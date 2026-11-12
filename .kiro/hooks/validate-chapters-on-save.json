@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Validate chapter specs on save",
+      "trigger": "PostFileSave",
+      "description": "Report-only and fast (about 1 s): static spec checks (references, asset ids, field tables) and whether src/chapters/generated is in sync. Rewrites nothing; run generate-chapter.mjs to recompile.",
+      "matcher": "chapters/.*\\.json$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/harness/generate-chapter.mjs --validate; node scripts/harness/generate-chapter.mjs --check",
+        "timeout": 60
+      }
+    }
+  ]
+}

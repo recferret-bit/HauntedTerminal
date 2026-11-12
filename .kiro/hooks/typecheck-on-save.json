@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Type-check on save",
+      "trigger": "PostFileSave",
+      "description": "Type-check the project (about 2 s) whenever a TypeScript source file is saved. Report-only.",
+      "matcher": "^src/.*\\.ts$|/src/.*\\.ts$",
+      "action": {
+        "type": "command",
+        "command": "npx tsc --noEmit",
+        "timeout": 60
+      }
+    }
+  ]
+}
