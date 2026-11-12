@@ -31,8 +31,8 @@ npm run preview    # serve the production bundle
 
 Useful storybook URLs:
 
-- `http://localhost:5173/storybook.html?inspect=agent.grok` (one model, animated)
-- `http://localhost:5173/storybook.html?inspect=agent.codex&scale=game` (at in-game size)
+- `http://localhost:5173/storybook.html?inspect=agent.gork` (one model, animated)
+- `http://localhost:5173/storybook.html?inspect=agent.codec&scale=game` (at in-game size)
 - `?tab=textures`, `?tab=fx` for the texture and effect galleries
 
 ## Checks

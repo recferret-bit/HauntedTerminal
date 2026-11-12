@@ -571,7 +571,7 @@ for (let p = 1; p <= pageCount; p++) {
           { model: p === pageCount ? 'boss.kernel' : 'malware.virus', x: 0.42, scale: 1.05 },
         ],
         bubbles: [
-          { speaker: 'codex', style: 'shout', text: 'ZERO LINTER ERRORS IF WE DELETE THE TESTS!', x: 0.6, y: 0.22 },
+          { speaker: 'codec', style: 'shout', text: 'ZERO LINTER ERRORS IF WE DELETE THE TESTS!', x: 0.6, y: 0.22 },
         ],
         sfx: { text: p === pageCount ? 'SIGKILL!' : 'KRAKOOM!', x: 0.5, y: 0.82, color: '#ffd166' },
       },
@@ -592,7 +592,7 @@ const dialogs = {
   cast: {
     dev: { displayName: 'DEV', color: '#ff8a3d' },
     [allyName]: { displayName: allyName.toUpperCase(), color: '#ffd166' },
-    codex: { displayName: bossName.toUpperCase(), color: '#ef476f' },
+    codec: { displayName: bossName.toUpperCase(), color: '#ef476f' },
   },
   levels: Object.fromEntries(
     builtLevels.map(({ spec }) => [

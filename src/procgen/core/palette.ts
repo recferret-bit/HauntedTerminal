@@ -65,15 +65,14 @@ export const ZONES = {
   malwareEye: { color: 0xfff07c, family: 'malware', emissive: 1.1 },
   ghostViolet: { color: 0x9b5de5, family: 'malware', ghost: true, opacity: 0.55 },
   // The four parody AI agents of the intro/outro cinematics (src/procgen/archetypes/agents/cast.ts).
-  // Hostile things, so family `malware`; each carries one agent's signature colour so the caricature
-  // reads by colour first: clay for CLAUDE, blue for GEMINI, black for GROK, the icon gradient for CODEX.
+  // Hostile things, so family `malware`; each carries one signature colour so the caricature reads by
+  // colour first: clay for CLOD, china blue and gravy for ANTI-GRAVY, black for GORK, steel and navy for CODEC.
   clayOrange: { color: 0xd97757, family: 'malware', halftone: true },
-  geminiBlue: { color: 0x4c8df6, family: 'malware', halftone: true },
-  grokBlack: { color: 0x1d1d22, family: 'malware' },
-  // The Codex icon's vertical gradient (lilac -> sky -> indigo), cut into three flat cel bands.
-  codexLilac: { color: 0xb1a7ff, family: 'malware' },
-  codexSky: { color: 0x7a9dff, family: 'malware' },
-  codexIndigo: { color: 0x3941ff, family: 'malware', halftone: true },
+  gravyBlue: { color: 0x4f7cc9, family: 'malware', halftone: true },
+  gravyBrown: { color: 0x8a5a2b, family: 'malware', halftone: true },
+  gorkBlack: { color: 0x1d1d22, family: 'malware' },
+  codecSteel: { color: 0x8696c2, family: 'malware' },
+  codecNavy: { color: 0x3a4675, family: 'malware', halftone: true },
 
   // glass
   glass: { color: 0xc8fff4, family: 'glass', emissive: 0.45, opacity: 0.85 },

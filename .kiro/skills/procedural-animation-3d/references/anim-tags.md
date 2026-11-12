@@ -114,7 +114,7 @@ it circles its own position with radius `amp` (default 0.06). Default 0.4 Hz.
 - Disk orbit: set `squash` (minor/major, 0..1], `tilt` (roll of the major axis, radians) and `sway` (z units,
   at most 0.5) and the path becomes a disk seen at an angle, started from the part's authored position; the far
   (upper) half is pushed back by `sway` so the part can slip behind the body and come round in front. Without
-  these fields the circle path is unchanged. Example: the debris round `agent.grok`. Bad values: `ANIM_DISK_FIELDS`.
+  these fields the circle path is unchanged. Example: the debris round `agent.gork`. Bad values: `ANIM_DISK_FIELDS`.
 - Good: motes, a satellite shard, a loading-ring dot.
 - Bad: anything that should face its direction of travel (use `spin` with a pivot: it turns the part too).
 

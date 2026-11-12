@@ -199,8 +199,8 @@ export type KernelEvent =
   | {
       /** One of the four AI agents (or Kiro Ghost companion) speaks in a cameo bubble on the stage. */
       type: 'AGENT_TAUNT';
-      agent: 'claude' | 'grok' | 'codex' | 'agy' | 'kiro';
-      /** procgen model id of the agent, e.g. `agent.claude` or `npc.kiro_ghost`. */
+      agent: 'clod' | 'gork' | 'codec' | 'antigravy' | 'kiro';
+      /** procgen model id of the agent, e.g. `agent.clod` or `npc.kiro_ghost`. */
       model: string;
       text: string;
       mood: 'laugh' | 'order' | 'smug' | 'annoyed';
@@ -228,6 +228,6 @@ export type KernelEvent =
       prompt: string;
       /** The command the player should type, e.g. `ls`. */
       command: string;
-      agent: 'claude' | 'grok' | 'codex' | 'agy' | 'kiro';
+      agent: 'clod' | 'gork' | 'codec' | 'antigravy' | 'kiro';
       done: boolean;
     };

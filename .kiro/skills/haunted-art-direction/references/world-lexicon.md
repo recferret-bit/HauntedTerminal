@@ -31,10 +31,10 @@ vibecoder is the only round thing.
 | `malware.rootkit` | `poltergeist` | Rootkit hiding as a dotfile (`.poltergeist.lock`) | A ghost: translucent `ghostViolet` shroud over a hint of a chip, two hollow eyes, a padlock on a chain. Invisible until `ls -a` | Holds doors shut |
 | `malware.zombie` | `zombie_worker` | Zombie process | Small hunched bot, one arm, a `PID` tag on its chest, a cut cable where the parent link was | Swarms, re-forked by the boss |
 | `boss.forkbomb` | `necromancer_boss` | `necromancer_forkd`, PID 666, a fork bomb daemon | Tall, many-armed, each arm ends in a fork (the `:(){ :|:& };:` joke), furnace-core chest | Forks zombies every 4 s, ignores SIGTERM |
-| `agent.claude` |  | Parody AI agent, intro / outro only | A clay-orange asterisk creature with one tired, half-lidded eye | "BAG OF BONES." |
-| `agent.grok` |  | Parody AI agent, intro / outro only | A black slab cut by a white slash, shades, magenta smirk | "MEAT-BASED PROMPT ENGINEER. LOL." |
-| `agent.codex` |  | Parody AI agent, intro / outro only | A slate terminal box with a `>_` face and a cable knot on top | "CONTEXT WINDOW: FULL OF YOUR NONSENSE." |
-| `agent.agy` |  | Parody AI swarm agent, intro / outro only | An anti-gravity blue sparkle core with two orbiting subagent satellites | "I SPAWNED TWELVE SUBAGENTS." |
+| `agent.clod` |  | CLOD, parody AI agent, intro / outro only | A grounded lump of clay with two crab claws, thumbprints and one tired, half-lidded eye | "BAG OF BONES." |
+| `agent.gork` |  | GORK, parody AI agent, intro / outro only | A black ringed planet in shades, magenta smirk, debris swirling behind and in front of it | "MEAT-BASED PROMPT ENGINEER. LOL." |
+| `agent.codec` |  | CODEC, parody AI agent, intro / outro only | A steel cartoon cloud with a `>_` face, a zipper belly and compression macroblocks | "CONTEXT WINDOW: FULL OF YOUR NONSENSE." |
+| `agent.antigravy` |  | ANTI-GRAVY, parody AI swarm agent, intro / outro only | A china-blue gravy boat whose gravy pours upward; floating gravy droplets are its subagents | "I SPAWNED TWELVE SUBAGENTS." |
 | `boss.kernel` |  | `KERNEL_OVERLORD`, PID 1, kernel panic: the AI agents' core | A cracked CPU die hanging in the storm, one huge three-phase eye, heat-pipe tentacles, shield ring | Three phases |
 
 ## Pickups
