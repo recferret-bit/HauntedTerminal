@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Dry run: new texture asset",
+      "trigger": "PostFileCreate",
+      "description": "Dummy run when a procedural texture or a dropped-in sprite PNG is created.",
+      "matcher": "(src/procgen/textures/.*\\.ts|public/assets/sprites/.*\\.png)$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/asset-dryrun.mjs texture",
+        "timeout": 20
+      }
+    }
+  ]
+}

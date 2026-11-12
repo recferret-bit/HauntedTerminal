@@ -1,0 +1,22 @@
+[
+  "ls", "cat todo.note", "pwd", "help", "grep BUG prod.py", "sed -i 's/BUG/FIXED/' prod.py", "source ram_16gb.dimm", "cd ..",
+  "ls -la", "rm .spycam", "cat intercom.sock", "rm .poltergeist.lock", "source energy.cell",
+  "cd drive_bay", "source ssd_256gb.img", "cd ..", "touch cellar_hatch/.power_on", "cd cellar_hatch",
+
+  "ps", "kill 1337", "chmod 000 port_445", "cat archivist_gate.sock",
+  "grep -h \"FATAL\" chronicles/*.log | wc -l > archivist_gate.sock", "source chronicles/energy.cell",
+  "cd iron_gate", "chmod -x stone_gargoyle.bin", "source energy.cell", "mv heavy_plank.tar chasm/",
+  "source chasm/ram_16gb.dimm", "cd chasm/crypt_stairs",
+
+  "source energy.cell", "cd ../../../", "ps", "kill -9 404", "cat pressure_plate.sock", "ls -la pedestal",
+  "rm pedestal/.mimic", "touch pedestal/{a,b,c}.rune", "echo align > pressure_plate.sock",
+  "cd ram_slots", "chmod -w stack.buf", "source ram_16gb.dimm", "source ssd_256gb.img", "cd ..",
+  "find . -name \"boiler_shaft\"", "cd hidden_wing", "source energy.cell", "cd boiler_shaft",
+
+  "ps", "kill 7777", "chmod 644 energy.cell ram_16gb.dimm", "source energy.cell", "source ram_16gb.dimm",
+  "cat valve_lock.sock", "grep \"^PASS=\" boiler.dump | cut -d= -f2 | rev > valve_lock.sock", "cd furnace_hall",
+  "kill -STOP 666", "source ssd_256gb.img", "source energy.cell", "kill -9 666", "cd core_elevator",
+
+  "mv chaos.stream /dev/null", "source energy.cell", "grep \"WAKEUP_TOKEN=\" core_dump.log > wakeup.sock",
+  "source energy2.cell", "sed -i 's/player_trapped=true/player_trapped=false/' reality_anchor.conf", "exit"
+]

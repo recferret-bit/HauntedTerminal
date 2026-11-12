@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Dry run: new model asset",
+      "trigger": "PostFileCreate",
+      "description": "Dummy run when a model file (pickups, doors, props, rooms, kit) is created.",
+      "matcher": "src/procgen/(archetypes/(pickups|doors|props|rooms)|kit)[^/]*(/[^/]*)?\\.ts$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/asset-dryrun.mjs model",
+        "timeout": 20
+      }
+    }
+  ]
+}

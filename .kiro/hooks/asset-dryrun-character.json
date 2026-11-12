@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Dry run: new character asset",
+      "trigger": "PostFileCreate",
+      "description": "Dummy run when a character (hero, ally, malware) archetype file is created.",
+      "matcher": "src/procgen/archetypes/(hero|malware|allies)[^/]*\\.ts$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/asset-dryrun.mjs character",
+        "timeout": 20
+      }
+    }
+  ]
+}
