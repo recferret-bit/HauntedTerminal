@@ -33,6 +33,7 @@ const LAYERS = [
   { area: 'assets/', may: [], three: true },
   { area: 'game/', may: ['contracts/', 'procgen/anim/', 'procgen/core/'], three: false },
   { area: 'renderer/', may: ['contracts/', 'procgen/', 'shaders/', 'assets/'], three: true },
+  { area: 'cinematic/', may: ['contracts/', 'procgen/', 'shaders/'], three: true },
   { area: 'main.ts', may: [], three: true },
 ];
 
