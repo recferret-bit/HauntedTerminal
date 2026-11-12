@@ -2,10 +2,8 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 /**
- * Procedural bolts and a Lichtenberg ground web.
- * Adapted from TerraAgent LightningStrikeSystem and the electric-surface
- * shader in frontend/render/weather/LightningStrikeFx.ts, scaled for a
- * room-sized diorama instead of a planetary hex.
+ * Procedural bolts and a Lichtenberg ground web with an electric-surface shader,
+ * scaled for a room-sized diorama.
  */
 
 interface ActiveBolt {

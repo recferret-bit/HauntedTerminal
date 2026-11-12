@@ -104,10 +104,9 @@ Colour is the first gameplay read: **orange = you, green/grey = the machine, glo
 magenta/violet = it will hurt you.** A new zone is a palette change: add it to `ZONES` with a family
 and say why in the PR; never inline a hex.
 
-### Post passes match TerraAgent
+### Post passes keep the hue
 
-The pixel-art pass (`src/shaders/pixel-art.ts`) and CRT (`src/shaders/crt-pass.ts`) were ported to behave
-like TerraAgent's: both run after `OutputPass`, so they work in display colour; pixel defaults are size 3.5,
+The pixel-art pass (`src/shaders/pixel-art.ts`) and CRT (`src/shaders/crt-pass.ts`) both run after `OutputPass`, so they work in display colour; pixel defaults are size 3.5,
 16 levels, dither 0.85, edge 0.65, palette mode 0 (full RGB, true hue); the CRT is scanlines every 3 css px,
 roll band, grain, flicker and vignette, with no barrel warp. Hue therefore survives. The retro palettes
 (`paletteMode` 1 to 5) remain as options; modes 4 and 5 keep only 22% of the hue, so do not judge colour

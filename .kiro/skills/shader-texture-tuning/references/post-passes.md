@@ -8,7 +8,7 @@ Built in the `ComicStage` constructor (`src/renderer/comic-stage.ts`):
 RenderPass(scene, camera) -> OutputPass -> pixelPass -> crtPass
 ```
 
-`OutputPass` does tone mapping and the colour-space conversion first, so the pixel and CRT passes work in display colour (as in TerraAgent). The pixel pass's `pixelSize` is in CSS pixels: `setPixelArtParams(pass, params, pixelRatio)` scales it. Pass resolution is set in `resize()`
+`OutputPass` does tone mapping and the colour-space conversion first, so the pixel and CRT passes work in display colour. The pixel pass's `pixelSize` is in CSS pixels: `setPixelArtParams(pass, params, pixelRatio)` scales it. Pass resolution is set in `resize()`
 in device pixels (`w * pixelRatio`), through `setPixelArtSize` and `setCrtSize`. Passes are switched
 with `pass.enabled` (`applyConfigVisuals`, driven by `stage.pixelOn` / `stage.crtOn`).
 

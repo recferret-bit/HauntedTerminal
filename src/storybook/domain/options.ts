@@ -23,7 +23,7 @@ export interface LabOptions {
   seed: number;
   pixel: boolean;
   crt: boolean;
-  /** Pixel-art pass palette mode, 0..5 (PALETTE_NAMES). The game default is 0, full RGB (as in TerraAgent). */
+  /** Pixel-art pass palette mode, 0..5 (PALETTE_NAMES). The game default is 0, full RGB. */
   palette: number;
   ink: boolean;
   tex: boolean;

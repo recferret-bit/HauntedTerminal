@@ -18,7 +18,7 @@ below: those are what players see.
 | `gridStrength` | 0.05 | A faint darker line on each cell's border. |
 | `paletteMode` | **0, full RGB** | True hue survives. Modes 1 to 5 are retro options; COMIX (4) is described below because it flattens colour families. |
 
-These defaults are TerraAgent's (`DEFAULT_PIXEL_PARAMS` in `src/shaders/pixel-art.ts`).
+These defaults live in `DEFAULT_PIXEL_PARAMS` (`src/shaders/pixel-art.ts`).
 
 **COMIX palette (mode 4, optional)**: the quantized **luma** picks a colour on a 4-stop ramp, ink (20,15,18) ->
 magenta (239,71,111) -> yellow (255,209,102) -> paper (239,230,210), and the result is

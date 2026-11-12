@@ -84,8 +84,7 @@ parameters: [LightningStrikeSystem.ts](./examples/LightningStrikeSystem.ts).
 Known gaps, so you do not design around features that are not there: bolts are additive glowing
 tubes rather than ink-edged shapes; midpoint displacement and the ground web use `Math.random()` and
 spread in x and z, but z is invisible to the front camera and the web lies flat on the floor, edge-on
-to it; bolt opacity fades instead of stepping; the file's header comment still names the project it
-was adapted from. The comic version of a bolt already exists as data: `fx.lightning-strike`
+to it; bolt opacity fades instead of stepping. The comic version of a bolt already exists as data: `fx.lightning-strike`
 (`src/procgen/fx/presets.ts`).
 
 ## How lightning should be drawn

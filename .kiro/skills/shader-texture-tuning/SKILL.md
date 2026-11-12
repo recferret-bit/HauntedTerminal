@@ -10,7 +10,7 @@ The look is produced by a short, fixed chain. Every tuning question is "which li
 ```
 zone colour + texture ──> comic material (cel bands, map, halftone, stripes, ink rim, emissive, flash)
 ink shell (back faces, #110e1b) ─┘
-        RenderPass ──> OutputPass ──> pixel-art pass ──> CRT pass   (same order as TerraAgent)
+        RenderPass ──> OutputPass ──> pixel-art pass ──> CRT pass
 ```
 
 | Link | File | Owns |

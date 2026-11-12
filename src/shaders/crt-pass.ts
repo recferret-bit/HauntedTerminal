@@ -3,8 +3,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { postBaseUniforms } from './post-common.js';
 
 /**
- * Old-TV look, ported from TerraAgent's CSS overlay (frontend/render/ui/crt.ts) so it behaves the same:
- * 1 css-px scanlines every 3 px that crawl, a slow rolling bright band, tape grain, rare flicker and a
+ * Old-TV look: 1 css-px scanlines every 3 px that crawl, a slow rolling bright band, tape grain, rare flicker and a
  * soft vignette. It runs AFTER the pixel-art pass and never resamples the picture, so the pixel grid stays
  * crisp. `distort` (barrel warp) is opt-in and 0 by default because it re-filters the pixel cells.
  */
