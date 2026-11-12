@@ -26,6 +26,9 @@ Run in this order. Each step consumes the output of the previous one.
 2. `comix-story-drawer`: render the Comix pages from `story/comix.spec.json`.
 3. `chapter-level-generator`: compile levels, validators, headless solvability.
 4. `chapter-implementer`: run the whole pipeline and the QA gate (`verify-chapter.mjs`).
+5. `chapter-editor`: the human step. `/editor` edits every spec with forms, previews the real game on the unsaved draft, checks references, runs the headless solution. It is also the place that must learn every new spec field (`src/chapter-editor/schema.ts`).
+
+The contract behind all five is `.kiro/steering/declarative-chapters.md`: chapters are data, the engine names no chapter or level.
 
 Rules: specs reference existing asset IDs only (`ModelCatalog`, `RoomKind`). Never put geometry, shader or particle definitions in a level spec.
 

@@ -105,3 +105,21 @@ Keep `mcp.json` empty until you need something. Likely later additions are an im
 ## Open decision
 
 Screen format: panel-based (a page with a grid of panels) or free layout?
+
+## Status in this repo (declarative chapters and the chapter editor)
+
+How the principles above landed. The layout in this doc was a proposal; the repo uses `chapters/` for content and `src/` for the engine.
+
+| Principle | Where it is |
+|---|---|
+| Content is data | `chapters/<slug>/` (manifest, levels with `script`, dialogs, comic). No chapter or level named in `src/` |
+| Truth in schemas | TypeScript vocabulary (`src/chapters/script-types.ts`, `types.ts`) + field tables (`src/chapter-editor/schema.ts`) that drive the forms and `schema-check.ts`. Variant tables are typed by the unions, so a new `kind` without a form fails `tsc` |
+| A validator with cross-references | `src/chapters/validate-pack.ts` (files, sockets, enemies, cores, tutorial indices), asset ids against `ModelCatalog`, field tables; run by `generate-chapter.mjs --validate` and the editor's Check tab |
+| Enforcement by script | `npm run quality` (incl. `quality:declarative`), `generate-chapter.mjs --verify`, `editor-smoke.mjs`, `verify-chapter.mjs` |
+| Steering = facts | `declarative-chapters.md`, `chapter-editor-rules.md` (fileMatch), `glossary.md` (always), `skills-map.md`. The vocabulary is included with `#[[file:src/chapters/script-types.ts]]`, not pasted |
+| Skills = procedures | `chapter-editor` (run it, add a capability, common mistakes, finish with), plus the existing LEVEL GEN skills |
+| Hooks = cheap enforcement | `validate-chapters-on-save`, `typecheck-on-save`, `chapter-gates-on-stop` (all report-only, under 2 s) and `guard-chapter-files` (PreToolUse: blocks `src/chapters/generated/`, asks before vocabulary files) |
+| Specs = capabilities | `.kiro/specs/declarative-chapter-runtime/`, `.kiro/specs/chapter-editor/` (EARS requirements, design, tasks with open follow-ups) |
+| MCP | none needed; `.kiro/settings/mcp.json` stays empty |
+
+Still open (tracked in the specs): JSON Schema export for outside tools, per-field locks for agent regeneration, level add/delete/reorder in the editor.

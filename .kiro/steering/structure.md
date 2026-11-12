@@ -29,13 +29,24 @@ src/
   procgen/        # ASSET PCG: core, geometry, kit, textures, archetypes, fx, anim, validate, runtime
   shaders/        # comic material, lightning, post passes
   storybook/      # storybook page (domain, subjects, stage, ui, app)
-  main.ts
-  # planned, not ported yet: renderer/ (comic stage), game/ (world, VFS, terminal), chapters/ (LEVEL GEN runtime)
+  assets/         # optional PNG albedo maps
+  game/           # world, VFS, shell, session (three-free)
+  chapters/       # LEVEL GEN runtime; generated/ is compiled from chapters/
+  renderer/       # comic stage
+  cinematic/      # intro and outro
+  ui/             # terminal, HUD, editor
+  sandbox/        # dev inspector
+  pages/          # chapter select and comic reader
+  chapter-editor/ # /editor: schema-driven chapter forms, game preview, checks (schema.ts is the field table)
+  hub/            # issue hub entry
+  play/           # play page composition (bootstrap). main.ts only starts it
+  styles/         # game.css, hub.css
+  main.ts         # play page (/)
 chapters/<chapter-slug>/     # LEVEL GEN data, one chapter for Kiroween
   chapter.manifest.json
   story/comix.spec.json, dialogs.json, out/
   levels/level-XX-<slug>/level.spec.json, LEVEL.md
-pages/                       # HTML entry pages: index.html (game), storybook.html
+pages/                       # HTML entry pages: index.html (player front door), play.html (game at /play/...), hub.html (redirect to /), chapter-editor.html (/editor, /editor/<chapter>/<level>), dev.html (level select, jumps, QA labs), chapters.html, comic.html, cinematic.html, storybook.html, chapter-editor.html (/editor)
 public/assets/               # external sprites/meshes (ai-mesh-pipeline)
 public/comix/<chapter-id>/   # rendered comic pages
 scripts/harness/             # shared Node tooling

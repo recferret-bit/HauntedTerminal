@@ -34,6 +34,13 @@ Every `levels/<level-id>/level.spec.json` declares:
 
 ---
 
+### Level `script` (behaviour as data)
+Anything a level does beyond files and rules goes in `level.spec.json -> script`, never in `src/`: `arrival` steps, `tutorial` (cards, `doneWhen` conditions, `hide` enemy), `bullying`, `kiro`, `safe`, `holdEnemiesUntil`, `signalAliases`, `onBossKill`. Vocabulary: `src/chapters/script-types.ts`; interpreter: `src/chapters/script.ts`; reference: `.kiro/steering/declarative-chapters.md`. If the vocabulary cannot say what the level needs, extend it generically (type, one interpreter branch, `src/chapter-editor/schema.ts`, `validate-pack.ts`).
+
+`--validate` and `--verify` run the editor's static checks (`src/chapter-editor/check.ts`): every path, socket, enemy, core and asset id a spec mentions must exist, and every file must match the field tables in `src/chapter-editor/schema.ts`. Fix every ERROR; read every warning.
+
+---
+
 ## 2. Commands
 
 ### Compile `chapters/*` -> `src/chapters/generated/catalog-data.ts`
@@ -41,9 +48,15 @@ Every `levels/<level-id>/level.spec.json` declares:
 node scripts/harness/generate-chapter.mjs
 ```
 
+### Fast read-only static check (about 1 s; what the save hook runs)
+```bash
+node scripts/harness/generate-chapter.mjs --validate   # references, asset ids, field tables (unknown keys, wrong types)
+node scripts/harness/generate-chapter.mjs --check      # is src/chapters/generated in sync with chapters/*?
+```
+
 ### Compile + Run Full Headless Playthrough Verification (with Enemy Tick Pressure)
 ```bash
-node scripts/harness/generate-chapter.mjs --verify --ticks 3
+node scripts/harness/generate-chapter.mjs --verify --ticks 3   # compile, --validate, then every level's solution, 0 deaths
 ```
 
 ### Run Validator + Runtime Edge-Case Self-Tests
@@ -56,4 +69,5 @@ node .kiro/skills/chapter-level-generator/scripts/self-test.mjs
 ## 3. Authoring Checklist Before Marking Done
 1. Every `level.spec.json` has a non-empty `solutionCommands[]` that starts in `spec.cwd` and ends with `cd <exitDir>` (or `exit` on the final boss).
 2. Both **CLI players** (`sed -i`) and **Split Editor players** (`edit <file>` + Patch Chips) can solve every code/config task.
-3. `node scripts/harness/generate-chapter.mjs --check` exits `0` (generated TS matches JSON specs on disk).
+3. `node scripts/harness/generate-chapter.mjs --validate` prints `0 error(s)`.
+4. `node scripts/harness/generate-chapter.mjs --check` exits `0` (generated TS matches JSON specs on disk).

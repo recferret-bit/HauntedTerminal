@@ -9,7 +9,7 @@ This skill turns a high-level chapter idea into a complete, schema-validated `ch
 
 **Category: LEVEL GEN** (see `.kiro/steering/skills-map.md`). Level generation composes levels and chapters from assets that already exist in `ModelCatalog` / `RoomKind`. If a level needs a model, room, texture or effect that does not exist yet, stop and use the matching ASSET PCG skill first (`procedural-malware-3d`, `procedural-rooms-3d`, ...); never invent asset IDs in a spec.
 
-**Kiroween scope:** the hackathon build ships exactly **one chapter of about 11 levels**. Do not scaffold additional chapters; if the user asks for one, confirm it is post-hackathon work. Default structure: `1` tutorial + `6` task levels + `3` hub levels + `1` boss (the shape of the former `chapter-05-kiroween`), adjustable by the user within 10 to 12 levels.
+**Kiroween scope:** the hackathon build ships exactly **one chapter of about 11 levels**. Do not scaffold additional chapters; if the user asks for one, confirm it is post-hackathon work. Default structure: `1` tutorial + `6` task levels + `3` hub levels + `1` boss (the shape of `chapter-01-kiroween`), adjustable by the user within 10 to 12 levels.
 
 Read `haunted-art-direction` first so every chosen `ModelCatalog` actor, `RoomKind`, and palette choice honours the Comix Zone art bible.
 
@@ -93,6 +93,9 @@ chapters/<chapter-id>/
     │   └── level.spec.json       # Executable VFS files, enemies, pickups, patches, winRules, solutionCommands
     └── ...
 ```
+
+### Behaviour is data
+Put arrival lines, tutorials, taunts and Kiro/boss reactions in each `level.spec.json -> script` (see `chapter-level-generator`), grants and outro in the manifest. Do not ask for, or write, code per chapter. The Chapter Editor (`/editor`) is where the human tunes the result.
 
 ### Non-Negotiable Authoring Rules
 1. **World Kill Rules Match `src/game/entities.ts`:**

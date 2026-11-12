@@ -11,6 +11,10 @@ description: "[LEVEL GEN] Final step of level generation (pipeline and QA gate).
 
 ---
 
+> Step 6 is human: open `/editor` (skill `chapter-editor`) to review dialogs, animations and interactions on the real game and tune the specs by hand. Agents must keep those edits (read specs from disk, patch only what the task names).
+
+---
+
 ## Step 1 — Validate Input Specifications
 Before touching `src/`, verify that the chapter's manifest, Comix script, dialogues, and level specs satisfy all `ModelCatalog`, `BESTIARY`, and `HUMAN_ZONE_MISUSE` contracts:
 
