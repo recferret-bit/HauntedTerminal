@@ -1,0 +1,74 @@
+{
+  "hero": {
+    "textureUrl": "/assets/sprites/hero.png",
+    "anchor": [0.5, 0.9],
+    "targetHeight": 92,
+    "tintFallback": "#06d6a0"
+  },
+  "system_hand": {
+    "textureUrl": "/assets/sprites/system_hand.png",
+    "anchor": [0.15, 0.85],
+    "targetHeight": 130,
+    "tintFallback": "#f4f1ea"
+  },
+  "necromancer_boss": {
+    "textureUrl": "/assets/sprites/necromancer_boss.png",
+    "anchor": [0.5, 0.85],
+    "targetHeight": 136,
+    "tintFallback": "#ef476f"
+  },
+  "zombie_worker": {
+    "textureUrl": "/assets/sprites/zombie_worker.png",
+    "anchor": [0.5, 0.85],
+    "targetHeight": 74,
+    "tintFallback": "#8ac926"
+  },
+  "locked_gate": {
+    "textureUrl": "/assets/sprites/locked_gate.png",
+    "anchor": [0.5, 0.9],
+    "targetHeight": 116,
+    "tintFallback": "#adb5bd"
+  },
+  "poltergeist": {
+    "textureUrl": "/assets/sprites/poltergeist.png",
+    "anchor": [0.5, 0.5],
+    "targetHeight": 78,
+    "tintFallback": "#9b5de5"
+  },
+  "gargoyle": {
+    "textureUrl": "/assets/sprites/gargoyle.png",
+    "anchor": [0.5, 0.9],
+    "targetHeight": 108,
+    "tintFallback": "#e07a5f"
+  },
+  "crate_bridge": {
+    "textureUrl": "/assets/sprites/crate_bridge.png",
+    "anchor": [0.5, 0.8],
+    "targetHeight": 64,
+    "tintFallback": "#d4a373"
+  },
+  "mirror_door": {
+    "textureUrl": "/assets/sprites/mirror_door.png",
+    "anchor": [0.5, 0.9],
+    "targetHeight": 112,
+    "tintFallback": "#4cc9f0"
+  },
+  "black_hole": {
+    "textureUrl": "/assets/sprites/black_hole.png",
+    "anchor": [0.5, 0.5],
+    "targetHeight": 96,
+    "tintFallback": "#7209b7"
+  },
+  "socket_guardian": {
+    "textureUrl": "/assets/sprites/socket_guardian.png",
+    "anchor": [0.5, 0.85],
+    "targetHeight": 98,
+    "tintFallback": "#ffd166"
+  },
+  "item_scroll": {
+    "textureUrl": "/assets/sprites/item_scroll.png",
+    "anchor": [0.5, 0.8],
+    "targetHeight": 52,
+    "tintFallback": "#f8edeb"
+  }
+}
