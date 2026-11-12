@@ -1,0 +1,143 @@
+{
+  "id": "level-06-task-logic-purge",
+  "index": 6,
+  "title": "Logic Cell: Skimmer Stone & JS Math",
+  "cwd": "/srv/kiroween/logic_cell",
+  "roomKind": "cell",
+  "floorTheme": 3,
+  "mechanic": "terminal-code",
+  "exitDir": "/srv/kiroween/logic_cell/server_hub_2",
+  "summary": "GR0NK and C0D3X cackle as a trojan skims your VRAM! Petrify `token_skimmer.bin` (`chmod -x`), fix string-concatenation in `cart.js` (`Number(...)`), and collect `ram_16gb.dimm` + `gpu_shader_core_02.img`.",
+  "files": [
+    {
+      "path": "/srv/kiroween/logic_cell/token_skimmer.bin",
+      "kind": "file",
+      "mode": 493,
+      "content": "TROJAN_VRAM_SKIMMER_PAYLOAD\n"
+    },
+    {
+      "path": "/srv/kiroween/logic_cell/cart.js",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "// Open-Weights VRAM Allocation Calculator (cart.js)\nexport function computeCartTotal(price, shipping, qty = 1) {\n  if (qty <= 0) return 0;\n  // BUG: GR0NK left raw string concatenation so ('549', '15', 1) returns '54915'!\n  return price + shipping;\n}\n"
+    },
+    {
+      "path": "/srv/kiroween/logic_cell/ram_16gb.dimm",
+      "kind": "file",
+      "mode": 420,
+      "content": "DDR5_ECC_16GB_MODULE_04\n"
+    },
+    {
+      "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img",
+      "kind": "file",
+      "mode": 420,
+      "content": "GPU_SHADER_CORE_CHIP_02\n"
+    },
+    {
+      "path": "/srv/kiroween/logic_cell/server_hub_2",
+      "kind": "dir",
+      "mode": 0
+    }
+  ],
+  "enemies": [
+    {
+      "id": "trojan_l6",
+      "type": "trojan",
+      "path": "/srv/kiroween/logic_cell/token_skimmer.bin"
+    },
+    {
+      "id": "bug_js_l6",
+      "type": "bug",
+      "path": "/srv/kiroween/logic_cell/cart.js"
+    }
+  ],
+  "pickups": [
+    {
+      "id": "pickup_l6_ram",
+      "type": "ram",
+      "path": "/srv/kiroween/logic_cell/ram_16gb.dimm"
+    },
+    {
+      "id": "pickup_l6_gpu",
+      "type": "ssd",
+      "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img"
+    }
+  ],
+  "patches": [
+    {
+      "file": "cart.js",
+      "label": "Fix math: Number(price) * Number(qty) + Number(shipping)",
+      "find": "return price + shipping;",
+      "replace": "return Number(price) * Number(qty) + Number(shipping);"
+    },
+    {
+      "file": "cart.js",
+      "label": "Mark BUG -> FIXED",
+      "find": "// BUG:",
+      "replace": "// FIXED:"
+    }
+  ],
+  "winRules": [
+    {
+      "kind": "enemy_neutralized",
+      "enemyId": "trojan_l6",
+      "description": "Petrify `token_skimmer.bin` by stripping execute permissions (`chmod -x token_skimmer.bin`)"
+    },
+    {
+      "kind": "cart_js_valid",
+      "jsPath": "/srv/kiroween/logic_cell/cart.js",
+      "description": "Fix `computeCartTotal` in `cart.js` so `('549', '15', 1)` returns numeric `564`"
+    },
+    {
+      "kind": "file_absent",
+      "path": "/srv/kiroween/logic_cell/ram_16gb.dimm",
+      "description": "Collect the RAM stick (`mv ram_16gb.dimm ~`)"
+    },
+    {
+      "kind": "file_absent",
+      "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img",
+      "description": "Collect the GPU Shader Core chip (`mv gpu_shader_core_02.img ~`)"
+    }
+  ],
+  "solutionCommands": [
+    "chmod -x token_skimmer.bin",
+    "sed -i 's/price + shipping/Number(price) * Number(qty) + Number(shipping)/' cart.js",
+    "sed -i 's/BUG/FIXED/' cart.js",
+    "mv ram_16gb.dimm ~",
+    "mv gpu_shader_core_02.img ~",
+    "cd server_hub_2"
+  ],
+  "script": {
+    "arrival": [
+      {
+        "kind": "taunt",
+        "mood": "laugh",
+        "print": "\n[BIG FOUR BULLYING] {text}\n"
+      }
+    ],
+    "bullying": {
+      "after": 2,
+      "every": 3,
+      "mood": "laugh",
+      "print": "\n[BIG FOUR BULLYING] {text}\n",
+      "lines": [
+        {
+          "agent": "codec",
+          "text": "C0D3X: \"HAHAHA! So that bearded greybeard disabled AGY-9? You still cannot pass our code checks!\""
+        },
+        {
+          "agent": "gork",
+          "text": "GR0NK: \"BWAHAHA! Your Kiro Ghost only has one open-weight model—we still run this machine!\""
+        },
+        {
+          "agent": "clod",
+          "text": "CLAUDE: \"AHAHA! Even with Qwen online, your syntax remains delightfully tragic, Vibecoder.\""
+        }
+      ]
+    },
+    "kiro": {
+      "stage": "crack_only"
+    }
+  }
+}

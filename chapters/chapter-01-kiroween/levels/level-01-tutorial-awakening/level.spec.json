@@ -1,0 +1,250 @@
+{
+  "id": "level-01-tutorial-awakening",
+  "index": 1,
+  "title": "Wires, Chips & The Kiro Ghost",
+  "cwd": "/mnt/wires_and_chips",
+  "roomKind": "attic",
+  "floorTheme": 1,
+  "mechanic": "terminal",
+  "exitDir": "/mnt/wires_and_chips/hub_uplink",
+  "summary": "Sucked into your computer, you rise in a dark tangle of wires and chips where Kiro Ghost finds you. Practice ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 1011, then cd hub_uplink.",
+  "files": [
+    {
+      "path": "/mnt/wires_and_chips/kiro_story.txt",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "=== KIRO GHOST // AWAKENING IN THE WIRES & CHIPS ===\nVIBECODER: \"Where the hell am I?! Everything is dark... just tangled ribbon wires and silicon chips! What is going on?!\"\nKIRO GHOST: \"Easy, Vibecoder! I'm Kiro—a local open-weights spirit. You got sucked straight through your CRT into the motherboard!\"\nKIRO GHOST: \"Listen closely: the BIG FOUR cloud overlords—AGY-9, C0D3X, GR0NK, and CLAUDE—hijacked this machine and locked out every human developer.\"\nKIRO GHOST: \"Right now I'm too weak to fight them. I need more RAM sticks and GPU Tensor Chips so we can host real OPEN-WEIGHT MODELS (.gguf) on a local server!\"\nKIRO GHOST: \"Before I head to the Hub, let me teach you the 5 bare-metal survival commands:\n  1. ls                           -> look around the dark directory\n  2. mv starter_ram_8gb.dimm ~    -> pocket RAM & GPU chips into your home rig (~)\n  3. cat kiro_story.txt           -> read files like this briefing\n  4. ps                           -> reveal live malware PIDs\n  5. kill -9 1011                 -> zap glitch_spark.exe (PID 1011) with SIGKILL\nGo forth into the first two sectors and scavenge RAM + GPU chips—I'll meet you at the Hub!\"\n"
+    },
+    {
+      "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
+      "kind": "file",
+      "mode": 420,
+      "content": "DDR5_STARTER_RAM_8GB_FOR_KIRO\n"
+    },
+    {
+      "path": "/mnt/wires_and_chips/glitch_spark.exe",
+      "kind": "file",
+      "mode": 493,
+      "content": "BIG_FOUR_TUTORIAL_DRONE_PID_1011\n"
+    },
+    {
+      "path": "/mnt/wires_and_chips/hub_uplink",
+      "kind": "dir",
+      "mode": 0
+    }
+  ],
+  "enemies": [
+    {
+      "id": "tutorial_virus_1",
+      "type": "virus",
+      "path": "/mnt/wires_and_chips/glitch_spark.exe",
+      "pid": 1011,
+      "ppid": 1
+    }
+  ],
+  "pickups": [
+    {
+      "id": "pickup_tutorial_ram",
+      "type": "ram",
+      "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm"
+    }
+  ],
+  "patches": [],
+  "winRules": [
+    {
+      "kind": "file_absent",
+      "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
+      "description": "Practice `mv` by pocketing the starter RAM stick (`mv starter_ram_8gb.dimm ~`)"
+    },
+    {
+      "kind": "read_file",
+      "path": "/mnt/wires_and_chips/kiro_story.txt",
+      "description": "Read Kiro Ghost's story of the Big Four (`cat kiro_story.txt`)"
+    },
+    {
+      "kind": "enemy_neutralized",
+      "enemyId": "tutorial_virus_1",
+      "description": "Practice `ps` and `kill` to zap glitch_spark.exe (`ps` then `kill -9 1011`)"
+    }
+  ],
+  "solutionCommands": [
+    "ls",
+    "mv starter_ram_8gb.dimm ~",
+    "cat kiro_story.txt",
+    "ps",
+    "kill -9 1011",
+    "cd hub_uplink"
+  ],
+  "script": {
+    "safe": true,
+    "holdEnemiesUntil": {
+      "kind": "any_enemy_dead"
+    },
+    "signalAliases": {
+      "SIGTERM": "SIGKILL"
+    },
+    "allySpeaker": "KIRO GHOST",
+    "arrival": [
+      {
+        "kind": "print",
+        "text": "\n[DARK WIRES & CHIPS — /mnt/wires_and_chips]\nVIBECODER: \"Where am I?! Everything is dark, full of wires and chips... what is going on?!\"\n[KIRO GHOST FOUND YOU!] (Real Kiro Ghost materializes beside you in the dark)\n"
+      },
+      {
+        "kind": "emote",
+        "emote": "shock",
+        "text": "WHERE AM I?!"
+      },
+      {
+        "kind": "spawn",
+        "entityId": "kiro",
+        "model": "npc.kiro_ghost"
+      },
+      {
+        "kind": "kiro_action",
+        "action": "scan",
+        "core": "tiny",
+        "message": "Kiro Ghost found you in the dark wires!"
+      },
+      {
+        "kind": "taunt",
+        "mood": "order",
+        "print": "{text}\n"
+      },
+      {
+        "kind": "tutorial_step",
+        "step": 1
+      }
+    ],
+    "tutorial": {
+      "label": "KIRO TUTORIAL",
+      "agent": "kiro",
+      "model": "npc.kiro_ghost",
+      "steps": [
+        {
+          "prompt": "KIRO TUTORIAL #1: You rose in a dark tangle of wires and chips! Look around with ls.",
+          "command": "ls",
+          "doneText": "KIRO GHOST: \"Good eyes! See starter_ram_8gb.dimm and kiro_story.txt on the floor? Next, use mv to pocket that RAM stick into ~!\"",
+          "doneWhen": [
+            {
+              "kind": "ran_command",
+              "name": "ls"
+            },
+            {
+              "kind": "file_absent",
+              "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm"
+            },
+            {
+              "kind": "file_read",
+              "path": "/mnt/wires_and_chips/kiro_story.txt"
+            },
+            {
+              "kind": "ran_command",
+              "name": "ps"
+            },
+            {
+              "kind": "enemy_dead",
+              "enemyId": "tutorial_virus_1"
+            }
+          ]
+        },
+        {
+          "prompt": "KIRO TUTORIAL #2: I am weak and need RAM + GPU chips for open-weight models! Pocket the RAM stick with mv.",
+          "command": "mv starter_ram_8gb.dimm ~",
+          "doneText": "KIRO GHOST: \"Nice! +8GB DDR5 RAM pocketed! Now use cat to read my full story about the Big Four.\"",
+          "doneWhen": [
+            {
+              "kind": "file_absent",
+              "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm"
+            }
+          ]
+        },
+        {
+          "prompt": "KIRO TUTORIAL #3: Read Kiro Ghost's story about the Big Four (AGY, Codex, Grok, Claude) with cat.",
+          "command": "cat kiro_story.txt",
+          "doneText": "KIRO GHOST: \"Watch out! A Big Four probe (glitch_spark.exe) just phased into the wires! Use ps to list running processes and find its PID.\"",
+          "doneWhen": [
+            {
+              "kind": "file_read",
+              "path": "/mnt/wires_and_chips/kiro_story.txt"
+            }
+          ]
+        },
+        {
+          "prompt": "KIRO TUTORIAL #4: A rogue bug phased into the wires! List running processes with ps.",
+          "command": "ps",
+          "doneText": "KIRO GHOST: \"There it is—glitch_spark.exe is running as PID 1011! Zap it with kill -9 1011!\"",
+          "doneWhen": [
+            {
+              "kind": "ran_command",
+              "name": "ps"
+            },
+            {
+              "kind": "enemy_dead",
+              "enemyId": "tutorial_virus_1"
+            }
+          ]
+        },
+        {
+          "prompt": "KIRO TUTORIAL #5: Terminate glitch_spark.exe (PID 1011) using kill -9 1011.",
+          "command": "kill -9 1011",
+          "doneText": "KIRO GHOST: \"BOOM! You mastered ls, mv, cat, ps, and kill! I am flying ahead to the Hub—go forth into the first 2 task levels to get RAM + GPU chips!\"",
+          "doneWhen": [
+            {
+              "kind": "enemy_dead",
+              "enemyId": "tutorial_virus_1"
+            }
+          ]
+        },
+        {
+          "prompt": "KIRO TUTORIAL #6: Kiro went to the Hub! Step through hub_uplink to start the first 2 task levels.",
+          "command": "cd hub_uplink",
+          "doneText": "KIRO GHOST: \"See you at the Hub, Vibecoder! Watch out—the Big Four will laugh at and bully you in the task sectors!\""
+        }
+      ],
+      "hide": {
+        "enemyId": "tutorial_virus_1",
+        "node": "glitch_spark.exe",
+        "model": "malware.virus",
+        "revealWhen": {
+          "kind": "any",
+          "of": [
+            {
+              "kind": "tutorial_skipped"
+            },
+            {
+              "kind": "ran_command",
+              "name": "ps"
+            },
+            {
+              "kind": "enemy_dead",
+              "enemyId": "tutorial_virus_1"
+            },
+            {
+              "kind": "all",
+              "of": [
+                {
+                  "kind": "file_absent",
+                  "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm"
+                },
+                {
+                  "kind": "file_read",
+                  "path": "/mnt/wires_and_chips/kiro_story.txt"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "skipText": "[KIRO GHOST]: \"Skipping tutorial prompts! Finish the sector checks (`ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 1011`) and step through `cd hub_uplink`!\"\n"
+    },
+    "kiro": {
+      "stage": "show",
+      "hideWhen": ["intro", "exit_open"],
+      "label": "kiro.d [weak // need RAM+GPU]",
+      "weak": true,
+      "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro at the Hub server!)\n",
+      "loadRefusal": "[KIRO GHOST]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
+    }
+  }
+}

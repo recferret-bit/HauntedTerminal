@@ -116,127 +116,9 @@ await withProcgen(async (_p, vite) => {
   ].join('\n');
   assert.equal(validators.validateDockerCompose(fourSpaceCompose).ok, true, '4-space YAML + indentless lists + /tcp + comments must pass');
 
-  // ---- 5. ChapterSession Runtime, Chroot, Pickups, Audit & Hint Walkthrough Edge Cases ----
-  const session = createChapterSession({ chapterId: 'chapter-01-freelance-storefront' });
-  session.skipIntro();
-
-  // Empty input is a safe no-op
-  assert.equal(session.exec('   ').output, '');
-
-  // `mv <pickup> ~` pockets hardware pickups in Chapter mode just like `source`!
-  const mvPickup = session.exec('mv spare_ram_16gb.dimm ~');
-  assert.ok(mvPickup.output.includes('[COLLECTED]'), 'mv <pickup> ~ must collect hardware pickup');
-  assert.equal(mvPickup.snapshot.ram, 16);
-
-  // `echo status > hank.tty.sock` runs live checklist audit WITHOUT burning hint rungs!
-  const auditOut = session.exec('echo status > hank.tty.sock').output;
-  assert.ok(auditOut.includes('LIVE AUDIT') && auditOut.includes('0/3'));
-
-  // 3-rung Socratic Hank escalation starts at RUNG 1/3 after status audit
-  const h1 = session.exec('hank').output;
-  const h2 = session.exec('hank').output;
-  const h3 = session.exec('hank').output;
-  assert.ok(h1.includes('RUNG 1/3'));
-  assert.ok(h2.includes('RUNG 2/3'));
-  assert.ok(h3.includes('RUNG 3/3'));
-
-  // Level 4: Chroot blocks `cd ..`, `cd /srv`, and `cd ~`; stage hides synthetic `..` parent neighbor at chroot root!
-  session.jumpToLevel('level-04-storefront-html-css');
-  assert.equal(session.getCurrentLevel().id, 'level-04-storefront-html-css');
-  assert.equal(
-    session.snapshot().room.neighbors.some((n) => n.relation === 'parent'),
-    false,
-    'synthetic parent `..` neighbor must not appear at level chroot root',
-  );
-  assert.ok(session.exec('cd ..').output.includes('chroot jail active'));
-  assert.ok(session.exec('cd /srv').output.includes('chroot jail active'));
-  assert.ok(session.exec('cd ~').output.includes('SSH connection locked'));
-
-  // Verify Hank's exact Rung 3 CLI commands for Level 4 unlock `cart_bay`!
-  session.exec('kill -9 404');
-  session.exec("sed -i 's/display: none/display: grid/' storefront.css");
-  session.exec("sed -i 's/width: 0%/width: 100%/' storefront.css");
-  session.exec("sed -i 's/z-index: -1/z-index: 10/' storefront.css");
-  session.exec("sed -i 's/disabled//' index.html");
-  session.exec('cd cart_bay');
-  assert.equal(session.getCurrentLevel().id, 'level-05-cart-bug-cleanup', 'Level 4 Rung 3 commands must unlock Level 5');
-
-  // Level 5: Verify fixing ONLY the JS formula (leaving `// BUG:` comment untouched!) squashes `c1-l5-bug` and unlocks `docker_forge`!
-  session.exec('chmod -x price_skimmer.bin');
-  const sedCart = session.exec("sed -i 's|price + shipping|Number(price) * Number(qty) + Number(shipping)|' cart.js");
-  assert.ok(sedCart.output.includes('CART TEST SUITE: PASS'), 'pipe-delimited sed on cart.js must pass');
-  assert.equal(sedCart.snapshot.enemiesLeft, 0, 'c1-l5-bug must auto-squash once cart.js passes validation');
-  session.exec('cd docker_forge');
-  assert.equal(session.getCurrentLevel().id, 'level-06-docker-image');
-
-  // Level 8 Boss: `kill -9 1` blocked before 3 anchors, succeeds cleanly after 3 anchors!
-  session.jumpToLevel('level-08-checkout-boss');
-  assert.ok(session.snapshot().ram >= 32 && session.snapshot().backups >= 1, 'mid-chapter jump to Level 8 must grant baseline RAM & SSD backup');
-  const prematureKill = session.exec('kill -9 1');
-  assert.ok(prematureKill.output.includes('Operation not permitted'));
-  session.exec('cat chaos_webhook.stream > /dev/null');
-  session.exec('grep ORDER_SIG stripe_audit.log > payment_verify.sock');
-  session.exec("sed -i 's/slop_override=true/slop_override=false/' checkout_anchor.conf");
-  const finalKill = session.exec('kill -9 1');
-  assert.ok(finalKill.output.includes('PID 1') && !finalKill.output.includes('Operation not permitted'));
-  const winExit = session.exec('exit');
-  assert.equal(winExit.snapshot.ended, true);
-
-  // Metagame: Silicon Scrap earned, workshop perk purchase & toggle, grimoire/bestiary commands, and Chaos Mode PID mutation
-  const metaAfter = catalog.readMetagame();
-  assert.ok(metaAfter.scrap >= 100, `expected >= 100 Silicon Scrap after clearing sectors, got ${metaAfter.scrap}`);
-
-  const perkSession = createChapterSession({
-    chapterId: 'chapter-01-freelance-storefront',
-    startLevelId: 'level-04-storefront-html-css',
-    chaosMode: true,
-    chaosSeed: 'unit-seed-42',
-  });
-  perkSession.skipIntro();
-  const psChaos = perkSession.exec('ps').output;
-  assert.ok(!psChaos.includes('  404 '), 'chaosMode must randomize non-PID-1 malware PIDs');
-  assert.ok(perkSession.exec('grimoire docker').output.includes('docker compose'));
-  assert.ok(perkSession.exec('bestiary trojan').output.includes('chmod -x'));
-  const buyRes = perkSession.exec('workshop perk-overclock-dimm');
-  assert.ok(buyRes.output.includes('Installed "Overclocked Starter DIMM"'));
-
-  // Tactical Mode prevents passive real-time tick damage & cron_restorer restores questCritical files
-  perkSession.setTacticalMode(true);
-  for (let i = 0; i < 5; i++) {
-    assert.equal(perkSession.tick().events.length, 0);
-  }
-  perkSession.setTacticalMode(false);
-  perkSession.jumpToLevel('level-03-config-purge');
-  perkSession.exec('rm store.conf');
-  assert.equal(perkSession.readEditableFile('store.conf').ok, false);
-  perkSession.tick();
-  const restoreTick = perkSession.tick();
-  assert.ok(restoreTick.events.some((e) => e.type === 'SYSTEM_HAND_SPAWN' && e.reason === 'cron_restore'));
-  assert.equal(perkSession.readEditableFile('store.conf').ok, true);
-
-  // ---- 6. Kiro Ghost Companion (`kiro.d`) Self-Hosted Cores, Audit & Defend-While-Cracking ----
-  const kiroSession = createChapterSession({
-    chapterId: 'chapter-01-freelance-storefront',
-    startLevelId: 'level-03-config-purge',
-    tacticalMode: true,
-  });
-  kiroSession.skipIntro();
-  assert.ok(kiroSession.snapshot().room.actors.some((a) => a.id === 'kiro' && a.model === 'npc.kiro_ghost'));
-  assert.ok(kiroSession.exec('kiro').output.includes('qwen-coder-7b-q4.gguf'));
-  assert.ok(kiroSession.exec('cat store.conf | kiro').output.includes('CATALOG_PORT=0000'));
-  const startCrack = kiroSession.exec('kiro crack agy_cloud.lock');
-  assert.ok(startCrack.output.includes('[0/2]'), 'qwen core starts 2-step crack at 0/2 even in tacticalMode');
-  const step1 = kiroSession.exec('kill -9 1337');
-  assert.ok(step1.output.includes('[1/2]'), 'first combat action advances crack to 1/2');
-  const step2 = kiroSession.exec('rm port_445/worm.bin');
-  assert.ok(step2.output.includes('CIPHER CRACKED!'), 'second combat action completes 2/2 decryption');
-  assert.ok(kiroSession.getChecklist().find((c) => c.description.includes('agy_cloud.lock'))?.done);
-  const swapCore = kiroSession.exec('kiro load llama');
-  assert.ok(swapCore.output.includes('llama-3-8b-local-q4.gguf'));
-
-  // ---- 7. Chapter 05 Kiroween: 11-Level Arc, Scripted Awakening, Kiro Tutorial, Matrix Greybeard Hub & Father Twist ----
+  // ---- 7. Chapter 01 Kiroween: 11-Level Arc, Scripted Awakening, Kiro Tutorial, Matrix Greybeard Hub & Father Twist ----
   const kiroRealtime = createChapterSession({
-    chapterId: 'chapter-05-kiroween',
+    chapterId: 'chapter-01-kiroween',
     tacticalMode: false,
   });
   // While intro card is active (before arriveLevel), Vibecoder rises alone in dark wires & chips with NO bug and NO Kiro yet
@@ -297,11 +179,11 @@ await withProcgen(async (_p, vite) => {
   );
 
   const kiroChap = createChapterSession({
-    chapterId: 'chapter-05-kiroween',
+    chapterId: 'chapter-01-kiroween',
     tacticalMode: true,
   });
   kiroChap.skipIntro();
-  assert.equal(kiroChap.getLevels().length, 11, 'chapter-05-kiroween must have 11 executable levels');
+  assert.equal(kiroChap.getLevels().length, 11, 'chapter-01-kiroween must have 11 executable levels');
   assert.equal(kiroChap.getCurrentLevel().id, 'level-01-tutorial-awakening');
   assert.ok(kiroChap.exec('ls').output.includes('kiro_story.txt'));
   assert.ok(kiroChap.exec('cat kiro_story.txt').output.includes('BIG FOUR'));
@@ -320,7 +202,7 @@ await withProcgen(async (_p, vite) => {
   const gpuCollect = kiroChap.exec('mv gpu_tensor_chip_01.img ~');
   assert.ok(gpuCollect.output.includes('Local GPU Tensor Chip'), 'GPU pickup must report Local GPU Tensor Chip');
 
-  // Jump to Hub 1 (Level 4): verify npc.greybeard_rig on stage, dad command, and kiro load qwen disabling AGY-9
+  // Jump to Hub 1 (Level 4): verify npc.greybeard_rig on stage, dad command, and kiro load qwen disabling GRAVY-9
   kiroChap.jumpToLevel('level-04-hub-model-one');
   assert.ok(
     kiroChap.snapshot().room.actors.some((a) => a.model === 'npc.greybeard_rig'),
@@ -353,11 +235,6 @@ await withProcgen(async (_p, vite) => {
     true,
   );
 
-  // Verify Chapter 1 Hub does NOT emit Chapter 5's Old Bearded Coder takedown banner on `kiro load qwen`
-  const ch1Hub = createChapterSession({ chapterId: 'chapter-01-freelance-storefront', tacticalMode: true });
-  ch1Hub.skipIntro();
-  assert.ok(!ch1Hub.exec('kiro load qwen').output.includes('Old Bearded Coder'));
-
   // Verify interactive `edit` modal (`readEditableFile` + patch chips + `saveEditableFile`) on Levels 5, 6, 8, 9
   kiroChap.jumpToLevel('level-05-task-ui-grid');
   assert.ok(kiroChap.exec('dad').output.includes('storefront.css'));
@@ -387,8 +264,8 @@ await withProcgen(async (_p, vite) => {
   kiroChap.jumpToLevel('level-11-boss-claude-core');
   const bossActors = kiroChap.snapshot().room.actors;
   assert.ok(
-    bossActors.some((a) => a.model === 'agent.claude'),
-    'Boss room must render agent.claude alongside boss.kernel',
+    bossActors.some((a) => a.model === 'agent.clod'),
+    'Boss room must render agent.clod alongside boss.kernel',
   );
   // Check that no two ground actors in Level 11 overlap in x
   const groundActors = bossActors.filter((a) => a.id !== 'kiro');
@@ -421,6 +298,11 @@ await withProcgen(async (_p, vite) => {
     kiroExit.snapshot.room.actors.some((a) => a.id === 'father:outro' && a.model === 'npc.greybeard_rig'),
     'Real-world ending must include Father (npc.greybeard_rig) alongside Vibecoder',
   );
+
+  // Chapter-declared codex cards come from the manifest, not from code.
+  const dossier = catalog.dossierOf(catalog.getChapterManifest('chapter-01-kiroween'));
+  assert.ok(dossier.some((d) => d.id === 'dad.tty'), 'manifest.dossier must add the chapter ally to the bestiary');
+  assert.ok(!catalog.BESTIARY_DOSSIER.some((d) => d.id === 'dad.tty'), 'the shared bestiary must not name a chapter ally');
 
   catalog.resetInMemoryStoresForTest();
   console.log('chapter-level-generator self-test PASS (all validator, chroot, hint, boss & metagame edge cases verified)');

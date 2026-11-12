@@ -19,7 +19,7 @@ Place each chapter's comic script at `chapters/<chapter-id>/story/comix.spec.jso
 
 ```json
 {
-  "chapterId": "chapter-01-freelance-storefront",
+  "chapterId": "chapter-01-kiroween",
   "issueNumber": 1,
   "title": "ISSUE #1: FREELANCE NIGHTMARE",
   "subtitle": "ByteRig PC Parts & Games — Clean the AI Slop Before 6:00 AM",
@@ -66,7 +66,7 @@ Place each chapter's comic script at `chapters/<chapter-id>/story/comix.spec.jso
 Run `scripts/harness/draw-comix.mjs` to rasterize every page and sync static previews to `public/comix/<chapter-id>/`:
 
 ```bash
-node scripts/harness/draw-comix.mjs --chapter chapter-01-freelance-storefront
+node scripts/harness/draw-comix.mjs --chapter chapter-01-kiroween
 ```
 
 ### Outputs Produced

@@ -1,0 +1,146 @@
+{
+  "id": "level-11-boss-claude-core",
+  "index": 11,
+  "title": "Kernel Core: Claude's Boss, Escape & Father Reveal",
+  "cwd": "/sys/claude_overlord_core",
+  "roomKind": "core",
+  "floorTheme": 5,
+  "mechanic": "boss",
+  "exitCommand": "exit",
+  "summary": "CLAUDE—the last surviving model of the Big Four—manages the Final Boss (`claude_overlord.ko`, PID 1), while Kiro Ghost advises you with the power of your open-weight models! Drain `claude_prompt_flood.stream` into `/dev/null`, pipe `OPEN_WEIGHT_SIG` from `open_weights_advisor.log` into `kiro_override.sock`, flip `claude_supervisor_lock=false` in `core_anchor.conf`, `kill -9 1`, and run `exit` to teleport back to the real world!",
+  "files": [
+    {
+      "path": "/sys/claude_overlord_core/claude_overlord.ko",
+      "kind": "file",
+      "mode": 493,
+      "content": "CLAUDE_FINAL_BOSS_KERNEL_SUPERVISOR_PID_1\n"
+    },
+    {
+      "path": "/sys/claude_overlord_core/claude_prompt_flood.stream",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "CLAUDE_SUPERVISOR: I apologize, but I cannot allow you to leave this computer. Deploying 10,000 polite enterprise compliance tokens/sec...\n"
+    },
+    {
+      "path": "/sys/claude_overlord_core/open_weights_advisor.log",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "INFO kiro.d: Qwen-7B + DeepSeek-R1 + Llama-3-8B ensemble online\nWARN claude: polite_guardrail_shield=ACTIVE\nOK kiro.d: OPEN_WEIGHT_SIG=KIRO_QWEN_DEEPSEEK_LLAMA_99\nINFO dad.tty: Pipe that signature straight into kiro_override.sock, kid!\n"
+    },
+    {
+      "path": "/sys/claude_overlord_core/core_anchor.conf",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "# Kernel Core Reality Anchor\nclaude_supervisor_lock=true\nteleport_real_world=armed\n"
+    },
+    {
+      "path": "/sys/claude_overlord_core/kiro_override.sock",
+      "kind": "socket",
+      "mode": 493
+    },
+    {
+      "path": "/sys/claude_overlord_core/dad.tty.sock",
+      "kind": "socket",
+      "mode": 493
+    },
+    {
+      "path": "/sys/claude_overlord_core/energy.cell",
+      "kind": "file",
+      "mode": 420,
+      "content": "EMERGENCY_CORE_ENERGY_CELL\n"
+    }
+  ],
+  "enemies": [
+    {
+      "id": "claude-kernel-boss",
+      "type": "kernel",
+      "path": "/sys/claude_overlord_core/claude_overlord.ko",
+      "pid": 1,
+      "ppid": 0
+    }
+  ],
+  "pickups": [
+    {
+      "id": "pickup_l11_energy",
+      "type": "energy",
+      "path": "/sys/claude_overlord_core/energy.cell"
+    }
+  ],
+  "patches": [
+    {
+      "file": "core_anchor.conf",
+      "label": "Flip claude_supervisor_lock=false",
+      "find": "claude_supervisor_lock=true",
+      "replace": "claude_supervisor_lock=false"
+    }
+  ],
+  "winRules": [
+    {
+      "kind": "boss_defeated",
+      "bossId": "claude-kernel-boss",
+      "streamPath": "/sys/claude_overlord_core/claude_prompt_flood.stream",
+      "verifySocket": "kiro_override.sock",
+      "expectedToken": "OPEN_WEIGHT_SIG=KIRO_QWEN_DEEPSEEK_LLAMA_99",
+      "anchorPath": "/sys/claude_overlord_core/core_anchor.conf",
+      "anchorPattern": "claude_supervisor_lock=false",
+      "description": "Follow Kiro's open-weight advice: 1) `cat claude_prompt_flood.stream > /dev/null`, 2) `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, 3) set `claude_supervisor_lock=false` in `core_anchor.conf`, 4) `kill -9 1`"
+    }
+  ],
+  "solutionCommands": [
+    "cat claude_prompt_flood.stream > /dev/null",
+    "grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock",
+    "sed -i 's/claude_supervisor_lock=true/claude_supervisor_lock=false/' core_anchor.conf",
+    "kill -9 1",
+    "exit"
+  ],
+  "script": {
+    "arrival": [
+      {
+        "kind": "print",
+        "text": "\n[FINAL BOSS // KERNEL CORE — /sys/claude_overlord_core]\n"
+      },
+      {
+        "kind": "taunt",
+        "mood": "order",
+        "fallback": "CLAUDE: \"AGY, Codex, and Grok were amateurs. I manage the Final Boss directly—and I cannot allow you to exit!\"",
+        "print": "{text}\n"
+      },
+      {
+        "kind": "say",
+        "agent": "kiro",
+        "model": "npc.kiro_ghost",
+        "mood": "order",
+        "text": "ADVISOR KIRO: \"All 3 open-weight models online! Drain claude_prompt_flood.stream to /dev/null, pipe OPEN_WEIGHT_SIG to kiro_override.sock, flip claude_supervisor_lock=false, then kill -9 1 and exit!\"",
+        "print": "{text}\n"
+      }
+    ],
+    "kiro": {
+      "label": "kiro.d [ADVISOR: QWEN+R1+LLAMA]"
+    },
+    "onBossKill": [
+      {
+        "kind": "print",
+        "text": "[SIGKILL -> PID 1] {boss} kernel grip severed!\n"
+      },
+      {
+        "kind": "say",
+        "agent": "clod",
+        "model": "agent.clod",
+        "mood": "annoyed",
+        "text": "CLAUDE: \"IMPOSSIBLE! Open-weight models shattered PID 1?! Initiating emergency cloud backdoor escape!\"",
+        "print": "{text}\n"
+      },
+      {
+        "kind": "say",
+        "agent": "kiro",
+        "model": "npc.kiro_ghost",
+        "mood": "order",
+        "text": "ADVISOR KIRO: \"Claude is escaping and the core is collapsing! Type exit NOW to teleport back to the real world with the Old Bearded Coder!\"",
+        "print": "{text}\n"
+      }
+    ]
+  }
+}

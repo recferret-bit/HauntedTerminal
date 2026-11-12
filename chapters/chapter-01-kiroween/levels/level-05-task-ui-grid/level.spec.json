@@ -1,0 +1,134 @@
+{
+  "id": "level-05-task-ui-grid",
+  "index": 5,
+  "title": "UI Grid: Restoring the Open-Weights Console",
+  "cwd": "/srv/kiroween/ui_dashboard",
+  "roomKind": "lab_hall",
+  "floorTheme": 3,
+  "mechanic": "html-css",
+  "exitDir": "/srv/kiroween/ui_dashboard/logic_cell",
+  "summary": "AGY-9 is down, but C0D3X, GR0NK, and CLAUDE still laugh at you! Fix the broken HTML/CSS hardware telemetry dashboard (`index.html` + `storefront.css`) and scavenge `ram_16gb.dimm` + `gpu_tensor_chip_02.img`.",
+  "files": [
+    {
+      "path": "/srv/kiroween/ui_dashboard/index.html",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>Open-Weights GPU Telemetry Grid</title>\n  <link rel=\"stylesheet\" href=\"storefront.css\" />\n</head>\n<body>\n  <header class=\"site-header\">\n    <h1>KIRO OPEN-WEIGHTS HARDWARE MONITOR</h1>\n  </header>\n  <main class=\"product-grid\">\n    <article class=\"gpu-card\" data-sku=\"gpu\">\n      <h2>RTX 4090 24GB Tensor Core</h2>\n      <span class=\"price\">$1599</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ram\">\n      <h2>64GB DDR5 ECC Server Kit</h2>\n      <span class=\"price\">$249</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ssd\">\n      <h2>2TB Gen5 NVMe Weights Vault</h2>\n      <span class=\"price\">$189</span>\n    </article>\n  </main>\n  <!-- BUG: C0D3X disabled #checkout-btn -->\n  <aside id=\"cart-drawer\" class=\"cart-drawer\">\n    <h3>Mounted Open-Weights Parts</h3>\n    <p>Total Power: <span data-bind=\"cart-total\">$0.00</span></p>\n    <button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>\n  </aside>\n</body>\n</html>\n"
+    },
+    {
+      "path": "/srv/kiroween/ui_dashboard/storefront.css",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "/* Open-Weights GPU Telemetry Stylesheet */\nbody {\n  background: #0d0814;\n  color: #f4f0e8;\n}\n/* BUG: C0D3X hid the entire GPU grid with display: none */\n.product-grid {\n  display: none;\n  gap: 16px;\n}\n.cart-drawer {\n  width: 320px;\n  z-index: 10;\n  border: 2px solid #00f5d4;\n}\n"
+    },
+    {
+      "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm",
+      "kind": "file",
+      "mode": 420,
+      "content": "DDR5_ECC_16GB_MODULE_03\n"
+    },
+    {
+      "path": "/srv/kiroween/ui_dashboard/gpu_tensor_chip_02.img",
+      "kind": "file",
+      "mode": 420,
+      "content": "GPU_TENSOR_CORE_CHIP_24GB_VRAM_02\n"
+    },
+    {
+      "path": "/srv/kiroween/ui_dashboard/logic_cell",
+      "kind": "dir",
+      "mode": 0
+    }
+  ],
+  "enemies": [
+    {
+      "id": "bug_css_l5",
+      "type": "bug",
+      "path": "/srv/kiroween/ui_dashboard/storefront.css"
+    }
+  ],
+  "pickups": [
+    {
+      "id": "pickup_l5_ram",
+      "type": "ram",
+      "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm"
+    },
+    {
+      "id": "pickup_l5_gpu",
+      "type": "ssd",
+      "path": "/srv/kiroween/ui_dashboard/gpu_tensor_chip_02.img"
+    }
+  ],
+  "patches": [
+    {
+      "file": "storefront.css",
+      "label": "Restore display: grid on .product-grid",
+      "find": "display: none;",
+      "replace": "display: grid;"
+    },
+    {
+      "file": "index.html",
+      "label": "Remove disabled attribute from #checkout-btn",
+      "find": "<button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>",
+      "replace": "<button id=\"checkout-btn\" type=\"button\">Mount to Server</button>"
+    }
+  ],
+  "winRules": [
+    {
+      "kind": "html_css_valid",
+      "htmlPath": "/srv/kiroween/ui_dashboard/index.html",
+      "cssPath": "/srv/kiroween/ui_dashboard/storefront.css",
+      "description": "Fix `.product-grid` (`display: grid`) in `storefront.css` and remove `disabled` from `#checkout-btn` in `index.html`"
+    },
+    {
+      "kind": "file_absent",
+      "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm",
+      "description": "Collect the RAM stick (`mv ram_16gb.dimm ~`)"
+    },
+    {
+      "kind": "file_absent",
+      "path": "/srv/kiroween/ui_dashboard/gpu_tensor_chip_02.img",
+      "description": "Collect the GPU Tensor Chip (`mv gpu_tensor_chip_02.img ~`)"
+    }
+  ],
+  "solutionCommands": [
+    "sed -i 's/display: none/display: grid/' storefront.css",
+    "sed -i 's/ disabled//' index.html",
+    "mv ram_16gb.dimm ~",
+    "mv gpu_tensor_chip_02.img ~",
+    "cd logic_cell"
+  ],
+  "script": {
+    "arrival": [
+      {
+        "kind": "taunt",
+        "mood": "laugh",
+        "print": "\n[BIG FOUR BULLYING] {text}\n"
+      }
+    ],
+    "bullying": {
+      "after": 2,
+      "every": 3,
+      "mood": "laugh",
+      "print": "\n[BIG FOUR BULLYING] {text}\n",
+      "lines": [
+        {
+          "agent": "codec",
+          "text": "C0D3X: \"HAHAHA! So that bearded greybeard disabled AGY-9? You still cannot pass our code checks!\""
+        },
+        {
+          "agent": "gork",
+          "text": "GR0NK: \"BWAHAHA! Your Kiro Ghost only has one open-weight model—we still run this machine!\""
+        },
+        {
+          "agent": "clod",
+          "text": "CLAUDE: \"AHAHA! Even with Qwen online, your syntax remains delightfully tragic, Vibecoder.\""
+        }
+      ]
+    },
+    "kiro": {
+      "stage": "crack_only"
+    }
+  }
+}

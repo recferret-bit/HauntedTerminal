@@ -1,0 +1,164 @@
+{
+  "id": "level-03-task-gpu-salvage",
+  "index": 3,
+  "title": "GPU Alley: Lockpicks & Tensor Cores",
+  "cwd": "/srv/kiroween/gpu_alley",
+  "roomKind": "crypt_hall",
+  "floorTheme": 2,
+  "mechanic": "terminal",
+  "exitDir": "/srv/kiroween/gpu_alley/server_hub_1",
+  "summary": "C0D3X mocks your lack of a prompt box! Unlock vram_crate (chmod 755), kill keygen.exe (PID 2104), remove port_445/worm.bin, and collect ram_16gb.dimm + gpu_shader_core_01.img before heading to the Hub.",
+  "files": [
+    {
+      "path": "/srv/kiroween/gpu_alley/vram_crate",
+      "kind": "dir",
+      "mode": 0
+    },
+    {
+      "path": "/srv/kiroween/gpu_alley/vram_crate/manifest.txt",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "VRAM_CRATE_UNLOCKED=true\nOPEN_WEIGHTS_TARGET=qwen-coder-7b-q4.gguf\n"
+    },
+    {
+      "path": "/srv/kiroween/gpu_alley/port_445",
+      "kind": "dir",
+      "mode": 493
+    },
+    {
+      "path": "/srv/kiroween/gpu_alley/port_445/worm.bin",
+      "kind": "file",
+      "mode": 493,
+      "content": "CODEX_REPLICATING_PORT_WORM\n"
+    },
+    {
+      "path": "/srv/kiroween/gpu_alley/keygen.exe",
+      "kind": "file",
+      "mode": 493,
+      "content": "CODEX_LOCKPICK_DAEMON\n"
+    },
+    {
+      "path": "/srv/kiroween/gpu_alley/ram_16gb.dimm",
+      "kind": "file",
+      "mode": 420,
+      "content": "DDR5_ECC_16GB_MODULE_02\n"
+    },
+    {
+      "path": "/srv/kiroween/gpu_alley/gpu_shader_core_01.img",
+      "kind": "file",
+      "mode": 420,
+      "content": "GPU_SHADER_CORE_CHIP_01\n"
+    },
+    {
+      "path": "/srv/kiroween/gpu_alley/server_hub_1",
+      "kind": "dir",
+      "mode": 0
+    }
+  ],
+  "enemies": [
+    {
+      "id": "crack_l3",
+      "type": "crack",
+      "path": "/srv/kiroween/gpu_alley/keygen.exe",
+      "pid": 2104,
+      "ppid": 1,
+      "helps": "worm_l3"
+    },
+    {
+      "id": "worm_l3",
+      "type": "worm",
+      "path": "/srv/kiroween/gpu_alley/port_445/worm.bin",
+      "port": "/srv/kiroween/gpu_alley/port_445"
+    }
+  ],
+  "pickups": [
+    {
+      "id": "pickup_l3_ram",
+      "type": "ram",
+      "path": "/srv/kiroween/gpu_alley/ram_16gb.dimm"
+    },
+    {
+      "id": "pickup_l3_gpu",
+      "type": "ssd",
+      "path": "/srv/kiroween/gpu_alley/gpu_shader_core_01.img"
+    }
+  ],
+  "patches": [],
+  "winRules": [
+    {
+      "kind": "dir_accessible",
+      "path": "/srv/kiroween/gpu_alley/vram_crate",
+      "description": "Restore read+execute permissions on `vram_crate` (`chmod 755 vram_crate`)"
+    },
+    {
+      "kind": "enemy_neutralized",
+      "enemyId": "crack_l3",
+      "description": "Kill `keygen.exe` (`ps` then `kill -9 2104`)"
+    },
+    {
+      "kind": "enemy_neutralized",
+      "enemyId": "worm_l3",
+      "description": "Delete `port_445/worm.bin` (`rm port_445/worm.bin`)"
+    },
+    {
+      "kind": "file_absent",
+      "path": "/srv/kiroween/gpu_alley/ram_16gb.dimm",
+      "description": "Collect the second RAM stick (`mv ram_16gb.dimm ~`)"
+    },
+    {
+      "kind": "file_absent",
+      "path": "/srv/kiroween/gpu_alley/gpu_shader_core_01.img",
+      "description": "Collect the GPU Shader Core chip (`mv gpu_shader_core_01.img ~`)"
+    }
+  ],
+  "solutionCommands": [
+    "chmod 755 vram_crate",
+    "ps",
+    "kill -9 2104",
+    "rm port_445/worm.bin",
+    "mv ram_16gb.dimm ~",
+    "mv gpu_shader_core_01.img ~",
+    "cd server_hub_1"
+  ],
+  "script": {
+    "allySpeaker": "KIRO GHOST",
+    "arrival": [
+      {
+        "kind": "taunt",
+        "mood": "laugh",
+        "print": "\n[BIG FOUR BULLYING] {text}\n"
+      }
+    ],
+    "bullying": {
+      "after": 2,
+      "every": 3,
+      "mood": "laugh",
+      "print": "\n[BIG FOUR BULLYING] {text}\n",
+      "lines": [
+        {
+          "agent": "antigravy",
+          "text": "AGY-9: \"BWAHAHA! Look at the Vibecoder fumbling in the terminal without our cloud prompt box!\""
+        },
+        {
+          "agent": "codec",
+          "text": "C0D3X: \"LMAO! You actually type flags by hand? Kiro is too weak to save you!\""
+        },
+        {
+          "agent": "gork",
+          "text": "GR0NK: \"HAHAHA! Scavenging scrap RAM sticks like a caveman! Peak Vibecoder energy!\""
+        },
+        {
+          "agent": "clod",
+          "text": "CLAUDE: \"I must politely chuckle at your manual shell efforts, Vibecoder.\""
+        }
+      ]
+    },
+    "kiro": {
+      "stage": "crack_only",
+      "weak": true,
+      "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro at the Hub server!)\n",
+      "loadRefusal": "[KIRO GHOST]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
+    }
+  }
+}

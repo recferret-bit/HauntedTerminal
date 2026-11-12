@@ -1,0 +1,97 @@
+{
+  "id": "level-10-hub-model-three",
+  "index": 10,
+  "title": "The Matrix Hub: Third Model & Last Agent Standing",
+  "cwd": "/home/dev",
+  "roomKind": "desk",
+  "floorTheme": 1,
+  "mechanic": "hub",
+  "exitDir": "/home/dev/claude_kernel_core",
+  "summary": "Return to the Hub! The Old Bearded Coder slots your final RAM + GPU chips into the Matrix server (`cat open_weights_cluster.conf`, `cat dad.tty.sock`) and reboots Kiro with Open-Weight Model #3 (`kiro load llama`) to disable GR0NK—leaving CLAUDE as the last surviving model of the Big Four!",
+  "files": [
+    {
+      "path": "/home/dev/open_weights_cluster.conf",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS CLUSTER #3 ===\nOLD BEARDED CODER: *stubs out his cigarette, eyes blazing behind green Matrix reflections*\n\"Oh, you've found the final RAM and H100 GPU parts for hosting our third open-weight model, nice!\"\n\"Watch this bare-metal magic: once we boot `llama-3-8b-local-q4.gguf`, Kiro will wipe GR0NK off the bus.\"\n\"That leaves only one surviving member of the Big Four: CLAUDE. Claude is managing the Final Boss down in the Kernel Core, and Kiro is going to be your advisor in the battle with the help of all our open-weight models!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro with the third open-weight model: `kiro load llama` (`llama-3-8b-local-q4.gguf`).\n  3. Watch Kiro disable GR0NK, then march into the final battle via `cd claude_kernel_core`!\n"
+    },
+    {
+      "path": "/home/dev/dad.tty.sock",
+      "kind": "socket",
+      "mode": 493
+    },
+    {
+      "path": "/home/dev/claude_kernel_core",
+      "kind": "dir",
+      "mode": 0
+    }
+  ],
+  "enemies": [],
+  "pickups": [],
+  "patches": [],
+  "winRules": [
+    {
+      "kind": "read_file",
+      "path": "/home/dev/open_weights_cluster.conf",
+      "description": "Read the final cluster briefing (`cat open_weights_cluster.conf`)"
+    },
+    {
+      "kind": "talk_ally",
+      "socket": "dad.tty.sock",
+      "description": "Talk to the Old Bearded Coder (`cat dad.tty.sock` or `dad`)"
+    },
+    {
+      "kind": "kiro_loaded",
+      "core": "llama",
+      "description": "Reboot Kiro with Open-Weight Model #3 (`kiro load llama`) to disable GR0NK!"
+    }
+  ],
+  "solutionCommands": [
+    "cat open_weights_cluster.conf",
+    "cat dad.tty.sock",
+    "kiro load llama",
+    "cd claude_kernel_core"
+  ],
+  "script": {
+    "arrival": [
+      {
+        "kind": "dialogue",
+        "obstacleId": "ally:dad.tty",
+        "speaker": "OLD BEARDED CODER (DAD.TTY)",
+        "portrait": "socket_guardian",
+        "mood": "hinting",
+        "anchorSocket": "dad.tty.sock",
+        "text": "Oh, you've found the final parts for hosting our third open-weight model, nice! Reboot Kiro with kiro load llama to disable GR0NK—leaving only CLAUDE managing the Final Boss!",
+        "highlight": ["cat", "dad", "kiro"],
+        "banner": "[OLD BEARDED MATRIX CODER // SERVER HUB #3]"
+      },
+      {
+        "kind": "print",
+        "text": "\n[THE MATRIX HUB — /home/dev]\nOLD BEARDED CODER (*Matrix glyphs blazing across his screen*): \"Oh, you've found the final parts for hosting our third open-weight model, nice! Reboot Kiro with `kiro load llama` to disable GR0NK—leaving CLAUDE as the last survivor managing the Final Boss!\"\n"
+      }
+    ],
+    "kiro": {
+      "label": "kiro.d [awaiting model #3]",
+      "labelLoaded": {
+        "cores": ["llama", "mistral"],
+        "label": "kiro.d [MODEL #3: LLAMA-3-8B]"
+      },
+      "coreAliases": {
+        "llama": ["mistral"]
+      },
+      "wrongCoreLine": "[DAD.TTY]: \"Solid weights, kid, but this Matrix server node is wired for `kiro load {core}` to disable our current Big Four target!\"\n",
+      "reactions": {
+        "llama": {
+          "foe": {
+            "agent": "gork",
+            "model": "agent.gork",
+            "text": "GR0NK: \"WAIT—Llama-3-8B grounded my chaos bus! Only Claude survives! [GR0NK DISABLED]\""
+          },
+          "kiro": "KIRO GHOST: \"All 3 open-weight models online! GR0NK is disabled—only Claude survives, and I will advise you in the Final Boss battle!\"",
+          "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder brings the full open-weight cluster online!\n[BIG FOUR TAKEDOWN #3/3] Kiro + {gguf} ground GR0NK's chaos bus! GR0NK DISABLED!\n[ALERT] Only CLAUDE survives among the Big Four—and he is fortifying the Final Boss in the Kernel Core!\n{foe}\n{kiro}\n"
+        }
+      }
+    }
+  }
+}

@@ -17,7 +17,7 @@ try {
     [
       drawScript,
       '--chapter',
-      'chapter-01-freelance-storefront',
+      'chapter-01-kiroween',
       '--out-dir',
       tmp,
       '--width',
@@ -29,7 +29,7 @@ try {
     { cwd: projectRoot, stdio: 'pipe' },
   );
 
-  for (const name of ['page-01.png', 'page-02.png', 'page-03.png', 'page-04.png', 'contact-sheet.png']) {
+  for (const name of ['page-01.png', 'page-02.png', 'page-03.png', 'page-04.png', 'page-05.png', 'page-06.png', 'contact-sheet.png']) {
     const p = resolve(tmp, name);
     if (!existsSync(p)) throw new Error(`Missing expected rendered comic output: ${name}`);
     const buf = readFileSync(p);

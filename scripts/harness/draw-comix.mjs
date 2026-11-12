@@ -5,15 +5,15 @@
 // and writes page-01.png .. page-NN.png + contact-sheet.png.
 //
 // Usage:
-//   node scripts/harness/draw-comix.mjs --chapter chapter-01-freelance-storefront
-//   node scripts/harness/draw-comix.mjs --spec chapters/chapter-01-freelance-storefront/story/comix.spec.json --out-dir /tmp/comix --no-public
+//   node scripts/harness/draw-comix.mjs --chapter chapter-01-kiroween
+//   node scripts/harness/draw-comix.mjs --spec chapters/chapter-01-kiroween/story/comix.spec.json --out-dir /tmp/comix --no-public
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs, projectRoot, withProcgen } from './lib/load.mjs';
 import { writePng } from './lib/png.mjs';
 
 const args = parseArgs(process.argv.slice(2), ['--chapter', '--spec', '--out-dir', '--width', '--height', '--seed']);
-const chapterId = args.val('--chapter', 'chapter-01-freelance-storefront');
+const chapterId = args.val('--chapter', 'chapter-01-kiroween');
 const specPath = resolve(
   projectRoot,
   args.val('--spec', `chapters/${chapterId}/story/comix.spec.json`),

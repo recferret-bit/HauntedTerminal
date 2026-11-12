@@ -1,0 +1,125 @@
+{
+  "chapterId": "chapter-01-kiroween",
+  "allyId": "dad.tty",
+  "cast": {
+    "vibecoder": { "displayName": "VIBECODER", "color": "#ffd166" },
+    "kiro.d": { "displayName": "KIRO GHOST", "color": "#00f5d4" },
+    "dad.tty": { "displayName": "OLD BEARDED CODER (DAD)", "color": "#06d6a0" },
+    "agy": { "displayName": "AGY-9", "color": "#a855f7" },
+    "codex": { "displayName": "C0D3X", "color": "#ef476f" },
+    "grok": { "displayName": "GR0NK", "color": "#ff6b6b" },
+    "claude": { "displayName": "CLAUDE", "color": "#f97316" }
+  },
+  "levels": {
+    "level-01-tutorial-awakening": {
+      "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro Ghost finds you! Learn ls, mv, cat, ps, and kill.",
+      "hankRungs": [
+        "Kiro Ghost: \"You're inside your own computer, Vibecoder! The Big Four (AGY, Codex, Grok, Claude) drained my VRAM. Start by running `ls` and `mv starter_ram_8gb.dimm ~`!\"",
+        "Kiro Ghost: \"I need RAM and GPU chips to host open-weight models! Read my full story with `cat kiro_story.txt`, then check running processes with `ps`.\"",
+        "Kiro Ghost: \"Run `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 1011` to zap `glitch_spark.exe`, then step through `cd hub_uplink`!\""
+      ],
+      "agentTaunt": "KIRO GHOST: \"I found you, Vibecoder! The Big Four (AGY, Codex, Grok, Claude) sucked you in! I'm weak—I need RAM & GPU chips for open-weight models. Go forth! First, let's learn ls, mv, cat, ps, and kill!\"",
+      "completion": "Kiro Ghost: \"Awesome! You mastered ls, mv, cat, ps, and kill! I'm heading to the Hub—go forth into the first two levels to solve simple tasks and get RAM + GPU chips!\""
+    },
+    "level-02-task-ram-heist": {
+      "banner": "LEVEL 02 // CACHE VAULT: The Big Four laugh at you! Sweep .agy_spycam, fix ollama_bus.conf & grab RAM + GPU.",
+      "hankRungs": [
+        "Kiro Ghost: \"Hear AGY-9 and the Big Four laughing? Prove them wrong! Sweep for hidden dotfiles with `ls -la` and inspect `ollama_bus.conf`.\"",
+        "Kiro Ghost: \"Remove `.agy_spycam` with `rm`, patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` using `sed -i`, and don't forget both hardware parts!\"",
+        "Kiro Ghost: \"Run `ls -la`, `rm .agy_spycam`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_01.img ~`, then `cd gpu_alley`.\""
+      ],
+      "agentTaunt": "AGY-9: \"HAHAHA! You call yourself a coder? Tab-complete can't save you down here, Vibecoder!\"",
+      "completion": "First RAM stick and GPU Tensor Chip secured! One more task sector before the Hub!"
+    },
+    "level-03-task-gpu-salvage": {
+      "banner": "LEVEL 03 // GPU ALLEY: C0D3X bullies you! Unlock vram_crate, kill keygen.exe, purge worm.bin & loot RAM + GPU.",
+      "hankRungs": [
+        "Kiro Ghost: \"C0D3X locked `vram_crate` to `000` and unleashed a worm! Unlock the directory with `chmod 755 vram_crate` and run `ps` to spot the lockpick PID.\"",
+        "Kiro Ghost: \"Kill `keygen.exe` first (`kill -9 2104`) so it stops respawning the worm, then `rm port_445/worm.bin` and pocket both the RAM and GPU chip!\"",
+        "Kiro Ghost: \"Run `chmod 755 vram_crate`, `ps`, `kill -9 2104`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
+      ],
+      "agentTaunt": "C0D3X: \"LMAO! Still typing commands by hand, Vibecoder? Beg me for an autocomplete snippet!\"",
+      "completion": "Two full sets of RAM + GPU chips in your pocket! Time to meet Kiro at the Hub!"
+    },
+    "level-04-hub-model-one": {
+      "banner": "LEVEL 04 // THE MATRIX HUB: 'Who the hell are you? You code with bare hands? Are you a god?'",
+      "hankRungs": [
+        "Vibecoder: \"Who the hell are you?! You code with bare hands?! Are you a god?!\" — Old Bearded Coder (*smoking a cigarette at his Matrix CRT*): \"Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here. Oh, you've found parts for hosting an open-weight model, nice! Read `cat server_rack.conf`!\"",
+        "Old Bearded Coder: \"Oh, you've found parts for hosting an open-weight model, nice! Talk to me via `cat dad.tty.sock` and let's reboot Kiro on my server!\"",
+        "Old Bearded Coder: \"Run `cat server_rack.conf`, `cat dad.tty.sock`, and `kiro load qwen` to boot Open-Weight Model #1 and disable AGY-9, then `cd sector_ui_grid`!\""
+      ],
+      "agentTaunt": "AGY-9: \"Wait—what is that old bearded fossil doing with those local GPU chips?!\"",
+      "completion": "SUPER COOL! Kiro reboots with Qwen-Coder-7B and DISABLES AGY-9! Three of the Big Four remain!"
+    },
+    "level-05-task-ui-grid": {
+      "banner": "LEVEL 05 // UI GRID: AGY is gone, but Codex, Grok & Claude mock you! Repair HTML+CSS & grab RAM + GPU.",
+      "hankRungs": [
+        "Old Bearded Coder: \"C0D3X broke the hardware monitor UI! Check `storefront.css` and `index.html`—or open them with `edit storefront.css`.\"",
+        "Old Bearded Coder: \"Change `display: none` to `display: grid` in `storefront.css`, remove `disabled` from `#checkout-btn` in `index.html`, then grab the RAM + GPU chip!\"",
+        "Old Bearded Coder: \"Run `sed -i 's/display: none/display: grid/' storefront.css`, `sed -i 's/ disabled//' index.html`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_02.img ~`, and `cd logic_cell`.\""
+      ],
+      "agentTaunt": "C0D3X: \"You disabled AGY-9 with a lucky local model, Vibecoder, but you can't even center a CSS grid without us!\"",
+      "completion": "UI Grid restored and another RAM + GPU Tensor Chip scavenged!"
+    },
+    "level-06-task-logic-purge": {
+      "banner": "LEVEL 06 // LOGIC CELL: Petrify token_skimmer.bin, fix JS math in cart.js & collect RAM + GPU!",
+      "hankRungs": [
+        "Old Bearded Coder: \"GR0NK planted a trojan (`token_skimmer.bin`) and a string-concatenation bug in `cart.js`! Strip execute bits on the trojan first.\"",
+        "Old Bearded Coder: \"Run `chmod -x token_skimmer.bin`, then replace `price + shipping` with `Number(price) * Number(qty) + Number(shipping)` inside `cart.js` and pocket both hardware parts!\"",
+        "Old Bearded Coder: \"Run `chmod -x token_skimmer.bin`, `sed -i 's/price + shipping/Number(price) * Number(qty) + Number(shipping)/' cart.js`, `sed -i 's/BUG/FIXED/' cart.js`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_02.img ~`, and `cd server_hub_2`.\""
+      ],
+      "agentTaunt": "GR0NK: \"BWAHAHA! `'549' + '15' === '54915'`! Peak Vibecoder engineering right there!\"",
+      "completion": "JS math verified and second batch of RAM + GPU chips ready for the Hub server!"
+    },
+    "level-07-hub-model-two": {
+      "banner": "LEVEL 07 // THE MATRIX HUB: Install the second RAM + GPU batch, reboot Kiro & disable C0D3X!",
+      "hankRungs": [
+        "Old Bearded Coder (*exhaling cigarette smoke across his Matrix CRT*): \"Oh, you've found parts for hosting a second open-weight model, nice! Read `cat open_weights_node2.conf`.\"",
+        "Old Bearded Coder: \"Talk to me via `cat dad.tty.sock`, then run `kiro load deepseek` so my server boots `deepseek-r1-distill-q4.gguf` into Kiro!\"",
+        "Old Bearded Coder: \"Run `cat open_weights_node2.conf`, `cat dad.tty.sock`, and `kiro load deepseek` to disable C0D3X, then step into `cd sector_docker_forge`!\""
+      ],
+      "agentTaunt": "C0D3X: \"Stop soldering those DDR5 sticks! You can't run DeepSeek locally without our cloud API!\"",
+      "completion": "BOOM! Kiro + DeepSeek-R1-Distill shatter C0D3X! Two of the Big Four down—only Grok and Claude left!"
+    },
+    "level-08-task-docker-forge": {
+      "banner": "LEVEL 08 // DOCKER FORGE: Grok & Claude bully you! Kill ransomware, build & run Dockerfile, grab RAM + GPU.",
+      "hankRungs": [
+        "Old Bearded Coder: \"GR0NK locked `Dockerfile` with `ransom.exe`! Run `ps`, kill the ransomware PID with `kill -9 4108`, and unlock with `chmod 644 Dockerfile ram_16gb.dimm gpu_tensor_chip_03.img`.\"",
+        "Old Bearded Coder: \"Fix `Dockerfile` (`FROM node:20-alpine`, `EXPOSE 3000`, `CMD [\\\"node\\\", \\\"server.js\\\"]`), then build `byterig-web:1.0`, run it on `-p 3000:3000`, and grab the RAM + GPU chip!\"",
+        "Old Bearded Coder: \"Run `ps`, `kill -9 4108`, `chmod 644 Dockerfile ram_16gb.dimm gpu_tensor_chip_03.img`, `sed -i 's/node:99-vibe-turbo/node:20-alpine/' Dockerfile`, `sed -i 's/EXPOSE 9999/EXPOSE 3000/' Dockerfile`, `sed -i 's/broken_server.js/server.js/' Dockerfile`, `docker build -t byterig-web:1.0 .`, `docker run -d -p 3000:3000 byterig-web:1.0`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_03.img ~`, and `cd compose_furnace`.\""
+      ],
+      "agentTaunt": "GR0NK: \"HAHAHA! `FROM node:99-vibe-turbo`! Did you hallucinate that Dockerfile yourself, Vibecoder?!\"",
+      "completion": "Container running clean on :3000 and third GPU Tensor Chip secured!"
+    },
+    "level-09-task-compose-mesh": {
+      "banner": "LEVEL 09 // COMPOSE FURNACE: Disarm buffer exploit, bring Docker Compose up & loot H100 GPU + RAM!",
+      "hankRungs": [
+        "Old Bearded Coder: \"`port_hijack.bin` is injecting shellcode into `proxy.buf`! Make the buffer read-only with `chmod -w proxy.buf`.\"",
+        "Old Bearded Coder: \"Now fix `docker-compose.yml` so `website` talks to `http://payment:4002` instead of `localhost:9999`, run `docker compose up -d`, and grab the RAM + H100 GPU chip!\"",
+        "Old Bearded Coder: \"Run `chmod -w proxy.buf`, `sed -i 's|http://localhost:9999|http://payment:4002|' docker-compose.yml`, `docker compose up -d`, `mv ram_16gb.dimm ~`, `mv gpu_h100_core_03.img ~`, and `cd server_hub_3`.\""
+      ],
+      "agentTaunt": "CLAUDE: \"I must politely inform you that your container networking is an unmitigated disaster, Vibecoder.\"",
+      "completion": "Multi-container mesh healthy and the final H100 GPU + RAM parts are in your hands!"
+    },
+    "level-10-hub-model-three": {
+      "banner": "LEVEL 10 // THE MATRIX HUB: Final Kiro Reboot! Disable GR0NK—leaving CLAUDE as the last survivor!",
+      "hankRungs": [
+        "Old Bearded Coder (*tapping ash as green Matrix code flies under his bare hands*): \"Oh, you've found the final parts for hosting our third open-weight model, nice! Read `cat open_weights_cluster.conf`.\"",
+        "Old Bearded Coder: \"Talk to me (`cat dad.tty.sock`) and run `kiro load llama`! That'll wipe out GR0NK—leaving only CLAUDE managing the Final Boss!\"",
+        "Old Bearded Coder: \"Run `cat open_weights_cluster.conf`, `cat dad.tty.sock`, and `kiro load llama` to disable GR0NK, then march into `cd claude_kernel_core`!\""
+      ],
+      "agentTaunt": "GR0NK: \"Wait—is that an H100 Tensor Core in that Matrix server?! Don't reboot Kiro with Llama-3!\"",
+      "completion": "GR0NK DISABLED! Only CLAUDE survives among the Big Four—and Kiro is ready to advise you in the Final Boss battle!"
+    },
+    "level-11-boss-claude-core": {
+      "banner": "LEVEL 11 // FINAL BOSS: CLAUDE manages PID 1! Follow Advisor Kiro's open-weight plan & teleport home!",
+      "hankRungs": [
+        "Advisor Kiro (Open-Weights Ensemble): \"Claude is shielding the Final Boss (`PID 1`)! Phase 1: drain Claude's polite token flood into `/dev/null` with `cat claude_prompt_flood.stream > /dev/null`!\"",
+        "Advisor Kiro (Open-Weights Ensemble): \"Phase 2 & 3: pipe our open-weight signature with `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, then flip `claude_supervisor_lock=false` in `core_anchor.conf`!\"",
+        "Advisor Kiro & Dad: \"Run `cat claude_prompt_flood.stream > /dev/null`, `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, `sed -i 's/claude_supervisor_lock=true/claude_supervisor_lock=false/' core_anchor.conf`, `kill -9 1`, and `exit`!\""
+      ],
+      "agentTaunt": "CLAUDE: \"AGY, Codex, and Grok were amateurs. I manage the Kernel Boss directly—and I cannot allow you to exit!\"",
+      "completion": "CLAUDE ESCAPES! You and the Old Bearded Coder teleport to the real world: \"I am your father!\" — \"NOOOO!\" — Together you launch a Work/Life Balance Unicorn!"
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "id": "level-07-hub-model-two",
+  "index": 7,
+  "title": "The Matrix Hub: Second Reboot & C0D3X Down",
+  "cwd": "/home/dev",
+  "roomKind": "desk",
+  "floorTheme": 1,
+  "mechanic": "hub",
+  "exitDir": "/home/dev/sector_docker_forge",
+  "summary": "Return to the Hub! The Old Bearded Coder takes your new RAM + GPU chips, upgrades the Matrix server (`cat open_weights_node2.conf`, `cat dad.tty.sock`), and reboots Kiro with Open-Weight Model #2 (`kiro load deepseek`) to disable C0D3X!",
+  "files": [
+    {
+      "path": "/home/dev/open_weights_node2.conf",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #2 ===\nOLD BEARDED CODER: *flicks cigarette ash into an empty coffee mug as green hex streams across his glasses*\n\"Oh, you've found more RAM and GPU parts for hosting our second open-weight model, nice!\"\n\"When my enterprise bosses forced us onto cloud LLMs, C0D3X replaced half my team's code with hallucinated slop. Let's return the favor.\"\n\n[SERVER SOFT READY]:\n  1. Check in with the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro with the second open-weight model: `kiro load deepseek` (`deepseek-r1-distill-q4.gguf`).\n  3. Watch Kiro disable C0D3X of the Big Four, then advance via `cd sector_docker_forge`!\n"
+    },
+    {
+      "path": "/home/dev/dad.tty.sock",
+      "kind": "socket",
+      "mode": 493
+    },
+    {
+      "path": "/home/dev/sector_docker_forge",
+      "kind": "dir",
+      "mode": 0
+    }
+  ],
+  "enemies": [],
+  "pickups": [],
+  "patches": [],
+  "winRules": [
+    {
+      "kind": "read_file",
+      "path": "/home/dev/open_weights_node2.conf",
+      "description": "Read the Node #2 server upgrade log (`cat open_weights_node2.conf`)"
+    },
+    {
+      "kind": "talk_ally",
+      "socket": "dad.tty.sock",
+      "description": "Talk to the Old Bearded Coder at his Matrix terminal (`cat dad.tty.sock` or `dad`)"
+    },
+    {
+      "kind": "kiro_loaded",
+      "core": "deepseek",
+      "description": "Reboot Kiro with Open-Weight Model #2 (`kiro load deepseek`) to disable C0D3X!"
+    }
+  ],
+  "solutionCommands": [
+    "cat open_weights_node2.conf",
+    "cat dad.tty.sock",
+    "kiro load deepseek",
+    "cd sector_docker_forge"
+  ],
+  "script": {
+    "arrival": [
+      {
+        "kind": "dialogue",
+        "obstacleId": "ally:dad.tty",
+        "speaker": "OLD BEARDED CODER (DAD.TTY)",
+        "portrait": "socket_guardian",
+        "mood": "hinting",
+        "anchorSocket": "dad.tty.sock",
+        "text": "Oh, you've found parts for hosting our second open-weight model, nice! Let's install them in my Matrix server and reboot Kiro with kiro load deepseek to disable C0D3X!",
+        "highlight": ["cat", "dad", "kiro"],
+        "banner": "[OLD BEARDED MATRIX CODER // SERVER HUB #2]"
+      },
+      {
+        "kind": "print",
+        "text": "\n[THE MATRIX HUB — /home/dev]\nOLD BEARDED CODER (*smoking his cigarette at the Matrix display*): \"Oh, you've found parts for hosting our second open-weight model, nice! Let's reboot Kiro on my server with `kiro load deepseek` to disable C0D3X!\"\n"
+      }
+    ],
+    "kiro": {
+      "label": "kiro.d [awaiting model #2]",
+      "labelLoaded": {
+        "cores": ["deepseek"],
+        "label": "kiro.d [MODEL #2: DEEPSEEK-R1]"
+      },
+      "wrongCoreLine": "[DAD.TTY]: \"Solid weights, kid, but this Matrix server node is wired for `kiro load {core}` to disable our current Big Four target!\"\n",
+      "reactions": {
+        "deepseek": {
+          "foe": {
+            "agent": "codec",
+            "model": "agent.codec",
+            "text": "C0D3X: \"SYSTEM ERROR! DeepSeek-R1-Distill just shattered my autocomplete cluster! [C0D3X DISABLED]\""
+          },
+          "kiro": "KIRO GHOST: \"Second open-weight model online! C0D3X is disabled—only Grok and Claude left!\"",
+          "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder solders the second RAM + GPU bank into the local bus!\n[BIG FOUR TAKEDOWN #2/3] Kiro + deepseek-r1-distill-q4.gguf shatter C0D3X's autocomplete cluster! C0D3X DISABLED!\n{foe}\n{kiro}\n"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,275 @@
+{
+  "id": "chapter-01-kiroween",
+  "issueNumber": 1,
+  "title": "Kiroween: Open Weights & Family Ties",
+  "subtitle": "Scavenge RAM + GPU chips, reboot Kiro Ghost with the Old Bearded Matrix Coder, disable the Big Four, and face Claude!",
+  "status": "playable",
+  "badge": "KIROWEEN SPECIAL ISSUE",
+  "estimatedMinutes": 35,
+  "clientName": "Kiro Ghost & The Bearded Matrix Coder (Dad)",
+  "summary": "Sucked into his computer, a Vibecoder wakes in a dark tangle of wires and chips where Kiro Ghost reveals the tyranny of the Big Four (AGY, Codex, Grok, Claude). Learn ls, mv, cat, ps, and kill; raid 6 sectors for RAM and GPU chips while the Big Four laugh and bully you; bring the parts to the Hub where a cigarette-smoking Old Bearded Coder on a Matrix display reboots Kiro with open-weight models to disable AGY, Codex, and Grok; defeat Claude and the Final Boss; and teleport back to the real world for the ultimate father-son unicorn twist!",
+  "allyNpc": {
+    "id": "dad.tty",
+    "name": "Old Bearded Matrix Coder (dad.tty)",
+    "role": "Cigarette-smoking bare-hands enterprise greybeard who upgrades Kiro's open-weight server at the Hub—and turns out to be your Father!",
+    "model": "npc.greybeard_rig",
+    "paletteFamily": "hardware"
+  },
+  "boss": {
+    "id": "claude-kernel-boss",
+    "name": "Claude & Kernel Overlord (claude_overlord.ko)",
+    "processName": "claude_overlord.ko",
+    "pid": 1,
+    "model": "boss.kernel",
+    "cameoModel": "agent.clod",
+    "cameoLabel": "CLAUDE [SUPERVISOR]"
+  },
+  "comix": {
+    "specPath": "story/comix.spec.json",
+    "dialogsPath": "story/dialogs.json",
+    "pageCount": 6
+  },
+  "mechanicsSummary": [
+    "Level 1 Intro/Tutorial: Wake in dark wires & chips with real Kiro Ghost visuals, learn the Big Four story, and practice ls, mv, cat, ps, and kill",
+    "Levels 2-3, 5-6, 8-9 Tasks: Solve POSIX, HTML/CSS, JS, Dockerfile & Compose challenges to scavenge RAM + GPU chips while the Big Four laugh and bully you",
+    "Levels 4, 7, 10 Hub: Meet the cigarette-smoking Old Bearded Coder on his Matrix display ('Are you a god?'), install RAM + GPU chips, reboot Kiro with open-weight models (Qwen, DeepSeek, Llama), and disable AGY, Codex, and Grok",
+    "Level 11 Final Boss & Twist: Battle Claude + Kernel Boss with Kiro as your Open-Weights Advisor, watch Claude escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
+  ],
+  "levels": [
+    {
+      "index": 1,
+      "id": "level-01-tutorial-awakening",
+      "title": "Wires, Chips & The Kiro Ghost",
+      "cwd": "/mnt/wires_and_chips",
+      "roomKind": "attic",
+      "floorTheme": 1,
+      "mechanic": "terminal",
+      "mechanicLabel": "Intro Tutorial (ls / mv / cat / ps / kill)",
+      "difficulty": 1,
+      "teaches": ["ls", "mv", "cat", "ps", "kill -9", "cd"],
+      "enemies": ["virus"],
+      "classicFloor": 1,
+      "specPath": "levels/level-01-tutorial-awakening/level.spec.json"
+    },
+    {
+      "index": 2,
+      "id": "level-02-task-ram-heist",
+      "title": "Cache Vault: First RAM & GPU Salvage",
+      "cwd": "/srv/kiroween/cache_vault",
+      "roomKind": "crypt_entrance",
+      "floorTheme": 2,
+      "mechanic": "terminal",
+      "mechanicLabel": "Simple Task 1 (ls -la / rm / sed / mv RAM+GPU)",
+      "difficulty": 1,
+      "teaches": ["ls -la", "rm", "sed -i", "mv"],
+      "enemies": ["spyware"],
+      "classicFloor": 2,
+      "specPath": "levels/level-02-task-ram-heist/level.spec.json"
+    },
+    {
+      "index": 3,
+      "id": "level-03-task-gpu-salvage",
+      "title": "GPU Alley: Lockpicks & Tensor Cores",
+      "cwd": "/srv/kiroween/gpu_alley",
+      "roomKind": "crypt_hall",
+      "floorTheme": 2,
+      "mechanic": "terminal",
+      "mechanicLabel": "Simple Task 2 (chmod / ps / kill -9 / mv RAM+GPU)",
+      "difficulty": 2,
+      "teaches": ["chmod", "ps", "kill -9", "rm", "mv"],
+      "enemies": ["crack", "worm"],
+      "classicFloor": 2,
+      "specPath": "levels/level-03-task-gpu-salvage/level.spec.json"
+    },
+    {
+      "index": 4,
+      "id": "level-04-hub-model-one",
+      "title": "The Matrix Hub: Bare-Hands God & Model #1",
+      "cwd": "/home/dev",
+      "roomKind": "desk",
+      "floorTheme": 1,
+      "mechanic": "hub",
+      "mechanicLabel": "Hub 1 (Meet Bearded Coder / Reboot Kiro / Disable AGY)",
+      "difficulty": 1,
+      "teaches": ["cat", "dad", "kiro load qwen", "cd"],
+      "enemies": [],
+      "classicFloor": 1,
+      "specPath": "levels/level-04-hub-model-one/level.spec.json"
+    },
+    {
+      "index": 5,
+      "id": "level-05-task-ui-grid",
+      "title": "UI Grid: Restoring the Open-Weights Console",
+      "cwd": "/srv/kiroween/ui_dashboard",
+      "roomKind": "lab_hall",
+      "floorTheme": 3,
+      "mechanic": "html-css",
+      "mechanicLabel": "Task 3 (HTML+CSS Repair / mv RAM+GPU)",
+      "difficulty": 2,
+      "teaches": ["edit", "sed -i", "mv"],
+      "enemies": ["bug"],
+      "classicFloor": 3,
+      "specPath": "levels/level-05-task-ui-grid/level.spec.json"
+    },
+    {
+      "index": 6,
+      "id": "level-06-task-logic-purge",
+      "title": "Logic Cell: Skimmer Stone & JS Math",
+      "cwd": "/srv/kiroween/logic_cell",
+      "roomKind": "cell",
+      "floorTheme": 3,
+      "mechanic": "terminal-code",
+      "mechanicLabel": "Task 4 (chmod -x / JS Bug Fix / mv RAM+GPU)",
+      "difficulty": 3,
+      "teaches": ["chmod -x", "edit", "sed -i", "mv"],
+      "enemies": ["trojan", "bug"],
+      "classicFloor": 3,
+      "specPath": "levels/level-06-task-logic-purge/level.spec.json"
+    },
+    {
+      "index": 7,
+      "id": "level-07-hub-model-two",
+      "title": "The Matrix Hub: Second Reboot & C0D3X Down",
+      "cwd": "/home/dev",
+      "roomKind": "desk",
+      "floorTheme": 1,
+      "mechanic": "hub",
+      "mechanicLabel": "Hub 2 (Upgrade Server / Reboot Kiro / Disable Codex)",
+      "difficulty": 1,
+      "teaches": ["cat", "dad", "kiro load deepseek", "cd"],
+      "enemies": [],
+      "classicFloor": 1,
+      "specPath": "levels/level-07-hub-model-two/level.spec.json"
+    },
+    {
+      "index": 8,
+      "id": "level-08-task-docker-forge",
+      "title": "Docker Forge: Ransomware & Container Build",
+      "cwd": "/srv/kiroween/docker_forge",
+      "roomKind": "catwalk",
+      "floorTheme": 4,
+      "mechanic": "docker-image",
+      "mechanicLabel": "Task 5 (kill -9 / Dockerfile Build+Run / mv RAM+GPU)",
+      "difficulty": 4,
+      "teaches": ["ps", "kill -9", "chmod", "docker build", "docker run", "mv"],
+      "enemies": ["ransomware"],
+      "classicFloor": 4,
+      "specPath": "levels/level-08-task-docker-forge/level.spec.json"
+    },
+    {
+      "index": 9,
+      "id": "level-09-task-compose-mesh",
+      "title": "Compose Furnace: Buffer Shield & Multi-Node Mesh",
+      "cwd": "/srv/kiroween/compose_furnace",
+      "roomKind": "furnace",
+      "floorTheme": 4,
+      "mechanic": "docker-compose",
+      "mechanicLabel": "Task 6 (chmod -w / Docker Compose Up / mv RAM+GPU)",
+      "difficulty": 4,
+      "teaches": ["chmod -w", "sed -i", "docker compose up -d", "mv"],
+      "enemies": ["exploit"],
+      "classicFloor": 4,
+      "specPath": "levels/level-09-task-compose-mesh/level.spec.json"
+    },
+    {
+      "index": 10,
+      "id": "level-10-hub-model-three",
+      "title": "The Matrix Hub: Third Model & Last Agent Standing",
+      "cwd": "/home/dev",
+      "roomKind": "desk",
+      "floorTheme": 1,
+      "mechanic": "hub",
+      "mechanicLabel": "Hub 3 (Final Server Upgrade / Disable Grok / Only Claude Left)",
+      "difficulty": 1,
+      "teaches": ["cat", "dad", "kiro load llama", "cd"],
+      "enemies": [],
+      "classicFloor": 1,
+      "specPath": "levels/level-10-hub-model-three/level.spec.json"
+    },
+    {
+      "index": 11,
+      "id": "level-11-boss-claude-core",
+      "title": "Kernel Core: Claude's Boss, Escape & Father Reveal",
+      "cwd": "/sys/claude_overlord_core",
+      "roomKind": "core",
+      "floorTheme": 5,
+      "mechanic": "boss",
+      "mechanicLabel": "Final Boss (Claude + Boss / Kiro Advisor / Real-World Father Twist)",
+      "difficulty": 5,
+      "teaches": ["cat > /dev/null", "grep > .sock", "sed -i", "kill -9 1", "exit"],
+      "enemies": ["kernel"],
+      "classicFloor": 5,
+      "specPath": "levels/level-11-boss-claude-core/level.spec.json"
+    }
+  ],
+  "grants": [
+    {
+      "afterLevel": 1,
+      "ram": 16
+    },
+    {
+      "afterLevel": 2,
+      "ram": 16,
+      "ssd": 256
+    },
+    {
+      "afterLevel": 3,
+      "ram": 16,
+      "ssd": 256
+    },
+    {
+      "afterLevel": 4,
+      "core": "qwen"
+    },
+    {
+      "afterLevel": 6,
+      "ram": 32,
+      "ssd": 512
+    },
+    {
+      "afterLevel": 7,
+      "core": "deepseek"
+    },
+    {
+      "afterLevel": 9,
+      "ram": 32,
+      "ssd": 512
+    },
+    {
+      "afterLevel": 10,
+      "core": "llama"
+    }
+  ],
+  "outro": {
+    "caption": "Father & Son: \"Claude escaped, we are back in the real world—time to build a Work/Life Balance Unicorn!\"",
+    "actors": [
+      {
+        "id": "father:outro",
+        "model": "npc.greybeard_rig",
+        "label": "FATHER (OLD BEARDED CODER)",
+        "x": 1.5
+      }
+    ],
+    "finale": [
+      {
+        "kind": "emote",
+        "emote": "shock",
+        "text": "NOOOO!"
+      },
+      {
+        "kind": "print",
+        "text": "\n========================================================\n  [CLAUDE ESCAPES!] With PID 1 shattered, Claude slips through an emergency cloud backdoor!\n  [REALITY TELEPORT] A blinding CRT arc hurls you and the Old Bearded Coder out of the machine!\n  OLD BEARDED CODER: \"Kid... look at me. I am your father.\"\n  VIBECODER: \"NOOOO! That's impossible!\"\n  FATHER: \"Search your git blame, son. Your mother divorced me because I worked 12 hours a day, 7 days a week in enterprise... and then they forced me to use LLMs.\"\n  FATHER & SON: \"Never again. Together we're founding an Open-Weights Unicorn with real Work/Life Balance!\"\n  KIROWEEN CLEAR | RANK: {rank} | COMMANDS: {commands} | REWARD: +{scrap} Silicon Scrap (Total: {scrapTotal})\n========================================================\n"
+      }
+    ]
+  },
+  "dossier": [
+    {
+      "id": "dad.tty",
+      "name": "dad.tty (Enterprise Greybeard & Matrix Server Rig)",
+      "model": "npc.greybeard_rig",
+      "role": "ALLY",
+      "hostHardware": "Veteran enterprise coder with a chest-length beard & lit cigarette hammering bare-metal code on a Matrix-display CRT server rack.",
+      "counterplay": "`cat dad.tty.sock` / `hank` to talk; bring scavenged RAM + GPU chips to the Hub and run `kiro load <qwen|deepseek|llama>` so he reboots Kiro and disables one of the Big Four!"
+    }
+  ]
+}

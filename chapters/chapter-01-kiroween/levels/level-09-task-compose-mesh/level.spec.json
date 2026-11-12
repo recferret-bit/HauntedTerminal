@@ -1,0 +1,136 @@
+{
+  "id": "level-09-task-compose-mesh",
+  "index": 9,
+  "title": "Compose Furnace: Buffer Shield & Multi-Node Mesh",
+  "cwd": "/srv/kiroween/compose_furnace",
+  "roomKind": "furnace",
+  "floorTheme": 4,
+  "mechanic": "docker-compose",
+  "exitDir": "/srv/kiroween/compose_furnace/server_hub_3",
+  "summary": "GR0NK and CLAUDE hurl a buffer-overflow syringe at the furnace! Make `proxy.buf` read-only (`chmod -w proxy.buf`), fix `PAYMENT_URL` in `docker-compose.yml` to `http://payment:4002`, run `docker compose up -d`, and collect `ram_16gb.dimm` + `gpu_h100_core_03.img`.",
+  "files": [
+    {
+      "path": "/srv/kiroween/compose_furnace/port_hijack.bin",
+      "kind": "file",
+      "mode": 493,
+      "content": "EXPLOIT_BUFFER_INJECTOR\n"
+    },
+    {
+      "path": "/srv/kiroween/compose_furnace/proxy.buf",
+      "kind": "file",
+      "mode": 438,
+      "questCritical": true,
+      "content": "RING_BUFFER_STREAM_ACTIVE\n"
+    },
+    {
+      "path": "/srv/kiroween/compose_furnace/docker-compose.yml",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "services:\n  nginx:\n    image: nginx:alpine\n    ports:\n      - \"8080:80\"\n    depends_on:\n      - website\n  website:\n    image: byterig-web:1.0\n    environment:\n      - PAYMENT_URL=http://localhost:9999\n    depends_on:\n      - payment\n  payment:\n    image: byterig-pay:1.0\n    environment:\n      - PAYMENT_MODE=live\n    ports:\n      - \"4002:4002\"\n"
+    },
+    {
+      "path": "/srv/kiroween/compose_furnace/ram_16gb.dimm",
+      "kind": "file",
+      "mode": 420,
+      "content": "DDR5_ECC_16GB_MODULE_06\n"
+    },
+    {
+      "path": "/srv/kiroween/compose_furnace/gpu_h100_core_03.img",
+      "kind": "file",
+      "mode": 420,
+      "content": "GPU_H100_TENSOR_CORE_CHIP_03\n"
+    },
+    {
+      "path": "/srv/kiroween/compose_furnace/server_hub_3",
+      "kind": "dir",
+      "mode": 0
+    }
+  ],
+  "enemies": [
+    {
+      "id": "exploit_l9",
+      "type": "exploit",
+      "path": "/srv/kiroween/compose_furnace/port_hijack.bin",
+      "buffer": "/srv/kiroween/compose_furnace/proxy.buf"
+    }
+  ],
+  "pickups": [
+    {
+      "id": "pickup_l9_ram",
+      "type": "ram",
+      "path": "/srv/kiroween/compose_furnace/ram_16gb.dimm"
+    },
+    {
+      "id": "pickup_l9_gpu",
+      "type": "ssd",
+      "path": "/srv/kiroween/compose_furnace/gpu_h100_core_03.img"
+    }
+  ],
+  "patches": [
+    {
+      "file": "docker-compose.yml",
+      "label": "Point PAYMENT_URL to http://payment:4002",
+      "find": "PAYMENT_URL=http://localhost:9999",
+      "replace": "PAYMENT_URL=http://payment:4002"
+    }
+  ],
+  "winRules": [
+    {
+      "kind": "enemy_neutralized",
+      "enemyId": "exploit_l9",
+      "description": "Starve `port_hijack.bin` by making `proxy.buf` read-only (`chmod -w proxy.buf`)"
+    },
+    {
+      "kind": "docker_compose_healthy",
+      "services": ["nginx", "website", "payment"],
+      "description": "Fix `PAYMENT_URL=http://payment:4002` in `docker-compose.yml` and run `docker compose up -d`"
+    },
+    {
+      "kind": "file_absent",
+      "path": "/srv/kiroween/compose_furnace/ram_16gb.dimm",
+      "description": "Collect the final RAM stick (`mv ram_16gb.dimm ~`)"
+    },
+    {
+      "kind": "file_absent",
+      "path": "/srv/kiroween/compose_furnace/gpu_h100_core_03.img",
+      "description": "Collect the H100 GPU Tensor Chip (`mv gpu_h100_core_03.img ~`)"
+    }
+  ],
+  "solutionCommands": [
+    "chmod -w proxy.buf",
+    "sed -i 's|http://localhost:9999|http://payment:4002|' docker-compose.yml",
+    "docker compose up -d",
+    "mv ram_16gb.dimm ~",
+    "mv gpu_h100_core_03.img ~",
+    "cd server_hub_3"
+  ],
+  "script": {
+    "arrival": [
+      {
+        "kind": "taunt",
+        "mood": "laugh",
+        "print": "\n[BIG FOUR BULLYING] {text}\n"
+      }
+    ],
+    "bullying": {
+      "after": 2,
+      "every": 3,
+      "mood": "laugh",
+      "print": "\n[BIG FOUR BULLYING] {text}\n",
+      "lines": [
+        {
+          "agent": "gork",
+          "text": "GR0NK: \"HAHAHA! AGY and Codex were soft, Vibecoder! Try getting these GPU chips past me and Claude!\""
+        },
+        {
+          "agent": "clod",
+          "text": "CLAUDE: \"AHAHA! Only Grok and I remain, and our container defenses are impenetrable!\""
+        }
+      ]
+    },
+    "kiro": {
+      "stage": "crack_only"
+    }
+  }
+}

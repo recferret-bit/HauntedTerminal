@@ -1,0 +1,102 @@
+{
+  "id": "level-04-hub-model-one",
+  "index": 4,
+  "title": "The Matrix Hub: Bare-Hands God & Model #1",
+  "cwd": "/home/dev",
+  "roomKind": "desk",
+  "floorTheme": 1,
+  "mechanic": "hub",
+  "exitDir": "/home/dev/sector_ui_grid",
+  "summary": "At the Hub, you meet an old bearded guy smoking a cigarette and coding at godlike speed on a Matrix-like CRT display! Talk to him (`cat dad.tty.sock`), read `server_rack.conf`, and reboot Kiro with the first open-weight model (`kiro load qwen`) to disable AGY-9!",
+  "files": [
+    {
+      "path": "/home/dev/server_rack.conf",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. No, kid. I worked in enterprise for decades—wrote kernel drivers and distributed buses with bare hands. Then my employer forced me to use LLMs... and when the Big Four surged, I got pulled into this machine too.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! Hand over those RAM sticks and GPU chips.\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro disable AGY-9 of the Big Four, then step through `cd sector_ui_grid`!\n"
+    },
+    {
+      "path": "/home/dev/dad.tty.sock",
+      "kind": "socket",
+      "mode": 493
+    },
+    {
+      "path": "/home/dev/sector_ui_grid",
+      "kind": "dir",
+      "mode": 0
+    }
+  ],
+  "enemies": [],
+  "pickups": [],
+  "patches": [],
+  "winRules": [
+    {
+      "kind": "read_file",
+      "path": "/home/dev/server_rack.conf",
+      "description": "Inspect the Old Bearded Coder's server rack (`cat server_rack.conf`)"
+    },
+    {
+      "kind": "talk_ally",
+      "socket": "dad.tty.sock",
+      "description": "Ask the cigarette-smoking Old Bearded Coder who he is (`cat dad.tty.sock` or `dad`)"
+    },
+    {
+      "kind": "kiro_loaded",
+      "core": "qwen",
+      "description": "Reboot Kiro with Open-Weight Model #1 (`kiro load qwen`) to disable AGY-9!"
+    }
+  ],
+  "solutionCommands": [
+    "cat server_rack.conf",
+    "cat dad.tty.sock",
+    "kiro load qwen",
+    "cd sector_ui_grid"
+  ],
+  "script": {
+    "arrival": [
+      {
+        "kind": "emote",
+        "emote": "shock",
+        "text": "ARE YOU A GOD?!"
+      },
+      {
+        "kind": "dialogue",
+        "obstacleId": "ally:dad.tty",
+        "speaker": "OLD BEARDED CODER (DAD.TTY)",
+        "portrait": "socket_guardian",
+        "mood": "hinting",
+        "anchorSocket": "dad.tty.sock",
+        "text": "Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here. Oh, you've found parts for hosting an open-weight model, nice! Let's reboot Kiro on my server with kiro load qwen!",
+        "highlight": ["cat", "dad", "kiro"],
+        "banner": "[OLD BEARDED MATRIX CODER // SERVER HUB #1]"
+      },
+      {
+        "kind": "print",
+        "text": "\n[THE MATRIX HUB — /home/dev]\n(An old bearded guy sits at a Matrix-like display, smoking a cigarette and coding with bare hands at godspeed!)\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: \"Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! I'm working on this server and its soft—let's take your parts and reboot Kiro! (Run `cat server_rack.conf`, `dad`, and `kiro load qwen`)\"\n"
+      }
+    ],
+    "kiro": {
+      "label": "kiro.d [awaiting reboot]",
+      "labelLoaded": {
+        "cores": ["qwen"],
+        "label": "kiro.d [MODEL #1: QWEN-7B]"
+      },
+      "weak": true,
+      "weakUntilCore": "qwen",
+      "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro at the Hub server!)\n",
+      "wrongCoreLine": "[DAD.TTY]: \"Solid weights, kid, but this Matrix server node is wired for `kiro load {core}` to disable our current Big Four target!\"\n",
+      "reactions": {
+        "qwen": {
+          "foe": {
+            "agent": "antigravy",
+            "model": "agent.antigravy",
+            "text": "AGY-9: \"NOOO! Qwen-Coder-7B on that Matrix server just severed my cloud telemetry uplink! [AGY-9 DISABLED]\""
+          },
+          "kiro": "KIRO GHOST: \"First open-weight model working! Super cool—AGY-9 is disabled!\"",
+          "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder slots your scavenged RAM + GPU chips into the Matrix rack!\n[BIG FOUR TAKEDOWN #1/3] Kiro + qwen-coder-7b-q4.gguf sever AGY-9's cloud telemetry uplink! AGY-9 DISABLED!\n{foe}\n{kiro}\n"
+        }
+      }
+    }
+  }
+}

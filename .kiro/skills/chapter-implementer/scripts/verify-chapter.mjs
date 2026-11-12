@@ -8,7 +8,7 @@ import { resolve } from 'node:path';
 import { parseArgs, projectRoot } from '../../../../scripts/harness/lib/load.mjs';
 
 const args = parseArgs(process.argv.slice(2), ['--chapter']);
-const chapterId = args.val('--chapter', 'chapter-01-freelance-storefront');
+const chapterId = args.val('--chapter', 'chapter-01-kiroween');
 
 function runNode(relScript, extraArgs = []) {
   const full = resolve(projectRoot, relScript);

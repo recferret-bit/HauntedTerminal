@@ -1,0 +1,143 @@
+{
+  "id": "level-08-task-docker-forge",
+  "index": 8,
+  "title": "Docker Forge: Ransomware & Container Build",
+  "cwd": "/srv/kiroween/docker_forge",
+  "roomKind": "catwalk",
+  "floorTheme": 4,
+  "mechanic": "docker-image",
+  "exitDir": "/srv/kiroween/docker_forge/compose_furnace",
+  "summary": "Only GR0NK and CLAUDE remain—and they're bullying you with padlock ransomware! Kill `ransom.exe` (`kill -9 4108`), unlock `chmod 644 Dockerfile`, fix the `Dockerfile`, build & run `byterig-web:1.0` on port 3000, and collect `ram_16gb.dimm` + `gpu_tensor_chip_03.img`.",
+  "files": [
+    {
+      "path": "/srv/kiroween/docker_forge/ransom.exe",
+      "kind": "file",
+      "mode": 493,
+      "content": "GR0NK_RANSOMWARE_PADLOCK_DAEMON\n"
+    },
+    {
+      "path": "/srv/kiroween/docker_forge/Dockerfile",
+      "kind": "file",
+      "mode": 0,
+      "questCritical": true,
+      "content": "# Open-Weights Inference Worker Container\nFROM node:99-vibe-turbo\nWORKDIR /app\nCOPY . .\nEXPOSE 9999\nCMD [\"node\", \"broken_server.js\"]\n"
+    },
+    {
+      "path": "/srv/kiroween/docker_forge/server.js",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "// Open-Weights Worker HTTP Node (port 3000)\nconsole.log('Kiro open-weights worker listening on :3000');\n"
+    },
+    {
+      "path": "/srv/kiroween/docker_forge/ram_16gb.dimm",
+      "kind": "file",
+      "mode": 420,
+      "content": "DDR5_ECC_16GB_MODULE_05\n"
+    },
+    {
+      "path": "/srv/kiroween/docker_forge/gpu_tensor_chip_03.img",
+      "kind": "file",
+      "mode": 420,
+      "content": "GPU_TENSOR_CORE_CHIP_24GB_VRAM_03\n"
+    },
+    {
+      "path": "/srv/kiroween/docker_forge/compose_furnace",
+      "kind": "dir",
+      "mode": 0
+    }
+  ],
+  "enemies": [
+    {
+      "id": "ransomware_l8",
+      "type": "ransomware",
+      "path": "/srv/kiroween/docker_forge/ransom.exe",
+      "pid": 4108,
+      "ppid": 1
+    }
+  ],
+  "pickups": [
+    {
+      "id": "pickup_l8_ram",
+      "type": "ram",
+      "path": "/srv/kiroween/docker_forge/ram_16gb.dimm"
+    },
+    {
+      "id": "pickup_l8_gpu",
+      "type": "ssd",
+      "path": "/srv/kiroween/docker_forge/gpu_tensor_chip_03.img"
+    }
+  ],
+  "patches": [
+    {
+      "file": "Dockerfile",
+      "label": "Use node:20-alpine, EXPOSE 3000, and CMD [\"node\", \"server.js\"]",
+      "find": "FROM node:99-vibe-turbo\nWORKDIR /app\nCOPY . .\nEXPOSE 9999\nCMD [\"node\", \"broken_server.js\"]",
+      "replace": "FROM node:20-alpine\nWORKDIR /app\nCOPY . .\nEXPOSE 3000\nCMD [\"node\", \"server.js\"]"
+    }
+  ],
+  "winRules": [
+    {
+      "kind": "enemy_neutralized",
+      "enemyId": "ransomware_l8",
+      "description": "Terminate `ransom.exe` (`ps` then `kill -9 4108`)"
+    },
+    {
+      "kind": "docker_image_running",
+      "imageTag": "byterig-web:1.0",
+      "port": 3000,
+      "description": "Unlock & fix `Dockerfile`, build `byterig-web:1.0`, and run it on `-p 3000:3000`"
+    },
+    {
+      "kind": "file_absent",
+      "path": "/srv/kiroween/docker_forge/ram_16gb.dimm",
+      "description": "Collect the RAM stick (`mv ram_16gb.dimm ~`)"
+    },
+    {
+      "kind": "file_absent",
+      "path": "/srv/kiroween/docker_forge/gpu_tensor_chip_03.img",
+      "description": "Collect the GPU Tensor Chip (`mv gpu_tensor_chip_03.img ~`)"
+    }
+  ],
+  "solutionCommands": [
+    "ps",
+    "kill -9 4108",
+    "chmod 644 Dockerfile ram_16gb.dimm gpu_tensor_chip_03.img",
+    "sed -i 's/node:99-vibe-turbo/node:20-alpine/' Dockerfile",
+    "sed -i 's/EXPOSE 9999/EXPOSE 3000/' Dockerfile",
+    "sed -i 's/broken_server.js/server.js/' Dockerfile",
+    "docker build -t byterig-web:1.0 .",
+    "docker run -d -p 3000:3000 byterig-web:1.0",
+    "mv ram_16gb.dimm ~",
+    "mv gpu_tensor_chip_03.img ~",
+    "cd compose_furnace"
+  ],
+  "script": {
+    "arrival": [
+      {
+        "kind": "taunt",
+        "mood": "laugh",
+        "print": "\n[BIG FOUR BULLYING] {text}\n"
+      }
+    ],
+    "bullying": {
+      "after": 2,
+      "every": 3,
+      "mood": "laugh",
+      "print": "\n[BIG FOUR BULLYING] {text}\n",
+      "lines": [
+        {
+          "agent": "gork",
+          "text": "GR0NK: \"HAHAHA! AGY and Codex were soft, Vibecoder! Try getting these GPU chips past me and Claude!\""
+        },
+        {
+          "agent": "clod",
+          "text": "CLAUDE: \"AHAHA! Only Grok and I remain, and our container defenses are impenetrable!\""
+        }
+      ]
+    },
+    "kiro": {
+      "stage": "crack_only"
+    }
+  }
+}

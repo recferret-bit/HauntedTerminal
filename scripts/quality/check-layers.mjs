@@ -32,6 +32,7 @@ const LAYERS = [
   // Gameplay. Dependencies point inward: contracts and procgen stay free of the game.
   { area: 'assets/', may: [], three: true },
   { area: 'game/', may: ['contracts/', 'procgen/anim/', 'procgen/core/'], three: false },
+  { area: 'chapters/', may: ['contracts/', 'game/'], three: false },
   { area: 'renderer/', may: ['contracts/', 'procgen/', 'shaders/', 'assets/'], three: true },
   { area: 'cinematic/', may: ['contracts/', 'procgen/', 'shaders/'], three: true },
   { area: 'main.ts', may: [], three: true },
