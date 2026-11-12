@@ -126,7 +126,7 @@ what it is (`gate`, `intercom`, `chasm`, `boss`, `pedestal`, `valve` ...). Compu
 5. **Squint test** on the sheet: cover the top half; the bottom half must be nearly flat dark. Then
    imagine the vibecoder at x = 0.7 and a door at the right edge: nothing bright behind either.
 6. **Validate**: `npm run procgen:validate`, then `npm run procgen:check` before calling it done.
-7. **Storybook**: `npm run dev`, open `/storybook.html`, look at the room under the real shaders,
+7. **Storybook**: `npm start`, open `/storybook.html`, look at the room under the real shaders,
    pixel-art and CRT passes, with and without textures.
 
 ## Common mistakes

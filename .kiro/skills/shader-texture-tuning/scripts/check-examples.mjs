@@ -9,7 +9,7 @@
 //   node .kiro/skills/shader-texture-tuning/scripts/check-examples.mjs
 //
 // It does not compile GLSL: a compile error shows up in the browser console once the material is on
-// screen (npm run dev). The shipped examples were compiled and linked in Chrome when they were written.
+// screen (npm start). The shipped examples were compiled and linked in Chrome when they were written.
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { withProcgen, projectRoot } from '../../../../scripts/harness/lib/load.mjs';

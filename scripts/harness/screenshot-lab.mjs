@@ -91,7 +91,7 @@ async function main() {
   const chromePath = findChrome();
   if (!chromePath) {
     console.error('No Chrome/Chromium found. Pass --chrome <path> or set CHROME_BIN.');
-    console.error('Manual route: npm run dev, open http://localhost:5173/storybook.html?<params> and use the browser screenshot.');
+    console.error('Manual route: npm start, open http://localhost:5173/storybook.html?<params> and use the browser screenshot.');
     return 2;
   }
 

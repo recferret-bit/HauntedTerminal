@@ -81,7 +81,7 @@ triangle costs). Worked example: [examples/prop-floppy.ts](./examples/prop-flopp
     It checks floating and buried parts, grounding, size ranges, palette families, zone count and
     thin features, and tells you the fix. See [model-geometry-validator](../model-geometry-validator/SKILL.md).
     Zero errors and zero warnings across seeds before you stop.
-11. **Storybook.** `npm run dev`, open `/storybook.html`: the same model under the real comic shader,
+11. **Storybook.** `npm start`, open `/storybook.html`: the same model under the real comic shader,
     pixel-art and CRT passes, animated. This is the only place ink shells and animation are real.
 12. `npm run procgen:check` must stay green.
 

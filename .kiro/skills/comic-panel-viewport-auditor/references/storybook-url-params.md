@@ -1,6 +1,6 @@
 # Storybook: URL parameters and automation
 
-Page: `storybook.html` at the project root, served by `npm run dev` at
+Page: `storybook.html` at the project root, served by `npm start` at
 `http://localhost:5173/storybook.html`. Code: `src/storybook/` (entry `storybook.ts`, parameters in
 `options.ts`). Every control writes its state back into the URL, so the address bar is always a
 link to what is on screen. Only values that differ from the default are written. Unknown

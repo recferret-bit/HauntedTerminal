@@ -141,7 +141,7 @@ node .kiro/skills/procedural-animation-3d/scripts/check-tags.mjs vibecoder.dev  
 npx tsc --noEmit
 ```
 
-Then look under the real shaders: `npm run dev`, `/storybook.html?inspect=<id>&scale=game`. The lab runs
+Then look under the real shaders: `npm start`, `/storybook.html?inspect=<id>&scale=game`. The lab runs
 this animator (`createModelAnimator`); `&anim=0` stops it, `&t=1.25` freezes the clock for repeatable
 poses, `&state=hidden|petrified|frozen|enraged` previews state materials. Under 1 px (0.017 units) a
 motion does not exist; if a blink or jitter is all you notice, it is too big. Validator codes and

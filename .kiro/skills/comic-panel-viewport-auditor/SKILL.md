@@ -51,14 +51,14 @@ Numbers first, then eyes, in this order. Do not skip to the game.
 1. **Software sheet** (no browser): `npm run procgen:sheet` writes `scripts/harness/out/models.png`;
    `node scripts/harness/render-sheet.mjs <id> --views` adds side and top views to check depth.
    Open the PNG. Fix silhouette and proportions here; it is the fastest loop.
-2. **Storybook**, the real renderer: `npm run dev`, open `http://localhost:5173/storybook.html`.
+2. **Storybook**, the real renderer: `npm start`, open `http://localhost:5173/storybook.html`.
    The gallery shows every `ModelCatalog` model at one shared scale with a ground line and a dashed
    vibecoder-height (1.6) line, plus `textures` and `fx` tabs. Click a panel to inspect; every toggle is a URL
    parameter ([references/storybook-url-params.md](./references/storybook-url-params.md)).
    Headless, one command: `node .kiro/skills/comic-panel-viewport-auditor/scripts/lab-qa.mjs <id>`
    shoots every test below to `scripts/harness/out/lab-<id>-<test>.png` (18 shots for an enemy, ~20 s).
    One shot: `node scripts/harness/screenshot-lab.mjs --query "inspect=<id>&scale=game" --name <stem>`.
-3. **In the game**: `npm run dev`, `http://localhost:5173/`. F2 opens the dev panel (level jump, kernel
+3. **In the game**: `npm start`, `http://localhost:5173/`. F2 opens the dev panel (level jump, kernel
    events: `ls -la` lantern reveal, `chmod -x` petrify, `kill -STOP` freeze, intro flash, hitboxes);
    F8 opens the shader lab (CRT, PIXEL, INK, STORM, PROJECTION zoom); F9 / F10 toggle CRT / pixel-art.
    **Today the game still draws its own actors from `src/renderer/procedural-cast.ts`; nothing in

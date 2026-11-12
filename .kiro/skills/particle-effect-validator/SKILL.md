@@ -88,7 +88,7 @@ What to look for:
 
 The preview draws flat cel bands and ink with the same light vector and thresholds as
 `src/shaders/comic-material.ts`. It does not run the pixel-art or CRT pass, the room, or the camera
-shake: finish in `/storybook.html` or the game (`npm run dev`).
+shake: finish in `/storybook.html` or the game (`npm start`).
 
 ## The self-test
 

@@ -97,7 +97,7 @@ Check there before drawing a new one.
    ink and flat colour? Does one tile repeat without an obvious "stamp"? Try `--seed 7`.
 5. **Whole set.** `npm run procgen:textures` (all textures, sheet at `scripts/harness/out/textures.png`)
    and `npm run procgen:selftest`.
-6. **Under the real shaders.** `npm run dev`, open `/storybook.html?tab=textures` for every texture
+6. **Under the real shaders.** `npm start`, open `/storybook.html?tab=textures` for every texture
    through the pixel-art and CRT passes, then the models tab for a model that uses yours. The software sheet (`npm run procgen:sheet`) also samples textures, but only the
    storybook shows the pixel-art and CRT passes. If the drawing turns to mush there, it is too fine:
    make shapes bigger, not the texture larger.

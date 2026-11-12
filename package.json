@@ -6,6 +6,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start": "node scripts/harness/stack.mjs start",
+    "stop": "node scripts/harness/stack.mjs stop",
+    "restart": "node scripts/harness/stack.mjs restart",
+    "status": "node scripts/harness/stack.mjs status",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "quality:size": "node scripts/quality/check-size.mjs",

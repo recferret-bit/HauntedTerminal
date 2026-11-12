@@ -139,7 +139,7 @@ Wiring recipe for other hosts (the cinematics use it too): [emitter-usage.ts](./
    then open `scripts/harness/out/fx.png`. Frame 1 must already be the hit. If you squint and see a
    fountain, cut the count in half and double the chunk size.
 6. **Self-test and type-check**: `npm run procgen:selftest`, `npx tsc --noEmit`.
-7. **See it under the real shaders**: `npm run dev`, then `/storybook.html?tab=fx` plays every preset
+7. **See it under the real shaders**: `npm start`, then `/storybook.html?tab=fx` plays every preset
    (`&inspect=fx.<name>` for one). Elsewhere, mount one with `createFxEmitter` and scrub it with `seek()`.
 8. Update [preset-catalog.md](./references/preset-catalog.md).
 

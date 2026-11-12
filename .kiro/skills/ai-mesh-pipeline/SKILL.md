@@ -60,7 +60,7 @@ Workflow:
    (`--strict` makes warnings fail). It validates the JSON, every field, that each file is a readable
    PNG of sane size, how much of it is transparent, how much is on-palette, keys no mesh uses, and
    orphan files.
-4. `npm run dev`, press F2, **Hot-reload PNG assets**, and look at the actor in the panel.
+4. `npm start`, press F2, **Hot-reload PNG assets**, and look at the actor in the panel.
 5. If it fights the cel shading or the pixel-art pass, the fix is nearly always fewer colours and
    bigger shapes in the PNG, not a shader change.
 

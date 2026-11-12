@@ -78,7 +78,7 @@ implement stripes, the flash, the pixel-art pass or the CRT pass.
 ## Tuning workflow
 
 1. **Name the link.** Turn passes off to find it: in the game, the dock buttons (CRT, PIXEL, INK,
-   STORM) toggle each stage; in the storybook (`npm run dev`, `/storybook.html`) use the same toggles
+   STORM) toggle each stage; in the storybook (`npm start`, `/storybook.html`) use the same toggles
    and the palette buttons. If it is wrong with pixel and CRT off, it is the material or the model.
    If it is only wrong with them on, it is a pass parameter.
 2. **Tune live first.** Move the visual lab slider until it reads right; note the value.

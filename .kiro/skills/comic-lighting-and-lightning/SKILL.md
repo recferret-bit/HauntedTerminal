@@ -118,7 +118,7 @@ Recipes with code for each of these: [extension-recipes.md](./references/extensi
 
 1. `npm run procgen:sheet` and open `scripts/harness/out/models.png`: bands still three, fronts still lit.
 2. `npm run procgen:fx -- --sheet`: effects still read on the floor backdrop.
-3. `npm run dev`: the game, then `/storybook.html` with the lantern and flash toggles. Check floor 1
+3. `npm start`: the game, then `/storybook.html` with the lantern and flash toggles. Check floor 1
    (darkest violet) and floor 4 (red).
 4. If you changed the vector or the bands: the three copies agree (`comic-material.ts`,
    `geometry/raster-shade.ts`, `fx/preview.ts`).

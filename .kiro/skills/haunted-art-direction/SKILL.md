@@ -165,7 +165,7 @@ Run from the project root. Every script loads the TypeScript directly (Vite SSR)
 | `npm run procgen:anim` | Checks every model's AnimTags and steps every animator state (no NaN, no limb through the floor). |
 | `npm run procgen:selftest` | Proves the validators and the animator do what they claim, plus the harness smoke test. |
 | `npm run procgen:check` | tsc, self-tests, model / texture / FX validation and the sheet. Must be green before work is called done. |
-| `npm run dev` then `/storybook.html` | The real thing: models, textures (`?tab=textures`) and effects (`?tab=fx`) under the game's shaders, pixel-art and CRT passes. URL parameters: [storybook-url-params.md](../comic-panel-viewport-auditor/references/storybook-url-params.md). |
+| `npm start` then `/storybook.html` | The real thing: models, textures (`?tab=textures`) and effects (`?tab=fx`) under the game's shaders, pixel-art and CRT passes. URL parameters: [storybook-url-params.md](../comic-panel-viewport-auditor/references/storybook-url-params.md). |
 | `node scripts/harness/screenshot-lab.mjs --query "inspect=<id>&scale=game" --name <n>` | Headless-Chrome screenshot of the storybook (real WebGL) to `scripts/harness/out/lab-<n>.png`. Read the PNG. `--page / --query nointro --eval "<js>"` shoots the game itself (drive it with `window.__term.submit(line)`). |
 | `/cinematic.html?play=intro\|outro&t=<s>` | Preview the intro / outro cinematics (`src/cinematic`), frozen at a moment with `t`. |
 | `node scripts/harness/playthrough.mjs --ticks 3` | Plays the whole campaign through the game logic (`playthrough.script.json`), idle ticks between commands. Must pass with 0 deaths. |
