@@ -1,18 +1,17 @@
 #!/usr/bin/env node
-// The asset-lab inspect checklist as screenshots: one PNG per read test for one model, under the
+// The storybook inspect checklist as screenshots: one PNG per read test for one model, under the
 // game's real shaders and post passes, in headless Chrome. Open every PNG it lists and judge it
 // against the checklist in ../SKILL.md.
 //
 //   node .kiro/skills/comic-panel-viewport-auditor/scripts/lab-qa.mjs malware.trojan
-//   node .kiro/skills/comic-panel-viewport-auditor/scripts/lab-qa.mjs hero.dev --seed 3 --t 0.5
+//   node .kiro/skills/comic-panel-viewport-auditor/scripts/lab-qa.mjs vibecoder.dev --seed 3 --t 0.5
 //   node .kiro/skills/comic-panel-viewport-auditor/scripts/lab-qa.mjs malware.bug --only game,silhouette,lantern
 //
 // Writes scripts/harness/out/lab-<id>-<test>.png. Enemy states are shot only for malware and boss.
 // Exit code 1 if any shot failed (page error, blank frame, unknown id).
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
-import { createServer } from 'vite';
-import { parseArgs, projectRoot } from '../../../../scripts/harness/lib/load.mjs';
+import { parseArgs, projectRoot, startPageServer } from '../../../../scripts/harness/lib/load.mjs';
 
 const args = parseArgs(process.argv.slice(2), ['--seed', '--t', '--only']);
 const id = args.rest[0];
@@ -49,9 +48,7 @@ const TESTS = [
 const only = args.val('--only') ? new Set(args.val('--only').split(',')) : null;
 const shots = TESTS.filter(([name]) => !only || only.has(name));
 
-const vite = await createServer({ root: projectRoot, logLevel: 'error', server: { port: 5320, strictPort: false, host: '127.0.0.1', open: false } });
-await vite.listen();
-const url = `http://127.0.0.1:${vite.httpServer.address().port}`;
+const { vite, base: url } = await startPageServer(5320);
 const script = resolve(projectRoot, 'scripts/harness/screenshot-lab.mjs');
 let failed = 0;
 try {

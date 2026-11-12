@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Runs validateAnimTags over catalog models and plays every animator state on each (NaN check).
 //   node .kiro/skills/procedural-animation-3d/scripts/check-tags.mjs --all
-//   node .kiro/skills/procedural-animation-3d/scripts/check-tags.mjs hero.dev malware.bug
+//   node .kiro/skills/procedural-animation-3d/scripts/check-tags.mjs vibecoder.dev malware.bug
 //   node .kiro/skills/procedural-animation-3d/scripts/check-tags.mjs --category malware [--seed 3]
 // Exits 1 if any model has an error (warnings do not fail).
 import { withProcgen, parseArgs } from '../../../../scripts/harness/lib/load.mjs';

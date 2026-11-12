@@ -1,6 +1,6 @@
 ---
 name: procedural-kitbash-3d
-description: "[ASSET PCG] Build procedural 3D models as comic reliefs from the greeble kit: the hero and System Hand, pickups (energy, RAM, SSD), doors (USB, Ethernet, HDMI, serial, firewall gate, loopback mirror, /dev/null, talking socket), props and items (file, crate, fuse, chip, capacitor, heatsink, fan, cables, CRT, tombstone) and the kit itself (pins, chips, fins, LEDs, port shells, screws, cables, traces, grilles, chains, padlocks). Use whenever you add, change or review `src/procgen/kit` or `src/procgen/archetypes/{hero,pickups,doors,props}.ts`, or a model 'looks wrong', 'floats', 'is unreadable' or a new door, pickup or prop is needed."
+description: "[ASSET PCG] Build procedural 3D models as comic reliefs from the greeble kit: the vibecoder and System Hand, pickups (energy, RAM, SSD), doors (USB, Ethernet, HDMI, serial, firewall gate, loopback mirror, /dev/null, talking socket), props and items (file, crate, fuse, chip, capacitor, heatsink, fan, cables, CRT, tombstone) and the kit itself (pins, chips, fins, LEDs, port shells, screws, cables, traces, grilles, chains, padlocks). Use whenever you add, change or review `src/procgen/kit` or `src/procgen/archetypes/{vibecoder,pickups,doors,props}.ts`, or a model 'looks wrong', 'floats', 'is unreadable' or a new door, pickup or prop is needed."
 ---
 
 # Procedural kitbash 3D
@@ -34,7 +34,7 @@ functions of a `seed`.
 |---|---|
 | `src/procgen/kit/shapes.ts` | Outlines (`outlineRoundRect`, `outlineArch`, `outlineComb`, `outlineStroke`, ...), part constructors (`kitPlate`, `kitBox`, `kitDisc`, `kitRing`), list transforms (`mirrorX`, `offsetParts`, `prefixParts`, `tiltParts`, `animateParts`) |
 | `src/procgen/kit/greebles.ts` | The hardware vocabulary, `greeble*()`. Re-exports `shapes.ts`, so import everything from here |
-| `src/procgen/archetypes/hero.ts` | `hero.dev`, `hero.hand` |
+| `src/procgen/archetypes/vibecoder.ts` | `vibecoder.dev`, `vibecoder.hand` |
 | `src/procgen/archetypes/pickups.ts` | `pickup.energy`, `pickup.ram`, `pickup.ssd` |
 | `src/procgen/archetypes/doors.ts` | `door.usb` `.ethernet` `.hdmi` `.serial` `.firewall` `.loopback` `.devnull` `.socket` |
 | `src/procgen/archetypes/props.ts` | `prop.file` `.tar` `.fuse` `.chip` `.capacitor` `.heatsink` `.fan` `.cables` `.crt` `.tombstone` |
@@ -55,12 +55,12 @@ triangle costs). Worked example: [examples/prop-floppy.ts](./examples/prop-flopp
    Keep 6 to 40 parts and under 3500 triangles. Use greebles for hardware detail instead of
    hand-placing boxes; they already handle layering and naming.
 4. **Zones, 60 / 30 / 10.** One dominant zone, one secondary, accents and light for the rest; at most
-   five zones plus ink. Family rules are enforced: `human` zones only on the hero and the hand,
+   five zones plus ink. Family rules are enforced: `human` zones only on the vibecoder and the hand,
    `malware` zones never here, `signal` zones only for light that means something.
 5. **Ground it.** Feet at `y = 0`. Bevels grow an outline by their size, so lift a bevelled base
    part by its bevel. Pickups and hanging things carry `tags: ['hover']` instead.
 6. **Sockets.** `label` (name tag, above the top), `fx` (where sparks spawn, in front of the centre),
-   plus the category's own: `lock` on doors, `bubble` on things that talk, `hand` / `lantern` on the hero.
+   plus the category's own: `lock` on doors, `bubble` on things that talk, `hand` / `lantern` on the vibecoder.
 7. **Anim tags.** Only what the brief asks for (table below). Parts that move as one limb share the
    same `pivot`, `phase` and `amp`. A part has one tag, so a bobbing body and a pulsing light are
    different parts. Motion itself belongs to [procedural-animation-3d](../procedural-animation-3d/SKILL.md).
@@ -81,7 +81,7 @@ triangle costs). Worked example: [examples/prop-floppy.ts](./examples/prop-flopp
     It checks floating and buried parts, grounding, size ranges, palette families, zone count and
     thin features, and tells you the fix. See [model-geometry-validator](../model-geometry-validator/SKILL.md).
     Zero errors and zero warnings across seeds before you stop.
-11. **Asset lab.** `npm run dev`, open `/asset-lab.html`: the same model under the real comic shader,
+11. **Storybook.** `npm run dev`, open `/storybook.html`: the same model under the real comic shader,
     pixel-art and CRT passes, animated. This is the only place ink shells and animation are real.
 12. `npm run procgen:check` must stay green.
 
@@ -89,14 +89,14 @@ triangle costs). Worked example: [examples/prop-floppy.ts](./examples/prop-flopp
 
 | Category | Size | Must have | Must not |
 |---|---|---|---|
-| `hero` | `hero.dev` 1.6 tall | `human` zones; round, soft outlines (large corner radii, bevels 0.02 to 0.03); legs tagged `legWalk` with phases 0 and 0.5 and the hip as pivot, the free arm `armSwing`; lantern on the screen-right; sockets `bubble`, `hand`, `lantern`, `fx` | Hardware or malware zones, sharp corners |
+| `vibecoder` | `vibecoder.dev` 1.6 tall | `human` zones; round, soft outlines (large corner radii, bevels 0.02 to 0.03); legs tagged `legWalk` with phases 0 and 0.5 and the hip as pivot, the free arm `armSwing`; lantern on the screen-right; sockets `bubble`, `hand`, `lantern`, `fx` | Hardware or malware zones, sharp corners |
 | `pickup` | 0.3 to 0.5, centred near y = 0.5 | `tags: ['hover']`; exactly one `signal` zone on a small part with `pulse`; every other part `bob` with the same tag (`animateParts`); a silhouette that says what you gain | Detail under 2 px, a second glowing zone |
 | `door` | 0.7 to 1.1 wide, 1.4 to 1.9 tall | A shell (`solder`, `heatsink` or `plastic`), visible contacts (`gold`), a lamp part named exactly `led` (the game recolours it: `lockRed` locked, `powerAmber` busy, `phosphor` open), a `lock` socket, a base that touches y = 0 | Malware zones; glow other than LEDs |
 | `prop` | Items 0.3 to 0.9, set dressing up to ~1.3 | Feet at y = 0 (or `hover` + `wall` for things that hang); low contrast for set dressing so actors pop | Any `signal` zone: props do not glow. Use `glass` sparingly |
 
 Shared rules that the validator cannot see:
 
-- **The hero is the only warm round thing.** Hardware is rectangles, chamfers and combs. If a door
+- **The vibecoder is the only warm round thing.** Hardware is rectangles, chamfers and combs. If a door
   looks friendly, square it off.
 - **Say the function with geometry.** A chip shows legs, a port shows contacts, a fan shows blades.
   A flat one-colour plate is a placeholder.

@@ -21,7 +21,7 @@ command makes the kernel emit `KernelEvent`s (`src/contracts/events.ts`), and th
 - **The page**: the stage shakes the camera, letters onomatopoeia, changes panels, strikes lightning.
 
 The animator never touches `model.group` and the stage never touches part meshes, so a frozen enemy
-can still be pushed by a tween and a walking hero keeps walking while he hops.
+can still be pushed by a tween and a walking vibecoder keeps walking while he hops.
 
 Why a CPU animator: one `THREE.Mesh` per part and a handful of actors per panel, so a few dozen
 transforms per frame is cheap, readable and testable in node. No skinning, no vertex-shader rig.
@@ -127,21 +127,21 @@ returns the rows for a concrete event; `animStateForActor(roomActor)` maps `Room
 (`src/renderer/comic-stage.ts` + `stage-cast.ts`) drives actors with `createAnimator(model, animActingOptions(id))`
 and plays these reactions from its timed event queue; change timings in the table, not in the stage.
 
-## The hero's vocabulary
+## The vibecoder's vocabulary
 
 Walk to a door and hop the gutter (`cd`), PANEL SMASH (`cd ../../..`), lantern raise (`ls -a`), the
-typing nod, hurt: states, tweens and timings in [event-to-motion.md](./references/event-to-motion.md#the-heros-vocabulary).
+typing nod, hurt: states, tweens and timings in [event-to-motion.md](./references/event-to-motion.md#the-vibecoders-vocabulary).
 
 ## Verify
 
 ```bash
 node .kiro/skills/procedural-animation-3d/scripts/self-test.mjs            # the animation module itself (must be all PASS)
 node .kiro/skills/procedural-animation-3d/scripts/check-tags.mjs --all     # validateAnimTags + every state on every catalog model
-node .kiro/skills/procedural-animation-3d/scripts/check-tags.mjs hero.dev  # one model
+node .kiro/skills/procedural-animation-3d/scripts/check-tags.mjs vibecoder.dev  # one model
 npx tsc --noEmit
 ```
 
-Then look under the real shaders: `npm run dev`, `/asset-lab.html?inspect=<id>&scale=game`. The lab runs
+Then look under the real shaders: `npm run dev`, `/storybook.html?inspect=<id>&scale=game`. The lab runs
 this animator (`createModelAnimator`); `&anim=0` stops it, `&t=1.25` freezes the clock for repeatable
 poses, `&state=hidden|petrified|frozen|enraged` previews state materials. Under 1 px (0.017 units) a
 motion does not exist; if a blink or jitter is all you notice, it is too big. Validator codes and

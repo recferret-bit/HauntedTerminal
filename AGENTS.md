@@ -4,7 +4,7 @@ Haunted Terminal: a web game (Vite, TypeScript, Three.js, xterm.js) with Comix Z
 
 ## Read first
 
-- `.kiro/steering/product.md`, `tech.md`, `structure.md`, `skills-map.md` (always loaded in Kiro).
+- `.kiro/steering/product.md`, `tech.md`, `structure.md`, `architecture.md`, `skills-map.md` (always loaded in Kiro).
 
 ## Two categories of work
 
@@ -17,9 +17,13 @@ Skill descriptions carry a `[ASSET PCG]` or `[LEVEL GEN]` tag. Full mapping and 
 
 Kiroween ships **one chapter of about 11 levels**. Do not start more chapters.
 
+## Repository layout
+
+Keep the root clean: HTML pages go in `pages/` (the Vite root; `pages/storybook.html` is served at `/storybook.html`), docs in `docs/`, tooling in `scripts/`, source in `src/`. Only tool configs, `AGENTS.md`, `README.md` and `LICENSE` sit at the root. `npm run quality:root` enforces it. Full table: `.kiro/steering/structure.md`.
+
 ## Commands
 
-`npm run dev`, `npm run build`, `npm run preview`. Skill scripts live in `.kiro/skills/*/scripts/` and `scripts/harness/`; many need code from the earlier prototype that is not ported yet (see `.kiro/steering/tech.md`).
+`npm run dev`, `npm run build`, `npm run preview`, `npm run quality` (typecheck, root layout, size <= 600 lines/file and 130 lines/function, layer rules, no duplicates). Skill scripts live in `.kiro/skills/*/scripts/` and `scripts/harness/`; the ASSET PCG ones run; the LEVEL GEN ones need code that is not ported yet (see `.kiro/steering/tech.md`).
 
 ## Working rules
 

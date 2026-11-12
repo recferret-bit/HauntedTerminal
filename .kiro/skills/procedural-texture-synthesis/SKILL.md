@@ -15,7 +15,7 @@ the browser and in the node harness. Art rules come from
 A texture reaches the screen through four stages, and each one removes something:
 
 1. A model part names it: `PartSpec.texture: 'tex.pcb-traces'` (`src/procgen/core/types.ts`).
-2. `buildModel` (`src/procgen/core/build.ts`) turns it into a nearest-filtered `DataTexture` and binds
+2. `buildModel` (`src/procgen/runtime/build.ts`) turns it into a nearest-filtered `DataTexture` and binds
    it as `uMap` on that part's comic material.
 3. The comic fragment shader (`src/shaders/comic-material.ts`) does
    `col = mix(uColor * band, albedo * band, 0.86)`. The texture is 86% of the colour, the zone colour
@@ -97,9 +97,9 @@ Check there before drawing a new one.
    ink and flat colour? Does one tile repeat without an obvious "stamp"? Try `--seed 7`.
 5. **Whole set.** `npm run procgen:textures` (all textures, sheet at `scripts/harness/out/textures.png`)
    and `npm run procgen:selftest`.
-6. **Under the real shaders.** `npm run dev`, open `/asset-lab.html?tab=textures` for every texture
+6. **Under the real shaders.** `npm run dev`, open `/storybook.html?tab=textures` for every texture
    through the pixel-art and CRT passes, then the models tab for a model that uses yours. The software sheet (`npm run procgen:sheet`) also samples textures, but only the
-   asset lab shows the pixel-art and CRT passes. If the drawing turns to mush there, it is too fine:
+   storybook shows the pixel-art and CRT passes. If the drawing turns to mush there, it is too fine:
    make shapes bigger, not the texture larger.
 7. Add a row to [texture-catalog.md](./references/texture-catalog.md)
    (`validate-textures.mjs --all --list` prints the table).

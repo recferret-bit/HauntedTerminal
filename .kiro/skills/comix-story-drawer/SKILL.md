@@ -35,7 +35,7 @@ Place each chapter's comic script at `chapters/<chapter-id>/story/comix.spec.jso
           "room": "room.desk",
           "caption": "03:12 AM — CLIENT MARTY'S BYTERIG PC PARTS & GAMES STORE LAUNCHES AT 06:00.",
           "cast": [
-            { "model": "hero.dev", "x": -0.5, "scale": 1.0 },
+            { "model": "vibecoder.dev", "x": -0.5, "scale": 1.0 },
             { "model": "prop.crt", "x": 0.45, "scale": 1.1 }
           ],
           "bubbles": [
@@ -54,7 +54,7 @@ Place each chapter's comic script at `chapters/<chapter-id>/story/comix.spec.jso
    - Vary panel widths (`0.94` widescreen establishing shot -> `0.45` + `0.46` side-by-side reaction beats -> `0.94` splash impact).
 2. **Valid `ModelCatalog` IDs Only:**
    - Rooms: `room.desk`, `room.attic`, `room.crypt_entrance`, `room.crypt_hall`, `room.lab_hall`, `room.catwalk`, `room.furnace`, `room.core`.
-   - Cast: `hero.dev`, `hero.hand`, `door.socket` (`hank.tty`), `prop.crt`, `pickup.ram`, `pickup.ssd`, `pickup.energy`, `malware.*`, `boss.kernel`, `boss.forkbomb`.
+   - Cast: `vibecoder.dev`, `vibecoder.hand`, `door.socket` (`hank.tty`), `prop.crt`, `pickup.ram`, `pickup.ssd`, `pickup.energy`, `malware.*`, `boss.kernel`, `boss.forkbomb`.
 3. **Lettering Economy:**
    - Keep `caption` under `95` characters and each `bubble.text` under `100` characters so lines stay bold and readable at thumbnail and mobile sizes.
    - Use `style: "shout"` + `sfx` (`KRAKOOM!`, `SIGKILL!`, `SHIPPED!`) sparingly on climax panels (`1` per page max).

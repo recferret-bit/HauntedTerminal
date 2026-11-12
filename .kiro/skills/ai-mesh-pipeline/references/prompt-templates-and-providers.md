@@ -13,7 +13,7 @@ The hexes are `ZONES` in `src/procgen/core/palette.ts`. If you change a colour t
 | Family | Zones and hexes | Use in a prompt for |
 |---|---|---|
 | neutral | ink `#110e1b`, paper `#f4f1ea` | Outlines; the System Hand |
-| human | skin `#ffe0c2`, hoodie `#f77f00`, denim `#3a506b`, hair `#4a2c2a`, lantern `#ffd166` | The hero only |
+| human | skin `#ffe0c2`, hoodie `#f77f00`, denim `#3a506b`, hair `#4a2c2a`, lantern `#ffd166` | The vibecoder only |
 | hardware | pcb `#1f7a5c`, pcbDark `#12473b`, solder `#adb5bd`, heatsink `#7d8597`, gold `#e9b44c`, copper `#c8763a`, silicon `#2b2540`, plastic `#d9d2c5`, rubber `#3a3550` | Doors, props, pickups, rooms, malware bodies |
 | signal | phosphor `#39ff88`, dataCyan `#4cc9f0`, powerAmber `#ffd166`, lockRed `#ef233c` | LEDs, pickups, port status lights |
 | malware | corruptMagenta `#ef476f`, corruptViolet `#9b5de5`, toxicGreen `#8ac926`, voidPurple `#3c096c`, malwareEye `#fff07c` | Enemies only |
@@ -63,10 +63,10 @@ third and at the far left edge. No bright colours except at most three tiny ligh
 
 Replace `{...}`; keep the colour roles.
 
-### Hero and the hand
+### Vibecoder and the hand
 
 ```text
-hero: A tired software developer, about three heads tall, round soft shapes. Orange hoodie (#f77f00)
+vibecoder: A tired software developer, about three heads tall, round soft shapes. Orange hoodie (#f77f00)
 with the hood up as the dominant colour, blue-grey jeans (#3a506b), pale sneakers (#f4f1ea), a strip
 of messy dark hair (#4a2c2a) under the hood, warm skin (#ffe0c2). He holds a small glowing lantern
 (#ffd166) out to one side at arm's length. Arms and legs clearly separated from the body.

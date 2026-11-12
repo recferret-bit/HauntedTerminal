@@ -1,6 +1,6 @@
 ---
 name: model-geometry-validator
-description: "[ASSET PCG] Validate procedural 3D models (`ModelSpec` in `src/procgen`) against the art bible, numerically and without a GPU: floating parts, hairline gaps, buried parts, z-fighting coplanar faces, grounding, size and depth, part and triangle budgets, front-view read at game scale, 60/30/10 colour, palette families and per-category contracts (malware eye and jitter, pickup hover, door LED and socket, hero walk tags). Use every time you create or change a model, a greeble, a palette zone or an archetype's random variation, and whenever `npm run procgen:validate` or `procgen:check` fails."
+description: "[ASSET PCG] Validate procedural 3D models (`ModelSpec` in `src/procgen`) against the art bible, numerically and without a GPU: floating parts, hairline gaps, buried parts, z-fighting coplanar faces, grounding, size and depth, part and triangle budgets, front-view read at game scale, 60/30/10 colour, palette families and per-category contracts (malware eye and jitter, pickup hover, door LED and socket, vibecoder walk tags). Use every time you create or change a model, a greeble, a palette zone or an archetype's random variation, and whenever `npm run procgen:validate` or `procgen:check` fails."
 ---
 
 # Model geometry validator
@@ -31,7 +31,7 @@ node .kiro/skills/model-geometry-validator/scripts/self-test.mjs      # proves t
 
 | Option | Effect |
 |---|---|
-| `<id>...`, `--all`, `--category <c>` | Which models. Categories: hero, malware, boss, pickup, door, prop, room, fx. |
+| `<id>...`, `--all`, `--category <c>` | Which models. Categories: vibecoder, npc, agent, malware, boss, pickup, door, prop, room, fx. |
 | `--seed n` | Build with this seed (default 1). |
 | `--seeds n` | Build and validate seeds 1..n. Builders take a seed and vary; a model that passes on seed 1 can break on seed 5. Always run this on an archetype that uses the rng. |
 | `--strict` | Warnings fail too. |
@@ -77,11 +77,11 @@ Full table with thresholds and fixes per code: [checks-and-thresholds.md](./refe
 | Group | Codes | Why it exists |
 |---|---|---|
 | Structure | `BAD_ID` `EMPTY_MODEL` `DUPLICATE_PART_NAME` `NON_FINITE` `DEGENERATE_SHAPE` `UNKNOWN_ZONE` `UNKNOWN_TEXTURE` `PART_BUDGET` `TRI_BUDGET` `BUILD_FAILED` `BAKE_FAILED` | Animation and FX address parts by name; a NaN or zero-size shape bakes to nothing; budgets keep 30 actors on screen cheap. |
-| Grounding and size | `NOT_GROUNDED` `HOVER_BAND` `SIZE_RANGE` `TOO_DEEP` | Feet are at `y = 0` or the actor floats above the floor line of the panel. Sizes are relative to the 1.6-unit hero. Depth beyond 60% of the larger side is triangles the camera never sees. |
+| Grounding and size | `NOT_GROUNDED` `HOVER_BAND` `SIZE_RANGE` `TOO_DEEP` | Feet are at `y = 0` or the actor floats above the floor line of the panel. Sizes are relative to the 1.6-unit vibecoder. Depth beyond 60% of the larger side is triangles the camera never sees. |
 | Contacts | `FLOATING_PART` `HAIRLINE_GAP` `DEPTH_GAP` `TUBE_ONLY_SUPPORT` `BURIED_PART` `COPLANAR_ZFIGHT` | Measured between triangles, not bounding boxes. A gap reads as a broken model; two camera-facing faces in one plane flicker; a part inside another solid is paid for and never drawn. |
 | Front read | `HIDDEN_PART` `THIN_FEATURE` `SILHOUETTE_BOX` `SILHOUETTE_BLOB` `TOO_MANY_ZONES` `PALETTE_FLAT` `PALETTE_PATCHWORK` `NO_ACCENT` `TOO_MUCH_GLOW` `LIGHT_NOT_VISIBLE` | Measured on a software render of the front view. The pixel-art pass eats anything under 2 px; enemies must be recognisable as a black shape; 60/30/10 keeps colour readable; light is reserved for things the player may look at. |
-| Palette families | `HUMAN_ZONE_MISUSE` `MALWARE_ZONE_MISUSE` | Colour is the first gameplay read: orange is the hero, magenta and violet will hurt you. One prop in the wrong family teaches the player the wrong thing. |
-| Category contracts | `MALWARE_NO_CORRUPTION` `MALWARE_NO_EYE` `MALWARE_EYE_COUNT` `MALWARE_EYE_NAME` `MALWARE_NO_JITTER` `PICKUP_NOT_HOVER` `PICKUP_NO_SIGNAL` `PICKUP_NOT_ANIMATED` `DOOR_NO_LED` `HERO_NO_WALK_TAGS` `HERO_NO_LANTERN` `MISSING_SOCKET` `SOCKET_OUT_OF_BOUNDS` | The game finds the LED, the eye and the sockets by name to recolour them and attach speech bubbles, locks and FX. |
+| Palette families | `HUMAN_ZONE_MISUSE` `MALWARE_ZONE_MISUSE` | Colour is the first gameplay read: orange is the vibecoder, magenta and violet will hurt you. One prop in the wrong family teaches the player the wrong thing. |
+| Category contracts | `MALWARE_NO_CORRUPTION` `MALWARE_NO_EYE` `MALWARE_EYE_COUNT` `MALWARE_EYE_NAME` `MALWARE_NO_JITTER` `PICKUP_NOT_HOVER` `PICKUP_NO_SIGNAL` `PICKUP_NOT_ANIMATED` `DOOR_NO_LED` `VIBECODER_NO_WALK_TAGS` `VIBECODER_NO_LANTERN` `MISSING_SOCKET` `SOCKET_OUT_OF_BOUNDS` | The game finds the LED, the eye and the sockets by name to recolour them and attach speech bubbles, locks and FX. |
 | Anim tags | `ANIM_INVALID` `ANIM_RANGE` `ANIM_PIVOT_OUTSIDE` | A pivot given relative to the part instead of in model space swings a leg around the wrong point. |
 
 ## Conventions the validator relies on
@@ -133,7 +133,9 @@ threshold in `MODEL_RULES` (`src/procgen/validate/model/rules.ts`), mirror it in
 
 Code lives in `src/procgen/validate/model.ts` (entry, report formatting) and
 `src/procgen/validate/model/`: `rules.ts` (thresholds, types), `tri.ts` (triangle maths),
-`geometry-checks.ts` (bounds and contacts), `read-checks.ts` (front view), `semantic-checks.ts`
-(structure, palette, categories, sockets, anim). After any change run
+`geometry-checks.ts` (grounding, size, depth), `contact-checks.ts` + `contact-geometry.ts` (floating,
+buried and coplanar parts), `read-checks.ts` + `read-measure.ts` (front view), `semantic-checks.ts` +
+`structure-checks.ts` (palette, categories, sockets, anim, part and triangle budgets), `zone-info.ts`
+(zone lookups). After any change run
 `scripts/self-test.mjs`: it builds small synthetic models with known answers (clean ones must give
 zero issues, each defect exactly its code) and fails if a code never fires. Add a case per new check.

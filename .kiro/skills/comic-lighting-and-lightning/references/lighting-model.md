@@ -117,11 +117,11 @@ decaying linearly, camera x and y only.
 set to 1 by `syncRoom` when `view.lantern`):
 
 - hidden dotfile (the ghost): body `uOpacity = 0.16 + 0.84 t`; eyes `uOpacity = t`, `uEmissive = 0.85 t`
-- hero lantern glow: `uEmissive = 0.35 + 1.25 t`
+- vibecoder lantern glow: `uEmissive = 0.35 + 1.25 t`
 
 Hidden actors otherwise sit at `alpha 0.04` (`defaultRoom()` / the session's `RoomView`).
 `config.lanternRadius` (140 px) is declared in `SandboxRenderConfig` but the stage does not read it:
-there is no dark overlay or cone in the game yet. The asset lab draws one (`src/lab/lab-stage.ts`:
+there is no dark overlay or cone in the game yet. The storybook draws one (`src/storybook/stage/lab-stage.ts`:
 a multiply plane in front of the camera with three hard steps, radius `140 / 58` units, emissive
 meshes re-drawn above it).
 
@@ -167,7 +167,7 @@ buildJaggedBoltGeometry(start, end, generations = 5, trunkRadius = 0.02, spawnFo
 
 | File | What it copies |
 |---|---|
-| `src/procgen/core/raster.ts` | `LIGHT = normalize([-0.35, 0.82, -0.48])`, bands 0.66 / 0.4 -> 1 / 0.68 / 0.4, halftone x0.78, rim `pow(1 - facing, 2.6)` and `smoothstep(0.55, 0.92) * 0.55`, emissive add, ghost alpha |
+| `src/procgen/geometry/raster-shade.ts` | `LIGHT = normalize([-0.35, 0.82, -0.48])`, bands 0.66 / 0.4 -> 1 / 0.68 / 0.4, halftone x0.78, rim `pow(1 - facing, 2.6)` and `smoothstep(0.55, 0.92) * 0.55`, emissive add, ghost alpha |
 | `src/procgen/fx/preview.ts` | The same vector with x mirrored (`PAGE_LIGHT`, effects are authored in page space) and the same band thresholds |
 
 Neither preview draws the flash, the pixel-art pass or the CRT pass.

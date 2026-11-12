@@ -8,7 +8,7 @@
 //   node scripts/harness/render-sheet.mjs --all --bg paper --out /tmp/sheet.png --seed 7
 //
 // Each cell: a large render, plus (bottom-left) the same model at in-game scale (58 px per world unit,
-// i.e. the hero is ~92 px tall). If the small one is unreadable, the model is too fussy.
+// i.e. the vibecoder is ~92 px tall). If the small one is unreadable, the model is too fussy.
 // The cell order is printed to stdout, left to right, top to bottom.
 import { resolve } from 'node:path';
 import { withProcgen, parseArgs, projectRoot } from './lib/load.mjs';
@@ -27,7 +27,7 @@ await withProcgen(async (p) => {
   if (args.flag('--all')) ids = p.ModelCatalog.list().map((e) => e.id);
   else if (args.val('--category')) ids = p.ModelCatalog.list(args.val('--category')).map((e) => e.id);
   if (!ids.length) {
-    console.error('usage: render-sheet.mjs <model id>... | --category <hero|malware|boss|pickup|door|prop|room|fx> | --all');
+    console.error('usage: render-sheet.mjs <model id>... | --category <vibecoder|malware|boss|pickup|door|prop|room|fx> | --all');
     console.error('       [--views] [--size 224] [--bg dark|paper|crypt|furnace] [--seed 1] [--cols n] [--out file.png]');
     console.error(`registered: ${p.ModelCatalog.list().map((e) => e.id).join(', ') || '(none)'}`);
     process.exit(2);

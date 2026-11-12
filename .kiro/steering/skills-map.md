@@ -8,7 +8,7 @@ Root contract: `haunted-art-direction`. Read it first, before any other asset sk
 
 | Area | Skills |
 |---|---|
-| Models | `procedural-kitbash-3d` (hero, pickups, doors, props), `procedural-malware-3d` (enemies, bosses), `model-geometry-validator` |
+| Models | `procedural-kitbash-3d` (vibecoder, pickups, doors, props), `procedural-malware-3d` (enemies, bosses), `model-geometry-validator` |
 | Rooms | `procedural-rooms-3d` |
 | Surfaces | `procedural-texture-synthesis`, `shader-texture-tuning`, `comic-lighting-and-lightning` |
 | Motion | `procedural-animation-3d`, `procedural-malware-animation` |

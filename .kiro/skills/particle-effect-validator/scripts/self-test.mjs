@@ -34,7 +34,7 @@ await withProcgen(async (p) => {
     ['accent bigger than the mass', 'FX_ROLE_BALANCE', (x) => { layer(x, 'glint').shape = p.fxSparkle(0.5); }],
     ['unknown zone', 'FX_ZONE', (x) => { layer(x, 'chunk').zone = 'lavaOrange'; }],
     ['system effect in malware colours', 'FX_FAMILY', (x) => { layer(x, 'chunk').zone = 'corruptMagenta'; }],
-    ['system effect in the hero\'s colours', 'FX_FAMILY', (x) => { layer(x, 'chunk').zone = 'hoodie'; }],
+    ['system effect in the vibecoder\'s colours', 'FX_FAMILY', (x) => { layer(x, 'chunk').zone = 'hoodie'; }],
     ['malware effect without a malware zone', 'FX_FAMILY', (x) => { x.family = 'malware'; layer(x, 'flash').zone = 'paper'; layer(x, 'chunk').zone = 'solder'; layer(x, 'glint').zone = 'ink'; x.onomatopoeia.zone = 'paper'; }],
     ['primary and secondary nearly the same colour', 'FX_COLOR_SEPARATION', (x) => { layer(x, 'chunk').zone = 'gold'; }],
     ['primary invisible on the backdrop', 'FX_BG_CONTRAST', (x) => { layer(x, 'flash').zone = 'silicon'; }],

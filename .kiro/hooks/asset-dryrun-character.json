@@ -4,8 +4,8 @@
     {
       "name": "Dry run: new character asset",
       "trigger": "PostFileCreate",
-      "description": "Dummy run when a character (hero, ally, malware) archetype file is created.",
-      "matcher": "src/procgen/archetypes/(hero|malware|allies)[^/]*\\.ts$",
+      "description": "Dummy run when a character (vibecoder, npc, agent, malware) archetype file is created.",
+      "matcher": "src/procgen/archetypes/(vibecoder|npc|agents|malware)[^/]*(/[^/]*)?\\.ts$",
       "action": {
         "type": "command",
         "command": "node scripts/hooks/asset-dryrun.mjs character",

@@ -16,9 +16,9 @@ const clone = (v) => JSON.parse(JSON.stringify(v));
 // ---------------------------------------------------------------- clean models
 
 /** A 1.6-unit humanoid: two legs, torso, two arms, head, hair, lantern. */
-function hero() {
+function vibecoder() {
   return {
-    id: 'hero.dev', category: 'hero', label: 'self-test hero',
+    id: 'vibecoder.dev', category: 'vibecoder', label: 'self-test vibecoder',
     parts: [
       { name: 'leg_l', shape: box(0.16, 0.6, 0.16), zone: 'denim', pos: [0.11, 0.3, 0], anim: { type: 'legWalk', phase: 0, pivot: [0.11, 0.6, 0] } },
       { name: 'leg_r', shape: box(0.16, 0.6, 0.16), zone: 'denim', pos: [-0.11, 0.3, 0], anim: { type: 'legWalk', phase: 0.5, pivot: [-0.11, 0.6, 0] } },
@@ -110,7 +110,7 @@ const part = (spec, name) => spec.parts.find((p) => p.name === name);
 
 const CASES = [
   // Clean models: zero issues of any severity.
-  { name: 'clean hero', spec: hero(), expect: [] },
+  { name: 'clean vibecoder', spec: vibecoder(), expect: [] },
   { name: 'clean pickup', spec: pickup(), expect: [] },
   { name: 'clean door', spec: door(), expect: [] },
   { name: 'clean malware', spec: malware(), expect: [] },
@@ -135,7 +135,7 @@ const CASES = [
   { name: 'over part budget', expect: ['PART_BUDGET'], spec: edit(door, (s) => {
     for (let i = 0; i < 36; i++) s.parts.push({ name: `rivet_${i}`, shape: box(0.05, 0.05, 0.05), zone: 'solder', pos: [-0.4 + (i % 2) * 0.8, 0.1 + Math.floor(i / 2) * 0.08, -0.1] });
   }) },
-  { name: 'over triangle budget', expect: ['TRI_BUDGET'], spec: edit(hero, (s) => {
+  { name: 'over triangle budget', expect: ['TRI_BUDGET'], spec: edit(vibecoder, (s) => {
     for (let i = 0; i < 10; i++) s.parts.push({ name: `button_${i}`, shape: { kind: 'sphere', radius: 0.04 }, zone: 'paper', pos: [-0.2 + (i % 5) * 0.1, 0.8 + Math.floor(i / 5) * 0.2, -0.13] });
   }) },
 
@@ -153,18 +153,18 @@ const CASES = [
     for (const p of s.parts) { p.scale = [1, 0.7, 1]; p.pos[1] *= 0.7; }
     s.sockets.lock[1] *= 0.7;
   }) },
-  { name: 'too deep', expect: ['TOO_DEEP'], spec: edit(hero, (s) => { s.parts.push({ name: 'backpack', shape: box(0.9, 0.2, 1.1), zone: 'hoodie', pos: [0, 0.9, 0.5] }); }) },
+  { name: 'too deep', expect: ['TOO_DEEP'], spec: edit(vibecoder, (s) => { s.parts.push({ name: 'backpack', shape: box(0.9, 0.2, 1.1), zone: 'hoodie', pos: [0, 0.9, 0.5] }); }) },
 
   // Contacts
-  { name: 'floating part', expect: ['FLOATING_PART'], spec: edit(hero, (s) => { s.parts.push({ name: 'drone', shape: box(0.15, 0.15, 0.1), zone: 'hoodie', pos: [0.8, 1.2, 0] }); }) },
+  { name: 'floating part', expect: ['FLOATING_PART'], spec: edit(vibecoder, (s) => { s.parts.push({ name: 'drone', shape: box(0.15, 0.15, 0.1), zone: 'hoodie', pos: [0.8, 1.2, 0] }); }) },
   { name: 'floating part far away in depth', expect: ['FLOATING_PART'], allow: ['TOO_DEEP'], spec: edit(door, (s) => { part(s, 'contact_0').pos[2] = -0.6; }) },
-  { name: 'orbiting satellite opts out', expect: [], spec: edit(hero, (s) => {
+  { name: 'orbiting satellite opts out', expect: [], spec: edit(vibecoder, (s) => {
     s.parts.push({ name: 'orbit_moth', shape: box(0.1, 0.1, 0.06), zone: 'paper', pos: [-0.31, 0.3, 0], anim: { type: 'orbit', amp: 0.08, pivot: [-0.31, 0.57, 0] } });
   }) },
-  { name: 'bobbing part without the opt-in name still floats', expect: ['FLOATING_PART'], spec: edit(hero, (s) => {
+  { name: 'bobbing part without the opt-in name still floats', expect: ['FLOATING_PART'], spec: edit(vibecoder, (s) => {
     s.parts.push({ name: 'moth', shape: box(0.1, 0.1, 0.06), zone: 'paper', pos: [-0.31, 0.3, 0], anim: { type: 'bob' } });
   }) },
-  { name: 'detached model tag opts out', expect: [], spec: edit(hero, (s) => {
+  { name: 'detached model tag opts out', expect: [], spec: edit(vibecoder, (s) => {
     s.tags = ['detached'];
     s.parts.push({ name: 'moth', shape: box(0.1, 0.1, 0.06), zone: 'paper', pos: [-0.31, 0.3, 0], anim: { type: 'bob' } });
   }) },
@@ -185,7 +185,7 @@ const CASES = [
   { name: 'coplanar faces on the back are harmless', expect: [], spec: edit(door, (s) => { s.parts.push({ name: 'plate', shape: box(1.0, 0.16, 0.1), zone: 'gold', pos: [0, 1.48, 0.05] }); }) },
 
   // 2D read
-  { name: 'hidden part', expect: ['HIDDEN_PART'], spec: edit(hero, (s) => { s.parts.push({ name: 'tag', shape: box(0.2, 0.2, 0.1), zone: 'paper', pos: [0, 0.9, 0.15] }); }) },
+  { name: 'hidden part', expect: ['HIDDEN_PART'], spec: edit(vibecoder, (s) => { s.parts.push({ name: 'tag', shape: box(0.2, 0.2, 0.1), zone: 'paper', pos: [0, 0.9, 0.15] }); }) },
   { name: 'thin feature', expect: ['THIN_FEATURE'], spec: edit(door, (s) => { s.parts.push({ name: 'whisker', shape: box(0.2, 0.02, 0.02), zone: 'gold', pos: [0.5, 0.8, 0] }); }) },
   { name: 'thin decal without outline is allowed', expect: [], spec: edit(door, (s) => { s.parts.push({ name: 'whisker', shape: box(0.2, 0.02, 0.02), zone: 'gold', pos: [0.5, 0.8, 0], outline: false }); }) },
   { name: 'box silhouette', expect: ['SILHOUETTE_BOX'], spec: edit(malware, (s) => {
@@ -245,16 +245,16 @@ const CASES = [
   { name: 'door without led', expect: ['DOOR_NO_LED'], spec: edit(door, (s) => { part(s, 'led').name = 'dot'; }) },
   { name: 'door led not in a signal zone', expect: ['DOOR_NO_LED'], spec: edit(door, (s) => { part(s, 'led').zone = 'gold'; }) },
   { name: 'door without lock socket', expect: ['MISSING_SOCKET'], spec: edit(door, (s) => { delete s.sockets; }) },
-  { name: 'hero without walk tags', expect: ['HERO_NO_WALK_TAGS'], spec: edit(hero, (s) => { delete part(s, 'arm_l').anim; delete part(s, 'arm_r').anim; }) },
-  { name: 'hero without lantern', expect: ['HERO_NO_LANTERN'], spec: edit(hero, (s) => { part(s, 'lantern').zone = 'paper'; }) },
+  { name: 'vibecoder without walk tags', expect: ['VIBECODER_NO_WALK_TAGS'], spec: edit(vibecoder, (s) => { delete part(s, 'arm_l').anim; delete part(s, 'arm_r').anim; }) },
+  { name: 'vibecoder without lantern', expect: ['VIBECODER_NO_LANTERN'], spec: edit(vibecoder, (s) => { part(s, 'lantern').zone = 'paper'; }) },
   { name: 'socket far outside the model', expect: ['SOCKET_OUT_OF_BOUNDS'], spec: edit(door, (s) => { s.sockets.lock = [0, 8, 0]; }) },
   { name: 'unknown anim type', expect: ['ANIM_INVALID'], spec: edit(pickup, (s) => { part(s, 'light').anim = { type: 'wobble' }; }) },
   { name: 'anim out of range', expect: ['ANIM_RANGE'], spec: edit(pickup, (s) => { part(s, 'light').anim = { type: 'pulse', speed: 40, amp: 3 }; }) },
-  { name: 'anim pivot outside the model', expect: ['ANIM_PIVOT_OUTSIDE'], spec: edit(hero, (s) => { part(s, 'leg_l').anim.pivot = [0.11, 6, 0]; }) },
+  { name: 'anim pivot outside the model', expect: ['ANIM_PIVOT_OUTSIDE'], spec: edit(vibecoder, (s) => { part(s, 'leg_l').anim.pivot = [0.11, 6, 0]; }) },
 
   // Options
   { name: 'geometryOnly skips palette and read checks', expect: [], opts: { geometryOnly: true }, spec: edit(door, (s) => { part(s, 'led').name = 'dot'; part(s, 'tongue').zone = 'skin'; }) },
-  { name: 'geometryOnly still finds floating parts', expect: ['FLOATING_PART'], opts: { geometryOnly: true }, spec: edit(hero, (s) => { s.parts.push({ name: 'drone', shape: box(0.15, 0.15, 0.1), zone: 'hoodie', pos: [0.8, 1.2, 0] }); }) },
+  { name: 'geometryOnly still finds floating parts', expect: ['FLOATING_PART'], opts: { geometryOnly: true }, spec: edit(vibecoder, (s) => { s.parts.push({ name: 'drone', shape: box(0.15, 0.15, 0.1), zone: 'hoodie', pos: [0.8, 1.2, 0] }); }) },
   { name: 'disable drops a code', expect: [], opts: { disable: ['THIN_FEATURE'] }, spec: edit(door, (s) => { s.parts.push({ name: 'whisker', shape: box(0.2, 0.02, 0.02), zone: 'gold', pos: [0.5, 0.8, 0] }); }) },
   { name: 'warnings pass by default', expect: ['THIN_FEATURE'], ok: true, spec: edit(door, (s) => { s.parts.push({ name: 'whisker', shape: box(0.2, 0.02, 0.02), zone: 'gold', pos: [0.5, 0.8, 0] }); }) },
   { name: 'strict fails on warnings', expect: ['THIN_FEATURE'], ok: false, opts: { strict: true }, spec: edit(door, (s) => { s.parts.push({ name: 'whisker', shape: box(0.2, 0.02, 0.02), zone: 'gold', pos: [0.5, 0.8, 0] }); }) },
@@ -300,8 +300,8 @@ const failures = await withProcgen(async (p) => {
   check('validateModel reports a builder that throws', !thrown.ok && thrown.issues[0]?.code === 'BUILD_FAILED', JSON.stringify(thrown.issues));
   const registered = p.validateModel('prop.selftest', { seed: 3 });
   check('validateModel passes a registered clean model', registered.ok && registered.issues.length === 0 && registered.seed === 3, JSON.stringify(registered.issues));
-  const text = p.formatModelReport(p.validateModelSpec(edit(hero, (s) => { s.parts.push({ name: 'drone', shape: box(0.15, 0.15, 0.1), zone: 'hoodie', pos: [0.8, 1.2, 0] }); })));
-  check('formatModelReport names the code, the part and the fix', /^FAIL hero\.dev/.test(text) && text.includes('FLOATING_PART') && text.includes('"drone"') && text.includes('fix:'), text);
+  const text = p.formatModelReport(p.validateModelSpec(edit(vibecoder, (s) => { s.parts.push({ name: 'drone', shape: box(0.15, 0.15, 0.1), zone: 'hoodie', pos: [0.8, 1.2, 0] }); })));
+  check('formatModelReport names the code, the part and the fix', /^FAIL vibecoder\.dev/.test(text) && text.includes('FLOATING_PART') && text.includes('"drone"') && text.includes('fix:'), text);
 
   // Every code in the reference must have fired at least once above (BAKE_FAILED is a safety net with no synthetic trigger).
   const documented = [
@@ -309,7 +309,7 @@ const failures = await withProcgen(async (p) => {
     'NOT_GROUNDED', 'HOVER_BAND', 'SIZE_RANGE', 'TOO_DEEP', 'FLOATING_PART', 'HAIRLINE_GAP', 'DEPTH_GAP', 'TUBE_ONLY_SUPPORT', 'BURIED_PART', 'COPLANAR_ZFIGHT',
     'HIDDEN_PART', 'THIN_FEATURE', 'SILHOUETTE_BOX', 'SILHOUETTE_BLOB', 'TOO_MANY_ZONES', 'PALETTE_FLAT', 'PALETTE_PATCHWORK', 'NO_ACCENT', 'TOO_MUCH_GLOW', 'LIGHT_NOT_VISIBLE',
     'HUMAN_ZONE_MISUSE', 'MALWARE_ZONE_MISUSE', 'MALWARE_NO_CORRUPTION', 'MALWARE_NO_EYE', 'MALWARE_EYE_COUNT', 'MALWARE_EYE_NAME', 'MALWARE_NO_JITTER', 'MISSING_SOCKET',
-    'PICKUP_NOT_HOVER', 'PICKUP_NO_SIGNAL', 'PICKUP_NOT_ANIMATED', 'DOOR_NO_LED', 'HERO_NO_WALK_TAGS', 'HERO_NO_LANTERN', 'SOCKET_OUT_OF_BOUNDS', 'ANIM_INVALID', 'ANIM_RANGE', 'ANIM_PIVOT_OUTSIDE',
+    'PICKUP_NOT_HOVER', 'PICKUP_NO_SIGNAL', 'PICKUP_NOT_ANIMATED', 'DOOR_NO_LED', 'VIBECODER_NO_WALK_TAGS', 'VIBECODER_NO_LANTERN', 'SOCKET_OUT_OF_BOUNDS', 'ANIM_INVALID', 'ANIM_RANGE', 'ANIM_PIVOT_OUTSIDE',
   ];
   const never = documented.filter((code) => !seenCodes.has(code));
   check('every documented issue code fired at least once', never.length === 0, `never fired: ${never.join(', ')}`);

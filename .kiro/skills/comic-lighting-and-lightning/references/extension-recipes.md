@@ -25,7 +25,7 @@ Suggested tints (multiply; keep every channel at or above 0.75 so shadows do not
 floor 1 `(0.92, 0.88, 1.0)` violet dusk, floor 2 `(0.85, 1.0, 0.95)` crypt green, floor 3
 `(0.85, 0.95, 1.0)` cold cyan, floor 4 `(1.0, 0.82, 0.78)` furnace red, floor 5 `(1.0, 0.8, 1.0)` magenta.
 
-Parity: add the same multiply to `raster.ts` behind a `RasterOptions.shadowTint`.
+Parity: add the same multiply to `raster-shade.ts` behind a `RasterOptions.shadowTint`.
 
 ## 2. Per-floor light direction
 
@@ -43,7 +43,7 @@ Constraints, or the art breaks:
 - Stay within about 15° of the default. Models were composed for it.
 - Presets worth having: furnace, light from the die below-right `(-0.45, 0.62, -0.42)`; kernel core,
   steeper top light `(-0.2, 0.9, -0.4)`.
-- Set `raster.ts` `LIGHT` and `fx/preview.ts` `PAGE_LIGHT` from the same value when previewing a
+- Set `raster-shade.ts` `LIGHT` and `fx/preview.ts` `PAGE_LIGHT` from the same value when previewing a
   floor; otherwise the contact sheets lie.
 
 ## 3. A second rim colour for the furnace
@@ -63,7 +63,7 @@ col += uRimColor * rimMask * toHeat;          // a hard-edged hot edge, not a gl
 
 Use `powerAmber` (`0xffd166`) or `lockRed` (`0xef233c`) at 0.5 to 0.8 strength, `uRimDir` pointing at
 the die. Only on floor 4, only while the boss is alive ("the boiler room cools" when it dies: tween
-the strength to 0 in three steps, not smoothly). Do not put it on the hero: he is lit by his lantern.
+the strength to 0 in three steps, not smoothly). Do not put it on the vibecoder: he is lit by his lantern.
 
 ## 4. The kernel-core storm (floor 5)
 
@@ -87,11 +87,11 @@ dotfile today. To add the dark:
 1. A full-screen plane parented to the camera, in front of everything, `MultiplyBlending`-style
    shader with **three hard steps**: inside the radius x1.0, a ring to 1.6x the radius x0.55, outside
    x0.2 tinted toward the floor `bg`. Radius: `config.lanternRadius` px / 58 px per unit (2.4 units).
-   `src/lab/lab-stage.ts` has this as a working stand-in; lift it rather than rewriting it.
-2. Centre it on the hero's lantern socket, projected to camera space every frame.
+   `src/storybook/stage/lab-stage.ts` has this as a working stand-in; lift it rather than rewriting it.
+2. Centre it on the vibecoder's lantern socket, projected to camera space every frame.
 3. Draw emissive meshes after it (`renderOrder` above the plane, `transparent = true` so they sort):
    that is rule 5, "in the dark only emissive survives".
-4. Unlit (`lantern: false`) rooms: radius 0.6 of normal, so the hero is a small island of light;
+4. Unlit (`lantern: false`) rooms: radius 0.6 of normal, so the vibecoder is a small island of light;
    `ls -a` snaps it to full over three steps while `applyLantern` raises the dotfile.
 5. During a lightning flash, lift the dark step to x0.6 for the frames where `flashStrength > 2`: the
    whole room shows for an instant. This is the haunted-mansion beat; use it.
@@ -115,7 +115,7 @@ calls it:
 
 ## 7. Parity rule
 
-Three files hold the light: `src/shaders/comic-material.ts` (truth), `src/procgen/core/raster.ts`
+Three files hold the light: `src/shaders/comic-material.ts` (truth), `src/procgen/geometry/raster-shade.ts`
 (model contact sheets, model validator) and `src/procgen/fx/preview.ts` (effect filmstrip). A change
 to the vector, the band thresholds (0.66 / 0.4), the band multipliers (1 / 0.68 / 0.4), the rim curve
 or the emissive add must land in all three in one commit, followed by `npm run procgen:sheet` and

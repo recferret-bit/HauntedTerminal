@@ -72,8 +72,8 @@ export class FxPlayer {
  *     KILLED          -> fxPlayer.play('sigkill', bossCentre)
  *     FROZEN          -> fxPlayer.play('sigstop-ice', bossCentre)
  *     TRAPPED_ENRAGED -> fxPlayer.play('sigterm-rage', bossCentre)
- *   case 'PLAYER_DAMAGED': fxPlayer.play('hit-hero', heroCentre, `-${ev.amount}HP`)
+ *   case 'PLAYER_DAMAGED': fxPlayer.play('hit-vibecoder', vibecoderCentre, `-${ev.amount}HP`)
  *
  * A mirrored effect (fx.mv-dust for an object pushed toward screen-left): fx.group.scale.x = -1.
- * Scrubbing in the asset lab: fx.seek(tMs) draws any moment directly; the simulation is closed form.
+ * Scrubbing in the storybook: fx.seek(tMs) draws any moment directly; the simulation is closed form.
  */

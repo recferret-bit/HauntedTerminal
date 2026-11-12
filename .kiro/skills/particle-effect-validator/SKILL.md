@@ -71,7 +71,7 @@ right, then top to bottom; each strip is one preset, its id and duration lettere
 caption turning red when the preset fails.
 
 Each strip has five frames, left to right, at 0%, 20%, 42%, 66% and 90% of `durationMs`. In every
-frame the pale bar is a hero-sized ghost (0.7 x 1.6 units) and the line is the floor: they are there
+frame the pale bar is a vibecoder-sized ghost (0.7 x 1.6 units) and the line is the floor: they are there
 for scale, not art. Full-panel presets are drawn at half scale so they fit; the log says so.
 
 What to look for:
@@ -79,7 +79,7 @@ What to look for:
 1. **Frame 1 is the hit.** The big shape and the word are both there, oversized. If frame 1 is
    empty or weaker than frame 2, the effect grows in: fix the scale keys or the delays.
 2. **You can count the chunks.** If you cannot, there are too many or they are too small.
-3. **Silhouette.** Squint. The effect should be one clear shape against the hero ghost, not a cloud.
+3. **Silhouette.** Squint. The effect should be one clear shape against the vibecoder ghost, not a cloud.
 4. **Three colours, one meaning.** One mass colour, one material colour, a few bright marks.
 5. **The word is readable and not on top of the big shape**, inside the frame on every frame
    (the pop frame is 30% larger).
@@ -88,7 +88,7 @@ What to look for:
 
 The preview draws flat cel bands and ink with the same light vector and thresholds as
 `src/shaders/comic-material.ts`. It does not run the pixel-art or CRT pass, the room, or the camera
-shake: finish in `/asset-lab.html` or the game (`npm run dev`).
+shake: finish in `/storybook.html` or the game (`npm run dev`).
 
 ## The self-test
 

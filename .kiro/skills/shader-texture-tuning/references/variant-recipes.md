@@ -67,7 +67,7 @@ col = mix(col, uGlitchVoid, cvTear * step(0.6, cvHash(vec2(cvRow, 9.7))));
 `uGlitch` 0.35 is an idle infection (about 14% of blocks, 10% of rows), 1.0 is death. Drive it from
 game state: raise it on hit, ramp to 1 on death. It pairs with the `jitter` AnimTag (geometry) and
 with `tex.corruption` as the part's `texture` (static damage that the software preview also shows).
-Use it on malware bodies and on hardware being infected, never on the hero or on `signal` parts.
+Use it on malware bodies and on hardware being infected, never on the vibecoder or on `signal` parts.
 
 ## Ice: SIGSTOP
 
@@ -107,15 +107,15 @@ To replace that with variants:
 3. Add the returned materials to the per-frame loop in `frame` that sets `uTime`, `uFlash`,
    `uFlashPos`, and remove them on restore.
 4. Tween `uOverlayAmount` / `uGlitch` with the stage's `tweens`.
-5. In the asset lab the states are listed in `STATE_IDS` (`src/lab/options.ts`): check `petrified`,
+5. In the storybook the states are listed in `STATE_IDS` (`src/storybook/domain/options.ts`): check `petrified`,
    `frozen` and a malware model there.
 
 ## Parity with the software preview
 
-`raster.ts` does not run variants, and should not: the harness sheets show the model's base look.
+`raster-shade.ts` does not run variants, and should not: the harness sheets show the model's base look.
 For a state that must be visible in a sheet, give the part the matching texture
 (`texture: 'tex.stone'`), which `rasterizeModel` does sample. If a variant ever becomes the default
-look of a zone, it is no longer a variant: put it in `COMIC_FRAG` and mirror it in `raster.ts`.
+look of a zone, it is no longer a variant: put it in `COMIC_FRAG` and mirror it in `raster-shade.ts`.
 
 ## Checklist for a new variant
 

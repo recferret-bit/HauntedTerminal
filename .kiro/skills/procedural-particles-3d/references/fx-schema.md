@@ -15,7 +15,7 @@ mirrors x because world `+x` is screen-left. `FxParticleState.z` is layering dep
 |---|---|---|
 | `id` | `fx.<kebab-name>` | Catalog key |
 | `label` | string | Human name |
-| `family` | `'system' \| 'malware' \| 'hero'` | Which palette families the layers and the word may use (`FX_FAMILY_ZONES`) |
+| `family` | `'system' \| 'malware' \| 'vibecoder'` | Which palette families the layers and the word may use (`FX_FAMILY_ZONES`) |
 | `trigger` | `{ event, moment, when }` | `event`: a `KernelEvent['type']` or `'COMMAND' \| 'GAME_TICK' \| 'INTRO'`. `moment`: an `FxMoment`, one preset each. `when`: the exact condition in words |
 | `anchor` | `'feet' \| 'center' \| 'top'` | Where the origin sits on the target. The caller positions `emitter.group` there |
 | `durationMs` | number | All particles are gone by then. One-shots 150..1500; loops 400..6000 |

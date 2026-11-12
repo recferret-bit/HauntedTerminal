@@ -44,7 +44,7 @@ for: [preset-catalog.md](./references/preset-catalog.md).
 
 Presets are authored **as seen on the page**: `+x` is screen-right, `+y` is up, angles are degrees
 counter-clockwise from screen-right (90 is up). Units are world units, 58 px each at game scale; the
-hero is 1.6 tall. World `+x` is screen-left, so `createFxEmitter` mirrors x for you. Never
+vibecoder is 1.6 tall. World `+x` is screen-left, so `createFxEmitter` mirrors x for you. Never
 pre-mirror a preset.
 
 ## Roles and colour: 60 / 30 / 10
@@ -70,7 +70,7 @@ Colour is the first gameplay read, so an effect inherits the palette family of w
 |---|---|---|
 | `system` | `neutral` `signal` `hardware` `glass` | The shell and the machine: doors, signals, pickups, files, the flood, lightning |
 | `malware` | `neutral` `hardware` `malware`, at least one `malware` zone | Anything a hostile thing does or suffers |
-| `hero` | `neutral` `human` `signal` | The developer: his lantern, his damage |
+| `vibecoder` | `neutral` `human` `signal` | The developer: his lantern, his damage |
 
 A SIGKILL is a `system` effect even when it kills malware: the signal is the system talking. The
 enemy's own death (`fx.malware-death`) is `malware`. Do not use magenta or violet for anything
@@ -113,12 +113,12 @@ DOM overlay, so it is validated and drawn with everything else.
 | `SYSTEM_HAND_SPAWN` | `fx.fork-spawn` | FORK()! |
 | `PROC_SIGNALED` `KILLED` / `FROZEN` / `TRAPPED_ENRAGED` | `fx.sigkill` / `fx.sigstop-ice` / `fx.sigterm-rage` | SIGKILL! / FROZEN! / SIGTERM IGNORED! |
 | `PUZZLE_DOOR_RESOLVED` | `fx.door-unlock` | UNLOCKED! |
-| `PLAYER_DAMAGED` | `fx.hit-hero` | -10HP (pass the amount) |
+| `PLAYER_DAMAGED` | `fx.hit-vibecoder` | -10HP (pass the amount) |
 | `rm`, `touch` (no event yet) | `fx.rm-ash`, `fx.touch-materialize` | |
 | Pickups | `fx.pickup-energy` `fx.pickup-ram` `fx.pickup-ssd` | +25HP, +16GB, +256GB (pass the amount) |
 | Enemy hit / removed | `fx.malware-hit`, `fx.malware-death` | SEGFAULT! |
 | Lightning (intro, storm, kill bolt) | `fx.lightning-strike` | KRAKOOM! |
-| Kernel breaks, hero dies | `fx.coredump` | COREDUMP! |
+| Kernel breaks, vibecoder dies | `fx.coredump` | COREDUMP! |
 
 Look a preset up by moment with `FxCatalog.forMoment('sigkill')`. The game's `ComicStage.handleEvent`
 (`src/renderer/comic-stage.ts`) plays them through `src/renderer/fx-player.ts`; the event → preset
@@ -139,7 +139,7 @@ Wiring recipe for other hosts (the cinematics use it too): [emitter-usage.ts](./
    then open `scripts/harness/out/fx.png`. Frame 1 must already be the hit. If you squint and see a
    fountain, cut the count in half and double the chunk size.
 6. **Self-test and type-check**: `npm run procgen:selftest`, `npx tsc --noEmit`.
-7. **See it under the real shaders**: `npm run dev`, then `/asset-lab.html?tab=fx` plays every preset
+7. **See it under the real shaders**: `npm run dev`, then `/storybook.html?tab=fx` plays every preset
    (`&inspect=fx.<name>` for one). Elsewhere, mount one with `createFxEmitter` and scrub it with `seek()`.
 8. Update [preset-catalog.md](./references/preset-catalog.md).
 

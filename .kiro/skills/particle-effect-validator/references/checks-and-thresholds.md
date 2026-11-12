@@ -29,7 +29,7 @@ Every check below has a failing case in `scripts/self-test.mjs`.
 | Code | Level | Rule | Why | Fix |
 |---|---|---|---|---|
 | `FX_ZONE` | error | Every layer zone and the word zone exist in `ZONES` | One palette, no hex | Use a `ZoneId` |
-| `FX_FAMILY` | error | `system`: neutral, signal, hardware, glass. `malware`: neutral, hardware, malware, and at least one malware zone. `hero`: neutral, human, signal | Colour tells the player who did it | Change the zone or the `family` |
+| `FX_FAMILY` | error | `system`: neutral, signal, hardware, glass. `malware`: neutral, hardware, malware, and at least one malware zone. `vibecoder`: neutral, human, signal | Colour tells the player who did it | Change the zone or the `family` |
 | `FX_COLOR_SEPARATION` | error / warning | CIE76 ΔE between the primary and each secondary zone is at least 15 (error). Accent vs primary under 15 is a warning | Close colours merge in motion at this resolution | Change lightness, not just hue |
 | `FX_BG_CONTRAST` | warning | Primary zone is at least ΔE 25 from every `FLOOR_THEMES` backdrop. `ink` is exempt (paper keyline) | Ink outlines vanish on dark rooms; the fill must carry the shape | Use a lighter or emissive zone |
 

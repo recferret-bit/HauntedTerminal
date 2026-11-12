@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Screenshot of the asset lab (/asset-lab.html) from headless Chrome: the model or texture under the
+// Screenshot of the storybook (/storybook.html) from headless Chrome: the model or texture under the
 // game's real shaders and post passes (pixel-art, CRT). No npm dependency: it starts Vite from the
 // project, launches the installed Chrome and drives it over the DevTools protocol with node's WebSocket.
 //
 //   node scripts/harness/screenshot-lab.mjs --query "inspect=malware.worm&scale=game&bg=floor4" --name worm-f4
 //   node scripts/harness/screenshot-lab.mjs --query "category=door" --name doors --width 1500 --height 1000
-//   node scripts/harness/screenshot-lab.mjs --query "inspect=hero.dev&silhouette=1&ui=0" --name hero-sil --width 400 --height 400
+//   node scripts/harness/screenshot-lab.mjs --query "inspect=vibecoder.dev&silhouette=1&ui=0" --name vibecoder-sil --width 400 --height 400
 //   node scripts/harness/screenshot-lab.mjs --selftest          (lab fixtures, proves Chrome + WebGL work here)
 //
 // Options: --query <url params>  --name <file stem>  --width 1280  --height 800  --dpr 1
@@ -13,16 +13,15 @@
 //          --page <path>   shoot another page (e.g. / for the game); --wait <ms> before the shot
 //          --timeout 30000       --chrome <path to a Chrome/Chromium binary>  (or env CHROME_BIN)
 //          --eval "<js>"         run in the page after it is ready and before the shot; may await;
-//                                its value is printed. e.g. --eval "await __assetLab.setOption('state','attack')"
+//                                its value is printed. e.g. --eval "await __storybook.setOption('state','attack')"
 // Writes scripts/harness/out/lab-<name>.png and prints the lab's stats for that frame.
-// URL parameters: .kiro/skills/comic-panel-viewport-auditor/references/asset-lab-url-params.md
+// URL parameters: .kiro/skills/comic-panel-viewport-auditor/references/storybook-url-params.md
 // Exit code: 0 ok, 1 page error / blank frame / not ready in time, 2 usage or no Chrome.
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { createServer } from 'vite';
-import { parseArgs, projectRoot } from './lib/load.mjs';
+import { parseArgs, projectRoot, startPageServer } from './lib/load.mjs';
 
 const args = parseArgs(process.argv.slice(2), ['--query', '--name', '--width', '--height', '--dpr', '--out', '--url', '--timeout', '--chrome', '--eval', '--page', '--wait', '--wait2']);
 const selftest = args.flag('--selftest');
@@ -92,7 +91,7 @@ async function main() {
   const chromePath = findChrome();
   if (!chromePath) {
     console.error('No Chrome/Chromium found. Pass --chrome <path> or set CHROME_BIN.');
-    console.error('Manual route: npm run dev, open http://localhost:5173/asset-lab.html?<params> and use the browser screenshot.');
+    console.error('Manual route: npm run dev, open http://localhost:5173/storybook.html?<params> and use the browser screenshot.');
     return 2;
   }
 
@@ -102,12 +101,10 @@ async function main() {
   const profile = mkdtempSync(join(tmpdir(), 'haunted-lab-'));
   try {
     if (!base) {
-      vite = await createServer({ root: projectRoot, logLevel: 'error', server: { port: 5310, strictPort: false, host: '127.0.0.1', open: false } });
-      await vite.listen();
-      base = `http://127.0.0.1:${vite.httpServer.address().port}`;
+      ({ vite, base } = await startPageServer(5310));
     }
-    const pagePath = args.val('--page', '/asset-lab.html');
-    const isLab = pagePath.includes('asset-lab');
+    const pagePath = args.val('--page', '/storybook.html');
+    const isLab = pagePath.includes('storybook');
     const url = `${base.replace(/\/$/, '')}${pagePath}?${query}${query ? '&' : ''}dpr=${dpr}`;
 
     chrome = spawn(chromePath, [
@@ -160,16 +157,16 @@ async function main() {
     await cdp.send('Page.navigate', { url });
 
     const evalJs = args.val('--eval');
-    // window.__assetLab.ready resolves once the frame on screen is complete (see src/lab/asset-lab.ts).
+    // window.__storybook.ready resolves once the frame on screen is complete (see src/storybook/storybook.ts).
     const probe = `(async () => {
-      for (let i = 0; i < 400 && !window.__assetLab; i++) await new Promise((r) => setTimeout(r, 25));
-      if (!window.__assetLab) throw new Error('window.__assetLab never appeared: the lab entry module failed to load');
-      await window.__assetLab.ready;
+      for (let i = 0; i < 400 && !window.__storybook; i++) await new Promise((r) => setTimeout(r, 25));
+      if (!window.__storybook) throw new Error('window.__storybook never appeared: the lab entry module failed to load');
+      await window.__storybook.ready;
       await document.fonts.ready;
       let evalResult;
       ${evalJs ? `evalResult = await (async () => { return (${evalJs}); })();
-      await window.__assetLab.setOption('guides', window.__assetLab.options().guides);` : ''}
-      const stats = window.__assetLab.stats();
+      await window.__storybook.setOption('guides', window.__storybook.options().guides);` : ''}
+      const stats = window.__storybook.stats();
       // How many distinct colours the WebGL frame holds. 1 means a blank frame.
       const gl = document.querySelector('.lab-canvas-host canvas') ?? document.querySelector('.lab-cell-canvas');
       let colours = 0;
@@ -184,7 +181,7 @@ async function main() {
         for (let i = 0; i < d.length; i += 4) seen.add((d[i] << 16) | (d[i + 1] << 8) | d[i + 2]);
         colours = seen.size;
       }
-      return JSON.stringify({ stats, colours, list: window.__assetLab.list(), evalResult });
+      return JSON.stringify({ stats, colours, list: window.__storybook.list(), evalResult });
     })()`;
     if (!isLab) {
       // Any other page (e.g. --page /): no lab hooks, so just wait, optionally run --eval, and shoot.
@@ -204,7 +201,7 @@ async function main() {
       console.log(`wrote    ${out}  (${width}x${height} @${dpr})`);
       return problems.length ? 1 : 0;
     }
-    const evaluated = await withTimeout(cdp.send('Runtime.evaluate', { expression: probe, awaitPromise: true, returnByValue: true }), timeout, 'asset lab ready');
+    const evaluated = await withTimeout(cdp.send('Runtime.evaluate', { expression: probe, awaitPromise: true, returnByValue: true }), timeout, 'storybook ready');
     if (evaluated.exceptionDetails) throw new Error(evaluated.exceptionDetails.exception?.description ?? evaluated.exceptionDetails.text);
     const { stats, colours, list, evalResult } = JSON.parse(evaluated.result.value);
 

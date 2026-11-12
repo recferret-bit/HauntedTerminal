@@ -49,7 +49,7 @@ Suggested spec set, in dependency order:
 
 1. `entity-model`: entity types, components and state.
 2. `rule-engine`: how entities interact. Define rules declaratively as condition, effect and priority, and specify conflict resolution and ordering explicitly.
-3. `screen-schema-and-renderer`: the declarative screen format plus its Three.js rendering (panels, layers, the hero breaking out of the frame).
+3. `screen-schema-and-renderer`: the declarative screen format plus its Three.js rendering (panels, layers, the vibecoder breaking out of the frame).
 4. `transition-system`: page and panel transitions, plus state handoff between screens.
 5. `terminal-shell`: the virtual unix shell (a fake filesystem, which commands exist, parsing, and how input becomes game events).
 6. `code-execution`: how the code the player writes is sandboxed and evaluated. This is its own risk, so give it its own spec.

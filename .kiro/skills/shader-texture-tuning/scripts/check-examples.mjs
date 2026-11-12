@@ -3,7 +3,7 @@
 //   - every patch anchor in examples/comic-variants.ts still exists in src/shaders/comic-material.ts
 //   - each variant builds, stays a comic material, and declares every uniform it sets
 //   - the patched GLSL has balanced braces and still contains the band / rim / flash lines
-//   - src/procgen/core/raster.ts still carries the constants it mirrors from the comic shader
+//   - src/procgen/geometry/raster-shade.ts and core/tri-raster.ts still carry the constants it mirrors from the comic shader
 // Run from the project root after touching src/shaders/comic-material.ts or the examples:
 //
 //   node .kiro/skills/shader-texture-tuning/scripts/check-examples.mjs
@@ -50,7 +50,10 @@ await withProcgen(async (_p, vite) => {
   check(pass.enabled === false, 'glitch pass disables at amount 0');
 
   // Parity: the software preview must use the same numbers as the fragment shader.
-  const raster = readFileSync(resolve(projectRoot, 'src/procgen/core/raster.ts'), 'utf8');
+  // The software preview's shading constants: per-pixel shading, plus the cel bands shared with fx/preview.
+  const raster = ['src/procgen/geometry/raster-shade.ts', 'src/procgen/core/tri-raster.ts']
+    .map((file) => readFileSync(resolve(projectRoot, file), 'utf8'))
+    .join('\n');
   const frag = comic.COMIC_FRAG;
   const pairs = [
     ['cel bands', 'shade > 0.66 ? 1.0 : shade > 0.4 ? 0.68 : 0.4', 'shade > 0.66 ? 1 : shade > 0.4 ? 0.68 : 0.4'],
@@ -62,7 +65,7 @@ await withProcgen(async (_p, vite) => {
   ];
   const comicSource = readFileSync(resolve(projectRoot, 'src/shaders/comic-material.ts'), 'utf8');
   for (const [name, glsl, ts] of pairs) {
-    check((frag.includes(glsl) || comicSource.includes(glsl)) && raster.includes(ts), `parity ${name}`, 'comic-material.ts and raster.ts must both carry this constant');
+    check((frag.includes(glsl) || comicSource.includes(glsl)) && raster.includes(ts), `parity ${name}`, 'comic-material.ts and raster-shade.ts must both carry this constant');
   }
 });
 

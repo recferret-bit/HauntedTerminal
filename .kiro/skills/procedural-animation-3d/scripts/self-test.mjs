@@ -47,7 +47,7 @@ const makeSpec = () => ({
 });
 
 await withProcgen(async (anim, vite) => {
-  const { buildModel } = await vite.ssrLoadModule('/src/procgen/core/build.ts');
+  const { buildModel } = await vite.ssrLoadModule('/src/procgen/runtime/build.ts');
   const {
     animPoseAt, animStepTime, animRootPoseAt, createAnimator, createAnimMaterialTint, validateAnimTags,
     ANIM_TAG_DEFAULTS, ANIM_STATES, ANIM_STATE_IDS, ANIM_STEP_FPS, ANIM_JITTER_GLITCH_GAIN,
@@ -560,7 +560,7 @@ await withProcgen(async (anim, vite) => {
     if (pick({ type: 'INODE_MODE_CHANGED', inodeId: 1, oldMode: 0o755, newMode: 0o644 }) !== 'subject:petrified') return 'chmod -x';
     const cd = (n, loop) => animReactionsFor({ type: 'ROOM_TRANSITION', fromDir: 1, toDir: 2, toPath: '/', upwardPanelsSmashed: n, viaSymlinkLoop: loop })[0].variant;
     if (cd(1, false) !== 'hop' || cd(3, false) !== 'panel_smash' || cd(0, true) !== 'eloop') return 'cd variants';
-    return pick({ type: 'PLAYER_DAMAGED', amount: 5, hpRemaining: 10, sourceName: 'x' }) === 'source:attack,hero:hit' || 'PLAYER_DAMAGED';
+    return pick({ type: 'PLAYER_DAMAGED', amount: 5, hpRemaining: 10, sourceName: 'x' }) === 'source:attack,vibecoder:hit' || 'PLAYER_DAMAGED';
   });
 
   check('animStateForActor: petrified > frozen > hidden > fallback', () => {
@@ -658,7 +658,7 @@ await withProcgen(async (anim, vite) => {
   } catch (err) {
     console.log(`SKIP src/procgen/index.ts could not be loaded (another module is broken): ${String(err).split('\n')[0]}`);
   }
-}, '/src/procgen/anim/index.ts');
+});
 
 let failed = 0;
 for (const r of results) {

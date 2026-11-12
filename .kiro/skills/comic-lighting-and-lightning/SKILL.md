@@ -34,7 +34,7 @@ Exact numbers and file locations: [lighting-model.md](./references/lighting-mode
 | Flash | `uFlash`, `uFlashPos` | Cyan-white add, falling off with distance from the strike |
 | Lightning | `LightningStrikeSystem`, `src/shaders/lightning.ts` | Builds bolts, owns `flashStrength` / `flashPos` |
 | Storm | `ComicStage.setStorm(on, intensity)` | Periodic distant strikes |
-| Lantern | `ComicStage.applyLantern(t)` | Reveals the hidden dotfile, raises the hero's lantern glow |
+| Lantern | `ComicStage.applyLantern(t)` | Reveals the hidden dotfile, raises the vibecoder's lantern glow |
 | Floor mood | `FLOORS` in `comic-stage.ts`, mirrored by `FLOOR_THEMES` in `src/procgen/core/palette.ts` | Backdrop colour and accent per floor |
 | PS_XRAY | `mountXray()` | Green process tags and a parent-child line |
 | Flood | `createFloodMaterial`, `syncFlood()` | Translucent cyan slab rising from the floor |
@@ -62,10 +62,10 @@ screen-left and the light's x is negative); the software rasterizer agrees. Trus
 4. **Darkness hides by opacity and value, never by turning the key light down.** Hidden dotfiles
    are `alpha 0.04`; rooms are dark because their palette is dark.
 5. **In the dark, only emissive survives.** Anything the player must still find without the lantern
-   (door LEDs, pickups, enemy eyes, the hero's lantern) must be an emissive zone.
+   (door LEDs, pickups, enemy eyes, the vibecoder's lantern) must be an emissive zone.
 6. **A flash is a held frame, not a fade-in.** Full strength on the first frame, gone in under
    half a second, always with shake and a word.
-7. **Parity.** `src/procgen/core/raster.ts` and `src/procgen/fx/preview.ts` copy the light vector
+7. **Parity.** `src/procgen/geometry/raster-shade.ts` and `src/procgen/fx/preview.ts` copy the light vector
    and the band thresholds so the node previews match the game. Change one, change all three, in
    the same commit (see below).
 
@@ -111,7 +111,7 @@ Recipes with code for each of these: [extension-recipes.md](./references/extensi
 | Per-floor mood | Tint: multiply by a floor colour in the shadow and mid bands only; or nudge `uLightDir` per floor within ±15° | Change band thresholds per floor; move the light behind the camera-facing band |
 | Furnace heat (floor 4) | A second rim colour: replace the ink rim blend with `powerAmber`/`lockRed` on faces turned toward a `uRimDir` | A PointLight; emissive on every pipe |
 | Kernel-core storm (floor 5) | `setStorm(true, 1.2..1.5)`, strikes from `FLOOR_THEMES[5].accent` side, `fx.lightning-strike` per hit | Continuous flicker |
-| Real lantern darkness | A stepped multiply overlay centred on the lantern (lit / mid ring / dark), emissive meshes drawn over it. The asset lab has a working stand-in in `src/lab/lab-stage.ts` | A SpotLight; a soft radial gradient |
+| Real lantern darkness | A stepped multiply overlay centred on the lantern (lit / mid ring / dark), emissive meshes drawn over it. The storybook has a working stand-in in `src/storybook/stage/lab-stage.ts` | A SpotLight; a soft radial gradient |
 | New glowing thing | Give its zone `emissive` in `ZONES`, in the `signal` family | Raise `uEmissive` ad hoc in the stage |
 | A new flash source | Set `lightning.flashStrength` / `flashPos`, or `FxPreset.flash` | A second flash uniform per effect |
 
@@ -119,10 +119,10 @@ Recipes with code for each of these: [extension-recipes.md](./references/extensi
 
 1. `npm run procgen:sheet` and open `scripts/harness/out/models.png`: bands still three, fronts still lit.
 2. `npm run procgen:fx -- --sheet`: effects still read on the floor backdrop.
-3. `npm run dev`: the game, then `/asset-lab.html` with the lantern and flash toggles. Check floor 1
+3. `npm run dev`: the game, then `/storybook.html` with the lantern and flash toggles. Check floor 1
    (darkest violet) and floor 4 (red).
 4. If you changed the vector or the bands: the three copies agree (`comic-material.ts`,
-   `core/raster.ts`, `fx/preview.ts`).
+   `geometry/raster-shade.ts`, `fx/preview.ts`).
 5. `npm run procgen:check` is green.
 
 ## The scene light (lantern, `ls` ping, light sources)
@@ -134,14 +134,14 @@ The game now has one real comic light, on top of the fixed cel direction:
   `uLampSplit`, `uLampPower`, `uLampRadius`, `uLampDark`, `uLampScan`, `uLampUv`, `uPingR`, `uPingPower`).
   Distance is measured on the page plane (xy), falloff is three stepped rings with a dithered edge, and
   darkness is applied before emissive, so glowing things stay bright in the dark. All zeros is the flat
-  look: that is what the asset lab, the cinematics (`suspendComicLight`) and `raster.ts` show.
+  look: that is what the storybook, the cinematics (`suspendComicLight`) and `raster-shade.ts` show.
 - **Rig:** `src/renderer/stage-light.ts` (`StageLight`) picks the source and drives the uniforms every
   frame, stepped at 12 fps, plus a halo mesh with sunburst rays at the lantern.
 - **Sources** (`LIGHT_MODES`, radio buttons in the F8 dock, saved in localStorage): LANTERN (warm pool
-  from the hero's `lantern` socket), PHOSPHOR (green glow from below with scanlines), BLACKLIGHT (UV:
+  from the vibecoder's `lantern` socket), PHOSPHOR (green glow from below with scanlines), BLACKLIGHT (UV:
   `malware`-family zones fluoresce through `uUvReact`), NEON (cyan / magenta split at the lantern), STORM
   (cold light from above that follows the lightning flash), FLAT (off).
-- **`ls`:** the stage reads `HERO_ACTION.command`. `ls` calls `light.ping(1)`: one ring sweeps the room
+- **`ls`:** the stage reads `VIBECODER_ACTION.command`. `ls` calls `light.ping(1)`: one ring sweeps the room
   and the light is boosted for about 4.5 s. `ls -a` / `ls -la` call `ping(2)`: three rings, a bigger
   boost for about 9 s, and a little UV. In FLAT mode `ls` still lights the room for the boost.
 - **New source:** add a row to `MODES` and `LIGHT_MODES` in `stage-light.ts`; nothing else needs to change.

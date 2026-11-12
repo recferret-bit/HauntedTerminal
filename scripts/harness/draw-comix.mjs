@@ -122,8 +122,8 @@ await withProcgen(async (p, vite) => {
 
   function categoryScaleFor(modelId) {
     if (modelId.startsWith('pickup.')) return 0.44;
-    if (modelId === 'prop.greybeard_rig') return 0.94;
-    if (modelId === 'prop.kiro_ghost') return 0.56;
+    if (modelId === 'npc.greybeard_rig') return 0.94;
+    if (modelId === 'npc.kiro_ghost') return 0.56;
     if (modelId === 'prop.crt') return 0.64;
     if (modelId === 'prop.tar') return 0.56;
     if (modelId.startsWith('prop.')) return 0.50;
@@ -131,7 +131,7 @@ await withProcgen(async (p, vite) => {
     if (modelId.startsWith('door.')) return 0.86;
     if (modelId.startsWith('malware.agent_')) return 0.90;
     if (modelId.startsWith('malware.')) return 0.76;
-    if (modelId === 'hero.hand') return 0.72;
+    if (modelId === 'vibecoder.hand') return 0.72;
     if (modelId.startsWith('boss.')) return 1.12;
     return 0.96;
   }

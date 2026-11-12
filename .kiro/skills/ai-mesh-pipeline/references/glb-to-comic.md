@@ -42,8 +42,8 @@ node .kiro/skills/ai-mesh-pipeline/scripts/sanitize-glb.mjs --input raw.glb --ou
 |---|---|---|
 | `--input` | required | A self-contained `.glb` |
 | `--output` | | Where to write. Omit with `--report` to only analyse |
-| `--height` | keep source size | Final height in world units (hero 1.6, minions 0.6 to 1.1, enemies 1.0 to 1.6, bosses 1.8 to 2.6, pickups 0.3 to 0.5, doors 1.4 to 1.9) |
-| `--families` | `hardware,signal,glass,neutral` | Palette families a triangle may snap to. Add `malware` for enemies; use `human,neutral` for the hero |
+| `--height` | keep source size | Final height in world units (vibecoder 1.6, minions 0.6 to 1.1, enemies 1.0 to 1.6, bosses 1.8 to 2.6, pickups 0.3 to 0.5, doors 1.4 to 1.9) |
+| `--families` | `hardware,signal,glass,neutral` | Palette families a triangle may snap to. Add `malware` for enemies; use `human,neutral` for the vibecoder |
 | `--max-zones` | 5 | Zones kept, by surface area. The rest fold into the nearest kept zone |
 | `--max-tris` | 3500 | Budget. Over it is an error (it does not decimate) |
 | `--yaw` | 180 | Degrees about y applied before fitting |

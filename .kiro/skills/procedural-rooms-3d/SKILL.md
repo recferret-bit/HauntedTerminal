@@ -1,12 +1,12 @@
 ---
 name: procedural-rooms-3d
-description: "[ASSET PCG] Build room sets: the `room.<kind>` models in `src/procgen/archetypes/rooms` (back wall, floor, set dressing, door and actor sockets) that sit behind the actors of each comic panel. Use whenever you add a room or room variant, touch a wall, floor, backdrop, pillar, arch, grille or set dressing, move a door or actor socket, restyle a floor of the machine, or a room is too busy, too bright or hides the hero. Level-generation skills pick a `roomKind` from this set; adding a new kind starts here. Read `haunted-art-direction` first."
+description: "[ASSET PCG] Build room sets: the `room.<kind>` models in `src/procgen/archetypes/rooms` (back wall, floor, set dressing, door and actor sockets) that sit behind the actors of each comic panel. Use whenever you add a room or room variant, touch a wall, floor, backdrop, pillar, arch, grille or set dressing, move a door or actor socket, restyle a floor of the machine, or a room is too busy, too bright or hides the vibecoder. Level-generation skills pick a `roomKind` from this set; adding a new kind starts here. Read `haunted-art-direction` first."
 ---
 
 # Procedural rooms
 
 A room is a `ModelSpec` like any other model, but its job is the opposite of an actor's: **to recede**.
-The player reads the hero, the malware, the door and the pickup; the room only says *where in the
+The player reads the vibecoder, the malware, the door and the pickup; the room only says *where in the
 machine we are* and *what mood it is*. Every rule below follows from that.
 
 Read [haunted-art-direction](../haunted-art-direction/SKILL.md) first: the palette, the camera and the
@@ -23,7 +23,7 @@ src/procgen/archetypes/rooms/floor3.ts   cell, lab_hall         floor4.ts  catwa
 src/procgen/archetypes/rooms/floor5.ts   core                   outro.ts   outro (the real world)
 ```
 
-`RoomKind` comes from `src/renderer/room-view.ts`; which actors stand in which room, and at what x, is
+`RoomKind` comes from `src/contracts/room-view.ts`; which actors stand in which room, and at what x, is
 in `src/game/view.ts`. One id per kind: `room.desk`, `room.attic`, `room.crypt_entrance`,
 `room.crypt_hall`, `room.chasm`, `room.cell`, `room.lab_hall`, `room.catwalk`, `room.furnace`,
 `room.core`, `room.outro`.
@@ -43,12 +43,12 @@ Constants live in `ROOM` (`frame.ts`); details and the mapping to the stage are 
 |---|---|---|
 | Wall | face at `0.9` | One box. Relief is glued on with `b.plaque()` / `b.relief()` |
 | Dressing | `0.8` .. `0.25` | Floor-standing things: pillars, racks, tombstones, fan towers |
-| Actors | `0` | Nothing of yours. The stage puts hero, malware, doors, pickups here |
+| Actors | `0` | Nothing of yours. The stage puts vibecoder, malware, doors, pickups here |
 | Foreground | `−0.35` | Optional low dark silhouettes, at the very edges only (|x| > 3.5, under 0.5 tall) |
 
 ## The actor band (the rule that matters most)
 
-Actors stand between the right edge and x ≈ 1.7 (the hero spawns around x = 0.7 and everything else is
+Actors stand between the right edge and x ≈ 1.7 (the vibecoder spawns around x = 0.7 and everything else is
 to screen-right of him), and are up to 2.4 tall. That rectangle is `ACTOR_BAND`. Inside it:
 
 - Only wall relief, only in `BAND_ZONES` (`silicon`, `pcbDark`, `rubber`, `ink`). No `heatsink`,
@@ -60,10 +60,10 @@ to screen-right of him), and are up to 2.4 tall. That rectangle is `ACTOR_BAND`.
 Everything with a shape goes to one of three places:
 
 1. **The upper wall** (y > 2.4): arches' heads, grilles, fins, pipes, frames, the room's one big motif.
-2. **The left wing** (x > 1.7, screen-left of the hero): tall floor-standing dressing, any hardware zone.
+2. **The left wing** (x > 1.7, screen-left of the vibecoder): tall floor-standing dressing, any hardware zone.
 3. **The apron** (y < 0): traces, hatch plates, ember slits. Below the feet, so it may carry accents.
 
-Why so strict: actors are small (the hero is 92 px) and the pixel-art pass quantizes everything. A
+Why so strict: actors are small (the vibecoder is 92 px) and the pixel-art pass quantizes everything. A
 bright pillar behind a 60 px enemy erases its silhouette.
 
 ## Value and colour
@@ -102,8 +102,8 @@ budget: 80 parts, 8000 triangles (current rooms use 30 to 40 parts and under 180
 
 ## Sockets
 
-Every room provides `hero`, `caption`, `door.left`, `door.right`, `door.down` (via
-`b.standardSockets(heroDesignX)`), plus one socket per thing `view.ts` puts in that room, named for
+Every room provides `vibecoder`, `caption`, `door.left`, `door.right`, `door.down` (via
+`b.standardSockets(vibecoderDesignX)`), plus one socket per thing `view.ts` puts in that room, named for
 what it is (`gate`, `intercom`, `chasm`, `boss`, `pedestal`, `valve` ...). Compute actor sockets with
 `designToRoomX(x)` from the x in `view.ts`, never by eye, so the dressing lines up with the actor
 (the chasm's gap is centred on the pit actor this way). Full list in
@@ -124,9 +124,9 @@ what it is (`gate`, `intercom`, `chasm`, `boss`, `pedestal`, `valve` ...). Compu
    then open the PNG. For one room up close: `node scripts/harness/render-sheet.mjs room.chasm --size 880 --out scripts/harness/out/room.png`;
    add `--views` for side and top views to check the z layers.
 5. **Squint test** on the sheet: cover the top half; the bottom half must be nearly flat dark. Then
-   imagine the hero at x = 0.7 and a door at the right edge: nothing bright behind either.
+   imagine the vibecoder at x = 0.7 and a door at the right edge: nothing bright behind either.
 6. **Validate**: `npm run procgen:validate`, then `npm run procgen:check` before calling it done.
-7. **Asset lab**: `npm run dev`, open `/asset-lab.html`, look at the room under the real shaders,
+7. **Storybook**: `npm run dev`, open `/storybook.html`, look at the room under the real shaders,
    pixel-art and CRT passes, with and without textures.
 
 ## Common mistakes

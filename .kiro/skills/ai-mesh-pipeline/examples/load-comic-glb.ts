@@ -10,8 +10,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createComicMaterial, type ComicMaterial } from '../../../../src/shaders/comic-material.js';
-import { DEFAULT_INK_WEIGHT } from '../../../../src/procgen/core/build.js';
-import { inkShellGeometry } from '../../../../src/procgen/core/geometry.js';
+import { DEFAULT_INK_WEIGHT } from '../../../../src/procgen/runtime/build.js';
+import { inkShellGeometry } from '../../../../src/procgen/geometry/geometry.js';
 import { INK, ZONES, zone, type ZoneId } from '../../../../src/procgen/core/palette.js';
 
 export interface ComicGlb {

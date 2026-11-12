@@ -1,7 +1,7 @@
 # The comic material, ink shells, vortex and flood
 
 Source: `src/shaders/comic-material.ts`. Created by `createComicMaterial(color, opts)`; for procgen
-models by `zoneMaterial()` in `src/procgen/core/build.ts`, one shared material per zone plus one clone
+models by `zoneMaterial()` in `src/procgen/runtime/build.ts`, one shared material per zone plus one clone
 per textured part.
 
 ## Uniforms
@@ -48,7 +48,7 @@ What each constant does when you move it:
 | Halftone cell 16 per unit, radius 0.16, x0.78 | Finer dots alias under the 2 px pixel pass | Coarser dots read as a pattern, not as tone |
 | Rim power 2.6, 0.55..0.92, x0.55 | Narrower rim | Wide dark halo, small round parts turn to ink |
 
-Every one of these is mirrored in `src/procgen/core/raster.ts` (see the parity rule in SKILL.md).
+Every one of these is mirrored in `src/procgen/geometry/raster-shade.ts` (see the parity rule in SKILL.md).
 
 ## Known quirks
 
@@ -56,7 +56,7 @@ Read these before "fixing" what looks like a bug in a model.
 
 - **Halftone is projected in world xz.** On faces that look at the camera (the xy plane, which is most
   of what the player sees) z is constant, so the dots degenerate into vertical streaks, or vanish,
-  depending on the face's z. Proper dots appear on top faces. The software preview (`raster.ts`) uses
+  depending on the face's z. Proper dots appear on top faces. The software preview (`raster-shade.ts`) uses
   screen-space dots instead, so it is more flattering than the game here. A fix would be
   `fract(vWorld.xy * 16.0)` in the shader; it needs art sign-off because it changes every halftone zone.
 - **The lab's INK tab overrides zones.** `ComicStage.setInk` sets `uHalftone` to 1 on every comic
@@ -69,12 +69,12 @@ Read these before "fixing" what looks like a bug in a model.
 - **Map alpha is ignored.** Decal textures show ink where they are transparent.
 - **Emissive is the zone colour.** A texture on an emissive part does not change what glows.
 - **`uLightDir` is per material.** Changing the light means changing `LIGHT` in `comic-material.ts`
-  and in `raster.ts`, not a scene light. The `AmbientLight` and `DirectionalLight` in the stage do not
+  and in `raster-shade.ts`, not a scene light. The `AmbientLight` and `DirectionalLight` in the stage do not
   affect comic materials.
 
 ## Ink shells
 
-`inkShellGeometry(geo, thickness)` in `src/procgen/core/geometry.ts`: clone the geometry, merge
+`inkShellGeometry(geo, thickness)` in `src/procgen/geometry/geometry.ts`: clone the geometry, merge
 vertices, recompute smooth normals, push every vertex out along its normal by `thickness` world units,
 draw with `MeshBasicMaterial({ color: INK, side: BackSide })`. Because the offset is in world units,
 a pin and a wall get the same line weight. `buildModel` divides the thickness by the part's largest

@@ -19,8 +19,7 @@ import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { createServer } from 'vite';
-import { parseArgs, projectRoot } from './lib/load.mjs';
+import { parseArgs, projectRoot, startPageServer } from './lib/load.mjs';
 
 const args = parseArgs(process.argv.slice(2), ['--url', '--page', '--query', '--script', '--gap', '--width', '--height', '--chrome', '--line-timeout']);
 const gap = Number(args.val('--gap', 1500));
@@ -106,9 +105,7 @@ async function main() {
   const shots = [];
   try {
     if (!base) {
-      vite = await createServer({ root: projectRoot, logLevel: 'error', server: { port: 5342, strictPort: false, host: '127.0.0.1', open: false, hmr: false, watch: null } });
-      await vite.listen();
-      base = `http://127.0.0.1:${vite.httpServer.address().port}`;
+      ({ vite, base } = await startPageServer(5342, { hmr: false, watch: null }));
     }
     base = base.replace(/\/$/, '');
     const origin = new URL(base).origin;

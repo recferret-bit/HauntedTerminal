@@ -8,7 +8,7 @@
 //   node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --seeds 8 --quiet
 //
 //   --all             every model in ModelCatalog
-//   --category <c>    hero | malware | boss | pickup | door | prop | room | fx
+//   --category <c>    vibecoder | npc | agent | malware | boss | pickup | door | prop | room | fx
 //   --seed <n>        build with this seed (default 1)
 //   --seeds <n>       build and validate seeds 1..n: catches variation that breaks a model
 //   --strict          warnings fail too
@@ -22,7 +22,7 @@ import { withProcgen, parseArgs } from '../../../../scripts/harness/lib/load.mjs
 
 const VALUE_FLAGS = ['--category', '--seed', '--seeds', '--disable'];
 const BOOL_FLAGS = ['--all', '--json', '--quiet', '--strict', '--geometry-only', '--help'];
-const CATEGORIES = ['hero', 'malware', 'boss', 'pickup', 'door', 'prop', 'room', 'fx'];
+const CATEGORIES = ['vibecoder', 'npc', 'agent', 'malware', 'boss', 'pickup', 'door', 'prop', 'room', 'fx'];
 const argv = process.argv.slice(2);
 const args = parseArgs(argv, VALUE_FLAGS);
 

@@ -1,22 +1,47 @@
 # Structure
 
+## Repository root: keep it clean
+
+Only these may sit at the root; `npm run quality:root` (`scripts/quality/check-root.mjs`) fails on anything else.
+
+| Entry | What belongs there |
+|---|---|
+| `pages/` | Every HTML entry page. It is the Vite root, so `pages/storybook.html` is served at `/storybook.html`. |
+| `src/` | TypeScript source (pages load it as `<script type="module" src="/src/...">`; `vite.config.ts` maps `/src/` to it). |
+| `scripts/` | Node tooling: `harness/`, `hooks/`, `quality/`. |
+| `public/` | Static assets served as-is. |
+| `chapters/` | LEVEL GEN data, one folder per chapter. |
+| `docs/` | Long-form docs and notes. |
+| `.kiro/` | Steering, skills, specs, hooks, settings. |
+| files | Only tool configs that must live at the root (`package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `.gitignore`) plus `AGENTS.md`, `README.md` and `LICENSE` (the open source licence the Kiroween rules require; GitHub detects it at the root). |
+
+Rules:
+- A new page is a new `pages/<name>.html` plus an entry in `build.rollupOptions.input` of `vite.config.ts`. Never put HTML at the root.
+- A new doc goes in `docs/`, never at the root. Generated output (`dist/`, `scripts/harness/out/`) stays git-ignored.
+- Harness scripts start the page server with `startPageServer()` from `scripts/harness/lib/load.mjs`, which uses `vite.config.ts`. Do not pass `root:` to Vite yourself.
+- Changing the allowed root entries means changing `check-root.mjs` and this table in the same commit.
+
+## Source tree
+
 ```
 src/
-  procgen/        # ASSET PCG code: kit, archetypes, textures, fx, anim, core
+  contracts/      # pure shared types
+  procgen/        # ASSET PCG: core, geometry, kit, textures, archetypes, fx, anim, validate, runtime
   shaders/        # comic material, lightning, post passes
-  renderer/       # comic stage
-  game/           # world, entities, terminal, VFS
-  chapters/       # LEVEL GEN runtime: types, validators, session, generated/
-  pages/          # chapters / comic pages
+  storybook/      # storybook page (domain, subjects, stage, ui, app)
   main.ts
+  # planned, not ported yet: renderer/ (comic stage), game/ (world, VFS, terminal), chapters/ (LEVEL GEN runtime)
 chapters/<chapter-slug>/     # LEVEL GEN data, one chapter for Kiroween
   chapter.manifest.json
   story/comix.spec.json, dialogs.json, out/
   levels/level-XX-<slug>/level.spec.json, LEVEL.md
+pages/                       # HTML entry pages: index.html (game), storybook.html
 public/assets/               # external sprites/meshes (ai-mesh-pipeline)
 public/comix/<chapter-id>/   # rendered comic pages
 scripts/harness/             # shared Node tooling
 scripts/hooks/               # scripts run by .kiro/hooks (asset dry runs)
+scripts/quality/             # root, size, layer, duplicate and fingerprint gates
+docs/                        # long-form docs and notes
 .kiro/
   steering/ skills/ specs/ hooks/ settings/
 ```

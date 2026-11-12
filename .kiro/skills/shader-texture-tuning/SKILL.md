@@ -16,13 +16,13 @@ ink shell (back faces, #110e1b) ─┘
 | Link | File | Owns |
 |---|---|---|
 | Comic material | `src/shaders/comic-material.ts` | Light (3 bands), albedo map mix, shadow dots, stripes, rim darkening, glow, ghost, flash |
-| Ink shell | `src/procgen/core/geometry.ts` `inkShellGeometry`, `core/build.ts` | The outline: constant world-space weight (0.028) |
+| Ink shell | `src/procgen/geometry/geometry.ts` `inkShellGeometry`, `runtime/build.ts` | The outline: constant world-space weight (0.028) |
 | Vortex, flood | `src/shaders/comic-material.ts` | `/dev/null` spiral, the rising data flood |
 | Pixel-art pass | `src/shaders/pixel-art.ts` | Pixel size, colour levels, dither, edge darkening, **the final palette** |
 | CRT pass | `src/shaders/crt-pass.ts` | Scanlines, roll, grain, flicker, vignette, barrel |
 | Composer, wiring | `src/renderer/comic-stage.ts` | Pass order, per-frame uniforms, `setInk` / `setPixelParams` / `setCrtParams` |
 | Visual lab dock | `src/ui/visual-lab.ts` | Live sliders in the running game, saved in `localStorage` (`haunted.lab.*`) |
-| Software preview | `src/procgen/core/raster.ts` | A copy of the comic fragment maths for the harness sheets |
+| Software preview | `src/procgen/geometry/raster-shade.ts` | A copy of the comic fragment maths for the harness sheets |
 
 Details: [comic-material.md](./references/comic-material.md) (every uniform and constant, ink shells,
 vortex, flood, known quirks) and [post-passes.md](./references/post-passes.md) (pixel-art and CRT
@@ -43,14 +43,14 @@ These are the look. A tuning change that breaks one is a redesign, not a tweak.
    literals in new GLSL, except the existing flash tint.
 6. **The pixel-art pass quantizes the final, display-space colour.** The default palette mode is 0 (full
    colour, 16 levels, Bayer dither), so hue survives; modes 1 to 5 are retro options, and modes 4 (COMIX)
-   and 5 keep only 22% of the hue. Judge a material change after the pass, in the asset lab.
+   and 5 keep only 22% of the hue. Judge a material change after the pass, in the storybook.
 
 ## The parity rule
 
-`src/procgen/core/raster.ts` mirrors the comic fragment shader so models can be previewed and
+`src/procgen/geometry/raster-shade.ts` mirrors the comic fragment shader so models can be previewed and
 validated in node. If you change any of these in one file, change it in the other in the same commit:
 
-| What | `comic-material.ts` | `raster.ts` |
+| What | `comic-material.ts` | `raster-shade.ts` |
 |---|---|---|
 | Light direction | `LIGHT = (-0.35, 0.82, -0.48)` | `LIGHT = normalize([-0.35, 0.82, -0.48])` |
 | Band thresholds and values | `shade > 0.66 ? 1.0 : shade > 0.4 ? 0.68 : 0.4` | same expression |
@@ -78,7 +78,7 @@ implement stripes, the flash, the pixel-art pass or the CRT pass.
 ## Tuning workflow
 
 1. **Name the link.** Turn passes off to find it: in the game, the dock buttons (CRT, PIXEL, INK,
-   STORM) toggle each stage; in the asset lab (`npm run dev`, `/asset-lab.html`) use the same toggles
+   STORM) toggle each stage; in the storybook (`npm run dev`, `/storybook.html`) use the same toggles
    and the palette buttons. If it is wrong with pixel and CRT off, it is the material or the model.
    If it is only wrong with them on, it is a pass parameter.
 2. **Tune live first.** Move the visual lab slider until it reads right; note the value.
@@ -92,7 +92,7 @@ implement stripes, the flash, the pixel-art pass or the CRT pass.
    npm run procgen:sheet        # software preview of every model: scripts/harness/out/models.png
    npx tsc --noEmit
    ```
-5. **Look at the real frame**: the game and `/asset-lab.html`, hero at game scale (58 px per unit),
+5. **Look at the real frame**: the game and `/storybook.html`, vibecoder at game scale (58 px per unit),
    on a dark floor and on paper, with a lightning flash held. Check a `signal` pickup, a malware
    enemy and a textured part: those three cover emissive, halftone and map.
 

@@ -4,7 +4,7 @@
 //   node scripts/harness/playthrough.mjs                 (3 ticks between commands)
 //   node scripts/harness/playthrough.mjs --ticks 6 --verbose
 //   node scripts/harness/playthrough.mjs --script my.json   (a JSON array of commands or {"tick": n})
-// Exit 1 when the run does not end, the hero dies, or any step throws.
+// Exit 1 when the run does not end, the vibecoder dies, or any step throws.
 // The default script lives in scripts/harness/playthrough.script.json; the game owner keeps it current.
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';

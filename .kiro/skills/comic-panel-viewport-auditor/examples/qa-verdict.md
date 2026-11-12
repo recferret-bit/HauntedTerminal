@@ -21,7 +21,7 @@ malware.bug  seed 1  (lab, default post chain, 58 px/unit, dpr 1)
 10 backdrops    FAIL  floor1..floor5 look the same under COMIX (all dark backdrops quantize to one
                       plum), and the body vanishes into all five. Only the light legs separate.
 11 states       PASS  hidden is faint; petrified / frozen keep the silhouette; attack (t 0.3) lunges.
-12 size         PASS  Minion size, under the hero line, same scale as malware.zombie.
+12 size         PASS  Minion size, under the vibecoder line, same scale as malware.zombie.
 
 Fix: raise the body's luma (silicon -> a lighter hardware zone for the shell, keep silicon for the
 underside) or add a light rim part along the top edge, so the body separates from a dark floor by

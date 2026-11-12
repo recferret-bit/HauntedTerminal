@@ -83,7 +83,7 @@ a scanline tear; the default moves in the page plane. Always stepped, also with 
 ### blink
 `emissiveMul = frac(cycles) >= 1 - amp ? 0.12 : 1`. `amp` is the share of the cycle the light is shut
 (default 0.12), `speed` default 0.4 Hz. Use `amp: 0.5` for a cursor, 0.1 for an eye.
-- Good: status LEDs with random phases, the hero-facing eye of an enemy, a cursor.
+- Good: status LEDs with random phases, the vibecoder-facing eye of an enemy, a cursor.
 - Bad: non-emissive zones (the animator lends the part 0.6 emissive while lit, but it is dark when nothing
   animates it; prefer a `signal` zone or `malwareEye`); many LEDs sharing one phase.
 - The animator gives every `blink` / `pulse` / `jitter` part its own `uEmissive` (a material clone that shares all
@@ -98,7 +98,7 @@ Default axis y, 0.25 Hz, 3%. Slow enough that stepping alone gives the held look
 ### legWalk
 `angle = amp * locomotion * hold(cycles)` about `axis` through `pivot`. Default axis x, 2 Hz, 0.45 rad.
 At locomotion 0 the leg is exactly at rest.
-- Axis x: front-on figures (`hero.dev`). The foot lifts and the leg foreshortens. Axis z: profile creatures
+- Axis x: front-on figures (`vibecoder.dev`). The foot lifts and the leg foreshortens. Axis z: profile creatures
   (`malware.bug`): the leg scissors in the page plane.
 - Two legs: phases 0 and 0.5. More: alternate neighbours and opposite pairs.
 - A leg whose foot is not under its hip dips below the floor when it swings toward vertical. Keep the foot
@@ -106,11 +106,15 @@ At locomotion 0 the leg is exactly at rest.
 
 ### armSwing
 `legWalk` with the sign flipped. Give an arm the phase of the leg on its own side and it swings against it.
-A small `amp` (0.08) on the arm that carries something (the hero's lantern) keeps it alive without waving it.
+A small `amp` (0.08) on the arm that carries something (the vibecoder's lantern) keeps it alive without waving it.
 
 ### orbit
 The part circles `pivot` in the XY plane at its authored distance, keeping its orientation. Without a pivot
 it circles its own position with radius `amp` (default 0.06). Default 0.4 Hz.
+- Disk orbit: set `squash` (minor/major, 0..1], `tilt` (roll of the major axis, radians) and `sway` (z units,
+  at most 0.5) and the path becomes a disk seen at an angle, started from the part's authored position; the far
+  (upper) half is pushed back by `sway` so the part can slip behind the body and come round in front. Without
+  these fields the circle path is unchanged. Example: the debris round `agent.grok`. Bad values: `ANIM_DISK_FIELDS`.
 - Good: motes, a satellite shard, a loading-ring dot.
 - Bad: anything that should face its direction of travel (use `spin` with a pivot: it turns the part too).
 
@@ -151,6 +155,7 @@ parts in model space; `setFacing(±1)` says which way `forward` is. Keys snap an
 | `ANIM_SPEED_RANGE` | error | Speed 0, negative (only `spin` / `orbit` may be), or above the type's `maxSpeed` | Slow down: 6 Hz is all a 12 fps pose clock can show |
 | `ANIM_AMP_RANGE` | error | \|amp\| above the type's `maxAmp` | Smaller amp |
 | `ANIM_PHASE_RANGE` | error | Phase outside 0..1 | Wrap it |
+| `ANIM_DISK_FIELDS` | error | `squash` / `tilt` / `sway` on a non-orbit tag, or squash outside (0, 1], \|sway\| > 0.5 | Only `orbit` takes them; keep the disk flatter than a circle |
 | `ANIM_PIVOT_OUTSIDE` | error | Pivot outside the model's bounds | The pivot is model space, not part space |
 | `ANIM_PIVOT_DETACHED` | warn / error | The limb's nearest point travels more than 0.04 / 0.12 units | Put the pivot on the joint |
 | `ANIM_DETACH` | warn / error | A lone `bob` larger than the part, or `jitter` amp over 0.04 | Smaller amp, or bob the neighbours too |

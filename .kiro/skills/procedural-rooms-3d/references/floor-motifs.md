@@ -132,7 +132,7 @@ family. It is tagged `real-world`. Treat it as an exception, not a precedent.
 | Hardware | a `plastic` monitor with a `silicon` screen, `plastic` keyboard |
 | Accent | `phosphor`: a prompt and a blinking cursor. The machine, now just a machine |
 
-Motifs: the window (upper wall, over the hero), the real desk in the same place and proportions as
+Motifs: the window (upper wall, over the vibecoder), the real desk in the same place and proportions as
 `room.desk` so the player recognises it, a bookshelf. Same frame and the same actor band rule.
 
 ## Adding a floor or a motif

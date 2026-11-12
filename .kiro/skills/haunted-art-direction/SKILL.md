@@ -32,7 +32,7 @@ what that thing *is inside a computer*.
 
 | Game role | What it is in the machine | Reads as |
 |---|---|---|
-| Hero (`dev`) | The only human. Hoodie, jeans, sneakers, a lantern. | Warm, soft, round. The one orange thing on a cold page. |
+| Vibecoder (`dev`) | The only human. Hoodie, jeans, sneakers, a lantern. | Warm, soft, round. The one orange thing on a cold page. |
 | System Hand | The artist / the OS itself, reaching in from outside the panel. | Paper-white hand with a stylus. |
 | Enemies | **Malware.** Virus, worm, trojan, software bug, exploit, crack, ransomware, spyware, rootkit, zombie process, fork-bomb daemon, kernel panic. | Corrupted hardware: magenta, violet, toxic green, one glowing eye or core, glitch jitter. |
 | Pickups | **Energy** cell (heals), **RAM** stick (+GB memory), **SSD** drive (+GB storage). | Small, bright, emissive, always bobbing or spinning. |
@@ -78,7 +78,7 @@ its back. So every model is a **relief**: a drawing with thickness.
 9. **Readable small.** Nothing important is thinner than ~2 px at game scale (58 px per world unit).
    The pixel-art pass will eat it.
 
-Sizes: the hero is 1.6 units tall. Feet at `y = 0`. Minions 0.6 to 1.1, standard enemies 1.0 to 1.6,
+Sizes: the vibecoder is 1.6 units tall. Feet at `y = 0`. Minions 0.6 to 1.1, standard enemies 1.0 to 1.6,
 bosses 1.8 to 2.6, pickups 0.3 to 0.5 (hovering at ~0.5), doors 1.4 to 1.9. Budgets: 6 to 40 parts and
 under 3500 triangles per actor; rooms up to 80 parts and 8000 triangles.
 
@@ -93,7 +93,7 @@ One palette, defined once in [`src/procgen/core/palette.ts`](../../../src/procge
 
 | Family | Zones | Who may use it |
 |---|---|---|
-| `human` | `skin` `hoodie` `denim` `hair` `lantern` | The hero and the System Hand only |
+| `human` | `skin` `hoodie` `denim` `hair` `lantern` | The vibecoder and the System Hand only |
 | `hardware` | `pcb` `pcbDark` `solder` `heatsink` `gold` `copper` `silicon` `plastic` `rubber` | The world: rooms, doors, props, pickups, and the bodies of malware |
 | `signal` | `phosphor` `dataCyan` `powerAmber` `lockRed` (all emissive) | System light: LEDs, pickups, ports |
 | `malware` | `corruptMagenta` `corruptViolet` `toxicGreen` `voidPurple` `malwareEye` `ghostViolet` | Hostile things only, and every hostile thing must use it |
@@ -112,7 +112,7 @@ like TerraAgent's: both run after `OutputPass`, so they work in display colour; 
 roll band, grain, flicker and vignette, with no barrel warp. Hue therefore survives. The retro palettes
 (`paletteMode` 1 to 5) remain as options; modes 4 and 5 keep only 22% of the hue, so do not judge colour
 families under them.
-Still check every new visual in the asset lab with post on, not only in the software sheet.
+Still check every new visual in the storybook with post on, not only in the software sheet.
 
 ### Size and seeding notes from the shipped set
 
@@ -133,7 +133,7 @@ src/procgen/
   core/        palette, types (ModelSpec / PartSpec / ShapeSpec / AnimTag / PixelBuffer), catalogs,
                geometry baking, buildModel() -> THREE.Group, rasterizeModel() software preview
   kit/         greebles: reusable part groups (pins, fins, port shells, LEDs, cables)
-  archetypes/  hero, malware, pickups, doors, props, rooms: each registers in ModelCatalog
+  archetypes/  vibecoder, npc, agents, malware, pickups, doors, props, rooms: each registers in ModelCatalog
   textures/    palette-locked comic textures as PixelBuffers: each registers in TextureCatalog
   anim/        AnimTag evaluators and state poses
   fx/          comic particle / onomatopoeia presets
@@ -166,8 +166,8 @@ Run from the project root. Every script loads the TypeScript directly (Vite SSR)
 | `npm run procgen:anim` | Checks every model's AnimTags and steps every animator state (no NaN, no limb through the floor). |
 | `npm run procgen:selftest` | Proves the validators and the animator do what they claim, plus the harness smoke test. |
 | `npm run procgen:check` | tsc, self-tests, model / texture / FX validation and the sheet. Must be green before work is called done. |
-| `npm run dev` then `/asset-lab.html` | The real thing: models, textures (`?tab=textures`) and effects (`?tab=fx`) under the game's shaders, pixel-art and CRT passes. URL parameters: [asset-lab-url-params.md](../comic-panel-viewport-auditor/references/asset-lab-url-params.md). |
-| `node scripts/harness/screenshot-lab.mjs --query "inspect=<id>&scale=game" --name <n>` | Headless-Chrome screenshot of the asset lab (real WebGL) to `scripts/harness/out/lab-<n>.png`. Read the PNG. `--page / --query nointro --eval "<js>"` shoots the game itself (drive it with `window.__term.submit(line)`). |
+| `npm run dev` then `/storybook.html` | The real thing: models, textures (`?tab=textures`) and effects (`?tab=fx`) under the game's shaders, pixel-art and CRT passes. URL parameters: [storybook-url-params.md](../comic-panel-viewport-auditor/references/storybook-url-params.md). |
+| `node scripts/harness/screenshot-lab.mjs --query "inspect=<id>&scale=game" --name <n>` | Headless-Chrome screenshot of the storybook (real WebGL) to `scripts/harness/out/lab-<n>.png`. Read the PNG. `--page / --query nointro --eval "<js>"` shoots the game itself (drive it with `window.__term.submit(line)`). |
 | `/cinematic.html?play=intro\|outro&t=<s>` | Preview the intro / outro cinematics (`src/cinematic`), frozen at a moment with `t`. |
 | `node scripts/harness/playthrough.mjs --ticks 3` | Plays the whole campaign through the game logic (`playthrough.script.json`), idle ticks between commands. Must pass with 0 deaths. |
 | `node scripts/harness/play-browser.mjs` | The same script typed through the real terminal in headless Chrome; fails on any console, page or stage error. Screenshots per floor to `out/play-*.png`. |
@@ -177,13 +177,13 @@ Run from the project root. Every script loads the TypeScript directly (Vite SSR)
 | `node .kiro/skills/shader-texture-tuning/scripts/check-examples.mjs` | Checks the shader recipes against the real shaders and the raster parity constants. |
 
 The loop for any visual change: **write the spec, validate, render the sheet, look, fix, then check
-it in the asset lab.** Numbers first, eyes second, never eyes only and never numbers only.
+it in the storybook.** Numbers first, eyes second, never eyes only and never numbers only.
 
 ## Which skill for what
 
 | Task | Skill |
 |---|---|
-| Hardware props, the hero, doors, pickups, greebles | [procedural-kitbash-3d](../procedural-kitbash-3d/SKILL.md) |
+| Hardware props, the vibecoder, doors, pickups, greebles | [procedural-kitbash-3d](../procedural-kitbash-3d/SKILL.md) |
 | Enemies | [procedural-malware-3d](../procedural-malware-3d/SKILL.md) |
 | Rooms and backdrops | [procedural-rooms-3d](../procedural-rooms-3d/SKILL.md) |
 | Textures | [procedural-texture-synthesis](../procedural-texture-synthesis/SKILL.md) |

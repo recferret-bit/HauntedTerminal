@@ -42,11 +42,11 @@ What follows from that (these surprise people):
   sprites; for the current renderer that is wrong.)
 - **`anchor`, `targetHeight` and `tintFallback` are not read by any code.** Keep them valid (the type
   `ManifestEntry` requires them) but do not expect them to move or scale anything.
-- **Keys are the cast group names** in `src/renderer/procedural-cast.ts`: `hero`, `poltergeist`,
+- **Keys are the cast group names** in `src/renderer/procedural-cast.ts`: `vibecoder`, `poltergeist`,
   `crate_bridge`, `socket_guardian`, `gargoyle`, `locked_gate`, `necromancer_boss`, `zombie_worker`,
   `black_hole`, `mirror_door`, `item_scroll`. `system_hand` is in the manifest but is built after the
   texture pass, so its PNG is never applied.
-- Procgen models built with `buildModel()` carry `userData.assetKey = spec.id` (`hero.dev`), not the
+- Procgen models built with `buildModel()` carry `userData.assetKey = spec.id` (`vibecoder.dev`), not the
   manifest key. When the stage adopts them, map through `ModelEntry.gameKey`.
 
 Workflow:
@@ -106,7 +106,7 @@ concept image  ->  image-to-3D or Blender  ->  decimate in Blender  ->  sanitize
    it as a `ModelSpec` instead: a kitbash model is smaller, animatable part by part, and validated.
 
 Choose `--families` by who the model is (the family rules are in the art bible): props, doors, rooms
-`hardware,signal,glass,neutral` (the default); malware add `malware`; the hero `human,neutral`.
+`hardware,signal,glass,neutral` (the default); malware add `malware`; the vibecoder `human,neutral`.
 
 ## What a GLB cannot give you
 

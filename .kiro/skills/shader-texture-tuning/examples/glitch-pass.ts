@@ -1,5 +1,5 @@
 /**
- * A post effect that respects the page: a screen-space glitch for the moment malware hits the hero.
+ * A post effect that respects the page: a screen-space glitch for the moment malware hits the vibecoder.
  * It follows the pattern of src/shaders/crt-pass.ts (a ShaderPass plus set* helpers) and goes into the
  * composer BEFORE the pixel-art pass, so its output is quantized, dithered and scanlined like
  * everything else:

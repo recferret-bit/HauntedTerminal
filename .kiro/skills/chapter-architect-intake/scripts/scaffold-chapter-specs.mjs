@@ -553,7 +553,7 @@ for (let p = 1; p <= pageCount; p++) {
         room: p === 1 ? 'room.desk' : 'room.furnace',
         caption: `ISSUE #${issueNumber} // PAGE ${p}: ${title}`,
         cast: [
-          { model: 'hero.dev', x: -0.45, scale: 1.0 },
+          { model: 'vibecoder.dev', x: -0.45, scale: 1.0 },
           { model: 'door.socket', x: 0.45, scale: 0.9 },
         ],
         bubbles: [
@@ -567,7 +567,7 @@ for (let p = 1; p <= pageCount; p++) {
         room: p === pageCount ? 'room.core' : 'room.catwalk',
         caption: `${bossName.toUpperCase()} SEIZES THE PIPELINE!`,
         cast: [
-          { model: 'hero.dev', x: -0.5, scale: 1.0 },
+          { model: 'vibecoder.dev', x: -0.5, scale: 1.0 },
           { model: p === pageCount ? 'boss.kernel' : 'malware.virus', x: 0.42, scale: 1.05 },
         ],
         bubbles: [

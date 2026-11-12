@@ -13,7 +13,7 @@ ever sees the front. Helpers named here are in `src/procgen/kit/shapes.ts` and a
   screen coordinates (+x right) and pass it through `outlineFlipX`.
 - Rotations are Euler XYZ radians. A positive z rotation is counter-clockwise in model space, which
   is **clockwise on screen**.
-- One fixed light shines from above and toward the camera (`LIGHT` in `src/procgen/core/raster.ts`).
+- One fixed light shines from above and toward the camera (`LIGHT` in `src/procgen/geometry/raster-shade.ts`).
   Faces that look at the camera or up are in the lit band, faces that look down are in shadow, and
   the two sides of a box land in different bands.
 
@@ -29,7 +29,7 @@ ever sees the front. Helpers named here are in `src/procgen/kit/shapes.ts` and a
 | A round cable in 3D, a tentacle | `tube` via `greebleCable` | Follows a smooth path. ~220 triangles for three points. |
 | A flat cable, strap, crack, trace, arm | `extrude` of `outlineStroke(path, width)` | A ribbon along a polyline, mitred corners, a few dozen triangles. |
 | A turned profile: bottle, bell, finial | `lathe` with a `[radius, y]` profile | Only when the roundness shows as shading; otherwise extrude its silhouette. |
-| A soft blob (hero only) | `extrude` with a round outline and `bevel` 0.02 to 0.03, or `capsule` / `sphere` | Bevel gives the soft cel edge without the triangle cost. |
+| A soft blob (vibecoder only) | `extrude` with a round outline and `bevel` 0.02 to 0.03, or `capsule` / `sphere` | Bevel gives the soft cel edge without the triangle cost. |
 
 Rule of thumb: if you can describe it as "this outline, this thick", it is an `extrude`.
 

@@ -17,7 +17,7 @@ Model space, as for every model: y up, the model faces −z, the camera is on �
           │                    UPPER WALL: motifs, the few accents           │
  y = 2.4  │ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┌─────────────────────────────────────────────┤  ACTOR_BAND.top
           │ tall dressing,     │ dark relief only: silicon / pcbDark /       │
-          │ any hardware zone  │ rubber / ink.  hero ~ x 0.7, doors far right│
+          │ any hardware zone  │ rubber / ink.  vibecoder ~ x 0.7, doors far right│
  y = 0    ├────────────────────┴─────────────────────────────────────────────┤  floor top = feet
  y = −0.6 └────────────────────  APRON (floor front face)  ──────────────────┘
 ```
@@ -49,7 +49,7 @@ All in room-frame coordinates.
 
 | Socket | Rooms | Position | Use |
 |---|---|---|---|
-| `hero` | all | `[designToRoomX(hero x in view.ts), 0, 0]` | Hero spawn |
+| `vibecoder` | all | `[designToRoomX(vibecoder x in view.ts), 0, 0]` | Vibecoder spawn |
 | `caption` | all | `[3.75, 4.55, 0.25]` | Top-left corner for the yellow caption box |
 | `door.left` | all | `[3.3, 0, 0.25]` | A door in the left wing (the way back) |
 | `door.right` | all | `[−3.55, 0, 0.25]`, or the gate actor's x | A door on the right edge (the way on) |
@@ -79,7 +79,7 @@ uses. If `view.ts` moves an actor, update the argument, not the number.
   `panelLeft` .. `panelRight`, clamped at both ends.
 - `designToRoomX` does the same thing onto the room: `t = (4.9 − x) / 6.05`,
   `roomX = 4 − 8t`. So design 4.9 → room +4, design 1.875 → room 0, design −1.15 → room −4.
-  The hero at design 2.4 lands at room x = 0.69.
+  The vibecoder at design 2.4 lands at room x = 0.69.
 - The orthographic view is `5.35 / zoom` units tall, centred on y = 2.45 (`CAM_HOME`, `LOOK_HOME`).
   `layoutFill()` sets `feetY = viewBottom + 0.5` (0.295 at zoom 1; the constant `FEET_Y = 0.62` is only
   the value before the first layout). So the room's y = 0 belongs at `feetY`, its apron fills the

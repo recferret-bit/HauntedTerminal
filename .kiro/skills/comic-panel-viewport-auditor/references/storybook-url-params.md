@@ -1,7 +1,7 @@
-# Asset lab: URL parameters and automation
+# Storybook: URL parameters and automation
 
-Page: `asset-lab.html` at the project root, served by `npm run dev` at
-`http://localhost:5173/asset-lab.html`. Code: `src/lab/` (entry `asset-lab.ts`, parameters in
+Page: `storybook.html` at the project root, served by `npm run dev` at
+`http://localhost:5173/storybook.html`. Code: `src/storybook/` (entry `storybook.ts`, parameters in
 `options.ts`). Every control writes its state back into the URL, so the address bar is always a
 link to what is on screen. Only values that differ from the default are written. Unknown
 parameters are ignored with a `console.warn`.
@@ -12,7 +12,7 @@ Booleans accept `1/0`, `true/false`, `on/off`, `yes/no`.
 |---|---|---|---|
 | `inspect` | (none) | a model, texture or FX id | One subject, large. Without it: the gallery. Left/right arrows step through the current list, Esc returns. |
 | `tab` | `models` | `models` `textures` `fx` | Gallery tab. Inspecting a texture or FX id switches tab by itself. |
-| `category` | `all` | `hero` `malware` `boss` `pickup` `door` `prop` `room` `fx` | Gallery filter for models. |
+| `category` | `all` | `vibecoder` `npc` `agent` `malware` `boss` `pickup` `door` `prop` `room` `fx` | Gallery filter for models. |
 | `seed` | `1` | integer ≥ 0 | Rebuilds models, textures and FX emissions with this seed. |
 | `post` | (none) | bool | Shorthand: sets both `pixel` and `crt`. `pixel=` / `crt=` after it still win. |
 | `pixel` | `1` | bool | Pixel-art pass on/off. |
@@ -30,27 +30,27 @@ Booleans accept `1/0`, `true/false`, `on/off`, `yes/no`.
 | `silhouette` | `0` | bool | Every material replaced by flat ink on paper. The readability test. |
 | `sockets` | `0` | bool | Labelled markers at `spec.sockets`. |
 | `plinth` | `1` | bool | The game's floor strip under actors (inspect only). |
-| `guides` | `1` | bool | Ground line `y = 0`, dashed hero-height line at 1.6, the lantern cone outline. Overlays, not art. |
+| `guides` | `1` | bool | Ground line `y = 0`, dashed vibecoder-height line at 1.6, the lantern cone outline. Overlays, not art. |
 | `yaw` | `0` | −40..40 degrees | Debug only: turns the camera to check depth. A red stamp says it is not the game's view. Never judge art with it. |
 | `ui` | `1` | bool | `0` hides the bar, control column, caption and tags: art and ink frame only. Error captions stay. |
 | `dpr` | device, max 1.75 | number | Renderer pixel ratio. `dpr=1` is the coarsest (worst) quantizer grid. |
-| `fixtures` | `0` | `1` | Registers the lab's own test model, prop and texture (`src/lab/fixtures.ts`). Not game art. |
+| `fixtures` | `0` | `1` | Registers the lab's own test model, prop and texture (`src/storybook/fixtures.ts`). Not game art. |
 
 Examples:
 
 ```
-/asset-lab.html?category=malware&scale=game
-/asset-lab.html?inspect=malware.trojan&scale=game&bg=floor2
-/asset-lab.html?inspect=malware.trojan&silhouette=1&scale=game&ui=0
-/asset-lab.html?inspect=boss.forkbomb&lantern=1&t=0.5
-/asset-lab.html?inspect=malware.trojan&state=petrified&t=1
-/asset-lab.html?inspect=hero.dev&post=0&palette=0
-/asset-lab.html?tab=textures&pixel=0&crt=0
-/asset-lab.html?tab=fx&t=0.3
-/asset-lab.html?inspect=fx.sigkill&t=0.2
+/storybook.html?category=malware&scale=game
+/storybook.html?inspect=malware.trojan&scale=game&bg=floor2
+/storybook.html?inspect=malware.trojan&silhouette=1&scale=game&ui=0
+/storybook.html?inspect=boss.forkbomb&lantern=1&t=0.5
+/storybook.html?inspect=malware.trojan&state=petrified&t=1
+/storybook.html?inspect=vibecoder.dev&post=0&palette=0
+/storybook.html?tab=textures&pixel=0&crt=0
+/storybook.html?tab=fx&t=0.3
+/storybook.html?inspect=fx.sigkill&t=0.2
 ```
 
-## `window.__assetLab`
+## `window.__storybook`
 
 | Member | Returns |
 |---|---|
@@ -67,5 +67,5 @@ Examples:
 starts Vite, opens the page in the installed Chrome (headless, real WebGL), waits for `ready`,
 writes `scripts/harness/out/lab-<stem>.png`, prints the stats, and exits 1 on a page error or a
 blank WebGL frame. `--eval "<js>"` runs in the page before the shot (it may `await`), for example
-`--eval "await __assetLab.setOption('state','attack')"`. `--url http://localhost:5173` reuses a
+`--eval "await __storybook.setOption('state','attack')"`. `--url http://localhost:5173` reuses a
 running dev server. `--selftest` shoots the lab fixture and proves Chrome plus WebGL work here.

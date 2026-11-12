@@ -40,9 +40,9 @@ authored for +x = screen-right.
 
 `ppu = stage height in CSS px / (5.35 / zoom)`. The stage is the window minus the terminal dock
 (`clamp(260px, 36vh, 420px)`) and page padding. Examples at zoom 1: a 310 px stage gives ~58 px per
-unit (the art bible's design number, the hero ~93 px tall); a 1080 px tall window gives about
+unit (the art bible's design number, the vibecoder ~93 px tall); a 1080 px tall window gives about
 650 px of stage, ~120 px per unit. **58 is the small, worst case**: if it reads at 58 it reads everywhere.
-The asset lab's `scale=game` is exactly 58.
+The storybook's `scale=game` is exactly 58.
 
 The pixel-art cell is `pixelSize` 2 **device** pixels. At pixel ratio 1 that is 2 CSS px (0.034 units at
 58 ppu); at 1.75 it is 1.14 CSS px. Pixel ratio 1 is the coarsest frame, so check at `dpr=1`.
@@ -100,7 +100,7 @@ collected `comics`: anything added later must be fed by hand.
 
 - `setInk()` at boot scales every `userData.outline` shell by `1 + 0.045 * outline` (1.045 at the
   default) and forces `uHalftone` on or off for every comic material in `world`.
-- Lantern: `applyLantern(t)` only fades the ghost and boosts the hero glow. There is no darkness
+- Lantern: `applyLantern(t)` only fades the ghost and boosts the vibecoder glow. There is no darkness
   cone in the game today; `config.lanternRadius` (140) is declared and unused. The lab's
   lantern-dark mode is a stricter test than the game, on purpose.
 - State tints today (`syncRoom`, `PROC_SIGNALED`): petrified paints `uColor` 0x6c757d, frozen 0x4cc9f0,

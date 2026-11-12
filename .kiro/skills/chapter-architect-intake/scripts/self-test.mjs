@@ -61,7 +61,7 @@ try {
   const comixPath = resolve(tmp, 'chapter-99-self-test/story/comix.spec.json');
   const levelPath = resolve(tmp, 'chapter-99-self-test/levels/level-02-terminal/level.spec.json');
 
-  manifest.allyNpc.model = 'hero.dev'; // triggers HUMAN_ZONE_MISUSE
+  manifest.allyNpc.model = 'vibecoder.dev'; // triggers HUMAN_ZONE_MISUSE
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
 
   const comix = JSON.parse(readFileSync(comixPath, 'utf8'));

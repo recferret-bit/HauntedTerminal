@@ -1,6 +1,6 @@
 # Post chain: what each pass does to the art
 
-Order (`ComicStage` constructor, and the asset lab's `src/lab/lab-stage.ts`):
+Order (`ComicStage` constructor, and the storybook's `src/storybook/stage/lab-stage.ts`):
 `RenderPass` -> `OutputPass` (sRGB + ACES tone mapping at 1.05) -> pixel-art pass -> CRT pass.
 Live tuning in the game: F8 opens the shader lab (`src/ui/visual-lab.ts`), F9 toggles CRT, F10
 toggles pixel-art; values persist in `localStorage` under `haunted.lab.*`. Judge art at the defaults

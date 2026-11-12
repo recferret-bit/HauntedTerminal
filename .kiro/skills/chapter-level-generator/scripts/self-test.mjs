@@ -221,7 +221,7 @@ await withProcgen(async (_p, vite) => {
     tacticalMode: true,
   });
   kiroSession.skipIntro();
-  assert.ok(kiroSession.snapshot().room.actors.some((a) => a.id === 'kiro' && a.model === 'prop.kiro_ghost'));
+  assert.ok(kiroSession.snapshot().room.actors.some((a) => a.id === 'kiro' && a.model === 'npc.kiro_ghost'));
   assert.ok(kiroSession.exec('kiro').output.includes('qwen-coder-7b-q4.gguf'));
   assert.ok(kiroSession.exec('cat store.conf | kiro').output.includes('CATALOG_PORT=0000'));
   const startCrack = kiroSession.exec('kiro crack agy_cloud.lock');
@@ -253,7 +253,7 @@ await withProcgen(async (_p, vite) => {
   assert.equal(kiroRealtime.snapshot().enemiesLeft, 0, 'At Level 1 spawn, HUD enemiesLeft must be 0');
   const arrival = kiroRealtime.arriveLevel();
   assert.ok(arrival.output.includes('Where am I') && arrival.output.includes('KIRO GHOST FOUND YOU'));
-  assert.ok(arrival.events.some((e) => e.type === 'HERO_EMOTE' && e.emote === 'shock'));
+  assert.ok(arrival.events.some((e) => e.type === 'VIBECODER_EMOTE' && e.emote === 'shock'));
   assert.ok(arrival.events.some((e) => e.type === 'AGENT_TAUNT' && e.agent === 'kiro'));
   assert.ok(
     arrival.events.some((e) => e.type === 'TUTORIAL_STEP' && e.agent === 'kiro' && e.step === 1 && e.command === 'ls'),
@@ -261,8 +261,8 @@ await withProcgen(async (_p, vite) => {
   assert.equal(arrival.snapshot.tutorial?.agent, 'kiro');
   assert.equal(arrival.snapshot.tutorial?.step, 1);
   assert.ok(
-    arrival.snapshot.room.actors.some((a) => a.id === 'kiro' && a.model === 'prop.kiro_ghost'),
-    'After arriveLevel(), Kiro Ghost (prop.kiro_ghost) must materialize on stage',
+    arrival.snapshot.room.actors.some((a) => a.id === 'kiro' && a.model === 'npc.kiro_ghost'),
+    'After arriveLevel(), Kiro Ghost (npc.kiro_ghost) must materialize on stage',
   );
   // Even after 15 real-time ticks in Level 1 Tutorial, player takes 0 damage (tutorial truce)
   const startHp = kiroRealtime.snapshot().hp;
@@ -320,11 +320,11 @@ await withProcgen(async (_p, vite) => {
   const gpuCollect = kiroChap.exec('mv gpu_tensor_chip_01.img ~');
   assert.ok(gpuCollect.output.includes('Local GPU Tensor Chip'), 'GPU pickup must report Local GPU Tensor Chip');
 
-  // Jump to Hub 1 (Level 4): verify prop.greybeard_rig on stage, dad command, and kiro load qwen disabling AGY-9
+  // Jump to Hub 1 (Level 4): verify npc.greybeard_rig on stage, dad command, and kiro load qwen disabling AGY-9
   kiroChap.jumpToLevel('level-04-hub-model-one');
   assert.ok(
-    kiroChap.snapshot().room.actors.some((a) => a.model === 'prop.greybeard_rig'),
-    'Hub room must render prop.greybeard_rig for dad.tty.sock',
+    kiroChap.snapshot().room.actors.some((a) => a.model === 'npc.greybeard_rig'),
+    'Hub room must render npc.greybeard_rig for dad.tty.sock',
   );
   // Before running `kiro load qwen`, the `kiro_loaded` winRule must NOT be satisfied!
   assert.equal(
@@ -387,8 +387,8 @@ await withProcgen(async (_p, vite) => {
   kiroChap.jumpToLevel('level-11-boss-claude-core');
   const bossActors = kiroChap.snapshot().room.actors;
   assert.ok(
-    bossActors.some((a) => a.model === 'malware.agent_claude'),
-    'Boss room must render malware.agent_claude alongside boss.kernel',
+    bossActors.some((a) => a.model === 'agent.claude'),
+    'Boss room must render agent.claude alongside boss.kernel',
   );
   // Check that no two ground actors in Level 11 overlap in x
   const groundActors = bossActors.filter((a) => a.id !== 'kiro');
@@ -418,8 +418,8 @@ await withProcgen(async (_p, vite) => {
   assert.ok(kiroExit.output.includes('12 hours a day, 7 days a week'));
   assert.ok(kiroExit.output.includes('Work/Life Balance'));
   assert.ok(
-    kiroExit.snapshot.room.actors.some((a) => a.id === 'father:outro' && a.model === 'prop.greybeard_rig'),
-    'Real-world ending must include Father (prop.greybeard_rig) alongside Vibecoder',
+    kiroExit.snapshot.room.actors.some((a) => a.id === 'father:outro' && a.model === 'npc.greybeard_rig'),
+    'Real-world ending must include Father (npc.greybeard_rig) alongside Vibecoder',
   );
 
   catalog.resetInMemoryStoresForTest();

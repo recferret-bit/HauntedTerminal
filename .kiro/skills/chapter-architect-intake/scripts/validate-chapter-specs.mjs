@@ -87,8 +87,8 @@ await withProcgen(async (procgen, vite) => {
     }
     if (!manifest.allyNpc?.model || !modelIds.has(manifest.allyNpc.model)) {
       errors.push(`${manifestPath}: allyNpc.model "${manifest.allyNpc?.model}" is not a registered ModelCatalog ID`);
-    } else if (manifest.allyNpc.model.startsWith('hero.')) {
-      errors.push(`${manifestPath}: HUMAN_ZONE_MISUSE — allyNpc.model "${manifest.allyNpc.model}" cannot use hero.* human palette models`);
+    } else if (manifest.allyNpc.model.startsWith('vibecoder.')) {
+      errors.push(`${manifestPath}: HUMAN_ZONE_MISUSE — allyNpc.model "${manifest.allyNpc.model}" cannot use vibecoder.* human palette models`);
     }
     if (!manifest.boss?.model || !modelIds.has(manifest.boss.model)) {
       errors.push(`${manifestPath}: boss.model "${manifest.boss?.model}" is not a registered ModelCatalog ID`);

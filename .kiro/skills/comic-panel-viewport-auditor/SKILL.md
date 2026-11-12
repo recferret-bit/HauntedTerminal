@@ -1,6 +1,6 @@
 ---
 name: comic-panel-viewport-auditor
-description: "[ASSET PCG] Camera, page contract and visual QA for generated assets: orthographic camera on -z, ink-framed comic panel, design band, feet line, `assertFrame`, and the QA loop (software contact sheet, `/asset-lab.html` with silhouette, game-scale, lantern-dark, floor-background, flash, state and post-pass checks, headless screenshots, how to judge a screenshot honestly). Use whenever you add or change a model, texture, FX preset, shader, post pass, room, camera or panel layout, before calling any visual asset work done, and whenever someone asks whether something 'reads' or how to screenshot it."
+description: "[ASSET PCG] Camera, page contract and visual QA for generated assets: orthographic camera on -z, ink-framed comic panel, design band, feet line, `assertFrame`, and the QA loop (software contact sheet, `/storybook.html` with silhouette, game-scale, lantern-dark, floor-background, flash, state and post-pass checks, headless screenshots, how to judge a screenshot honestly). Use whenever you add or change a model, texture, FX preset, shader, post pass, room, camera or panel layout, before calling any visual asset work done, and whenever someone asks whether something 'reads' or how to screenshot it."
 ---
 
 # Comic panel viewport auditor
@@ -25,7 +25,7 @@ The game draws one comic panel per directory (`src/renderer/comic-stage.ts`, `Co
   and mapped linearly onto the live panel. The screen-right 20% (1.7 to 2.8 units) is the neighbor
   column behind a 0.14 gutter. Top-left holds the masthead and yellow caption, top-right the HUD,
   bottom corners the F2 button and shader dock: nothing that must be read goes in a corner.
-- **Scale:** px per unit = stage height / (5.35 / zoom). 58 px per unit (hero ~93 px) is the small,
+- **Scale:** px per unit = stage height / (5.35 / zoom). 58 px per unit (vibecoder ~93 px) is the small,
   worst case and the art bible's design number; a 1080 px window gives ~120.
 
 All numbers with sources: [references/camera-and-panel.md](./references/camera-and-panel.md).
@@ -51,10 +51,10 @@ Numbers first, then eyes, in this order. Do not skip to the game.
 1. **Software sheet** (no browser): `npm run procgen:sheet` writes `scripts/harness/out/models.png`;
    `node scripts/harness/render-sheet.mjs <id> --views` adds side and top views to check depth.
    Open the PNG. Fix silhouette and proportions here; it is the fastest loop.
-2. **Asset lab**, the real renderer: `npm run dev`, open `http://localhost:5173/asset-lab.html`.
+2. **Storybook**, the real renderer: `npm run dev`, open `http://localhost:5173/storybook.html`.
    The gallery shows every `ModelCatalog` model at one shared scale with a ground line and a dashed
-   hero-height (1.6) line, plus `textures` and `fx` tabs. Click a panel to inspect; every toggle is a URL
-   parameter ([references/asset-lab-url-params.md](./references/asset-lab-url-params.md)).
+   vibecoder-height (1.6) line, plus `textures` and `fx` tabs. Click a panel to inspect; every toggle is a URL
+   parameter ([references/storybook-url-params.md](./references/storybook-url-params.md)).
    Headless, one command: `node .kiro/skills/comic-panel-viewport-auditor/scripts/lab-qa.mjs <id>`
    shoots every test below to `scripts/harness/out/lab-<id>-<test>.png` (18 shots for an enemy, ~20 s).
    One shot: `node scripts/harness/screenshot-lab.mjs --query "inspect=<id>&scale=game" --name <stem>`.
@@ -85,7 +85,7 @@ Run each with `scale=game` unless stated. A fail is a fail; write down which rul
 | 9 | `scale=game`, `dpr=1` | No important part thinner than ~2 px; the focal point survives the quantizer. | 9 readable small |
 | 10 | `bg=floor1`..`floor5`, `paper` | The actor separates from all five backdrops by luma at the silhouette. Under COMIX the dark floors quantize to almost one plum: also look with `palette=0`. | 9, mood |
 | 11 | `state=hidden/petrified/frozen/enraged`, `attack` with `t` < 0.6 | Hidden barely shows; stone and ice change the read but keep the silhouette; enraged reads hotter. | enemies |
-| 12 | gallery, same category | Sizes match the art bible (hero 1.6, minions 0.6-1.1, bosses 1.8-2.6, pickups 0.3-0.5). | sizes |
+| 12 | gallery, same category | Sizes match the art bible (vibecoder 1.6, minions 0.6-1.1, bosses 1.8-2.6, pickups 0.3-0.5). | sizes |
 
 ## 5. Judging a screenshot honestly
 
@@ -101,7 +101,7 @@ Common failures and the usual fix:
   (≥ 4 px, 0.07 units) and spacing ≥ 1 cell; delete what cannot be made big.
 - **Ink doubling**: two ink lines where parts overlap or nearly touch, or a black smear on small parts.
   Merge the parts, separate them by ≥ 0.06, or set `outline: false` on tiny decals.
-- **Wrong colour family**: under COMIX the hero or a pickup reads like malware. Separate by luma
+- **Wrong colour family**: under COMIX the vibecoder or a pickup reads like malware. Separate by luma
   (a brighter or darker zone), not hue; check with `palette=0` that the hue is right too.
 - **Glow everywhere**: three or more cream blobs of the same brightness. Keep one focal emissive; turn
   the rest into hardware zones.

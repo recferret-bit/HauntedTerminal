@@ -46,14 +46,14 @@ variant must separate by value. Two zones of the same luma are the same colour o
 
 Tuning notes:
 
-- `pixelSize` 2 with a 58 px per unit camera gives the hero about 46 cells of height. At 3 the ink
+- `pixelSize` 2 with a 58 px per unit camera gives the vibecoder about 46 cells of height. At 3 the ink
   shell (1.6 px) starts to break up; raise `inkWeight` with it or leave it.
 - `dither` and `colorLevels` trade: `dither / levels` is the visible amplitude. 0.28 / 20 is quiet.
 - `edgeStrength` thickens outlines only where the pass sees a luma step. It cannot draw an outline
   between two parts of equal value; that is the ink shell's job.
 - To add a palette mode: add a branch in `applyPaletteMode` (keep the 78 / 22 mix so `signal` hues
   still tint), extend the comment at the top of the file, `PALETTE_NAMES` in `src/ui/visual-lab.ts`
-  and `src/lab/options.ts`, and the `paletteMode` slider `max`.
+  and `src/storybook/domain/options.ts`, and the `paletteMode` slider `max`.
 
 ## CRT pass (`src/shaders/crt-pass.ts`)
 
@@ -87,9 +87,9 @@ a slider dialog. It calls `stage.setPixelParams`, `stage.setCrtParams`, `stage.s
   `set*Params` function, to the matching `*_SLIDERS` list and to the `write*` / `*Field` switches in
   `visual-lab.ts`. Sliders are data; the dialog renders from the list.
 
-The asset lab (`/asset-lab.html`, `src/lab/`) has its own toggles for the same passes and palette
-modes and takes them as URL parameters (`src/lab/options.ts`), which makes before / after screenshots
-reproducible: `/asset-lab.html?tab=textures&pixel=0&crt=0`.
+The storybook (`/storybook.html`, `src/storybook/`) has its own toggles for the same passes and palette
+modes and takes them as URL parameters (`src/storybook/domain/options.ts`), which makes before / after screenshots
+reproducible: `/storybook.html?tab=textures&pixel=0&crt=0`.
 
 ## Adding a post pass
 

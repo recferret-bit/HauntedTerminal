@@ -5,12 +5,10 @@
  * The self-test loads and runs this file, so it always matches the real API:
  *   node .kiro/skills/procedural-animation-3d/scripts/self-test.mjs
  */
-import { buildModel } from '../../../../src/procgen/core/build.js';
+import { buildModel } from '../../../../src/procgen/runtime/build.js';
 import type { AnimTag, ModelSpec, PartSpec } from '../../../../src/procgen/core/types.js';
-import {
-  animReactionsFor, animStateForActor, createAnimator, createAnimMaterialTint, validateAnimTags,
-  type AnimState,
-} from '../../../../src/procgen/anim/index.js';
+import { animReactionsFor, animStateForActor, validateAnimTags, type AnimState } from '../../../../src/procgen/anim/index.js';
+import { createAnimator, createAnimMaterialTint } from '../../../../src/procgen/runtime/index.js';
 
 const HIP_Y = 0.42;
 const SHOULDER_Y = 0.86;
