@@ -1,13 +1,10 @@
 import * as THREE from 'three';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import type { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { INK, PAPER } from '../../procgen/core/palette.js';
+import { createComicComposer, frameOrtho, type ComicPost } from '../../shaders/comic-composer.js';
 import { createComicMaterial, type ComicMaterial } from '../../shaders/comic-material.js';
-import { createCrtPass, setCrtSize, setCrtTime } from '../../shaders/crt-pass.js';
+import { setCrtSize, setCrtTime } from '../../shaders/crt-pass.js';
 import { LightningStrikeSystem } from '../../shaders/lightning.js';
-import { createPixelArtPass, DEFAULT_PIXEL_PARAMS, setPixelArtParams, setPixelArtSize } from '../../shaders/pixel-art.js';
+import { DEFAULT_PIXEL_PARAMS, setPixelArtParams, setPixelArtSize } from '../../shaders/pixel-art.js';
 import type { Subject } from '../subjects/index.js';
 import { LanternLayer } from './lantern-layer.js';
 import { ACTOR_Z, BACKDROP_Z, CAM_DISTANCE, CAM_FAR, CAM_NEAR, HELD_FLASH, PLINTH_COLOR } from './stage-constants.js';
@@ -48,9 +45,9 @@ export class LabStage {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.OrthographicCamera(-1, 1, 1, -1, CAM_NEAR, CAM_FAR);
-  private readonly composer: EffectComposer;
-  private readonly pixelPass: ShaderPass;
-  private readonly crtPass: ShaderPass;
+  private readonly composer: ComicPost['composer'];
+  private readonly pixelPass: ComicPost['pixelPass'];
+  private readonly crtPass: ComicPost['crtPass'];
   private readonly lightning: LightningStrikeSystem;
   private readonly lantern: LanternLayer;
   private readonly slot = new THREE.Group();
@@ -67,16 +64,7 @@ export class LabStage {
   private height = 1;
 
   constructor(pixelRatio: number) {
-    // Same renderer setup as ComicStage. preserveDrawingBuffer only makes the canvas readable for screenshots.
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     this.pixelRatio = pixelRatio;
-    this.renderer.setPixelRatio(pixelRatio);
-    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
-    this.renderer.info.autoReset = false;
-    this.canvas = this.renderer.domElement;
-
     this.backdropMat = createComicMaterial(0x211a36, { halftone: true });
     this.backdrop = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), this.backdropMat);
     this.backdrop.rotation.y = Math.PI;
@@ -85,20 +73,25 @@ export class LabStage {
     this.lantern = new LanternLayer(this.camera);
 
     this.scene.add(this.camera, this.backdrop, this.plinth, this.slot);
-    this.pixelPass = createPixelArtPass(1, 1);
-    this.crtPass = createCrtPass(1, 1);
-    this.composer = this.createComposer();
+    // preserveDrawingBuffer keeps the canvas readable for lab screenshots.
+    const post = createComicComposer({
+      antialias: true,
+      preserveDrawingBuffer: true,
+      pixelRatio,
+      addKeyLights: false,
+      passWidth: 1,
+      passHeight: 1,
+      scene: this.scene,
+      camera: this.camera,
+      autoResetInfo: false,
+    });
+    this.renderer = post.renderer;
+    this.canvas = this.renderer.domElement;
+    this.composer = post.composer;
+    this.pixelPass = post.pixelPass;
+    this.crtPass = post.crtPass;
     this.lightning = new LightningStrikeSystem(this.scene);
     this.setSize(320, 240);
-  }
-
-  private createComposer(): EffectComposer {
-    const composer = new EffectComposer(this.renderer);
-    composer.addPass(new RenderPass(this.scene, this.camera));
-    composer.addPass(new OutputPass());
-    composer.addPass(this.pixelPass);
-    composer.addPass(this.crtPass);
-    return composer;
   }
 
   /** Size in CSS pixels. The post passes get device pixels, as in ComicStage.resize(). */
@@ -164,11 +157,7 @@ export class LabStage {
   /** Orthographic window of `halfW` x `halfH` world units, camera on −z, optionally yawed for debugging. */
   private aimCamera(req: RenderRequest, halfW: number, halfH: number): void {
     const cam = this.camera;
-    cam.left = -halfW;
-    cam.right = halfW;
-    cam.top = halfH;
-    cam.bottom = -halfH;
-    cam.updateProjectionMatrix();
+    frameOrtho(cam, halfW, halfH);
     const yaw = THREE.MathUtils.degToRad(req.yaw);
     this.target.set(req.centerX, req.centerY, ACTOR_Z);
     cam.position.set(req.centerX + Math.sin(yaw) * CAM_DISTANCE, req.centerY, ACTOR_Z - Math.cos(yaw) * CAM_DISTANCE);
