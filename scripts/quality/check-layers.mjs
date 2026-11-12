@@ -29,6 +29,8 @@ const LAYERS = [
   { area: 'storybook/app/', may: ['storybook/', 'procgen/', 'shaders/'], three: true },
   { area: 'storybook/fixtures.ts', may: ['procgen/core/'], three: false },
   { area: 'storybook/storybook.ts', may: ['storybook/app/', 'storybook/domain/'], three: false },
+  // Gameplay. Dependencies point inward: contracts and procgen stay free of the game.
+  { area: 'game/', may: ['contracts/', 'procgen/anim/', 'procgen/core/'], three: false },
   { area: 'main.ts', may: [], three: true },
 ];
 
