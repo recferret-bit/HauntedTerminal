@@ -1,18 +1,21 @@
 import { fileURLToPath } from 'node:url';
 import type { Connect } from 'vite';
 import { defineConfig } from 'vite';
+// @ts-expect-error plain Node module without types; it is dev-server tooling, not app code.
+import { chapterApi } from './scripts/harness/lib/chapter-api.mjs';
 
 /** HTML entry pages live in pages/ (see .kiro/steering/structure.md); it is the Vite root, so URLs stay `/` and `/storybook.html`. */
 const pages = (file = ''): string => fileURLToPath(new URL(`./pages/${file}`, import.meta.url));
 const project = (dir: string): string => fileURLToPath(new URL(`./${dir}`, import.meta.url));
 
-/** `/play/<chapter>/<level>` is the game. The browser keeps the path. */
+/** `/play/<chapter>/<level>` is the game and `/editor[/<chapter>[/<level>]]` the chapter editor; the browser keeps the path. */
 const playPaths = (): Connect.NextHandleFunction => (req, _res, next) => {
   const url = req.url ?? '';
   const q = url.indexOf('?');
   const path = q === -1 ? url : url.slice(0, q);
   const search = q === -1 ? '' : url.slice(q);
   if (path === '/play' || path.startsWith('/play/')) req.url = `/play.html${search}`;
+  if (path === '/editor' || path.startsWith('/editor/')) req.url = `/chapter-editor.html${search}`;
   next();
 };
 
@@ -27,6 +30,8 @@ export default defineConfig({
       configureServer: (server) => { server.middlewares.use(playPaths()); },
       configurePreviewServer: (server) => { server.middlewares.use(playPaths()); },
     },
+    // Dev server only: the chapter editor reads and writes chapters/ through /api/chapters.
+    chapterApi(),
   ],
   server: { port: 5173 },
   build: {
@@ -42,6 +47,7 @@ export default defineConfig({
         cinematic: pages('cinematic.html'),
         storybook: pages('storybook.html'),
         dev: pages('dev.html'),
+        editor: pages('chapter-editor.html'),
       },
     },
   },

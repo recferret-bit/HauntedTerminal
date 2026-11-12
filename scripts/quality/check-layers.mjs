@@ -39,6 +39,8 @@ const LAYERS = [
   { area: 'ui/', may: ['contracts/', 'game/', 'chapters/', 'shaders/', 'renderer/'], three: false },
   { area: 'sandbox/', may: ['contracts/', 'game/', 'renderer/', 'ui/'], three: false },
   { area: 'pages/', may: ['contracts/', 'game/', 'chapters/'], three: false },
+  // Chapter editor: edits chapter specs with forms driven by its own schema, previews through the game in an iframe.
+  { area: 'chapter-editor/', may: ['contracts/', 'game/', 'chapters/', 'procgen/'], three: false },
   { area: 'hub/', may: [], three: false },
   // Play page composition. main.ts only starts it. Helpers live in play/ so the entry stays small.
   { area: 'play/', may: ['assets/', 'chapters/', 'cinematic/', 'contracts/', 'game/', 'renderer/', 'sandbox/', 'ui/'], three: true },

@@ -9,29 +9,10 @@ const args = parseArgs(process.argv.slice(2), ['--chapter', '--root']);
 const chaptersRoot = resolve(projectRoot, args.val('--root', 'chapters'));
 const filterChapter = args.val('--chapter', '');
 
-const VALID_ROOMS = new Set([
-  'desk',
-  'attic',
-  'crypt_entrance',
-  'crypt_hall',
-  'chasm',
-  'cell',
-  'lab_hall',
-  'catwalk',
-  'furnace',
-  'core',
-  'outro',
-]);
-const VALID_PICKUPS = new Set(['energy', 'ram', 'ssd']);
-const VALID_MECHANICS = new Set([
-  'hub',
-  'terminal',
-  'html-css',
-  'terminal-code',
-  'docker-image',
-  'docker-compose',
-  'boss',
-]);
+// Filled from src/chapters/validate-pack.ts so there is one list of rooms, mechanics and pickups, not a copy per script.
+let VALID_ROOMS = new Set();
+let VALID_PICKUPS = new Set();
+let VALID_MECHANICS = new Set();
 
 function loadJson(filePath, errors) {
   try {
@@ -44,6 +25,11 @@ function loadJson(filePath, errors) {
 
 await withProcgen(async (procgen, vite) => {
   const { BESTIARY } = await vite.ssrLoadModule('/src/game/bestiary.ts');
+  const lists = await vite.ssrLoadModule('/src/chapters/validate-pack.ts');
+  const { checkPack } = await vite.ssrLoadModule('/src/chapter-editor/check.ts');
+  VALID_ROOMS = new Set(lists.ROOM_KINDS);
+  VALID_PICKUPS = new Set(lists.PICKUP_TYPES);
+  VALID_MECHANICS = new Set(lists.MECHANICS);
   const modelIds = new Set(procgen.ModelCatalog.list().map((e) => e.id));
   const enemyTypes = new Set(Object.keys(BESTIARY));
 
@@ -212,6 +198,20 @@ await withProcgen(async (procgen, vite) => {
           }
         }
       }
+    }
+  }
+
+  // The same static checks the chapter editor's Check tab runs: references, asset ids and the field tables (script blocks included).
+  for (const dirName of dirs) {
+    const cDir = resolve(chaptersRoot, dirName);
+    const manifest = existsSync(resolve(cDir, 'chapter.manifest.json')) ? loadJson(resolve(cDir, 'chapter.manifest.json'), errors) : null;
+    if (!manifest) continue;
+    const read = (rel) => (rel && existsSync(resolve(cDir, rel)) ? loadJson(resolve(cDir, rel), errors) : undefined);
+    const levels = (manifest.levels ?? []).map((l) => read(l.specPath)).filter(Boolean).sort((a, b) => a.index - b.index);
+    if (levels.length === 0) continue;
+    const pack = { manifest, levels, dialogs: read(manifest.comix?.dialogsPath), comix: read(manifest.comix?.specPath) };
+    for (const issue of checkPack(pack)) {
+      if (issue.severity === 'error') errors.push(`${dirName}/${issue.where}: ${issue.message}`);
     }
   }
 
