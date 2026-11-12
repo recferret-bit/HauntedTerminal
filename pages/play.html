@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Haunted Terminal — Play</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23140f12'/%3E%3Crect x='2' y='3' width='12' height='9' fill='%23ffd166'/%3E%3Crect x='4' y='6' width='2' height='2' fill='%23140f12'/%3E%3Crect x='7' y='9' width='5' height='1' fill='%23ff6a13'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <div id="page">
+      <div id="stage-wrapper">
+        <div id="stage-mount"></div>
+        <div id="topbar">
+          <div id="titleblock">
+            <header id="masthead">
+              <h1>HAUNTED <span>TERMINAL</span></h1>
+              <p id="masthead-sub">Comix Zone // Haunted Mansion · <a href="/">Issues</a></p>
+            </header>
+            <div id="stage-caption">FLOOR 01 // /home/dev/nightmare_workspace/desk</div>
+          </div>
+          <div id="hud"></div>
+        </div>
+        <button id="sandbox-toggle-btn" type="button" title="Shortcut: F2">F2</button>
+        <div id="shader-dock"></div>
+        <aside id="dev-inspector" class="hidden"></aside>
+        <div id="outro"></div>
+      </div>
+      <div id="terminal-dock">
+        <section id="code-editor-pane" class="hidden" aria-label="Split Code Mini-Editor"></section>
+        <div id="terminal-bezel">
+          <div id="tty-bar"><span><i></i>TTY0</span><span>SHELL</span></div>
+          <div id="terminal-panel"></div>
+        </div>
+      </div>
+    </div>
+    <div id="cinematic"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

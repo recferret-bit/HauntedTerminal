@@ -10,7 +10,7 @@
 //
 // Options: --url <dev server>  --script <json, default scripts/harness/playthrough.script.json>
 //          --gap 1500 (ms between lines)  --width 1280 --height 800  --chrome <path>  --line-timeout 20000
-//          --nointro   load /?nointro instead of skipping the intro cinematic with Esc
+//          --nointro   load /play?nointro=1 instead of skipping the intro cinematic with Esc
 //          --verbose   print each line with the floor/hp after it
 // Script entries: "command" or {"tick": n} (wait n real seconds).
 // Writes scripts/harness/out/play-<floor>.png (one per floor, after its title card) and play-end.png.
@@ -109,10 +109,10 @@ async function main() {
     }
     base = base.replace(/\/$/, '');
     const origin = new URL(base).origin;
-    const pagePath = args.val('--page', '/play.html').replace(/^\/*/, '/');
+    const pagePath = args.val('--page', '/play').replace(/^\/*/, '/');
     const queryParts = [];
     if (args.val('--query')) queryParts.push(args.val('--query').replace(/^\?/, ''));
-    else if (!args.val('--script')) queryParts.push('chapter=chapter-00-classic-kernel');
+    else if (!args.val('--script')) queryParts.push('chapter=chapter-01-kiroween');
     if (args.flag('--nointro') && !queryParts.join('&').includes('nointro')) queryParts.push('nointro=1');
     const url = `${base}${pagePath}${queryParts.length ? `?${queryParts.join('&')}` : ''}`;
 

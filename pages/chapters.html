@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Haunted Terminal — Chapter &amp; Exact Level Selector</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23140f12'/%3E%3Crect x='2' y='3' width='12' height='9' fill='%23ffd166'/%3E%3Crect x='4' y='6' width='2' height='2' fill='%23140f12'/%3E%3Crect x='7' y='9' width='5' height='1' fill='%23ff6a13'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <main class="hub-shell">
+      <nav class="hub-nav" aria-label="Chapter Selector Navigation">
+        <a class="hub-brand" href="/">
+          <span class="hub-logo-badge">← HUB</span>
+          <strong>CHAPTER <span>&amp; LEVEL SELECT</span></strong>
+        </a>
+        <div class="hub-nav-links">
+          <span id="scrap-counter-pill" class="scrap-pill" title="Silicon Scrap earned from clearing sectors &amp; Chaos Contracts">⚙ 0 SILICON SCRAP</span>
+          <a class="comic-btn teal" href="/comic.html?chapter=chapter-01-kiroween">Read Kiroween Comix</a>
+          <a class="comic-btn primary" href="/play/chapter-01-kiroween?nointro=1">Quick-Play Kiroween (#1)</a>
+        </div>
+      </nav>
+
+      <div class="section-head">
+        <h2>1. Select Comic Issue (Chapter)</h2>
+        <span id="chapters-summary-count">Loading issues...</span>
+      </div>
+
+      <section id="issue-rack" class="issue-rack" aria-label="Chapters"></section>
+
+      <div class="section-head">
+        <h2 id="selected-issue-heading">2. Select Exact Sector (Level)</h2>
+        <span id="selected-issue-subtitle"></span>
+      </div>
+
+      <section class="selector-workspace">
+        <div id="level-grid" class="level-grid" aria-label="Levels in selected chapter"></div>
+        <aside id="level-dossier" class="dossier-card" aria-live="polite"></aside>
+      </section>
+
+      <div class="section-head" id="metagame-deck">
+        <h2>3. /home/dev Rig Workshop, Command Grimoire &amp; Malware Dossier</h2>
+        <span id="metagame-summary">Persistent ~/.bashrc perks &amp; field manuals</span>
+      </div>
+
+      <section id="workshop-rack" class="workshop-grid" aria-label="Rig Perks Workshop"></section>
+
+      <section class="binder-panel" aria-label="Grimoire and Bestiary Binder">
+        <div class="binder-tabs">
+          <button type="button" id="tab-grimoire" class="comic-btn teal">De-Vibed Command Grimoire</button>
+          <button type="button" id="tab-bestiary" class="comic-btn paper">Hardware Spirit &amp; Malware Dossier</button>
+        </div>
+        <div id="binder-content" class="binder-grid"></div>
+      </section>
+    </main>
+    <script type="module" src="/src/pages/chapters-page.ts"></script>
+  </body>
+</html>

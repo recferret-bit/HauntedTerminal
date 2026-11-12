@@ -1,13 +1,103 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Haunted Terminal</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23140f12'/%3E%3Crect x='2' y='3' width='12' height='9' fill='%23ffd166'/%3E%3Crect x='4' y='6' width='2' height='2' fill='%23140f12'/%3E%3Crect x='7' y='9' width='5' height='1' fill='%23ff6a13'/%3E%3C/svg%3E" />
+    <script>
+      (function () {
+        var params = new URLSearchParams(location.search);
+        var play = ['chapter', 'level', 'floor', 'nointro', 'skipIntro', 'tactical', 'chaos', 'play', 'dev'].some(function (k) { return params.has(k); });
+        if (!play) return;
+        var parts = ['/play'];
+        if (params.get('chapter')) parts.push(encodeURIComponent(params.get('chapter')));
+        if (params.get('level')) parts.push(encodeURIComponent(params.get('level')));
+        else if (params.get('floor')) parts.push('floor', encodeURIComponent(params.get('floor')));
+        ['chapter', 'level', 'floor'].forEach(function (k) { params.delete(k); });
+        var q = params.toString();
+        location.replace(parts.join('/') + (q ? '?' + q : '') + location.hash);
+      })();
+    </script>
   </head>
   <body>
-    <div id="scene"></div>
-    <div id="terminal"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/hub/hub.ts"></script>
+    <main class="hub-shell">
+      <nav class="hub-nav" aria-label="Primary Navigation">
+        <a class="hub-brand" href="/">
+          <span class="hub-logo-badge">COMIX // TTY</span>
+          <strong>HAUNTED <span>TERMINAL</span></strong>
+        </a>
+        <div class="hub-nav-links">
+          <a class="comic-btn primary" href="/play/chapter-01-kiroween">Play Kiroween</a>
+          <a class="comic-btn teal" href="/comic.html?chapter=chapter-01-kiroween">Read the Comix</a>
+        </div>
+      </nav>
+
+      <section class="hero-panel">
+        <div class="hero-copy">
+          <span class="caption-tag">KIROWEEN CAMPAIGN // 11 LEVELS</span>
+          <h1>KIRO GHOST, THE BIG FOUR &amp; THE <span>MATRIX GREYBEARD</span>.</h1>
+          <p>
+            Sucked into your computer into a dark tangle of wires and chips, you are found by
+            <strong>Kiro Ghost</strong>. Learn <code>ls</code>, <code>mv</code>, <code>cat</code>,
+            <code>ps</code>, and <code>kill</code>; raid 6 task levels for RAM &amp; GPU chips while the
+            <strong>Big Four</strong> (AGY, Codex, Grok, Claude) laugh at and bully you; bring parts to the Hub
+            where a cigarette-smoking <strong>Old Bearded Matrix Coder</strong> reboots Kiro with open-weight models
+            to disable the Big Four; defeat Claude's Final Boss; and teleport home for the ultimate Father reveal!
+          </p>
+          <div class="hero-cta-row">
+            <a class="comic-btn primary" href="/play/chapter-01-kiroween">
+              Launch Kiroween Campaign (11 Levels) →
+            </a>
+            <a class="comic-btn teal" href="/comic.html?chapter=chapter-01-kiroween">
+              Read 6-Page Kiroween Comix
+            </a>
+          </div>
+        </div>
+        <a class="hero-art-frame" href="/comic.html?chapter=chapter-01-kiroween" title="Open Kiroween Comix Reader">
+          <img src="/comix/chapter-01-kiroween/page-01.png" alt="Kiroween Issue #1 Page 1 Comix Preview" />
+          <span class="hero-art-stamp">6 FULL COMIX PAGES</span>
+        </a>
+      </section>
+
+      <div class="section-head">
+        <h2>Choose Your Entry Door</h2>
+        <span>Play the campaign, or read the issue first.</span>
+      </div>
+
+      <section class="door-grid">
+        <a class="door-card" href="/play/chapter-01-kiroween?nointro=1">
+          <div>
+            <div class="door-card-top">
+              <span class="door-kicker orange">11 PLAYABLE LEVELS</span>
+              <span>Kiroween #1</span>
+            </div>
+            <h3>Issue #1: Kiroween — Open Weights &amp; Family Ties</h3>
+            <p>
+              Wake in dark wires &amp; chips with Kiro Ghost, learn <code>ls</code>/<code>mv</code>/<code>cat</code>/<code>ps</code>/<code>kill</code>,
+              raid 6 sectors for RAM + GPU chips while the Big Four laugh and bully you, reboot Kiro at the Hub with the
+              cigarette-smoking Old Bearded Matrix Coder, defeat Claude, and discover the Father twist!
+            </p>
+          </div>
+          <span class="door-go">Play Kiroween (#1) →</span>
+        </a>
+
+        <a class="door-card" href="/comic.html?chapter=chapter-01-kiroween">
+          <div>
+            <div class="door-card-top">
+              <span class="door-kicker">COMIX ZONE READER</span>
+              <span>Pages 1–6</span>
+            </div>
+            <h3>Kiroween 6-Page Comix Story</h3>
+            <p>
+              Read the 6-page Kiroween comic issue rendered with real 3D <code>prop.kiro_ghost</code>,
+              <code>prop.greybeard_rig</code>, the Big Four, Claude &amp; the Kernel Boss, and the Father-Son Unicorn ending!
+            </p>
+          </div>
+          <span class="door-go">Read Kiroween Comix →</span>
+        </a>
+      </section>
+    </main>
   </body>
 </html>
