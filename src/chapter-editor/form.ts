@@ -31,8 +31,11 @@ function defaultFor(f: Field): unknown {
       return f.options[0];
     case 'strings':
     case 'numbers':
+    case 'pairs':
     case 'array':
       return [];
+    case 'textOrVec':
+      return '';
     case 'color':
       return '#000000';
     case 'object':
@@ -53,8 +56,8 @@ export function blankOf(fields: Field[]): Rec {
   return out;
 }
 
-export function blankUnion(variants: Record<string, Field[]>, kind: string): Rec {
-  return { kind, ...blankOf(variants[kind] ?? []) };
+export function blankUnion(variants: Record<string, Field[]>, kind: string, tag = 'kind'): Rec {
+  return { [tag]: kind, ...blankOf(variants[kind] ?? []) };
 }
 
 // ---- small controls -----------------------------------------------------------------------------------------------
@@ -79,6 +82,13 @@ function datalist(ctx: FormCtx, name: string): string {
   return id;
 }
 
+function trackText(input: HTMLInputElement | HTMLTextAreaElement, obj: Rec, f: Field, ctx: FormCtx): void {
+  input.addEventListener('input', () => {
+    put(obj, f, input.value, input.value === '');
+    ctx.changed();
+  });
+}
+
 function textField(obj: Rec, f: Of<'text'>, ctx: FormCtx): HTMLElement {
   const value = typeof obj[f.key] === 'string' ? (obj[f.key] as string) : '';
   const cls = f.mono ? 'mono' : '';
@@ -86,10 +96,7 @@ function textField(obj: Rec, f: Of<'text'>, ctx: FormCtx): HTMLElement {
     ? h('textarea', { rows: f.rows, class: cls, spellcheck: 'false' })
     : h('input', { type: 'text', class: cls, list: f.suggest ? datalist(ctx, f.suggest) : undefined, spellcheck: 'false' });
   input.value = value;
-  input.addEventListener('input', () => {
-    put(obj, f, input.value, input.value === '');
-    ctx.changed();
-  });
+  trackText(input, obj, f, ctx);
   return row(f, input, f.rows ? 'wide' : '');
 }
 
@@ -185,17 +192,18 @@ function iconButton(label: string, title: string, run: () => void): HTMLElement 
 
 function itemFields(host: HTMLElement, item: Rec, spec: ArrayItem, ctx: FormCtx, path: string, list: Rec[], index: number): void {
   if (spec.union) {
+    const tag = spec.tag ?? 'kind';
     const variants = spec.union();
     const kind = h('select', { class: 'kind' });
-    for (const k of Object.keys(variants)) kind.append(h('option', { value: k, selected: k === item.kind }, k));
+    for (const k of Object.keys(variants)) kind.append(h('option', { value: k, selected: k === item[tag] }, k));
     kind.addEventListener('change', () => {
-      const next = blankUnion(variants, kind.value);
+      const next = blankUnion(variants, kind.value, tag);
       if (typeof item.description === 'string' && 'description' in next) next.description = item.description;
       list[index] = next;
       ctx.restructure();
     });
-    host.append(row({ label: 'Kind' }, kind));
-    renderFields(host, item, variants[String(item.kind)] ?? [], ctx, path);
+    host.append(row({ label: tag === 'kind' ? 'Kind' : tag }, kind));
+    renderFields(host, item, variants[String(item[tag])] ?? [], ctx, path);
   } else {
     renderFields(host, item, spec.fields ?? [], ctx, path);
   }
@@ -230,7 +238,7 @@ function arrayField(obj: Rec, f: Of<'array'>, ctx: FormCtx, path: string): HTMLE
   const kind = variants ? h('select', {}, ...Object.keys(variants).map((k) => h('option', { value: k }, k))) : null;
   const add = h('button', { type: 'button', class: 'btn small' }, '+ Add');
   add.addEventListener('click', () => {
-    const next = variants && kind ? blankUnion(variants, kind.value) : blankOf(f.item.fields ?? []);
+    const next = variants && kind ? blankUnion(variants, kind.value, f.item.tag ?? 'kind') : blankOf(f.item.fields ?? []);
     const target = Array.isArray(obj[f.key]) ? (obj[f.key] as Rec[]) : (obj[f.key] = []) as Rec[];
     target.push(next);
     ctx.open.add(`${path}[${target.length - 1}]`);
@@ -280,12 +288,18 @@ function recordField(obj: Rec, f: Of<'record'>, ctx: FormCtx, path: string): HTM
       ctx.restructure();
       ctx.changed();
     });
-    if (f.value === 'string' || f.value === 'strings') {
+    if (f.value === 'string' || f.value === 'strings' || f.value === 'number') {
       const list = f.value === 'strings';
       const text = list ? (Array.isArray(map[key]) ? (map[key] as string[]).join(', ') : '') : String(map[key] ?? '');
-      const val = h('input', { type: 'text', class: 'mono', value: text, title: list ? 'comma separated' : undefined });
+      const val = f.value === 'number'
+        ? h('input', { type: 'number', step: 'any', value: text })
+        : h('input', { type: 'text', class: 'mono', value: text, title: list ? 'comma separated' : undefined });
       val.addEventListener('input', () => {
-        map[key] = list ? val.value.split(',').map((x) => x.trim()).filter(Boolean) : val.value;
+        if (f.value === 'number') {
+          map[key] = val.value.trim() === '' || !Number.isFinite(Number(val.value)) ? 0 : Number(val.value);
+        } else {
+          map[key] = list ? val.value.split(',').map((x) => x.trim()).filter(Boolean) : val.value;
+        }
         ctx.changed();
       });
       box.append(h('div', { class: 'rec-row' }, name, val, remove));
@@ -304,7 +318,7 @@ function recordField(obj: Rec, f: Of<'record'>, ctx: FormCtx, path: string): HTM
     const key = newKey.value.trim();
     if (!key || key in map) return;
     const target = isRec(obj[f.key]) ? (obj[f.key] as Rec) : (obj[f.key] = {}) as Rec;
-    target[key] = f.value === 'string' ? '' : f.value === 'strings' ? [] : blankOf(f.value);
+    target[key] = f.value === 'string' ? '' : f.value === 'strings' ? [] : f.value === 'number' ? 0 : blankOf(f.value);
     ctx.open.add(`${path}.${key}`);
     ctx.restructure();
     ctx.changed();
@@ -314,21 +328,83 @@ function recordField(obj: Rec, f: Of<'record'>, ctx: FormCtx, path: string): HTM
 }
 
 function unionField(obj: Rec, f: Of<'union'>, ctx: FormCtx, path: string): HTMLElement {
+  const tag = f.tag ?? 'kind';
   const variants = f.union();
   const current = isRec(obj[f.key]) ? (obj[f.key] as Rec) : null;
   const box = h('fieldset', { class: 'grp' }, h('legend', {}, f.label));
   const kind = h('select', { class: 'kind' });
   if (f.optional) kind.append(h('option', { value: '' }, '(none)'));
-  for (const k of Object.keys(variants)) kind.append(h('option', { value: k, selected: current?.kind === k }, k));
+  for (const k of Object.keys(variants)) kind.append(h('option', { value: k, selected: current?.[tag] === k }, k));
   kind.addEventListener('change', () => {
     if (kind.value === '') delete obj[f.key];
-    else obj[f.key] = blankUnion(variants, kind.value);
+    else obj[f.key] = blankUnion(variants, kind.value, tag);
     ctx.restructure();
     ctx.changed();
   });
   box.append(kind);
-  if (current) renderFields(box, current, variants[String(current.kind)] ?? [], ctx, path);
+  if (current) renderFields(box, current, variants[String(current[tag])] ?? [], ctx, path);
   return box;
+}
+
+function pairsField(obj: Rec, f: Of<'pairs'>, ctx: FormCtx): HTMLElement {
+  const list = Array.isArray(obj[f.key]) ? (obj[f.key] as unknown[]) : [];
+  const box = h('section', { class: 'grp' }, h('h4', {}, `${f.label} (${list.length})`));
+  list.forEach((pair, i) => {
+    const [a, b] = Array.isArray(pair) ? pair : ['', ''];
+    const left = h('input', { type: 'text', class: 'mono', value: String(a ?? '') });
+    const right = h('input', { type: 'text', class: 'mono', value: String(b ?? '') });
+    const write = (): void => {
+      list[i] = [left.value, right.value];
+      ctx.changed();
+    };
+    left.addEventListener('input', write);
+    right.addEventListener('input', write);
+    box.append(h('div', { class: 'rec-row' }, left, right, iconButton('✕', 'Remove', () => {
+      list.splice(i, 1);
+      if (list.length === 0 && f.optional) delete obj[f.key];
+      ctx.restructure();
+      ctx.changed();
+    })));
+  });
+  const add = h('button', { type: 'button', class: 'btn small' }, '+ Add');
+  add.addEventListener('click', () => {
+    const target = Array.isArray(obj[f.key]) ? (obj[f.key] as unknown[]) : (obj[f.key] = []) as unknown[];
+    target.push(['', '']);
+    ctx.restructure();
+    ctx.changed();
+  });
+  box.append(h('div', { class: 'add-row' }, add));
+  return box;
+}
+
+function textOrVecField(obj: Rec, f: Of<'textOrVec'>, ctx: FormCtx): HTMLElement {
+  const current = obj[f.key];
+  const asVec = isRec(current);
+  const mode = h('select', {}, h('option', { value: 'name', selected: !asVec }, 'name'), h('option', { value: 'vector', selected: asVec }, 'vector'));
+  mode.addEventListener('change', () => {
+    obj[f.key] = mode.value === 'vector' ? { x: 0, y: 0, z: 0 } : '';
+    ctx.restructure();
+    ctx.changed();
+  });
+  const body = h('span', { class: 'color-pair' });
+  if (asVec) {
+    for (const axis of ['x', 'y', 'z'] as const) {
+      const input = h('input', { type: 'number', step: 'any' });
+      input.value = typeof current[axis] === 'number' ? String(current[axis]) : '0';
+      input.addEventListener('input', () => {
+        const parsed = Number(input.value);
+        if (Number.isFinite(parsed)) current[axis] = parsed;
+        ctx.changed();
+      });
+      body.append(input);
+    }
+  } else {
+    const input = h('input', { type: 'text', class: 'mono', list: datalist(ctx, 'points'), spellcheck: 'false' });
+    input.value = typeof current === 'string' ? current : '';
+    trackText(input, obj, f, ctx);
+    body.append(input);
+  }
+  return row(f, h('span', { class: 'color-pair' }, mode, body));
 }
 
 function renderField(obj: Rec, f: Field, ctx: FormCtx, path: string): HTMLElement {
@@ -345,6 +421,10 @@ function renderField(obj: Rec, f: Field, ctx: FormCtx, path: string): HTMLElemen
       return stringsField(obj, f, ctx);
     case 'numbers':
       return numbersField(obj, f, ctx);
+    case 'pairs':
+      return pairsField(obj, f, ctx);
+    case 'textOrVec':
+      return textOrVecField(obj, f, ctx);
     case 'color':
       return colorField(obj, f, ctx);
     case 'array':

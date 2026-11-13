@@ -1,7 +1,7 @@
 import type { PackIssue } from '../chapters/validate-pack.js';
 import type { ChapterPack } from '../chapters/types.js';
 import { isRec, type Rec } from './dom.js';
-import { COMIX_PAGE, DIALOG_CAST, DIALOG_ENTRY, ENTITIES, FILES, MANIFEST, OVERVIEW, RULES, SCRIPT, type Field } from './schema.js';
+import { COMIX_PAGE, DIALOG_CAST, DIALOG_ENTRY, ENTITIES, FILES, MANIFEST, OVERVIEW, RULES, SCRIPT, type ArrayItem, type Field } from './schema.js';
 
 /**
  * The field tables are the schema of the spec files. This walks a file against them and reports what no other check
@@ -27,25 +27,26 @@ class SchemaWalk {
     for (const key of Object.keys(value)) if (!known.has(key)) this.add('warn', `${path}.${key}`, 'unknown field (typo? the game ignores it)');
     for (const f of fields) {
       const v = value[f.key];
-      if (v === undefined) {
-        if (!f.optional) this.add('error', `${path}.${f.key}`, 'required field is missing');
+      if (v === undefined || (v === null && f.optional)) {
+        if (v === undefined && !f.optional) this.add('error', `${path}.${f.key}`, 'required field is missing');
         continue;
       }
       this.field(v, f, `${path}.${f.key}`);
     }
   }
 
-  private variant(value: unknown, variants: Record<string, Field[]>, path: string): void {
-    if (!isRec(value) || typeof value.kind !== 'string') {
-      this.add('error', path, 'expected an object with a "kind"');
+  private variant(value: unknown, variants: Record<string, Field[]>, path: string, tag = 'kind'): void {
+    const kind = isRec(value) ? value[tag] : undefined;
+    if (!isRec(value) || typeof kind !== 'string') {
+      this.add('error', path, `expected an object with a "${tag}"`);
       return;
     }
-    const fields = variants[value.kind];
+    const fields = variants[kind];
     if (!fields) {
-      this.add('error', `${path}.kind`, `unknown kind "${value.kind}" (${Object.keys(variants).join(', ')})`);
+      this.add('error', `${path}.${tag}`, `unknown ${tag} "${kind}" (${Object.keys(variants).join(', ')})`);
       return;
     }
-    this.object(value, fields, path, ['kind']);
+    this.object(value, fields, path, [tag]);
   }
 
   private field(v: unknown, f: Field, path: string): void {
@@ -69,6 +70,12 @@ class SchemaWalk {
       case 'numbers':
         if (!Array.isArray(v) || v.some((x) => typeof x !== 'number')) this.add('error', path, 'expected a list of numbers');
         break;
+      case 'pairs':
+        if (!Array.isArray(v) || v.some((p) => !Array.isArray(p) || p.length !== 2 || p.some((x) => typeof x !== 'string'))) this.add('error', path, 'expected a list of [string, string]');
+        break;
+      case 'textOrVec':
+        this.textOrVec(v, path);
+        break;
       case 'array':
         this.list(v, f, path);
         break;
@@ -79,9 +86,18 @@ class SchemaWalk {
         this.record(v, f, path);
         break;
       case 'union':
-        this.variant(v, f.union(), path);
+        this.variant(v, f.union(), path, f.tag ?? 'kind');
         break;
     }
+  }
+
+  private textOrVec(v: unknown, path: string): void {
+    if (typeof v === 'string') return;
+    if (!isRec(v) || typeof v.x !== 'number' || typeof v.y !== 'number' || typeof v.z !== 'number') {
+      this.add('error', path, 'expected a point name or {x, y, z}');
+      return;
+    }
+    for (const key of Object.keys(v)) if (!['x', 'y', 'z'].includes(key)) this.add('warn', `${path}.${key}`, 'unknown field (typo? the game ignores it)');
   }
 
   private list(v: unknown, f: Extract<Field, { type: 'array' }>, path: string): void {
@@ -90,9 +106,14 @@ class SchemaWalk {
       return;
     }
     v.forEach((item, i) => {
-      if (f.item.union) this.variant(item, f.item.union(), `${path}[${i}]`);
+      if (f.item.union) this.variant(item, f.item.union(), `${path}[${i}]`, f.item.tag ?? 'kind');
       else this.object(item, f.item.fields ?? [], `${path}[${i}]`);
     });
+  }
+
+  /** A root list (letters, beats, camera): same rules as an array field. */
+  items(value: unknown, item: ArrayItem, path: string): void {
+    this.list(value, { type: 'array', key: 'items', label: '', item }, path);
   }
 
   private record(v: unknown, f: Extract<Field, { type: 'record' }>, path: string): void {
@@ -105,6 +126,8 @@ class SchemaWalk {
         if (typeof item !== 'string') this.add('error', `${path}.${key}`, 'expected a string');
       } else if (f.value === 'strings') {
         if (!Array.isArray(item) || item.some((x) => typeof x !== 'string')) this.add('error', `${path}.${key}`, 'expected a list of strings');
+      } else if (f.value === 'number') {
+        if (typeof item !== 'number') this.add('error', `${path}.${key}`, 'expected a number');
       } else {
         this.object(item, f.value, `${path}.${key}`);
       }
@@ -153,4 +176,27 @@ function tabOf(message: string): string {
   if (['enemies', 'pickups', 'patches'].includes(key)) return 'entities';
   if (['winRules', 'solutionCommands'].includes(key)) return 'rules';
   return 'overview';
+}
+
+export interface ShapeIssue {
+  severity: 'error' | 'warn';
+  message: string;
+}
+
+function taken(walk: SchemaWalk): ShapeIssue[] {
+  return walk.issues.map((i) => ({ severity: i.severity, message: i.message }));
+}
+
+/** Unknown keys, missing fields, wrong types. `extra` keys are legal but not in the table. */
+export function objectShape(value: unknown, fields: Field[], path: string, extra: readonly string[] = []): ShapeIssue[] {
+  const walk = new SchemaWalk(path, 'check');
+  walk.object(value, fields, path, extra);
+  return taken(walk);
+}
+
+/** A JSON array at the root of a file. */
+export function listShape(value: unknown, item: ArrayItem, path: string): ShapeIssue[] {
+  const walk = new SchemaWalk(path, 'check');
+  walk.items(value, item, path);
+  return taken(walk);
 }

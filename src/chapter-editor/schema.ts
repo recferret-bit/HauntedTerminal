@@ -19,32 +19,38 @@ interface Base {
 export interface ArrayItem {
   /** Plain object items. */
   fields?: Field[];
-  /** Items tagged by `kind`; the variants are looked up lazily so a condition can contain conditions. */
+  /** Items tagged by `kind` (or `tag`); the variants are looked up lazily so a condition can contain conditions. */
   union?: () => Record<string, Field[]>;
+  /** Discriminant key. Default `kind`. */
+  tag?: string;
   /** One-line title of a collapsed item. */
   title: (item: Record<string, unknown>, index: number) => string;
   /** Lets the editor play this item in the preview ("steps" = a script step). */
   play?: 'steps';
 }
 
+export type SuggestName = 'models' | 'paths' | 'sockets' | 'enemies' | 'rooms' | 'cores' | 'actors' | 'points' | 'panels' | 'marks';
+
 export type Field =
-  | (Base & { type: 'text'; rows?: number; suggest?: 'models' | 'paths' | 'sockets' | 'enemies' | 'rooms' | 'cores'; mono?: boolean })
+  | (Base & { type: 'text'; rows?: number; suggest?: SuggestName; mono?: boolean; /** A comix mark expression (`NAME`, `NAME+n`, `NAME-n`, or a number). */ mark?: boolean })
   | (Base & { type: 'number'; step?: number; octal?: boolean })
   | (Base & { type: 'bool' })
   | (Base & { type: 'select'; options: readonly Option[] })
-  | (Base & { type: 'strings'; rows?: number })
+  | (Base & { type: 'strings'; rows?: number; mark?: boolean })
   | (Base & { type: 'numbers' })
+  | (Base & { type: 'pairs'; mark?: boolean })
+  | (Base & { type: 'textOrVec' })
   | (Base & { type: 'color' })
   | (Base & { type: 'array'; item: ArrayItem })
   | (Base & { type: 'object'; fields: Field[] })
-  | (Base & { type: 'record'; value: Field[] | 'string' | 'strings'; keyLabel: string })
-  | (Base & { type: 'union'; union: () => Record<string, Field[]> });
+  | (Base & { type: 'record'; value: Field[] | 'string' | 'strings' | 'number'; keyLabel: string })
+  | (Base & { type: 'union'; union: () => Record<string, Field[]>; tag?: string });
 
-const t = (key: string, label: string, extra: Partial<Extract<Field, { type: 'text' }>> = {}): Field => ({ type: 'text', key, label, ...extra });
-const n = (key: string, label: string, extra: Partial<Extract<Field, { type: 'number' }>> = {}): Field => ({ type: 'number', key, label, ...extra });
-const b = (key: string, label: string, extra: Partial<Base> = {}): Field => ({ type: 'bool', key, label, ...extra });
-const sel = (key: string, label: string, options: readonly Option[], extra: Partial<Base> = {}): Field => ({ type: 'select', key, label, options, ...extra });
-const opt = <F extends Field>(f: F): F => ({ ...f, optional: true });
+export const t = (key: string, label: string, extra: Partial<Extract<Field, { type: 'text' }>> = {}): Field => ({ type: 'text', key, label, ...extra });
+export const n = (key: string, label: string, extra: Partial<Extract<Field, { type: 'number' }>> = {}): Field => ({ type: 'number', key, label, ...extra });
+export const b = (key: string, label: string, extra: Partial<Base> = {}): Field => ({ type: 'bool', key, label, ...extra });
+export const sel = (key: string, label: string, options: readonly Option[], extra: Partial<Base> = {}): Field => ({ type: 'select', key, label, options, ...extra });
+export const opt = <F extends Field>(f: F): F => ({ ...f, optional: true });
 
 export const AGENTS = ['kiro', 'clod', 'gork', 'codec', 'antigravy'] as const;
 export const MOODS = ['laugh', 'order', 'smug', 'annoyed'] as const;
