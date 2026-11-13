@@ -5,7 +5,7 @@
  * Both render into `host` (an element laid over the stage), clean up after themselves, and resolve when
  * finished or skipped (Esc / click / Enter).
  *
- * playIntro: ~40 s, three comic pages (see INTRO_T in ./intro.ts): he overworks his AI agents (Claude, Grok,
+ * playIntro: ~40 s, three comic pages from comix/intro: he overworks his AI agents (Claude, Grok,
  *   Codex, Gemini parodies), lightning wakes them, they roast him and take over, the computer sucks him in.
  *   Esc / Enter / Space / click skips it and resolves at once. It resolves by itself after the
  *   "ENTERING FLOOR 01" card (main.ts relies on a full play lasting more than 23 s).

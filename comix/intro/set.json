@@ -1,0 +1,92 @@
+{
+  "points": {
+    "heroHome": {
+      "x": 1.3,
+      "y": 0,
+      "z": -0.15
+    },
+    "screen": {
+      "x": 2.55,
+      "y": 1.37,
+      "z": 0.42
+    },
+    "towerTop": {
+      "x": 3.72,
+      "y": 1.66,
+      "z": 0.4
+    },
+    "keyboard": {
+      "x": 2.05,
+      "y": 0.88,
+      "z": 0.4
+    },
+    "windowBolt": {
+      "x": -0.35,
+      "y": 2.25,
+      "z": 0.84
+    },
+    "inScreen": {
+      "x": 2.55,
+      "y": 1.12,
+      "z": 0.4
+    }
+  },
+  "monitor": {
+    "x": 2.55,
+    "y": 1.36,
+    "w": 1.12,
+    "h": 0.84
+  },
+  "parts": {
+    "glass": "monitor-screen",
+    "code": [
+      "code-line",
+      "cursor"
+    ],
+    "glassMaterial": "glass",
+    "amberMaterial": "powerAmber"
+  },
+  "rain": {
+    "x": -0.7,
+    "y": 3,
+    "w": 2.4,
+    "h": 1.7,
+    "z": 0.835
+  },
+  "bolts": [
+    {
+      "id": "strike",
+      "from": {
+        "x": 3.37,
+        "y": 4.26,
+        "z": 0.2
+      },
+      "to": {
+        "x": 3.72,
+        "y": 1.66,
+        "z": 0.2
+      },
+      "style": "bolt"
+    },
+    {
+      "id": "comic",
+      "from": {
+        "x": 3.22,
+        "y": 3.3,
+        "z": 0.12
+      },
+      "to": {
+        "x": 3.72,
+        "y": 1.68,
+        "z": 0.12
+      },
+      "style": "comic",
+      "seed": 7
+    }
+  ],
+  "vortex": {
+    "at": "screen",
+    "z": 0.47,
+    "inset": 0.16
+  }
+}

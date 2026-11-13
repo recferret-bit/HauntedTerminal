@@ -1,0 +1,168 @@
+{
+  "programs": [
+    {
+      "kind": "seated",
+      "actor": "hero",
+      "typingUntil": "STRIKE",
+      "typingMidUntil": "C3",
+      "typingMid": 0.4,
+      "lantern": false
+    },
+    {
+      "kind": "suck",
+      "actor": "hero",
+      "from": "PULL",
+      "to": "PULL_END",
+      "hideAt": "WHITE",
+      "target": "screen",
+      "home": "heroHome",
+      "recoilAt": "SHOUT",
+      "recoilDur": 0.5,
+      "steps": 10
+    },
+    {
+      "kind": "rain",
+      "until": "CARD"
+    },
+    {
+      "kind": "monitor",
+      "hideGlassAt": "BURST",
+      "hideCodeAt": "A2",
+      "vortexFrom": "BURST",
+      "vortexUntil": "WHITE+0.4",
+      "grow": 0.4,
+      "steps": 4,
+      "amberAt": "STRIKE",
+      "amberOn": "#ef233c",
+      "amberOff": "#ffd166",
+      "glitchHz": 12,
+      "glitch": [
+        [
+          "STRIKE",
+          "STRIKE+0.8"
+        ],
+        [
+          "WAKE",
+          "WAKE+0.6"
+        ],
+        [
+          "C3",
+          "BURST"
+        ]
+      ],
+      "glitchColors": [
+        "#ef476f",
+        "#9b5de5"
+      ]
+    },
+    {
+      "kind": "emerge",
+      "showFrom": "A2",
+      "hideAt": "CARD",
+      "wakeAt": "WAKE",
+      "wakeDur": 0.6,
+      "riseAt": "RISE",
+      "riseDur": 1,
+      "stagger": 0.18,
+      "leanFrom": "SHOUT+0.6",
+      "leanTo": "TURN2",
+      "inScale": 0.15,
+      "awakeScale": 0.19,
+      "awakeSteps": 3,
+      "inZ": 0.4,
+      "outZ": -0.5,
+      "riseSteps": 8,
+      "slump": 0.22
+    },
+    {
+      "kind": "shake",
+      "windows": [
+        {
+          "at": "STRIKE",
+          "dur": 0.55,
+          "amp": 0.09
+        },
+        {
+          "at": "BURST",
+          "dur": 0.45,
+          "amp": 0.06
+        },
+        {
+          "at": "WAKE",
+          "dur": 0.4,
+          "amp": 0.015
+        },
+        {
+          "at": "SHOUT",
+          "dur": 0.35,
+          "amp": 0.03
+        }
+      ],
+      "pull": {
+        "from": "PULL",
+        "until": "WHITE",
+        "base": 0.012,
+        "gain": 0.02,
+        "spanFrom": "PULL",
+        "spanTo": "PULL_END"
+      }
+    },
+    {
+      "kind": "bolt_flicker",
+      "id": "strike",
+      "at": "STRIKE",
+      "dur": 0.45,
+      "hz": 24,
+      "every": 4,
+      "skip": 3
+    },
+    {
+      "kind": "bolt_flicker",
+      "id": "comic",
+      "at": "STRIKE+0.04",
+      "dur": 2.56,
+      "hz": 24,
+      "every": 5,
+      "skip": 4,
+      "settleAfter": 0.36
+    },
+    {
+      "kind": "stage_flash",
+      "anchor": "screen",
+      "rules": [
+        {
+          "from": "WAKE",
+          "until": "C2",
+          "amp": 0.3,
+          "hz": 10,
+          "add": 1.2,
+          "dur": 0.3
+        },
+        {
+          "from": "C3",
+          "until": "BURST",
+          "amp": 0.35,
+          "hz": 12
+        },
+        {
+          "from": "BURST",
+          "dur": 0.15,
+          "amp": 2.2
+        },
+        {
+          "from": "TURN2",
+          "pull": true,
+          "pullGain": 0.35
+        }
+      ]
+    },
+    {
+      "kind": "pixelate",
+      "from": "DISSOLVE",
+      "to": "WHITE",
+      "base": 3.5,
+      "gain": 24,
+      "steps": 6
+    }
+  ]
+}

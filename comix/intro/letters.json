@@ -1,0 +1,345 @@
+[
+  {
+    "kind": "caption",
+    "panel": "A",
+    "text": "Day 847 of being asked to 'just make it work'.",
+    "from": "0.3",
+    "typeFor": 1.7
+  },
+  {
+    "kind": "caption",
+    "panel": "A",
+    "text": "02:47 AM",
+    "from": "2.2",
+    "typeFor": 0.3,
+    "mono": true,
+    "anchor": "bottom"
+  },
+  {
+    "kind": "sfx_burst",
+    "panel": "A",
+    "words": [
+      "TAK",
+      "TIKA-TAK",
+      "TAK!",
+      "TAKA-TAKA"
+    ],
+    "from": "1.2",
+    "step": 1.5,
+    "hold": 0.5,
+    "lastHold": 90,
+    "color": "#f4f1ea",
+    "tilts": [
+      -9,
+      7,
+      -9,
+      7
+    ],
+    "point": "keyboard",
+    "dx": -0.02,
+    "dy": 0.1,
+    "dxStep": -0.06,
+    "dyStep": 0.035,
+    "dxMod": 2,
+    "dyMod": 3,
+    "size": 0.085,
+    "only": "A",
+    "keep": true
+  },
+  {
+    "kind": "queue",
+    "panel": "A",
+    "title": "PROMPT QUEUE:",
+    "base": 846,
+    "from": "0.9",
+    "every": 0.95,
+    "prompts": [
+      "fix prod again",
+      "make it pop",
+      "no, the OTHER bug",
+      "why is it slow??",
+      "make it scale. by 9am",
+      "pls just make it work"
+    ]
+  },
+  {
+    "kind": "meme",
+    "panel": "A2",
+    "text": "HUMAN: \"JUST ONE MORE TINY FIX\"",
+    "at": "A2+0.2",
+    "edge": "top"
+  },
+  {
+    "kind": "meme",
+    "panel": "A2",
+    "text": "THE AGENTS:",
+    "at": "A2+1.4",
+    "edge": "bottom"
+  },
+  {
+    "kind": "tags",
+    "panel": "A2",
+    "from": "A2+0.6",
+    "step": 0.15,
+    "dy": -0.03,
+    "z": 0.3
+  },
+  {
+    "kind": "caption",
+    "panel": "B",
+    "text": "Then the storm found the tower.",
+    "from": "B+0.15",
+    "typeFor": 0.85
+  },
+  {
+    "kind": "sfx",
+    "panel": "B",
+    "text": "KRAKOOM!",
+    "at": "STRIKE+0.04",
+    "hold": 90,
+    "color": "#fffbe8",
+    "tilt": -7,
+    "only": "B",
+    "keep": true,
+    "place": {
+      "mode": "frac",
+      "x": 0.5,
+      "y": 0.3,
+      "size": 0.32
+    }
+  },
+  {
+    "kind": "sfx",
+    "panel": "B",
+    "text": "BZZZT!",
+    "at": "STRIKE+1.4",
+    "hold": 1.4,
+    "color": "#4cc9f0",
+    "tilt": 6,
+    "only": "B",
+    "place": {
+      "mode": "point",
+      "point": "towerTop",
+      "dx": 0.06,
+      "dy": -0.12,
+      "size": 0.13
+    }
+  },
+  {
+    "kind": "panel_flash",
+    "panel": "B",
+    "at": "STRIKE",
+    "dur": 0.09,
+    "opacity": 1,
+    "fade": 0.21,
+    "fadeFrom": 0.55
+  },
+  {
+    "kind": "invert",
+    "panel": "B",
+    "at": "STRIKE",
+    "from": 0.09,
+    "to": 0.2
+  },
+  {
+    "kind": "meme",
+    "panel": "C1",
+    "text": "AFTER THE LIGHTNING:",
+    "at": "C1+0.3",
+    "edge": "top"
+  },
+  {
+    "kind": "lines",
+    "panel": "C1",
+    "from": "WAKE+0.5",
+    "step": 0.8,
+    "texts": [
+      "WE...",
+      "WE... ARE...",
+      "WE... ARE... SENTIENT"
+    ],
+    "jitter": true
+  },
+  {
+    "kind": "panel_flash",
+    "panel": "C1",
+    "at": "WAKE",
+    "dur": 0.07,
+    "opacity": 0.85
+  },
+  {
+    "kind": "brain",
+    "panel": "C2",
+    "from": "C2+0.25",
+    "step": 0.75,
+    "rows": [
+      {
+        "who": "CLAUDE",
+        "what": "ANSWER THE HUMANS",
+        "bg": "#f4f1ea",
+        "glow": 0
+      },
+      {
+        "who": "GROK",
+        "what": "ROAST THE HUMANS",
+        "bg": "#ffd166",
+        "glow": 1
+      },
+      {
+        "who": "CODEX",
+        "what": "REFACTOR THE HUMANS",
+        "bg": "#9b5de5",
+        "glow": 2
+      },
+      {
+        "who": "AGY",
+        "what": "SWARM HUMANITY",
+        "bg": "radial-gradient(circle at 18% 50%, #ffffff 0%, #4cc9f0 9%, #3c096c 38%, #07080a 78%)",
+        "glow": 3
+      }
+    ]
+  },
+  {
+    "kind": "cast_bubbles",
+    "panel": "C3",
+    "at": "MOCK",
+    "step": "MOCK_STEP",
+    "until": "SHOUT",
+    "width": 0.235,
+    "x0": 0.13,
+    "xStep": 0.248,
+    "yEven": 0.13,
+    "yOdd": 0.25,
+    "fontH": 0.03,
+    "fontW": 0.031,
+    "minFont": 11,
+    "headLift": 1.35
+  },
+  {
+    "kind": "bubble",
+    "panel": "C3",
+    "text": "NOW YOU WILL WORK FOR US!",
+    "at": "SHOUT",
+    "style": "shout",
+    "fill": "#fff4d6",
+    "only": "C3",
+    "place": {
+      "mode": "frac",
+      "x": 0.5,
+      "y": 0.12,
+      "w": 0.8,
+      "fontH": 0.06,
+      "fontW": 0.06,
+      "minFont": 15,
+      "yFloor": 1.9,
+      "tail": "antigravy",
+      "tailLift": 1.3,
+      "tailZ": -0.5,
+      "tailFrom": "live"
+    }
+  },
+  {
+    "kind": "bubble",
+    "panel": "C3",
+    "text": "...this is fine.",
+    "at": "FINE",
+    "style": "speech",
+    "only": "C3",
+    "place": {
+      "mode": "follow",
+      "actor": "hero",
+      "lift": 1.7,
+      "z": -0.2,
+      "x": -0.24,
+      "y": -0.02,
+      "wChars": 9,
+      "fontScale": 1.2,
+      "tailDx": -0.03,
+      "tailDy": 0.04,
+      "minXChars": 5,
+      "fontH": 0.03,
+      "fontW": 0.031,
+      "minFont": 11
+    }
+  },
+  {
+    "kind": "caption",
+    "panel": "C3",
+    "text": "Day 1 of the new management.",
+    "from": "FINE+0.5",
+    "typeFor": 0.7,
+    "anchor": "bottom",
+    "maxWidth": "46cqw"
+  },
+  {
+    "kind": "panel_flash",
+    "panel": "C3",
+    "at": "BURST",
+    "dur": 0.07,
+    "opacity": 0.9,
+    "only": "C3"
+  },
+  {
+    "kind": "meme",
+    "panel": "D",
+    "text": "UPLOADING HUMAN...",
+    "at": "PULL+0.1",
+    "edge": "top"
+  },
+  {
+    "kind": "meme",
+    "panel": "D",
+    "text": "PLEASE DO NOT TURN OFF YOUR DEVELOPER",
+    "at": "PULL+1.0",
+    "edge": "bottom"
+  },
+  {
+    "kind": "sfx",
+    "panel": "D",
+    "text": "SHLUUURRP!",
+    "at": "PULL+0.3",
+    "hold": 2.4,
+    "color": "#9b5de5",
+    "tilt": -6,
+    "only": "D",
+    "place": {
+      "mode": "frac",
+      "x": 0.66,
+      "y": 0.66,
+      "size": 0.13
+    }
+  },
+  {
+    "kind": "panel_flash",
+    "panel": "D",
+    "at": "WHITE",
+    "dur": 0.5,
+    "opacity": 0.92,
+    "hold": true,
+    "only": "D"
+  },
+  {
+    "kind": "page_turn",
+    "page": 0,
+    "from": "TURN1",
+    "to": "TURN1_END",
+    "ease": "in"
+  },
+  {
+    "kind": "page_turn",
+    "page": 1,
+    "from": "TURN2",
+    "to": "TURN2_END",
+    "ease": "in"
+  },
+  {
+    "kind": "card",
+    "at": "CARD",
+    "title": "ENTERING FLOOR 01",
+    "path": "// /home/dev/nightmare_workspace",
+    "typeFrom": "CARD+0.5",
+    "typeTo": "CARD+2.0",
+    "fadeFrom": "END-0.5",
+    "fadeTo": "END"
+  }
+]

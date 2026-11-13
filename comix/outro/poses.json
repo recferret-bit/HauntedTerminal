@@ -1,0 +1,67 @@
+{
+  "programs": [
+    {
+      "kind": "seated",
+      "actor": "hero",
+      "typingUntil": "0",
+      "lantern": true
+    },
+    {
+      "kind": "flight",
+      "actor": "hero",
+      "from": "REVERSE+0.1",
+      "to": "LAND",
+      "origin": "monitor",
+      "dest": "seat",
+      "arc": 1.1,
+      "steps": 9,
+      "originDy": -0.4
+    },
+    {
+      "kind": "fling",
+      "from": "REVERSE+0.4",
+      "to": "SHATTER-0.1",
+      "stagger": 0.12,
+      "origin": "monitor",
+      "originDy": -0.3,
+      "scale": 0.62,
+      "steps": 6,
+      "hideAt": "TURN",
+      "z": 0.3
+    },
+    {
+      "kind": "screen_blaze",
+      "until": "SHATTER+0.3",
+      "anchor": "monitor",
+      "calm": 0.4,
+      "blinkUntil": "REVERSE",
+      "blinkHz": 12,
+      "blinkBase": 0.35,
+      "blinkAmp": 0.45
+    },
+    {
+      "kind": "bolt_flicker",
+      "id": "reverse",
+      "at": "REVERSE",
+      "dur": 0.6,
+      "hz": 20,
+      "every": 3,
+      "skip": 2
+    },
+    {
+      "kind": "shake",
+      "windows": [
+        {
+          "at": "REVERSE",
+          "dur": 0.5,
+          "amp": 0.08
+        },
+        {
+          "at": "LAND",
+          "dur": 0.3,
+          "amp": 0.05
+        }
+      ]
+    }
+  ]
+}
