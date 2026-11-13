@@ -8,7 +8,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
 const SRC = resolve('src');
-const AREAS = ['chapters', 'play', 'ui', 'pages', 'renderer', 'cinematic', 'sandbox', 'chapter-editor', 'hub', 'main.ts'];
+const AREAS = ['chapters', 'play', 'ui', 'pages', 'renderer', 'cinematic', 'sandbox', 'chapter-editor', 'comix-editor', 'hub', 'main.ts'];
 const SKIP = ['chapters/generated/'];
 const RULES = [
   { rx: /chapter-\d{2}-[a-z]/, what: 'a chapter id' },

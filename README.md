@@ -16,6 +16,7 @@ Work in progress. What runs today:
 - **Play** (`/play/<chapter>/<level>`): the comic stage and the terminal. `/play` opens the Kiroween chapter. Mode flags stay on the query string (`?nointro=1`).
 - **Developer** (`/dev.html`): level select, direct sector jumps, and the visual QA labs.
 - **Chapter editor** (`/editor`, dev server): select a chapter, edit every level, dialog and comic panel with forms, preview the real game on the unsaved draft, run the checks, save back to `chapters/`. Chapters are data; no per-chapter code (`.kiro/steering/declarative-chapters.md`).
+- **Comix editor** (`/comix-editor`, dev server): edit the intro and outro specs in `comix/`.
 - **Chapter select** (`/chapters.html`), **comic reader** (`/comic.html`), **cinematics** (`/cinematic.html`).
 - **Storybook** (`/storybook.html`): every procedural model, texture and effect under the real comic
   renderer (cel shading, ink outlines, halftone, pixel-art and CRT passes).

@@ -3,6 +3,7 @@
 Use these words exactly; do not invent synonyms.
 
 - **Chapter**: one folder `chapters/<slug>/`: manifest, levels, story. Kiroween ships one.
+- **Comix**: one folder `comix/<id>/` of specs played by `src/cinematic/`. Intro and outro are comixes.
 - **Level**: one `level.spec.json`: files, enemies, pickups, patches, win rules, solution, `script`.
 - **Spec**: any of the chapter JSON files. Specs are the single source of truth; `src/chapters/generated/` is compiled output.
 - **Pack** (`ChapterPack`): manifest + levels + dialogs + comic, as the game consumes them. The compiled pack is `getChapterPack`; a **draft** is an unsaved pack from the editor.
