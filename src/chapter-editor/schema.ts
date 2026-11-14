@@ -29,12 +29,12 @@ export interface ArrayItem {
   play?: 'steps';
 }
 
-export type SuggestName = 'models' | 'paths' | 'sockets' | 'enemies' | 'rooms' | 'cores' | 'actors' | 'points' | 'panels' | 'marks';
+export type SuggestName = 'models' | 'paths' | 'sockets' | 'enemies' | 'rooms' | 'cores' | 'actors' | 'points' | 'panels' | 'marks' | 'fixtures' | 'fx';
 
 export type Field =
   | (Base & { type: 'text'; rows?: number; suggest?: SuggestName; mono?: boolean; /** A comix mark expression (`NAME`, `NAME+n`, `NAME-n`, or a number). */ mark?: boolean })
   | (Base & { type: 'number'; step?: number; octal?: boolean })
-  | (Base & { type: 'bool' })
+  | (Base & { type: 'bool'; defaultTrue?: boolean })
   | (Base & { type: 'select'; options: readonly Option[] })
   | (Base & { type: 'strings'; rows?: number; mark?: boolean })
   | (Base & { type: 'numbers' })
@@ -48,7 +48,7 @@ export type Field =
 
 export const t = (key: string, label: string, extra: Partial<Extract<Field, { type: 'text' }>> = {}): Field => ({ type: 'text', key, label, ...extra });
 export const n = (key: string, label: string, extra: Partial<Extract<Field, { type: 'number' }>> = {}): Field => ({ type: 'number', key, label, ...extra });
-export const b = (key: string, label: string, extra: Partial<Base> = {}): Field => ({ type: 'bool', key, label, ...extra });
+export const b = (key: string, label: string, extra: Partial<Extract<Field, { type: 'bool' }>> = {}): Field => ({ type: 'bool', key, label, ...extra });
 export const sel = (key: string, label: string, options: readonly Option[], extra: Partial<Base> = {}): Field => ({ type: 'select', key, label, options, ...extra });
 export const opt = <F extends Field>(f: F): F => ({ ...f, optional: true });
 

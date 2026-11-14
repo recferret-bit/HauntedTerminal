@@ -1,52 +1,74 @@
 import { ConflictError } from '../chapter-editor/api.js';
-import { bundledComixes } from './data/bundled.js';
-import type { ComixSource } from './model.js';
+import type { ComixManifest, ComixPageSpec } from '../cinematic/spec-types.js';
 
 export { ConflictError };
 
-export interface LoadResult {
+export interface ComixFiles {
+  slug: string;
+  manifest: ComixManifest;
+  pages: Array<{ path: string; spec: ComixPageSpec }>;
+  etags: Record<string, string>;
+}
+
+export interface ComixLoadResult {
   writable: boolean;
-  comixes: ComixSource[];
+  comixes: ComixFiles[];
 }
 
-async function readError(res: Response): Promise<string> {
+export interface ComixSaveResult {
+  regenerated: boolean;
+  etag: string;
+  warning?: string;
+}
+
+async function callComixApi<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, init);
+  const data = (await res.json()) as T & { error?: string };
+  if (res.status === 409) throw new ConflictError(data.error ?? 'comix file changed on disk');
+  if (!res.ok) throw new Error(data.error ?? `${res.status} ${res.statusText}`);
+  return data;
+}
+
+async function loadCompiledComixes(): Promise<ComixLoadResult> {
+  const catalog = await import('../cinematic/catalog.js');
+  const comixes: ComixFiles[] = catalog.COMIX_MANIFESTS.map((m) => ({
+    slug: m.id,
+    manifest: structuredClone(m),
+    pages: catalog.getComixPages(m.id)
+      .map((spec) => ({
+        path: m.pages.find((s) => s.id === spec.id)?.specPath ?? `pages/${spec.id}/page.spec.json`,
+        spec: structuredClone(spec),
+      }))
+      .sort((a, b) => a.spec.index - b.spec.index),
+    etags: {},
+  }));
+  return { writable: false, comixes };
+}
+
+export async function loadComixes(): Promise<ComixLoadResult> {
   try {
-    const body = (await res.json()) as { error?: string };
-    return body.error ?? `${res.status} ${res.statusText}`;
+    return await callComixApi<ComixLoadResult>('/api/comix');
   } catch {
-    return `${res.status} ${res.statusText}`;
+    return loadCompiledComixes();
   }
 }
 
-/** Live specs from the dev API, or the bundled JSON when that API 404s. */
-export async function loadComixes(): Promise<LoadResult> {
-  try {
-    const res = await fetch('/api/comix');
-    if (res.status === 404) return { writable: false, comixes: bundledComixes() };
-    if (!res.ok) throw new Error(await readError(res));
-    const body = (await res.json()) as { comixes?: ComixSource[] };
-    return { writable: true, comixes: body.comixes ?? [] };
-  } catch (err) {
-    if (err instanceof TypeError) return { writable: false, comixes: bundledComixes() };
-    throw err;
-  }
-}
-
-export async function saveComixFile(id: string, path: string, json: unknown, baseEtag: string): Promise<{ etag: string }> {
-  const res = await fetch(`/api/comix/${encodeURIComponent(id)}/file`, {
+export async function saveComixFile(slug: string, relPath: string, payload: unknown, baseEtag?: string): Promise<ComixSaveResult> {
+  const endpoint = `/api/comix/${encodeURIComponent(slug)}/file`;
+  const reqBody = JSON.stringify({ path: relPath, json: payload, baseEtag });
+  return callComixApi<ComixSaveResult>(endpoint, {
     method: 'PUT',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ path, json, baseEtag }),
+    body: reqBody,
   });
-  if (res.status === 409) throw new ConflictError(await readError(res));
-  if (!res.ok) throw new Error(await readError(res));
-  const body = (await res.json()) as { etag?: string };
-  return { etag: body.etag ?? '' };
 }
 
-export async function fetchComixEtags(id: string): Promise<Record<string, string>> {
-  const res = await fetch(`/api/comix/${encodeURIComponent(id)}/etags`);
-  if (!res.ok) throw new Error(await readError(res));
-  const body = (await res.json()) as { etags?: Record<string, string> };
-  return body.etags ?? {};
+export interface ComixDiskState {
+  etags: Record<string, string>;
+  slugs?: string[];
+}
+
+export async function fetchComixDiskState(slug: string): Promise<ComixDiskState> {
+  const endpoint = `/api/comix/${encodeURIComponent(slug)}/etags`;
+  return callComixApi<ComixDiskState>(endpoint);
 }

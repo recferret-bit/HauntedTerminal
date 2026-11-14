@@ -1,304 +1,532 @@
 import { clear, h } from '../chapter-editor/dom.js';
 import type { FormCtx } from '../chapter-editor/form.js';
-import { ConflictError, fetchComixEtags, loadComixes, saveComixFile } from './api.js';
-import { checkComix, type ComixIssue } from './check.js';
-import { ComixModel } from './model.js';
-import { renderCheckPane, renderFormPane, renderJsonPane, type Holder } from './panes.js';
+import type { ComixElementRef } from '../cinematic/editor-select.js';
+import { resolveTime } from '../cinematic/expr.js';
+import type { SceneViewState } from '../cinematic/preview.js';
+import type { ShotBox } from '../cinematic/spec-types.js';
+import { compileTimeline, visiblePanelStart } from '../cinematic/timeline.js';
+import { ConflictError, fetchComixDiskState, loadComixes, saveComixFile } from './api.js';
+import { checkComixPack, runComixSim, type ComixIssue } from './check.js';
+import { renderEditorSidebar, renderEditorTabBar, renderEditorTopBar, type ChromeRenderDeps } from './chrome.js';
+import type { DockSlot, FloatRect, LayoutState, PanelId, SplitEdge } from './dock-layout.js';
+import { ComixModel, type ComixFileKey } from './model.js';
+import { COMIX_TABS, PAGE_TABS, renderComixPane, type ComixEnv, type ComixSel } from './panes.js';
 import { ComixPreview } from './preview.js';
-import { suggestions } from './suggest.js';
+import { resolveSelectionFromPath, routeForElement, syncInspectorSelectionDom, visibilityJumpForElement } from './selection.js';
+import { suggestForComix } from './suggest.js';
+import { WorkspaceManager, type DockId, type WorkspaceState } from './workspace.js';
 
-const TABS = [
-  { id: 'form', label: 'Form' },
-  { id: 'json', label: 'JSON' },
-  { id: 'check', label: 'Check' },
-] as const;
+const ISSUE_DEBOUNCE_MS = 200;
+const ETAG_POLL_MS = 5000;
 
-type Tab = (typeof TABS)[number]['id'];
-
-interface Sel {
-  id: string;
-  file: string;
-  tab: Tab;
+export interface ComixEditorHook {
+  ready: boolean;
+  state(): {
+    slug: string;
+    target: string;
+    tab: string;
+    writable: boolean;
+    dirty: string[];
+    issueCount: number;
+    previewTime: number;
+    previewMode: 'play' | 'freeze';
+    docks: WorkspaceState;
+    layout: LayoutState;
+    viewportSize: { w: number; h: number };
+    pageZoom: number | 'fit';
+    sceneZoom: number;
+    selectedElement: ComixElementRef | null;
+  };
+  select(next: Partial<ComixSel>): void;
+  selectElement(refOrPath: ComixElementRef | string | null): ComixElementRef | null;
+  pickViewportElement(clientX: number, clientY: number): ComixElementRef | null;
+  jumpTo(sec: number): void;
+  playFull(): void;
+  simulate(): ReturnType<typeof runComixSim>;
+  toggleDock(dock: DockId): void;
+  toggleZen(): void;
+  setSplitSize(edge: SplitEdge, px: number): void;
+  undockPanel(id: PanelId, patch?: Partial<FloatRect>): void;
+  dockPanel(id: PanelId, target?: DockSlot): void;
+  setViewportSize(w: number, h: number): void;
+  resetLayout(): void;
+  setPageZoom(scale: number | 'fit'): void;
+  setSceneView(next: Partial<SceneViewState>): void;
+  resetSceneView(): void;
+  applySceneShot(): boolean;
+  reload(): Promise<void>;
 }
 
-const CHECK_DELAY_MS = 250;
-const DISK_POLL_MS = 5000;
+declare global {
+  interface Window {
+    __comixEditor?: ComixEditorHook;
+  }
+}
 
-/** Sidebar of comixes and spec files, a schema form or JSON, and the cinematic draft preview. */
-class ComixEditor {
+class ComixEditorController {
   private models: ComixModel[] = [];
   private writable = false;
-  private sel: Sel = { id: '', file: '', tab: 'form' };
+  private sel: ComixSel = { slug: '', target: 'manifest', tab: 'manifest' };
   private issues: ComixIssue[] = [];
-  private readonly open = new Set<string>();
-  private holder: Holder | null = null;
-  private status = '';
-  private conflict = false;
-  private stale: string[] = [];
-  private checkTimer = 0;
-  private checkPending = false;
-  private readonly top = h('header', { class: 'ed-top' });
-  private readonly side = h('nav', { class: 'ed-side', 'aria-label': 'Comixes and spec files' });
-  private readonly tabs = h('div', { class: 'ed-tabs', role: 'tablist', 'aria-label': 'Comix file' });
-  private readonly pane = h('div', { class: 'ed-pane', role: 'tabpanel' });
+  private readonly openDetails = new Set<string>();
+  private readonly topEl = h('header', { class: 'ed-top' });
+  private readonly sideBodyEl = h('div', { class: 'cx-side-body' });
+  private readonly sideEl = h('nav', { class: 'ed-side', 'aria-label': 'Comix sequences and pages' }, this.sideBodyEl);
+  private readonly tabsEl = h('div', { class: 'ed-tabs', 'data-panel-drag': 'right' });
+  private readonly paneEl = h('div', { class: 'ed-pane', role: 'tabpanel' });
+  private readonly mainEl = h('main', { class: 'ed-main' }, this.tabsEl, this.paneEl);
+  private readonly workspace = new WorkspaceManager();
   private readonly preview: ComixPreview;
+  private readonly gridEl: HTMLElement;
+  private statusMsg = '';
+  private conflict = false;
+  private staleFiles: string[] = [];
+  private issueTimer = 0;
+  private issuesDirty = false;
+  private selectedEl: ComixElementRef | null = null;
 
-  constructor(private readonly root: HTMLElement) {
-    this.preview = new ComixPreview(() => ({ id: this.model.id, files: this.model.drafts() }));
-    const main = h('main', { class: 'ed-main' }, this.tabs, this.pane);
-    root.append(h('div', { class: 'ed' }, this.top, this.side, main, h('aside', { class: 'ed-pv' }, this.preview.root)));
+  constructor(private readonly host: HTMLElement) {
+    this.preview = new ComixPreview({
+      getPack: () => this.activeModel.pack(),
+      onToggleDock: (dock) => this.workspace.toggle(dock),
+      onToggleZen: () => this.workspace.toggleZen(),
+      onApplyShot: (panelId, shot, portrait) => this.applySceneShotToDraft(panelId, shot, portrait),
+      onSelectElement: (sel) => this.handleViewportSelect(sel),
+      onRevealSelected: (sel) => this.handleViewportSelect(sel),
+    });
+    this.preview.stageEl.append(this.workspace.renderRestoreOverlay());
+    this.gridEl = h('div', { class: 'ed cx-ed' }, this.topEl, this.sideEl, this.preview.stageEl, this.preview.timelineEl, this.mainEl);
+    host.append(this.gridEl);
+    this.workspace.attach(
+      this.gridEl,
+      { left: this.sideEl, right: this.mainEl, timeline: this.preview.timelineEl },
+      () => window.requestAnimationFrame(() => this.preview.updateFrameLayout()),
+      () => this.preview.setPageZoom('fit'),
+    );
+
     window.addEventListener('keydown', (ev) => {
       if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 's') {
         ev.preventDefault();
-        void this.save();
+        void this.saveKeys([this.activeFileKey()]);
       }
     });
+    window.addEventListener('popstate', () => {
+      if (this.models.length > 0) this.navigate(this.parseUrlRoute(), false);
+    });
     window.addEventListener('beforeunload', (ev) => {
-      if (this.models.some((model) => model.dirtyPaths().length > 0)) ev.preventDefault();
+      if (this.models.some((m) => m.anyDirty())) ev.preventDefault();
     });
   }
 
-  private get model(): ComixModel {
-    return this.models.find((model) => model.id === this.sel.id) ?? this.models[0]!;
+  private get activeModel(): ComixModel {
+    return this.models.find((m) => m.slug === this.sel.slug) ?? this.models[0]!;
   }
 
-  async start(): Promise<void> {
-    let loaded;
-    try {
-      loaded = await loadComixes();
-    } catch (err) {
-      this.root.replaceChildren(h('p', { class: 'note error' }, (err as Error).message));
-      return;
-    }
-    this.writable = loaded.writable;
-    this.models = loaded.comixes.map((comix) => new ComixModel(comix));
-    if (this.models.length === 0) {
-      this.root.replaceChildren(h('p', { class: 'note error' }, 'No comixes found in comix/.'));
-      return;
-    }
-    this.sel = this.readRoute();
-    this.refresh();
-    this.draw();
-    this.syncUrl();
-    this.preview.load();
-    this.armDiskWatch();
+  private activeFileKey(): ComixFileKey {
+    return this.sel.target === 'manifest' ? 'manifest' : `page:${this.sel.target}`;
   }
 
-  /** Poll etags while the tab is open, and again when it regains focus. */
-  private armDiskWatch(): void {
-    if (!this.writable) return;
-    const ping = (): void => { void this.checkDisk(); };
-    window.setInterval(ping, DISK_POLL_MS);
-    window.addEventListener('focus', ping);
-  }
-
-  private readRoute(): Sel {
-    const parts = location.pathname.split('/').filter(Boolean).map(decodeURIComponent);
-    const model = this.models.find((comix) => comix.id === parts[1]) ?? this.models[0]!;
-    const requested = parts.slice(2).join('/');
-    const file = model.file(requested)?.path ?? (model.file('manifest.json') ? 'manifest.json' : model.files[0]?.path ?? '');
-    const tab = new URLSearchParams(location.search).get('tab');
-    return { id: model.id, file, tab: TABS.some((item) => item.id === tab) ? tab as Tab : 'form' };
-  }
-
-  private syncUrl(): void {
-    const file = this.sel.file.split('/').map(encodeURIComponent).join('/');
-    const path = `/comix-editor/${encodeURIComponent(this.sel.id)}/${file}`;
-    history.replaceState(null, '', `${path}?tab=${this.sel.tab}`);
-  }
-
-  private select(next: Partial<Sel>): void {
-    const prev = this.sel.id;
-    const model = this.models.find((comix) => comix.id === (next.id ?? this.sel.id)) ?? this.model;
-    let file = next.file ?? (next.id && next.id !== prev ? '' : this.sel.file);
-    if (!model.file(file)) file = model.file('manifest.json') ? 'manifest.json' : (model.files[0]?.path ?? '');
-    const tab = next.tab ?? this.sel.tab;
-    this.sel = { id: model.id, file, tab: TABS.some((item) => item.id === tab) ? tab : 'form' };
-    this.syncUrl();
-    this.draw();
-    if (model.id !== prev) this.preview.load();
-  }
-
-  private ctx(): FormCtx {
+  private chromeDeps(): ChromeRenderDeps {
     return {
-      suggest: (name) => suggestions(this.model, name),
-      changed: () => { this.syncHolder(); this.onChanged(); },
-      restructure: () => { this.syncHolder(); this.drawPane(); this.onChanged(); },
-      open: this.open,
+      models: this.models,
+      activeModel: this.activeModel,
+      sel: this.sel,
+      writable: this.writable,
+      statusMsg: this.statusMsg,
+      conflict: this.conflict,
+      staleFiles: this.staleFiles,
+      issues: this.issues,
+      workspace: this.workspace,
+      activeFileKey: () => this.activeFileKey(),
+      navigate: (next) => this.navigate(next),
+      revertCurrent: () => this.revertCurrent(),
+      saveKeys: (keys) => void this.saveKeys(keys),
+      reloadFromDisk: () => void this.reloadComixFromDisk(),
     };
   }
 
-  private syncHolder(): void {
-    const file = this.model.file(this.sel.file);
-    if (this.holder && file) file.value = this.holder.box[this.holder.key];
+  private formCtx(): FormCtx {
+    return {
+      suggest: (name: string) => suggestForComix(this.activeModel.pack(), this.sel.target, name),
+      changed: () => this.handleDraftEdit(),
+      restructure: () => {
+        this.renderPaneOnly();
+        this.handleDraftEdit();
+      },
+      selectedPath: this.selectedEl?.itemPath,
+      selectPath: (path) => {
+        this.selectByItemPath(path);
+      },
+      open: this.openDetails,
+    };
   }
 
-  private onChanged(): void {
-    this.scheduleCheck();
-    this.drawTop();
-    this.drawSide();
-    this.preview.loadSoon();
+  private paneEnv(): ComixEnv {
+    return {
+      model: this.activeModel,
+      writable: this.writable,
+      baseCtx: this.formCtx(),
+      preview: this.preview,
+      issues: this.issues,
+      selectedElement: this.selectedEl,
+      selectElement: (ref, nav = false) => {
+        this.applySelection(ref, nav, false);
+      },
+      navigate: (next) => this.navigate(next),
+      redraw: () => this.renderAll(),
+      changed: () => this.handleDraftEdit(),
+    };
   }
 
-  private scheduleCheck(): void {
-    window.clearTimeout(this.checkTimer);
-    this.checkPending = true;
-    this.checkTimer = window.setTimeout(() => {
-      this.refresh();
-      this.drawTop();
-      this.drawSide();
-    }, CHECK_DELAY_MS);
-  }
-
-  private refresh(): void {
-    window.clearTimeout(this.checkTimer);
-    this.checkPending = false;
-    this.issues = checkComix(this.model);
-  }
-
-  private async save(): Promise<void> {
-    if (!this.writable) {
-      this.setStatus('read-only: run the dev server (npm start) to save');
-      return;
-    }
-    const file = this.model.file(this.sel.file);
-    if (!file || !this.model.isDirty(file.path)) {
-      this.setStatus('nothing to save');
-      return;
-    }
+  async boot(): Promise<void> {
+    let payload;
     try {
-      const res = await saveComixFile(this.model.id, file.path, file.value, file.etag);
-      this.model.markSaved(file.path, res.etag);
-      this.conflict = false;
-      this.setStatus(`saved ${file.path}`);
+      payload = await loadComixes();
     } catch (err) {
-      if (err instanceof ConflictError) {
-        this.conflict = true;
-        this.setStatus('This file changed on disk. Nothing was overwritten.', true);
-      } else this.setStatus(`save failed: ${(err as Error).message}`, true);
-    }
-    this.drawTop();
-    this.drawSide();
-  }
-
-  private async checkDisk(): Promise<void> {
-    if (document.hidden || !this.writable) return;
-    let etags: Record<string, string>;
-    try {
-      etags = await fetchComixEtags(this.model.id);
-    } catch {
+      this.host.replaceChildren(h('p', { class: 'note error' }, (err as Error).message));
       return;
     }
-    const stale = this.model.changedOnDisk(etags);
-    if (stale.join() === this.stale.join()) return;
-    this.stale = stale;
-    this.drawTop();
-  }
-
-  private async reloadFromDisk(): Promise<void> {
-    const current = this.model;
-    const dirty = current.dirtyPaths().length > 0;
-    if (dirty && !window.confirm('Discard your unsaved edits and reload this comix from disk?')) return;
-    const loaded = await loadComixes();
-    const fresh = loaded.writable ? loaded.comixes.find((comix) => comix.id === current.id) : undefined;
-    if (!fresh) {
-      this.setStatus('reload failed: the dev API did not answer', true);
+    this.writable = payload.writable;
+    this.models = payload.comixes.map((c) => new ComixModel(c));
+    if (this.models.length === 0) {
+      this.host.replaceChildren(h('p', { class: 'note error' }, 'No comixes found in comix/.'));
       return;
     }
-    this.models = this.models.map((model) => (model.id === fresh.id ? new ComixModel(fresh) : model));
-    if (!this.model.file(this.sel.file)) this.sel.file = this.model.files[0]?.path ?? '';
-    this.stale = [];
-    this.conflict = false;
-    this.refresh();
-    this.setStatus('reloaded from disk');
-    this.draw();
-    this.preview.load();
+    this.sel = this.parseUrlRoute();
+    this.recomputeIssues();
+    this.renderAll();
+    this.syncUrlRoute(true);
+    this.preview.playFull();
+    if (this.writable) {
+      window.setInterval(() => void this.pollDiskEtags(), ETAG_POLL_MS);
+      window.addEventListener('focus', () => void this.pollDiskEtags());
+    }
+    this.installWindowHook();
   }
 
-  private setStatus(text: string, bad = false): void {
-    this.status = `${bad ? '✕ ' : ''}${text}`;
-    this.drawTop();
+  private installWindowHook(): void {
+    window.__comixEditor = {
+      ready: true,
+      state: () => ({
+        slug: this.activeModel.slug,
+        target: this.sel.target,
+        tab: this.sel.tab,
+        writable: this.writable,
+        dirty: this.activeModel.dirtyEntries().map((e) => e.path),
+        issueCount: this.issues.length,
+        previewTime: this.preview.currentTime,
+        previewMode: this.preview.mode,
+        docks: this.workspace.current,
+        layout: this.workspace.layout,
+        viewportSize: this.preview.viewportSize,
+        pageZoom: this.preview.pageZoomMode,
+        sceneZoom: this.preview.sceneZoomValue,
+        selectedElement: this.selectedEl,
+      }),
+      select: (next) => this.navigate(next),
+      selectElement: (refOrPath) =>
+        typeof refOrPath === 'string' ? this.selectByItemPath(refOrPath) : this.applySelection(refOrPath, true, true),
+      pickViewportElement: (clientX, clientY) => this.preview.pickViewportAt(clientX, clientY),
+      jumpTo: (sec) => this.preview.jumpTo(sec),
+      playFull: () => this.preview.playFull(),
+      simulate: () => runComixSim(this.activeModel.pack()),
+      toggleDock: (dock) => this.workspace.toggle(dock),
+      toggleZen: () => this.workspace.toggleZen(),
+      setSplitSize: (edge, px) => this.workspace.setSplitSize(edge, px),
+      undockPanel: (id, patch) => this.workspace.undockPanel(id, patch),
+      dockPanel: (id, target) => this.workspace.dockPanel(id, target),
+      setViewportSize: (w, hPx) => this.preview.setViewportSize(w, hPx),
+      resetLayout: () => this.workspace.resetLayout(),
+      setPageZoom: (scale) => this.preview.setPageZoom(scale),
+      setSceneView: (next) => this.preview.setSceneView(next),
+      resetSceneView: () => this.preview.resetSceneView(),
+      applySceneShot: () => this.preview.applySceneShot(),
+      reload: () => this.reloadComixFromDisk(),
+    };
   }
 
-  private draw(): void {
-    if (this.checkPending) this.refresh();
-    for (const paint of [this.drawTop, this.drawSide, this.drawTabs, this.drawPane]) paint.call(this);
+  private applySceneShotToDraft(panelId: string, shot: ShotBox, portrait: boolean): void {
+    const manifestCues = this.activeModel.draft.manifest.cues ?? {};
+    for (const page of this.activeModel.draft.pages) {
+      const panel = page.panels.find((p) => p.id === panelId);
+      if (!panel) continue;
+      let targetSlot = 'camera.from';
+      if (portrait) {
+        panel.camera.portrait = { ...shot };
+        targetSlot = 'camera.portrait';
+      } else if (panel.camera.to) {
+        const cues = { ...manifestCues, ...(page.cues ?? {}) };
+        let useTo = false;
+        try {
+          const pFrom = resolveTime(panel.from, cues, page.from);
+          const pUntil = resolveTime(panel.until, cues, page.from);
+          const s0 = panel.camera.span ? resolveTime(panel.camera.span[0], cues, pFrom) : pFrom;
+          const s1 = panel.camera.span ? resolveTime(panel.camera.span[1], cues, pFrom) : pUntil;
+          useTo = this.preview.currentTime >= (s0 + s1) * 0.5;
+        } catch {
+          useTo = false;
+        }
+        if (useTo) {
+          panel.camera.to = { ...shot };
+          targetSlot = 'camera.to';
+        } else {
+          panel.camera.from = { ...shot };
+        }
+      } else {
+        panel.camera.from = { ...shot };
+      }
+      this.preview.resetSceneView();
+      this.statusMsg = `applied ${targetSlot} shot to ${panelId}`;
+      this.handleDraftEdit();
+      this.renderAll();
+      return;
+    }
   }
 
-  private drawTop(): void {
-    const dirty = this.model.isDirty(this.sel.file);
-    const offerReload = this.conflict || this.stale.length > 0;
-    const save = h('button', { type: 'button', class: 'btn primary', disabled: !this.writable || !dirty, onclick: () => void this.save() }, dirty ? 'Save ●' : 'Save');
-    const reload = h('button', { type: 'button', class: 'btn warn', onclick: () => void this.reloadFromDisk() }, 'Reload');
-    clear(this.top);
-    this.top.append(
-      h('a', { class: 'ed-brand', href: '/' }, h('b', {}, 'COMIX'), ' EDITOR'),
-      h('span', {}, `${this.model.id} — ${this.model.title}`),
-      save,
-      ...(offerReload ? [reload] : []),
-      h('span', { class: 'ed-status', role: 'status', 'aria-live': 'polite' }, this.writable ? this.status : 'READ-ONLY — start the dev server (npm start) to edit comix specs on disk'),
-    );
+  private parseUrlRoute(): ComixSel {
+    const parts = location.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+    const model = this.models.find((m) => m.slug === parts[1]) ?? this.models[0]!;
+    const rawTarget = parts[2] ?? 'manifest';
+    const validPage = model.page(rawTarget);
+    const target = validPage ? validPage.id : 'manifest';
+    const tabs = target === 'manifest' ? COMIX_TABS : PAGE_TABS;
+    const requestedTab = new URLSearchParams(location.search).get('tab') ?? tabs[0].id;
+    const tab = tabs.some((t) => t.id === requestedTab) ? requestedTab : tabs[0].id;
+    return { slug: model.slug, target, tab };
   }
 
-  private drawSide(): void {
-    const count = (file: string): number => this.issues.filter((issue) => issue.file === file && issue.severity === 'error').length;
-    clear(this.side);
-    this.side.append(h('h3', {}, 'Comixes'));
-    for (const model of this.models) {
-      const on = model.id === this.model.id;
-      this.side.append(h('button', {
-        type: 'button',
-        class: `ed-item${on ? ' on' : ''}`,
-        'aria-current': on ? 'true' : undefined,
-        onclick: () => this.select({ id: model.id, tab: 'form' }),
-      }, h('span', { class: 'lbl' }, `${model.id} — ${model.title}`)));
-      if (!on) continue;
-      for (const file of model.files) {
-        const active = file.path === this.sel.file;
-        const errors = count(file.path);
-        this.side.append(h('button', {
-          type: 'button',
-          class: `ed-item ed-file${active ? ' on' : ''}`,
-          'aria-current': active ? 'page' : undefined,
-          onclick: () => this.select({ file: file.path }),
-        }, h('span', { class: 'lbl' }, file.path), model.isDirty(file.path) ? h('i', { class: 'dot', title: 'unsaved' }, '●', h('span', { class: 'sr' }, ' unsaved')) : null, errors ? h('i', { class: 'bad', title: 'errors' }, `✕${errors}`, h('span', { class: 'sr' }, ' errors')) : null));
+  private syncUrlRoute(replace: boolean): void {
+    const { slug, target, tab } = this.sel;
+    const url = `/comix-editor/${encodeURIComponent(slug)}/${encodeURIComponent(target)}?tab=${encodeURIComponent(tab)}`;
+    const cur = `${location.pathname}${location.search}`;
+    if (replace) history.replaceState(null, '', url);
+    else if (cur !== url) history.pushState(null, '', url);
+  }
+
+  private navigate(next: Partial<ComixSel>, updateUrl = true): void {
+    const prevSlug = this.sel.slug;
+    const prevTarget = this.sel.target;
+    const model = this.models.find((m) => m.slug === (next.slug ?? this.sel.slug)) ?? this.activeModel;
+    let target = next.target ?? (next.slug && next.slug !== prevSlug ? 'manifest' : this.sel.target);
+    if (target !== 'manifest' && !model.page(target)) target = 'manifest';
+    const tabs = target === 'manifest' ? COMIX_TABS : PAGE_TABS;
+    let tab = next.tab ?? this.sel.tab;
+    if (!tabs.some((t) => t.id === tab) || (next.target !== undefined && next.target !== prevTarget && next.tab === undefined)) {
+      tab = tabs[0].id;
+    }
+    this.sel = { slug: model.slug, target, tab };
+    if (model.slug !== prevSlug) {
+      this.selectedEl = null;
+      this.preview.setSelectedElement(null);
+      this.recomputeIssues();
+    }
+    if (updateUrl) this.syncUrlRoute(false);
+    this.renderAll();
+    if (model.slug !== prevSlug) {
+      this.preview.playFull();
+    } else if (target !== 'manifest' && target !== prevTarget) {
+      const page = model.page(target);
+      if (page) {
+        let jumpSec = page.from + 0.05;
+        try {
+          jumpSec = visiblePanelStart(compileTimeline(model.pack()), page.index, page.from, page.until);
+        } catch {
+          // Keep fallback if draft timeline has syntax errors.
+        }
+        this.preview.jumpTo(jumpSec);
       }
     }
   }
 
-  private drawTabs(): void {
-    const errors = this.issues.filter((issue) => issue.severity === 'error').length;
-    clear(this.tabs);
-    for (const tab of TABS) {
-      const on = tab.id === this.sel.tab;
-      const badge = tab.id === 'check' && errors ? h('i', { class: 'bad' }, ` ✕${errors}`) : null;
-      this.tabs.append(h('button', {
-        type: 'button',
-        role: 'tab',
-        id: `comix-tab-${tab.id}`,
-        'aria-selected': on ? 'true' : 'false',
-        'aria-controls': 'comix-panel',
-        class: `ed-tab${on ? ' on' : ''}`,
-        onclick: () => this.select({ tab: tab.id }),
-      }, tab.label, badge));
-    }
-    this.pane.id = 'comix-panel';
-    this.pane.setAttribute('aria-labelledby', `comix-tab-${this.sel.tab}`);
+  private handleDraftEdit(): void {
+    window.clearTimeout(this.issueTimer);
+    this.issuesDirty = true;
+    this.issueTimer = window.setTimeout(() => {
+      this.recomputeIssues();
+      this.renderChromeOnly();
+    }, ISSUE_DEBOUNCE_MS);
+    this.renderChromeOnly();
+    this.preview.refreshDraftSoon();
   }
 
-  private drawPane(): void {
-    const scroll = this.pane.scrollTop;
-    clear(this.pane);
-    this.holder = null;
-    const file = this.model.file(this.sel.file);
-    if (!file) this.pane.append(h('p', { class: 'note' }, 'Pick a file.'));
-    else if (this.sel.tab === 'json') this.pane.append(renderJsonPane(file, () => this.onChanged()));
-    else if (this.sel.tab === 'check') this.pane.append(renderCheckPane(this.issues));
-    else this.pane.append(renderFormPane(file, this.ctx(), (holder) => { this.holder = holder; }));
-    this.pane.scrollTop = scroll;
+  private recomputeIssues(): void {
+    window.clearTimeout(this.issueTimer);
+    this.issuesDirty = false;
+    this.issues = checkComixPack(this.activeModel.pack());
+  }
+
+  private revertCurrent(): void {
+    const key = this.activeFileKey();
+    if (!this.activeModel.dirty(key)) return;
+    this.activeModel.revert(key);
+    this.recomputeIssues();
+    this.statusMsg = `reverted ${this.activeModel.entry(key)?.path ?? key}`;
+    this.renderAll();
+    this.preview.refreshDraftSoon();
+  }
+
+  private async saveKeys(keys: ComixFileKey[]): Promise<void> {
+    if (!this.writable) {
+      this.statusMsg = 'read-only mode: run npm start to save specs to disk';
+      this.renderChromeOnly();
+      return;
+    }
+    this.activeModel.syncSummaries();
+    const targetKeys = new Set<ComixFileKey>(keys);
+    if (this.activeModel.dirty('manifest')) targetKeys.add('manifest');
+    const toWrite = [...targetKeys]
+      .map((k) => this.activeModel.entry(k))
+      .filter((e): e is NonNullable<typeof e> => Boolean(e) && this.activeModel.dirty(e!.key));
+    if (toWrite.length === 0) {
+      this.statusMsg = 'nothing to save';
+      this.renderChromeOnly();
+      return;
+    }
+    try {
+      for (const entry of toWrite) {
+        const res = await saveComixFile(this.activeModel.slug, entry.path, entry.value, this.activeModel.etag(entry.key));
+        this.activeModel.accept(entry.key, res.etag);
+      }
+      this.conflict = false;
+      this.recomputeIssues();
+      this.statusMsg = `saved ${toWrite.map((e) => e.path).join(', ')}`;
+    } catch (err) {
+      if (err instanceof ConflictError) {
+        this.conflict = true;
+        this.statusMsg = '✕ Disk conflict (409): file changed outside the editor. Reload to sync.';
+      } else {
+        this.statusMsg = `✕ Save error: ${(err as Error).message}`;
+      }
+    }
+    this.renderAll();
+  }
+
+  private async pollDiskEtags(): Promise<void> {
+    if (document.hidden || !this.writable) return;
+    try {
+      const disk = await fetchComixDiskState(this.activeModel.slug);
+      const changed = this.activeModel.changedPaths(disk.etags);
+      if (Array.isArray(disk.slugs)) {
+        const known = new Set(this.models.map((m) => m.slug));
+        const live = new Set(disk.slugs);
+        for (const s of disk.slugs) if (!known.has(s)) changed.push(`comix/${s}`);
+        for (const s of known) if (!live.has(s)) changed.push(`comix/${s}`);
+      }
+      if (changed.join('|') !== this.staleFiles.join('|')) {
+        this.staleFiles = changed;
+        renderEditorTopBar(this.topEl, this.chromeDeps());
+      }
+    } catch {
+      // Ignore transient network hiccups during background poll.
+    }
+  }
+
+  private async reloadComixFromDisk(): Promise<void> {
+    if (this.activeModel.anyDirty() && !window.confirm('Discard unsaved edits and reload this comix from disk?')) {
+      return;
+    }
+    const loaded = await loadComixes();
+    if (loaded.comixes.length === 0) {
+      this.statusMsg = '✕ Reload failed: no comixes returned by dev server';
+      renderEditorTopBar(this.topEl, this.chromeDeps());
+      return;
+    }
+    const prevBySlug = new Map(this.models.map((m) => [m.slug, m]));
+    const activeSlug = this.activeModel.slug;
+    this.models = loaded.comixes.map((files) => {
+      const existing = prevBySlug.get(files.slug);
+      if (existing) {
+        if (files.slug === activeSlug || !existing.anyDirty()) existing.reloadFrom(files);
+        return existing;
+      }
+      return new ComixModel(files);
+    });
+    const nextModel = this.models.find((m) => m.slug === this.sel.slug) ?? this.models[0]!;
+    const nextTarget = this.sel.target !== 'manifest' && nextModel.page(this.sel.target) ? this.sel.target : 'manifest';
+    const tabs = nextTarget === 'manifest' ? COMIX_TABS : PAGE_TABS;
+    const nextTab = tabs.some((t) => t.id === this.sel.tab) ? this.sel.tab : tabs[0].id;
+    this.sel = { slug: nextModel.slug, target: nextTarget, tab: nextTab };
+    this.conflict = false;
+    this.staleFiles = [];
+    this.recomputeIssues();
+    this.statusMsg = 'reloaded from disk';
+    this.syncUrlRoute(true);
+    this.renderAll();
+    this.preview.playFull();
+  }
+
+  private renderChromeOnly(): void {
+    const deps = this.chromeDeps();
+    renderEditorTopBar(this.topEl, deps);
+    renderEditorSidebar(this.sideBodyEl, deps);
+    renderEditorTabBar(this.tabsEl, this.paneEl, deps);
+  }
+
+  private renderAll(): void {
+    if (this.issuesDirty) this.recomputeIssues();
+    this.renderChromeOnly();
+    this.renderPaneOnly();
+  }
+
+  private renderPaneOnly(): void {
+    const prevScroll = this.paneEl.scrollTop;
+    clear(this.paneEl);
+    this.paneEl.append(renderComixPane(this.paneEnv(), this.sel));
+    syncInspectorSelectionDom(this.paneEl, this.selectedEl, false);
+    this.paneEl.scrollTop = prevScroll;
+  }
+
+  private handleViewportSelect(sel: ComixElementRef | null): void {
+    this.selectedEl = sel;
+    if (!sel) {
+      syncInspectorSelectionDom(this.paneEl, null, false);
+      return;
+    }
+    const route = routeForElement(this.activeModel.pack(), sel);
+    const canonicalPath = route.openPaths[0] ?? sel.itemPath;
+    this.selectedEl = canonicalPath === sel.itemPath ? sel : { ...sel, itemPath: canonicalPath };
+    this.preview.setSelectedElement(this.selectedEl);
+    for (const p of route.openPaths) this.openDetails.add(p);
+    if (!this.workspace.current.right) this.workspace.toggle('right');
+    if (this.sel.target !== route.target || this.sel.tab !== route.tab) {
+      this.sel = { ...this.sel, target: route.target, tab: route.tab };
+      this.syncUrlRoute(false);
+      this.renderAll();
+    } else {
+      this.renderPaneOnly();
+    }
+    syncInspectorSelectionDom(this.paneEl, this.selectedEl, true);
+  }
+
+  private selectByItemPath(itemPath: string): ComixElementRef | null {
+    if (this.selectedEl?.itemPath === itemPath) return this.selectedEl;
+    const ref = resolveSelectionFromPath(this.activeModel.pack(), itemPath);
+    return this.applySelection(ref, false, true);
+  }
+
+  private applySelection(
+    ref: ComixElementRef | null,
+    navigateToRoute: boolean,
+    seekIfHidden: boolean,
+  ): ComixElementRef | null {
+    this.selectedEl = ref;
+    if (ref) {
+      for (const p of routeForElement(this.activeModel.pack(), ref).openPaths) this.openDetails.add(p);
+    }
+    this.preview.setSelectedElement(ref);
+    if (ref && seekIfHidden) {
+      const jump = visibilityJumpForElement(this.activeModel.pack(), ref, this.preview.currentSec);
+      if (jump !== null) this.preview.jumpTo(jump);
+    }
+    if (ref && navigateToRoute) {
+      this.handleViewportSelect(ref);
+    } else {
+      syncInspectorSelectionDom(this.paneEl, ref, false);
+    }
+    return this.selectedEl;
   }
 }
 
 export async function startComixEditor(root: HTMLElement): Promise<void> {
-  await new ComixEditor(root).start();
+  await new ComixEditorController(root).boot();
 }

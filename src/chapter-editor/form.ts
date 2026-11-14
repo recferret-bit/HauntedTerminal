@@ -11,8 +11,25 @@ export interface FormCtx {
   restructure(): void;
   /** Play one script step in the preview. */
   playStep?(step: Rec): void;
+  /** Active selected element itemPath in the form (optional). */
+  selectedPath?: string;
+  /** Notify host when the user selects an element in the form (optional). */
+  selectPath?(path: string, item: Rec): void;
   /** Paths of the `<details>` blocks that are open, kept across redraws. */
   open: Set<string>;
+}
+
+function bindSelectableItem(details: HTMLDetailsElement, itemPath: string, item: Rec, ctx: FormCtx): void {
+  details.dataset.itemPath = itemPath;
+  if (ctx.selectedPath === itemPath) details.classList.add('is-selected');
+  if (!ctx.selectPath) return;
+  const pick = (e: Event): void => {
+    if ((e.target as HTMLElement | null)?.closest('.item-tools')) return;
+    e.stopPropagation();
+    ctx.selectPath?.(itemPath, item);
+  };
+  details.addEventListener('click', pick);
+  details.addEventListener('focusin', pick);
 }
 
 type Of<T extends Field['type']> = Extract<Field, { type: T }>;
@@ -26,7 +43,7 @@ function defaultFor(f: Field): unknown {
     case 'number':
       return 0;
     case 'bool':
-      return false;
+      return Boolean(f.defaultTrue);
     case 'select':
       return f.options[0];
     case 'strings':
@@ -119,9 +136,14 @@ function numberField(obj: Rec, f: Of<'number'>, ctx: FormCtx): HTMLElement {
 
 function boolField(obj: Rec, f: Of<'bool'>, ctx: FormCtx): HTMLElement {
   const input = h('input', { type: 'checkbox' });
-  input.checked = obj[f.key] === true;
+  input.checked = f.defaultTrue ? obj[f.key] !== false : obj[f.key] === true;
   input.addEventListener('change', () => {
-    put(obj, f, input.checked, !input.checked);
+    if (f.defaultTrue) {
+      if (f.optional && input.checked) delete obj[f.key];
+      else obj[f.key] = input.checked;
+    } else {
+      put(obj, f, input.checked, !input.checked);
+    }
     ctx.changed();
   });
   return h('label', { class: 'fld check' }, input, h('span', {}, f.label));
@@ -215,6 +237,7 @@ function arrayItem(list: Rec[], i: number, f: Of<'array'>, obj: Rec, ctx: FormCt
   const title = h('span', { class: 'item-title' }, f.item.title(item, i));
   const details = h('details', { class: 'item', open: ctx.open.has(itemPath) });
   details.addEventListener('toggle', () => (details.open ? ctx.open.add(itemPath) : ctx.open.delete(itemPath)));
+  bindSelectableItem(details, itemPath, item, ctx);
   details.addEventListener('input', () => { title.textContent = f.item.title(item, i); });
   const tools = h('span', { class: 'item-tools' });
   if (f.item.play && ctx.playStep) tools.append(iconButton('▶', 'Play this step in the preview', () => ctx.playStep?.(item)));
@@ -306,6 +329,8 @@ function recordField(obj: Rec, f: Of<'record'>, ctx: FormCtx, path: string): HTM
     } else {
       const details = h('details', { class: 'item', open: ctx.open.has(entryPath) });
       details.addEventListener('toggle', () => (details.open ? ctx.open.add(entryPath) : ctx.open.delete(entryPath)));
+      const recItem = isRec(map[key]) ? (map[key] as Rec) : {};
+      bindSelectableItem(details, entryPath, recItem, ctx);
       const body = h('div', { class: 'item-body' });
       if (isRec(map[key])) renderFields(body, map[key] as Rec, f.value, ctx, entryPath);
       details.append(h('summary', {}, name, h('span', { class: 'item-tools' }, remove)), body);

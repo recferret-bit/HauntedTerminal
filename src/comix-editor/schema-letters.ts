@@ -1,107 +1,183 @@
-import { b, opt, sel, t, type Field } from '../chapter-editor/schema.js';
-import { mark, num, optMark, panel } from './schema-util.js';
+import { b, n, opt, sel, t, type Field } from '../chapter-editor/schema.js';
+import type { PageOverlay, PanelLetter } from '../cinematic/spec-types.js';
+import { colorField as col, ptRefField as ptRef, timeField as time } from './schema-fields.js';
 
-const sfxPlace = (): Record<'frac' | 'point', Field[]> => ({
-  frac: [num('x', 'X'), num('y', 'Y'), num('size', 'Size')],
-  point: [t('point', 'Point', { suggest: 'points', mono: true }), num('dx', 'dx'), num('dy', 'dy'), num('size', 'Size')],
+const SFX_FIELDS: Field[] = [
+  t('text', 'Onomatopoeia'),
+  time('at', 'Appear at'),
+  n('hold', 'Hold (s)', { step: 0.1 }),
+  col('color', 'Colour'),
+  n('tilt', 'Tilt (deg)', { step: 1 }),
+  sel('anchor', 'Placement mode', ['frac', 'point']),
+  opt(n('x', 'Panel X (0..1, frac mode)', { step: 0.02 })),
+  opt(n('y', 'Panel Y (0..1, frac mode)', { step: 0.02 })),
+  opt(ptRef('point', 'Stage point (point mode)')),
+  opt(n('dx', 'Point offset dX (panel frac)', { step: 0.01 })),
+  opt(n('dy', 'Point offset dY (panel frac)', { step: 0.01 })),
+  n('size', 'Font size (fraction of panel min)', { step: 0.01 }),
+  opt(b('activePanelOnly', 'Only draw while panel is active')),
+  opt(b('freezeOnCut', 'Keep frozen word after cut')),
+];
+
+const SFX_SEQ_FIELDS: Field[] = [
+  { type: 'strings', key: 'words', label: 'Words (one per line)', rows: 4 },
+  { type: 'numbers', key: 'tilts', label: 'Tilts in degrees (comma separated)' },
+  time('from', 'First word at'),
+  n('step', 'Step between words (s)', { step: 0.1 }),
+  n('hold', 'Hold per word (s)', { step: 0.1 }),
+  opt(n('lastHold', 'Hold on last word (s)', { step: 0.5 })),
+  col('color', 'Colour'),
+  ptRef('point', 'Anchor point'),
+  n('dx', 'Base dX', { step: 0.01 }),
+  n('dy', 'Base dY', { step: 0.01 }),
+  n('dxStep', 'Step dX', { step: 0.01 }),
+  n('dyStep', 'Step dY', { step: 0.01 }),
+  n('dxMod', 'Modulo X'),
+  n('dyMod', 'Modulo Y'),
+  n('size', 'Font size (panel min frac)', { step: 0.005 }),
+  opt(b('activePanelOnly', 'Only update while panel is active')),
+  opt(b('freezeOnCut', 'Keep frozen after cut')),
+];
+
+const BUBBLE_FIELDS: Field[] = [
+  t('text', 'Dialogue line', { rows: 2 }),
+  time('at', 'Appear at'),
+  opt(time('until', 'Hide at')),
+  sel('style', 'Bubble shape', ['speech', 'shout', 'thought']),
+  opt(col('fill', 'Fill colour')),
+  opt(b('activePanelOnly', 'Only while panel is active')),
+  opt(b('freezeOnCut', 'Keep frozen after cut', { defaultTrue: true })),
+  sel('anchor', 'Anchor mode', ['panel', 'world']),
+  n('x', 'X (panel 0..1 or world dX)', { step: 0.02 }),
+  n('y', 'Y (panel 0..1 or world dY)', { step: 0.02 }),
+  opt(n('w', 'Width (panel 0..1)', { step: 0.02 })),
+  opt(n('wChars', 'Max width in em/chars', { step: 1 })),
+  opt(n('yFloor', 'Min top in font multiples', { step: 0.1 })),
+  opt(n('minXChars', 'Min left in font multiples', { step: 0.5 })),
+  n('fontH', 'Font height factor', { step: 0.005 }),
+  n('fontW', 'Font width factor', { step: 0.005 }),
+  n('minFont', 'Min font px', { step: 1 }),
+  opt(n('fontOfMin', 'Font of min(w,h) override', { step: 0.005 })),
+  opt(n('fontScale', 'Font scale multiplier', { step: 0.05 })),
+  opt(t('tailActor', 'Tail actor id (live)', { suggest: 'actors', mono: true })),
+  opt(ptRef('tailPoint', 'Tail world point')),
+  opt(n('tailLift', 'Tail lift on actor', { step: 0.05 })),
+  opt(n('tailZ', 'Tail Z on actor', { step: 0.05 })),
+  opt(n('tailDx', 'Tail dX (world mode)', { step: 0.01 })),
+  opt(n('tailDy', 'Tail dY (world mode)', { step: 0.01 })),
+];
+
+const STATS_CARD_FIELDS: Field[] = [
+  t('title', 'Heading'),
+  time('at', 'Show card at'),
+  time('keyAt', 'Show press-key prompt at'),
+  { type: 'record', key: 'rankColor', label: 'Rank burst colours', keyLabel: 'Rank', value: 'string' },
+  { type: 'record', key: 'rankWord', label: 'Rank titles', keyLabel: 'Rank', value: 'string' },
+  {
+    type: 'object',
+    key: 'labels',
+    label: 'Field labels',
+    fields: [
+      t('rank', 'Rank label'),
+      t('time', 'Time label'),
+      t('commands', 'Commands label'),
+      t('shortcuts', 'Shortcuts label'),
+      t('press', 'Continue prompt'),
+    ],
+  },
+  t('emptyShortcuts', 'Empty shortcuts text'),
+  col('fallbackBackground', 'No-WebGL fallback background'),
+];
+
+export const LETTER_VARIANTS = (): Record<PanelLetter['kind'], Field[]> => ({
+  caption: [
+    t('text', 'Caption text', { rows: 2 }),
+    time('from', 'Start'),
+    opt(time('until', 'Hide at')),
+    n('typeDur', 'Typewriter duration (s)', { step: 0.05 }),
+    opt(b('mono', 'Monospace paper style')),
+    opt(sel('position', 'Position', ['top', 'bottom'])),
+    opt(t('maxWidth', 'Max width CSS (e.g. 46cqw)', { mono: true })),
+  ],
+  banner: [
+    t('text', 'Banner text', { rows: 2 }),
+    time('at', 'Appear at'),
+    opt(time('until', 'Hide at')),
+    sel('edge', 'Edge', ['top', 'bottom']),
+  ],
+  sfx: SFX_FIELDS,
+  sfx_seq: SFX_SEQ_FIELDS,
+  bubble: BUBBLE_FIELDS,
+  label_tag: [
+    t('text', 'Tag label'),
+    time('at', 'Appear at'),
+    opt(time('until', 'Hide at')),
+    ptRef('point', 'World point'),
+    opt(b('activePanelOnly', 'Only while panel is active')),
+    opt(b('freezeOnCut', 'Keep frozen after cut', { defaultTrue: true })),
+  ],
+  prompt_list: [
+    t('title', 'Header prefix'),
+    n('baseCount', 'Starting counter'),
+    time('from', 'Start at'),
+    n('every', 'New item every (s)', { step: 0.05 }),
+    { type: 'strings', key: 'items', label: 'Prompts (one per line)', rows: 6 },
+  ],
+  glitch_text: [
+    time('from', 'Start at'),
+    n('step', 'Step per line (s)', { step: 0.05 }),
+    { type: 'strings', key: 'texts', label: 'Progressive lines (one per line)', rows: 4 },
+    opt(b('jitter', 'Jitter while active')),
+  ],
+  tier_stack: [
+    time('from', 'Start at'),
+    n('step', 'Reveal step (s)', { step: 0.05 }),
+    {
+      type: 'array',
+      key: 'rows',
+      label: 'Rows',
+      item: {
+        title: (r) => `${String(r.who)}: ${String(r.what)}`,
+        fields: [
+          t('who', 'Speaker badge'),
+          t('what', 'Doctrine text'),
+          t('bg', 'CSS background (hex or gradient)', { mono: true }),
+          n('glow', 'Brain glow tier (0..3)'),
+        ],
+      },
+    },
+  ],
+  panel_flash: [
+    time('at', 'Flash at'),
+    n('dur', 'Duration (s)', { step: 0.01 }),
+    n('opacity', 'Peak opacity (0..1)', { step: 0.05 }),
+    opt(n('fade', 'Fade tail (s)', { step: 0.02 })),
+    opt(n('fadeFrom', 'Fade start opacity', { step: 0.05 })),
+    opt(b('hold', 'Hold flash opacity after peak')),
+    opt(b('activePanelOnly', 'Only while panel is active')),
+  ],
+  invert: [
+    time('at', 'Reference cue'),
+    n('fromOffset', 'Invert start offset (s)', { step: 0.01 }),
+    n('toOffset', 'Invert end offset (s)', { step: 0.01 }),
+  ],
+  stats_card: STATS_CARD_FIELDS,
 });
 
-const bubbleFrac: Field[] = [
-  num('x', 'X'), num('y', 'Y'), num('w', 'Width'),
-  num('fontH', 'Font height'), num('fontW', 'Font width'), num('minFont', 'Min font', { step: 1 }),
-  opt(num('fontOfMin', 'Font of min side')),
-  opt(num('yFloor', 'Y floor')),
-  opt(num('wChars', 'Width in characters', { step: 1 })),
-  t('tail', 'Tail actor', { suggest: 'actors' }),
-  num('tailLift', 'Tail lift'), num('tailZ', 'Tail z'),
-  opt(sel('tailFrom', 'Tail from', ['live', 'point'])),
-  opt(t('tailPoint', 'Tail point', { suggest: 'points', mono: true })),
-];
+export const OVERLAY_VARIANTS = (): Record<PageOverlay['kind'], Field[]> => ({
+  title_card: [
+    time('at', 'Appear at'),
+    t('title', 'Big card title'),
+    t('subtitle', 'Typed terminal subtitle', { mono: true }),
+    time('typeFrom', 'Type start'),
+    time('typeTo', 'Type end'),
+    time('fadeFrom', 'Fade start'),
+    time('fadeTo', 'Fade end'),
+  ],
+});
 
-const bubbleFollow: Field[] = [
-  t('actor', 'Actor', { suggest: 'actors' }),
-  num('lift', 'Lift'), num('z', 'Z'), num('x', 'X'), num('y', 'Y'),
-  num('wChars', 'Width in characters', { step: 1 }),
-  num('fontScale', 'Font scale'),
-  num('tailDx', 'Tail dx'), num('tailDy', 'Tail dy'),
-  num('minXChars', 'Min x characters', { step: 1 }),
-  num('fontH', 'Font height'), num('fontW', 'Font width'), num('minFont', 'Min font', { step: 1 }),
-];
-
-const bubblePlace = (): Record<'frac' | 'follow', Field[]> => ({ frac: bubbleFrac, follow: bubbleFollow });
-
-const place = (union: () => Record<string, Field[]>): Field => ({ type: 'union', key: 'place', label: 'Place', tag: 'mode', union });
-
-export const CAPTION: Field[] = [
-  panel(), t('text', 'Text', { rows: 2 }), mark('from', 'From'), num('typeFor', 'Type for (seconds)'),
-  opt(b('mono', 'Monospace')), opt(sel('anchor', 'Anchor', ['bottom'])), opt(t('maxWidth', 'Max width')),
-];
-
-export const MEME: Field[] = [panel(), t('text', 'Text', { rows: 2 }), mark('at', 'At'), sel('edge', 'Edge', ['top', 'bottom'])];
-
-export const SFX: Field[] = [
-  panel(), t('text', 'Text'), mark('at', 'At'), num('hold', 'Hold'),
-  { type: 'color', key: 'color', label: 'Colour' }, num('tilt', 'Tilt', { step: 0.1 }),
-  opt(t('only', 'Only while panel', { suggest: 'panels', mono: true })),
-  opt(b('keep', 'Keep last place on other panels')),
-  place(sfxPlace),
-];
-
-export const SFX_BURST: Field[] = [
-  panel(), { type: 'strings', key: 'words', label: 'Words (one per line)' },
-  mark('from', 'From'), num('step', 'Step (seconds)'), num('hold', 'Hold'), opt(num('lastHold', 'Last hold')),
-  { type: 'color', key: 'color', label: 'Colour' }, { type: 'numbers', key: 'tilts', label: 'Tilts (comma separated)' },
-  t('point', 'Point', { suggest: 'points', mono: true }),
-  num('dx', 'dx'), num('dy', 'dy'), num('dxStep', 'dx step'), num('dyStep', 'dy step'),
-  num('dxMod', 'dx mod', { step: 1 }), num('dyMod', 'dy mod', { step: 1 }), num('size', 'Size'),
-  opt(t('only', 'Only while panel', { suggest: 'panels', mono: true })), opt(b('keep', 'Keep last place')),
-];
-
-export const BUBBLE: Field[] = [
-  panel(), t('text', 'Text', { rows: 2 }), mark('at', 'At'), optMark('until', 'Until'),
-  sel('style', 'Style', ['speech', 'shout', 'thought']),
-  opt({ type: 'color', key: 'fill', label: 'Fill' }),
-  opt(t('only', 'Only while panel', { suggest: 'panels', mono: true })),
-  place(bubblePlace),
-];
-
-export const CAST_BUBBLES: Field[] = [
-  panel(), mark('at', 'At'), mark('step', 'Step (mark)'), mark('until', 'Until'),
-  num('width', 'Width'), num('x0', 'x0'), num('xStep', 'x step'), num('yEven', 'Y even'), num('yOdd', 'Y odd'),
-  num('fontH', 'Font height'), num('fontW', 'Font width'), num('minFont', 'Min font', { step: 1 }), num('headLift', 'Head lift'),
-];
-
-export const QUEUE: Field[] = [
-  panel(), t('title', 'Title'), num('base', 'Base number', { step: 1 }), mark('from', 'From'), num('every', 'Every (seconds)'),
-  { type: 'strings', key: 'prompts', label: 'Prompts (one per line)', rows: 6 },
-];
-
-export const TAGS: Field[] = [panel(), mark('from', 'From'), num('step', 'Step (seconds)'), num('dy', 'dy'), num('z', 'Z')];
-
-export const LINES: Field[] = [
-  panel(), mark('from', 'From'), num('step', 'Step (seconds)'),
-  { type: 'strings', key: 'texts', label: 'Lines (one per line)', rows: 4 },
-  opt(b('jitter', 'Jitter')),
-];
-
-const BRAIN_ROW: Field[] = [t('who', 'Who'), t('what', 'What'), t('bg', 'Background', { hint: 'colour or CSS gradient' }), num('glow', 'Glow', { step: 1 })];
-
-export const BRAIN: Field[] = [
-  panel(), mark('from', 'From'), num('step', 'Step (seconds)'),
-  { type: 'array', key: 'rows', label: 'Rows', item: { fields: BRAIN_ROW, title: (row) => `${String(row.who)}: ${String(row.what)}` } },
-];
-
-export const CARD: Field[] = [
-  mark('at', 'At'), t('title', 'Title'), t('path', 'Path', { mono: true }),
-  mark('typeFrom', 'Type from'), mark('typeTo', 'Type to'), mark('fadeFrom', 'Fade from'), mark('fadeTo', 'Fade to'),
-];
-
-export const PAGE_TURN: Field[] = [num('page', 'Page index', { step: 1 }), mark('from', 'From'), mark('to', 'To'), sel('ease', 'Ease', ['in', 'quad'])];
-
-export const PANEL_FLASH: Field[] = [
-  panel(), mark('at', 'At'), num('dur', 'Duration'), num('opacity', 'Opacity'),
-  opt(num('fade', 'Fade extra')), opt(num('fadeFrom', 'Fade from opacity')),
-  opt(b('hold', 'Hold at full opacity')), opt(t('only', 'Only while panel', { suggest: 'panels', mono: true })),
-];
-
-export const INVERT: Field[] = [panel(), mark('at', 'At'), num('from', 'From (seconds)'), num('to', 'To (seconds)')];
+export function letterTitle(l: Record<string, unknown>): string {
+  const detail = l.text ?? l.title ?? (Array.isArray(l.words) ? l.words.join(' ') : '') ?? '';
+  const when = l.at ?? l.from ?? '';
+  return `${String(l.kind)}${when !== '' ? ` @ ${String(when)}` : ''}${detail ? ` — ${String(detail).slice(0, 52)}` : ''}`;
+}

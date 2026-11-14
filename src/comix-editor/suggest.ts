@@ -1,38 +1,53 @@
-import { isRec, type Rec } from '../chapter-editor/dom.js';
-import { markTable } from './marks.js';
-import type { ComixModel } from './model.js';
+import { ZONE_IDS } from '../procgen/core/palette.js';
+import { FxCatalog, ModelCatalog } from '../procgen/index.js';
+import type { ComixPack } from '../cinematic/spec-types.js';
 
-function list(model: ComixModel, path: string, key: string): Rec[] {
-  const value = model.file(path)?.value;
-  if (!isRec(value) || !Array.isArray(value[key])) return [];
-  return value[key].filter(isRec);
+let cachedModels: string[] | null = null;
+let cachedRooms: string[] | null = null;
+let cachedFx: string[] | null = null;
+
+function modelIds(): string[] {
+  if (!cachedModels) cachedModels = ModelCatalog.list().map((e) => e.id).sort();
+  return cachedModels;
 }
 
-function unique(values: string[]): string[] {
-  return [...new Set(values)].sort();
+function roomIds(): string[] {
+  if (!cachedRooms) cachedRooms = ModelCatalog.list('room').map((e) => e.id).sort();
+  return cachedRooms;
 }
 
-/** Names offered by the form datalists, taken from the comix being edited. */
-export function suggestions(model: ComixModel, name: string): string[] {
+function fxIds(): string[] {
+  if (!cachedFx) cachedFx = FxCatalog.list().map((e) => e.id).sort();
+  return cachedFx;
+}
+
+export function suggestForComix(pack: ComixPack, pageId: string, name: string): string[] {
+  const page = pack.pages.find((p) => p.id === pageId);
   switch (name) {
-    case 'marks':
-      return Object.keys(markTable(model.file('marks.json')?.value)).sort();
-    case 'actors':
-      return unique(list(model, 'cast.json', 'actors').map((actor) => String(actor.id ?? '')).filter(Boolean));
-    case 'points': {
-      const set = model.file('set.json')?.value;
-      return isRec(set) && isRec(set.points) ? Object.keys(set.points).sort() : [];
-    }
-    case 'panels':
-      return unique(model.files.filter((file) => file.path.startsWith('pages/')).flatMap((file) => {
-        if (!isRec(file.value) || !Array.isArray(file.value.panels)) return [];
-        return file.value.panels.filter(isRec).map((panel) => String(panel.id ?? '')).filter(Boolean);
-      }));
     case 'models':
-      return unique([
-        ...list(model, 'cast.json', 'actors').map((actor) => String(actor.model ?? '')),
-        ...list(model, 'set.json', 'props').map((prop) => String(prop.model ?? '')),
-      ].filter(Boolean));
+      return modelIds();
+    case 'rooms':
+      return roomIds();
+    case 'fx':
+      return fxIds();
+    case 'zones':
+      return [...ZONE_IDS].sort();
+    case 'actors':
+      return pack.manifest.cast.map((a) => a.id);
+    case 'points':
+      return Object.keys(pack.manifest.stage.points ?? {});
+    case 'fixtures':
+      return (pack.manifest.stage.fixtures ?? []).map((f) => f.id);
+    case 'panels':
+      return pack.pages.flatMap((p) => p.panels.map((pn) => pn.id));
+    case 'marks': {
+      const cues = new Set<string>([
+        ...Object.keys(pack.manifest.cues ?? {}),
+        ...Object.keys(page?.cues ?? {}),
+      ]);
+      const base = [...cues].sort();
+      return [...base, '+0.2', '+0.5', '+1.0'];
+    }
     default:
       return [];
   }
