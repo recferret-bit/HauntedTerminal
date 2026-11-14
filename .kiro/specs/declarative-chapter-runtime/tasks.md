@@ -10,4 +10,4 @@
 - [x] 8. Static checks shared by editor and CLI (`checkPack`); `generate-chapter.mjs --validate/--check/--verify`. _Req 13, 14_
 - [x] 9. Skill self-tests follow the current content and assert `dossierOf`. _Req 9_
 - [ ] 10. Move the remaining shared-but-narrative strings (`help` text mentioning `hank.tty`, grimoire wording) behind manifest fields if a second chapter needs them.
-- [ ] 11. Make the intro/outro cinematics (`src/cinematic/`) data-driven; today they are shared across chapters.
+- [x] 11. Make the intro/outro cinematics (`src/cinematic/`) data-driven; completed via connected `comix/<slug>/` specs and generic engine (`.kiro/specs/declarative-comix-runtime/`).

@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Validate comix specs on save",
+      "trigger": "PostFileSave",
+      "description": "Report-only and fast: connected layout + static comix spec checks (schema, cues, timeline, catalog assets) and whether src/cinematic/generated is in sync. Rewrites nothing; run generate-comix.mjs to recompile.",
+      "matcher": "comix/.*\\.(json|md)$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/harness/validate-comix.mjs; node scripts/harness/generate-comix.mjs --validate; node scripts/harness/generate-comix.mjs --check",
+        "timeout": 60
+      }
+    }
+  ]
+}

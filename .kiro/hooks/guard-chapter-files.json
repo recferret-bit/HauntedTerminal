@@ -2,9 +2,9 @@
   "version": "v1",
   "hooks": [
     {
-      "name": "Guard compiled chapter data and the spec vocabulary",
+      "name": "Guard compiled chapter/comix data and spec vocabularies",
       "trigger": "PreToolUse",
-      "description": "Blocks hand edits of src/chapters/generated/ (compiled output) and asks before changes to the chapter vocabulary (types, script-types, script interpreter, validate-pack, editor schema), which must move together.",
+      "description": "Blocks hand edits of src/chapters/generated/ and src/cinematic/generated/ (compiled outputs) and asks before changes to the chapter or comix spec vocabularies (types, interpreters, simulators, and editor schemas), which must move together.",
       "matcher": "fs_write|str_replace|fs_append|write|edit|replace|append",
       "action": {
         "type": "command",

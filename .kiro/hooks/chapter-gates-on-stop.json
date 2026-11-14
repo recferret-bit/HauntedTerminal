@@ -4,10 +4,10 @@
     {
       "name": "Declarative and catalog gate on stop",
       "trigger": "Stop",
-      "description": "Final gate when the agent stops: no chapter or level named in code, and the compiled catalog matches chapters/. Under 1 s, report-only.",
+      "description": "Final gate when the agent stops: no chapter/level/comix page named in code, and compiled chapter & comix catalogs match disk. Under 1 s, report-only.",
       "action": {
         "type": "command",
-        "command": "node scripts/quality/check-declarative.mjs; node scripts/harness/generate-chapter.mjs --check",
+        "command": "node scripts/quality/check-declarative.mjs; node scripts/harness/generate-chapter.mjs --check; node scripts/harness/generate-comix.mjs --check",
         "timeout": 30
       }
     }

@@ -11,7 +11,7 @@ Only these may sit at the root; `npm run quality:root` (`scripts/quality/check-r
 | `scripts/` | Node tooling: `harness/`, `hooks/`, `quality/`. |
 | `public/` | Static assets served as-is. |
 | `chapters/` | LEVEL GEN data, one folder per chapter. |
-| `comix/` | Declarative intro and outro specs. |
+| `comix/` | Declarative animated 3D comix sequences, one connected folder per sequence (`comix.manifest.json` + `pages/page-XX-<slug>/page.spec.json`). |
 | `docs/` | Long-form docs and notes. |
 | `.kiro/` | Steering, skills, specs, hooks, settings. |
 | files | Only tool configs that must live at the root (`package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `.gitignore`) plus `AGENTS.md`, `README.md` and `LICENSE` (the open source licence the Kiroween rules require; GitHub detects it at the root). |
@@ -34,8 +34,8 @@ src/
   game/           # world, VFS, shell, session (three-free)
   chapters/       # LEVEL GEN runtime; generated/ is compiled from chapters/
   renderer/       # comic stage
-  cinematic/      # intro and outro player
-  comix-editor/   # /comix-editor: schema-driven comix forms and cinematic preview
+  cinematic/      # generic 3D comix player & viewport selector; generated/ is compiled from comix/
+  comix-editor/   # /comix-editor: schema forms, bidirectional element selection, layout map, preview & 60fps verifier
   ui/             # terminal, HUD, editor
   sandbox/        # dev inspector
   pages/          # chapter select and comic reader
@@ -44,12 +44,14 @@ src/
   play/           # play page composition (bootstrap). main.ts only starts it
   styles/         # game.css, hub.css
   main.ts         # play page (/)
-comix/<id>/                   # intro and outro specs: manifest, marks, cast, set, pages, letters, beats, camera, poses, splash
+comix/<slug>/                # animated 3D comix data (intro, outro, ...):
+  comix.manifest.json        #   stage, cast, shared cues, skip policy, page index
+  pages/page-XX-<slug>/page.spec.json  # connected self-contained page & panel specs
 chapters/<chapter-slug>/     # LEVEL GEN data, one chapter for Kiroween
   chapter.manifest.json
   story/comix.spec.json, dialogs.json, out/
   levels/level-XX-<slug>/level.spec.json, LEVEL.md
-pages/                       # HTML entry pages: index.html (player front door), play.html (game at /play/...), hub.html (redirect to /), chapter-editor.html (/editor, /editor/<chapter>/<level>), comix-editor.html (/comix-editor, /comix-editor/<id>/<file>), dev.html (level select, jumps, QA labs), chapters.html, comic.html, cinematic.html, storybook.html
+pages/                       # HTML entry pages: index.html (player front door), play.html (game at /play/...), hub.html (redirect to /), chapter-editor.html (/editor, /editor/<chapter>/<level>), comix-editor.html (/comix-editor, /comix-editor/<slug>/<target>), dev.html (level select, jumps, QA labs), chapters.html, comic.html, cinematic.html, storybook.html
 public/assets/               # external sprites/meshes (ai-mesh-pipeline)
 public/comix/<chapter-id>/   # rendered comic pages
 scripts/harness/             # shared Node tooling

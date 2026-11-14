@@ -17,7 +17,8 @@ assets/               optional PNG albedo loader (three). No other src imports.
 game/                 world, VFS, shell, session. Three-free. Room view types come from contracts.
 chapters/             level runtime. Imports game and contracts. generated/ is compiled data.
 renderer/             comic stage. Three, procgen, shaders, assets. Not the game rules.
-cinematic/            intro and outro. Three, procgen, shaders.
+cinematic/            generic 3D comix runtime. Three, procgen, shaders. generated/ is compiled data.
+comix-editor/         /comix-editor. chapter-editor (form/dom/api helpers), cinematic, procgen. Player runs in an iframe.
 ui/                   terminal, HUD, editor, shader dock. No three import of its own.
 sandbox/              dev inspector. Talks to the stage through its public methods.
 pages/                chapter select and comic reader scripts.
@@ -31,15 +32,16 @@ Exact allowed imports live in `scripts/quality/check-layers.mjs`. Change the rul
 
 ## Hard limits
 
-- No source file over 600 lines. No function over 130 lines. Split by responsibility, not by line count. `src/chapters/generated/` is compiled data and is outside the size gate; regenerate it, do not hand-edit it.
-- No duplicated blocks (`jscpd`, 4 lines / 35 tokens). Extract the shared helper into the innermost layer that both callers may import. `src/chapters/generated/` is compiled level data and is excluded.
+- No source file over 600 lines. No function over 130 lines. Split by responsibility, not by line count. `src/chapters/generated/` and `src/cinematic/generated/` are compiled data and are outside the size gate; regenerate them, do not hand-edit them.
+- No duplicated blocks (`jscpd`, 4 lines / 35 tokens). Extract the shared helper into the innermost layer that both callers may import. `src/chapters/generated/` and `src/cinematic/generated/` are compiled data and are excluded.
 - KISS: plain functions and data tables before classes; no indirection that only exists to survive a missing module.
 - No `any`.
 
 ## Gates (run before saying a change is done)
 
-- `npm run quality` : typecheck, root layout, size, layers, declarative (no chapter or level named in code), duplicates.
+- `npm run quality` : typecheck, root layout, size, layers, declarative (no chapter, level, or comix page named in code), duplicates.
 - `node scripts/harness/generate-chapter.mjs --verify` : compile chapters, static spec checks, 0-death headless playthrough.
-- `node scripts/harness/editor-smoke.mjs` : the chapter editor in headless Chrome.
+- `node scripts/harness/generate-comix.mjs --verify` & `node scripts/harness/validate-comix.mjs` : compile comix sequences, static + connected-folder checks, 60fps headless timeline simulation.
+- `node scripts/harness/editor-smoke.mjs` & `node scripts/harness/comix-editor-smoke.mjs` : chapter and comix editors in headless Chrome.
 - `npm run quality:fingerprint` : hashes of every model, texture and FX (specs, validator reports, rasters, meshes, poses). Refactors must leave it byte-identical; for intended asset changes, diff it and explain the change.
 - Storybook: `node scripts/harness/screenshot-lab.mjs --selftest`.

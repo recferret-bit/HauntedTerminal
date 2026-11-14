@@ -16,7 +16,7 @@ Work in progress. What runs today:
 - **Play** (`/play/<chapter>/<level>`): the comic stage and the terminal. `/play` opens the Kiroween chapter. Mode flags stay on the query string (`?nointro=1`).
 - **Developer** (`/dev.html`): level select, direct sector jumps, and the visual QA labs.
 - **Chapter editor** (`/editor`, dev server): select a chapter, edit every level, dialog and comic panel with forms, preview the real game on the unsaved draft, run the checks, save back to `chapters/`. Chapters are data; no per-chapter code (`.kiro/steering/declarative-chapters.md`).
-- **Comix editor** (`/comix-editor`, dev server): edit the intro and outro specs in `comix/`.
+- **Comix editor** (`/comix-editor`, dev server): select any animated 3D comix in `comix/`, inspect connected page/panel layouts, edit every stage, cast, camera, letter, beat and track with forms, scrub and freeze the live 3D preview on the draft, run the 60fps timeline verifier, and save back to `comix/`. Comixes are data; no hardcoded scenes (`.kiro/steering/declarative-comix.md`).
 - **Chapter select** (`/chapters.html`), **comic reader** (`/comic.html`), **cinematics** (`/cinematic.html`).
 - **Storybook** (`/storybook.html`): every procedural model, texture and effect under the real comic
   renderer (cel shading, ink outlines, halftone, pixel-art and CRT passes).
@@ -63,9 +63,9 @@ Everything Kiro uses lives in [`.kiro/`](./.kiro):
 
 - **Steering** (`.kiro/steering/`): product, tech, structure, architecture and the skills map, always loaded.
   Architecture rules are enforced by scripts in `scripts/quality/`, not by prose.
-- **Skills** (`.kiro/skills/`): 17 skills in two categories. *ASSET PCG* (art direction, models, malware,
+- **Skills** (`.kiro/skills/`): 22 skills in two categories. *ASSET PCG* (art direction, models, malware,
   rooms, textures, shaders, lighting, animation, particles, validators, visual QA) and *LEVEL GEN*
-  (chapter intake, comic drawing, level compiler, implementer). Each ships its own validator scripts and self-tests.
+  (chapter intake, comic story drawing, level compiler, chapter implementer, chapter editor, plus 3D comix intake, sequence generator, comix implementer, and comix editor). Each ships its own validator scripts and self-tests.
 - **Hooks** (`.kiro/hooks/`): asset dry runs that validate a model, texture or effect as soon as it is saved.
 - **Specs** (`.kiro/specs/`): feature specs (requirements, design, tasks); none committed yet.
 
