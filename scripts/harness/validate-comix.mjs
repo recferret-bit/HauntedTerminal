@@ -1,174 +1,169 @@
 #!/usr/bin/env node
-// Structural check for comix/<id>/. Plain node, no Vite.
+// Connected-spec and 60fps timeline validator for comix/<slug>/.
+//
 //   node scripts/harness/validate-comix.mjs
-// Fails when a required spec is missing, manifest.id disagrees with the folder, a mark expression does not
-// resolve, a panel id is repeated, or a letter/camera panel id is unknown.
+//   node scripts/harness/validate-comix.mjs --comix intro
+//   node scripts/harness/validate-comix.mjs --root /tmp/test-comix
+//
+// Checks:
+//   1. Folder connectivity: every comix/<slug>/ has README.md, comix.manifest.json, and pages/page-XX-<name>/page.spec.json
+//      matching manifest.pages[].specPath, with zero disconnected or legacy JSON files.
+//   2. Compiled catalog sync (when checking the repo's default comix/ directory).
+//   3. Full schema, ModelCatalog/FxCatalog, cue, rect, and 60fps simulation checks from src/comix-editor/check.ts.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { comixCatalogFile, comixDir, compileAllComix } from './lib/comix-compile.mjs';
+import { parseArgs, withProcgen } from './lib/load.mjs';
 
-const ROOT = resolve('comix');
-const REQUIRED = ['manifest.json', 'marks.json', 'cast.json', 'set.json', 'letters.json', 'beats.json', 'camera.json', 'poses.json'];
-const NUMBER = /^-?\d+(?:\.\d+)?$/;
-const NAMED = /^([A-Za-z_][\w]*)([+-]\d+(?:\.\d+)?)?$/;
+const args = parseArgs(process.argv.slice(2), ['--root', '--comix']);
+const customRoot = args.val('--root', '');
+const targetRoot = customRoot ? resolve(customRoot) : comixDir;
+const filterSlug = args.val('--comix', '');
+const PAGE_PATH_RE = /^pages\/page-\d{2}-[a-z0-9-]+\/page\.spec\.json$/;
 
-const LETTER_MARKS = {
-  caption: ['from'], meme: ['at'], sfx: ['at'], sfx_burst: ['from'], bubble: ['at', 'until'],
-  cast_bubbles: ['at', 'step', 'until'], queue: ['from'], tags: ['from'], lines: ['from'], brain: ['from'],
-  card: ['at', 'typeFrom', 'typeTo', 'fadeFrom', 'fadeTo'], page_turn: ['from', 'to'], panel_flash: ['at'], invert: ['at'],
-};
-const BEAT_MARKS = {
-  lightning: ['at'], fx: ['at'], fx_repeat: ['at'], look: ['at'], audio: ['at'], state: ['at'],
-  arcs: ['at'], keys: ['from', 'until'], shatter_cast: ['at'],
-};
-const POSE_MARKS = {
-  seated: ['typingUntil', 'typingMidUntil'], suck: ['from', 'to', 'hideAt', 'recoilAt'], rain: ['until'],
-  monitor: ['hideGlassAt', 'hideCodeAt', 'vortexFrom', 'vortexUntil', 'amberAt'],
-  emerge: ['showFrom', 'hideAt', 'wakeAt', 'riseAt', 'leanFrom', 'leanTo'],
-  flight: ['from', 'to'], fling: ['from', 'to', 'hideAt'], screen_blaze: ['until', 'blinkUntil'],
-  bolt_flicker: ['at'], shake: [], stage_flash: [], pixelate: ['from', 'to'],
-};
-
-const issues = [];
-
-function walk(dir, base = '') {
+function walkJsonFiles(dir, base = '') {
   const out = [];
-  for (const name of readdirSync(dir)) {
-    const abs = join(dir, name);
-    const rel = base ? `${base}/${name}` : name;
-    if (statSync(abs).isDirectory()) out.push(...walk(abs, rel));
-    else if (name.endsWith('.json')) out.push(rel);
+  for (const entry of readdirSync(dir)) {
+    const abs = join(dir, entry);
+    const rel = base ? `${base}/${entry}` : entry;
+    if (statSync(abs).isDirectory()) out.push(...walkJsonFiles(abs, rel));
+    else if (entry.endsWith('.json')) out.push(rel);
   }
   return out.sort();
 }
 
-function read(dir, rel, bag) {
+function loadComixFolder(rootDir, slug, problems) {
+  const dir = join(rootDir, slug);
+  if (!existsSync(join(dir, 'README.md'))) {
+    problems.push(`comix/${slug}/README.md: missing human-readable sequence overview`);
+  }
+  const manifestFile = join(dir, 'comix.manifest.json');
+  if (!existsSync(manifestFile)) {
+    problems.push(`comix/${slug}/comix.manifest.json: missing`);
+    return null;
+  }
+
+  let manifest;
   try {
-    bag[rel] = JSON.parse(readFileSync(join(dir, rel), 'utf8'));
+    manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
   } catch (err) {
-    issues.push(`comix/${rel}: ${err.message}`);
+    problems.push(`comix/${slug}/comix.manifest.json: invalid JSON (${err.message})`);
+    return null;
   }
-}
 
-function checkExpr(file, at, expr, marks) {
-  if (expr === undefined) return;
-  if (typeof expr !== 'string') {
-    issues.push(`${file}: ${at} is not a mark expression`);
-    return;
+  if (manifest.id !== slug) {
+    problems.push(`comix/${slug}/comix.manifest.json: id "${manifest.id}" must match folder "${slug}"`);
   }
-  const text = expr.trim();
-  if (NUMBER.test(text)) return;
-  const found = NAMED.exec(text);
-  if (!found || !Object.hasOwn(marks, found[1])) issues.push(`${file}: ${at} mark "${expr}" does not resolve`);
-}
+  if (!Array.isArray(manifest.pages) || manifest.pages.length === 0) {
+    problems.push(`comix/${slug}/comix.manifest.json: pages[] must list at least 1 page`);
+    return null;
+  }
 
-function checkKeys(file, at, value, keys, marks) {
-  if (!value || typeof value !== 'object') return;
-  for (const key of keys) checkExpr(file, `${at}.${key}`, value[key], marks);
-}
+  const expectedJson = new Set(['comix.manifest.json']);
+  const pages = [];
 
-function checkPoses(file, programs, marks) {
-  if (!Array.isArray(programs)) return;
-  programs.forEach((program, i) => {
-    const at = `programs[${i}]`;
-    checkKeys(file, at, program, POSE_MARKS[program?.kind] ?? [], marks);
-    if (program?.kind === 'monitor' && Array.isArray(program.glitch)) {
-      program.glitch.forEach((pair, j) => { if (Array.isArray(pair)) pair.forEach((expr, k) => checkExpr(file, `${at}.glitch[${j}][${k}]`, expr, marks)); });
+  manifest.pages.forEach((summary, idx) => {
+    const label = `comix/${slug}/comix.manifest.json pages[${idx}]`;
+    if (!summary || typeof summary.specPath !== 'string') {
+      problems.push(`${label}: missing specPath`);
+      return;
     }
-    if (program?.kind === 'shake') {
-      (program.windows ?? []).forEach((win, j) => checkExpr(file, `${at}.windows[${j}].at`, win?.at, marks));
-      checkKeys(file, `${at}.pull`, program.pull, ['from', 'until', 'spanFrom', 'spanTo'], marks);
+    if (!PAGE_PATH_RE.test(summary.specPath)) {
+      problems.push(`${label}: specPath "${summary.specPath}" must match pages/page-XX-<slug>/page.spec.json`);
     }
-    if (program?.kind === 'stage_flash') {
-      (program.rules ?? []).forEach((rule, j) => checkKeys(file, `${at}.rules[${j}]`, rule, ['from', 'until'], marks));
+    const expectedFolder = `pages/${summary.id}/page.spec.json`;
+    if (summary.specPath !== expectedFolder) {
+      problems.push(`${label}: specPath "${summary.specPath}" must match summary.id ("${expectedFolder}")`);
+    }
+    expectedJson.add(summary.specPath);
+    const absPage = join(dir, summary.specPath);
+    if (!existsSync(absPage)) {
+      problems.push(`comix/${slug}/${summary.specPath}: file declared in manifest.pages does not exist`);
+      return;
+    }
+    try {
+      const spec = JSON.parse(readFileSync(absPage, 'utf8'));
+      if (spec.id !== summary.id) {
+        problems.push(`comix/${slug}/${summary.specPath}: page id "${spec.id}" disagrees with manifest summary id "${summary.id}"`);
+      }
+      pages.push(spec);
+    } catch (err) {
+      problems.push(`comix/${slug}/${summary.specPath}: invalid JSON (${err.message})`);
     }
   });
-}
 
-function needPanel(file, at, panel, ids) {
-  if (typeof panel !== 'string' || ids.has(panel)) return;
-  issues.push(`${file}: ${at} panel "${panel}" does not exist`);
-}
-
-function checkPages(id, json, marks) {
-  const ids = new Map();
-  for (const rel of Object.keys(json).filter((name) => name.startsWith('pages/'))) {
-    const page = json[rel];
-    const panels = Array.isArray(page?.panels) ? page.panels : [];
-    panels.forEach((panel, i) => {
-      const file = `comix/${id}/${rel}`;
-      if (!panel || typeof panel.id !== 'string') return;
-      if (ids.has(panel.id)) issues.push(`${file}: panels[${i}].id "${panel.id}" is also used in ${ids.get(panel.id)}`);
-      else ids.set(panel.id, file);
-      checkExpr(file, `panels[${i}].at`, panel.at, marks);
-    });
+  for (const rel of walkJsonFiles(dir)) {
+    if (!expectedJson.has(rel)) {
+      problems.push(`comix/${slug}/${rel}: disconnected JSON file (not referenced in comix.manifest.json)`);
+    }
   }
-  return ids;
+
+  return { slug, pack: { manifest, pages: pages.sort((a, b) => a.index - b.index) } };
 }
 
-function checkRefs(id, json, ids) {
-  const letters = `comix/${id}/letters.json`;
-  (Array.isArray(json['letters.json']) ? json['letters.json'] : []).forEach((letter, i) => {
-    if (letter && typeof letter.panel === 'string') needPanel(letters, `[${i}].panel`, letter.panel, ids);
-  });
-  const camera = `comix/${id}/camera.json`;
-  (Array.isArray(json['camera.json']) ? json['camera.json'] : []).forEach((shot, i) => {
-    if (shot) needPanel(camera, `[${i}].panel`, shot.panel, ids);
-  });
-  const splash = json['splash.json'];
-  if (splash && typeof splash.panel === 'string') needPanel(`comix/${id}/splash.json`, 'panel', splash.panel, ids);
-  const frames = json['manifest.json']?.keyframes;
-  if (Array.isArray(frames)) frames.forEach((frame, i) => needPanel(`comix/${id}/manifest.json`, `keyframes[${i}].panel`, frame?.panel, ids));
-}
-
-function checkMarks(id, json, marks) {
-  const file = (rel) => `comix/${id}/${rel}`;
-  (Array.isArray(json['letters.json']) ? json['letters.json'] : []).forEach((letter, i) => {
-    checkKeys(file('letters.json'), `[${i}]`, letter, LETTER_MARKS[letter?.kind] ?? [], marks);
-  });
-  (Array.isArray(json['beats.json']) ? json['beats.json'] : []).forEach((beat, i) => {
-    checkKeys(file('beats.json'), `[${i}]`, beat, BEAT_MARKS[beat?.kind] ?? [], marks);
-  });
-  (Array.isArray(json['camera.json']) ? json['camera.json'] : []).forEach((shot, i) => {
-    (shot?.span ?? []).forEach((expr, j) => checkExpr(file('camera.json'), `[${i}].span[${j}]`, expr, marks));
-  });
-  checkPoses(file('poses.json'), json['poses.json']?.programs, marks);
-  const splash = json['splash.json'];
-  if (splash) {
-    checkExpr(file('splash.json'), 'at', splash.at, marks);
-    checkExpr(file('splash.json'), 'keyAt', splash.keyAt, marks);
-    checkExpr(file('splash.json'), 'caption.from', splash.caption?.from, marks);
-  }
-}
-
-function checkFolderFiles(id) {
-  const dir = join(ROOT, id);
-  const files = walk(dir);
-  for (const name of REQUIRED) if (!files.includes(name)) issues.push(`comix/${id}/${name}: missing`);
-  if (!files.some((rel) => rel.startsWith('pages/') && rel.endsWith('.json'))) issues.push(`comix/${id}: no pages/*.json`);
-  const json = {};
-  for (const rel of files) read(dir, rel, json);
-  const manifest = json['manifest.json'];
-  if (manifest && manifest.id !== id) issues.push(`comix/${id}/manifest.json: id "${manifest.id}" does not match folder ${id}`);
-  const marks = json['marks.json'] && typeof json['marks.json'] === 'object' && !Array.isArray(json['marks.json']) ? json['marks.json'] : {};
-  if (manifest) {
-    checkExpr(`comix/${id}/manifest.json`, 'end', manifest.end, marks);
-    checkExpr(`comix/${id}/manifest.json`, 'acceptsKeyFrom', manifest.acceptsKeyFrom, marks);
-    (manifest.keyframes ?? []).forEach((frame, i) => checkExpr(`comix/${id}/manifest.json`, `keyframes[${i}].at`, frame?.at, marks));
-    if (Array.isArray(manifest.skip)) manifest.skip.forEach((rule, i) => checkKeys(`comix/${id}/manifest.json`, `skip[${i}]`, rule, ['before', 'to'], marks));
-  }
-  const ids = checkPages(id, json, marks);
-  checkRefs(id, json, ids);
-  checkMarks(id, json, marks);
-}
-
-if (!existsSync(ROOT)) {
-  console.log('comix/: missing');
+if (!existsSync(targetRoot)) {
+  console.error(`${targetRoot}: directory does not exist`);
   process.exit(1);
 }
-for (const name of readdirSync(ROOT).filter((entry) => statSync(join(ROOT, entry)).isDirectory()).sort()) checkFolderFiles(name);
-if (issues.length) {
-  for (const line of issues) console.log(line);
-  console.log(`${issues.length} comix problem(s)`);
+
+const slugs = readdirSync(targetRoot)
+  .filter((name) => statSync(join(targetRoot, name)).isDirectory())
+  .filter((name) => !filterSlug || name === filterSlug)
+  .sort();
+
+if (slugs.length === 0) {
+  console.error(`No comix sequences found under ${targetRoot}`);
   process.exit(1);
 }
-console.log('comix OK');
+
+const problems = [];
+const loaded = [];
+for (const slug of slugs) {
+  const item = loadComixFolder(targetRoot, slug, problems);
+  if (item) loaded.push(item);
+}
+
+if (!filterSlug) {
+  const roleOwners = new Map();
+  for (const { slug, pack } of loaded) {
+    const role = pack.manifest.role;
+    const playable = (pack.manifest.status ?? 'playable') === 'playable';
+    if (!playable || (role !== 'opening' && role !== 'ending')) continue;
+    if (roleOwners.has(role)) {
+      problems.push(`comix/${slug}: duplicate playable "${role}" role (already claimed by "${roleOwners.get(role)}")`);
+    } else {
+      roleOwners.set(role, slug);
+    }
+  }
+}
+
+if (!customRoot && !filterSlug) {
+  const { ts } = compileAllComix();
+  const existing = existsSync(comixCatalogFile) ? readFileSync(comixCatalogFile, 'utf8') : '';
+  if (existing !== ts) {
+    problems.push('src/cinematic/generated/catalog-data.ts is out of sync with comix/*. Run: node scripts/harness/generate-comix.mjs');
+  }
+}
+
+await withProcgen(async (_p, vite) => {
+  const { checkComixPack } = await vite.ssrLoadModule('/src/comix-editor/check.ts');
+  for (const { slug, pack } of loaded) {
+    const issues = checkComixPack(pack);
+    for (const issue of issues) {
+      if (issue.severity === 'error') {
+        problems.push(`comix/${slug} [${issue.where}]: ${issue.message}`);
+      } else {
+        console.warn(`warn  comix/${slug} [${issue.where}]: ${issue.message}`);
+      }
+    }
+  }
+});
+
+if (problems.length > 0) {
+  for (const line of problems) console.error(`ERROR ${line}`);
+  console.error(`${problems.length} comix problem(s)`);
+  process.exit(1);
+}
+
+const totalPages = loaded.reduce((n, item) => n + item.pack.pages.length, 0);
+console.log(`comix OK (${loaded.length} sequences, ${totalPages} connected pages)`);

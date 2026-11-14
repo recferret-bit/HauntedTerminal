@@ -2,7 +2,7 @@
 // Size gate: no source file over 600 lines, no function over 130 lines.
 //   node scripts/quality/check-size.mjs [dir ...]      (default: src)
 // Exit 1 when a limit is exceeded. Functions = declarations, methods, arrows, function expressions.
-// src/chapters/generated/ is compiled chapter data (regenerate, do not hand-edit) and is not counted.
+// src/chapters/generated/ and src/cinematic/generated/ are compiled spec data (regenerate, do not hand-edit) and are not counted.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import ts from 'typescript';
@@ -10,12 +10,13 @@ import ts from 'typescript';
 const MAX_FILE = 600;
 const MAX_FUNC = 130;
 const roots = process.argv.slice(2).length ? process.argv.slice(2) : ['src'];
+const GENERATED_DIRS = [join('src', 'chapters', 'generated'), join('src', 'cinematic', 'generated')];
 
 function* walk(dir) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     if (statSync(p).isDirectory()) yield* walk(p);
-    else if (/\.(ts|mjs)$/.test(name) && !name.endsWith('.d.ts') && !p.includes(`${join('src', 'chapters', 'generated')}`)) yield p;
+    else if (/\.(ts|mjs)$/.test(name) && !name.endsWith('.d.ts') && !GENERATED_DIRS.some((g) => p.includes(g))) yield p;
   }
 }
 

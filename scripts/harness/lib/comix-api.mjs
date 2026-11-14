@@ -1,21 +1,21 @@
 // Dev-server API behind the comix editor (`/comix-editor`). A Vite plugin: dev server only, never in `vite build`.
 //
-//   GET /api/comix                 every comix, read fresh from comix/<id>/**/*.json, with file etags
-//   GET /api/comix/<id>/etags      { path: etag } for every json file now on disk
-//   PUT /api/comix/<id>/file       { path, json, baseEtag }  write one existing json file
+//   GET /api/comix                 every comix as the editor needs it, read fresh from disk, with file etags
+//   GET /api/comix/<slug>/etags    { path: etag } for every spec file now on disk (change detection)
+//   PUT /api/comix/<slug>/file     { path, json, baseEtag }  write one spec file, then recompile catalog-data.ts
 //
-// Safety matches the chapter API: an existing .json file inside that comix folder (no new paths, no `..`),
-// Content-Type application/json, same-origin Host, etag 409, atomic rename. A comix save does not recompile chapters.
-import { existsSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs';
+// Safety matches the chapter API: only existing `comix.manifest.json` and `pages/<dir>/page.spec.json` inside that
+// comix folder can be written. Requires Content-Type: application/json, same-origin Host/Origin, baseEtag 409 check,
+// and atomic rename.
+import { existsSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
-import { etagOf } from './chapter-compile.mjs';
+import { comixDir, compileAllComix, etagOf, listComixIds, readComix, writeComixCatalog } from './comix-compile.mjs';
 import { stringifyComixJson } from './comix-json.mjs';
-import { projectRoot } from './load.mjs';
 
-const ID = /^[\w.-]+$/;
+const WRITABLE = /^(comix\.manifest\.json|pages\/[\w.-]+\/page\.spec\.json)$/;
+const SLUG = /^[\w.-]+$/;
 const LOCAL_HOST = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 const MAX_BODY = 8 * 1024 * 1024;
-const comixDir = resolve(projectRoot, 'comix');
 
 class HttpError extends Error {
   constructor(status, message) {
@@ -68,44 +68,17 @@ function readBody(req) {
   });
 }
 
-function listIds() {
-  if (!existsSync(comixDir)) return [];
-  return readdirSync(comixDir)
-    .filter((name) => statSync(resolve(comixDir, name)).isDirectory() && existsSync(resolve(comixDir, name, 'manifest.json')))
-    .sort();
-}
-
-function walkJson(dir, base = '') {
-  const out = [];
-  for (const name of readdirSync(dir)) {
-    const abs = resolve(dir, name);
-    const rel = base ? `${base}/${name}` : name;
-    if (statSync(abs).isDirectory()) out.push(...walkJson(abs, rel));
-    else if (name.endsWith('.json')) out.push(rel.split(sep).join('/'));
-  }
-  return out.sort();
-}
-
-function readComix(id) {
-  const dir = resolve(comixDir, id);
-  const files = walkJson(dir).map((rel) => {
-    const text = readFileSync(resolve(dir, rel), 'utf8');
-    return { path: rel, json: JSON.parse(text), etag: etagOf(text) };
-  });
-  const manifest = files.find((file) => file.path === 'manifest.json')?.json;
-  const title = manifest && typeof manifest.title === 'string' ? manifest.title : id;
-  return { id, title, files };
-}
-
-function safeTarget(id, relPath) {
-  if (!ID.test(id) || !listIds().includes(id)) throw new HttpError(404, `unknown comix "${id}"`);
-  if (typeof relPath !== 'string' || !relPath.endsWith('.json') || relPath.includes('..') || relPath.includes('\\') || relPath.startsWith('/')) {
+function safeTarget(slug, relPath) {
+  if (!SLUG.test(slug) || !listComixIds().includes(slug)) throw new HttpError(404, `unknown comix "${slug}"`);
+  if (typeof relPath !== 'string' || !WRITABLE.test(relPath)) {
     throw new HttpError(400, `path not writable: ${relPath}`);
   }
-  const dir = resolve(comixDir, id);
+  const dir = resolve(comixDir, slug);
   const target = resolve(dir, relPath);
-  if (target !== dir && !target.startsWith(`${dir}${sep}`)) throw new HttpError(400, 'path escapes the comix folder');
-  if (!existsSync(target) || !statSync(target).isFile()) throw new HttpError(404, `${relPath} does not exist; add it to the comix first`);
+  if (!target.startsWith(`${dir}${sep}`)) throw new HttpError(400, 'path escapes the comix folder');
+  if (!existsSync(target) || !statSync(target).isFile()) {
+    throw new HttpError(404, `${relPath} does not exist; add it to the comix first`);
+  }
   return target;
 }
 
@@ -115,31 +88,41 @@ function writeAtomic(target, text) {
   renameSync(tmp, target);
 }
 
-async function putFile(req, res, id) {
+async function putFile(req, res, slug) {
   const body = await readBody(req);
-  const target = safeTarget(id, body.path);
-  if (body.json === null || typeof body.json !== 'object') throw new HttpError(400, 'json must be an object or array');
+  const target = safeTarget(slug, body.path);
+  if (body.json === null || typeof body.json !== 'object' || Array.isArray(body.json)) {
+    throw new HttpError(400, 'json must be an object');
+  }
   const current = etagOf(readFileSync(target, 'utf8'));
   if (body.baseEtag !== undefined && body.baseEtag !== current) {
     throw new HttpError(409, `${body.path} changed on disk after you loaded it; reload before saving`);
   }
   const text = stringifyComixJson(body.json);
   writeAtomic(target, text);
-  return send(res, 200, { ok: true, etag: etagOf(text) });
+  let regenerated = false;
+  let warning;
+  try {
+    regenerated = writeComixCatalog(compileAllComix().ts);
+  } catch (err) {
+    warning = `saved, but the comix catalog was not recompiled: ${err.message}`;
+  }
+  return send(res, 200, { ok: true, regenerated, etag: etagOf(text), warning });
 }
 
 async function handle(req, res, url) {
   assertLocal(req);
-  const parts = url.pathname.split('/').filter(Boolean);
-  const id = parts[2] ?? '';
-  if (req.method === 'GET' && parts.length === 2) return send(res, 200, { comixes: listIds().map(readComix) });
-  if (req.method === 'GET' && parts[3] === 'etags') {
-    if (!listIds().includes(id)) throw new HttpError(404, 'unknown comix');
-    const etags = {};
-    for (const file of readComix(id).files) etags[file.path] = file.etag;
-    return send(res, 200, { etags });
+  const parts = url.pathname.split('/').filter(Boolean); // api comix [slug action]
+  const slug = parts[2] ?? '';
+  if (req.method === 'GET' && parts.length === 2) {
+    return send(res, 200, { writable: true, comixes: listComixIds().map(readComix) });
   }
-  if (req.method === 'PUT' && parts[3] === 'file') return putFile(req, res, id);
+  if (req.method === 'GET' && parts[3] === 'etags') {
+    const slugs = listComixIds();
+    if (!slugs.includes(slug)) return send(res, 200, { etags: {}, slugs });
+    return send(res, 200, { etags: readComix(slug).etags, slugs });
+  }
+  if (req.method === 'PUT' && parts[3] === 'file') return putFile(req, res, slug);
   throw new HttpError(404, 'not found');
 }
 

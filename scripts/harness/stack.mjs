@@ -76,6 +76,8 @@ function urls(p) {
   return [
     `  game       http://localhost:${p}/`,
     `  dev        http://localhost:${p}/dev.html`,
+    `  editor     http://localhost:${p}/editor`,
+    `  comix      http://localhost:${p}/comix-editor`,
     `  storybook  http://localhost:${p}/storybook.html`,
     `  inspect    http://localhost:${p}/storybook.html?inspect=<model id>`,
   ].join('\n');

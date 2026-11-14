@@ -15,7 +15,7 @@
     "quality:size": "node scripts/quality/check-size.mjs",
     "quality:layers": "node scripts/quality/check-layers.mjs",
     "quality:declarative": "node scripts/quality/check-declarative.mjs",
-    "quality:dup": "jscpd src --min-lines 4 --min-tokens 35 --threshold 0 --reporters console --format typescript --ignore \"**/chapters/generated/**\"",
+    "quality:dup": "jscpd src --min-lines 4 --min-tokens 35 --threshold 0 --reporters console --format typescript --ignore \"**/chapters/generated/**,**/cinematic/generated/**\"",
     "quality:fingerprint": "node scripts/quality/fingerprint.mjs",
     "quality": "tsc --noEmit && npm run quality:root && npm run quality:size && npm run quality:layers && npm run quality:declarative && npm run quality:dup",
     "quality:root": "node scripts/quality/check-root.mjs"

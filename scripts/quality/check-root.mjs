@@ -9,7 +9,7 @@ import { execFileSync } from 'node:child_process';
 const DIRS = {
   '.kiro': 'Kiro steering, skills, specs, hooks, settings',
   chapters: 'LEVEL GEN data: one folder per chapter',
-  comix: 'declarative intro and outro specs',
+  comix: 'declarative animated 3D comix sequences: one folder per comix',
   docs: 'long-form docs and notes (markdown)',
   pages: 'HTML entry pages (the Vite root)',
   public: 'static assets served as-is',
