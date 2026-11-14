@@ -10,15 +10,13 @@ import type {
   TimeExpr,
 } from '../cinematic/spec-types.js';
 import { compileTimeline, visiblePanelStart } from '../cinematic/timeline.js';
+import { syncSelectedDetailsDom } from '../editor-core/form.js';
 
 export interface ElementRoute {
   target: string;
   tab: string;
   openPaths: string[];
 }
-
-const cssEsc = (v: string): string =>
-  typeof CSS !== 'undefined' && typeof CSS.escape === 'function' ? CSS.escape(v) : v.replace(/"/g, '\\"');
 
 function mergedCues(pack: ComixPack, page?: ComixPageSpec): Record<string, number> {
   return { ...(pack.manifest.cues ?? {}), ...(page?.cues ?? {}) };
@@ -105,8 +103,15 @@ export function routeForElement(pack: ComixPack, ref: ComixElementRef): ElementR
         openPaths: page && panel ? [`${page.id}.${panel.id}.${tab}.${field}[${idx}]`] : [],
       };
     }
-    case 'page_track':
-      return pageItemRoute(pack, ref, 'tracks', 'tracks');
+    case 'page_track': {
+      const page = findPageForRef(pack, ref.pageId, ref.panelId) ?? pack.pages[0];
+      const idx = ref.itemIndex ?? 0;
+      return {
+        target: page?.id ?? 'manifest',
+        tab: 'beats',
+        openPaths: page ? [`${page.id}.tracks.tracks[${idx}]`] : [],
+      };
+    }
   }
 }
 
@@ -442,16 +447,7 @@ export function syncInspectorSelectionDom(
   selected: ComixElementRef | null,
   scrollIntoView = false,
 ): void {
-  const selectedPath = selected?.itemPath ?? null;
-  let activeDetails: HTMLDetailsElement | null = null;
-  for (const el of paneEl.querySelectorAll<HTMLDetailsElement>('details[data-item-path]')) {
-    const match = selectedPath !== null && el.dataset.itemPath === selectedPath;
-    el.classList.toggle('is-selected', match);
-    if (match) {
-      el.open = true;
-      activeDetails = el;
-    }
-  }
+  const activeDetails = syncSelectedDetailsDom(paneEl, selected?.itemPath ?? null, scrollIntoView);
   const activePanelId = selected?.panelId ?? null;
   for (const sec of paneEl.querySelectorAll<HTMLElement>('.panel-sec[data-panel-id]')) {
     sec.classList.toggle('is-selected', selected?.kind === 'panel' && sec.dataset.panelId === activePanelId);
@@ -459,10 +455,5 @@ export function syncInspectorSelectionDom(
   for (const box of paneEl.querySelectorAll<HTMLElement>('.layout-box[data-panel-id]')) {
     box.classList.toggle('is-selected', activePanelId !== null && box.dataset.panelId === activePanelId);
   }
-  if (scrollIntoView && activeDetails) {
-    activeDetails.scrollIntoView({ block: 'nearest' });
-  } else if (scrollIntoView && selectedPath) {
-    const fallback = paneEl.querySelector<HTMLElement>(`[data-item-path="${cssEsc(selectedPath)}"]`);
-    fallback?.scrollIntoView({ block: 'nearest' });
-  }
+  if (scrollIntoView && activeDetails) activeDetails.scrollIntoView({ block: 'nearest' });
 }

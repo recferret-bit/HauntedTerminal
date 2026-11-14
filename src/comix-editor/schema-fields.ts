@@ -1,4 +1,4 @@
-import { n, opt, t, type Field } from '../chapter-editor/schema.js';
+import { n, opt, t, type Field } from '../editor-core/schema.js';
 
 export const timeField = (key: string, label: string): Field =>
   t(key, label, { mono: true, suggest: 'marks', hint: 'sec, +offset, or CUE+0.2' });

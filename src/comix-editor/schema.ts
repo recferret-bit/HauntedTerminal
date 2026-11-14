@@ -1,4 +1,4 @@
-import { b, n, opt, sel, t, type Field } from '../chapter-editor/schema.js';
+import { b, n, opt, sel, t, type Field } from '../editor-core/schema.js';
 import { timeField as time, VEC3_FIELDS } from './schema-fields.js';
 import { LETTER_VARIANTS, OVERLAY_VARIANTS, letterTitle } from './schema-letters.js';
 import { BEAT_VARIANTS, FIXTURE_VARIANTS, TRACK_VARIANTS, beatTitle, trackTitle } from './schema-tracks.js';

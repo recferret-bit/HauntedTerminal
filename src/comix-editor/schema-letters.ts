@@ -1,4 +1,4 @@
-import { b, n, opt, sel, t, type Field } from '../chapter-editor/schema.js';
+import { b, n, opt, sel, t, type Field } from '../editor-core/schema.js';
 import type { PageOverlay, PanelLetter } from '../cinematic/spec-types.js';
 import { colorField as col, ptRefField as ptRef, timeField as time } from './schema-fields.js';
 

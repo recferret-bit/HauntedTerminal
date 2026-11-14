@@ -1,5 +1,5 @@
-import { isRec } from '../chapter-editor/dom.js';
-import { objectShape } from '../chapter-editor/schema-check.js';
+import { isRec } from '../editor-core/dom.js';
+import { objectShape } from '../editor-core/schema-check.js';
 import { cssHex, resolvePoint, resolveTime } from '../cinematic/expr.js';
 import { simulateComixPack, type ComixSimResult } from '../cinematic/simulate.js';
 import type { ComixPack, ComixPageSpec, PointRef, Rect4, Vec3 } from '../cinematic/spec-types.js';

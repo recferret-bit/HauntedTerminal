@@ -1,4 +1,4 @@
-import { b, n, opt, sel, t, type Field } from '../chapter-editor/schema.js';
+import { b, n, opt, sel, t, type Field } from '../editor-core/schema.js';
 import type { AudioCue, EaseName, PanelBeat, SceneTrack, StageFixtureSpec } from '../cinematic/spec-types.js';
 import { ANIM_STATE_IDS } from '../procgen/anim/states.js';
 import { ZONE_IDS } from '../procgen/core/palette.js';

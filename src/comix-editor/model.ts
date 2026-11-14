@@ -1,5 +1,6 @@
-import { clone } from '../chapter-editor/dom.js';
 import type { ComixManifest, ComixPack, ComixPageSpec } from '../cinematic/spec-types.js';
+import { clone } from '../editor-core/dom.js';
+import { BasePackModel } from '../editor-core/file-tracker.js';
 import type { ComixFiles } from './api.js';
 import { stringifyComixJson } from './json.js';
 
@@ -11,20 +12,12 @@ export interface ComixFileEntry {
   value: ComixManifest | ComixPageSpec;
 }
 
-export class ComixModel {
-  readonly slug: string;
-  draft!: ComixPack;
-  private saved!: ComixPack;
+export class ComixModel extends BasePackModel<ComixFileKey, ComixPack> {
   private pagePaths = new Map<string, string>();
-  private etags: Record<string, string> = {};
 
   constructor(files: ComixFiles) {
-    this.slug = files.slug;
+    super(files.slug, stringifyComixJson);
     this.reloadFrom(files);
-  }
-
-  get id(): string {
-    return this.draft.manifest.id;
   }
 
   pack(): ComixPack {
@@ -50,16 +43,9 @@ export class ComixModel {
     return this.entries().find((e) => e.key === key);
   }
 
-  private savedValue(key: ComixFileKey): unknown {
-    if (key === 'manifest') return this.saved.manifest;
-    const id = key.slice(5);
-    return this.saved.pages.find((p) => p.id === id);
-  }
-
   dirty(key: ComixFileKey): boolean {
-    const cur = this.entry(key)?.value;
-    const base = this.savedValue(key);
-    return stringifyComixJson(cur) !== stringifyComixJson(base);
+    const found = this.entry(key);
+    return found ? this.tracker.isDirty(key, found.value) : false;
   }
 
   dirtyEntries(): ComixFileEntry[] {
@@ -70,43 +56,34 @@ export class ComixModel {
     return this.dirtyEntries().length > 0;
   }
 
-  etag(key: ComixFileKey): string | undefined {
-    const path = this.entry(key)?.path;
-    return path ? this.etags[path] : undefined;
-  }
-
   accept(key: ComixFileKey, etag: string): void {
     const found = this.entry(key);
-    if (!found) return;
-    this.etags[found.path] = etag;
-    if (key === 'manifest') {
-      this.saved.manifest = clone(this.draft.manifest);
-    } else {
-      const id = key.slice(5);
-      const idx = this.saved.pages.findIndex((p) => p.id === id);
-      if (idx >= 0) this.saved.pages[idx] = clone(found.value as ComixPageSpec);
-    }
+    if (found) this.tracker.markSaved(key, found.value, etag);
   }
 
   revert(key: ComixFileKey): void {
     if (key === 'manifest') {
-      this.draft.manifest = clone(this.saved.manifest);
+      const orig = this.tracker.parseBaseline<ComixManifest>('manifest');
+      if (orig) this.draft.manifest = orig;
       return;
     }
     const id = key.slice(5);
-    const orig = this.saved.pages.find((p) => p.id === id);
+    const orig = this.tracker.parseBaseline<ComixPageSpec>(key);
     const idx = this.draft.pages.findIndex((p) => p.id === id);
-    if (orig && idx >= 0) this.draft.pages[idx] = clone(orig);
+    if (orig && idx >= 0) this.draft.pages[idx] = orig;
   }
 
   replace(key: ComixFileKey, next: Record<string, unknown>): void {
     if (key === 'manifest') {
-      this.draft.manifest = next as unknown as ComixManifest;
+      this.draft.manifest = { ...(next as unknown as ComixManifest), id: this.draft.manifest.id };
       return;
     }
     const id = key.slice(5);
     const idx = this.draft.pages.findIndex((p) => p.id === id);
-    if (idx >= 0) this.draft.pages[idx] = next as unknown as ComixPageSpec;
+    if (idx >= 0) {
+      const prev = this.draft.pages[idx]!;
+      this.draft.pages[idx] = { ...(next as unknown as ComixPageSpec), id, index: prev.index };
+    }
   }
 
   /** Keep `manifest.pages` summaries synchronized with each page spec's title, window, and panel count. */
@@ -122,24 +99,20 @@ export class ComixModel {
   }
 
   changedPaths(diskEtags: Record<string, string>): string[] {
-    const out: string[] = [];
-    for (const [path, hash] of Object.entries(diskEtags)) {
-      if (this.etags[path] !== hash) out.push(path);
-    }
-    for (const path of Object.keys(this.etags)) {
-      if (!(path in diskEtags)) out.push(path);
-    }
-    return out;
+    return this.tracker.changedDiskPaths(diskEtags, true);
   }
 
   reloadFrom(files: ComixFiles): void {
     const sorted = [...files.pages].sort((a, b) => a.spec.index - b.spec.index);
     this.pagePaths = new Map(sorted.map((p) => [p.spec.id, p.path]));
-    this.saved = {
-      manifest: clone(files.manifest),
-      pages: sorted.map((p) => clone(p.spec)),
-    };
-    this.draft = clone(this.saved);
-    this.etags = { ...files.etags };
+    const manifestCopy = clone(files.manifest);
+    const pageCopies = sorted.map((p) => clone(p.spec));
+    this.draft = { manifest: manifestCopy, pages: pageCopies };
+    this.tracker.reset();
+    this.tracker.register('manifest', 'comix.manifest.json', manifestCopy, files.etags['comix.manifest.json']);
+    for (let i = 0; i < sorted.length; i++) {
+      const src = sorted[i]!;
+      this.tracker.register(`page:${src.spec.id}`, src.path, pageCopies[i]!, files.etags[src.path]);
+    }
   }
 }

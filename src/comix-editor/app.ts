@@ -1,5 +1,13 @@
-import { clear, h } from '../chapter-editor/dom.js';
-import type { FormCtx } from '../chapter-editor/form.js';
+import type { LayoutState } from '../editor-core/dock-layout.js';
+import { clear, h } from '../editor-core/dom.js';
+import type { FormCtx } from '../editor-core/form.js';
+import {
+  createWorkstationHookApi,
+  WorkspaceManager,
+  type DockButtonDef,
+  type WorkspaceState,
+  type WorkstationHook,
+} from '../editor-core/workspace.js';
 import type { ComixElementRef } from '../cinematic/editor-select.js';
 import { resolveTime } from '../cinematic/expr.js';
 import type { SceneViewState } from '../cinematic/preview.js';
@@ -7,19 +15,32 @@ import type { ShotBox } from '../cinematic/spec-types.js';
 import { compileTimeline, visiblePanelStart } from '../cinematic/timeline.js';
 import { ConflictError, fetchComixDiskState, loadComixes, saveComixFile } from './api.js';
 import { checkComixPack, runComixSim, type ComixIssue } from './check.js';
-import { renderEditorSidebar, renderEditorTabBar, renderEditorTopBar, type ChromeRenderDeps } from './chrome.js';
-import type { DockSlot, FloatRect, LayoutState, PanelId, SplitEdge } from './dock-layout.js';
+import {
+  renderEditorSidebar,
+  renderEditorTabBar,
+  renderEditorTopBar,
+  type ChromeRenderDeps,
+  type ComixDockId,
+} from './chrome.js';
 import { ComixModel, type ComixFileKey } from './model.js';
 import { COMIX_TABS, PAGE_TABS, renderComixPane, type ComixEnv, type ComixSel } from './panes.js';
 import { ComixPreview } from './preview.js';
 import { resolveSelectionFromPath, routeForElement, syncInspectorSelectionDom, visibilityJumpForElement } from './selection.js';
 import { suggestForComix } from './suggest.js';
-import { WorkspaceManager, type DockId, type WorkspaceState } from './workspace.js';
 
 const ISSUE_DEBOUNCE_MS = 200;
 const ETAG_POLL_MS = 5000;
 
-export interface ComixEditorHook {
+const COMIX_DOCK_BUTTONS: readonly DockButtonDef<ComixDockId>[] = [
+  { id: 'left', label: '◧ Pages', title: 'Toggle Left Pages Outliner ([)', restoreLabel: 'Pages' },
+  { id: 'right', label: '◨ Inspector', title: 'Toggle Right Inspector (])', restoreLabel: 'Inspector' },
+  { id: 'timeline', label: '◫ Timeline', title: 'Toggle Bottom Timeline (\\)', restoreLabel: 'Timeline' },
+  { id: 'jumps', label: '⊟ Chips', title: 'Toggle Quick-Jump Chips' },
+  { id: 'stagebar', label: '⬒ Bar', title: 'Toggle Viewport Toolbar' },
+  { id: 'top', label: '▴ Top', title: 'Hide Top Bar (restorable from floating pill)' },
+];
+
+export interface ComixEditorHook extends WorkstationHook<ComixDockId> {
   ready: boolean;
   state(): {
     slug: string;
@@ -30,7 +51,7 @@ export interface ComixEditorHook {
     issueCount: number;
     previewTime: number;
     previewMode: 'play' | 'freeze';
-    docks: WorkspaceState;
+    docks: WorkspaceState<ComixDockId>;
     layout: LayoutState;
     viewportSize: { w: number; h: number };
     pageZoom: number | 'fit';
@@ -43,14 +64,6 @@ export interface ComixEditorHook {
   jumpTo(sec: number): void;
   playFull(): void;
   simulate(): ReturnType<typeof runComixSim>;
-  toggleDock(dock: DockId): void;
-  toggleZen(): void;
-  setSplitSize(edge: SplitEdge, px: number): void;
-  undockPanel(id: PanelId, patch?: Partial<FloatRect>): void;
-  dockPanel(id: PanelId, target?: DockSlot): void;
-  setViewportSize(w: number, h: number): void;
-  resetLayout(): void;
-  setPageZoom(scale: number | 'fit'): void;
   setSceneView(next: Partial<SceneViewState>): void;
   resetSceneView(): void;
   applySceneShot(): boolean;
@@ -75,7 +88,11 @@ class ComixEditorController {
   private readonly tabsEl = h('div', { class: 'ed-tabs', 'data-panel-drag': 'right' });
   private readonly paneEl = h('div', { class: 'ed-pane', role: 'tabpanel' });
   private readonly mainEl = h('main', { class: 'ed-main' }, this.tabsEl, this.paneEl);
-  private readonly workspace = new WorkspaceManager();
+  private readonly workspace = new WorkspaceManager<ComixDockId>({
+    storageKey: 'ht-comix-editor-ui',
+    buttons: COMIX_DOCK_BUTTONS,
+    labels: { left: 'Pages', right: 'Inspector', timeline: 'Timeline' },
+  });
   private readonly preview: ComixPreview;
   private readonly gridEl: HTMLElement;
   private statusMsg = '';
@@ -100,16 +117,12 @@ class ComixEditorController {
     this.workspace.attach(
       this.gridEl,
       { left: this.sideEl, right: this.mainEl, timeline: this.preview.timelineEl },
-      () => window.requestAnimationFrame(() => this.preview.updateFrameLayout()),
-      () => this.preview.setPageZoom('fit'),
+      () => window.requestAnimationFrame(() => this.preview.stage.updateFrameLayout()),
+      () => this.preview.stage.setPageZoom('fit'),
+      (saveAll) =>
+        void this.saveKeys(saveAll ? this.activeModel.dirtyEntries().map((e) => e.key) : [this.activeFileKey()]),
     );
 
-    window.addEventListener('keydown', (ev) => {
-      if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 's') {
-        ev.preventDefault();
-        void this.saveKeys([this.activeFileKey()]);
-      }
-    });
     window.addEventListener('popstate', () => {
       if (this.models.length > 0) this.navigate(this.parseUrlRoute(), false);
     });
@@ -156,6 +169,14 @@ class ComixEditorController {
       selectedPath: this.selectedEl?.itemPath,
       selectPath: (path) => {
         this.selectByItemPath(path);
+      },
+      remapSelection: (mapPath) => {
+        const cur = this.selectedEl?.itemPath;
+        if (!cur) return;
+        const next = mapPath(cur);
+        if (next === cur) return;
+        if (next === null) this.applySelection(null, false, false);
+        else this.selectByItemPath(next);
       },
       open: this.openDetails,
     };
@@ -218,8 +239,8 @@ class ComixEditorController {
         previewMode: this.preview.mode,
         docks: this.workspace.current,
         layout: this.workspace.layout,
-        viewportSize: this.preview.viewportSize,
-        pageZoom: this.preview.pageZoomMode,
+        viewportSize: this.preview.stage.viewportSize,
+        pageZoom: this.preview.stage.pageZoomMode,
         sceneZoom: this.preview.sceneZoomValue,
         selectedElement: this.selectedEl,
       }),
@@ -230,14 +251,7 @@ class ComixEditorController {
       jumpTo: (sec) => this.preview.jumpTo(sec),
       playFull: () => this.preview.playFull(),
       simulate: () => runComixSim(this.activeModel.pack()),
-      toggleDock: (dock) => this.workspace.toggle(dock),
-      toggleZen: () => this.workspace.toggleZen(),
-      setSplitSize: (edge, px) => this.workspace.setSplitSize(edge, px),
-      undockPanel: (id, patch) => this.workspace.undockPanel(id, patch),
-      dockPanel: (id, target) => this.workspace.dockPanel(id, target),
-      setViewportSize: (w, hPx) => this.preview.setViewportSize(w, hPx),
-      resetLayout: () => this.workspace.resetLayout(),
-      setPageZoom: (scale) => this.preview.setPageZoom(scale),
+      ...createWorkstationHookApi(this.workspace, this.preview.stage),
       setSceneView: (next) => this.preview.setSceneView(next),
       resetSceneView: () => this.preview.resetSceneView(),
       applySceneShot: () => this.preview.applySceneShot(),
@@ -394,6 +408,7 @@ class ComixEditorController {
       if (err instanceof ConflictError) {
         this.conflict = true;
         this.statusMsg = '✕ Disk conflict (409): file changed outside the editor. Reload to sync.';
+        await this.pollDiskEtags();
       } else {
         this.statusMsg = `✕ Save error: ${(err as Error).message}`;
       }

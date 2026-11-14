@@ -1,13 +1,13 @@
-import { clear, h } from '../chapter-editor/dom.js';
+import { clear, h } from '../editor-core/dom.js';
+import { clampNum } from '../editor-core/drag.js';
+import { ViewportStageController } from '../editor-core/viewport-stage.js';
 import { writeDraftComixPack } from '../cinematic/draft.js';
 import type { ComixElementRef } from '../cinematic/editor-select.js';
 import type { EditorCallbacks, SceneViewState } from '../cinematic/preview.js';
 import type { ComixPack, ShotBox } from '../cinematic/spec-types.js';
 import { activePanelAt, compileTimeline, visiblePanelStart, type ResolvedTimeline } from '../cinematic/timeline.js';
-import { clampNum } from './drag.js';
+import type { ComixDockId } from './chrome.js';
 import { buildPreviewStageBar, buildPreviewTransportBar } from './preview-bars.js';
-import { installMatControls, installViewResizers, syncViewResizerAria } from './view-resizer.js';
-import type { DockId } from './workspace.js';
 
 interface PreviewCineApi {
   readonly state?: string;
@@ -34,14 +34,13 @@ interface PreviewWindow {
 
 export interface ComixPreviewOpts {
   getPack: () => ComixPack;
-  onToggleDock?: (dock: DockId) => void;
+  onToggleDock?: (dock: ComixDockId) => void;
   onToggleZen?: () => void;
   onApplyShot?: (panelId: string, shot: ShotBox, portrait: boolean) => void;
   onSelectElement?: (sel: ComixElementRef | null) => void;
   onRevealSelected?: (sel: ComixElementRef) => void;
 }
 
-const clampPageScale = (s: number): number => clampNum(s, 0.4, 2.5);
 const clampSceneZoom = (z: number): number => clampNum(z, 0.25, 6);
 
 /**
@@ -52,18 +51,12 @@ const clampSceneZoom = (z: number): number => clampNum(z, 0.25, 6);
 export class ComixPreview {
   readonly stageEl: HTMLElement;
   readonly timelineEl: HTMLElement;
-  private readonly matEl: HTMLElement;
-  private readonly frameWrapEl: HTMLElement;
-  private readonly frame: HTMLIFrameElement;
-  private readonly resizerEls: HTMLElement[];
+  readonly stage: ViewportStageController;
   private readonly playFullBtn: HTMLButtonElement;
   private readonly freezeBtn: HTMLButtonElement;
-  private readonly fitBtn: HTMLButtonElement;
-  private readonly pageReadoutBtn: HTMLButtonElement;
   private readonly sceneReadoutEl: HTMLElement;
   private readonly resetCamBtn: HTMLButtonElement;
   private readonly selReadoutBtn: HTMLButtonElement;
-  private readonly aspectBtn: HTMLButtonElement;
   private readonly slider: HTMLInputElement;
   private readonly numInput: HTMLInputElement;
   private readonly statusEl: HTMLElement;
@@ -73,17 +66,21 @@ export class ComixPreview {
   private debounceId = 0;
   private sec = 0;
   private frozen = false;
-  private portrait = false;
-  private pageScale: number | 'fit' = 'fit';
-  private customViewSize: { w: number; h: number } | null = null;
   private sceneView: SceneViewState = { zoom: 1, panX: 0, panY: 0 };
   private selectedRef: ComixElementRef | null = null;
   private loadedSlug = '';
   private loadedDraftJson = '';
 
   constructor(private readonly opts: ComixPreviewOpts) {
-    this.frame = h('iframe', { class: 'pv-frame comix-frame', title: 'Comix preview' });
-    this.frame.addEventListener('load', () => this.bindIframe());
+    this.stage = new ViewportStageController({
+      frameTitle: 'Comix preview',
+      onFrameLoad: () => this.bindIframe(),
+      onPortraitChange: () => {
+        if (!this.frozen) return;
+        this.updateFrozenStatus(this.opts.getPack(), this.sec);
+        window.requestAnimationFrame(() => this.jumpTo(this.sec));
+      },
+    });
     this.statusEl = h('span', { class: 'pv-status', role: 'status' }, 'Ready');
 
     this.playFullBtn = h('button', {
@@ -99,19 +96,6 @@ export class ComixPreview {
       onclick: () => this.jumpTo(this.sec),
     }, '⏸ Freeze');
 
-    this.fitBtn = h('button', {
-      type: 'button',
-      class: 'btn small',
-      'aria-pressed': 'true',
-      title: 'Fit page inside viewport',
-      onclick: () => this.setPageZoom('fit'),
-    }, 'Fit');
-    this.pageReadoutBtn = h('button', {
-      type: 'button',
-      class: 'cx-readout',
-      title: 'Click to reset Page Zoom to Fit',
-      onclick: () => this.setPageZoom('fit'),
-    }, 'Fit');
     this.sceneReadoutEl = h('span', { class: 'cx-readout mono', title: '3D Scene Camera Zoom & Pan' }, '1.00×');
     this.resetCamBtn = h('button', {
       type: 'button',
@@ -127,14 +111,6 @@ export class ComixPreview {
       title: 'Selected element — click to reveal & focus in Inspector',
       onclick: () => { if (this.selectedRef) this.opts.onRevealSelected?.(this.selectedRef); },
     }, '');
-
-    this.aspectBtn = h('button', {
-      type: 'button',
-      class: 'btn small',
-      'aria-pressed': 'false',
-      title: 'Toggle Landscape / Portrait preview viewport',
-      onclick: () => this.togglePortrait(),
-    }, '📱 Portrait');
 
     this.slider = h('input', {
       type: 'range',
@@ -161,25 +137,11 @@ export class ComixPreview {
     });
     this.jumpsEl = h('div', { class: 'comix-jumps', 'aria-label': 'Timeline quick jumps' });
 
-    this.frameWrapEl = h('div', { class: 'cx-frame-wrap' }, this.frame);
-    this.matEl = h('div', { class: 'cx-stage-mat' }, this.frameWrapEl);
-    this.resizerEls = installViewResizers({
-      frameWrapEl: this.frameWrapEl,
-      frameEl: this.frame,
-      matEl: this.matEl,
-      isPortrait: () => this.portrait,
-      getViewportSize: () => this.viewportSize,
-      setViewportSize: (w, hPx) => this.setViewportSize(w, hPx),
-      resetFit: () => this.setPageZoom('fit'),
-      zoomPageBy: (f) => this.zoomPageBy(f),
-    });
     const stageBar = buildPreviewStageBar({
-      fitBtn: this.fitBtn,
-      pageReadoutBtn: this.pageReadoutBtn,
+      pageZoomGroup: this.stage.buildZoomGroup('Page'),
       sceneReadoutEl: this.sceneReadoutEl,
       resetCamBtn: this.resetCamBtn,
       selReadoutBtn: this.selReadoutBtn,
-      zoomPageBy: (f) => this.zoomPageBy(f),
       zoomSceneBy: (f) => this.zoomSceneBy(f),
       applySceneShot: () => { this.applySceneShot(); },
       onToggleZen: this.opts.onToggleZen,
@@ -188,12 +150,12 @@ export class ComixPreview {
     const transportBar = buildPreviewTransportBar({
       playFullBtn: this.playFullBtn,
       freezeBtn: this.freezeBtn,
-      aspectBtn: this.aspectBtn,
+      aspectBtn: this.stage.aspectBtn,
       statusEl: this.statusEl,
       stepPanel: (d) => this.stepPanel(d),
       onToggleDock: this.opts.onToggleDock,
     });
-    this.stageEl = h('section', { class: 'cx-stage', 'aria-label': 'Comix Viewport' }, stageBar, this.matEl);
+    this.stageEl = h('section', { class: 'cx-stage', 'aria-label': 'Comix Viewport' }, stageBar, this.stage.matEl);
     this.timelineEl = h(
       'section',
       { class: 'cx-timeline', 'aria-label': 'Timeline and Transport' },
@@ -202,11 +164,6 @@ export class ComixPreview {
       this.jumpsEl,
     );
 
-    installMatControls({ matEl: this.matEl, zoomPageBy: (f) => this.zoomPageBy(f) });
-    if (typeof ResizeObserver !== 'undefined') {
-      new ResizeObserver(() => this.updateFrameLayout()).observe(this.matEl);
-    }
-    window.addEventListener('resize', () => this.updateFrameLayout());
     window.setInterval(() => this.tickLive(), 100);
   }
 
@@ -222,91 +179,8 @@ export class ComixPreview {
     return this.cine()?.currentPanel || (this.timeline ? activePanelAt(this.timeline, this.sec).id : '');
   }
 
-  get pageZoomMode(): number | 'fit' {
-    return this.pageScale;
-  }
-
   get sceneZoomValue(): number {
     return this.sceneView.zoom;
-  }
-
-  get viewportSize(): { w: number; h: number } {
-    if (this.customViewSize) return { ...this.customViewSize };
-    const r = this.frame.getBoundingClientRect();
-    return {
-      w: Math.round(r.width || parseFloat(this.frame.style.width) || 0),
-      h: Math.round(r.height || parseFloat(this.frame.style.height) || 0),
-    };
-  }
-
-  updateFrameLayout(): void {
-    const matW = this.matEl.clientWidth || 800;
-    const matH = this.matEl.clientHeight || 500;
-    const padStyle = getComputedStyle(this.matEl);
-    const padX = (parseFloat(padStyle.paddingLeft) || 12) + (parseFloat(padStyle.paddingRight) || 12);
-    const padY = (parseFloat(padStyle.paddingTop) || 12) + (parseFloat(padStyle.paddingBottom) || 12);
-    const aspect = this.portrait ? 9 / 16 : 16 / 10;
-    const availW = Math.max(220, matW - padX);
-    const availH = Math.max(175, matH - padY);
-    let fitW = availW;
-    let fitH = fitW / aspect;
-    if (fitH > availH) {
-      fitH = availH;
-      fitW = fitH * aspect;
-    }
-    const minW = this.portrait ? 220 : 280;
-    const minH = this.portrait ? 390 : 175;
-    if (fitW < minW) {
-      fitW = minW;
-      fitH = fitW / aspect;
-    }
-    if (fitH < minH) {
-      fitH = minH;
-      fitW = fitH * aspect;
-    }
-    let w: number;
-    let hPx: number;
-    if (this.customViewSize) {
-      w = Math.round(clampNum(this.customViewSize.w, 220, 2600));
-      hPx = Math.round(clampNum(this.customViewSize.h, 175, 2400));
-      this.pageReadoutBtn.textContent = `${w}×${hPx}`;
-    } else if (this.pageScale === 'fit') {
-      w = Math.round(fitW);
-      hPx = Math.round(fitH);
-      this.pageReadoutBtn.textContent = `Fit (${w}×${hPx})`;
-    } else {
-      const refW = Math.max(fitW, this.portrait ? 405 : 960);
-      w = Math.round(refW * this.pageScale);
-      hPx = Math.round(w / aspect);
-      this.pageReadoutBtn.textContent = `${Math.round(this.pageScale * 100)}%`;
-    }
-    this.fitBtn.setAttribute('aria-pressed', String(!this.customViewSize && this.pageScale === 'fit'));
-    this.frame.style.width = `${w}px`;
-    this.frame.style.height = `${hPx}px`;
-    syncViewResizerAria(this.resizerEls, w, hPx);
-  }
-
-  setViewportSize(w: number, hPx: number): void {
-    this.customViewSize = {
-      w: Math.round(clampNum(w, 220, 2600)),
-      h: Math.round(clampNum(hPx, 175, 2400)),
-    };
-    this.updateFrameLayout();
-  }
-
-  setPageZoom(scale: number | 'fit'): void {
-    this.customViewSize = null;
-    this.pageScale = scale === 'fit' ? 'fit' : clampPageScale(scale);
-    this.updateFrameLayout();
-  }
-
-  zoomPageBy(factor: number): void {
-    if (this.customViewSize) {
-      this.setViewportSize(this.customViewSize.w * factor, this.customViewSize.h * factor);
-      return;
-    }
-    const base = this.pageScale === 'fit' ? 1 : this.pageScale;
-    this.setPageZoom(base * factor);
   }
 
   setSceneView(next: Partial<SceneViewState>): void {
@@ -337,7 +211,7 @@ export class ComixPreview {
     if (!shot) return false;
     const panelId = this.activePanelId;
     if (!panelId) return false;
-    this.opts.onApplyShot?.(panelId, shot, this.portrait);
+    this.opts.onApplyShot?.(panelId, shot, this.stage.isPortrait);
     return true;
   }
 
@@ -366,7 +240,7 @@ export class ComixPreview {
   }
 
   private cine(): PreviewCineApi | undefined {
-    return (this.frame.contentWindow as PreviewWindow | null)?.__cinematic;
+    return (this.stage.frame.contentWindow as PreviewWindow | null)?.__cinematic;
   }
 
   private isSceneDirty(): boolean {
@@ -428,7 +302,7 @@ export class ComixPreview {
         this.sceneView = v;
         this.syncSceneReadout();
       },
-      onPageWheelZoom: (factor) => this.zoomPageBy(factor),
+      onPageWheelZoom: (factor) => this.stage.zoomPageBy(factor),
       onSelectElement: (sel) => {
         this.selectedRef = sel;
         this.syncSelectionReadout();
@@ -511,19 +385,6 @@ export class ComixPreview {
     this.debounceId = window.setTimeout(() => this.jumpTo(targetSec), 40);
   }
 
-  private togglePortrait(): void {
-    this.portrait = !this.portrait;
-    this.customViewSize = null;
-    this.frame.classList.toggle('portrait', this.portrait);
-    this.aspectBtn.setAttribute('aria-pressed', String(this.portrait));
-    this.aspectBtn.textContent = this.portrait ? '🖥 Landscape' : '📱 Portrait';
-    this.updateFrameLayout();
-    if (this.frozen) {
-      this.updateFrozenStatus(this.opts.getPack(), this.sec);
-      window.requestAnimationFrame(() => this.jumpTo(this.sec));
-    }
-  }
-
   private stepPanel(delta: -1 | 1): void {
     const pack = this.opts.getPack();
     this.sync(pack);
@@ -546,7 +407,7 @@ export class ComixPreview {
   private updateFrozenStatus(pack: ComixPack, freezeAt: number): void {
     const active = this.timeline ? activePanelAt(this.timeline, freezeAt) : undefined;
     const label = active ? `P${active.pageIndex + 1} · ${active.id}` : 'hold';
-    const orient = this.portrait ? ' · portrait' : '';
+    const orient = this.stage.isPortrait ? ' · portrait' : '';
     this.statusEl.textContent = `Frozen @ ${freezeAt.toFixed(2)}s (${label}${orient})`;
     void pack;
   }
@@ -575,11 +436,11 @@ export class ComixPreview {
     this.rev += 1;
     const slug = encodeURIComponent(pack.manifest.id);
     if (freezeAt === null) {
-      this.frame.src = `/cinematic.html?play=${slug}&draft=1&editor=1&muted=1&r=${this.rev}`;
+      this.stage.frame.src = `/cinematic.html?play=${slug}&draft=1&editor=1&muted=1&r=${this.rev}`;
       this.statusEl.textContent = `Playing ${pack.manifest.id} (${pack.manifest.durationSec}s)`;
       return;
     }
-    this.frame.src = `/cinematic.html?play=${slug}&draft=1&editor=1&muted=1&t=${freezeAt.toFixed(2)}&r=${this.rev}`;
+    this.stage.frame.src = `/cinematic.html?play=${slug}&draft=1&editor=1&muted=1&t=${freezeAt.toFixed(2)}&r=${this.rev}`;
     this.updateFrozenStatus(pack, freezeAt);
   }
 }

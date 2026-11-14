@@ -1,4 +1,4 @@
-import '../styles/chapter-editor.css';
+import '../styles/editor-workstation.css';
 import '../styles/comix-editor.css';
 import { startComixEditor } from './app.js';
 

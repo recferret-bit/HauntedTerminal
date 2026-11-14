@@ -1,6 +1,7 @@
-import { clear, h, isRec, type Rec } from '../chapter-editor/dom.js';
-import { renderFields, type FormCtx } from '../chapter-editor/form.js';
-import type { Field } from '../chapter-editor/schema.js';
+import { renderDataTable, renderIssueList, renderJsonFilePane } from '../editor-core/chrome.js';
+import { clear, h, type Rec } from '../editor-core/dom.js';
+import { renderFields, type FormCtx } from '../editor-core/form.js';
+import type { Field } from '../editor-core/schema.js';
 import { resolveTime } from '../cinematic/expr.js';
 import type { ComixElementRef } from '../cinematic/editor-select.js';
 import type { ComixPageSpec, ComixPanelSpec } from '../cinematic/spec-types.js';
@@ -87,26 +88,15 @@ function drawFormBlock(obj: Rec, fields: Field[], ctx: FormCtx, path: string): H
 }
 
 function renderIssueRows(env: ComixEnv, list: ComixIssue[], clickable: boolean): HTMLElement {
-  if (list.length === 0) return h('p', { class: 'ok' }, '✓ 0 static or timeline issues');
-  const ul = h('ul', { class: 'issues' });
-  for (const issue of list) {
-    const glyph = issue.severity === 'error' ? '✕ ' : '⚠ ';
-    const li = h(
-      'li',
-      { class: `${issue.severity}${clickable ? ' link' : ''}` },
-      h('b', { 'aria-hidden': 'true' }, glyph),
-      h('span', { class: 'where' }, `[${issue.where}] `),
-      issue.message,
-    );
-    if (clickable) {
-      li.addEventListener('click', () => {
-        const hasPage = env.model.draft.pages.some((p) => p.id === issue.where);
-        env.navigate({ target: hasPage ? issue.where : 'manifest', tab: issue.tab });
-      });
-    }
-    ul.append(li);
-  }
-  return ul;
+  return renderIssueList(list, {
+    okText: '✓ 0 static or timeline issues',
+    onJump: clickable
+      ? (issue) => {
+          const hasPage = env.model.draft.pages.some((p) => p.id === issue.where);
+          env.navigate({ target: hasPage ? issue.where : 'manifest', tab: issue.tab });
+        }
+      : undefined,
+  });
 }
 
 function renderSkipEditor(env: ComixEnv): HTMLElement {
@@ -158,6 +148,7 @@ function renderSkipEditor(env: ComixEnv): HTMLElement {
           type: 'button',
           class: 'mini',
           title: 'Remove rule',
+          'aria-label': `Remove skip rule ${idx + 1}`,
           onclick: () => {
             rules.splice(idx, 1);
             env.changed();
@@ -237,7 +228,7 @@ function renderManifestPane(env: ComixEnv): HTMLElement {
       'fieldset',
       { class: 'grp' },
       h('legend', {}, 'Connected Pages (synced on save)'),
-      h('table', { class: 'tbl' }, ...tableRows),
+      renderDataTable(['Page', 'ID', 'Title', 'Window', 'Panels', ''], tableRows),
       h('div', { class: 'row' }, syncBtn),
     ),
   );
@@ -356,33 +347,23 @@ function renderPanelSections(
 
 function renderJsonEditor(env: ComixEnv, key: ComixFileKey): HTMLElement {
   const entry = env.model.entry(key);
-  if (!entry) return h('p', { class: 'note error' }, 'Unknown spec file.');
-  const status = h('p', { class: 'note dim', role: 'status' }, `Editing ${entry.path}`);
-  const area = h('textarea', {
-    class: 'json mono',
-    spellcheck: 'false',
-    'aria-label': `Raw JSON for ${entry.path}`,
-  });
-  area.value = stringifyComixJson(entry.value).trimEnd();
-
-  const applyText = (reformat: boolean): void => {
-    try {
-      const parsed = JSON.parse(area.value) as unknown;
-      if (!isRec(parsed)) throw new Error('Root JSON value must be an object');
+  return renderJsonFilePane({
+    files: entry ? [{ key: entry.key, path: entry.path }] : [],
+    initialKey: key,
+    readText: (k) => {
+      const cur = env.model.entry(k as ComixFileKey);
+      return cur ? stringifyComixJson(cur.value) : '';
+    },
+    formatValue: () => {
+      const cur = env.model.entry(key);
+      return cur ? stringifyComixJson(cur.value) : '';
+    },
+    applyObject: (_k, parsed) => {
       env.model.replace(key, parsed);
-      if (reformat) area.value = stringifyComixJson(parsed).trimEnd();
-      status.textContent = `✓ Applied JSON to draft (${entry.path})`;
-      status.className = 'ok';
       env.changed();
-    } catch (err) {
-      status.textContent = `✕ JSON not applied: ${(err as Error).message}`;
-      status.className = 'note error';
-    }
-  };
-
-  area.addEventListener('input', () => applyText(false));
-  const fmtBtn = h('button', { type: 'button', class: 'btn small', onclick: () => applyText(true) }, 'Format JSON');
-  return h('div', { class: 'jsonpane' }, h('div', { class: 'row' }, fmtBtn, status), area);
+    },
+    liveInput: true,
+  });
 }
 
 function renderCheckTab(env: ComixEnv, sel: ComixSel): HTMLElement {

@@ -1,6 +1,6 @@
-import { h } from '../chapter-editor/dom.js';
+import { h } from '../editor-core/dom.js';
+import { bindPointerGesture, clampNum } from '../editor-core/drag.js';
 import type { ComixPanelSpec, Rect4 } from '../cinematic/spec-types.js';
-import { bindPointerGesture, clampNum } from './drag.js';
 
 export interface SheetBoxOpts {
   sheet: HTMLElement;
