@@ -28,9 +28,9 @@ Writing needs the dev server (`/api/chapters`, a Vite plugin that exists only un
 | JSON | the raw file, applied to the draft | any |
 | Check | static checks (references, asset ids, field tables) and the headless solution of this level or the chapter, on the draft | `validate-pack.ts`, `schema-check.ts`, `solve.ts` |
 
-The right column is the game itself in an iframe (`/play/<chapter>/<level>?draft=1`): restart, type the next solution command, run the solution at a chosen speed, type any command, fire a raw event, read the event log. The draft travels through localStorage (`src/chapters/draft.ts`); a preview records no progress, scrap or telemetry.
+The center stage holds the real game in an iframe (`/play/<chapter>/<level>?draft=1`, `ViewportStageController` with Canvas zoom `Fit` / `40%–250%`, symmetric edge/corner handles, and Portrait/Landscape switch); the bottom dock holds transport controls (restart, next command, run solution at a chosen speed), command input, event emitter, and the live event log. Every dock (`Levels`, `Inspector`, `Console`, `Log`, `Bar`, `Top`) can be hidden, dragged to float, resized, or swapped Left<->Right (`WorkspaceManager` + Focus Mode `` ` ``). The draft travels through localStorage (`src/chapters/draft.ts`); a preview records no progress, scrap or telemetry.
 
-Saving writes only changed files, refreshes the manifest's level summaries and recompiles `src/chapters/generated/`. **Saves are conflict-safe**: each file carries an etag; if someone else (an agent, git, another tab) changed it after the editor loaded it, the API answers 409, nothing is overwritten, and the header offers "Reload from disk". Ctrl/Cmd+S saves the current file.
+Saving writes only changed files, refreshes the manifest's level summaries and recompiles `src/chapters/generated/`. **Saves are conflict-safe**: each file carries an etag; if someone else (an agent, git, another tab) changed it after the editor loaded it, the API answers 409, nothing is overwritten, and the header offers "Reload from disk". `Ctrl/Cmd+S` saves the current file; `Ctrl/Cmd+Shift+S` saves all dirty files.
 
 ## Canonical example
 
@@ -40,20 +40,21 @@ Do not copy a template; read a real, gated spec:
 `.../level-11-boss-claude-core/level.spec.json` (`onBossKill`), and `chapter.manifest.json` (`grants`, `outro.finale`, `dossier`).
 The vocabulary is `src/chapters/script-types.ts`; the field tables are `src/chapter-editor/schema.ts`.
 
-## Code map (`src/chapter-editor/`)
+## Code map (`src/chapter-editor/` + `src/editor-core/`)
 
 | File | Job |
 |---|---|
+| `src/editor-core/*` | shared workstation layer: `dom`, `schema`, `form` / `form-state` (`data-item-path` selection, `remapArrayPaths`), `schema-check`, `http`, `file-tracker`, `dock-state`/`dock-layout`, `workspace`, `view-resizer`, `viewport-stage`, `chrome` |
 | `schema.ts` | **the field tables**: what each spec object is made of. Add a field and the form and the schema check both know it. Variant tables are typed by the spec unions: a new `kind` without a form fails `tsc` |
-| `form.ts` | generic renderer for the tables (text, number, octal, select, lists, objects, maps, tagged unions with add/move/duplicate/remove) |
-| `schema-check.ts` | validates a spec against the tables: unknown keys, missing or mistyped fields, bad options |
+| `schema-check.ts` | validates chapter specs against the field tables via `src/editor-core/schema-check.ts` |
 | `check.ts` | all static checks in one list (`validatePack` + `assetIssues` + `schemaIssues`), headless solve |
-| `panes.ts`, `app.ts` | tabs, sidebar, save, conflict handling, routing |
-| `chapter-model.ts` | editable copy, baselines (dirty), etags |
-| `preview.ts` | iframe driver |
-| `api.ts` | dev API client with a read-only fallback |
+| `chrome.ts` | workstation top bar, Levels outliner header/list, roving ARIA Inspector tablist |
+| `panes.ts`, `app.ts` | inspector tabs, save/conflict handling, `pushState`/`popstate` routing, item selection, `window.__chapterEditor` |
+| `chapter-model.ts` | `BasePackModel` + `FileBaselineTracker` (editable draft, baselines, etags, `reloadFrom`) |
+| `preview.ts` | centered game stage (`ViewportStageController`) + bottom Console & Walkthrough dock |
+| `api.ts` | dev API client (`editor-core/http.ts`) with read-only fallback |
 
-Node side: `scripts/harness/lib/chapter-api.mjs` (API, safety rules in `chapter-editor-rules.md`), `chapter-compile.mjs` (read chapters, render `catalog-data.ts`, etags), `chapter-json.mjs` (canonical JSON text).
+Node side: `scripts/harness/lib/chapter-api.mjs` + `editor-api-common.mjs` (API, safety rules in `chapter-editor-rules.md`), `chapter-compile.mjs` (read chapters, render `catalog-data.ts`, etags), `chapter-json.mjs` (canonical JSON text).
 
 ## Adding a capability (the only allowed way)
 
@@ -79,7 +80,8 @@ Node side: `scripts/harness/lib/chapter-api.mjs` (API, safety rules in `chapter-
 ```bash
 node scripts/harness/generate-chapter.mjs --verify     # static checks + 0-death headless playthrough of every level
 npm run quality                                        # includes the declarative gate
-node scripts/harness/editor-smoke.mjs                  # if src/chapter-editor/ or the dev API changed
+node scripts/harness/editor-unit-test.mjs              # unit & corner-case checks for editor-core, models, schemas & API
+node scripts/harness/editor-smoke.mjs                  # if src/chapter-editor/, src/editor-core/ or the dev API changed
 ```
 
 Run them, fix everything they print, and report only what you ran.

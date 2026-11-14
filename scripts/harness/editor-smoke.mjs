@@ -28,8 +28,11 @@ let vite = null;
 let base = args.val('--url');
 if (!base) ({ vite, base } = await startPageServer(5343, { hmr: false, watch: null }));
 base = base.replace(/\/$/, '');
-const browser = await launchBrowser({ width: Number(args.val('--width', 1600)), height: Number(args.val('--height', 950)) });
+const vpWidth = Number(args.val('--width', 1600));
+const vpHeight = Number(args.val('--height', 950));
+const browser = await launchBrowser({ width: vpWidth, height: vpHeight });
 const $ = (expr) => browser.evaluate(expr);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const click = (selector, text) => $(`(() => { const els = [...document.querySelectorAll(${JSON.stringify(selector)})]; const el = els.find((e) => !${JSON.stringify(text ?? '')} || e.textContent.includes(${JSON.stringify(text ?? '')})); if (!el) return false; el.click(); return true; })()`);
 
 try {
@@ -112,14 +115,179 @@ try {
   await click('.ed-top .btn', 'Revert file');
   check(!(await $("document.querySelector('.ed-item.on .dot')")), 'revert clears the unsaved mark');
 
-  // 8. the schema check catches what no reference check can: a misspelled key
+  // 8. the schema check catches what no reference check can: a misspelled key, and Check issues are keyboard-operable buttons
   await click('.ed-item', chapter.levels[0].spec.title);
   await click('.ed-tab', 'JSON');
-  await $(`(() => { const a = document.querySelector('.ed-pane textarea.json'); const j = JSON.parse(a.value); j.sumary = 'typo'; a.value = JSON.stringify(j); })()`);
+  await $(`(() => { const a = document.querySelector('.ed-pane textarea.json'); a.value = '{broken-json'; })()`);
+  await click('button', 'Apply JSON to the draft');
+  check(Boolean(await $("document.querySelector('.jsonpane .note.error')")), 'JSON pane reports syntax error cleanly without crashing');
+  await $(`(() => { const a = document.querySelector('.ed-pane textarea.json'); const j = ${JSON.stringify(chapter.levels[0].spec)}; j.id = 'corrupted-id'; j.index = 999; j.sumary = 'typo'; a.value = JSON.stringify(j); })()`);
   await click('button', 'Apply JSON to the draft');
   await click('.ed-tab', 'Check');
   check((await $("document.querySelector('.ed-pane').textContent")).includes('level.sumary: unknown field'), 'Check tab flags a misspelled spec key from the field tables');
+  const jumpedViaBtn = await $(`(() => {
+    const btn = [...document.querySelectorAll('.issues button.issue-jump')].find((b) => b.textContent.includes('level.sumary'));
+    if (!btn) return false;
+    btn.focus();
+    btn.click();
+    return window.__chapterEditor.state().tab === 'overview';
+  })()`);
+  check(jumpedViaBtn, 'Check tab issue rows render keyboard-focusable button.issue-jump that jumps to offending tab');
   await click('.ed-top .btn', 'Revert file');
+  check((await $('window.__chapterEditor.state().dirty.length')) === 0, 'raw JSON replace preserves immutable level id/index so Revert restores baseline cleanly');
+
+  // 8b. workstation geometry, ARIA tabs, dock toggle/drag/swap/float, canvas zoom/aspect, item selection & history
+  await click('.ed-item', chapter.levels[0].spec.title);
+  await click('.ed-tab', 'Script');
+  await sleep(120);
+  const wsGeo = await $(`(() => {
+    const top = document.querySelector('.ed-top');
+    const side = document.querySelector('.ed-side').getBoundingClientRect();
+    const stage = document.querySelector('.cx-stage').getBoundingClientRect();
+    const main = document.querySelector('.ed-main').getBoundingClientRect();
+    const frame = document.querySelector('.pv-frame').getBoundingClientRect();
+    const tabList = document.querySelector('[role="tablist"]');
+    const nonTabChild = tabList ? [...tabList.children].some((el) => el.getAttribute('role') !== 'tab') : true;
+    return {
+      topNoScroll: top.scrollWidth <= top.clientWidth + 1,
+      redirectCount: document.querySelectorAll('.ed-top a[href]').length,
+      centered: side.right <= stage.left + 2 && stage.right <= main.left + 2,
+      stageW: stage.width,
+      frameW: frame.width,
+      strictTablist: Boolean(tabList) && !nonTabChild,
+    };
+  })()`);
+  check(wsGeo.topNoScroll && wsGeo.redirectCount === 0, 'top bar has zero horizontal scroll and zero external redirect links');
+  check(wsGeo.centered && wsGeo.stageW >= 320, `centered game viewport (${Math.round(wsGeo.stageW)}px) sits between Outliner and Inspector`);
+  check(wsGeo.strictTablist, 'tablist owns only role=tab elements');
+
+  await $("(() => { const on = document.querySelector('.ed-tab.on'); on.focus(); on.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })); })()");
+  await sleep(60);
+  check(await $("document.activeElement?.getAttribute('role') === 'tab' && document.activeElement?.textContent.includes('Dialogs')"), 'ArrowRight moves roving focus across Inspector tabs');
+
+  let allDocksOk = true;
+  for (const dock of ['left', 'right', 'timeline', 'log', 'stagebar', 'top']) {
+    await $(`window.__chapterEditor.toggleDock(${JSON.stringify(dock)})`);
+    await sleep(50);
+    const hiddenOk = await $(`(() => {
+      const sel = { left: '.ed-side', right: '.ed-main', timeline: '.cx-timeline', log: '.ch-console-body', stagebar: '.cx-stage-bar', top: '.ed-top' }[${JSON.stringify(dock)}];
+      return document.querySelector(sel)?.offsetParent === null;
+    })()`);
+    await $(`window.__chapterEditor.toggleDock(${JSON.stringify(dock)})`);
+    await sleep(50);
+    const shownOk = await $(`(() => {
+      const sel = { left: '.ed-side', right: '.ed-main', timeline: '.cx-timeline', log: '.ch-console-body', stagebar: '.cx-stage-bar', top: '.ed-top' }[${JSON.stringify(dock)}];
+      return document.querySelector(sel)?.offsetParent !== null;
+    })()`);
+    if (!hiddenOk || !shownOk) allDocksOk = false;
+  }
+  check(allDocksOk, 'all 6 docks and bars (left, right, timeline, log, stagebar, top) hide and show cleanly');
+
+  await $('window.__chapterEditor.toggleZen()');
+  await sleep(160);
+  const zen = await $(`(() => ({
+    topHidden: document.querySelector('.ed-top').offsetParent === null,
+    pillVisible: document.querySelector('.cx-restore-pill')?.offsetParent !== null,
+    frameW: document.querySelector('.pv-frame').getBoundingClientRect().width,
+  }))()`);
+  check(zen.topHidden && zen.pillVisible && zen.frameW > wsGeo.frameW + 120, `Focus mode hides docks, reveals restore pill, and expands frame (${Math.round(zen.frameW)}px)`);
+  await click('.cx-restore-btn', 'Restore UI');
+  await sleep(140);
+  check(await $("document.querySelector('.ed-top').offsetParent !== null && document.querySelector('.ed-side').offsetParent !== null"), 'Restore UI button exits Focus mode');
+
+  await $('window.__chapterEditor.setSplitSize("left", 290)');
+  await $('window.__chapterEditor.undockPanel("right", { x: 40, y: 80, w: 460, h: 520 })');
+  await sleep(80);
+  const floated = await $("document.querySelector('.ed-main').dataset.slot === 'float' && document.querySelectorAll('.ed-main > .cx-float-resizer').length === 8");
+  check(floated && (await $("window.__chapterEditor.state().layout.leftWidth")) === 290, 'splitter resizing and float undock with 8-way resizers work');
+  await click('.ed-main [data-redock="right"]');
+  await $('window.__chapterEditor.dockPanel("left", "right")');
+  await sleep(80);
+  const swapped = await $(`(() => {
+    const l = document.querySelector('.ed-side').getBoundingClientRect();
+    const r = document.querySelector('.ed-main').getBoundingClientRect();
+    const st = window.__chapterEditor.state().layout.slots;
+    return st.left === 'right' && st.right === 'left' && l.left > r.left;
+  })()`);
+  check(swapped, 'Left Outliner and Right Inspector docks can swap sides');
+  await $('window.__chapterEditor.resetLayout()');
+  await sleep(120);
+  check(await $("window.__chapterEditor.state().layout.slots.left === 'left' && window.__chapterEditor.state().pageZoom === 'fit'"), 'Reset Layout restores default dock slots and Fit zoom');
+
+  await $('window.__chapterEditor.setPageZoom(1.25)');
+  await $('window.__chapterEditor.setViewportSize(560, 350)');
+  await sleep(60);
+  const customRect = await $("document.querySelector('.pv-frame').getBoundingClientRect().toJSON()");
+  await $('window.__chapterEditor.togglePortrait()');
+  await sleep(60);
+  const portraitRect = await $("document.querySelector('.pv-frame').getBoundingClientRect().toJSON()");
+  await $('window.__chapterEditor.togglePortrait()');
+  await $("window.__chapterEditor.setPageZoom('fit')");
+  await sleep(80);
+  check(
+    Math.abs(customRect.width - 560) <= 2 && Math.abs(customRect.height - 350) <= 2 && portraitRect.height > portraitRect.width,
+    `viewport canvas zoom, custom resize (${Math.round(customRect.width)}x${Math.round(customRect.height)}), and Portrait (${Math.round(portraitRect.width)}x${Math.round(portraitRect.height)}) aspect switch work`,
+  );
+
+  await click('.ed-tab', 'Script');
+  await sleep(60);
+  const pickedPath = await $("document.querySelector('.ed-pane details[data-item-path]')?.dataset.itemPath || ''");
+  await $(`window.__chapterEditor.selectItem(${JSON.stringify(pickedPath)})`);
+  await click('.ed-tab', 'Overview');
+  await sleep(60);
+  const pillVisible = await $("!document.querySelector('.cx-sel-pill').hidden");
+  await click('.cx-sel-pill');
+  await sleep(80);
+  const revealed = await $(`document.querySelector('.ed-pane details.is-selected')?.dataset.itemPath === ${JSON.stringify(pickedPath)} && window.__chapterEditor.state().tab === 'script'`);
+  check(Boolean(pickedPath) && pillVisible && revealed, 'spec item selection highlights row and .cx-sel-pill reveals its tab and opens details');
+
+  await click('.ed-tab', 'Files');
+  await sleep(80);
+  const beforeBack = await $('window.__chapterEditor.state().tab');
+  await $('history.back()');
+  await sleep(100);
+  const afterBack = await $('window.__chapterEditor.state().tab');
+  await $('history.forward()');
+  await sleep(100);
+  check(beforeBack === 'files' && afterBack === 'script' && (await $('window.__chapterEditor.state().tab')) === 'files', 'browser history back/forward restores editor route via popstate');
+  await click('.ed-item', chapter.levels[0].spec.title);
+  await $('window.__chapterEditor.resetLayout()');
+  await sleep(100);
+
+  // 8c. array reorder open-details preservation, semantic manifest table & Event Log Clear button layout
+  await click('.ed-tab', 'Script');
+  await sleep(60);
+  const movedStaysOpen = await $(`(() => {
+    const items = [...document.querySelectorAll('.ed-pane details.item')];
+    if (items.length < 2) return true;
+    items[0].open = true;
+    items[0].dispatchEvent(new Event('toggle'));
+    items[1].open = false;
+    items[1].dispatchEvent(new Event('toggle'));
+    window.__chapterEditor.selectItem(items[0].dataset.itemPath);
+    const moveDown = [...items[0].querySelectorAll(':scope > summary .mini')].find((b) => b.getAttribute('aria-label') === 'Move down');
+    moveDown?.click();
+    const after = [...document.querySelectorAll('.ed-pane details.item')];
+    return Boolean(after[1]?.open) && !after[0]?.open && window.__chapterEditor.state().selectedPath === after[1]?.dataset.itemPath;
+  })()`);
+  check(movedStaysOpen, 'reordering an array item remaps open <details> state and selectedPath to follow the moved item');
+  await click('.ed-top .btn', 'Revert file');
+
+  await $('window.__chapterEditor.select({ target: "chapter", tab: "manifest" })');
+  await sleep(60);
+  const tableAndClearOk = await $(`(() => {
+    const ths = document.querySelectorAll('.ed-pane table.tbl thead th[scope="col"]').length;
+    const noMultiInputLabel = [...document.querySelectorAll('.ed-pane label')].every((l) => l.querySelectorAll('input,select,textarea').length <= 1);
+    const clearBtn = [...document.querySelectorAll('.ch-log-head button')].find((b) => b.textContent.trim() === 'Clear');
+    const clearFits = Boolean(clearBtn) && clearBtn.scrollWidth <= clearBtn.clientWidth + 2;
+    const openBtn = [...document.querySelectorAll('.ed-pane table.tbl tbody button')].find((b) => b.textContent.includes('Open'));
+    openBtn?.click();
+    return { ths, noMultiInputLabel, clearFits, jumpedLevel: window.__chapterEditor.state().target === 'level' };
+  })()`);
+  check(
+    tableAndClearOk.ths >= 5 && tableAndClearOk.noMultiInputLabel && tableAndClearOk.clearFits && tableAndClearOk.jumpedLevel,
+    'Chapter summary table uses semantic th[scope=col] + Open button, multi-control fields avoid multi-input <label>, and Clear button fits cleanly',
+  );
 
   // 9. a file changed on disk by someone else is noticed, and a stale save is refused
   const last = chapter.levels[chapter.levels.length - 1];
@@ -164,7 +332,13 @@ try {
   check((await status({ path: last.path, json: last.spec }, { 'content-type': 'text/plain' })) === 415, 'API requires Content-Type: application/json (no CSRF through a simple form post)');
   check((await status({ path: last.path, json: last.spec }, { 'content-type': 'application/json', origin: 'http://evil.example' })) === 403, 'API refuses a request from another origin');
   check((await status({ path: last.path, json: last.spec, baseEtag: 'stale' })) === 409, 'API answers 409 to a stale baseEtag');
+  check((await status({ path: last.path, json: last.spec, baseEtag: 12345 })) === 400, 'API refuses non-string baseEtag');
   check((await status({ path: last.path, json: [] })) === 400, 'API refuses a body that is not an object');
+  check(
+    (await fetch(`${base}/api/chapters/${slug}/file`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: 'null' })).status === 400,
+    'API answers 400 (never 500) to a null top-level JSON body',
+  );
+  check((await fetch(`${base}/api/chapters`, { method: 'DELETE' })).status === 404, 'API answers 404 to unsupported HTTP methods');
 } catch (err) {
   check(false, `script aborted: ${err.message}`);
   await browser.shoot(out('error')).catch(() => {});

@@ -810,7 +810,52 @@ try {
   }
   check(lossless, 'saving untouched comix manifest and pages through /api/comix writes identical bytes');
 
-  // 8. Security checks on /api/comix
+  // 8. Security & negative corner-case checks on /api/comix and editor forms/routing
+  await $(`window.__comixEditor.select({ slug: 'intro', target: 'manifest', tab: 'stage' })`);
+  await sleep(60);
+  const stageA11yOk = await $(`(() => {
+    const noMultiLabel = [...document.querySelectorAll('.ed-pane label')].every((l) => l.querySelectorAll('input,select,textarea').length <= 1);
+    const ptDetails = document.querySelector('.ed-pane details.item');
+    if (ptDetails) {
+      ptDetails.open = true;
+      const keyIn = ptDetails.querySelector('summary input.key');
+      keyIn?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true }));
+    }
+    return noMultiLabel && (!ptDetails || ptDetails.open);
+  })()`);
+  check(stageA11yOk, 'Stage & Set multi-control fields use role=group (<=1 control per <label>) and Space inside summary key input keeps <details> open');
+
+  await $(`window.__comixEditor.select({ slug: 'intro', target: 'page-01-desk-storm', tab: 'beats' })`);
+  await sleep(60);
+  await $(`(() => {
+    const sec = [...document.querySelectorAll('.ed-pane .panel-sec')].find((s) => s.textContent.includes('Page-Wide Continuous Tracks'));
+    sec?.querySelector('.add-row button')?.click();
+  })()`);
+  await $(`window.__comixEditor.select({ slug: 'intro', target: 'page-01-desk-storm', tab: 'overview' })`);
+  await sleep(40);
+  await $(`window.__comixEditor.selectElement({ kind: 'page_track', pageId: 'page-01-desk-storm', itemIndex: 0, label: 'page-track:0' })`);
+  await sleep(60);
+  const pageTrackRouted = await $(`window.__comixEditor.state().tab === 'beats' && document.querySelector('.ed-pane details.is-selected')?.dataset.itemPath === 'page-01-desk-storm.tracks.tracks[0]'`);
+  check(pageTrackRouted, 'selecting a page_track routes to Beats & Tracks tab and highlights page.tracks.tracks[0]');
+  await clickText('.ed-top .btn', 'Revert');
+  await sleep(60);
+
+  await $(`window.__comixEditor.select({ slug: 'intro', target: 'page-01-desk-storm', tab: 'json' })`);
+  await sleep(50);
+  const jsonCornerOk = await $(`(() => {
+    const area = document.querySelector('.ed-pane textarea.json');
+    const orig = JSON.parse(area.value);
+    area.value = '{bad';
+    area.dispatchEvent(new Event('input', { bubbles: true }));
+    const hadErr = Boolean(document.querySelector('.jsonpane .note.error'));
+    area.value = JSON.stringify({ ...orig, id: 'wrong-id', index: 88, title: 'Live JSON Test' });
+    area.dispatchEvent(new Event('input', { bubbles: true }));
+    return hadErr && window.__comixEditor.state().dirty.some((p) => p.includes('page-01-desk-storm'));
+  })()`);
+  await clickText('.ed-top .btn', 'Revert');
+  await sleep(60);
+  check(jsonCornerOk && (await $('window.__comixEditor.state().dirty.length')) === 0, 'live JSON pane handles syntax errors and preserves immutable page id/index');
+
   const statusOf = async (body, headers) => (await putComix(body, headers)).status;
   check((await statusOf({ path: '../../package.json', json: {} })) === 400, 'API rejects path traversal');
   check((await statusOf({ path: 'marks.json', json: {} })) === 400, 'API rejects legacy disconnected file names');
@@ -824,7 +869,13 @@ try {
     'API rejects cross-origin requests',
   );
   check((await statusOf({ path: lastPage.path, json: lastPage.spec, baseEtag: 'stale-etag' })) === 409, 'API returns 409 on stale baseEtag');
+  check((await statusOf({ path: lastPage.path, json: lastPage.spec, baseEtag: 999 })) === 400, 'API rejects non-string baseEtag');
   check((await statusOf({ path: lastPage.path, json: [] })) === 400, 'API rejects array JSON payload');
+  check(
+    (await fetch(`${base}/api/comix/intro/file`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: 'null' })).status === 400,
+    'API returns 400 (never 500) on null top-level JSON body',
+  );
+  check((await fetch(`${base}/api/comix`, { method: 'POST' })).status === 404, 'API returns 404 on unsupported HTTP methods');
 } catch (err) {
   check(false, `smoke script aborted: ${err.message}`);
   await browser.shoot(outShot('error')).catch(() => {});

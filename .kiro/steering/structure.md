@@ -35,14 +35,15 @@ src/
   chapters/       # LEVEL GEN runtime; generated/ is compiled from chapters/
   renderer/       # comic stage
   cinematic/      # generic 3D comix player & viewport selector; generated/ is compiled from comix/
+  editor-core/    # shared workstation UI primitives: dom, schema, form/form-state, schema-check, http, file-tracker, dock-state/layout, workspace, view-resizer, viewport-stage, chrome
   comix-editor/   # /comix-editor: schema forms, bidirectional element selection, layout map, preview & 60fps verifier
   ui/             # terminal, HUD, editor
   sandbox/        # dev inspector
   pages/          # chapter select and comic reader
-  chapter-editor/ # /editor: schema-driven chapter forms, game preview, checks (schema.ts is the field table)
+  chapter-editor/ # /editor: workstation studio, schema-driven chapter forms, centered game preview, checks (schema.ts is the field table)
   hub/            # issue hub entry
   play/           # play page composition (bootstrap). main.ts only starts it
-  styles/         # game.css, hub.css
+  styles/         # game.css, hub.css, editor-workstation.css, chapter-editor.css, comix-editor.css
   main.ts         # play page (/)
 comix/<slug>/                # animated 3D comix data (intro, outro, ...):
   comix.manifest.json        #   stage, cast, shared cues, skip policy, page index

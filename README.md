@@ -15,8 +15,8 @@ Work in progress. What runs today:
 - **Player front door** (`/`): play the Kiroween campaign or read the comix. `/hub.html` redirects here.
 - **Play** (`/play/<chapter>/<level>`): the comic stage and the terminal. `/play` opens the Kiroween chapter. Mode flags stay on the query string (`?nointro=1`).
 - **Developer** (`/dev.html`): level select, direct sector jumps, and the visual QA labs.
-- **Chapter editor** (`/editor`, dev server): select a chapter, edit every level, dialog and comic panel with forms, preview the real game on the unsaved draft, run the checks, save back to `chapters/`. Chapters are data; no per-chapter code (`.kiro/steering/declarative-chapters.md`).
-- **Comix editor** (`/comix-editor`, dev server): select any animated 3D comix in `comix/`, inspect connected page/panel layouts, edit every stage, cast, camera, letter, beat and track with forms, scrub and freeze the live 3D preview on the draft, run the 60fps timeline verifier, and save back to `comix/`. Comixes are data; no hardcoded scenes (`.kiro/steering/declarative-comix.md`).
+- **Chapter editor** (`/editor`, dev server): centered game-stage workstation built on shared `src/editor-core/` — select a chapter, dock/float/hide panels, edit every level, dialog and comic panel with schema forms, preview and step through the real game on the unsaved draft, run checks, and save back to `chapters/`. Chapters are data; no per-chapter code (`.kiro/steering/declarative-chapters.md`).
+- **Comix editor** (`/comix-editor`, dev server): centered 3D comix workstation built on `src/editor-core/` — select any animated 3D comix in `comix/`, inspect connected page/panel layouts, click-select elements bidirectionally, edit every stage, cast, camera, letter, beat and track with forms, scrub and freeze the live 3D preview on the draft, run the 60fps timeline verifier, and save back to `comix/`. Comixes are data; no hardcoded scenes (`.kiro/steering/declarative-comix.md`).
 - **Chapter select** (`/chapters.html`), **comic reader** (`/comic.html`), **cinematics** (`/cinematic.html`).
 - **Storybook** (`/storybook.html`): every procedural model, texture and effect under the real comic
   renderer (cel shading, ink outlines, halftone, pixel-art and CRT passes).
@@ -49,8 +49,13 @@ Useful storybook URLs:
 ## Checks
 
 ```bash
-npm run quality                 # typecheck, root layout, file/function size, layer rules, duplicates
+npm run quality                 # typecheck, root layout, file/function size, layer rules, declarative gate, duplicates
 npm run quality:fingerprint     # hashes of every model, texture and effect
+node scripts/harness/editor-unit-test.mjs             # unit suite for editor-core, chapter/comix editors & APIs
+node scripts/harness/editor-smoke.mjs                 # headless Chrome E2E suite for /editor
+node scripts/harness/comix-editor-smoke.mjs           # headless Chrome E2E suite for /comix-editor
+node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs
+node .kiro/skills/comix-implementer/scripts/verify-comix.mjs
 node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict
 node .kiro/skills/procedural-animation-3d/scripts/check-tags.mjs --all
 node scripts/harness/render-sheet.mjs                 # contact sheet -> scripts/harness/out/models.png
@@ -61,20 +66,19 @@ node scripts/harness/screenshot-lab.mjs --selftest    # headless WebGL screensho
 
 Everything Kiro uses lives in [`.kiro/`](./.kiro):
 
-- **Steering** (`.kiro/steering/`): product, tech, structure, architecture and the skills map, always loaded.
-  Architecture rules are enforced by scripts in `scripts/quality/`, not by prose.
-- **Skills** (`.kiro/skills/`): 22 skills in two categories. *ASSET PCG* (art direction, models, malware,
+- **Steering** (`.kiro/steering/`): product, tech, structure, architecture, declarative chapter/comix rules, editor rules, and the skills map. Architecture and declarative rules are enforced by scripts in `scripts/quality/`, not by prose.
+- **Skills** (`.kiro/skills/`): 23 skills in two categories. *ASSET PCG* (art direction, models, malware,
   rooms, textures, shaders, lighting, animation, particles, validators, visual QA) and *LEVEL GEN*
   (chapter intake, comic story drawing, level compiler, chapter implementer, chapter editor, plus 3D comix intake, sequence generator, comix implementer, and comix editor). Each ships its own validator scripts and self-tests.
-- **Hooks** (`.kiro/hooks/`): asset dry runs that validate a model, texture or effect as soon as it is saved.
-- **Specs** (`.kiro/specs/`): feature specs (requirements, design, tasks); none committed yet.
+- **Hooks** (`.kiro/hooks/`): asset dry runs, chapter/comix spec validators and typecheck on save, a stop-time verification gate, and a pre-write guard protecting `generated/` files and chapter/comix vocabulary contracts.
+- **Specs** (`.kiro/specs/`): feature specs (`requirements.md`, `design.md`, `tasks.md`) for `declarative-chapter-runtime`, `chapter-editor`, `declarative-comix-runtime`, and `comix-editor`.
 
 ## Layout
 
 ```
-pages/      HTML entry pages (Vite root): player front door, game, dev, hub, chapters, comic, cinematic, storybook
-src/        contracts, procgen, shaders, storybook, game, renderer, ui, cinematic, chapters
-scripts/    harness (sheets, screenshots, comic drawing), hooks, quality gates
+pages/      HTML entry pages (Vite root): player front door, game, dev, hub, chapters, comic, cinematic, editors, storybook
+src/        contracts, procgen, shaders, storybook, game, renderer, ui, cinematic, chapters, editor-core, chapter-editor, comix-editor
+scripts/    harness (sheets, screenshots, comic drawing, chapter/comix compilers, editor APIs & smoke suites), hooks, quality gates
 docs/       long-form notes
 .kiro/      steering, skills, hooks, specs, settings
 ```

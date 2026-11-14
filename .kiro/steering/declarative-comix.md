@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "{comix/**,src/cinematic/**,src/comix-editor/**}"
+fileMatchPattern: "{comix/**,src/cinematic/**,src/comix-editor/**,src/editor-core/**}"
 ---
 
 # Declarative comix
@@ -29,4 +29,4 @@ The full vocabulary is typed in: #[[file:src/cinematic/spec-types.ts]]
 
 Humans review, click-select 2D/3D elements bidirectionally, scrub timestamps, and tweak sequences in `/comix-editor` (etag-guarded `409` conflict protection + external disk-change reload; see `.kiro/steering/comix-editor-rules.md` and `.kiro/specs/comix-editor/`). Finish any comix change with:
 - `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs` (or `node scripts/harness/generate-comix.mjs --verify` + `node scripts/harness/validate-comix.mjs`)
-- `node scripts/harness/comix-editor-smoke.mjs` when `src/comix-editor/`, `src/cinematic/editor-select.ts`, `src/cinematic/preview.ts`, or `scripts/harness/lib/comix-api.mjs` changed.
+- `node scripts/harness/editor-unit-test.mjs` and `node scripts/harness/comix-editor-smoke.mjs` when `src/comix-editor/`, `src/editor-core/`, `src/cinematic/editor-select.ts`, `src/cinematic/preview.ts`, or `scripts/harness/lib/{comix-api,editor-api-common}.mjs` changed.

@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "{chapters/**,src/chapters/**,src/chapter-editor/**,src/play/**,src/ui/**,src/pages/**}"
+fileMatchPattern: "{chapters/**,src/chapters/**,src/chapter-editor/**,src/editor-core/**,src/play/**,src/ui/**,src/pages/**}"
 ---
 
 # Declarative chapters
@@ -32,4 +32,4 @@ The vocabulary of `script` is this file, so it cannot drift from the code: #[[fi
 People do final tuning in the Chapter Editor (`/editor`). The editor refuses to overwrite a file that changed on disk after it loaded it (etag, HTTP 409), and shows "Reload from disk" when an agent or git touched a file. Agents owe the same care:
 
 - Read the spec from disk right before editing; change only the fields the task names. Never rebuild a level or story file from a template over human edits.
-- Finish with `node scripts/harness/generate-chapter.mjs --verify` (static checks + 0-death headless playthrough). If `src/chapter-editor/` changed, also `node scripts/harness/editor-smoke.mjs`. Report only what you ran.
+- Finish with `node scripts/harness/generate-chapter.mjs --verify` (static checks + 0-death headless playthrough). If `src/chapter-editor/` or `src/editor-core/` changed, also run `node scripts/harness/editor-unit-test.mjs` and `node scripts/harness/editor-smoke.mjs`. Report only what you ran.

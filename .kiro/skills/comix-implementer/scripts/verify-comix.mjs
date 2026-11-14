@@ -32,9 +32,10 @@ runNode('scripts/harness/generate-comix.mjs', ['--verify', ...(filterComix ? ['-
 console.log('=== [3/5] Checking declarative runtime gate ===');
 runNode('scripts/quality/check-declarative.mjs');
 
-console.log('=== [4/5] Running Comix skill self-tests ===');
+console.log('=== [4/5] Running Comix skill & editor unit self-tests ===');
 runNode('.kiro/skills/comix-architect-intake/scripts/self-test.mjs');
 runNode('.kiro/skills/comix-sequence-generator/scripts/self-test.mjs');
+runNode('scripts/harness/editor-unit-test.mjs');
 
 console.log('=== [5/5] Verifying Kiro Comix specs & guard hooks ===');
 for (const specDir of ['declarative-comix-runtime', 'comix-editor']) {

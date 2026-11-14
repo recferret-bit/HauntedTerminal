@@ -54,22 +54,24 @@ The editor follows a game-engine workstation layout with the **Comix Viewport** 
 - **Right Inspector (`]`):** `⠿` drag grip, roving-tabindex ARIA tablist (`ArrowLeft`/`ArrowRight`/`Home`/`End`), forms, interactive **2D Landscape/Portrait sheet** (highlights active preview panel, click to preview, drag or `Alt+Arrows` to reposition `[x, y]`, drag corner or `Alt+Shift+Arrows` to resize `[w, h]`), raw JSON, and 60fps verifier (`▶` collapse button).
 - **Splitters, Drag-to-Float & Side Swapping:** Drag the seams between left/right/bottom docks and the stage (or use Arrow keys on focused splitters; double-click to reset). Drag any dock's `⠿` grip (or header bar) to undock it into an 8-way edge/corner resizable floating window, drag to screen edges (`left`/`right`/`bottom`) to re-dock or swap `Pages ↔ Inspector` (preserving each panel's width), click `📌` (or double-click `⠿`) to dock, or click **`↺ Layout`** to reset all dock positions, sizes, and viewport fit.
 - **All UI Hidable / Focus Mode (`` ` ``):** Every dock (`Top`, `Pages`, `Inspector`, `Timeline`, `Chips`, `Bar`) toggles individually from the top bar or inline close buttons and persists in `localStorage['ht-comix-editor-ui']`. Focus mode (`⛶ Focus`) hides all chrome and opens a floating `☰ Restore UI` pill in the stage corner.
-- **Conflict-safe saving:** Every file carries an `etag`. Saving calls `model.syncSummaries()`, writes changed JSON canonically via `stringifyComixJson`, and recompiles `src/cinematic/generated/catalog-data.ts`. Stale writes return `409` without overwriting disk.
+- **Conflict-safe saving:** Every file carries an `etag`. Saving (`Ctrl/Cmd+S` for active file, `Ctrl/Cmd+Shift+S` for all dirty files) calls `model.syncSummaries()`, writes changed JSON canonically via `stringifyComixJson`, and recompiles `src/cinematic/generated/catalog-data.ts`. Stale writes return `409` without overwriting disk.
 
 ---
 
-## Code Map (`src/comix-editor/`)
+## Code Map (`src/comix-editor/` + `src/editor-core/`)
 
 | File | Responsibility |
 | :--- | :--- |
+| `src/editor-core/*` | Shared workstation layer: `dom.ts`, `schema.ts`, `form.ts`, `form-state.ts`, `schema-check.ts`, `http.ts`, `file-tracker.ts`, `drag.ts`, `dock-state.ts`, `dock-layout.ts`, `workspace.ts`, `view-resizer.ts`, `viewport-stage.ts`, `chrome.ts` |
 | `schema.ts`, `schema-letters.ts`, `schema-tracks.ts`, `schema-fields.ts` | Exhaustive `Field[]` tables keyed by every tagged union in `src/cinematic/spec-types.ts` (a new `kind` without a form fails `tsc`) |
 | `check.ts` | Static validator (`objectShape` + `ModelCatalog`/`FxCatalog` refs + panel rect bounds + cue & timeline continuity + `simulateComixPack`) |
-| `model.ts` | Draft vs saved baseline state, `syncSummaries()`, per-file dirty tracking & `etag` conflict state |
-| `drag.ts`, `dock-layout.ts`, `sheet-drag.ts` | Shared pointer-gesture engine, dock splitters, undock/float/swap/snap-dock controller, and 2D sheet panel box drag/resize |
-| `workspace.ts` | Hidable dock state (`top`, `left`, `right`, `timeline`, `jumps`, `stagebar`, `zen`), `↺ Layout` reset, keyboard shortcuts, `localStorage` persistence, and floating restore pill |
-| `preview.ts`, `preview-bars.ts`, `view-resizer.ts` | Center `/cinematic.html` viewport (`stageEl`) + symmetric edge/corner & keyboard resize handles, Page/Scene zoom + Apply Shot, live playhead sync, `.cx-sel-pill`, and bottom transport/scrubber/jump dock (`timelineEl`) |
+| `model.ts` | `BasePackModel` + `FileBaselineTracker`, `syncSummaries()`, identity-safe `replace()`, per-file dirty tracking & `etag` conflict state |
+| `sheet-drag.ts` | 2D Landscape/Portrait sheet panel box pointer drag/resize and `Alt+Arrow` keyboard nudging |
+| `preview.ts`, `preview-bars.ts` | Center `/cinematic.html` viewport (`ViewportStageController`), Page/Scene zoom + Apply Shot, live playhead sync, `.cx-sel-pill`, and bottom transport/scrubber/jump dock (`timelineEl`) |
 | `selection.ts` | Bidirectional routing (`routeForElement`, `resolveSelectionFromPath`), `visibilityJumpForElement` seeking, and focus-safe `syncInspectorSelectionDom` |
 | `panes.ts`, `chrome.ts`, `app.ts` | Top bar (zero redirect links), outliner, roving ARIA tablist, interactive 2D Page Layout Mini-Map, skip editor, JSON pane, 60fps simulator UI, selection wiring & `window.__comixEditor` hook (`selectedElement`, `selectElement`, `pickViewportElement`) |
+
+Node side: `scripts/harness/lib/comix-api.mjs` + `editor-api-common.mjs` (dev API), `comix-compile.mjs`, `comix-json.mjs`, `scripts/harness/editor-unit-test.mjs`, and `scripts/harness/comix-editor-smoke.mjs`.
 
 ---
 
@@ -79,4 +81,4 @@ The editor follows a game-engine workstation layout with the **Comix Viewport** 
 2. Interpret it generically once in `src/cinematic/` (`tracks.ts`, `beats.ts`, or `letters-build.ts` / `letters-draw.ts`) + `timeline.ts`.
 3. Add its form fields in `src/comix-editor/schema*.ts`.
 4. Validate its invariants in `src/cinematic/simulate.ts` / `src/comix-editor/check.ts`.
-5. Run `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs`, `node scripts/harness/comix-editor-smoke.mjs`, and `npm run quality`.
+5. Run `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs`, `node scripts/harness/editor-unit-test.mjs`, `node scripts/harness/comix-editor-smoke.mjs`, and `npm run quality`.
