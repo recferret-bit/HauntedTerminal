@@ -70,6 +70,10 @@ export class CinematicStage {
   readonly flashPos = new THREE.Vector3();
   /** Clamp the view to the room frame when it fits. */
   clampToRoom = true;
+  /** Non-destructive scene inspection zoom (`1` = default shot) and world pan offsets for the editor. */
+  sceneZoom = 1;
+  scenePanX = 0;
+  scenePanY = 0;
 
   constructor() {
     const post = createComicComposer({
@@ -161,6 +165,15 @@ export class CinematicStage {
     this.lightning.update(dt);
   }
 
+  /** Dispose transient FX emitters and lightning bolts before re-seeking from t = 0. */
+  clearEffects(): void {
+    for (const live of this.fxs) live.fx.dispose();
+    this.fxs.length = 0;
+    this.lightning.update(10);
+    this.lightning.flashStrength = 0;
+    this.canvas.style.filter = '';
+  }
+
   /** Project a world point to CSS px inside the panel (origin top-left). */
   project(p: THREE.Vector3): { x: number; y: number } {
     this.updateCamera(0);
@@ -173,7 +186,15 @@ export class CinematicStage {
     return (this.camera.top - this.camera.bottom) / this.height;
   }
 
-  private updateCamera(t: number): void {
+  private clampInsideRoom(x: number, y: number, halfW: number, halfH: number): { x: number; y: number } {
+    const cx = Math.min(BOUNDS.maxX - halfW, Math.max(BOUNDS.minX + halfW, x));
+    const cy = halfH * 2 < BOUNDS.maxY - BOUNDS.minY
+      ? Math.min(BOUNDS.maxY - halfH, Math.max(BOUNDS.minY + halfH, y))
+      : y;
+    return { x: cx, y: cy };
+  }
+
+  private baseCenter(): { x: number; y: number; halfW: number; halfH: number } {
     const aspect = this.width / this.height;
     let halfH = Math.max(this.shot.h / 2, this.shot.w / 2 / aspect);
     let halfW = halfH * aspect;
@@ -186,15 +207,50 @@ export class CinematicStage {
         halfW = roomHalfW;
         halfH = halfW / aspect;
       }
-      x = Math.min(BOUNDS.maxX - halfW, Math.max(BOUNDS.minX + halfW, x));
-      if (halfH * 2 < BOUNDS.maxY - BOUNDS.minY) y = Math.min(BOUNDS.maxY - halfH, Math.max(BOUNDS.minY + halfH, y));
+      ({ x, y } = this.clampInsideRoom(x, y, halfW, halfH));
     }
+    return { x, y, halfW, halfH };
+  }
+
+  /** Effective world shot box after room clamping, aspect fitting, and interactive scene zoom/pan. */
+  effectiveView(): Shot {
+    const base = this.baseCenter();
+    const z = Math.max(0.2, Math.min(8, this.sceneZoom));
+    const halfW = base.halfW / z;
+    const halfH = base.halfH / z;
+    let x = base.x + this.scenePanX;
+    let y = base.y + this.scenePanY;
+    if (this.clampToRoom && z >= 1) {
+      ({ x, y } = this.clampInsideRoom(x, y, halfW, halfH));
+      if (halfH * 2 >= BOUNDS.maxY - BOUNDS.minY && this.scenePanY !== 0) {
+        const minY = Math.min(BOUNDS.maxY - halfH, base.y);
+        const maxY = Math.max(BOUNDS.minY + halfH, base.y);
+        y = Math.min(maxY, Math.max(minY, y));
+      }
+    } else {
+      x = Math.min(base.x + 12, Math.max(base.x - 12, x));
+      y = Math.min(base.y + 12, Math.max(base.y - 12, y));
+    }
+    return { x, y, w: halfW * 2, h: halfH * 2 };
+  }
+
+  /** Sync `scenePanX` / `scenePanY` to the effective clamped camera offset so dragging past a wall never builds overshoot. */
+  syncClampedPan(): { panX: number; panY: number } {
+    const base = this.baseCenter();
+    const eff = this.effectiveView();
+    this.scenePanX = eff.x - base.x;
+    this.scenePanY = eff.y - base.y;
+    return { panX: this.scenePanX, panY: this.scenePanY };
+  }
+
+  private updateCamera(t: number): void {
+    const view = this.effectiveView();
     // World +x is screen-left: the camera looks down +z from -z, so left/right are mirrored for us.
-    frameOrtho(this.camera, halfW, halfH);
+    frameOrtho(this.camera, view.w / 2, view.h / 2);
     const sx = this.shake > 0 ? (hash(t * 61.7) - 0.5) * 2 * this.shake : 0;
     const sy = this.shake > 0 ? (hash(t * 47.3 + 9.1) - 0.5) * 2 * this.shake : 0;
-    this.camera.position.set(x + sx, y + sy, -8);
-    this.camera.lookAt(x + sx, y + sy, 0);
+    this.camera.position.set(view.x + sx, view.y + sy, -8);
+    this.camera.lookAt(view.x + sx, view.y + sy, 0);
     this.camera.updateMatrixWorld(true);
   }
 

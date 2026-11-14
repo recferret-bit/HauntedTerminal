@@ -1,10 +1,9 @@
 import type { KernelEvent } from '../contracts/events.js';
-import type { OutroStats } from '../cinematic/index.js';
 import type { Session } from '../game/session.js';
 import type { GameSnapshot, TickResult } from '../game/types.js';
 import type { ComicStage } from '../renderer/comic-stage.js';
 import type { CodeEditor } from '../ui/code-editor.js';
-import type { Hud } from '../ui/hud.js';
+import type { EndStats, Hud } from '../ui/hud.js';
 import type { Shell } from '../ui/terminal.js';
 import type { TutorialCard } from '../ui/tutorial.js';
 
@@ -101,8 +100,8 @@ export class Play {
   paint!: (snap: GameSnapshot) => void;
   apply!: (events: KernelEvent[], snap: GameSnapshot, printed?: string) => void;
   applyTick!: (res: TickResult) => void;
-  runCinematic!: (show: () => Promise<void>) => Promise<void>;
-  beginEnding!: (stats: OutroStats | null) => void;
+  runCinematic!: <T>(show: () => Promise<T>) => Promise<T | undefined>;
+  beginEnding!: (stats: EndStats | null) => void;
   startRun!: () => Promise<void>;
 
   constructor(

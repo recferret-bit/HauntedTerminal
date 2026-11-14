@@ -1,10 +1,15 @@
 /**
- * Vocabulary of a cinematic comix (`comix/<id>/`). The player in this folder interprets it.
- * A new kind is added here, interpreted once, and given a form in `src/comix-editor/schema.ts`.
- * Times are mark expressions: a mark name (`STRIKE`), a sum (`STRIKE+0.35`, `WHITE-0.1`) or a number (`1.5`).
+ * Declarative vocabulary of an animated 3D Comix sequence (`comix/<slug>/`).
+ *
+ * Every comix lives in its own connected directory:
+ *   - `comix/<slug>/comix.manifest.json` — identity, playback/skip policy, stage set, cast, shared cues, and ordered page index.
+ *   - `comix/<slug>/pages/page-XX-<slug>/page.spec.json` — self-contained page config with its time window, local cues,
+ *     page-turn transition, overlays, page tracks, and panels (each bundling layout, camera, lettering, beats, and tracks).
+ *
+ * The runtime in `src/cinematic/` names no comix, no page, and no scene. Adding a new spec capability is one change
+ * in four places: `spec-types.ts` (type), `src/cinematic/` (interpreter), `src/comix-editor/schema.ts` (form),
+ * and `src/comix-editor/check.ts` (validator).
  */
-
-export type MarkExpr = string;
 
 export interface Vec3 {
   x: number;
@@ -12,7 +17,24 @@ export interface Vec3 {
   z: number;
 }
 
-export interface Shot {
+/** Named landmark in `manifest.stage.points`, or an inline `{ x, y, z }` world position. */
+export type PointRef = string | Vec3;
+
+/**
+ * Timestamp expression in seconds:
+ *   - `"12.5"` — absolute seconds from `0`
+ *   - `"+0.4"` — offset from the enclosing panel's (or page's) `from` timestamp
+ *   - `"STRIKE"`, `"STRIKE+0.35"`, `"WHITE-0.1"` — cue from `manifest.cues` or `page.cues`
+ */
+export type TimeExpr = string;
+
+/** Page-fraction rectangle `[x, y, w, h]` inside `0..1`. */
+export type Rect4 = [number, number, number, number];
+
+export type EaseName = 'linear' | 'in' | 'out' | 'outBack';
+
+/** Orthographic world-space box `(x, y)` centre + `(w, h)` size shown by a panel camera. */
+export interface ShotBox {
   x: number;
   y: number;
   w: number;
@@ -20,436 +42,474 @@ export interface Shot {
 }
 
 export interface SkipRule {
-  before: MarkExpr;
-  to: MarkExpr;
+  before: TimeExpr;
+  to: TimeExpr;
 }
+
+// ---- Stage & Cast (`comix.manifest.json`) -------------------------------------------------------------------------
+
+export interface StagePropSpec {
+  id: string;
+  model: string;
+  at: PointRef;
+  scale?: number;
+}
+
+export type StageFixtureSpec =
+  | {
+      kind: 'rain';
+      id: string;
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+      z: number;
+      drops?: number;
+    }
+  | {
+      kind: 'bolt';
+      id: string;
+      style: 'bolt' | 'comic';
+      from: PointRef;
+      to: PointRef;
+      seed?: number;
+    }
+  | {
+      kind: 'vortex';
+      id: string;
+      at: PointRef;
+      z: number;
+      w: number;
+      h: number;
+    };
+
+export interface ComixStageSpec {
+  room: string;
+  background: string;
+  clampToRoom?: boolean;
+  points: Record<string, Vec3>;
+  props?: StagePropSpec[];
+  fixtures?: StageFixtureSpec[];
+}
+
+export interface ComixActorSpec {
+  id: string;
+  model: string;
+  label?: string;
+  at?: PointRef;
+  scale?: number;
+  rotationZ?: number;
+  visible?: boolean;
+  look?: [number, number];
+}
+
+export interface ComixPageSummary {
+  index: number;
+  id: string;
+  title: string;
+  from: number;
+  until: number;
+  panelCount: number;
+  specPath: string;
+}
+
+export type ComixRole = 'opening' | 'ending' | 'interlude' | 'standalone';
 
 export interface ComixManifest {
   id: string;
   title: string;
-  room: string;
-  background: string;
-  pageCount: number;
-  end: MarkExpr;
+  subtitle: string;
+  summary: string;
+  role?: ComixRole;
+  status: 'playable' | 'draft';
+  durationSec: number;
   holdAtEnd?: boolean;
-  /** `"end"` resolves immediately. A list jumps to the first `to` whose `before` is still ahead; otherwise time stays. */
-  skip: 'end' | SkipRule[];
-  acceptsKeyFrom?: MarkExpr;
+  acceptsKeyFrom?: TimeExpr;
   inputGraceMs?: number;
-  hero?: string;
-  /** Extra stills, taken only while that panel is the live one. */
-  keyframes?: Array<{ panel: string; at: MarkExpr }>;
+  skip: 'end' | SkipRule[];
+  cues?: Record<string, number>;
+  stage: ComixStageSpec;
+  cast: ComixActorSpec[];
+  pages: ComixPageSummary[];
 }
 
-export interface CastActor {
-  id: string;
-  model: string;
-  name?: string;
-  role?: 'hero' | 'agent';
-  /** Starting look (x, y) passed to the animator. */
-  look?: [number, number];
-  /** Seated at this point. */
-  home?: string;
-  inX?: number;
-  to?: [number, number];
-  scale?: number;
-  mock?: string;
-  order?: number;
-  slot?: number;
-  /** Named point the outro flings this actor toward. */
-  fling?: string;
+// ---- Panel Camera, Lettering, Beats & Continuous Tracks (`page.spec.json`) ----------------------------------------
+
+export interface PanelCameraSpec {
+  from: ShotBox;
+  to?: ShotBox;
+  span?: [TimeExpr, TimeExpr];
+  ease?: EaseName;
+  portrait?: ShotBox;
 }
 
-export interface CastSpec {
-  actors: CastActor[];
-}
-
-export interface SetSpec {
-  points: Record<string, Vec3>;
-  monitor?: { x: number; y: number; w: number; h: number };
-  props?: Array<{ id: string; model: string; at: string }>;
-  parts?: {
-    glass?: string;
-    code?: string[];
-    screen?: string;
-    glassMaterial?: string;
-    amberMaterial?: string;
-  };
-  rain?: { x: number; y: number; w: number; h: number; z: number } | null;
-  bolts?: Array<{ id: string; from: Vec3; to: Vec3; style?: 'bolt' | 'comic'; seed?: number }>;
-  vortex?: { at: string; z: number; inset: number } | null;
-}
-
-export interface PanelSpec {
-  id: string;
-  landscape: [number, number, number, number];
-  portrait: [number, number, number, number];
-  /** When this panel becomes the live one. */
-  at: MarkExpr;
-}
-
-export interface PageFile {
-  page: number;
-  panels: PanelSpec[];
-}
-
-export interface CaptionLetter {
-  kind: 'caption';
-  panel: string;
-  text: string;
-  from: MarkExpr;
-  /** Seconds spent typing the line (absolute end is `from` + this). */
-  typeFor: number;
-  mono?: boolean;
-  anchor?: 'bottom';
-  maxWidth?: string;
-}
-
-export interface MemeLetter {
-  kind: 'meme';
-  panel: string;
-  text: string;
-  at: MarkExpr;
-  edge: 'top' | 'bottom';
-}
-
-export interface SfxLetter {
-  kind: 'sfx';
-  panel: string;
-  text: string;
-  at: MarkExpr;
-  hold: number;
-  color: string;
-  tilt: number;
-  /** Draw only while this panel is current; `keep` freezes the last place on other panels. */
-  only?: string;
-  keep?: boolean;
-  place:
-    | { mode: 'frac'; x: number; y: number; size: number }
-    | { mode: 'point'; point: string; dx: number; dy: number; size: number };
-}
-
-/** Several onomatopoeia. Offset is `dx + (i % dxMod) * dxStep` (same for y). */
-export interface SfxBurstLetter {
-  kind: 'sfx_burst';
-  panel: string;
-  words: string[];
-  from: MarkExpr;
-  step: number;
-  hold: number;
-  lastHold?: number;
-  color: string;
-  tilts: number[];
-  point: string;
-  dx: number;
-  dy: number;
-  dxStep: number;
-  dyStep: number;
-  dxMod: number;
-  dyMod: number;
-  size: number;
-  only?: string;
-  keep?: boolean;
-}
-
-export interface BubbleLetter {
-  kind: 'bubble';
-  panel: string;
-  text: string;
-  at: MarkExpr;
-  until?: MarkExpr;
-  style: 'speech' | 'shout' | 'thought';
-  fill?: string;
-  only?: string;
-  place:
-    | {
-        mode: 'frac';
-        x: number;
-        y: number;
-        w: number;
-        fontH: number;
-        fontW: number;
-        minFont: number;
-        /** When set, font = max(minFont, min(panel) * fontOfMin) instead of min(h*fontH, w*fontW). */
-        fontOfMin?: number;
-        /** cy = max(h * y, fontPx * yFloor). Otherwise cy = h * y. */
-        yFloor?: number;
-        /** width = min(w * w, fontPx * wChars). Otherwise width = w * w. */
-        wChars?: number;
-        tail: string;
-        tailLift: number;
-        tailZ: number;
-        /** `live` aims the tail at the actor's group. `point` aims at a named point (or the actor home). */
-        tailFrom?: 'live' | 'point';
-        tailPoint?: string;
-      }
-    | {
-        mode: 'follow';
-        actor: string;
-        lift: number;
-        z: number;
-        x: number;
-        y: number;
-        wChars: number;
-        fontScale: number;
-        tailDx: number;
-        tailDy: number;
-        minXChars: number;
-        fontH: number;
-        fontW: number;
-        minFont: number;
-      };
-}
-
-/** One speech bubble per cast agent, laid out by `slot`. */
-export interface CastBubblesLetter {
-  kind: 'cast_bubbles';
-  panel: string;
-  at: MarkExpr;
-  step: MarkExpr;
-  until: MarkExpr;
-  width: number;
-  x0: number;
-  xStep: number;
-  yEven: number;
-  yOdd: number;
-  fontH: number;
-  fontW: number;
-  minFont: number;
-  headLift: number;
-}
-
-export interface QueueLetter {
-  kind: 'queue';
-  panel: string;
-  title: string;
-  base: number;
-  from: MarkExpr;
-  every: number;
-  prompts: string[];
-}
-
-export interface TagsLetter {
-  kind: 'tags';
-  panel: string;
-  from: MarkExpr;
-  step: number;
-  dy: number;
-  z: number;
-}
-
-export interface LinesLetter {
-  kind: 'lines';
-  panel: string;
-  from: MarkExpr;
-  step: number;
-  texts: string[];
-  jitter?: boolean;
-}
-
-export interface BrainRow {
+export interface TierRowSpec {
   who: string;
   what: string;
   bg: string;
   glow: number;
 }
 
-export interface BrainLetter {
-  kind: 'brain';
-  panel: string;
-  from: MarkExpr;
-  step: number;
-  rows: BrainRow[];
+export interface StatsLabelsSpec {
+  rank: string;
+  time: string;
+  commands: string;
+  shortcuts: string;
+  press: string;
 }
 
-export interface CardLetter {
-  kind: 'card';
-  at: MarkExpr;
+export type PanelLetter =
+  | {
+      kind: 'caption';
+      text: string;
+      from: TimeExpr;
+      until?: TimeExpr;
+      typeDur: number;
+      mono?: boolean;
+      position?: 'top' | 'bottom';
+      maxWidth?: string;
+    }
+  | {
+      kind: 'banner';
+      text: string;
+      at: TimeExpr;
+      until?: TimeExpr;
+      edge: 'top' | 'bottom';
+    }
+  | {
+      kind: 'sfx';
+      text: string;
+      at: TimeExpr;
+      hold: number;
+      color: string;
+      tilt: number;
+      anchor: 'frac' | 'point';
+      x?: number;
+      y?: number;
+      point?: PointRef;
+      dx?: number;
+      dy?: number;
+      size: number;
+      activePanelOnly?: boolean;
+      freezeOnCut?: boolean;
+    }
+  | {
+      kind: 'sfx_seq';
+      words: string[];
+      tilts: number[];
+      from: TimeExpr;
+      step: number;
+      hold: number;
+      lastHold?: number;
+      color: string;
+      point: PointRef;
+      dx: number;
+      dy: number;
+      dxStep: number;
+      dyStep: number;
+      dxMod: number;
+      dyMod: number;
+      size: number;
+      activePanelOnly?: boolean;
+      freezeOnCut?: boolean;
+    }
+  | {
+      kind: 'bubble';
+      text: string;
+      at: TimeExpr;
+      until?: TimeExpr;
+      style: 'speech' | 'shout' | 'thought';
+      fill?: string;
+      activePanelOnly?: boolean;
+      freezeOnCut?: boolean;
+      anchor: 'panel' | 'world';
+      x: number;
+      y: number;
+      w?: number;
+      wChars?: number;
+      yFloor?: number;
+      minXChars?: number;
+      fontH: number;
+      fontW: number;
+      minFont: number;
+      fontOfMin?: number;
+      fontScale?: number;
+      tailActor?: string;
+      tailPoint?: PointRef;
+      tailLift?: number;
+      tailZ?: number;
+      tailDx?: number;
+      tailDy?: number;
+    }
+    | {
+      kind: 'label_tag';
+      text: string;
+      at: TimeExpr;
+      until?: TimeExpr;
+      point: PointRef;
+      activePanelOnly?: boolean;
+      freezeOnCut?: boolean;
+    }
+  | {
+      kind: 'prompt_list';
+      title: string;
+      baseCount: number;
+      from: TimeExpr;
+      every: number;
+      items: string[];
+    }
+  | {
+      kind: 'glitch_text';
+      from: TimeExpr;
+      step: number;
+      texts: string[];
+      jitter?: boolean;
+    }
+  | {
+      kind: 'tier_stack';
+      from: TimeExpr;
+      step: number;
+      rows: TierRowSpec[];
+    }
+  | {
+      kind: 'panel_flash';
+      at: TimeExpr;
+      dur: number;
+      opacity: number;
+      fade?: number;
+      fadeFrom?: number;
+      hold?: boolean;
+      activePanelOnly?: boolean;
+    }
+  | {
+      kind: 'invert';
+      at: TimeExpr;
+      fromOffset: number;
+      toOffset: number;
+    }
+  | {
+      kind: 'stats_card';
+      title: string;
+      at: TimeExpr;
+      keyAt: TimeExpr;
+      rankColor: Record<string, string>;
+      rankWord: Record<string, string>;
+      labels: StatsLabelsSpec;
+      emptyShortcuts: string;
+      fallbackBackground: string;
+    };
+
+export type PageOverlay = {
+  kind: 'title_card';
+  at: TimeExpr;
   title: string;
-  path: string;
-  typeFrom: MarkExpr;
-  typeTo: MarkExpr;
-  fadeFrom: MarkExpr;
-  fadeTo: MarkExpr;
+  subtitle: string;
+  typeFrom: TimeExpr;
+  typeTo: TimeExpr;
+  fadeFrom: TimeExpr;
+  fadeTo: TimeExpr;
+};
+
+export type AudioCue = 'rain_on' | 'rain_off' | 'thunder' | 'distant_thunder' | 'burst' | 'shatter' | 'zap';
+
+export type PanelBeat =
+  | {
+      kind: 'lightning';
+      at: TimeExpr;
+      point: PointRef;
+      power: number;
+      flash: number;
+      audio?: 'distant' | 'thunder';
+    }
+  | {
+      kind: 'fx';
+      at: TimeExpr;
+      preset: string;
+      point: PointRef;
+      offset?: Vec3;
+      seed?: number;
+      scale?: number;
+      text?: string;
+    }
+  | {
+      kind: 'fx_repeat';
+      at: TimeExpr;
+      step: number;
+      count: number;
+      preset: string;
+      point: PointRef;
+      offset?: Vec3;
+      seed?: number;
+      scale?: number;
+    }
+  | {
+      kind: 'arc';
+      at: TimeExpr;
+      from: PointRef;
+      to: PointRef;
+      flash?: number;
+    }
+  | {
+      kind: 'look';
+      at: TimeExpr;
+      actors: string[];
+      x: number;
+      y: number;
+    }
+  | {
+      kind: 'state';
+      at: TimeExpr;
+      actors: string[];
+      state: string;
+    }
+  | {
+      kind: 'audio';
+      at: TimeExpr;
+      cue: AudioCue;
+      seconds?: number;
+      reverse?: boolean;
+    }
+  | {
+      kind: 'key_clicks';
+      from: TimeExpr;
+      until: TimeExpr;
+      hz: number;
+      chance: number;
+    };
+
+export type SceneTrack =
+  | {
+      kind: 'actor_visibility';
+      actor: string;
+      from: TimeExpr;
+      until?: TimeExpr;
+      visible: boolean;
+      hideWhenDead?: boolean;
+    }
+  | {
+      kind: 'actor_motion';
+      actor: string;
+      from: TimeExpr;
+      until?: TimeExpr;
+      span?: [TimeExpr, TimeExpr];
+      fromPos: PointRef;
+      toPos?: PointRef;
+      ease?: EaseName;
+      steps?: number;
+      arc?: number;
+      scaleFrom?: number;
+      scaleTo?: number;
+      stretchFrom?: [number, number];
+      stretchTo?: [number, number];
+      rotZFrom?: number;
+      rotZTo?: number;
+      deform?: 'none' | 'stretch_to_target' | 'squash_land';
+      hideWhenDead?: boolean;
+    }
+  | {
+      kind: 'actor_rig';
+      actor: string;
+      from: TimeExpr;
+      until?: TimeExpr;
+      typing?: number;
+      restRightArm?: boolean;
+      hideParts?: string[];
+    }
+  | {
+      kind: 'part_visibility';
+      target: string;
+      parts: string[];
+      from: TimeExpr;
+      until?: TimeExpr;
+      visible: boolean;
+    }
+  | {
+      kind: 'material_tint';
+      target: string;
+      zone: string;
+      from: TimeExpr;
+      until?: TimeExpr;
+      color: string;
+      glitchColors?: string[];
+      glitchHz?: number;
+    }
+  | {
+      kind: 'fixture';
+      fixture: string;
+      from: TimeExpr;
+      until?: TimeExpr;
+      growDur?: number;
+      steps?: number;
+      flickerHz?: number;
+      flickerEvery?: number;
+      flickerSkip?: number;
+      settleAfter?: number;
+    }
+  | {
+      kind: 'stage_light';
+      anchor: PointRef;
+      from: TimeExpr;
+      until: TimeExpr;
+      intensity: number;
+      intensityTo?: number;
+      ease?: 'linear' | 'quad' | 'in' | 'out';
+      blinkHz?: number;
+      blinkAmp?: number;
+    }
+  | {
+      kind: 'camera_shake';
+      from: TimeExpr;
+      until: TimeExpr;
+      amp: number;
+      ampTo?: number;
+    }
+  | {
+      kind: 'pixelate';
+      from: TimeExpr;
+      until: TimeExpr;
+      sizeFrom: number;
+      sizeTo: number;
+      steps?: number;
+      ease?: EaseName;
+    };
+
+export interface ComixPanelSpec {
+  id: string;
+  title: string;
+  from: TimeExpr;
+  until: TimeExpr;
+  snapshotAt?: TimeExpr;
+  layout: {
+    landscape: Rect4;
+    portrait: Rect4;
+  };
+  camera: PanelCameraSpec;
+  letters?: PanelLetter[];
+  beats?: PanelBeat[];
+  tracks?: SceneTrack[];
 }
 
-export interface PageTurnLetter {
-  kind: 'page_turn';
-  page: number;
-  from: MarkExpr;
-  to: MarkExpr;
-  /** `in` uses easeIn; `quad` uses t*t. Both are stepped by 8. */
+export interface PageTurnSpec {
+  from: TimeExpr;
+  to: TimeExpr;
   ease: 'in' | 'quad';
 }
 
-export interface PanelFlashLetter {
-  kind: 'panel_flash';
-  panel: string;
-  at: MarkExpr;
-  dur: number;
-  opacity: number;
-  /** After `dur`, fade this extra span from `opacity` (or 0.55 of it) down to 0. */
-  fade?: number;
-  fadeFrom?: number;
-  /** Once `at` is reached, opacity stays at max(span(at, at+dur), opacity) instead of cutting. */
-  hold?: boolean;
-  only?: string;
-}
-
-export interface InvertLetter {
-  kind: 'invert';
-  panel: string;
-  at: MarkExpr;
-  from: number;
-  to: number;
-}
-
-export type Letter =
-  | CaptionLetter
-  | MemeLetter
-  | SfxLetter
-  | SfxBurstLetter
-  | BubbleLetter
-  | CastBubblesLetter
-  | QueueLetter
-  | TagsLetter
-  | LinesLetter
-  | BrainLetter
-  | CardLetter
-  | PageTurnLetter
-  | PanelFlashLetter
-  | InvertLetter;
-
-export interface SplashSpec {
-  panel: string;
-  title: string;
-  at: MarkExpr;
-  keyAt: MarkExpr;
-  caption: { text: string; from: MarkExpr; typeFor: number };
-  rankColor: Record<string, string>;
-  rankWord: Record<string, string>;
-  labels: { rank: string; time: string; commands: string; shortcuts: string; press: string };
-  emptyShortcuts: string;
-  fallbackBackground: string;
-}
-
-export type Beat =
-  | { kind: 'lightning'; at: MarkExpr; point: string | Vec3; power: number; flash: number; audio?: 'thunder' | 'distant' }
-  | { kind: 'fx'; at: MarkExpr; preset: string; point: string; z?: number; dy?: number; seed: number; scale?: number; text?: string }
-  | { kind: 'fx_repeat'; at: MarkExpr; step: number; count: number; preset: string; point: string; z?: number; seed: number; scale?: number }
-  | { kind: 'look'; at: MarkExpr; actor?: string; role?: 'hero' | 'agent'; x: number; y: number }
-  | { kind: 'audio'; at: MarkExpr; cue: 'rain_on' | 'rain_off' | 'thunder' | 'burst' | 'shatter' | 'zap'; seconds?: number; reverse?: boolean }
-  | { kind: 'state'; at: MarkExpr; actor: string; state: string }
-  | { kind: 'arcs'; at: MarkExpr; step: number; count: number; y: number; z: number; flash: number }
-  | { kind: 'keys'; from: MarkExpr; until: MarkExpr; hz: number; chance: number }
-  | { kind: 'shatter_cast'; at: MarkExpr; fxFirst: string; fxRest: string; seed: number; scale: number; lift: number; z: number };
-
-export type EaseName = 'linear' | 'in' | 'out' | 'outBack';
-
-export interface ShotTrack {
-  panel: string;
-  from: Shot;
-  to?: Shot;
-  span?: [MarkExpr, MarkExpr];
-  ease?: EaseName;
-  /** Splash panel: choose by the panel's own aspect (taller than wide). */
-  portrait?: Shot;
-  landscape?: Shot;
-}
-
-export interface ShakeWindow {
-  at: MarkExpr;
-  dur: number;
-  amp: number;
-}
-
-export type PoseProgram =
-  | { kind: 'seated'; actor: string; typingUntil: MarkExpr; typingMidUntil?: MarkExpr; typingMid?: number; lantern?: boolean }
-  | {
-      kind: 'suck';
-      actor: string;
-      from: MarkExpr;
-      to: MarkExpr;
-      hideAt: MarkExpr;
-      target: string;
-      home: string;
-      recoilAt?: MarkExpr;
-      recoilDur?: number;
-      steps: number;
-    }
-  | { kind: 'rain'; until: MarkExpr }
-  | {
-      kind: 'monitor';
-      hideGlassAt: MarkExpr;
-      hideCodeAt: MarkExpr;
-      vortexFrom: MarkExpr;
-      vortexUntil: MarkExpr;
-      grow: number;
-      steps: number;
-      amberAt: MarkExpr;
-      amberOn: string;
-      amberOff: string;
-      glitch: Array<[MarkExpr, MarkExpr]>;
-      glitchHz: number;
-      glitchColors: string[];
-    }
-  | {
-      kind: 'emerge';
-      showFrom: MarkExpr;
-      hideAt: MarkExpr;
-      wakeAt: MarkExpr;
-      wakeDur: number;
-      riseAt: MarkExpr;
-      riseDur: number;
-      stagger: number;
-      leanFrom: MarkExpr;
-      leanTo: MarkExpr;
-      inScale: number;
-      awakeScale: number;
-      awakeSteps: number;
-      inZ: number;
-      outZ: number;
-      riseSteps: number;
-      slump: number;
-    }
-  | { kind: 'flight'; actor: string; from: MarkExpr; to: MarkExpr; origin: string; dest: string; arc: number; steps: number; originDy: number }
-  | {
-      kind: 'fling';
-      from: MarkExpr;
-      to: MarkExpr;
-      stagger: number;
-      origin: string;
-      originDy: number;
-      scale: number;
-      steps: number;
-      hideAt: MarkExpr;
-      z: number;
-    }
-  | { kind: 'screen_blaze'; until: MarkExpr; anchor: string; calm: number; blinkUntil: MarkExpr; blinkHz: number; blinkBase: number; blinkAmp: number }
-  | { kind: 'bolt_flicker'; id: string; at: MarkExpr; dur: number; hz: number; every: number; skip: number; settleAfter?: number }
-  | { kind: 'shake'; windows: ShakeWindow[]; pull?: { from: MarkExpr; until: MarkExpr; base: number; gain: number; spanFrom: MarkExpr; spanTo: MarkExpr } }
-  | {
-      kind: 'stage_flash';
-      anchor: string;
-      rules: Array<{ from: MarkExpr; until?: MarkExpr; dur?: number; amp?: number; hz?: number; add?: number; pull?: boolean; pullGain?: number }>;
-    }
-  | { kind: 'pixelate'; from: MarkExpr; to: MarkExpr; base: number; gain: number; steps: number };
-
-export interface PosesSpec {
-  programs: PoseProgram[];
-}
-
-/** One comix folder, assembled from its spec files. */
-export interface ComixPack {
+export interface ComixPageSpec {
   id: string;
+  index: number;
+  title: string;
+  summary: string;
+  from: number;
+  until: number;
+  cues?: Record<string, number>;
+  turn?: PageTurnSpec;
+  overlays?: PageOverlay[];
+  tracks?: SceneTrack[];
+  panels: ComixPanelSpec[];
+}
+
+export interface ComixPack {
   manifest: ComixManifest;
-  marks: Record<string, number>;
-  cast: CastSpec;
-  set: SetSpec;
-  pages: PageFile[];
-  letters: Letter[];
-  beats: Beat[];
-  camera: ShotTrack[];
-  poses: PosesSpec;
-  splash?: SplashSpec;
+  pages: ComixPageSpec[];
 }

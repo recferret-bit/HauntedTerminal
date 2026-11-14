@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Haunted Terminal - cinematics</title>
+    <title>Haunted Terminal - Comix Studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
     <style>
@@ -11,18 +11,22 @@
       #host { position: absolute; inset: 0; }
       #menu { position: absolute; inset: 0; display: grid; place-items: center; }
       #menu[hidden] { display: none; }
-      #menu div { display: grid; gap: 10px; text-align: center; }
-      #menu button { font: 700 18px "Chakra Petch", sans-serif; padding: 10px 22px; background: #ffd166; border: 3px solid #f4f1ea; cursor: pointer; }
-      #menu p { opacity: 0.7; max-width: 520px; line-height: 1.5; }
+      #menu .menu-box { display: grid; gap: 12px; text-align: center; max-width: 600px; padding: 24px; }
+      #menu h1 { margin: 0; font: 700 24px "Chakra Petch", sans-serif; color: #ffd166; letter-spacing: 0.04em; text-transform: uppercase; }
+      #menu-list { display: grid; gap: 10px; }
+      #menu button { font: 700 16px "Chakra Petch", sans-serif; padding: 10px 22px; background: #ffd166; color: #110e1b; border: 3px solid #f4f1ea; cursor: pointer; }
+      #menu button:hover { filter: brightness(1.07); }
+      #menu p, #menu a { opacity: 0.8; line-height: 1.5; color: #c8fff4; }
     </style>
   </head>
   <body>
     <div id="host"></div>
     <div id="menu" hidden>
-      <div>
-        <button data-play="intro" type="button">PLAY INTRO</button>
-        <button data-play="outro" type="button">PLAY OUTRO</button>
-        <p>?play=intro|outro &amp; t=&lt;seconds&gt; (freeze) &amp; muted=1 &amp; rank=S|A|B|C &amp; skippable=0</p>
+      <div class="menu-box">
+        <h1>Declarative Comix Studio</h1>
+        <div id="menu-list"></div>
+        <p>?play=&lt;slug&gt; &amp; t=&lt;seconds&gt; (freeze) &amp; draft=1 &amp; muted=1 &amp; rank=S|A|B|C &amp; skippable=0</p>
+        <p><a href="/comix-editor">Open Comix Editor (/comix-editor) ▸</a></p>
       </div>
     </div>
     <script type="module" src="/src/cinematic/preview.ts"></script>

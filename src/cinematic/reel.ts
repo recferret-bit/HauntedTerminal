@@ -1,62 +1,79 @@
 import type * as THREE from 'three';
 import type { ComicMaterial } from '../shaders/comic-material.js';
 import type { CineAudio } from './audio.js';
-import type { ComicPage, PanelDef } from './page.js';
+import { resolvePoint } from './expr.js';
+import type { ComicPage } from './page.js';
+import type { Runner } from './runner.js';
 import type { Rain } from './set.js';
-import type { CastActor, ComixPack } from './spec-types.js';
-import { resolveMark } from './expr.js';
+import { v3 } from './set.js';
+import type { ComixActorSpec, ComixPack, PointRef, StagePropSpec, Vec3 } from './spec-types.js';
 import type { Actor, CinematicStage } from './stage.js';
+import { activePanelAt, type ResolvedTimeline } from './timeline.js';
 
-/** One catalog model placed by the pack's cast. */
 export interface ComixActor {
-  spec: CastActor;
+  spec: ComixActorSpec;
   actor: Actor;
+  basePos: THREE.Vector3;
+  baseScale: number;
+  baseRotZ: number;
+  baseVisible: boolean;
 }
 
-export interface TimedPanel {
-  id: string;
-  at: number;
-  def: PanelDef;
+export interface ComixProp {
+  spec: StagePropSpec;
+  actor: Actor;
+  index: number;
 }
 
-/**
- * Live comix: the packed specs plus the stage, page and actors they built.
- * Poses and letters read this; they do not store their own timings.
- */
+export type ComixFixture =
+  | { kind: 'rain'; id: string; rain: Rain }
+  | { kind: 'bolt'; id: string; node: THREE.Object3D }
+  | { kind: 'vortex'; id: string; mesh: THREE.Mesh; w: number; h: number };
+
+export interface TrackedPartBase {
+  mesh: THREE.Mesh;
+  visible: boolean;
+}
+
+export interface TrackedZoneBase {
+  material: ComicMaterial;
+  hex: number;
+}
+
+/** Live runtime state for any declarative `ComixPack`. */
 export interface ComixWorld {
   pack: ComixPack;
+  timeline: ResolvedTimeline;
   page: ComicPage;
   stage: CinematicStage | null;
+  room: Actor | null;
   audio: CineAudio;
   sound: CineAudio;
   actors: Map<string, ComixActor>;
-  agents: ComixActor[];
-  points: Record<string, THREE.Vector3>;
-  monitor: { x: number; y: number; w: number; h: number } | null;
-  vortexInset: number;
-  glassParts: THREE.Mesh[];
-  codeParts: THREE.Mesh[];
-  screenParts: THREE.Mesh[];
-  glass?: ComicMaterial;
-  glassColor: number;
-  amber?: ComicMaterial;
-  rain: Rain | null;
-  bolts: Map<string, THREE.Object3D>;
-  vortex: THREE.Mesh | null;
-  panels: TimedPanel[];
+  props: Map<string, ComixProp>;
+  fixtures: Map<string, ComixFixture>;
+  partBases: TrackedPartBase[];
+  zoneBases: Map<string, TrackedZoneBase>;
   current: string;
   prev: number;
   kept: Set<string>;
 }
 
-/** Freeze-frame and comix-editor draft flags. Signatures of startIntro / startOutro stay the same. */
 export interface DebugOptions {
   freezeAt?: number;
-  /** Play `localStorage['ht-comix-draft']` when it is a draft of this comix. */
+  /** Play `localStorage['ht-comix-draft']` when it holds a draft of this comix. */
   draft?: boolean;
+  /** Embedded `/comix-editor` mode: hide in-page transport overlay and hold at `durationSec` instead of disposing WebGL. */
+  editor?: boolean;
+  /** Receives the live `Runner` handle for in-place seeking / replay in `/cinematic.html` and `/comix-editor`. */
+  onRunner?: (runner: Runner) => void;
+  /** Receives the live `ComixWorld` handle for editor camera inspection. */
+  onWorld?: (world: ComixWorld) => void;
+  /** Runs after every frame render so embedded editor selection overlays stay aligned with animated targets. */
+  onDraw?: (world: ComixWorld, t: number) => void;
 }
 
-/** Run stats the outro splash reads. Structural match for `OutroStats`. */
+/** Run stats consumed by any `stats_card` panel letter. */
 export interface ComixStats {
   rank: string;
   timeSec: number;
@@ -64,19 +81,11 @@ export interface ComixStats {
   shortcuts: string[];
 }
 
-export function markAt(world: ComixWorld, expr: string): number {
-  return resolveMark(expr, world.pack.marks);
+export function worldPoint(world: ComixWorld, ref: PointRef, offset?: Vec3): THREE.Vector3 {
+  const p = resolvePoint(ref, world.timeline.points, offset);
+  return v3(p.x, p.y, p.z);
 }
 
-export function pointAt(world: ComixWorld, id: string): THREE.Vector3 {
-  const point = world.points[id];
-  if (!point) throw new Error(`unknown comix point "${id}"`);
-  return point;
-}
-
-/** Latest panel whose `at` is <= t. Same rule as the old hardcoded `panelAt`. */
 export function panelAt(world: ComixWorld, t: number): string {
-  let id = world.panels[0]?.id ?? '';
-  for (const panel of world.panels) if (t >= panel.at) id = panel.id;
-  return id;
+  return activePanelAt(world.timeline, t).id;
 }

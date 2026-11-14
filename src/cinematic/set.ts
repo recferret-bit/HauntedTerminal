@@ -1,15 +1,12 @@
 import * as THREE from 'three';
 import { createComicMaterial, createVortexMaterial } from '../shaders/comic-material.js';
-import type { Vec3 } from '../procgen/index.js';
+import type { Vec3 as TupleVec3 } from '../procgen/index.js';
 import { hash, type Actor, type CinematicStage } from './stage.js';
 
-/** Hero parts that belong to the lantern (hidden at the desk: the lantern is a thing of the machine). */
-const LANTERN = /^lantern\./;
-
 interface PartBase {
-  pos: Vec3;
-  rot: Vec3;
-  scale: Vec3;
+  pos: TupleVec3;
+  rot: TupleVec3;
+  scale: TupleVec3;
 }
 
 function base(mesh: THREE.Mesh): PartBase {
@@ -22,34 +19,50 @@ function turnAbout(mesh: THREE.Mesh | undefined, pivot: [number, number], theta:
   const b = base(mesh);
   const dx = b.pos[0] - pivot[0];
   const dy = b.pos[1] - pivot[1];
-  const c = Math.cos(theta), s = Math.sin(theta);
+  const c = Math.cos(theta);
+  const s = Math.sin(theta);
   mesh.position.set(pivot[0] + dx * c - dy * s, pivot[1] + dx * s + dy * c, b.pos[2]);
   mesh.rotation.set(b.rot[0], b.rot[1], b.rot[2] + theta);
 }
 
+/** Every part of a model whose name equals `prefix` or starts with `prefix.` (`RoomBuilder` suffixes repeats). */
+export function partsNamed(actor: Actor, prefix: string): THREE.Mesh[] {
+  return [...actor.model.parts]
+    .filter(([name]) => name === prefix || name.startsWith(`${prefix}.`))
+    .map(([, m]) => m);
+}
+
 /**
- * The developer seated at the desk. Call after the animator has updated (it rewrites part transforms).
- * `typing` 0..1 reaches the screen-left arm to the keyboard and taps it; `lantern` shows the lantern arm
- * as authored, otherwise that arm hangs by his side.
+ * Generic limb/part rig pose applied after the animator updates:
+ * - `typing` (0..1): reaches `arm.l` / `hand.l` forward and taps on twos
+ * - `restRightArm`: rests `arm.r` / `hand.r` at the actor's side
+ * - `hideParts`: hides any model parts matching those prefixes
  */
-export function poseSeated(hero: Actor, t: number, typing: number, lantern: boolean): void {
-  const parts = hero.model.parts;
-  for (const [name, mesh] of parts) if (LANTERN.test(name)) mesh.visible = lantern;
+export function applyActorRig(
+  actor: Actor,
+  t: number,
+  typing: number,
+  restRightArm: boolean,
+  hideParts: readonly string[],
+): void {
+  for (const prefix of hideParts) {
+    for (const mesh of partsNamed(actor, prefix)) mesh.visible = false;
+  }
+  const parts = actor.model.parts;
   if (typing > 0) {
-    // Taps on twos: a new key every 1/9 s, pseudo-random depth.
     const beat = Math.floor(t * 9);
     const tap = hash(beat * 1.37) > 0.45 ? 0.08 : -0.03;
-    const theta = (0.86 + tap) * typing + 0.0 * (1 - typing);
+    const theta = (0.86 + tap) * typing;
     turnAbout(parts.get('arm.l'), [0.3, 1.04], theta);
     turnAbout(parts.get('hand.l'), [0.3, 1.04], theta);
   }
-  if (!lantern) {
+  if (restRightArm) {
     turnAbout(parts.get('arm.r'), [-0.28, 1.04], 0.92);
     turnAbout(parts.get('hand.r'), [-0.28, 1.04], 0.92);
   }
 }
 
-/** Rain behind the window glass: thin slanted streaks, moving on twos so it reads as drawn. */
+/** Rain streaks in a 2D world rectangle at depth `z`, stepped on twos so they read as drawn ink. */
 export class Rain {
   readonly group = new THREE.Group();
   private readonly drops: THREE.Mesh[] = [];
@@ -63,6 +76,7 @@ export class Rain {
       this.drops.push(m);
       this.group.add(m);
     }
+    this.group.visible = false;
     stage.scene.add(this.group);
   }
 
@@ -70,15 +84,15 @@ export class Rain {
     const ts = Math.floor(t * 12) / 12;
     const { x, y, w, h } = this.rect;
     this.drops.forEach((m, i) => {
-      const fall = (ts * 3.4 + hash(i * 3.1 + 0.7) * h) % (h - 0.3);
-      const px = x - w / 2 + 0.1 + hash(i * 7.7) * (w - 0.2) + fall * 0.28;
+      const fall = (ts * 3.4 + hash(i * 3.1 + 0.7) * h) % Math.max(0.2, h - 0.3);
+      const px = x - w / 2 + 0.1 + hash(i * 7.7) * Math.max(0.1, w - 0.2) + fall * 0.28;
       m.position.x = Math.min(x + w / 2 - 0.05, px);
       m.position.y = y + h / 2 - 0.35 - fall;
     });
   }
 }
 
-/** A purple shader vortex filling a rectangle (the monitor's broken screen). */
+/** Shader vortex filling a `(w, h)` plane at `at`. */
 export function makeVortex(stage: CinematicStage, at: THREE.Vector3, w: number, h: number): THREE.Mesh {
   const mat = stage.track(createVortexMaterial());
   const geo = stage.own(new THREE.SphereGeometry(0.5, 28, 18));
@@ -90,7 +104,7 @@ export function makeVortex(stage: CinematicStage, at: THREE.Vector3, w: number, 
   return mesh;
 }
 
-/** A jagged reverse bolt (outro): built once, flickers by time. */
+/** Additive jagged lightning bolt geometry between `from` and `to`. */
 export function makeBolt(stage: CinematicStage, from: THREE.Vector3, to: THREE.Vector3): THREE.Mesh {
   const geo = stage.lightning.buildJaggedBoltGeometry(from, to, 5, 0.035, true) ?? new THREE.BufferGeometry();
   stage.own(geo);
@@ -108,19 +122,13 @@ export function makeBolt(stage: CinematicStage, from: THREE.Vector3, to: THREE.V
   return mesh;
 }
 
-/** Every part of a model whose name starts with `prefix` (RoomBuilder suffixes repeats with `.2`, `.3`). */
-export function partsNamed(actor: Actor, prefix: string): THREE.Mesh[] {
-  return [...actor.model.parts].filter(([name]) => name === prefix || name.startsWith(`${prefix}.`)).map(([, m]) => m);
-}
-
 export function v3(x: number, y: number, z: number): THREE.Vector3 {
   return new THREE.Vector3(x, y, z);
 }
 
-/**
- * A drawn comic bolt: a flat zig-zag ribbon (cyan, glowing) with a paper core and an ink keyline, from
- * `from` to `to` in the page plane. Wide enough to survive the pixel-art pass, deterministic per `seed`.
- */
+const lerpN = (a: number, b: number, k: number): number => a + (b - a) * k;
+
+/** Drawn comic zig-zag ribbon bolt with ink keyline, cyan glow, and paper core. */
 export function makeComicBolt(stage: CinematicStage, from: THREE.Vector3, to: THREE.Vector3, seed: number): THREE.Group {
   const group = new THREE.Group();
   const steps = 7;
@@ -130,12 +138,12 @@ export function makeComicBolt(stage: CinematicStage, from: THREE.Vector3, to: TH
     const side = i === 0 || i === steps ? 0 : (i % 2 ? 1 : -1) * (0.08 + hash(seed + i * 3.7) * 0.08);
     centre.push(new THREE.Vector2(lerpN(from.x, to.x, k) + side, lerpN(from.y, to.y, k)));
   }
-  // A stroke with true perpendicular width (a diagonal zig never thins out), tapering to the tip.
   const ribbon = (width: number, tip: number): THREE.ShapeGeometry => {
     const left: THREE.Vector2[] = [];
     const right: THREE.Vector2[] = [];
     centre.forEach((p, i) => {
-      const a = centre[Math.max(0, i - 1)]!, b = centre[Math.min(steps, i + 1)]!;
+      const a = centre[Math.max(0, i - 1)]!;
+      const b = centre[Math.min(steps, i + 1)]!;
       const d = new THREE.Vector2(b.x - a.x, b.y - a.y).normalize();
       const w = lerpN(width, tip, i / steps) / 2;
       left.push(new THREE.Vector2(p.x - d.y * w, p.y + d.x * w));
@@ -156,5 +164,3 @@ export function makeComicBolt(stage: CinematicStage, from: THREE.Vector3, to: TH
   stage.scene.add(group);
   return group;
 }
-
-const lerpN = (a: number, b: number, k: number): number => a + (b - a) * k;

@@ -22,6 +22,8 @@ export interface CineScript {
   onPause?(paused: boolean): void;
   /** Whether the PAUSE / SKIP controls show at `t` (default: until `end`). */
   showControls?(t: number): boolean;
+  /** Reset world & DOM state back to `t = 0` so `seek` / `playFromStart` can replay on the same WebGL stage. */
+  reset?(): void;
 }
 
 export interface RunOptions {
@@ -30,6 +32,8 @@ export interface RunOptions {
   freezeAt?: number;
   /** Ignore input this long after start (the Enter that typed `exit` must not skip the outro). */
   inputGraceMs?: number;
+  /** Embedded editor mode: omit duplicate in-page PAUSE/SKIP overlay and hold at `end` without tearing down WebGL. */
+  editor?: boolean;
 }
 
 export interface Runner {
@@ -37,7 +41,14 @@ export interface Runner {
   /** Current cinematic time. */
   readonly time: number;
   readonly paused: boolean;
+  readonly frozen: boolean;
   setPaused(paused: boolean): void;
+  /** Deterministically jump to `targetSec` and freeze without reallocating WebGL. */
+  seek(targetSec: number): void;
+  /** Reset to `t = 0` and play live on the existing stage. */
+  playFromStart(): void;
+  /** Redraw the current frame without advancing time. */
+  redraw(): void;
   finish(): void;
 }
 
@@ -79,7 +90,7 @@ function syncPauseBtn(ctx: RunCtx): void {
   ctx.pauseBtn.textContent = ctx.paused ? '\u25B6 CONTINUE' : '\u275A\u275A PAUSE';
   ctx.pauseBtn.setAttribute('aria-pressed', String(ctx.paused));
   ctx.pauseBtn.setAttribute('aria-label', ctx.paused ? 'Continue (Space)' : 'Pause (Space)');
-  ctx.root.classList.toggle('htc-paused', ctx.paused);
+  ctx.root.classList.toggle('htc-paused', ctx.paused && !ctx.opts.editor);
 }
 
 function mountControls(ctx: RunCtx): void {
@@ -99,7 +110,7 @@ function mountControls(ctx: RunCtx): void {
   ctx.pauseBtn = pauseBtn;
   ctx.skipBtn = skipBtn;
   syncPauseBtn(ctx);
-  if (!ctx.frozen) ctx.root.appendChild(controls);
+  if (!ctx.frozen && !ctx.opts.editor) ctx.root.appendChild(controls);
   // Presses on the controls never reach the root's own pointer handler.
   controls.addEventListener('pointerdown', (e) => e.stopPropagation());
   pauseBtn.addEventListener('click', (e) => {
@@ -172,6 +183,7 @@ function pressRun(ctx: RunCtx, isSkipKey: boolean, fromButton = false): void {
 }
 
 function handleRunKey(ctx: RunCtx, e: KeyboardEvent): void {
+  if (ctx.opts.editor) return;
   // Browser shortcuts and F-keys pass through untouched; Tab moves focus between our buttons.
   if (e.metaKey || e.ctrlKey || e.altKey || /^F\d{1,2}$/.test(e.key)) return;
   if (e.key === 'Tab') {
@@ -198,6 +210,7 @@ function handleRunKey(ctx: RunCtx, e: KeyboardEvent): void {
 }
 
 function handleRunPointer(ctx: RunCtx, e: PointerEvent): void {
+  if (ctx.opts.editor) return;
   // Clicking the picture never skips; it only continues past the outro's held splash.
   if (ctx.t >= ctx.script.end && ctx.script.holdAtEnd) {
     e.preventDefault();
@@ -217,9 +230,16 @@ function frame(ctx: RunCtx, now: number): void {
       ctx.script.step(ctx.t, dt, true);
     }
     ctx.script.draw(ctx.t);
-    const show = ctx.script.showControls ? ctx.script.showControls(ctx.t) : ctx.t < ctx.script.end;
+    const show = !ctx.opts.editor && (ctx.script.showControls ? ctx.script.showControls(ctx.t) : ctx.t < ctx.script.end);
     ctx.controls.style.display = show ? '' : 'none';
-    if (!ctx.frozen && ctx.t >= ctx.script.end && !ctx.script.holdAtEnd) finishRun(ctx);
+    if (!ctx.frozen && ctx.t >= ctx.script.end && !ctx.script.holdAtEnd) {
+      if (ctx.opts.editor) {
+        ctx.t = ctx.script.end;
+        setRunPaused(ctx, true);
+      } else {
+        finishRun(ctx);
+      }
+    }
   } catch (err) {
     console.error('[cinematic] frame failed, ending it', err);
     finishRun(ctx);
@@ -271,6 +291,35 @@ function bindRunInput(ctx: RunCtx): void {
   }
 }
 
+function seekRun(ctx: RunCtx, targetSec: number): void {
+  if (ctx.finished) return;
+  ctx.frozen = true;
+  ctx.paused = false;
+  ctx.last = 0;
+  ctx.t = 0;
+  ctx.controls.remove();
+  ctx.root.classList.remove('htc-paused');
+  ctx.script.onPause?.(true);
+  ctx.script.reset?.();
+  ctx.script.layout();
+  fastForward(ctx, Math.max(0, targetSec));
+  ctx.script.draw(ctx.t);
+}
+
+function playRunFromStart(ctx: RunCtx): void {
+  if (ctx.finished) return;
+  ctx.frozen = false;
+  ctx.paused = false;
+  ctx.last = 0;
+  ctx.t = 0;
+  syncPauseBtn(ctx);
+  if (!ctx.opts.editor && !ctx.controls.isConnected) ctx.root.appendChild(ctx.controls);
+  ctx.script.onPause?.(false);
+  ctx.script.reset?.();
+  ctx.script.layout();
+  ctx.script.draw(0);
+}
+
 export function runCinematic(root: HTMLElement, script: CineScript, opts: RunOptions, cleanup: () => void): Runner {
   const ctx = createRunCtx(root, script, opts, cleanup);
   mountControls(ctx);
@@ -287,7 +336,13 @@ export function runCinematic(root: HTMLElement, script: CineScript, opts: RunOpt
     done: ctx.done,
     get time() { return ctx.t; },
     get paused() { return ctx.paused; },
+    get frozen() { return ctx.frozen; },
     setPaused: (p) => setRunPaused(ctx, p),
+    seek: (targetSec) => seekRun(ctx, targetSec),
+    playFromStart: () => playRunFromStart(ctx),
+    redraw: () => {
+      if (!ctx.finished) ctx.script.draw(ctx.t);
+    },
     finish: () => finishRun(ctx),
   };
 }

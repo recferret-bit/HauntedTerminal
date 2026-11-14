@@ -1,5 +1,5 @@
 import { isChapterSession } from '../chapters/chapter-session.js';
-import { playIntro, playOutro } from '../cinematic/index.js';
+import { findComixByRole, playComix, type ComixRole } from '../cinematic/index.js';
 import { mountDevInspector } from '../sandbox/dev-inspector.js';
 import { mountCodeEditor } from '../ui/code-editor.js';
 import { mountHud } from '../ui/hud.js';
@@ -171,15 +171,16 @@ export function bindPlayInput(play: Play): void {
   });
 }
 
-async function devCinematic(play: Play, which: 'intro' | 'outro'): Promise<void> {
+async function devCinematic(play: Play, role: ComixRole): Promise<void> {
   if (play.phase !== 'play' || play.reasons.has('cinematic')) return;
+  const seq = findComixByRole(role);
+  if (!seq) return;
   play.reasons.add('cinematic');
   play.syncPause();
   const muted = play.session.snapshot().muted;
-  if (which === 'outro') await powerOff();
-  await play.runCinematic(() =>
-    which === 'intro' ? playIntro(play.dom.cineEl, { muted }) : playOutro(play.dom.cineEl, statsFrom(play.session.snapshot()), { muted }),
-  );
+  if (role === 'ending') await powerOff();
+  const stats = role === 'ending' ? statsFrom(play.session.snapshot()) : undefined;
+  await play.runCinematic(() => playComix(seq.id, play.dom.cineEl, { muted }, stats));
   await powerOn(true);
   play.reasons.delete('cinematic');
   play.syncPause();
@@ -217,8 +218,8 @@ export function mountPlayDev(play: Play): void {
       if (play.phase === 'play') void play.shell.submit('cat intercom.sock');
     },
     onTerminalLog: (msg) => play.shell.printAbove(msg),
-    onPlayIntro: () => void devCinematic(play, 'intro'),
-    onPlayOutro: () => void devCinematic(play, 'outro'),
+    onPlayIntro: () => void devCinematic(play, 'opening'),
+    onPlayOutro: () => void devCinematic(play, 'ending'),
     onAssetsReloaded: () => play.paint(session.snapshot()),
     emit: (ev) => play.apply([ev], session.snapshot()),
   });

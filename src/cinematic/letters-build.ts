@@ -1,49 +1,59 @@
-import type {
-  BrainLetter, BubbleLetter, CaptionLetter, CardLetter, CastBubblesLetter, InvertLetter, Letter, LinesLetter,
-  PageTurnLetter, PanelFlashLetter, QueueLetter, SfxBurstLetter, SfxLetter, SplashSpec, TagsLetter,
-} from './spec-types.js';
-import { markAt, type ComixStats, type ComixWorld } from './reel.js';
+import { resolveTime } from './expr.js';
 import { Bubble, Caption, Meme, Sfx, el, jaggedPoints, svg } from './page.js';
+import type { ComixStats, ComixWorld } from './reel.js';
+import type { PanelLetter } from './spec-types.js';
+import type { ResolvedLetter, ResolvedOverlay, ResolvedPageTurn } from './timeline.js';
 
-export interface SfxNode { node: Sfx; spec: SfxLetter }
-export interface BurstNode { nodes: Sfx[]; spec: SfxBurstLetter }
-export interface BubbleNode { node: Bubble; spec: BubbleLetter }
-export interface CastNode { nodes: Bubble[]; spec: CastBubblesLetter }
-export interface QueueNode { head: HTMLElement; items: HTMLElement[]; spec: QueueLetter }
-export interface TagsNode { nodes: HTMLElement[]; spec: TagsLetter }
-export interface LinesNode { el: HTMLElement; spec: LinesLetter }
-export interface BrainNode { rows: HTMLElement[]; spec: BrainLetter }
-export interface CardNode { root: HTMLElement; big: HTMLElement; typed: HTMLElement; cursor: HTMLElement; spec: CardLetter }
-export interface SplashNode {
+type SpecOf<K extends PanelLetter['kind']> = Extract<PanelLetter, { kind: K }>;
+
+export interface CaptionNode { node: Caption; until: number }
+export interface BannerNode { node: Meme; until: number }
+export interface SfxNode { node: Sfx; item: ResolvedLetter; spec: SpecOf<'sfx'> }
+export interface SfxSeqNode { nodes: Sfx[]; item: ResolvedLetter; spec: SpecOf<'sfx_seq'> }
+export interface BubbleNode { node: Bubble; item: ResolvedLetter; spec: SpecOf<'bubble'>; until: number }
+export interface TagNode { el: HTMLElement; item: ResolvedLetter; spec: SpecOf<'label_tag'>; at: number; until: number; placed: boolean }
+export interface PromptListNode { head: HTMLElement; items: HTMLElement[]; from: number; spec: SpecOf<'prompt_list'> }
+export interface GlitchNode { el: HTMLElement; panelId: string; from: number; spec: SpecOf<'glitch_text'> }
+export interface TierNode { rows: HTMLElement[]; from: number; spec: SpecOf<'tier_stack'> }
+export interface FlashNode { panelId: string; at: number; spec: SpecOf<'panel_flash'> }
+export interface InvertNode { panelId: string; at: number; spec: SpecOf<'invert'> }
+export interface TitleCardNode { root: HTMLElement; big: HTMLElement; typed: HTMLElement; cursor: HTMLElement; overlay: ResolvedOverlay }
+export interface StatsCardNode {
+  panelId: string;
   root: HTMLDivElement;
   row: HTMLDivElement;
   rank: HTMLDivElement;
   press: HTMLDivElement;
-  caption: Caption;
-  spec: SplashSpec;
+  at: number;
+  keyAt: number;
+  spec: SpecOf<'stats_card'>;
 }
 
-/** DOM built once from the pack. Drawing it is `letters-draw.ts`. */
 export interface LetterNodes {
-  captions: Caption[];
-  memes: Meme[];
+  captions: CaptionNode[];
+  banners: BannerNode[];
   sfx: SfxNode[];
-  bursts: BurstNode[];
+  sfxSeqs: SfxSeqNode[];
   bubbles: BubbleNode[];
-  casts: CastNode[];
-  queues: QueueNode[];
-  tags: TagsNode[];
-  lines: LinesNode[];
-  brains: BrainNode[];
-  cards: CardNode[];
-  turns: PageTurnLetter[];
-  flashes: PanelFlashLetter[];
-  inverts: InvertLetter[];
-  splash: SplashNode | null;
+  tags: TagNode[];
+  prompts: PromptListNode[];
+  glitches: GlitchNode[];
+  tiers: TierNode[];
+  flashes: FlashNode[];
+  inverts: InvertNode[];
+  turns: ResolvedPageTurn[];
+  cards: TitleCardNode[];
+  statsCards: StatsCardNode[];
 }
 
-/** A brain in a 100 x 60 box, `glow` 0..3 rays and halo. Drawn here, not loaded as an image. */
-function brainSvg(glow: number): SVGSVGElement {
+const DEFAULT_STATS: ComixStats = {
+  rank: 'A',
+  timeSec: 1234,
+  commands: 87,
+  shortcuts: ['ls -la', 'chmod +x', 'kill -9', 'cd -', '!!', 'tab-complete'],
+};
+
+function tierBrainSvg(glow: number): SVGSVGElement {
   const s = svg('svg', { viewBox: '-20 -20 140 100' });
   if (glow >= 2) {
     for (let i = 0; i < 16; i++) {
@@ -51,9 +61,12 @@ function brainSvg(glow: number): SVGSVGElement {
       const r1 = 34;
       const r2 = glow === 3 ? 66 : 50;
       s.append(svg('line', {
-        x1: 50 + Math.cos(a) * r1, y1: 30 + Math.sin(a) * r1 * 0.75,
-        x2: 50 + Math.cos(a) * r2, y2: 30 + Math.sin(a) * r2 * 0.75,
-        stroke: glow === 3 ? '#fffbe8' : '#ffd166', 'stroke-width': glow === 3 ? 4 : 3,
+        x1: 50 + Math.cos(a) * r1,
+        y1: 30 + Math.sin(a) * r1 * 0.75,
+        x2: 50 + Math.cos(a) * r2,
+        y2: 30 + Math.sin(a) * r2 * 0.75,
+        stroke: glow === 3 ? '#fffbe8' : '#ffd166',
+        'stroke-width': glow === 3 ? 4 : 3,
       }));
     }
   }
@@ -68,121 +81,6 @@ function brainSvg(glow: number): SVGSVGElement {
   return s;
 }
 
-function emptyNodes(): LetterNodes {
-  return {
-    captions: [], memes: [], sfx: [], bursts: [], bubbles: [], casts: [], queues: [], tags: [],
-    lines: [], brains: [], cards: [], turns: [], flashes: [], inverts: [], splash: null,
-  };
-}
-
-function buildCaption(world: ComixWorld, spec: CaptionLetter): Caption {
-  const from = markAt(world, spec.from);
-  const node = new Caption(world.page.panel(spec.panel).overlay, spec.text, from, from + spec.typeFor, spec.mono ? 'htc-mono' : '');
-  if (spec.anchor === 'bottom') {
-    node.el.style.top = 'auto';
-    node.el.style.bottom = '3cqmin';
-  }
-  if (spec.maxWidth) node.el.style.maxWidth = spec.maxWidth;
-  return node;
-}
-
-function buildSfx(world: ComixWorld, spec: SfxLetter): SfxNode {
-  const node = new Sfx(world.page.panel(spec.panel).overlay, spec.text, markAt(world, spec.at), spec.hold, spec.color, spec.tilt);
-  return { node, spec };
-}
-
-function buildBurst(world: ComixWorld, spec: SfxBurstLetter): BurstNode {
-  const from = markAt(world, spec.from);
-  const parent = world.page.panel(spec.panel).overlay;
-  const nodes = spec.words.map((word, i) => {
-    const last = i === spec.words.length - 1 && spec.lastHold !== undefined;
-    return new Sfx(parent, word, from + i * spec.step, last ? spec.lastHold! : spec.hold, spec.color, spec.tilts[i] ?? 0);
-  });
-  return { nodes, spec };
-}
-
-function buildBubble(world: ComixWorld, spec: BubbleLetter): BubbleNode {
-  const panel = world.page.panel(spec.panel);
-  const node = new Bubble(panel.overlay, panel.tails, spec.text, markAt(world, spec.at), spec.style, spec.fill);
-  return { node, spec };
-}
-
-function buildCast(world: ComixWorld, spec: CastBubblesLetter): CastNode {
-  const panel = world.page.panel(spec.panel);
-  const at = markAt(world, spec.at);
-  const step = markAt(world, spec.step);
-  const nodes = world.agents.map((member) => new Bubble(
-    panel.overlay,
-    panel.tails,
-    `${member.spec.name ?? member.spec.id}: ${member.spec.mock ?? ''}`,
-    at + (member.spec.order ?? 0) * step,
-    'speech',
-  ));
-  return { nodes, spec };
-}
-
-function buildQueue(world: ComixWorld, spec: QueueLetter): QueueNode {
-  const queue = el('div', 'htc-queue');
-  const head = el('div', 'htc-qhead', `${spec.title} ${spec.base}`);
-  queue.append(head);
-  const items = spec.prompts.map((prompt) => {
-    const item = el('div', 'htc-qitem', prompt);
-    item.style.display = 'none';
-    queue.append(item);
-    return item;
-  });
-  world.page.panel(spec.panel).overlay.appendChild(queue);
-  return { head, items, spec };
-}
-
-function buildTags(world: ComixWorld, spec: TagsLetter): TagsNode {
-  const overlay = world.page.panel(spec.panel).overlay;
-  const nodes = world.agents.map((member) => {
-    const tag = el('div', 'htc-tag', member.spec.name ?? member.spec.id);
-    tag.style.display = 'none';
-    overlay.appendChild(tag);
-    return tag;
-  });
-  return { nodes, spec };
-}
-
-function buildLines(world: ComixWorld, spec: LinesLetter): LinesNode {
-  const node = el('div', 'htc-glitch');
-  world.page.panel(spec.panel).overlay.appendChild(node);
-  return { el: node, spec };
-}
-
-function buildBrain(world: ComixWorld, spec: BrainLetter): BrainNode {
-  const brain = el('div', 'htc-brain');
-  const rows = spec.rows.map((row) => {
-    const node = el('div', row.glow < 2 ? 'htc-light' : '');
-    node.style.background = row.bg;
-    const label = el('b');
-    label.append(el('small', '', row.who), document.createTextNode(row.what));
-    node.append(brainSvg(row.glow), label);
-    node.style.visibility = 'hidden';
-    brain.append(node);
-    return node;
-  });
-  world.page.panel(spec.panel).overlay.appendChild(brain);
-  return { rows, spec };
-}
-
-function buildCard(world: ComixWorld, spec: CardLetter): CardNode {
-  const root = el('div', 'htc-card');
-  const inner = el('div', 'htc-card-inner');
-  const big = el('div', 'htc-big', spec.title);
-  const path = el('div', 'htc-path');
-  const typed = el('span');
-  const cursor = el('span', 'htc-cursor');
-  path.append(typed, cursor);
-  inner.append(big, path);
-  root.append(inner);
-  root.style.display = 'none';
-  world.page.root.appendChild(root);
-  return { root, big, typed, cursor, spec };
-}
-
 function clock(sec: number): string {
   const s = Math.max(0, Math.round(sec));
   const h = Math.floor(s / 3600);
@@ -192,12 +90,8 @@ function clock(sec: number): string {
   return h > 0 ? `${h}:${two(mm)}:${two(ss)}` : `${two(mm)}:${two(ss)}`;
 }
 
-function addStat(dl: HTMLElement, key: string, value: string): void {
-  dl.append(el('dt', '', key), el('dd', '', value));
-}
-
-function buildSplash(world: ComixWorld, stats: ComixStats, spec: SplashSpec): SplashNode {
-  const panel = world.page.panel(spec.panel);
+function buildStatsCard(world: ComixWorld, item: ResolvedLetter, spec: SpecOf<'stats_card'>, stats: ComixStats): StatsCardNode {
+  const panel = world.page.panel(item.panelId);
   const root = el('div', 'htc-splash');
   const row = el('div', 'htc-stats-row');
   const rank = el('div', 'htc-rank');
@@ -210,11 +104,13 @@ function buildSplash(world: ComixWorld, stats: ComixStats, spec: SplashSpec): Sp
   );
   rank.append(burst, el('b', '', stats.rank));
   const dl = el('dl', 'htc-stats');
-  addStat(dl, spec.labels.rank, `${stats.rank} // ${spec.rankWord[stats.rank] ?? stats.rank}`);
-  addStat(dl, spec.labels.time, clock(stats.timeSec));
-  addStat(dl, spec.labels.commands, String(stats.commands));
-  const shortcuts = stats.shortcuts.length ? String(stats.shortcuts.length) : spec.emptyShortcuts;
-  addStat(dl, spec.labels.shortcuts, shortcuts);
+  const addStat = (key: string, val: string): void => {
+    dl.append(el('dt', '', key), el('dd', '', val));
+  };
+  addStat(spec.labels.rank, `${stats.rank} // ${spec.rankWord[stats.rank] ?? stats.rank}`);
+  addStat(spec.labels.time, clock(stats.timeSec));
+  addStat(spec.labels.commands, String(stats.commands));
+  addStat(spec.labels.shortcuts, stats.shortcuts.length ? String(stats.shortcuts.length) : spec.emptyShortcuts);
   row.append(rank, dl);
   const chips = el('div', 'htc-chips');
   for (const shortcut of stats.shortcuts.slice(0, 12)) chips.append(el('span', 'htc-chip', shortcut));
@@ -224,66 +120,188 @@ function buildSplash(world: ComixWorld, stats: ComixStats, spec: SplashSpec): Sp
   root.append(press);
   root.style.display = 'none';
   panel.overlay.appendChild(root);
-  const from = markAt(world, spec.caption.from);
-  const caption = new Caption(panel.overlay, spec.caption.text, from, from + spec.caption.typeFor);
-  return { root, row, rank, press, caption, spec };
+  if (!world.stage) panel.el.style.background = spec.fallbackBackground;
+  return {
+    panelId: item.panelId,
+    root,
+    row,
+    rank,
+    press,
+    at: resolveTime(spec.at, item.cues, item.panelFrom),
+    keyAt: resolveTime(spec.keyAt, item.cues, item.panelFrom),
+    spec,
+  };
 }
 
-function addLetter(world: ComixWorld, nodes: LetterNodes, letter: Letter): void {
-  switch (letter.kind) {
-    case 'caption':
-      nodes.captions.push(buildCaption(world, letter));
-      break;
-    case 'meme':
-      nodes.memes.push(new Meme(world.page.panel(letter.panel).overlay, letter.text, markAt(world, letter.at), letter.edge));
-      break;
-    case 'sfx':
-      nodes.sfx.push(buildSfx(world, letter));
-      break;
-    case 'sfx_burst':
-      nodes.bursts.push(buildBurst(world, letter));
-      break;
-    case 'bubble':
-      nodes.bubbles.push(buildBubble(world, letter));
-      break;
-    case 'cast_bubbles':
-      nodes.casts.push(buildCast(world, letter));
-      break;
-    case 'queue':
-      nodes.queues.push(buildQueue(world, letter));
-      break;
-    case 'tags':
-      nodes.tags.push(buildTags(world, letter));
-      break;
-    case 'lines':
-      nodes.lines.push(buildLines(world, letter));
-      break;
-    case 'brain':
-      nodes.brains.push(buildBrain(world, letter));
-      break;
-    case 'card':
-      nodes.cards.push(buildCard(world, letter));
-      break;
-    case 'page_turn':
-      nodes.turns.push(letter);
-      break;
+function tagLetterEl(node: HTMLElement, item: ResolvedLetter): void {
+  node.dataset.comixSelKind = 'letter';
+  node.dataset.comixPageId = item.pageId;
+  node.dataset.comixPanelId = item.panelId;
+  node.dataset.comixPanelIdx = String(item.panelIndex);
+  node.dataset.comixItemIdx = String(item.letterIndex);
+  node.dataset.comixLetterKind = item.spec.kind;
+}
+
+function buildTitleCard(world: ComixWorld, overlay: ResolvedOverlay): TitleCardNode {
+  const root = el('div', 'htc-card');
+  root.dataset.comixSelKind = 'overlay';
+  root.dataset.comixPageId = overlay.pageId;
+  root.dataset.comixItemIdx = String(overlay.overlayIndex);
+  root.dataset.comixOverlayTitle = overlay.title;
+  const inner = el('div', 'htc-card-inner');
+  const big = el('div', 'htc-big', overlay.title);
+  const path = el('div', 'htc-path');
+  const typed = el('span');
+  const cursor = el('span', 'htc-cursor');
+  path.append(typed, cursor);
+  inner.append(big, path);
+  root.append(inner);
+  root.style.display = 'none';
+  world.page.root.appendChild(root);
+  return { root, big, typed, cursor, overlay };
+}
+
+function addPanelLetter(world: ComixWorld, nodes: LetterNodes, item: ResolvedLetter, stats: ComixStats): void {
+  const { panelId, cues, panelFrom, spec } = item;
+  const panel = world.page.panel(panelId);
+  const time = (expr: string): number => resolveTime(expr, cues, panelFrom);
+  switch (spec.kind) {
+    case 'caption': {
+      const from = time(spec.from);
+      const until = spec.until !== undefined ? time(spec.until) : Infinity;
+      const node = new Caption(panel.overlay, spec.text, from, from + spec.typeDur, spec.mono ? 'htc-mono' : '');
+      if (spec.position === 'bottom') {
+        node.el.style.top = 'auto';
+        node.el.style.bottom = '3cqmin';
+      }
+      if (spec.maxWidth) node.el.style.maxWidth = spec.maxWidth;
+      tagLetterEl(node.el, item);
+      nodes.captions.push({ node, until });
+      return;
+    }
+    case 'banner': {
+      const until = spec.until !== undefined ? time(spec.until) : Infinity;
+      const node = new Meme(panel.overlay, spec.text, time(spec.at), spec.edge);
+      tagLetterEl(node.el, item);
+      nodes.banners.push({ node, until });
+      return;
+    }
+    case 'sfx': {
+      const node = new Sfx(panel.overlay, spec.text, time(spec.at), spec.hold, spec.color, spec.tilt);
+      tagLetterEl(node.el, item);
+      nodes.sfx.push({ node, item, spec });
+      return;
+    }
+    case 'sfx_seq': {
+      const from = time(spec.from);
+      const list = spec.words.map((w, i) => {
+        const last = i === spec.words.length - 1 && spec.lastHold !== undefined;
+        const sfxNode = new Sfx(panel.overlay, w, from + i * spec.step, last ? spec.lastHold! : spec.hold, spec.color, spec.tilts[i] ?? 0);
+        tagLetterEl(sfxNode.el, item);
+        return sfxNode;
+      });
+      nodes.sfxSeqs.push({ nodes: list, item, spec });
+      return;
+    }
+    case 'bubble': {
+      const until = spec.until !== undefined ? time(spec.until) : Infinity;
+      const node = new Bubble(panel.overlay, panel.tails, spec.text, time(spec.at), spec.style, spec.fill);
+      tagLetterEl(node.el, item);
+      nodes.bubbles.push({ node, item, spec, until });
+      return;
+    }
+    case 'label_tag': {
+      const tag = el('div', 'htc-tag', spec.text);
+      tag.style.display = 'none';
+      tagLetterEl(tag, item);
+      panel.overlay.appendChild(tag);
+      const until = spec.until !== undefined ? time(spec.until) : Infinity;
+      nodes.tags.push({ el: tag, item, spec, at: time(spec.at), until, placed: false });
+      return;
+    }
+    case 'prompt_list': {
+      const box = el('div', 'htc-queue');
+      tagLetterEl(box, item);
+      const head = el('div', 'htc-qhead', `${spec.title} ${spec.baseCount}`);
+      box.append(head);
+      const items = spec.items.map((txt) => {
+        const row = el('div', 'htc-qitem', txt);
+        row.style.display = 'none';
+        box.append(row);
+        return row;
+      });
+      panel.overlay.appendChild(box);
+      nodes.prompts.push({ head, items, from: time(spec.from), spec });
+      return;
+    }
+    case 'glitch_text': {
+      const node = el('div', 'htc-glitch');
+      tagLetterEl(node, item);
+      panel.overlay.appendChild(node);
+      nodes.glitches.push({ el: node, panelId, from: time(spec.from), spec });
+      return;
+    }
+    case 'tier_stack': {
+      const brain = el('div', 'htc-brain');
+      tagLetterEl(brain, item);
+      const rows = spec.rows.map((r) => {
+        const div = el('div', r.glow < 2 ? 'htc-light' : '');
+        div.style.background = r.bg;
+        const label = el('b');
+        label.append(el('small', '', r.who), document.createTextNode(r.what));
+        div.append(tierBrainSvg(r.glow), label);
+        div.style.visibility = 'hidden';
+        brain.append(div);
+        return div;
+      });
+      panel.overlay.appendChild(brain);
+      nodes.tiers.push({ rows, from: time(spec.from), spec });
+      return;
+    }
     case 'panel_flash':
-      nodes.flashes.push(letter);
-      break;
+      nodes.flashes.push({ panelId, at: time(spec.at), spec });
+      return;
     case 'invert':
-      nodes.inverts.push(letter);
-      break;
-    default:
-      break;
+      nodes.inverts.push({ panelId, at: time(spec.at), spec });
+      return;
+    case 'stats_card': {
+      const card = buildStatsCard(world, item, spec, stats);
+      tagLetterEl(card.root, item);
+      nodes.statsCards.push(card);
+      return;
+    }
   }
 }
 
 export function buildLetters(world: ComixWorld, stats?: ComixStats): LetterNodes {
-  const nodes = emptyNodes();
-  for (const letter of world.pack.letters) addLetter(world, nodes, letter);
-  if (world.pack.splash && stats) nodes.splash = buildSplash(world, stats, world.pack.splash);
-  if (!world.stage && world.pack.splash) {
-    world.page.panel(world.pack.splash.panel).el.style.background = world.pack.splash.fallbackBackground;
-  }
+  const nodes: LetterNodes = {
+    captions: [],
+    banners: [],
+    sfx: [],
+    sfxSeqs: [],
+    bubbles: [],
+    tags: [],
+    prompts: [],
+    glitches: [],
+    tiers: [],
+    flashes: [],
+    inverts: [],
+    turns: [...world.timeline.turns],
+    cards: [],
+    statsCards: [],
+  };
+  const resolvedStats = stats ?? DEFAULT_STATS;
+  for (const letter of world.timeline.letters) addPanelLetter(world, nodes, letter, resolvedStats);
+  for (const overlay of world.timeline.overlays) nodes.cards.push(buildTitleCard(world, overlay));
   return nodes;
+}
+
+export function resetLetterNodes(nodes: LetterNodes): void {
+  for (const s of nodes.sfx) s.node.reset();
+  for (const seq of nodes.sfxSeqs) for (const node of seq.nodes) node.reset();
+  for (const b of nodes.bubbles) b.node.reset();
+  for (const tag of nodes.tags) {
+    tag.placed = false;
+    tag.el.style.display = 'none';
+  }
 }

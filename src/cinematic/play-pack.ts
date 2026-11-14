@@ -1,165 +1,147 @@
 import type * as THREE from 'three';
 import type { ZoneId } from '../procgen/core/palette.js';
-import type { ComicMaterial } from '../shaders/comic-material.js';
 import { CineAudio, safeAudio } from './audio.js';
 import { stepBeats } from './beats.js';
-import { cssHex, resolveMark } from './expr.js';
-import { buildLetters, type LetterNodes } from './letters-build.js';
+import { resolvePoint } from './expr.js';
+import { buildLetters, resetLetterNodes, type LetterNodes } from './letters-build.js';
 import { drawLetterNodes } from './letters-draw.js';
 import { ComicPage, type PanelDef } from './page.js';
-import { poseBody } from './pose-body.js';
-import { poseLight, poseShot } from './pose-light.js';
+import type { ComixActor, ComixFixture, ComixProp, ComixStats, ComixWorld, DebugOptions, TrackedPartBase, TrackedZoneBase } from './reel.js';
 import { runCinematic, type CineScript } from './runner.js';
-import { markAt, type ComixActor, type ComixStats, type ComixWorld, type DebugOptions, type TimedPanel } from './reel.js';
 import { makeBolt, makeComicBolt, makeVortex, partsNamed, Rain, v3 } from './set.js';
-import type { ComixPack, PoseProgram } from './spec-types.js';
-import { CinematicStage, fitPanelStage, span, type Actor } from './stage.js';
+import type { ComixPack } from './spec-types.js';
+import { CinematicStage, fitPanelStage, type Actor } from './stage.js';
+import { compileTimeline, resolveSkipTarget, type ResolvedTimeline } from './timeline.js';
+import { poseComix } from './tracks.js';
 
 export type { DebugOptions };
 
-function suckPull(world: ComixWorld, t: number): number {
-  for (const program of world.pack.poses.programs) {
-    if (program.kind === 'suck') return span(t, markAt(world, program.from), markAt(world, program.to));
-  }
-  return 0;
+function buildPageDom(host: HTMLElement, timeline: ResolvedTimeline): ComicPage {
+  const defs: PanelDef[] = timeline.panels.map((p) => ({
+    id: p.id,
+    page: p.pageIndex,
+    landscape: p.landscape,
+    portrait: p.portrait,
+  }));
+  return new ComicPage(host, defs, timeline.pageCount);
 }
 
-/** Poses are a pure function of t. Body programs move actors; light programs do not. */
-export function poseComix(world: ComixWorld, t: number): void {
-  const stage = world.stage;
-  if (!stage) return;
-  stage.shake = 0;
-  stage.flash = 0;
-  poseShot(world, t);
-  const pull = suckPull(world, t);
-  for (const program of world.pack.poses.programs) applyProgram(world, program, t, pull);
-}
-
-function applyProgram(world: ComixWorld, program: PoseProgram, t: number, pull: number): void {
-  if (!poseBody(world, program, t)) poseLight(world, program, t, pull);
-}
-
-function buildPage(host: HTMLElement, pack: ComixPack): { page: ComicPage; panels: TimedPanel[] } {
-  const defs: PanelDef[] = [];
-  const panels: TimedPanel[] = [];
-  for (const file of [...pack.pages].sort((a, b) => a.page - b.page)) {
-    if (file.page < 0 || file.page >= pack.manifest.pageCount) {
-      throw new Error(`comix page ${file.page} is outside pageCount ${pack.manifest.pageCount}`);
-    }
-    for (const panel of file.panels) {
-      if (panels.some((have) => have.id === panel.id)) throw new Error(`duplicate comix panel "${panel.id}"`);
-      const def: PanelDef = { id: panel.id, page: file.page, landscape: panel.landscape, portrait: panel.portrait };
-      defs.push(def);
-      panels.push({ id: panel.id, at: resolveMark(panel.at, pack.marks), def });
-    }
-  }
-  panels.sort((a, b) => a.at - b.at);
-  return { page: new ComicPage(host, defs, pack.manifest.pageCount), panels };
-}
-
-function buildPoints(pack: ComixPack): Record<string, THREE.Vector3> {
-  const points: Record<string, THREE.Vector3> = {};
-  for (const [id, point] of Object.entries(pack.set.points)) points[id] = v3(point.x, point.y, point.z);
-  return points;
-}
-
-function buildCast(stage: CinematicStage, pack: ComixPack, points: Record<string, THREE.Vector3>): { actors: Map<string, ComixActor>; agents: ComixActor[] } {
+function buildCast(stage: CinematicStage, pack: ComixPack, timeline: ResolvedTimeline): Map<string, ComixActor> {
   const actors = new Map<string, ComixActor>();
-  const agents: ComixActor[] = [];
-  const flying = new Set(pack.poses.programs.flatMap((program) => (program.kind === 'flight' ? [program.actor] : [])));
-  for (const spec of pack.cast.actors) {
+  for (const spec of pack.manifest.cast) {
     const actor = stage.addModel(spec.model, 1);
-    const member: ComixActor = { spec, actor };
-    actors.set(spec.id, member);
-    if (spec.role === 'agent') agents.push(member);
-    if (spec.home) {
-      const home = points[spec.home];
-      if (!home) throw new Error(`unknown comix point "${spec.home}"`);
-      actor.model.group.position.copy(home);
-    }
+    const pos = spec.at ? resolvePoint(spec.at, timeline.points) : { x: 0, y: 0, z: 0 };
+    const basePos = v3(pos.x, pos.y, pos.z);
+    const baseScale = spec.scale ?? 1;
+    const baseRotZ = spec.rotationZ ?? 0;
+    const baseVisible = spec.visible !== false;
+    actor.model.group.position.copy(basePos);
+    actor.model.group.scale.setScalar(baseScale);
+    actor.model.group.rotation.z = baseRotZ;
+    actor.model.group.visible = baseVisible;
     if (spec.look) actor.animator.setLook(spec.look[0], spec.look[1]);
-    actor.model.group.visible = spec.role === 'agent' ? false : !flying.has(spec.id);
+    actors.set(spec.id, { spec, actor, basePos, baseScale, baseRotZ, baseVisible });
   }
-  return { actors, agents };
+  return actors;
 }
 
-function zoneMat(room: Actor, name: string | undefined): ComicMaterial | undefined {
-  if (!name) return undefined;
-  return room.model.materials.get(name as ZoneId);
+function buildFixtures(stage: CinematicStage, pack: ComixPack, timeline: ResolvedTimeline): Map<string, ComixFixture> {
+  const fixtures = new Map<string, ComixFixture>();
+  for (const spec of pack.manifest.stage.fixtures ?? []) {
+    if (spec.kind === 'rain') {
+      fixtures.set(spec.id, {
+        kind: 'rain',
+        id: spec.id,
+        rain: new Rain(stage, { x: spec.x, y: spec.y, w: spec.w, h: spec.h }, spec.z, spec.drops ?? 26),
+      });
+    } else if (spec.kind === 'bolt') {
+      const from = resolvePoint(spec.from, timeline.points);
+      const to = resolvePoint(spec.to, timeline.points);
+      const node = spec.style === 'comic'
+        ? makeComicBolt(stage, v3(from.x, from.y, from.z), v3(to.x, to.y, to.z), spec.seed ?? 1)
+        : makeBolt(stage, v3(from.x, from.y, from.z), v3(to.x, to.y, to.z));
+      fixtures.set(spec.id, { kind: 'bolt', id: spec.id, node });
+    } else {
+      const at = resolvePoint(spec.at, timeline.points);
+      const mesh = makeVortex(stage, v3(at.x, at.y, spec.z), spec.w, spec.h);
+      fixtures.set(spec.id, { kind: 'vortex', id: spec.id, mesh, w: spec.w, h: spec.h });
+    }
+  }
+  return fixtures;
 }
 
-function buildParts(room: Actor, pack: ComixPack): Pick<ComixWorld, 'glassParts' | 'codeParts' | 'screenParts' | 'glass' | 'glassColor' | 'amber'> {
-  const parts = pack.set.parts;
-  const glass = zoneMat(room, parts?.glassMaterial);
-  const color = glass?.uniforms.uColor?.value as THREE.Color | undefined;
-  return {
-    glassParts: parts?.glass ? partsNamed(room, parts.glass) : [],
-    codeParts: (parts?.code ?? []).flatMap((prefix) => partsNamed(room, prefix)),
-    screenParts: parts?.screen ? partsNamed(room, parts.screen) : [],
-    glass,
-    glassColor: color?.getHex() ?? 0xc8fff4,
-    amber: zoneMat(room, parts?.amberMaterial),
+function collectTrackBases(room: Actor, actors: Map<string, ComixActor>, timeline: ResolvedTimeline): {
+  partBases: TrackedPartBase[];
+  zoneBases: Map<string, TrackedZoneBase>;
+} {
+  const seenParts = new Set<THREE.Mesh>();
+  const partBases: TrackedPartBase[] = [];
+  const zoneBases = new Map<string, TrackedZoneBase>();
+
+  for (const tr of timeline.tracks) {
+    const spec = tr.spec;
+    if (spec.kind === 'part_visibility') {
+      const target = spec.target === 'room' ? room : actors.get(spec.target)?.actor;
+      if (!target) continue;
+      for (const prefix of spec.parts) {
+        for (const mesh of partsNamed(target, prefix)) {
+          if (seenParts.has(mesh)) continue;
+          seenParts.add(mesh);
+          partBases.push({ mesh, visible: mesh.visible });
+        }
+      }
+    } else if (spec.kind === 'material_tint') {
+      const key = `${spec.target}:${spec.zone}`;
+      if (zoneBases.has(key)) continue;
+      const target = spec.target === 'room' ? room : actors.get(spec.target)?.actor;
+      const material = target?.model.materials.get(spec.zone as ZoneId);
+      const color = material?.uniforms.uColor?.value as THREE.Color | undefined;
+      if (material && color) zoneBases.set(key, { material, hex: color.getHex() });
+    }
+  }
+  return { partBases, zoneBases };
+}
+
+function buildWorld(pack: ComixPack, timeline: ResolvedTimeline, page: ComicPage, stage: CinematicStage | null, audio: CineAudio): ComixWorld {
+  const base: ComixWorld = {
+    pack,
+    timeline,
+    page,
+    stage,
+    room: null,
+    audio,
+    sound: safeAudio(audio),
+    actors: new Map(),
+    props: new Map(),
+    fixtures: new Map(),
+    partBases: [],
+    zoneBases: new Map(),
+    current: '',
+    prev: 0,
+    kept: new Set(),
   };
-}
-
-function buildEffects(stage: CinematicStage, pack: ComixPack, points: Record<string, THREE.Vector3>): Pick<ComixWorld, 'rain' | 'bolts' | 'vortex' | 'vortexInset' | 'monitor'> {
-  const set = pack.set;
-  const bolts = new Map<string, THREE.Object3D>();
-  for (const bolt of set.bolts ?? []) {
-    const from = v3(bolt.from.x, bolt.from.y, bolt.from.z);
-    const to = v3(bolt.to.x, bolt.to.y, bolt.to.z);
-    bolts.set(bolt.id, bolt.style === 'comic' ? makeComicBolt(stage, from, to, bolt.seed ?? 1) : makeBolt(stage, from, to));
-  }
-  const monitor = set.monitor ?? null;
-  let vortex: THREE.Mesh | null = null;
-  if (set.vortex && monitor) {
-    const at = points[set.vortex.at];
-    if (!at) throw new Error(`unknown comix point "${set.vortex.at}"`);
-    vortex = makeVortex(stage, v3(at.x, at.y, set.vortex.z), monitor.w - set.vortex.inset, monitor.h - set.vortex.inset);
-  }
-  return {
-    rain: set.rain ? new Rain(stage, set.rain, set.rain.z) : null,
-    bolts,
-    vortex,
-    vortexInset: set.vortex?.inset ?? 0,
-    monitor,
-  };
-}
-
-function addRoom(stage: CinematicStage, pack: ComixPack, points: Record<string, THREE.Vector3>): Actor {
-  const room = stage.addModel(pack.manifest.room, 1);
-  for (const prop of pack.set.props ?? []) {
-    const actor = stage.addModel(prop.model, 1);
-    const at = points[prop.at];
-    if (!at) throw new Error(`unknown comix point "${prop.at}"`);
-    actor.model.group.position.copy(at);
-  }
-  return room;
-}
-
-function blankWorld(pack: ComixPack, page: ComicPage, panels: TimedPanel[], stage: CinematicStage | null, audio: CineAudio, points: Record<string, THREE.Vector3>): ComixWorld {
-  return {
-    pack, page, stage, audio, sound: safeAudio(audio), points,
-    actors: new Map(), agents: [], monitor: pack.set.monitor ?? null, vortexInset: pack.set.vortex?.inset ?? 0,
-    glassParts: [], codeParts: [], screenParts: [], glassColor: 0xc8fff4,
-    rain: null, bolts: new Map(), vortex: null, panels, current: '', prev: 0, kept: new Set(),
-  };
-}
-
-function buildWorld(pack: ComixPack, page: ComicPage, panels: TimedPanel[], stage: CinematicStage | null, audio: CineAudio): ComixWorld {
-  const points = buildPoints(pack);
-  const world = blankWorld(pack, page, panels, stage, audio, points);
-  if (!stage) return world;
-  stage.setBackground(cssHex(pack.manifest.background));
-  const room = addRoom(stage, pack, points);
-  const cast = buildCast(stage, pack, points);
-  return { ...world, ...cast, ...buildParts(room, pack), ...buildEffects(stage, pack, points) };
+  if (!stage) return base;
+  stage.clampToRoom = timeline.clampToRoom;
+  stage.setBackground(timeline.backgroundHex);
+  const room = stage.addModel(pack.manifest.stage.room, 1);
+  const props = new Map<string, ComixProp>();
+  (pack.manifest.stage.props ?? []).forEach((prop, index) => {
+    const placed = stage.addModel(prop.model, 1);
+    const pos = resolvePoint(prop.at, timeline.points);
+    placed.model.group.position.set(pos.x, pos.y, pos.z);
+    if (prop.scale !== undefined) placed.model.group.scale.setScalar(prop.scale);
+    props.set(prop.id, { spec: prop, actor: placed, index });
+  });
+  const actors = buildCast(stage, pack, timeline);
+  const fixtures = buildFixtures(stage, pack, timeline);
+  const { partBases, zoneBases } = collectTrackBases(room, actors, timeline);
+  return { ...base, room, actors, props, fixtures, partBases, zoneBases };
 }
 
 function cutTo(world: ComixWorld, letters: LetterNodes, to: string, at: number): void {
   const stage = world.stage;
   if (stage && world.current && !world.kept.has(world.current)) {
-    const before = at - 1e-3;
+    const before = Math.max(0, at - 1e-3);
     poseComix(world, before);
     stage.render(before);
     drawLetterNodes(world, letters, before);
@@ -168,6 +150,7 @@ function cutTo(world: ComixWorld, letters: LetterNodes, to: string, at: number):
   world.page.show(to);
   if (stage) world.page.mount(to, stage.canvas);
   world.current = to;
+  world.page.root.dataset.activePanel = to;
   if (stage && world.current) fitPanelStage(stage, world.page, world.current);
 }
 
@@ -182,96 +165,128 @@ function snapKept(world: ComixWorld, letters: LetterNodes, id: string, t: number
 }
 
 function stepWorld(world: ComixWorld, letters: LetterNodes, t: number, dt: number, live: boolean): void {
-  for (let i = 1; i < world.panels.length; i++) {
-    const panel = world.panels[i]!;
-    if (world.prev < panel.at && t >= panel.at) cutTo(world, letters, panel.id, panel.at);
+  const panels = world.timeline.panels;
+  for (let i = 1; i < panels.length; i++) {
+    const panel = panels[i]!;
+    if (world.prev < panel.from && t >= panel.from) cutTo(world, letters, panel.id, panel.from);
   }
-  for (const frame of world.pack.manifest.keyframes ?? []) {
-    const at = markAt(world, frame.at);
-    if (world.prev < at && t >= at && world.current === frame.panel) snapKept(world, letters, frame.panel, t);
+  for (const panel of panels) {
+    if (panel.snapshotAt !== undefined && world.prev < panel.snapshotAt && t >= panel.snapshotAt && world.current === panel.id) {
+      snapKept(world, letters, panel.id, t);
+    }
   }
   if (world.stage) stepBeats(world, t, live);
   world.stage?.step(dt);
   world.prev = t;
 }
 
-function drawWorld(world: ComixWorld, letters: LetterNodes, t: number): void {
-  poseComix(world, t);
-  world.stage?.render(t);
-  drawLetterNodes(world, letters, t);
+function resetWorld(world: ComixWorld, letters: LetterNodes): void {
+  world.kept.clear();
+  world.prev = 0;
+  world.current = '';
+  world.page.reset();
+  world.stage?.clearEffects();
+  resetLetterNodes(letters);
+  for (const member of world.actors.values()) {
+    member.actor.animator.setState('idle');
+    member.actor.animator.setLook(member.spec.look?.[0] ?? 0, member.spec.look?.[1] ?? 0);
+    member.actor.animator.update(0);
+  }
+  const first = world.timeline.panels[0]!;
+  cutTo(world, letters, first.id, first.from);
 }
 
-function layoutWorld(world: ComixWorld): void {
-  world.page.layout();
-  if (world.stage && world.current) fitPanelStage(world.stage, world.page, world.current);
-}
-
-function skipPack(world: ComixWorld, t: number): number | 'end' {
-  const skip = world.pack.manifest.skip;
-  if (skip === 'end') return 'end';
-  for (const rule of skip) if (t < markAt(world, rule.before)) return markAt(world, rule.to);
-  return t;
-}
-
-function makeScript(world: ComixWorld, letters: LetterNodes): CineScript {
-  const keyFrom = world.pack.manifest.acceptsKeyFrom;
+function makeScript(world: ComixWorld, letters: LetterNodes, onDraw?: (world: ComixWorld, t: number) => void): CineScript {
+  const { timeline } = world;
   return {
-    end: markAt(world, world.pack.manifest.end),
-    holdAtEnd: world.pack.manifest.holdAtEnd,
+    end: timeline.durationSec,
+    holdAtEnd: timeline.holdAtEnd,
     step: (t, dt, live) => stepWorld(world, letters, t, dt, live),
-    draw: (t) => drawWorld(world, letters, t),
-    layout: () => layoutWorld(world),
-    skipTo: (t) => skipPack(world, t),
-    acceptsKey: keyFrom ? (t) => t >= markAt(world, keyFrom) : undefined,
+    draw: (t) => {
+      poseComix(world, t);
+      world.stage?.render(t);
+      drawLetterNodes(world, letters, t);
+      onDraw?.(world, t);
+    },
+    layout: () => {
+      world.page.layout();
+      if (world.stage && world.current) fitPanelStage(world.stage, world.page, world.current);
+    },
+    skipTo: (t) => resolveSkipTarget(timeline, t),
+    acceptsKey: timeline.acceptsKeyFrom !== undefined ? (t) => t >= timeline.acceptsKeyFrom! : undefined,
     onPause: (paused) => world.audio.setPaused(paused),
+    reset: () => resetWorld(world, letters),
   };
 }
 
-function openStage(pack: ComixPack): { stage: CinematicStage | null; skip: boolean } {
+function openStage(timeline: ResolvedTimeline): { stage: CinematicStage | null; skip: boolean } {
   try {
     return { stage: new CinematicStage(), skip: false };
   } catch (err) {
-    const splash = !!pack.splash;
-    console.warn(splash ? '[cinematic] no WebGL, showing the stats without the scene' : '[cinematic] no WebGL, skipping the intro', err);
-    return { stage: null, skip: !splash };
+    const hasStatsCard = timeline.letters.some((l) => l.spec.kind === 'stats_card');
+    console.warn(
+      hasStatsCard ? '[cinematic] no WebGL, showing stats card without 3D stage' : `[cinematic] no WebGL, skipping comix "${timeline.id}"`,
+      err,
+    );
+    return { stage: null, skip: !hasStatsCard };
   }
 }
 
-interface PlayOpts { skippable?: boolean; muted?: boolean }
-
-function runPacked(pack: ComixPack, built: { page: ComicPage; panels: TimedPanel[] }, stage: CinematicStage | null, audio: CineAudio, opts: PlayOpts, debug: DebugOptions, stats?: ComixStats): Promise<void> {
-  const world = buildWorld(pack, built.page, built.panels, stage, audio);
-  const letters = buildLetters(world, stats);
-  const first = world.panels[0];
-  if (!first) throw new Error(`comix pack "${pack.id}" has no panels`);
-  cutTo(world, letters, first.id, first.at);
-  const cleanup = (): void => {
-    world.stage?.dispose();
-    world.audio.dispose();
-    world.page.dispose();
-  };
-  return runCinematic(world.page.root, makeScript(world, letters), {
-    skippable: opts.skippable !== false,
-    freezeAt: debug.freezeAt,
-    inputGraceMs: pack.manifest.inputGraceMs ?? 400,
-  }, cleanup).done;
+export interface PlayOpts {
+  skippable?: boolean;
+  muted?: boolean;
 }
 
-/** Play one assembled pack. Intro bails when WebGL is missing; a splash pack still shows its card. */
-export function startComix(host: HTMLElement, pack: ComixPack, opts: PlayOpts = {}, debug: DebugOptions = {}, stats?: ComixStats): Promise<void> {
-  const built = buildPage(host, pack);
-  const opened = openStage(pack);
+export interface ComixPlayResult {
+  completed: boolean;
+  finalTime: number;
+  showedOverlay: boolean;
+}
+
+/** Play any declarative `ComixPack` on `host`. */
+export function startComix(
+  host: HTMLElement,
+  pack: ComixPack,
+  opts: PlayOpts = {},
+  debug: DebugOptions = {},
+  stats?: ComixStats,
+): Promise<ComixPlayResult> {
+  const timeline = compileTimeline(pack);
+  const page = buildPageDom(host, timeline);
+  const opened = openStage(timeline);
   if (opened.skip) {
-    built.page.dispose();
-    return Promise.resolve();
+    page.dispose();
+    return Promise.resolve({ completed: false, finalTime: 0, showedOverlay: false });
   }
   const audio = new CineAudio(!!opts.muted || debug.freezeAt !== undefined);
   try {
-    return runPacked(pack, built, opened.stage, audio, opts, debug, stats);
+    const world = buildWorld(pack, timeline, page, opened.stage, audio);
+    const letters = buildLetters(world, stats);
+    const first = timeline.panels[0]!;
+    cutTo(world, letters, first.id, first.from);
+    const cleanup = (): void => {
+      world.stage?.dispose();
+      world.audio.dispose();
+      world.page.dispose();
+    };
+    const runner = runCinematic(world.page.root, makeScript(world, letters, debug.onDraw), {
+      skippable: opts.skippable !== false,
+      freezeAt: debug.freezeAt,
+      inputGraceMs: timeline.inputGraceMs,
+      editor: debug.editor,
+    }, cleanup);
+    debug.onRunner?.(runner);
+    debug.onWorld?.(world);
+    if (debug.onDraw) debug.onDraw(world, runner.time);
+    return runner.done.then(() => {
+      const finalTime = runner.time;
+      const showedOverlay = timeline.overlays.some((ov) => finalTime >= ov.at + 0.1);
+      return { completed: finalTime >= timeline.durationSec - 1e-3, finalTime, showedOverlay };
+    });
   } catch (err) {
     opened.stage?.dispose();
     audio.dispose();
-    built.page.dispose();
+    page.dispose();
     throw err;
   }
 }

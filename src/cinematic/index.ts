@@ -1,56 +1,44 @@
 /**
- * Cinematics: the opening (the developer at his desk, lightning, the AI agents, the teleport into the
- * machine) and the ending (back at the desk at dawn). CONTRACT, owned by the cinematic module:
- * main.ts calls these and awaits them; the game clock is paused (session.setPaused) while they run.
- * Both render into `host` (an element laid over the stage), clean up after themselves, and resolve when
- * finished or skipped (Esc / click / Enter).
+ * Declarative 3D Comix runtime (`src/cinematic/`).
  *
- * playIntro: ~40 s, three comic pages from comix/intro: he overworks his AI agents (Claude, Grok,
- *   Codex, Gemini parodies), lightning wakes them, they roast him and take over, the computer sucks him in.
- *   Esc / Enter / Space / click skips it and resolves at once. It resolves by itself after the
- *   "ENTERING FLOOR 01" card (main.ts relies on a full play lasting more than 23 s).
- * playOutro: reverse lightning at dawn, then a splash page with the run stats. Esc / Enter / click
- *   during the animation jumps to the splash; once "PRESS ANY KEY" shows, any key or click resolves.
- *   It draws no button: the caller shows "Play Again" after the promise resolves.
- * While either runs, keydown is captured on window and never reaches the terminal. Input in the first
- * 400 ms is ignored (the Enter that submitted `exit` must not skip the ending).
- * Both remove every DOM node, listener, WebGL context and AudioContext they made before resolving.
- * Preview / screenshots: /cinematic.html?play=intro|outro&t=<seconds>.
+ * Plays any animated comix pack compiled from `comix/<slug>/` (or an unsaved editor draft from `localStorage`).
+ * No comix, page, or scene is hardcoded here:
+ *   - `playComix(id, host, opts, stats, debug)` plays any comix by slug and returns playback completion metadata.
+ *   - `findComixByRole(role)` resolves playable sequences declaratively by manifest `role`.
+ *
+ * Preview / freeze-frame studio: `/cinematic.html?play=<slug>&t=<seconds>&muted=1`.
  */
 import { suspendComicLight } from '../shaders/comic-material.js';
-import { startIntro } from './intro.js';
-import { startOutro } from './outro.js';
+import { COMIX_MANIFESTS, findComixByRole, getComixPack } from './catalog.js';
+import { readDraftComixPack } from './draft.js';
+import { startComix, type ComixPlayResult, type DebugOptions } from './play-pack.js';
+import type { ComixStats } from './reel.js';
+import type { ComixRole } from './spec-types.js';
 
-export interface OutroStats {
-  rank: 'C' | 'B' | 'A' | 'S';
-  timeSec: number;
-  commands: number;
-  shortcuts: string[];
-}
+export { COMIX_MANIFESTS, findComixByRole, getComixPack };
+export type { ComixPlayResult, ComixRole, ComixStats, DebugOptions };
 
 export interface CinematicOptions {
-  /** Allow Esc / Enter / click to skip. Default true. */
+  /** Allow Esc / Enter / SKIP button to skip. Default true. */
   skippable?: boolean;
   muted?: boolean;
 }
 
-export async function playIntro(host: HTMLElement, opts: CinematicOptions = {}): Promise<void> {
+/** Play any compiled (or draft) comix sequence by id inside `host`. */
+export async function playComix(
+  id: string,
+  host: HTMLElement,
+  opts: CinematicOptions = {},
+  stats?: ComixStats,
+  debug: DebugOptions = {},
+): Promise<ComixPlayResult> {
   suspendComicLight(true);
   try {
-    await startIntro(host, opts);
+    const pack = (debug.draft ? readDraftComixPack(id) : null) ?? getComixPack(id);
+    return await startComix(host, pack, opts, debug, stats);
   } catch (err) {
-    console.error('[cinematic] intro failed', err);
-  } finally {
-    suspendComicLight(false);
-  }
-}
-
-export async function playOutro(host: HTMLElement, stats: OutroStats, opts: CinematicOptions = {}): Promise<void> {
-  suspendComicLight(true);
-  try {
-    await startOutro(host, stats, opts);
-  } catch (err) {
-    console.error('[cinematic] outro failed', err);
+    console.error(`[cinematic] comix "${id}" failed`, err);
+    return { completed: false, finalTime: 0, showedOverlay: false };
   } finally {
     suspendComicLight(false);
   }

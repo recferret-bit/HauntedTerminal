@@ -327,6 +327,20 @@ export class ComicPage {
     p.insertBefore(canvas, p.firstChild);
   }
 
+  /** Clear panel snapshots and page-turn transforms before deterministic re-seeking. */
+  reset(): void {
+    for (const page of this.pages) {
+      page.classList.remove('htc-hidden');
+      page.style.transform = '';
+      page.style.boxShadow = '';
+    }
+    for (const { el: panel, flash } of this.panels.values()) {
+      panel.classList.add('htc-hidden');
+      flash.style.opacity = '0';
+      panel.querySelector('canvas.htc-still')?.remove();
+    }
+  }
+
   dispose(): void {
     this.root.remove();
     releaseStyle(this.style);
@@ -382,6 +396,11 @@ export class Sfx {
     this.update(t, fx * pw, fy * ph, fs * Math.min(pw, ph));
   }
 
+  reset(): void {
+    this.last = [0, 0, 0];
+    this.el.style.display = 'none';
+  }
+
   update(t: number, x: number, y: number, size: number): void {
     if (size > 0) {
       // Kept as fractions of the panel, so a frozen word stays put when the window is resized.
@@ -408,6 +427,7 @@ export class Bubble {
   readonly text: HTMLSpanElement;
   private readonly tail: SVGPolygonElement;
   private readonly tailInk: SVGPolygonElement;
+  private placed = false;
   constructor(
     parent: HTMLElement,
     tails: SVGSVGElement,
@@ -434,18 +454,37 @@ export class Bubble {
     this.tailInk.style.display = 'none';
   }
 
+  private applyVisible(on: boolean, k = 1): boolean {
+    const disp = on ? '' : 'none';
+    this.el.style.display = disp;
+    this.tail.style.display = disp;
+    this.tailInk.style.display = disp;
+    if (on) {
+      const s = k < 0.06 ? 0.55 : k < 0.12 ? 1.12 : 1;
+      this.el.style.transform = `scale(${s})`;
+    }
+    return on;
+  }
+
+  /** Keep a placed bubble visible at its last frozen percentage coordinates after its panel cuts away. */
+  keep(t: number, until = Infinity): void {
+    const k = t - this.t0;
+    this.applyVisible(this.placed && k >= 0 && t < until, k);
+  }
+
+  reset(): void {
+    this.placed = false;
+    this.applyVisible(false);
+  }
+
   /**
    * Place the bubble: centre (cx, cy) and width in panel px, font size in px, tail toward (tx, ty).
    * `until` hides it again.
    */
   update(t: number, cx: number, cy: number, width: number, fontPx: number, tx: number, ty: number, until = Infinity, color = '#110e1b'): void {
     const k = t - this.t0;
-    const on = k >= 0 && t < until;
-    this.el.style.display = on ? '' : 'none';
-    this.tail.style.display = on ? '' : 'none';
-    this.tailInk.style.display = on ? '' : 'none';
-    if (!on) return;
-    const s = k < 0.06 ? 0.55 : k < 0.12 ? 1.12 : 1;
+    if (!this.applyVisible(k >= 0 && t < until, k)) return;
+    this.placed = true;
     // Placed in percentages of the panel (and the tails in a viewBox of its size), so a frozen panel's
     // bubbles stay where they belong when the window is resized.
     const pw = this.el.parentElement?.clientWidth || 1, ph = this.el.parentElement?.clientHeight || 1;
@@ -460,7 +499,6 @@ export class Bubble {
       tails.setAttribute('viewBox', `0 0 ${pw} ${ph}`);
       tails.setAttribute('preserveAspectRatio', 'none');
     }
-    this.el.style.transform = `scale(${s})`;
     this.el.style.padding = `${Math.round(fontPx * 0.55)}px ${Math.round(fontPx * 0.5)}px`;
     // Tail: a wedge from the bubble's lower edge toward the target, stopping short of it.
     const bx = cx + (tx - cx) * 0.18;
