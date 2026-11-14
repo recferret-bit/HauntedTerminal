@@ -14,22 +14,39 @@ import type {
   LevelSpec,
 } from './types.js';
 
-export const CHAPTER_MANIFESTS: readonly ChapterManifest[] = GENERATED_MANIFESTS;
+type GeneratedChapterCatalog = typeof import('./generated/catalog-data.js');
+
+const chapterManifests: ChapterManifest[] = [...GENERATED_MANIFESTS];
+let levelsMap = GENERATED_LEVELS_BY_CHAPTER;
+let comixMap = GENERATED_COMIX_BY_CHAPTER;
+let dialogsMap = GENERATED_DIALOGS_BY_CHAPTER;
+
+export const CHAPTER_MANIFESTS: readonly ChapterManifest[] = chapterManifests;
+
+import.meta.hot?.accept('./generated/catalog-data.js', (updated) => {
+  const data = updated as GeneratedChapterCatalog | undefined;
+  if (!data) return;
+  chapterManifests.length = 0;
+  chapterManifests.push(...data.GENERATED_MANIFESTS);
+  levelsMap = data.GENERATED_LEVELS_BY_CHAPTER;
+  comixMap = data.GENERATED_COMIX_BY_CHAPTER;
+  dialogsMap = data.GENERATED_DIALOGS_BY_CHAPTER;
+});
 
 export function getChapterManifest(chapterId: string): ChapterManifest | undefined {
   return CHAPTER_MANIFESTS.find((c) => c.id === chapterId);
 }
 
 export function getChapterLevels(chapterId: string): LevelSpec[] {
-  return GENERATED_LEVELS_BY_CHAPTER[chapterId] ?? [];
+  return levelsMap[chapterId] ?? [];
 }
 
 export function getChapterComix(chapterId: string): ComixStorySpec | undefined {
-  return GENERATED_COMIX_BY_CHAPTER[chapterId];
+  return comixMap[chapterId];
 }
 
 export function getChapterDialogs(chapterId: string): ChapterDialogs | undefined {
-  return GENERATED_DIALOGS_BY_CHAPTER[chapterId];
+  return dialogsMap[chapterId];
 }
 
 /** The compiled chapter as one pack, or undefined when the chapter has no playable levels. */

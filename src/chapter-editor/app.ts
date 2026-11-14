@@ -1,10 +1,25 @@
 import { writeDraftPack } from '../chapters/draft.js';
 import type { ScriptStep } from '../chapters/types.js';
-import { ConflictError, fetchEtags, loadChapters, saveFile } from './api.js';
+import type { LayoutState } from '../editor-core/dock-layout.js';
+import { clear, h, type Rec } from '../editor-core/dom.js';
+import { syncSelectedDetailsDom, type FormCtx } from '../editor-core/form.js';
+import {
+  createWorkstationHookApi,
+  WorkspaceManager,
+  type DockButtonDef,
+  type WorkspaceState,
+  type WorkstationHook,
+} from '../editor-core/workspace.js';
+import { ConflictError, fetchChapterDiskState, loadChapters, saveFile } from './api.js';
 import { ChapterModel, type FileKey } from './chapter-model.js';
 import { checkPack } from './check.js';
-import { clear, h, type Rec } from './dom.js';
-import type { FormCtx } from './form.js';
+import {
+  renderChapterSidebar,
+  renderChapterTabBar,
+  renderChapterTopBar,
+  type ChapterChromeDeps,
+  type ChapterDockId,
+} from './chrome.js';
 import { CHAPTER_TABS, LEVEL_TABS, renderPane, type Env, type Sel } from './panes.js';
 import { Preview } from './preview.js';
 import { makeSuggest } from './suggest.js';
@@ -13,7 +28,58 @@ const CHECK_DELAY_MS = 250;
 const PREVIEW_DELAY_MS = 500;
 const DISK_POLL_MS = 5000;
 
-/** The whole editor: sidebar of levels, tabbed forms driven by schema.ts, and the live game preview. */
+const CHAPTER_DOCK_BUTTONS: readonly DockButtonDef<ChapterDockId>[] = [
+  { id: 'left', label: '◧ Levels', title: 'Toggle Left Levels Outliner ([)', restoreLabel: 'Levels' },
+  { id: 'right', label: '◨ Inspector', title: 'Toggle Right Inspector (])', restoreLabel: 'Inspector' },
+  { id: 'timeline', label: '◫ Console', title: 'Toggle Bottom Console & Walkthrough (\\)', restoreLabel: 'Console' },
+  { id: 'log', label: '⊟ Log', title: 'Toggle Event Log & Console Drawer' },
+  { id: 'stagebar', label: '⬒ Bar', title: 'Toggle Viewport Toolbar' },
+  { id: 'top', label: '▴ Top', title: 'Hide Top Bar (restorable from floating pill)' },
+];
+
+export interface ChapterEditorHook extends WorkstationHook<ChapterDockId> {
+  ready: boolean;
+  state(): {
+    slug: string;
+    target: 'level' | 'chapter';
+    levelId: string;
+    tab: string;
+    writable: boolean;
+    dirty: string[];
+    issueCount: number;
+    previewLevel: string;
+    previewPhase: string;
+    selectedPath: string | null;
+    docks: WorkspaceState<ChapterDockId>;
+    layout: LayoutState;
+    viewportSize: { w: number; h: number };
+    pageZoom: number | 'fit';
+  };
+  select(next: Partial<Sel>, updateUrl?: boolean): void;
+  selectItem(path: string | null, scrollIntoView?: boolean): string | null;
+  reload(): Promise<void>;
+}
+
+declare global {
+  interface Window {
+    __chapterEditor?: ChapterEditorHook;
+  }
+}
+
+function summarizeSelectedItem(pane: HTMLElement, path: string, item?: Rec): string {
+  const details = [...pane.querySelectorAll<HTMLDetailsElement>('details[data-item-path]')].find(
+    (el) => el.dataset.itemPath === path,
+  );
+  const titleText = details?.querySelector('.item-title')?.textContent?.trim();
+  if (titleText) return titleText;
+  if (item) {
+    const pick = item.kind ?? item.id ?? item.name ?? item.title;
+    if (typeof pick === 'string' && pick.trim()) return pick.trim();
+  }
+  return path.split('.').slice(-2).join('.');
+}
+
+/** Game-engine workstation shell for editing chapter specs with live centered preview. */
 class EditorApp {
   private models: ChapterModel[] = [];
   private writable = false;
@@ -21,26 +87,46 @@ class EditorApp {
   private issues = [] as ReturnType<typeof checkPack>;
   private readonly open = new Set<string>();
   private readonly top = h('header', { class: 'ed-top' });
-  private readonly side = h('nav', { class: 'ed-side', 'aria-label': 'Chapter and levels' });
-  private readonly tabs = h('div', { class: 'ed-tabs', role: 'tablist', 'aria-label': 'Editor sections' });
+  private readonly sideBody = h('div', { class: 'cx-side-body' });
+  private readonly side = h('nav', { class: 'ed-side', 'aria-label': 'Chapter and levels' }, this.sideBody);
+  private readonly tabs = h('div', { class: 'ed-tabs', 'data-panel-drag': 'right' });
   private readonly pane = h('div', { class: 'ed-pane', role: 'tabpanel' });
+  private readonly main = h('main', { class: 'ed-main' }, this.tabs, this.pane);
+  private readonly workspace = new WorkspaceManager<ChapterDockId>({
+    storageKey: 'ht-chapter-editor-ui',
+    buttons: CHAPTER_DOCK_BUTTONS,
+    labels: { left: 'Levels', right: 'Inspector', timeline: 'Console' },
+  });
   private readonly pv: Preview;
+  private readonly gridEl: HTMLElement;
   private status = '';
-  /** Spec files that changed on disk since this editor read them (an agent, git, another tab). */
+  private conflict = false;
   private stale: string[] = [];
+  private selectedPath: string | null = null;
   private checkTimer = 0;
   private checkPending = false;
   private previewTimer = 0;
 
   constructor(private readonly root: HTMLElement) {
-    this.pv = new Preview(() => this.model.pack());
-    const main = h('main', { class: 'ed-main' }, this.tabs, this.pane);
-    root.append(h('div', { class: 'ed' }, this.top, this.side, main, h('aside', { class: 'ed-pv' }, this.pv.root)));
-    window.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
-        e.preventDefault();
-        void this.save(this.currentKeys());
-      }
+    this.pv = new Preview({
+      getPack: () => this.model.pack(),
+      onToggleDock: (dock) => this.workspace.toggle(dock),
+      onToggleZen: () => this.workspace.toggleZen(),
+      onRevealSelected: () => this.revealSelectedItem(),
+    });
+    this.pv.stageEl.append(this.workspace.renderRestoreOverlay());
+    this.gridEl = h('div', { class: 'ed cx-ed' }, this.top, this.side, this.pv.stageEl, this.pv.timelineEl, this.main);
+    root.append(this.gridEl);
+    this.workspace.attach(
+      this.gridEl,
+      { left: this.side, right: this.main, timeline: this.pv.timelineEl },
+      () => window.requestAnimationFrame(() => this.pv.stage.updateFrameLayout()),
+      () => this.pv.stage.setPageZoom('fit'),
+      (saveAll) => void this.save(saveAll ? this.model.dirtyKeys() : this.currentKeys()),
+    );
+
+    window.addEventListener('popstate', () => {
+      if (this.models.length > 0) this.select(this.readRoute(), false);
     });
     window.addEventListener('beforeunload', (e) => {
       if (this.models.some((m) => m.dirtyKeys().length > 0)) e.preventDefault();
@@ -57,6 +143,13 @@ class EditorApp {
       changed: () => this.onChanged(),
       restructure: () => this.drawPane(),
       playStep: (step: Rec) => this.pv.playStep(step as unknown as ScriptStep),
+      selectedPath: this.selectedPath ?? undefined,
+      selectPath: (path, item) => this.selectItem(path, false, item),
+      remapSelection: (mapPath) => {
+        if (!this.selectedPath) return;
+        const mapped = mapPath(this.selectedPath);
+        if (mapped !== this.selectedPath) this.selectItem(mapped, false);
+      },
       open: this.open,
     };
   }
@@ -74,6 +167,29 @@ class EditorApp {
     };
   }
 
+  private chromeDeps(): ChapterChromeDeps {
+    return {
+      models: this.models,
+      model: this.model,
+      sel: this.sel,
+      writable: this.writable,
+      status: this.status,
+      conflict: this.conflict,
+      stale: this.stale,
+      issues: this.issues,
+      workspace: this.workspace,
+      currentKeys: () => this.currentKeys(),
+      select: (next) => this.select(next),
+      revertKeys: (keys) => {
+        keys.forEach((k) => this.model.revert(k));
+        this.onChanged();
+        this.draw();
+      },
+      saveKeys: (keys) => void this.save(keys),
+      reloadFromDisk: () => void this.reloadFromDisk(),
+    };
+  }
+
   async start(): Promise<void> {
     const loaded = await loadChapters();
     this.writable = loaded.writable;
@@ -84,41 +200,103 @@ class EditorApp {
     }
     this.sel = this.readRoute();
     this.issues = checkPack(this.model.pack());
+    this.syncUrl(true);
     this.draw();
     this.loadPreview();
+    this.installWindowHook();
     window.setInterval(() => void this.checkDisk(), DISK_POLL_MS);
     window.addEventListener('focus', () => void this.checkDisk());
   }
 
-  // ---- routing ----------------------------------------------------------------------------------------------------
+  private installWindowHook(): void {
+    window.__chapterEditor = {
+      ready: true,
+      state: () => ({
+        slug: this.model.slug,
+        target: this.sel.target,
+        levelId: this.sel.levelId,
+        tab: this.sel.tab,
+        writable: this.writable,
+        dirty: this.model.dirtyKeys(),
+        issueCount: this.issues.length,
+        previewLevel: this.pv.currentLevelId,
+        previewPhase: this.pv.livePhase,
+        selectedPath: this.selectedPath,
+        docks: this.workspace.current,
+        layout: this.workspace.layout,
+        viewportSize: this.pv.stage.viewportSize,
+        pageZoom: this.pv.stage.pageZoomMode,
+      }),
+      select: (next, updateUrl = true) => this.select(next, updateUrl),
+      selectItem: (path, scrollIntoView = true) => this.selectItem(path, scrollIntoView),
+      ...createWorkstationHookApi(this.workspace, this.pv.stage),
+      reload: () => this.reloadFromDisk(),
+    };
+  }
 
   private readRoute(): Sel {
-    const parts = location.pathname.split('/').filter(Boolean);
-    const m = this.models.find((c) => c.slug === decodeURIComponent(parts[1] ?? '')) ?? this.models[0]!;
-    const level = m.level(decodeURIComponent(parts[2] ?? '')) ?? m.draft.levels[0];
-    const tab = new URLSearchParams(location.search).get('tab') ?? 'overview';
-    return { slug: m.slug, target: parts[1] !== undefined && parts[2] === undefined ? 'chapter' : 'level', levelId: level?.id ?? '', tab };
+    const parts = location.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+    const m = this.models.find((c) => c.slug === (parts[1] ?? '')) ?? this.models[0]!;
+    const target: 'level' | 'chapter' = parts[1] !== undefined && parts[2] === undefined ? 'chapter' : 'level';
+    const level = m.level(parts[2] ?? '') ?? m.draft.levels[0];
+    const tabs = target === 'level' ? LEVEL_TABS : CHAPTER_TABS;
+    const rawTab = new URLSearchParams(location.search).get('tab') ?? tabs[0].id;
+    const tab = tabs.some((t) => t.id === rawTab) ? rawTab : tabs[0].id;
+    return { slug: m.slug, target, levelId: level?.id ?? '', tab };
   }
 
-  private syncUrl(): void {
+  private syncUrl(replace: boolean): void {
     const s = this.sel;
     const path = s.target === 'level' ? `/editor/${encodeURIComponent(s.slug)}/${encodeURIComponent(s.levelId)}` : `/editor/${encodeURIComponent(s.slug)}`;
-    history.replaceState(null, '', `${path}?tab=${s.tab}`);
+    const url = `${path}?tab=${encodeURIComponent(s.tab)}`;
+    if (replace) history.replaceState(null, '', url);
+    else if (`${location.pathname}${location.search}` !== url) history.pushState(null, '', url);
   }
 
-  private select(next: Partial<Sel>): void {
+  private select(next: Partial<Sel>, updateUrl = true): void {
     const levelChanged = (next.levelId !== undefined && next.levelId !== this.sel.levelId) || (next.slug !== undefined && next.slug !== this.sel.slug);
     const prevTarget = this.sel.target;
     this.sel = { ...this.sel, ...next };
     const tabs = this.sel.target === 'level' ? LEVEL_TABS : CHAPTER_TABS;
     if (!tabs.some((t) => t.id === this.sel.tab)) this.sel.tab = tabs[0].id;
     if (next.target && next.target !== prevTarget && next.tab === undefined) this.sel.tab = tabs[0].id;
-    this.syncUrl();
+    if (levelChanged) this.selectItem(null, false);
+    if (updateUrl) this.syncUrl(false);
     this.draw();
     if (levelChanged && this.sel.target === 'level') this.loadPreviewSoon();
   }
 
-  // ---- preview ----------------------------------------------------------------------------------------------------
+  private selectItem(path: string | null, scrollIntoView = false, item?: Rec): string | null {
+    this.selectedPath = path;
+    if (path) this.open.add(path);
+    this.pv.setSelectedReadout(path ? summarizeSelectedItem(this.pane, path, item) : null);
+    syncSelectedDetailsDom(this.pane, path, scrollIntoView);
+    return this.selectedPath;
+  }
+
+  private revealSelectedItem(): void {
+    if (!this.selectedPath) return;
+    if (!this.workspace.current.right) this.workspace.toggle('right');
+    const inferred = this.routeForPath(this.selectedPath);
+    if (inferred && (inferred.target !== this.sel.target || inferred.levelId !== this.sel.levelId || inferred.tab !== this.sel.tab)) {
+      this.select(inferred);
+    }
+    this.open.add(this.selectedPath);
+    syncSelectedDetailsDom(this.pane, this.selectedPath, true);
+  }
+
+  private routeForPath(path: string): Partial<Sel> | null {
+    const head = path.split('.')[0]?.replace(/\[.*$/, '') ?? '';
+    if (head === 'manifest') return { target: 'chapter', tab: 'manifest' };
+    if (head === 'cast') return { target: 'chapter', tab: 'cast' };
+    if (head === 'comic') return { target: 'chapter', tab: 'comic' };
+    if (this.model.level(head)) {
+      const seg = path.split('.')[1]?.replace(/\[.*$/, '') ?? 'overview';
+      const tab = seg === 'dialog' ? 'dialogs' : LEVEL_TABS.some((t) => t.id === seg) ? seg : 'overview';
+      return { target: 'level', levelId: head, tab };
+    }
+    return null;
+  }
 
   private loadPreview(): void {
     const level = this.model.level(this.sel.levelId);
@@ -130,21 +308,16 @@ class EditorApp {
     this.previewTimer = window.setTimeout(() => this.loadPreview(), PREVIEW_DELAY_MS);
   }
 
-  // ---- changes and saving -----------------------------------------------------------------------------------------
-
   private onChanged(): void {
     window.clearTimeout(this.checkTimer);
     this.checkPending = true;
     this.checkTimer = window.setTimeout(() => {
       this.refreshIssues();
-      this.drawTop();
-      this.drawSide();
+      this.drawChrome();
     }, CHECK_DELAY_MS);
-    this.drawTop();
-    this.drawSide();
+    this.drawChrome();
   }
 
-  /** Runs the static checks on the draft now and hands the draft to the game preview. */
   private refreshIssues(): void {
     window.clearTimeout(this.checkTimer);
     this.checkPending = false;
@@ -180,124 +353,88 @@ class EditorApp {
         m.markSaved(key, res.etag);
         if (res.warning) this.setStatus(res.warning, true);
       }
+      this.conflict = false;
       this.setStatus(`saved ${todo.size} file${todo.size > 1 ? 's' : ''}; src/chapters/generated recompiled`);
     } catch (err) {
       if (err instanceof ConflictError) {
+        this.conflict = true;
         this.setStatus(`${err.message}. Nothing was overwritten: use "Reload from disk".`, true);
         await this.checkDisk();
       } else {
         this.setStatus(`save failed: ${(err as Error).message}`, true);
       }
     }
-    this.drawTop();
-    this.drawSide();
+    this.drawChrome();
   }
 
-  /** Notices spec files that were edited outside this editor and offers a reload instead of a silent overwrite. */
   private async checkDisk(): Promise<void> {
     if (!this.writable || document.hidden) return;
     try {
-      const stale = this.model.changedOnDisk(await fetchEtags(this.model.slug));
+      const disk = await fetchChapterDiskState(this.model.slug);
+      const stale = this.model.changedOnDisk(disk.etags);
+      if (Array.isArray(disk.slugs)) {
+        const present = new Set(this.models.map((c) => c.slug));
+        const current = new Set(disk.slugs);
+        for (const s of disk.slugs) if (!present.has(s)) stale.push(`chapters/${s}`);
+        for (const s of present) if (!current.has(s)) stale.push(`chapters/${s}`);
+      }
       if (stale.join() !== this.stale.join()) {
         this.stale = stale;
-        this.drawTop();
+        renderChapterTopBar(this.top, this.chromeDeps());
       }
     } catch {
       /* dev server restarting: try again on the next poll */
     }
   }
 
-  /** Replaces this chapter's draft with the files as they are on disk now. */
   private async reloadFromDisk(): Promise<void> {
     const m = this.model;
     if (m.dirtyKeys().length > 0 && !window.confirm('Discard your unsaved edits and reload this chapter from disk?')) return;
     const loaded = await loadChapters();
-    const fresh = loaded.chapters.find((c) => c.slug === m.slug);
-    if (!fresh) return;
-    this.models = this.models.map((c) => (c.slug === m.slug ? new ChapterModel(fresh) : c));
-    if (!this.model.level(this.sel.levelId)) this.sel.levelId = this.model.draft.levels[0]?.id ?? '';
+    if (loaded.chapters.length === 0) return;
+    const oldMap = new Map(this.models.map((c) => [c.slug, c]));
+    const activeSlug = m.slug;
+    this.models = loaded.chapters.map((ch) => {
+      const prev = oldMap.get(ch.slug);
+      if (!prev) return new ChapterModel(ch);
+      if (ch.slug === activeSlug || prev.dirtyKeys().length === 0) prev.reloadFrom(ch);
+      return prev;
+    });
+    const next = this.models.find((c) => c.slug === activeSlug) ?? this.models[0]!;
+    this.sel.slug = next.slug;
+    if (!next.level(this.sel.levelId)) this.sel.levelId = next.draft.levels[0]?.id ?? '';
+    this.conflict = false;
     this.stale = [];
-    this.issues = checkPack(this.model.pack());
+    this.issues = checkPack(next.pack());
     this.setStatus('reloaded from disk');
+    this.syncUrl(true);
     this.draw();
     this.loadPreview();
   }
 
   private setStatus(text: string, bad = false): void {
     this.status = bad ? `✕ ${text}` : text;
-    this.drawTop();
+    renderChapterTopBar(this.top, this.chromeDeps());
   }
 
-  // ---- drawing ----------------------------------------------------------------------------------------------------
+  private drawChrome(): void {
+    const deps = this.chromeDeps();
+    renderChapterTopBar(this.top, deps);
+    renderChapterSidebar(this.sideBody, deps);
+    renderChapterTabBar(this.tabs, this.pane, deps);
+  }
 
   draw(): void {
-    // An edit made a moment ago must show in the Check tab and the sidebar marks, not after the typing delay.
     if (this.checkPending) this.refreshIssues();
-    this.drawTop();
-    this.drawSide();
-    this.drawTabs();
+    this.drawChrome();
     this.drawPane();
-  }
-
-  private drawTop(): void {
-    const m = this.model;
-    const dirtyAll = m.dirtyKeys().length;
-    const chapter = h('select', { class: 'ed-chapter' }, ...this.models.map((c) => h('option', { value: c.slug, selected: c.slug === m.slug }, `#${c.draft.manifest.issueNumber} ${c.draft.manifest.title}`)));
-    chapter.addEventListener('change', () => {
-      const next = this.models.find((c) => c.slug === chapter.value);
-      if (next) this.select({ slug: next.slug, target: 'level', levelId: next.draft.levels[0]?.id ?? '', tab: 'overview' });
-    });
-    const keys = this.currentKeys();
-    const fileDirty = keys.filter((k) => m.isDirty(k)).length;
-    const btn = (label: string, cls: string, run: () => void, disabled = false): HTMLElement => h('button', { type: 'button', class: `btn ${cls}`, disabled, onclick: run }, label);
-    clear(this.top);
-    this.top.append(
-      h('a', { class: 'ed-brand', href: '/' }, h('b', {}, 'CHAPTER'), ' EDITOR'),
-      chapter,
-      btn(fileDirty ? `Save file ●` : 'Save file', 'primary', () => void this.save(keys), !this.writable || fileDirty === 0),
-      btn(`Save all (${dirtyAll})`, '', () => void this.save(m.dirtyKeys()), !this.writable || dirtyAll === 0),
-      btn('Revert file', '', () => { keys.forEach((k) => m.revert(k)); this.onChanged(); this.draw(); }, fileDirty === 0),
-      ...(this.stale.length > 0 ? [btn(`Reload from disk (${this.stale.length} changed)`, 'warn', () => void this.reloadFromDisk())] : []),
-      h('span', { class: 'ed-status', role: 'status', 'aria-live': 'polite' }, this.writable ? this.status : 'READ-ONLY — start the dev server (npm start) to edit chapters on disk'),
-      h('a', { class: 'ed-link', href: this.pv.playUrl(), target: '_blank', rel: 'noopener' }, 'Play in tab ↗'),
-      h('a', { class: 'ed-link', href: '/chapters.html' }, 'Level select'),
-    );
-  }
-
-  private drawSide(): void {
-    const m = this.model;
-    const count = (where: string): number => this.issues.filter((i) => i.where === where && i.severity === 'error').length;
-    const warn = (where: string): number => this.issues.filter((i) => i.where === where && i.severity === 'warn').length;
-    const mark = (keys: FileKey[], where: string): HTMLElement => h('span', { class: 'marks' }, keys.some((k) => m.isDirty(k)) ? h('i', { class: 'dot', title: 'unsaved' }, '●', h('span', { class: 'sr' }, ' unsaved')) : null, count(where) ? h('i', { class: 'bad', title: 'errors' }, `✕${count(where)}`, h('span', { class: 'sr' }, ' errors')) : warn(where) ? h('i', { class: 'warnmark', title: 'warnings' }, `⚠${warn(where)}`, h('span', { class: 'sr' }, ' warnings')) : null);
-    const entry = (label: string, active: boolean, run: () => void, extra: HTMLElement | null): HTMLElement => h('button', { type: 'button', class: `ed-item${active ? ' on' : ''}`, 'aria-current': active ? 'true' : undefined, onclick: run }, h('span', { class: 'lbl' }, label), extra);
-    clear(this.side);
-    this.side.append(
-      h('h3', {}, 'Chapter'),
-      entry('Settings, speakers & comic', this.sel.target === 'chapter', () => this.select({ target: 'chapter', tab: 'manifest' }), mark(['manifest', 'dialogs', 'comix'], 'chapter')),
-      h('h3', {}, `Levels (${m.draft.levels.length})`),
-    );
-    for (const l of m.draft.levels) {
-      const sub = h('small', {}, `${l.mechanic} · ${l.roomKind}`);
-      const on = this.sel.target === 'level' && this.sel.levelId === l.id;
-      const item = entry(`${String(l.index).padStart(2, '0')} ${l.title}`, on, () => this.select({ target: 'level', levelId: l.id }), mark([`level:${l.id}`], l.id));
-      item.append(sub);
-      this.side.append(item);
-    }
-  }
-
-  private drawTabs(): void {
-    const tabs = this.sel.target === 'level' ? LEVEL_TABS : CHAPTER_TABS;
-    clear(this.tabs);
-    for (const t of tabs) {
-      const bad = this.issues.filter((i) => i.tab === t.id && (this.sel.target === 'level' ? i.where === this.sel.levelId : i.where === 'chapter' || i.where === 'comix') && i.severity === 'error').length;
-      this.tabs.append(h('button', { type: 'button', role: 'tab', 'aria-selected': t.id === this.sel.tab ? 'true' : 'false', class: `ed-tab${t.id === this.sel.tab ? ' on' : ''}`, onclick: () => this.select({ tab: t.id }) }, t.label, bad ? h('i', { class: 'bad' }, ` ✕${bad}`, h('span', { class: 'sr' }, ' errors')) : null));
-    }
   }
 
   private drawPane(): void {
     const scroll = this.pane.scrollTop;
     clear(this.pane);
     this.pane.append(renderPane(this.env, this.sel));
+    syncSelectedDetailsDom(this.pane, this.selectedPath, false);
     this.pane.scrollTop = scroll;
   }
 }

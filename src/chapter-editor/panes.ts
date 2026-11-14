@@ -1,10 +1,11 @@
 import type { PackIssue } from '../chapters/validate-pack.js';
 import type { LevelSpec } from '../chapters/types.js';
+import { renderDataTable, renderIssueList, renderJsonFilePane } from '../editor-core/chrome.js';
+import { clear, h, type Rec } from '../editor-core/dom.js';
+import { renderFields, type FormCtx } from '../editor-core/form.js';
 import { renderComix } from './api.js';
 import type { ChapterModel, FileKey } from './chapter-model.js';
 import { runSolve } from './check.js';
-import { clear, h, isRec, type Rec } from './dom.js';
-import { renderFields, type FormCtx } from './form.js';
 import type { Preview } from './preview.js';
 import { COMIX_PAGE, DIALOG_CAST, DIALOG_ENTRY, ENTITIES, FILES, MANIFEST, OVERVIEW, RULES, SCRIPT, type Field } from './schema.js';
 
@@ -57,20 +58,15 @@ function note(text: string, cls = 'note'): HTMLElement {
 }
 
 function issueList(env: Env, issues: PackIssue[], jump: boolean): HTMLElement {
-  if (issues.length === 0) return h('p', { class: 'ok' }, '✓ no issues');
-  const list = h('ul', { class: 'issues' });
-  for (const i of issues) {
-    const item = h('li', { class: i.severity }, h('b', { 'aria-hidden': 'true' }, i.severity === 'error' ? '✕ ' : '⚠ '), h('span', { class: 'sr' }, i.severity === 'error' ? 'Error: ' : 'Warning: '), h('span', { class: 'where' }, i.where), ` ${i.message}`);
-    if (jump) {
-      item.classList.add('link');
-      item.addEventListener('click', () => {
-        const isLevel = env.model.draft.levels.some((l) => l.id === i.where);
-        env.select(isLevel ? { target: 'level', levelId: i.where, tab: i.tab } : { target: 'chapter', tab: i.tab });
-      });
-    }
-    list.append(item);
-  }
-  return list;
+  return renderIssueList(issues, {
+    okText: '✓ no issues',
+    onJump: jump
+      ? (i) => {
+          const isLevel = env.model.draft.levels.some((l) => l.id === i.where);
+          env.select(isLevel ? { target: 'level', levelId: i.where, tab: i.tab } : { target: 'chapter', tab: i.tab });
+        }
+      : undefined,
+  });
 }
 
 function form(env: Env, obj: Rec, fields: Field[], path: string): HTMLElement {
@@ -127,14 +123,37 @@ function dialogsPane(env: Env, level: LevelSpec): HTMLElement {
 function manifestPane(env: Env): HTMLElement {
   const m = env.model.draft.manifest;
   const box = h('div', {}, form(env, m as unknown as Rec, MANIFEST, 'manifest'));
-  const rows = m.levels.map((s) => h('tr', {}, h('td', {}, String(s.index)), h('td', {}, s.title), h('td', {}, s.mechanic), h('td', {}, s.roomKind), h('td', {}, s.cwd)));
+  const rows = m.levels.map((s) =>
+    h(
+      'tr',
+      {},
+      h('td', {}, String(s.index)),
+      h('td', {}, s.title),
+      h('td', {}, s.mechanic),
+      h('td', {}, s.roomKind),
+      h('td', { class: 'mono' }, s.cwd),
+      h(
+        'td',
+        {},
+        h(
+          'button',
+          { type: 'button', class: 'btn small', onclick: () => env.select({ target: 'level', levelId: s.id, tab: 'overview' }) },
+          'Open →',
+        ),
+      ),
+    ),
+  );
   const sync = h('button', { type: 'button', class: 'btn small' }, 'Refresh from level specs');
   sync.addEventListener('click', () => {
     env.model.syncSummaries();
     env.changed();
     env.redraw();
   });
-  box.append(h('h4', {}, 'Level summaries (copied from each spec on save)'), h('table', { class: 'tbl' }, ...rows), sync);
+  box.append(
+    h('h4', {}, 'Level summaries (copied from each spec on save)'),
+    renderDataTable(['#', 'Title', 'Mechanic', 'Room', 'CWD', ''], rows),
+    sync,
+  );
   return box;
 }
 
@@ -145,7 +164,7 @@ function castPane(env: Env): HTMLElement {
 
 function comicPane(env: Env): HTMLElement {
   const comix = env.model.draft.comix;
-  if (!comix) return note('This chapter has no comix.spec.json.');
+  if (!comix || comix.pages.length === 0) return note('This chapter has no comic pages.');
   const slug = env.model.slug;
   const index = Math.min(comicPage.get(slug) ?? 0, comix.pages.length - 1);
   const page = comix.pages[index]!;
@@ -170,26 +189,17 @@ function comicPane(env: Env): HTMLElement {
 
 function jsonPane(env: Env, sel: Sel): HTMLElement {
   const keys: FileKey[] = sel.target === 'level' ? [`level:${sel.levelId}`] : env.model.entries().filter((e) => !e.key.startsWith('level:')).map((e) => e.key);
-  const pick = h('select', {}, ...keys.map((k) => h('option', { value: k }, env.model.entry(k)?.path ?? k)));
-  const area = h('textarea', { class: 'json mono', spellcheck: 'false' });
-  const msg = h('p', { class: 'note' });
-  const load = (): void => { area.value = JSON.stringify(env.model.entry(pick.value)?.value ?? null, null, 2); msg.textContent = ''; };
-  pick.addEventListener('change', load);
-  load();
-  const apply = h('button', { type: 'button', class: 'btn primary', }, 'Apply JSON to the draft');
-  apply.addEventListener('click', () => {
-    try {
-      const parsed = JSON.parse(area.value) as unknown;
-      if (!isRec(parsed)) throw new Error('the file must be a JSON object');
-      env.model.replace(pick.value, parsed);
+  return renderJsonFilePane({
+    files: keys.map((k) => ({ key: k, path: env.model.entry(k)?.path ?? k })),
+    initialKey: keys[0] ?? 'manifest',
+    readText: (k) => JSON.stringify(env.model.entry(k)?.value ?? null, null, 2),
+    applyObject: (k, parsed) => {
+      env.model.replace(k, parsed);
       env.changed();
       env.redraw();
-    } catch (err) {
-      msg.textContent = `not applied: ${(err as Error).message}`;
-      msg.className = 'note error';
-    }
+    },
+    applyButtonLabel: 'Apply JSON to the draft',
   });
-  return h('div', { class: 'jsonpane' }, h('div', { class: 'row' }, pick, apply), msg, area);
 }
 
 function solveRows(report: ReturnType<typeof runSolve>): HTMLElement {

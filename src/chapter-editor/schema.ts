@@ -1,56 +1,24 @@
 import type { ScriptCond, ScriptStep, WinRule } from '../chapters/types.js';
 import { ENEMY_TYPES, MECHANICS, PICKUP_TYPES, ROOM_KINDS } from '../chapters/validate-pack.js';
+import {
+  b,
+  n,
+  opt,
+  sel,
+  t,
+  type ArrayItem,
+  type Field,
+  type FieldBase,
+  type Option,
+  type SuggestName,
+} from '../editor-core/schema.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
 
 /**
  * The editor is driven by these tables, not by per-chapter code. A new spec field is: one line in
  * `src/chapters/script-types.ts` (or types.ts), one interpreter branch in `script.ts`, one entry here.
  */
-export type Option = string | number;
-
-interface Base {
-  key: string;
-  label: string;
-  hint?: string;
-  /** The key may be absent; clearing the control removes it from the JSON. */
-  optional?: boolean;
-}
-
-export interface ArrayItem {
-  /** Plain object items. */
-  fields?: Field[];
-  /** Items tagged by `kind` (or `tag`); the variants are looked up lazily so a condition can contain conditions. */
-  union?: () => Record<string, Field[]>;
-  /** Discriminant key. Default `kind`. */
-  tag?: string;
-  /** One-line title of a collapsed item. */
-  title: (item: Record<string, unknown>, index: number) => string;
-  /** Lets the editor play this item in the preview ("steps" = a script step). */
-  play?: 'steps';
-}
-
-export type SuggestName = 'models' | 'paths' | 'sockets' | 'enemies' | 'rooms' | 'cores' | 'actors' | 'points' | 'panels' | 'marks' | 'fixtures' | 'fx';
-
-export type Field =
-  | (Base & { type: 'text'; rows?: number; suggest?: SuggestName; mono?: boolean; /** A comix mark expression (`NAME`, `NAME+n`, `NAME-n`, or a number). */ mark?: boolean })
-  | (Base & { type: 'number'; step?: number; octal?: boolean })
-  | (Base & { type: 'bool'; defaultTrue?: boolean })
-  | (Base & { type: 'select'; options: readonly Option[] })
-  | (Base & { type: 'strings'; rows?: number; mark?: boolean })
-  | (Base & { type: 'numbers' })
-  | (Base & { type: 'pairs'; mark?: boolean })
-  | (Base & { type: 'textOrVec' })
-  | (Base & { type: 'color' })
-  | (Base & { type: 'array'; item: ArrayItem })
-  | (Base & { type: 'object'; fields: Field[] })
-  | (Base & { type: 'record'; value: Field[] | 'string' | 'strings' | 'number'; keyLabel: string })
-  | (Base & { type: 'union'; union: () => Record<string, Field[]>; tag?: string });
-
-export const t = (key: string, label: string, extra: Partial<Extract<Field, { type: 'text' }>> = {}): Field => ({ type: 'text', key, label, ...extra });
-export const n = (key: string, label: string, extra: Partial<Extract<Field, { type: 'number' }>> = {}): Field => ({ type: 'number', key, label, ...extra });
-export const b = (key: string, label: string, extra: Partial<Extract<Field, { type: 'bool' }>> = {}): Field => ({ type: 'bool', key, label, ...extra });
-export const sel = (key: string, label: string, options: readonly Option[], extra: Partial<Base> = {}): Field => ({ type: 'select', key, label, options, ...extra });
-export const opt = <F extends Field>(f: F): F => ({ ...f, optional: true });
+export { b, n, opt, sel, t, type ArrayItem, type Field, type Option, type SuggestName };
 
 export const AGENTS = ['kiro', 'clod', 'gork', 'codec', 'antigravy'] as const;
 export const MOODS = ['laugh', 'order', 'smug', 'annoyed'] as const;
@@ -115,7 +83,7 @@ function stepTitle(s: Record<string, unknown>): string {
   return `${String(s.kind)}: ${String(text).replace(/\s+/g, ' ').slice(0, 70)}`;
 }
 
-const stepsField = (key: string, label: string, extra: Partial<Base> = {}): Field => ({
+const stepsField = (key: string, label: string, extra: Partial<FieldBase> = {}): Field => ({
   type: 'array',
   key,
   label,

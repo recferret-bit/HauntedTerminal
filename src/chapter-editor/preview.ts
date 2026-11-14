@@ -2,7 +2,10 @@ import type { KernelEvent } from '../contracts/events.js';
 import { writeDraftPack } from '../chapters/draft.js';
 import { stepOutput } from '../chapters/script.js';
 import type { ChapterPack, LevelSpec, ScriptStep } from '../chapters/types.js';
-import { clear, h, type Rec } from './dom.js';
+import { renderStageBarRightGroup } from '../editor-core/chrome.js';
+import { clear, h, type Rec } from '../editor-core/dom.js';
+import { ViewportStageController } from '../editor-core/viewport-stage.js';
+import type { ChapterDockId } from './chrome.js';
 
 /** The automation hooks `src/play/loop.ts` puts on the game window. */
 interface PlayWindow extends Window {
@@ -45,13 +48,23 @@ export interface PreviewTarget {
   pack: ChapterPack;
 }
 
+export interface PreviewOpts {
+  getPack: () => ChapterPack;
+  onToggleDock?: (dock: ChapterDockId) => void;
+  onToggleZen?: () => void;
+  onRevealSelected?: () => void;
+}
+
 /**
- * The real game in an iframe, fed with the editor's unsaved draft (`?draft=1`). Because it is the game itself,
- * dialogs, animations and interactions are exactly what a player gets. The editor only types, emits and watches.
+ * Center Game Viewport (`stageEl`) + Bottom Console & Solution Walkthrough Dock (`timelineEl`).
+ * Runs the real game in an iframe fed with the editor's unsaved draft (`?draft=1`).
  */
 export class Preview {
-  readonly root: HTMLElement;
-  private readonly frame = h('iframe', { class: 'pv-frame', title: 'Game preview', allow: 'autoplay' });
+  readonly stageEl: HTMLElement;
+  readonly timelineEl: HTMLElement;
+  readonly stage: ViewportStageController;
+  private readonly levelPill = h('span', { class: 'ch-level-pill', title: 'Active level in preview' }, 'No level');
+  private readonly selPill: HTMLButtonElement;
   private readonly log = h('div', { class: 'pv-log', role: 'log', 'aria-label': 'Event log' });
   private readonly status = h('span', { class: 'pv-status', role: 'status', 'aria-live': 'polite' }, 'idle');
   private readonly stepLabel = h('span', { class: 'pv-step' });
@@ -59,22 +72,61 @@ export class Preview {
   private cursor = 0;
   private logged = 0;
   private running = false;
+  private loadToken = 0;
   private timer = 0;
   private speed = 700;
 
-  constructor(private readonly currentPack: () => ChapterPack) {
-    this.root = h('section', { class: 'pv' });
-    this.build();
+  constructor(private readonly opts: PreviewOpts) {
+    this.stage = new ViewportStageController({
+      frameTitle: 'Game preview',
+      allow: 'autoplay',
+      bindIframeCtrlWheel: true,
+    });
+    this.selPill = h('button', {
+      type: 'button',
+      class: 'cx-sel-pill',
+      hidden: true,
+      title: 'Selected spec item — click to reveal & focus in Inspector',
+      onclick: () => this.opts.onRevealSelected?.(),
+    }, '');
+
+    const stageBar = this.buildStageBar();
+    this.stageEl = h('section', { class: 'cx-stage', 'aria-label': 'Game Viewport' }, stageBar, this.stage.matEl);
+    this.timelineEl = this.buildConsoleDock();
     this.timer = window.setInterval(() => this.pollLog(), POLL_MS);
   }
 
   private get win(): PlayWindow | null {
-    return this.frame.contentWindow as PlayWindow | null;
+    return this.stage.frame.contentWindow as PlayWindow | null;
   }
 
-  private build(): void {
-    const speed = h('select', { title: 'Delay between typed commands' }, ...[300, 700, 1500, 3000].map((ms) => h('option', { value: String(ms), selected: ms === this.speed }, `${ms} ms`)));
+  private buildStageBar(): HTMLElement {
+    const gameGrp = h(
+      'div',
+      { class: 'cx-bar-grp', role: 'group', 'aria-label': 'Game viewport controls' },
+      h('span', { class: 'cx-bar-lbl' }, 'Game'),
+      this.stage.aspectBtn,
+      h('button', { type: 'button', class: 'btn small', title: 'Reload active level preview', onclick: () => this.reload() }, '↻ Reload'),
+      this.levelPill,
+    );
+    const rightGrp = renderStageBarRightGroup({
+      selReadoutBtn: this.selPill,
+      hint: 'Ctrl+Wheel: Canvas',
+      onToggleZen: this.opts.onToggleZen,
+      onHideBar: () => this.opts.onToggleDock?.('stagebar'),
+    });
+    return h('div', { class: 'cx-stage-bar' }, this.stage.buildZoomGroup('Canvas'), gameGrp, rightGrp);
+  }
+
+  private buildConsoleDock(): HTMLElement {
+    const speed = h(
+      'select',
+      { title: 'Delay between typed commands', 'aria-label': 'Command playback delay' },
+      ...[300, 700, 1500, 3000].map((ms) => h('option', { value: String(ms), selected: ms === this.speed }, `${ms} ms`)),
+    );
     speed.addEventListener('change', () => { this.speed = Number(speed.value); });
+
+    // `.pv-bar button:nth-child(2)` must remain `⏭ Next command` for harness compatibility.
     const bar = h(
       'div',
       { class: 'pv-bar' },
@@ -86,18 +138,84 @@ export class Preview {
       this.stepLabel,
       this.status,
     );
-    const send = h('input', { type: 'text', class: 'mono', placeholder: 'type a command for the player…' });
-    send.addEventListener('keydown', (e) => {
-      if (e.key !== 'Enter' || !send.value.trim()) return;
+    const consoleHead = h(
+      'div',
+      { class: 'ch-console-head', 'data-panel-drag': 'timeline' },
+      h('button', {
+        type: 'button',
+        class: 'mini cx-drag-grip',
+        'data-drag-grip': 'timeline',
+        title: 'Drag Console panel (double-click to dock)',
+        'aria-label': 'Move Console panel (Enter toggles float, Arrows nudge, Alt+Arrows resize)',
+      }, '⠿'),
+      bar,
+      h('span', { class: 'cx-bar-spacer' }),
+      h('button', {
+        type: 'button',
+        class: 'mini cx-redock-btn',
+        'data-redock': 'timeline',
+        title: 'Dock Console to bottom',
+        'aria-label': 'Dock Console to bottom',
+      }, '📌'),
+      h('button', {
+        type: 'button',
+        class: 'mini cx-dock-toggle',
+        title: 'Toggle Event Log & Console',
+        'aria-label': 'Toggle Event Log and Console drawer',
+        onclick: () => this.opts.onToggleDock?.('log'),
+      }, '⊟'),
+      h('button', {
+        type: 'button',
+        class: 'mini cx-dock-close',
+        title: 'Hide Console dock (\\)',
+        'aria-label': 'Hide Console dock',
+        onclick: () => this.opts.onToggleDock?.('timeline'),
+      }, '▾'),
+    );
+
+    const send = h('input', {
+      type: 'text',
+      class: 'mono',
+      spellcheck: 'false',
+      autocorrect: 'off',
+      autocapitalize: 'none',
+      'aria-label': 'Send command to player terminal',
+      placeholder: 'type a command for the player…',
+    });
+    const submitCommand = (): void => {
+      if (!send.value.trim()) return;
       this.win?.__term?.submit(send.value);
       send.value = '';
+    };
+    send.addEventListener('keydown', (e) => {
+      if (e.isComposing || e.keyCode === 229 || e.key !== 'Enter') return;
+      e.preventDefault();
+      submitCommand();
     });
-    this.root.append(bar, this.frame, h('div', { class: 'pv-send' }, send), this.emitBox(), h('h4', {}, 'Event log'), this.log);
+    const runCmdBtn = h('button', { type: 'button', class: 'btn small', onclick: submitCommand }, 'Run');
+    const tools = h('div', { class: 'ch-console-tools' }, h('div', { class: 'pv-send pv-send-row' }, send, runCmdBtn), this.emitBox());
+    const logPane = h(
+      'div',
+      { class: 'ch-console-log' },
+      h(
+        'div',
+        { class: 'ch-log-head' },
+        h('h4', {}, 'Event log'),
+        h('button', { type: 'button', class: 'btn small', title: 'Clear event log', onclick: () => clear(this.log) }, 'Clear'),
+      ),
+      this.log,
+    );
+    return h(
+      'section',
+      { class: 'cx-timeline', 'aria-label': 'Console and Solution Walkthrough' },
+      consoleHead,
+      h('div', { class: 'ch-console-body' }, tools, logPane),
+    );
   }
 
   private emitBox(): HTMLElement {
-    const select = h('select', {}, ...Object.keys(EVENT_PRESETS).map((k) => h('option', { value: k }, k)));
-    const area = h('textarea', { rows: 4, class: 'mono', spellcheck: 'false' });
+    const select = h('select', { 'aria-label': 'Preset event type' }, ...Object.keys(EVENT_PRESETS).map((k) => h('option', { value: k }, k)));
+    const area = h('textarea', { rows: 3, class: 'mono', spellcheck: 'false', 'aria-label': 'Event JSON payload' });
     const fill = (): void => { area.value = JSON.stringify(EVENT_PRESETS[select.value], null, 2); };
     select.addEventListener('change', fill);
     fill();
@@ -112,6 +230,19 @@ export class Preview {
     return h('details', { class: 'pv-emit' }, h('summary', {}, 'Fire an event on the stage'), h('div', { class: 'pv-emit-row' }, select, fire), area);
   }
 
+  get currentLevelId(): string {
+    return this.target?.level.id ?? '';
+  }
+
+  get livePhase(): string {
+    return this.win?.__term?.phase?.() ?? this.status.textContent ?? 'idle';
+  }
+
+  setSelectedReadout(label: string | null): void {
+    this.selPill.hidden = !label;
+    this.selPill.textContent = label ? `◎ ${label}` : '';
+  }
+
   private setStatus(text: string): void {
     this.status.textContent = text;
   }
@@ -123,39 +254,40 @@ export class Preview {
 
   /** Loads `level` with the current draft and waits until the terminal is live. */
   load(level: LevelSpec): void {
-    this.target = { level, pack: this.currentPack() };
+    this.target = { level, pack: this.opts.getPack() };
     this.reload();
   }
 
   reload(): void {
     if (!this.target) return;
-    const pack = this.currentPack();
+    const pack = this.opts.getPack();
     const level = pack.levels.find((l) => l.id === this.target?.level.id) ?? this.target.level;
     this.target = { level, pack };
+    this.levelPill.textContent = `${String(level.index).padStart(2, '0')} · ${level.id}`;
     this.running = false;
     this.cursor = 0;
     this.logged = 0;
     clear(this.log);
     this.updateStepLabel();
     writeDraftPack(pack);
-    const url = `/play/${encodeURIComponent(pack.manifest.id)}/${encodeURIComponent(level.id)}?draft=1&nointro=1&t=${Date.now()}`;
+    const token = ++this.loadToken;
+    const url = `/play/${encodeURIComponent(pack.manifest.id)}/${encodeURIComponent(level.id)}?draft=1&nointro=1&t=${Date.now()}&seq=${token}`;
     this.setStatus('loading…');
-    this.frame.src = url;
-    void this.waitUntilLive();
+    this.stage.frame.src = url;
+    void this.waitUntilLive(token);
   }
 
-  private async waitUntilLive(): Promise<boolean> {
+  private async waitUntilLive(token = this.loadToken): Promise<boolean> {
     const started = Date.now();
-    const src = this.frame.src;
     while (Date.now() - started < BOOT_TIMEOUT_MS) {
-      if (this.frame.src !== src) return false;
+      if (token !== this.loadToken) return false;
       if (this.win?.__term?.phase?.() === 'play') {
         this.setStatus('live');
         return true;
       }
       await new Promise((r) => window.setTimeout(r, 250));
     }
-    this.setStatus('the game did not start (see the iframe)');
+    if (token === this.loadToken) this.setStatus('the game did not start (see the iframe)');
     return false;
   }
 
@@ -175,6 +307,10 @@ export class Preview {
       this.setStatus('solution finished');
       return;
     }
+    if (this.win?.__term?.phase?.() !== 'play') {
+      const live = await this.waitUntilLive();
+      if (!live || this.win?.__term?.phase?.() !== 'play') return;
+    }
     this.cursor += 1;
     this.updateStepLabel();
     this.setStatus(`$ ${next}`);
@@ -183,18 +319,22 @@ export class Preview {
 
   async runAll(): Promise<void> {
     if (this.running || !this.target) return;
+    const token = this.loadToken;
     this.running = true;
-    while (this.running && this.cursor < this.target.level.solutionCommands.length) {
+    while (this.running && token === this.loadToken && this.cursor < this.target.level.solutionCommands.length) {
       await this.stepOnce();
+      if (!this.running || token !== this.loadToken) break;
       await new Promise((r) => window.setTimeout(r, this.speed));
     }
-    this.running = false;
-    this.setStatus(this.cursor >= (this.target?.level.solutionCommands.length ?? 0) ? 'solution finished' : 'stopped');
+    if (token === this.loadToken) {
+      this.running = false;
+      this.setStatus(this.cursor >= (this.target?.level.solutionCommands.length ?? 0) ? 'solution finished' : 'stopped');
+    }
   }
 
   /** Plays one script step on the live stage (dialog bubble, taunt, emote, tutorial card...). */
   playStep(step: ScriptStep): void {
-    const pack = this.currentPack();
+    const pack = this.opts.getPack();
     const levelId = this.target?.level.id ?? '';
     const spec = pack.levels.find((l) => l.id === levelId);
     const out = stepOutput(step, {
@@ -226,11 +366,5 @@ export class Preview {
 
   dispose(): void {
     window.clearInterval(this.timer);
-  }
-
-  /** URL of the same level in a full browser tab (draft included). */
-  playUrl(): string {
-    const t = this.target;
-    return t ? `/play/${encodeURIComponent(t.pack.manifest.id)}/${encodeURIComponent(t.level.id)}?draft=1&nointro=1` : '#';
   }
 }
