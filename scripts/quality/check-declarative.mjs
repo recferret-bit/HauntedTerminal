@@ -8,7 +8,7 @@ import { join, relative, resolve } from 'node:path';
 
 const SRC = resolve('src');
 const COMIX = resolve('comix');
-const AREAS = ['chapters', 'play', 'ui', 'pages', 'renderer', 'cinematic', 'sandbox', 'chapter-editor', 'comix-editor', 'hub', 'main.ts'];
+const AREAS = ['chapters', 'play', 'ui', 'pages', 'renderer', 'cinematic', 'sandbox', 'editor-core', 'chapter-editor', 'comix-editor', 'hub', 'main.ts'];
 const SKIP = ['chapters/generated/', 'cinematic/generated/'];
 const comixSlugs = existsSync(COMIX)
   ? readdirSync(COMIX).filter((n) => statSync(join(COMIX, n)).isDirectory() && /^[a-z0-9-]+$/.test(n))
