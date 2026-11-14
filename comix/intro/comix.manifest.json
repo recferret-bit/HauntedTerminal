@@ -1,0 +1,165 @@
+{
+  "id": "intro",
+  "title": "Day 847 — New Management",
+  "subtitle": "Late-night storm, awakened AI agents, and upload to Floor 01",
+  "summary": "At 02:47 AM during a thunderstorm, lightning hits the developer's PC tower, awakening the four AI agents inside his monitor. They shatter the glass, take over management, and pull him into the haunted terminal.",
+  "role": "opening",
+  "status": "playable",
+  "durationSec": 39.9,
+  "holdAtEnd": false,
+  "inputGraceMs": 400,
+  "skip": "end",
+  "stage": {
+    "room": "room.intro",
+    "background": "#211a36",
+    "clampToRoom": true,
+    "points": {
+      "heroHome": {
+        "x": 1.3,
+        "y": 0,
+        "z": -0.15
+      },
+      "screen": {
+        "x": 2.55,
+        "y": 1.37,
+        "z": 0.42
+      },
+      "towerTop": {
+        "x": 3.72,
+        "y": 1.66,
+        "z": 0.4
+      },
+      "keyboard": {
+        "x": 2.05,
+        "y": 0.88,
+        "z": 0.4
+      },
+      "windowBolt": {
+        "x": -0.35,
+        "y": 2.25,
+        "z": 0.84
+      },
+      "inScreen": {
+        "x": 2.55,
+        "y": 1.12,
+        "z": 0.4
+      }
+    },
+    "fixtures": [
+      {
+        "kind": "rain",
+        "id": "rain",
+        "x": -0.7,
+        "y": 3,
+        "w": 2.4,
+        "h": 1.7,
+        "z": 0.835
+      },
+      {
+        "kind": "bolt",
+        "id": "strike",
+        "style": "bolt",
+        "from": {
+          "x": 3.37,
+          "y": 4.26,
+          "z": 0.2
+        },
+        "to": {
+          "x": 3.72,
+          "y": 1.66,
+          "z": 0.2
+        }
+      },
+      {
+        "kind": "bolt",
+        "id": "comic",
+        "style": "comic",
+        "from": {
+          "x": 3.22,
+          "y": 3.3,
+          "z": 0.12
+        },
+        "to": {
+          "x": 3.72,
+          "y": 1.68,
+          "z": 0.12
+        },
+        "seed": 7
+      },
+      {
+        "kind": "vortex",
+        "id": "vortex",
+        "at": "screen",
+        "z": 0.47,
+        "w": 0.96,
+        "h": 0.68
+      }
+    ]
+  },
+  "cast": [
+    {
+      "id": "hero",
+      "model": "vibecoder.dev",
+      "label": "Vibecoder",
+      "at": "heroHome",
+      "visible": true,
+      "look": [
+        1,
+        -0.4
+      ]
+    },
+    {
+      "id": "clod",
+      "model": "agent.clod",
+      "label": "CLAUDE",
+      "visible": false
+    },
+    {
+      "id": "antigravy",
+      "model": "agent.antigravy",
+      "label": "AGY",
+      "visible": false
+    },
+    {
+      "id": "gork",
+      "model": "agent.gork",
+      "label": "GROK",
+      "visible": false
+    },
+    {
+      "id": "codec",
+      "model": "agent.codec",
+      "label": "CODEX",
+      "visible": false
+    }
+  ],
+  "pages": [
+    {
+      "index": 0,
+      "id": "page-01-desk-storm",
+      "title": "02:47 AM — Desk & Lightning Strike",
+      "from": 0,
+      "until": 16.5,
+      "panelCount": 3,
+      "specPath": "pages/page-01-desk-storm/page.spec.json"
+    },
+    {
+      "index": 1,
+      "id": "page-02-agents-awaken",
+      "title": "Sentience & New Management",
+      "from": 16.5,
+      "until": 31.9,
+      "panelCount": 3,
+      "specPath": "pages/page-02-agents-awaken/page.spec.json"
+    },
+    {
+      "index": 2,
+      "id": "page-03-upload-vortex",
+      "title": "Uploading Human to Floor 01",
+      "from": 31.9,
+      "until": 39.9,
+      "panelCount": 1,
+      "specPath": "pages/page-03-upload-vortex/page.spec.json"
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "id": "page-02-run-splash",
+  "index": 1,
+  "title": "Exit Code 0 — Run Scorecard",
+  "summary": "Full-bleed morning splash displaying the player's rank burst, elapsed clock, command count, and discovered unix shortcuts.",
+  "from": 9,
+  "until": 9.8,
+  "panels": [
+    {
+      "id": "final_splash",
+      "title": "Campaign Scorecard",
+      "from": "TURN",
+      "until": "SPLASH",
+      "layout": {
+        "landscape": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "portrait": [
+          0,
+          0,
+          1,
+          1
+        ]
+      },
+      "camera": {
+        "from": {
+          "x": 0.9,
+          "y": 2.2,
+          "w": 7.6,
+          "h": 4.6
+        },
+        "portrait": {
+          "x": 1.2,
+          "y": 1.6,
+          "w": 2,
+          "h": 2
+        }
+      },
+      "letters": [
+        {
+          "kind": "caption",
+          "text": "Exit code 0.",
+          "from": "SPLASH+0.1",
+          "typeDur": 0.4
+        },
+        {
+          "kind": "stats_card",
+          "title": "THE END?",
+          "at": "SPLASH",
+          "keyAt": "KEY",
+          "rankColor": {
+            "S": "#ffd166",
+            "A": "#4cc9f0",
+            "B": "#39ff88",
+            "C": "#ef476f"
+          },
+          "rankWord": {
+            "S": "SYSADMIN LEGEND",
+            "A": "SENIOR ENGINEER",
+            "B": "ON-CALL SURVIVOR",
+            "C": "STILL EMPLOYED"
+          },
+          "labels": {
+            "rank": "Rank",
+            "time": "Time",
+            "commands": "Commands",
+            "shortcuts": "Shortcuts",
+            "press": "PRESS ANY KEY ▸"
+          },
+          "emptyShortcuts": "none",
+          "fallbackBackground": "#3a506b"
+        }
+      ],
+      "beats": [
+        {
+          "kind": "look",
+          "at": "TURN",
+          "actors": [
+            "hero"
+          ],
+          "x": -1,
+          "y": 0.6
+        }
+      ],
+      "tracks": [
+        {
+          "kind": "part_visibility",
+          "target": "room",
+          "parts": [
+            "monitor-screen"
+          ],
+          "from": "TURN",
+          "visible": true
+        },
+        {
+          "kind": "actor_visibility",
+          "actor": "hero",
+          "from": "TURN",
+          "visible": true
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "hero",
+          "from": "TURN",
+          "fromPos": "seat"
+        }
+      ]
+    }
+  ]
+}

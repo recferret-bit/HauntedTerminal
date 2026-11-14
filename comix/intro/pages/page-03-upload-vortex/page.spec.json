@@ -1,0 +1,333 @@
+{
+  "id": "page-03-upload-vortex",
+  "index": 2,
+  "title": "Uploading Human to Floor 01",
+  "summary": "The broken monitor's vortex stretches the developer into the screen, dissolves the room into coarse pixels, and flashes to the Floor 01 title card.",
+  "from": 31.9,
+  "until": 39.9,
+  "cues": {
+    "PULL": 32.3,
+    "DISSOLVE": 33.9,
+    "PULL_END": 34.7,
+    "WHITE": 35.1,
+    "CARD": 36.1,
+    "END": 39.9
+  },
+  "overlays": [
+    {
+      "kind": "title_card",
+      "at": "CARD",
+      "title": "ENTERING FLOOR 01",
+      "subtitle": "// /home/dev/nightmare_workspace",
+      "typeFrom": "CARD+0.5",
+      "typeTo": "CARD+2.0",
+      "fadeFrom": "END-0.5",
+      "fadeTo": "END"
+    }
+  ],
+  "tracks": [
+    {
+      "kind": "fixture",
+      "fixture": "rain",
+      "from": "31.9",
+      "until": "CARD"
+    },
+    {
+      "kind": "fixture",
+      "fixture": "vortex",
+      "from": "31.9",
+      "until": "WHITE+0.4"
+    },
+    {
+      "kind": "part_visibility",
+      "target": "room",
+      "parts": [
+        "code-line",
+        "cursor",
+        "monitor-screen"
+      ],
+      "from": "31.9",
+      "until": "END",
+      "visible": false
+    },
+    {
+      "kind": "material_tint",
+      "target": "room",
+      "zone": "powerAmber",
+      "from": "31.9",
+      "until": "END",
+      "color": "#ef233c"
+    },
+    {
+      "kind": "actor_rig",
+      "actor": "hero",
+      "from": "31.9",
+      "until": "WHITE",
+      "typing": 0,
+      "restRightArm": true,
+      "hideParts": [
+        "lantern"
+      ]
+    },
+    {
+      "kind": "actor_visibility",
+      "actor": "clod",
+      "from": "31.9",
+      "until": "CARD",
+      "visible": true
+    },
+    {
+      "kind": "actor_visibility",
+      "actor": "antigravy",
+      "from": "31.9",
+      "until": "CARD",
+      "visible": true
+    },
+    {
+      "kind": "actor_visibility",
+      "actor": "gork",
+      "from": "31.9",
+      "until": "CARD",
+      "visible": true
+    },
+    {
+      "kind": "actor_visibility",
+      "actor": "codec",
+      "from": "31.9",
+      "until": "CARD",
+      "visible": true
+    },
+    {
+      "kind": "actor_motion",
+      "actor": "clod",
+      "from": "31.9",
+      "until": "CARD",
+      "fromPos": {
+        "x": 3.25,
+        "y": 1.75,
+        "z": -0.5
+      },
+      "scaleFrom": 0.7
+    },
+    {
+      "kind": "actor_motion",
+      "actor": "gork",
+      "from": "31.9",
+      "until": "CARD",
+      "fromPos": {
+        "x": 1,
+        "y": 1.8,
+        "z": -0.5
+      },
+      "scaleFrom": 0.68
+    },
+    {
+      "kind": "actor_motion",
+      "actor": "antigravy",
+      "from": "31.9",
+      "until": "CARD",
+      "fromPos": {
+        "x": 2.1,
+        "y": 1.95,
+        "z": -0.5
+      },
+      "scaleFrom": 0.68
+    },
+    {
+      "kind": "actor_motion",
+      "actor": "codec",
+      "from": "31.9",
+      "until": "CARD",
+      "fromPos": {
+        "x": -0.15,
+        "y": 1.7,
+        "z": -0.5
+      },
+      "scaleFrom": 0.7
+    }
+  ],
+  "panels": [
+    {
+      "id": "human_upload",
+      "title": "Vortex Pull & Pixel Dissolve",
+      "from": "31.9",
+      "until": "39.9",
+      "layout": {
+        "landscape": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "portrait": [
+          0,
+          0,
+          1,
+          1
+        ]
+      },
+      "camera": {
+        "from": {
+          "x": 1.95,
+          "y": 1.3,
+          "w": 3.8,
+          "h": 2.6
+        },
+        "to": {
+          "x": 2.35,
+          "y": 1.35,
+          "w": 3,
+          "h": 2.1
+        },
+        "span": [
+          "PULL",
+          "WHITE"
+        ],
+        "ease": "in"
+      },
+      "letters": [
+        {
+          "kind": "banner",
+          "text": "UPLOADING HUMAN...",
+          "at": "PULL+0.1",
+          "edge": "top"
+        },
+        {
+          "kind": "banner",
+          "text": "PLEASE DO NOT TURN OFF YOUR DEVELOPER",
+          "at": "PULL+1.0",
+          "edge": "bottom"
+        },
+        {
+          "kind": "sfx",
+          "text": "SHLUUURRP!",
+          "at": "PULL+0.3",
+          "hold": 2.4,
+          "color": "#9b5de5",
+          "tilt": -6,
+          "anchor": "frac",
+          "x": 0.66,
+          "y": 0.66,
+          "size": 0.13,
+          "activePanelOnly": true
+        },
+        {
+          "kind": "panel_flash",
+          "at": "WHITE",
+          "dur": 0.5,
+          "opacity": 0.92,
+          "hold": true,
+          "activePanelOnly": true
+        }
+      ],
+      "beats": [
+        {
+          "kind": "look",
+          "at": "31.9",
+          "actors": [
+            "clod",
+            "antigravy",
+            "gork",
+            "codec"
+          ],
+          "x": -1,
+          "y": -0.5
+        },
+        {
+          "kind": "audio",
+          "at": "31.9",
+          "cue": "rain_off"
+        },
+        {
+          "kind": "audio",
+          "at": "PULL",
+          "cue": "zap",
+          "seconds": 2.6
+        },
+        {
+          "kind": "fx_repeat",
+          "at": "PULL+0.2",
+          "step": 0.62,
+          "count": 4,
+          "preset": "fx.devnull-suck",
+          "point": "screen",
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": -0.22
+          },
+          "seed": 11,
+          "scale": 1.2
+        },
+        {
+          "kind": "audio",
+          "at": "WHITE",
+          "cue": "burst"
+        }
+      ],
+      "tracks": [
+        {
+          "kind": "actor_motion",
+          "actor": "hero",
+          "from": "PULL",
+          "until": "WHITE",
+          "span": [
+            "PULL",
+            "PULL_END"
+          ],
+          "fromPos": "heroHome",
+          "toPos": "screen",
+          "ease": "in",
+          "steps": 10,
+          "deform": "stretch_to_target"
+        },
+        {
+          "kind": "actor_visibility",
+          "actor": "hero",
+          "from": "WHITE",
+          "until": "END",
+          "visible": false
+        },
+        {
+          "kind": "stage_light",
+          "anchor": "screen",
+          "from": "PULL",
+          "until": "PULL_END",
+          "intensity": 0,
+          "intensityTo": 0.35,
+          "ease": "quad"
+        },
+        {
+          "kind": "stage_light",
+          "anchor": "screen",
+          "from": "PULL_END",
+          "until": "END",
+          "intensity": 0.35
+        },
+        {
+          "kind": "camera_shake",
+          "from": "PULL",
+          "until": "PULL_END",
+          "amp": 0.012,
+          "ampTo": 0.032
+        },
+        {
+          "kind": "camera_shake",
+          "from": "PULL_END",
+          "until": "WHITE",
+          "amp": 0.032,
+          "ampTo": 0.032
+        },
+        {
+          "kind": "pixelate",
+          "from": "DISSOLVE",
+          "until": "WHITE",
+          "sizeFrom": 3.5,
+          "sizeTo": 27.5,
+          "steps": 6,
+          "ease": "in"
+        }
+      ]
+    }
+  ]
+}

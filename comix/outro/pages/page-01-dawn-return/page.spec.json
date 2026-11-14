@@ -1,0 +1,483 @@
+{
+  "id": "page-01-dawn-return",
+  "index": 0,
+  "title": "Reverse Storm & Dawn Desk",
+  "summary": "Reverse lightning blasts out of the monitor, flinging the Vibecoder back into his chair and shattering the pursuing agents before a quiet dawn settles.",
+  "from": 0,
+  "until": 9,
+  "cues": {
+    "REVERSE": 0.5,
+    "LAND": 1.5,
+    "SHATTER": 2.1,
+    "DAWN": 5
+  },
+  "turn": {
+    "from": "TURN",
+    "to": "SPLASH",
+    "ease": "quad"
+  },
+  "panels": [
+    {
+      "id": "reverse_storm",
+      "title": "The Storm Runs Backwards",
+      "from": "0",
+      "until": "5",
+      "layout": {
+        "landscape": [
+          0,
+          0,
+          0.6,
+          1
+        ],
+        "portrait": [
+          0,
+          0,
+          1,
+          0.56
+        ]
+      },
+      "camera": {
+        "from": {
+          "x": 2,
+          "y": 1.75,
+          "w": 4.2,
+          "h": 3.6
+        }
+      },
+      "letters": [
+        {
+          "kind": "caption",
+          "text": "Then the storm ran backwards.",
+          "from": "+0.15",
+          "typeDur": 0.95
+        },
+        {
+          "kind": "sfx",
+          "text": "MOOKARK!",
+          "at": "REVERSE+0.05",
+          "hold": 1.2,
+          "color": "#4cc9f0",
+          "tilt": 8,
+          "anchor": "frac",
+          "x": 0.5,
+          "y": 0.24,
+          "size": 0.15,
+          "activePanelOnly": true
+        },
+        {
+          "kind": "sfx",
+          "text": "THUD!",
+          "at": "LAND",
+          "hold": 0.9,
+          "color": "#ffd166",
+          "tilt": -10,
+          "anchor": "point",
+          "point": "seat",
+          "dx": -0.05,
+          "dy": -0.05,
+          "size": 0.11,
+          "activePanelOnly": true
+        },
+        {
+          "kind": "sfx",
+          "text": "KSSHH!",
+          "at": "SHATTER",
+          "hold": 1,
+          "color": "#ef476f",
+          "tilt": 6,
+          "anchor": "frac",
+          "x": 0.62,
+          "y": 0.34,
+          "size": 0.11,
+          "activePanelOnly": true
+        },
+        {
+          "kind": "panel_flash",
+          "at": "REVERSE",
+          "dur": 0.08,
+          "opacity": 1,
+          "activePanelOnly": true
+        }
+      ],
+      "beats": [
+        {
+          "kind": "lightning",
+          "at": "REVERSE",
+          "point": "monitor",
+          "power": 0,
+          "flash": 2.2,
+          "audio": "thunder"
+        },
+        {
+          "kind": "audio",
+          "at": "REVERSE",
+          "cue": "zap",
+          "seconds": 1,
+          "reverse": true
+        },
+        {
+          "kind": "fx",
+          "at": "LAND",
+          "preset": "fx.hop",
+          "point": "seat",
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": -0.15
+          },
+          "seed": 4,
+          "text": "HOME!"
+        },
+        {
+          "kind": "state",
+          "at": "SHATTER",
+          "actors": [
+            "clod",
+            "gork",
+            "codec",
+            "antigravy"
+          ],
+          "state": "death"
+        },
+        {
+          "kind": "fx",
+          "at": "SHATTER",
+          "preset": "fx.malware-death",
+          "point": "fling0",
+          "offset": {
+            "x": 0,
+            "y": 0.45,
+            "z": -0.2
+          },
+          "seed": 20,
+          "scale": 0.8
+        },
+        {
+          "kind": "fx",
+          "at": "SHATTER",
+          "preset": "fx.malware-hit",
+          "point": "fling1",
+          "offset": {
+            "x": 0,
+            "y": 0.45,
+            "z": -0.2
+          },
+          "seed": 21,
+          "scale": 0.8
+        },
+        {
+          "kind": "fx",
+          "at": "SHATTER",
+          "preset": "fx.malware-hit",
+          "point": "fling2",
+          "offset": {
+            "x": 0,
+            "y": 0.45,
+            "z": -0.15
+          },
+          "seed": 22,
+          "scale": 0.8
+        },
+        {
+          "kind": "fx",
+          "at": "SHATTER",
+          "preset": "fx.malware-hit",
+          "point": "fling3",
+          "offset": {
+            "x": 0,
+            "y": 0.45,
+            "z": -0.2
+          },
+          "seed": 23,
+          "scale": 0.8
+        },
+        {
+          "kind": "audio",
+          "at": "SHATTER",
+          "cue": "shatter"
+        },
+        {
+          "kind": "look",
+          "at": "LAND+0.8",
+          "actors": [
+            "hero"
+          ],
+          "x": -1,
+          "y": 0.2
+        }
+      ],
+      "tracks": [
+        {
+          "kind": "part_visibility",
+          "target": "room",
+          "parts": [
+            "monitor-screen"
+          ],
+          "from": "0",
+          "until": "TURN",
+          "visible": true
+        },
+        {
+          "kind": "actor_visibility",
+          "actor": "hero",
+          "from": "REVERSE+0.1",
+          "until": "TURN",
+          "visible": true
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "hero",
+          "from": "REVERSE+0.1",
+          "until": "TURN",
+          "span": [
+            "REVERSE+0.1",
+            "LAND"
+          ],
+          "fromPos": {
+            "x": 3,
+            "y": 1.22,
+            "z": 0.3
+          },
+          "toPos": "seat",
+          "arc": 1.1,
+          "stretchFrom": [
+            0.25,
+            1.8
+          ],
+          "stretchTo": [
+            1,
+            1
+          ],
+          "rotZFrom": 0.9,
+          "rotZTo": 0,
+          "steps": 9,
+          "deform": "squash_land"
+        },
+        {
+          "kind": "actor_visibility",
+          "actor": "clod",
+          "from": "REVERSE+0.4",
+          "until": "TURN",
+          "visible": true,
+          "hideWhenDead": true
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "clod",
+          "from": "REVERSE+0.4",
+          "until": "TURN",
+          "span": [
+            "REVERSE+0.4",
+            "SHATTER-0.1"
+          ],
+          "fromPos": {
+            "x": 3,
+            "y": 1.32,
+            "z": 0.3
+          },
+          "toPos": "fling0",
+          "scaleFrom": 0.1,
+          "scaleTo": 0.62,
+          "ease": "outBack",
+          "steps": 6,
+          "hideWhenDead": true
+        },
+        {
+          "kind": "actor_visibility",
+          "actor": "gork",
+          "from": "REVERSE+0.52",
+          "until": "TURN",
+          "visible": true,
+          "hideWhenDead": true
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "gork",
+          "from": "REVERSE+0.52",
+          "until": "TURN",
+          "span": [
+            "REVERSE+0.52",
+            "SHATTER-0.1"
+          ],
+          "fromPos": {
+            "x": 3,
+            "y": 1.32,
+            "z": 0.3
+          },
+          "toPos": "fling1",
+          "scaleFrom": 0.1,
+          "scaleTo": 0.62,
+          "ease": "outBack",
+          "steps": 6,
+          "hideWhenDead": true
+        },
+        {
+          "kind": "actor_visibility",
+          "actor": "codec",
+          "from": "REVERSE+0.64",
+          "until": "TURN",
+          "visible": true,
+          "hideWhenDead": true
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "codec",
+          "from": "REVERSE+0.64",
+          "until": "TURN",
+          "span": [
+            "REVERSE+0.64",
+            "SHATTER-0.1"
+          ],
+          "fromPos": {
+            "x": 3,
+            "y": 1.32,
+            "z": 0.3
+          },
+          "toPos": "fling2",
+          "scaleFrom": 0.1,
+          "scaleTo": 0.62,
+          "ease": "outBack",
+          "steps": 6,
+          "hideWhenDead": true
+        },
+        {
+          "kind": "actor_visibility",
+          "actor": "antigravy",
+          "from": "REVERSE+0.76",
+          "until": "TURN",
+          "visible": true,
+          "hideWhenDead": true
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "antigravy",
+          "from": "REVERSE+0.76",
+          "until": "TURN",
+          "span": [
+            "REVERSE+0.76",
+            "SHATTER-0.1"
+          ],
+          "fromPos": {
+            "x": 3,
+            "y": 1.32,
+            "z": 0.3
+          },
+          "toPos": "fling3",
+          "scaleFrom": 0.1,
+          "scaleTo": 0.62,
+          "ease": "outBack",
+          "steps": 6,
+          "hideWhenDead": true
+        },
+        {
+          "kind": "stage_light",
+          "anchor": "monitor",
+          "from": "0",
+          "until": "REVERSE",
+          "intensity": 0.35,
+          "blinkHz": 12,
+          "blinkAmp": 0.45
+        },
+        {
+          "kind": "stage_light",
+          "anchor": "monitor",
+          "from": "REVERSE",
+          "until": "SHATTER+0.3",
+          "intensity": 0.4
+        },
+        {
+          "kind": "fixture",
+          "fixture": "reverse",
+          "from": "REVERSE",
+          "until": "REVERSE+0.6",
+          "flickerHz": 20,
+          "flickerEvery": 3,
+          "flickerSkip": 2
+        },
+        {
+          "kind": "camera_shake",
+          "from": "REVERSE",
+          "until": "REVERSE+0.5",
+          "amp": 0.08,
+          "ampTo": 0
+        },
+        {
+          "kind": "camera_shake",
+          "from": "LAND",
+          "until": "LAND+0.3",
+          "amp": 0.05,
+          "ampTo": 0
+        }
+      ]
+    },
+    {
+      "id": "dawn_desk",
+      "title": "Dawn & Green Build",
+      "from": "5",
+      "until": "9",
+      "layout": {
+        "landscape": [
+          0.6,
+          0,
+          0.4,
+          1
+        ],
+        "portrait": [
+          0,
+          0.56,
+          1,
+          0.44
+        ]
+      },
+      "camera": {
+        "from": {
+          "x": 0.2,
+          "y": 1.95,
+          "w": 3,
+          "h": 3.4
+        }
+      },
+      "letters": [
+        {
+          "kind": "caption",
+          "text": "Dawn. Production is green.",
+          "from": "+0.2",
+          "typeDur": 1.1
+        },
+        {
+          "kind": "bubble",
+          "text": "...was it all a dream?",
+          "at": "+1.8",
+          "style": "thought",
+          "activePanelOnly": true,
+          "anchor": "panel",
+          "x": 0.5,
+          "y": 0.2,
+          "w": 0.8,
+          "wChars": 10,
+          "yFloor": 3.8,
+          "fontH": 0.065,
+          "fontW": 0.065,
+          "minFont": 13,
+          "fontOfMin": 0.065,
+          "tailPoint": {
+            "x": 0.95,
+            "y": 1.75,
+            "z": -0.2
+          }
+        }
+      ],
+      "beats": [
+        {
+          "kind": "look",
+          "at": "+1.0",
+          "actors": [
+            "hero"
+          ],
+          "x": -1,
+          "y": 0.6
+        }
+      ]
+    }
+  ]
+}

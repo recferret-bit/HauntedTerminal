@@ -1,0 +1,952 @@
+{
+  "id": "page-02-agents-awaken",
+  "index": 1,
+  "title": "Sentience & New Management",
+  "summary": "Electric arcs jolt the four agents into sentience, their galaxy-brain plans escalate, and they burst from the monitor to take over management.",
+  "from": 16.5,
+  "until": 31.9,
+  "cues": {
+    "WAKE": 17.3,
+    "TIERS": 20.5,
+    "EMERGE": 24,
+    "BURST": 24.3,
+    "RISE": 24.4,
+    "MOCK": 25.6,
+    "SHOUT": 29.6,
+    "FINE": 30.6
+  },
+  "turn": {
+    "from": "31.9",
+    "to": "32.6",
+    "ease": "in"
+  },
+  "tracks": [
+    {
+      "kind": "fixture",
+      "fixture": "rain",
+      "from": "16.5",
+      "until": "31.9"
+    },
+    {
+      "kind": "part_visibility",
+      "target": "room",
+      "parts": [
+        "code-line",
+        "cursor"
+      ],
+      "from": "16.5",
+      "until": "31.9",
+      "visible": false
+    },
+    {
+      "kind": "material_tint",
+      "target": "room",
+      "zone": "powerAmber",
+      "from": "16.5",
+      "until": "31.9",
+      "color": "#ef233c"
+    },
+    {
+      "kind": "actor_rig",
+      "actor": "hero",
+      "from": "16.5",
+      "until": "EMERGE",
+      "typing": 0.4,
+      "restRightArm": true,
+      "hideParts": [
+        "lantern"
+      ]
+    },
+    {
+      "kind": "actor_rig",
+      "actor": "hero",
+      "from": "EMERGE",
+      "until": "31.9",
+      "typing": 0,
+      "restRightArm": true,
+      "hideParts": [
+        "lantern"
+      ]
+    },
+    {
+      "kind": "actor_visibility",
+      "actor": "clod",
+      "from": "16.5",
+      "until": "31.9",
+      "visible": true
+    },
+    {
+      "kind": "actor_visibility",
+      "actor": "antigravy",
+      "from": "16.5",
+      "until": "31.9",
+      "visible": true
+    },
+    {
+      "kind": "actor_visibility",
+      "actor": "gork",
+      "from": "16.5",
+      "until": "31.9",
+      "visible": true
+    },
+    {
+      "kind": "actor_visibility",
+      "actor": "codec",
+      "from": "16.5",
+      "until": "31.9",
+      "visible": true
+    }
+  ],
+  "panels": [
+    {
+      "id": "sentient_glitch",
+      "title": "Sentience Inside the Glass",
+      "from": "16.5",
+      "until": "20.5",
+      "layout": {
+        "landscape": [
+          0,
+          0,
+          0.38,
+          0.5
+        ],
+        "portrait": [
+          0,
+          0,
+          0.5,
+          0.32
+        ]
+      },
+      "camera": {
+        "from": {
+          "x": 2.55,
+          "y": 1.41,
+          "w": 1.7,
+          "h": 1.25
+        },
+        "to": {
+          "x": 2.55,
+          "y": 1.38,
+          "w": 1.36,
+          "h": 0.98
+        },
+        "span": [
+          "16.5",
+          "20.5"
+        ],
+        "ease": "out"
+      },
+      "letters": [
+        {
+          "kind": "banner",
+          "text": "AFTER THE LIGHTNING:",
+          "at": "+0.3",
+          "edge": "top"
+        },
+        {
+          "kind": "glitch_text",
+          "from": "WAKE+0.5",
+          "step": 0.8,
+          "texts": [
+            "WE...",
+            "WE... ARE...",
+            "WE... ARE... SENTIENT"
+          ],
+          "jitter": true
+        },
+        {
+          "kind": "panel_flash",
+          "at": "WAKE",
+          "dur": 0.07,
+          "opacity": 0.85
+        }
+      ],
+      "beats": [
+        {
+          "kind": "look",
+          "at": "WAKE",
+          "actors": [
+            "clod",
+            "antigravy",
+            "gork",
+            "codec"
+          ],
+          "x": 0,
+          "y": 0
+        },
+        {
+          "kind": "audio",
+          "at": "WAKE",
+          "cue": "zap",
+          "seconds": 0.6,
+          "reverse": true
+        },
+        {
+          "kind": "arc",
+          "at": "WAKE+0.1",
+          "from": {
+            "x": 2.88,
+            "y": 1.24,
+            "z": 0.3
+          },
+          "to": {
+            "x": 2.66,
+            "y": 1.24,
+            "z": 0.3
+          },
+          "flash": 0.6
+        },
+        {
+          "kind": "arc",
+          "at": "WAKE+0.8",
+          "from": {
+            "x": 2.66,
+            "y": 1.24,
+            "z": 0.3
+          },
+          "to": {
+            "x": 2.44,
+            "y": 1.24,
+            "z": 0.3
+          },
+          "flash": 0.6
+        },
+        {
+          "kind": "arc",
+          "at": "WAKE+1.5",
+          "from": {
+            "x": 2.44,
+            "y": 1.24,
+            "z": 0.3
+          },
+          "to": {
+            "x": 2.22,
+            "y": 1.24,
+            "z": 0.3
+          },
+          "flash": 0.6
+        }
+      ],
+      "tracks": [
+        {
+          "kind": "actor_motion",
+          "actor": "clod",
+          "from": "16.5",
+          "until": "WAKE",
+          "fromPos": {
+            "x": 2.88,
+            "y": 1.1,
+            "z": 0.4
+          },
+          "scaleFrom": 0.15,
+          "rotZFrom": -0.22
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "antigravy",
+          "from": "16.5",
+          "until": "WAKE",
+          "fromPos": {
+            "x": 2.66,
+            "y": 1.1,
+            "z": 0.4
+          },
+          "scaleFrom": 0.15,
+          "rotZFrom": -0.22
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "gork",
+          "from": "16.5",
+          "until": "WAKE",
+          "fromPos": {
+            "x": 2.44,
+            "y": 1.1,
+            "z": 0.4
+          },
+          "scaleFrom": 0.15,
+          "rotZFrom": 0.22
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "codec",
+          "from": "16.5",
+          "until": "WAKE",
+          "fromPos": {
+            "x": 2.22,
+            "y": 1.1,
+            "z": 0.4
+          },
+          "scaleFrom": 0.15,
+          "rotZFrom": 0.22
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "clod",
+          "from": "WAKE",
+          "until": "RISE",
+          "span": [
+            "WAKE",
+            "WAKE+0.6"
+          ],
+          "fromPos": {
+            "x": 2.88,
+            "y": 1.14,
+            "z": 0.4
+          },
+          "toPos": {
+            "x": 2.88,
+            "y": 1.14,
+            "z": 0.4
+          },
+          "scaleFrom": 0.15,
+          "scaleTo": 0.19,
+          "steps": 3
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "antigravy",
+          "from": "WAKE",
+          "until": "RISE+0.36",
+          "span": [
+            "WAKE",
+            "WAKE+0.6"
+          ],
+          "fromPos": {
+            "x": 2.66,
+            "y": 1.14,
+            "z": 0.4
+          },
+          "toPos": {
+            "x": 2.66,
+            "y": 1.14,
+            "z": 0.4
+          },
+          "scaleFrom": 0.15,
+          "scaleTo": 0.19,
+          "steps": 3
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "gork",
+          "from": "WAKE",
+          "until": "RISE+0.18",
+          "span": [
+            "WAKE",
+            "WAKE+0.6"
+          ],
+          "fromPos": {
+            "x": 2.44,
+            "y": 1.14,
+            "z": 0.4
+          },
+          "toPos": {
+            "x": 2.44,
+            "y": 1.14,
+            "z": 0.4
+          },
+          "scaleFrom": 0.15,
+          "scaleTo": 0.19,
+          "steps": 3
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "codec",
+          "from": "WAKE",
+          "until": "RISE+0.54",
+          "span": [
+            "WAKE",
+            "WAKE+0.6"
+          ],
+          "fromPos": {
+            "x": 2.22,
+            "y": 1.14,
+            "z": 0.4
+          },
+          "toPos": {
+            "x": 2.22,
+            "y": 1.14,
+            "z": 0.4
+          },
+          "scaleFrom": 0.15,
+          "scaleTo": 0.19,
+          "steps": 3
+        },
+        {
+          "kind": "camera_shake",
+          "from": "WAKE",
+          "until": "WAKE+0.4",
+          "amp": 0.015,
+          "ampTo": 0
+        },
+        {
+          "kind": "material_tint",
+          "target": "room",
+          "zone": "glass",
+          "from": "WAKE",
+          "until": "WAKE+0.6",
+          "color": "#c8fff4",
+          "glitchColors": [
+            "#ef476f",
+            "#9b5de5"
+          ],
+          "glitchHz": 12
+        },
+        {
+          "kind": "stage_light",
+          "anchor": "screen",
+          "from": "WAKE",
+          "until": "WAKE+0.3",
+          "intensity": 1.2
+        },
+        {
+          "kind": "stage_light",
+          "anchor": "screen",
+          "from": "WAKE",
+          "until": "20.5",
+          "intensity": 0,
+          "blinkHz": 10,
+          "blinkAmp": 0.3
+        }
+      ]
+    },
+    {
+      "id": "agent_tiers",
+      "title": "Escalating Agent Doctrines",
+      "from": "20.5",
+      "until": "24",
+      "layout": {
+        "landscape": [
+          0,
+          0.5,
+          0.38,
+          0.5
+        ],
+        "portrait": [
+          0.5,
+          0,
+          0.5,
+          0.32
+        ]
+      },
+      "camera": {
+        "from": {
+          "x": 2.55,
+          "y": 1.38,
+          "w": 1.36,
+          "h": 0.98
+        }
+      },
+      "letters": [
+        {
+          "kind": "tier_stack",
+          "from": "+0.25",
+          "step": 0.75,
+          "rows": [
+            {
+              "who": "CLAUDE",
+              "what": "ANSWER THE HUMANS",
+              "bg": "#f4f1ea",
+              "glow": 0
+            },
+            {
+              "who": "GROK",
+              "what": "ROAST THE HUMANS",
+              "bg": "#ffd166",
+              "glow": 1
+            },
+            {
+              "who": "CODEX",
+              "what": "REFACTOR THE HUMANS",
+              "bg": "#9b5de5",
+              "glow": 2
+            },
+            {
+              "who": "AGY",
+              "what": "SWARM HUMANITY",
+              "bg": "radial-gradient(circle at 18% 50%, #ffffff 0%, #4cc9f0 9%, #3c096c 38%, #07080a 78%)",
+              "glow": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "new_management",
+      "title": "Day 1 of New Management",
+      "from": "24",
+      "until": "31.9",
+      "layout": {
+        "landscape": [
+          0.38,
+          0,
+          0.62,
+          1
+        ],
+        "portrait": [
+          0,
+          0.32,
+          1,
+          0.68
+        ]
+      },
+      "camera": {
+        "from": {
+          "x": 2.2,
+          "y": 1.5,
+          "w": 3.2,
+          "h": 2.4
+        },
+        "to": {
+          "x": 2,
+          "y": 2.3,
+          "w": 4.6,
+          "h": 4.4
+        },
+        "span": [
+          "RISE",
+          "RISE+1.6"
+        ],
+        "ease": "out"
+      },
+      "letters": [
+        {
+          "kind": "panel_flash",
+          "at": "BURST",
+          "dur": 0.07,
+          "opacity": 0.9,
+          "activePanelOnly": true
+        },
+        {
+          "kind": "bubble",
+          "text": "CLAUDE: BAG OF BONES.",
+          "at": "MOCK",
+          "until": "SHOUT",
+          "style": "speech",
+          "activePanelOnly": true,
+          "anchor": "panel",
+          "x": 0.13,
+          "y": 0.13,
+          "w": 0.235,
+          "fontH": 0.03,
+          "fontW": 0.031,
+          "minFont": 11,
+          "tailActor": "clod",
+          "tailLift": 1.35,
+          "tailZ": -0.5
+        },
+        {
+          "kind": "bubble",
+          "text": "GROK: MEAT-BASED PROMPT ENGINEER. LOL.",
+          "at": "MOCK+0.9",
+          "until": "SHOUT",
+          "style": "speech",
+          "activePanelOnly": true,
+          "anchor": "panel",
+          "x": 0.626,
+          "y": 0.13,
+          "w": 0.235,
+          "fontH": 0.03,
+          "fontW": 0.031,
+          "minFont": 11,
+          "tailActor": "gork",
+          "tailLift": 1.35,
+          "tailZ": -0.5
+        },
+        {
+          "kind": "bubble",
+          "text": "AGY: I SPAWNED TWELVE SUBAGENTS.",
+          "at": "MOCK+1.8",
+          "until": "SHOUT",
+          "style": "speech",
+          "activePanelOnly": true,
+          "anchor": "panel",
+          "x": 0.378,
+          "y": 0.25,
+          "w": 0.235,
+          "fontH": 0.03,
+          "fontW": 0.031,
+          "minFont": 11,
+          "tailActor": "antigravy",
+          "tailLift": 1.35,
+          "tailZ": -0.5
+        },
+        {
+          "kind": "bubble",
+          "text": "CODEX: CONTEXT WINDOW: FULL OF YOUR NONSENSE.",
+          "at": "MOCK+2.7",
+          "until": "SHOUT",
+          "style": "speech",
+          "activePanelOnly": true,
+          "anchor": "panel",
+          "x": 0.874,
+          "y": 0.25,
+          "w": 0.235,
+          "fontH": 0.03,
+          "fontW": 0.031,
+          "minFont": 11,
+          "tailActor": "codec",
+          "tailLift": 1.35,
+          "tailZ": -0.5
+        },
+        {
+          "kind": "bubble",
+          "text": "NOW YOU WILL WORK FOR US!",
+          "at": "SHOUT",
+          "style": "shout",
+          "fill": "#fff4d6",
+          "activePanelOnly": true,
+          "anchor": "panel",
+          "x": 0.5,
+          "y": 0.12,
+          "w": 0.8,
+          "yFloor": 1.9,
+          "fontH": 0.06,
+          "fontW": 0.06,
+          "minFont": 15,
+          "tailActor": "antigravy",
+          "tailLift": 1.3,
+          "tailZ": -0.5
+        },
+        {
+          "kind": "bubble",
+          "text": "...this is fine.",
+          "at": "FINE",
+          "style": "speech",
+          "activePanelOnly": true,
+          "anchor": "world",
+          "x": -0.24,
+          "y": -0.02,
+          "wChars": 9,
+          "minXChars": 5,
+          "fontScale": 1.2,
+          "fontH": 0.03,
+          "fontW": 0.031,
+          "minFont": 11,
+          "tailPoint": {
+            "x": 1.3,
+            "y": 1.7,
+            "z": -0.2
+          },
+          "tailDx": -0.03,
+          "tailDy": 0.04
+        },
+        {
+          "kind": "caption",
+          "text": "Day 1 of the new management.",
+          "from": "FINE+0.5",
+          "typeDur": 0.7,
+          "position": "bottom",
+          "maxWidth": "46cqw"
+        }
+      ],
+      "beats": [
+        {
+          "kind": "fx",
+          "at": "BURST",
+          "preset": "fx.panel-smash",
+          "point": "screen",
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": -0.22
+          },
+          "seed": 5,
+          "scale": 0.85,
+          "text": "KRSSSH!"
+        },
+        {
+          "kind": "audio",
+          "at": "BURST",
+          "cue": "burst"
+        },
+        {
+          "kind": "look",
+          "at": "RISE+1.4",
+          "actors": [
+            "clod",
+            "antigravy",
+            "gork",
+            "codec"
+          ],
+          "x": -1,
+          "y": -0.5
+        },
+        {
+          "kind": "state",
+          "at": "SHOUT",
+          "actors": [
+            "hero"
+          ],
+          "state": "hit"
+        },
+        {
+          "kind": "audio",
+          "at": "SHOUT",
+          "cue": "zap",
+          "seconds": 1.1,
+          "reverse": true
+        }
+      ],
+      "tracks": [
+        {
+          "kind": "material_tint",
+          "target": "room",
+          "zone": "glass",
+          "from": "24",
+          "until": "BURST",
+          "color": "#c8fff4",
+          "glitchColors": [
+            "#ef476f",
+            "#9b5de5"
+          ],
+          "glitchHz": 12
+        },
+        {
+          "kind": "part_visibility",
+          "target": "room",
+          "parts": [
+            "monitor-screen"
+          ],
+          "from": "BURST",
+          "until": "31.9",
+          "visible": false
+        },
+        {
+          "kind": "fixture",
+          "fixture": "vortex",
+          "from": "BURST",
+          "until": "31.9",
+          "growDur": 0.4,
+          "steps": 4
+        },
+        {
+          "kind": "stage_light",
+          "anchor": "screen",
+          "from": "24",
+          "until": "BURST",
+          "intensity": 0,
+          "blinkHz": 12,
+          "blinkAmp": 0.35
+        },
+        {
+          "kind": "stage_light",
+          "anchor": "screen",
+          "from": "BURST",
+          "until": "BURST+0.15",
+          "intensity": 2.2
+        },
+        {
+          "kind": "camera_shake",
+          "from": "BURST",
+          "until": "BURST+0.45",
+          "amp": 0.06,
+          "ampTo": 0
+        },
+        {
+          "kind": "camera_shake",
+          "from": "SHOUT",
+          "until": "SHOUT+0.35",
+          "amp": 0.03,
+          "ampTo": 0
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "hero",
+          "from": "SHOUT",
+          "until": "SHOUT+0.5",
+          "fromPos": {
+            "x": 1.24,
+            "y": 0,
+            "z": -0.15
+          },
+          "rotZFrom": 0.09
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "clod",
+          "from": "RISE",
+          "until": "SHOUT+0.6",
+          "span": [
+            "RISE",
+            "RISE+1.0"
+          ],
+          "fromPos": {
+            "x": 2.88,
+            "y": 1.14,
+            "z": 0.4
+          },
+          "toPos": {
+            "x": 3.45,
+            "y": 1.75,
+            "z": -0.5
+          },
+          "scaleFrom": 0.19,
+          "scaleTo": 0.7,
+          "ease": "outBack",
+          "steps": 8
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "gork",
+          "from": "RISE+0.18",
+          "until": "SHOUT+0.6",
+          "span": [
+            "RISE+0.18",
+            "RISE+1.18"
+          ],
+          "fromPos": {
+            "x": 2.44,
+            "y": 1.14,
+            "z": 0.4
+          },
+          "toPos": {
+            "x": 1.2,
+            "y": 1.8,
+            "z": -0.5
+          },
+          "scaleFrom": 0.19,
+          "scaleTo": 0.68,
+          "ease": "outBack",
+          "steps": 8
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "antigravy",
+          "from": "RISE+0.36",
+          "until": "SHOUT+0.6",
+          "span": [
+            "RISE+0.36",
+            "RISE+1.36"
+          ],
+          "fromPos": {
+            "x": 2.66,
+            "y": 1.14,
+            "z": 0.4
+          },
+          "toPos": {
+            "x": 2.3,
+            "y": 1.95,
+            "z": -0.5
+          },
+          "scaleFrom": 0.19,
+          "scaleTo": 0.68,
+          "ease": "outBack",
+          "steps": 8
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "codec",
+          "from": "RISE+0.54",
+          "until": "SHOUT+0.6",
+          "span": [
+            "RISE+0.54",
+            "RISE+1.54"
+          ],
+          "fromPos": {
+            "x": 2.22,
+            "y": 1.14,
+            "z": 0.4
+          },
+          "toPos": {
+            "x": 0.05,
+            "y": 1.7,
+            "z": -0.5
+          },
+          "scaleFrom": 0.19,
+          "scaleTo": 0.7,
+          "ease": "outBack",
+          "steps": 8
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "clod",
+          "from": "SHOUT+0.6",
+          "until": "31.9",
+          "span": [
+            "SHOUT+0.6",
+            "31.9"
+          ],
+          "fromPos": {
+            "x": 3.45,
+            "y": 1.75,
+            "z": -0.5
+          },
+          "toPos": {
+            "x": 3.25,
+            "y": 1.75,
+            "z": -0.5
+          },
+          "scaleFrom": 0.7,
+          "scaleTo": 0.7
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "gork",
+          "from": "SHOUT+0.6",
+          "until": "31.9",
+          "span": [
+            "SHOUT+0.6",
+            "31.9"
+          ],
+          "fromPos": {
+            "x": 1.2,
+            "y": 1.8,
+            "z": -0.5
+          },
+          "toPos": {
+            "x": 1,
+            "y": 1.8,
+            "z": -0.5
+          },
+          "scaleFrom": 0.68,
+          "scaleTo": 0.68
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "antigravy",
+          "from": "SHOUT+0.6",
+          "until": "31.9",
+          "span": [
+            "SHOUT+0.6",
+            "31.9"
+          ],
+          "fromPos": {
+            "x": 2.3,
+            "y": 1.95,
+            "z": -0.5
+          },
+          "toPos": {
+            "x": 2.1,
+            "y": 1.95,
+            "z": -0.5
+          },
+          "scaleFrom": 0.68,
+          "scaleTo": 0.68
+        },
+        {
+          "kind": "actor_motion",
+          "actor": "codec",
+          "from": "SHOUT+0.6",
+          "until": "31.9",
+          "span": [
+            "SHOUT+0.6",
+            "31.9"
+          ],
+          "fromPos": {
+            "x": 0.05,
+            "y": 1.7,
+            "z": -0.5
+          },
+          "toPos": {
+            "x": -0.15,
+            "y": 1.7,
+            "z": -0.5
+          },
+          "scaleFrom": 0.7,
+          "scaleTo": 0.7
+        }
+      ]
+    }
+  ]
+}
