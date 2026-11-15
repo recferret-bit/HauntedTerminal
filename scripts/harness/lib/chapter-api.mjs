@@ -16,6 +16,7 @@ import { stringifyChapterJson } from './chapter-json.mjs';
 import { chaptersDir, compileAll, etagOf, listChapterSlugs, readChapter, writeCatalog } from './chapter-compile.mjs';
 import {
   assertLocalOrigin,
+  devApiPlugin,
   assertPutPayload,
   HttpError,
   readJsonObjectBody,
@@ -90,16 +91,5 @@ async function handle(req, res, url) {
 }
 
 export function chapterApi() {
-  const middleware = (req, res, next) => {
-    const url = new URL(req.url ?? '/', 'http://localhost');
-    if (!url.pathname.startsWith('/api/chapters')) return next();
-    handle(req, res, url).catch((err) => sendJson(res, err instanceof HttpError ? err.status : 500, { error: String(err?.message ?? err) }));
-  };
-  return {
-    name: 'chapter-api',
-    apply: 'serve',
-    configureServer: (server) => {
-      server.middlewares.use(middleware);
-    },
-  };
+  return devApiPlugin('chapter-api', '/api/chapters', handle);
 }

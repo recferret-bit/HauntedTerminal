@@ -12,6 +12,7 @@ import { comixDir, compileAllComix, etagOf, listComixIds, readComix, writeComixC
 import { stringifyComixJson } from './comix-json.mjs';
 import {
   assertLocalOrigin,
+  devApiPlugin,
   assertPutPayload,
   HttpError,
   readJsonObjectBody,
@@ -66,10 +67,5 @@ async function handle(req, res, url) {
 }
 
 export function comixApi() {
-  const middleware = (req, res, next) => {
-    const url = new URL(req.url ?? '/', 'http://localhost');
-    if (!url.pathname.startsWith('/api/comix')) return next();
-    handle(req, res, url).catch((err) => sendJson(res, err instanceof HttpError ? err.status : 500, { error: String(err?.message ?? err) }));
-  };
-  return { name: 'comix-api', apply: 'serve', configureServer: (server) => { server.middlewares.use(middleware); } };
+  return devApiPlugin('comix-api', '/api/comix', handle);
 }

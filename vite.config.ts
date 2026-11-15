@@ -5,12 +5,14 @@ import { defineConfig } from 'vite';
 import { chapterApi } from './scripts/harness/lib/chapter-api.mjs';
 // @ts-expect-error plain Node module without types; it is dev-server tooling, not app code.
 import { comixApi } from './scripts/harness/lib/comix-api.mjs';
+// @ts-expect-error plain Node module without types; it is dev-server tooling, not app code.
+import { terminalLabApi } from './scripts/harness/lib/terminal-lab-api.mjs';
 
 /** HTML entry pages live in pages/ (see .kiro/steering/structure.md); it is the Vite root, so URLs stay `/` and `/storybook.html`. */
 const pages = (file = ''): string => fileURLToPath(new URL(`./pages/${file}`, import.meta.url));
 const project = (dir: string): string => fileURLToPath(new URL(`./${dir}`, import.meta.url));
 
-/** `/play/<chapter>/<level>` is the game, `/editor/...` the chapter editor, `/comix-editor/...` the comix editor; the browser keeps the path. */
+/** `/play/<chapter>/<level>` is the game, `/editor/...` the chapter editor, `/comix-editor/...` the comix editor, `/terminal-lab/...` the terminal lab; the browser keeps the path. */
 const playPaths = (): Connect.NextHandleFunction => (req, _res, next) => {
   const url = req.url ?? '';
   const q = url.indexOf('?');
@@ -19,6 +21,7 @@ const playPaths = (): Connect.NextHandleFunction => (req, _res, next) => {
   if (path === '/play' || path.startsWith('/play/')) req.url = `/play.html${search}`;
   if (path === '/editor' || path.startsWith('/editor/')) req.url = `/chapter-editor.html${search}`;
   if (path === '/comix-editor' || path.startsWith('/comix-editor/')) req.url = `/comix-editor.html${search}`;
+  if (path === '/terminal-lab' || path.startsWith('/terminal-lab/')) req.url = `/terminal-lab.html${search}`;
   next();
 };
 
@@ -33,9 +36,10 @@ export default defineConfig({
       configureServer: (server) => { server.middlewares.use(playPaths()); },
       configurePreviewServer: (server) => { server.middlewares.use(playPaths()); },
     },
-    // Dev server only: the chapter editor reads and writes chapters/ through /api/chapters.
+    // Dev server only: the chapter editor reads and writes chapters/ through /api/chapters, the terminal lab its labs through /api/terminal-lab.
     chapterApi(),
     comixApi(),
+    terminalLabApi(),
   ],
   server: { port: 5173 },
   build: {
@@ -53,6 +57,7 @@ export default defineConfig({
         dev: pages('dev.html'),
         editor: pages('chapter-editor.html'),
         comixEditor: pages('comix-editor.html'),
+        terminalLab: pages('terminal-lab.html'),
       },
     },
   },

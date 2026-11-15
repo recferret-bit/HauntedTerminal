@@ -1,0 +1,72 @@
+{
+  "id": "enemy-spyware",
+  "title": "Enemy: spyware",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Enemy: spyware",
+    "summary": "Spyware hides as a dotfile. ls -a shows it, rm removes it."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "enemy",
+      "id": "spyware-1",
+      "type": "spyware",
+      "path": "/lab/.spycam",
+      "hidden": true
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "ls -a",
+      "expect": {
+        "stdout": ".spycam"
+      }
+    },
+    {
+      "op": "run",
+      "line": "ps",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "tick",
+      "n": 10,
+      "expect": {
+        "events": [
+          "ENEMY_ATTACK"
+        ],
+        "absorbed": {
+          "min": 1
+        }
+      },
+      "note": "It attacks; the hit is counted, never applied."
+    },
+    {
+      "op": "run",
+      "line": "rm .spycam",
+      "expect": {
+        "events": [
+          "ENEMY_KILLED"
+        ]
+      }
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "enemiesLeft": 0
+      }
+    }
+  ]
+}

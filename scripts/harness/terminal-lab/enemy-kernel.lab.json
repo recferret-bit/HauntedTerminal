@@ -1,0 +1,113 @@
+{
+  "id": "enemy-kernel",
+  "title": "Enemy: kernel (boss)",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Enemy: kernel (boss)",
+    "summary": "The kernel cannot be signalled. Drain the stream, feed the token, rewrite the anchor."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "enemy",
+      "id": "kernel-1",
+      "type": "kernel",
+      "path": "/lab/overlord.ko",
+      "pid": 4001,
+      "ppid": 1
+    },
+    {
+      "op": "file",
+      "path": "/lab/chaos.stream",
+      "content": "noise\n"
+    },
+    {
+      "op": "socket",
+      "path": "/lab/wakeup.sock"
+    },
+    {
+      "op": "file",
+      "path": "/lab/anchor.conf",
+      "content": "player_trapped=true\n"
+    },
+    {
+      "op": "task",
+      "id": "task-boss-defeated-1",
+      "rule": {
+        "kind": "boss_defeated",
+        "bossId": "kernel-1",
+        "streamPath": "/lab/chaos.stream",
+        "verifySocket": "wakeup.sock",
+        "expectedToken": "LIGHTNING_777",
+        "anchorPath": "/lab/anchor.conf",
+        "anchorPattern": "player_trapped=false",
+        "description": "Drain the stream, feed the token to wakeup.sock, rewrite the anchor, kill the boss"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "stdout": "overlord.ko"
+      }
+    },
+    {
+      "op": "run",
+      "line": "kill -9 4001",
+      "expect": {
+        "code": 1,
+        "stderr": "not permitted"
+      },
+      "note": "root-owned: refused"
+    },
+    {
+      "op": "tick",
+      "n": 12,
+      "expect": {
+        "events": [
+          "ENEMY_ATTACK"
+        ],
+        "absorbed": {
+          "min": 1
+        }
+      },
+      "note": "It attacks; the hit is counted, never applied."
+    },
+    {
+      "op": "run",
+      "line": "mv chaos.stream /dev/null",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "run",
+      "line": "echo LIGHTNING_777 > wakeup.sock",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "run",
+      "line": "sed -i 's/player_trapped=true/player_trapped=false/' anchor.conf",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "check",
+      "id": "task-boss-defeated-1"
+    }
+  ]
+}

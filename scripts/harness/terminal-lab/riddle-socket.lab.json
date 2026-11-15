@@ -1,0 +1,139 @@
+{
+  "id": "riddle-socket",
+  "title": "Riddle: a talking socket that opens a locked door",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Riddle: a talking socket that opens a locked door",
+    "summary": "Count the FATAL lines and tell the gate."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "file",
+      "path": "/lab/server.log",
+      "content": "ok\nFATAL disk\nok\nFATAL net\nFATAL fan\n"
+    },
+    {
+      "op": "dir",
+      "path": "/lab/vault",
+      "mode": 0
+    },
+    {
+      "op": "riddle",
+      "id": "gate",
+      "path": "/lab/gate.sock",
+      "speaker": "Gate",
+      "prompt": "Count every FATAL line in server.log and write the number here.",
+      "answer": "3",
+      "hints": [
+        "Wrong. The log is in this room.",
+        "grep FATAL server.log",
+        "Pipe it into wc -l and redirect the number here."
+      ],
+      "success": "The count is exact. The vault unlocks.",
+      "opens": "/lab/vault",
+      "tokens": [
+        "grep",
+        "wc -l"
+      ]
+    },
+    {
+      "op": "check",
+      "id": "said-wrong",
+      "description": "Give a wrong answer first",
+      "when": {
+        "kind": "code",
+        "code": 1,
+        "line": "gate.sock"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "cat gate.sock",
+      "expect": {
+        "code": 0,
+        "stdout": "Count every FATAL line",
+        "events": [
+          "OBSTACLE_DIALOGUE_RENDERED"
+        ]
+      }
+    },
+    {
+      "op": "check",
+      "id": "gate",
+      "is": "fail",
+      "note": "not solved yet"
+    },
+    {
+      "op": "run",
+      "line": "cd vault",
+      "expect": {
+        "code": 1,
+        "cwd": "/lab"
+      },
+      "note": "the vault is locked"
+    },
+    {
+      "op": "run",
+      "line": "echo 99 > gate.sock",
+      "expect": {
+        "code": 1,
+        "stderr": "The log is in this room",
+        "events": [
+          "OBSTACLE_DIALOGUE_RENDERED"
+        ],
+        "noEvents": [
+          "PUZZLE_DOOR_RESOLVED"
+        ]
+      }
+    },
+    {
+      "op": "run",
+      "line": "echo 7 > gate.sock",
+      "expect": {
+        "code": 1,
+        "stderr": "grep FATAL server.log"
+      },
+      "note": "the second wrong answer gets the next hint"
+    },
+    {
+      "op": "check",
+      "id": "said-wrong"
+    },
+    {
+      "op": "run",
+      "line": "grep FATAL server.log | wc -l > gate.sock",
+      "expect": {
+        "code": 0,
+        "stdout": "vault unlocks",
+        "events": [
+          "PUZZLE_DOOR_RESOLVED",
+          "INODE_MODE_CHANGED"
+        ]
+      }
+    },
+    {
+      "op": "check",
+      "id": "gate"
+    },
+    {
+      "op": "run",
+      "line": "cd vault",
+      "expect": {
+        "code": 0,
+        "cwd": "/lab/vault"
+      }
+    }
+  ]
+}

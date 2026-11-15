@@ -1,0 +1,101 @@
+{
+  "id": "classic-floor",
+  "title": "Classic floor: Crypt of Logs",
+  "driver": "classic",
+  "room": {
+    "roomKind": "crypt_entrance",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/var/dungeon/entrance",
+    "title": "Floor 2: Crypt of Logs",
+    "summary": "Classic floor 2 in the lab: built-in Archivist socket, worm + keygen, and lab-absorbed damage."
+  },
+  "player": {
+    "ram": 16,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "check",
+      "id": "gate-opened",
+      "description": "Unlock the Archivist iron_gate on classic floor 2",
+      "when": {
+        "kind": "event",
+        "type": "PUZZLE_DOOR_RESOLVED"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "code": 0,
+        "stdout": "archivist_gate.sock"
+      }
+    },
+    {
+      "op": "tick",
+      "n": 10,
+      "expect": {
+        "events": [
+          "ENEMY_ATTACK"
+        ],
+        "absorbed": {
+          "min": 1
+        }
+      },
+      "note": "The classic floor's worm attacks, and the lab absorbs the hit."
+    },
+    {
+      "op": "run",
+      "line": "grep -c FATAL chronicles/day1.log chronicles/day2.log chronicles/day3.log",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "run",
+      "line": "echo 6 > archivist_gate.sock",
+      "expect": {
+        "code": 0,
+        "events": [
+          "PUZZLE_DOOR_RESOLVED"
+        ]
+      }
+    },
+    {
+      "op": "check",
+      "id": "gate-opened"
+    },
+    {
+      "op": "run",
+      "line": "kill -9 1337",
+      "expect": {
+        "code": 0,
+        "events": [
+          "ENEMY_KILLED"
+        ]
+      }
+    },
+    {
+      "op": "run",
+      "line": "chmod 000 port_445",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "tick",
+      "n": 5,
+      "expect": {
+        "events": [
+          "ENEMY_KILLED"
+        ]
+      }
+    }
+  ]
+}

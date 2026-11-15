@@ -1,0 +1,168 @@
+{
+  "id": "no-damage-soak",
+  "title": "No damage: every enemy fires for 60 ticks",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "No damage: every enemy fires for 60 ticks",
+    "summary": "All 12 enemy types in one room. Nobody takes damage, however long they fire."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "enemy",
+      "id": "bug-1",
+      "type": "bug",
+      "path": "/lab/prod.py"
+    },
+    {
+      "op": "enemy",
+      "id": "spyware-1",
+      "type": "spyware",
+      "path": "/lab/.spycam",
+      "hidden": true
+    },
+    {
+      "op": "enemy",
+      "id": "rootkit-1",
+      "type": "rootkit",
+      "path": "/lab/.poltergeist.lock",
+      "pid": 4001,
+      "ppid": 1,
+      "hidden": true
+    },
+    {
+      "op": "enemy",
+      "id": "worm-1",
+      "type": "worm",
+      "path": "/lab/port_445/worm.bin",
+      "port": "/lab/port_445"
+    },
+    {
+      "op": "enemy",
+      "id": "crack-1",
+      "type": "crack",
+      "path": "/lab/keygen.exe",
+      "pid": 4002,
+      "ppid": 1
+    },
+    {
+      "op": "enemy",
+      "id": "trojan-1",
+      "type": "trojan",
+      "path": "/lab/token_skimmer.bin"
+    },
+    {
+      "op": "enemy",
+      "id": "virus-1",
+      "type": "virus",
+      "path": "/lab/virus.exe",
+      "pid": 4003,
+      "ppid": 1
+    },
+    {
+      "op": "enemy",
+      "id": "exploit-1",
+      "type": "exploit",
+      "path": "/lab/port_hijack.bin",
+      "buffer": "/lab/proxy.buf"
+    },
+    {
+      "op": "enemy",
+      "id": "ransomware-1",
+      "type": "ransomware",
+      "path": "/lab/ransom.exe",
+      "pid": 4004,
+      "ppid": 1
+    },
+    {
+      "op": "enemy",
+      "id": "zombie-1",
+      "type": "zombie",
+      "path": "/lab",
+      "pid": 4005,
+      "ppid": 1
+    },
+    {
+      "op": "enemy",
+      "id": "forkbomb-1",
+      "type": "forkbomb",
+      "path": "/lab/fork.bomb",
+      "pid": 4006,
+      "ppid": 1
+    },
+    {
+      "op": "enemy",
+      "id": "kernel-1",
+      "type": "kernel",
+      "path": "/lab/overlord.ko"
+    },
+    {
+      "op": "pickup",
+      "id": "energy-1",
+      "type": "energy",
+      "path": "/lab/energy.cell"
+    },
+    {
+      "op": "pickup",
+      "id": "ram-1",
+      "type": "ram",
+      "path": "/lab/ram_16gb.dimm"
+    },
+    {
+      "op": "pickup",
+      "id": "ssd-1",
+      "type": "ssd",
+      "path": "/lab/ssd_256gb.img"
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "ls -a",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "run",
+      "line": "ps",
+      "expect": {
+        "code": 0,
+        "stdout": "RUNNING"
+      }
+    },
+    {
+      "op": "tick",
+      "n": 60,
+      "expect": {
+        "events": [
+          "ENEMY_ATTACK"
+        ],
+        "noEvents": [
+          "PLAYER_DAMAGED",
+          "PLAYER_RESPAWNED"
+        ],
+        "absorbed": {
+          "min": 1
+        }
+      },
+      "note": "Enemies fire the whole time; every hit is counted, none is applied."
+    },
+    {
+      "op": "run",
+      "line": "pwd",
+      "expect": {
+        "stdout": "/lab"
+      }
+    }
+  ]
+}

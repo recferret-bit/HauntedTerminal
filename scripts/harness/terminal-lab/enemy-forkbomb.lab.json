@@ -1,0 +1,80 @@
+{
+  "id": "enemy-forkbomb",
+  "title": "Enemy: forkbomb",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Enemy: forkbomb",
+    "summary": "A fork bomb spawns zombies until it is frozen, then killed."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "enemy",
+      "id": "forkbomb-1",
+      "type": "forkbomb",
+      "path": "/lab/fork.bomb",
+      "pid": 4001,
+      "ppid": 1
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "stdout": "fork.bomb"
+      }
+    },
+    {
+      "op": "tick",
+      "n": 10,
+      "expect": {
+        "events": [
+          "ENTITY_SPAWNED"
+        ]
+      },
+      "note": "it forks zombies"
+    },
+    {
+      "op": "run",
+      "line": "kill -STOP 4001",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "tick",
+      "n": 6,
+      "expect": {
+        "noEvents": [
+          "ENTITY_SPAWNED"
+        ]
+      },
+      "note": "frozen: no more forks"
+    },
+    {
+      "op": "run",
+      "line": "kill -9 4001",
+      "expect": {
+        "events": [
+          "ENEMY_KILLED"
+        ]
+      }
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "enemiesLeft": 0
+      }
+    }
+  ]
+}

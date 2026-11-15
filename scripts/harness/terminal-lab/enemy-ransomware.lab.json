@@ -1,0 +1,94 @@
+{
+  "id": "enemy-ransomware",
+  "title": "Enemy: ransomware",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Enemy: ransomware",
+    "summary": "Ransomware encrypts a pickup (mode 000). Kill it, then chmod 644 the file."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "enemy",
+      "id": "ransomware-1",
+      "type": "ransomware",
+      "path": "/lab/ransom.exe",
+      "pid": 4001,
+      "ppid": 1
+    },
+    {
+      "op": "pickup",
+      "id": "energy-1",
+      "type": "energy",
+      "path": "/lab/energy.cell"
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "stdout": "energy.cell"
+      }
+    },
+    {
+      "op": "tick",
+      "n": 8,
+      "expect": {
+        "events": [
+          "INODE_MODE_CHANGED"
+        ]
+      },
+      "note": "it encrypts the energy cell"
+    },
+    {
+      "op": "run",
+      "line": "source energy.cell",
+      "expect": {
+        "code": 1
+      },
+      "note": "locked"
+    },
+    {
+      "op": "run",
+      "line": "kill -9 4001",
+      "expect": {
+        "events": [
+          "ENEMY_KILLED"
+        ]
+      }
+    },
+    {
+      "op": "run",
+      "line": "chmod 644 energy.cell",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "run",
+      "line": "source energy.cell",
+      "expect": {
+        "code": 0,
+        "events": [
+          "PICKUP_COLLECTED"
+        ]
+      }
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "enemiesLeft": 0
+      }
+    }
+  ]
+}

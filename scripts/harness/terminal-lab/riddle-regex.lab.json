@@ -1,0 +1,55 @@
+{
+  "id": "riddle-regex",
+  "title": "Riddle: any of several answers",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Riddle: any of several answers",
+    "summary": "The accepted answer is a regex."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "riddle",
+      "id": "rainbow",
+      "path": "/lab/rainbow.sock",
+      "speaker": "Prism",
+      "prompt": "Name a color of the rainbow.",
+      "answer": "re:/^(red|orange|yellow|green|blue|indigo|violet)$/i",
+      "hints": [
+        "Think of a rainbow."
+      ],
+      "success": "Correct."
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "echo pink > rainbow.sock",
+      "expect": {
+        "code": 1,
+        "stderr": "Think of a rainbow"
+      }
+    },
+    {
+      "op": "run",
+      "line": "echo Violet > rainbow.sock",
+      "expect": {
+        "code": 0,
+        "stdout": "Correct"
+      }
+    },
+    {
+      "op": "check",
+      "id": "rainbow"
+    }
+  ]
+}

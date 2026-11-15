@@ -1,0 +1,64 @@
+{
+  "id": "enemy-rootkit",
+  "title": "Enemy: rootkit",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Enemy: rootkit",
+    "summary": "A rootkit only shows in the long listing. Remove its file."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "enemy",
+      "id": "rootkit-1",
+      "type": "rootkit",
+      "path": "/lab/.poltergeist.lock",
+      "pid": 4001,
+      "ppid": 1,
+      "hidden": true
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "ls -la",
+      "expect": {
+        "stdout": ".poltergeist.lock"
+      }
+    },
+    {
+      "op": "tick",
+      "n": 10,
+      "expect": {
+        "noEvents": [
+          "ENEMY_ATTACK"
+        ]
+      },
+      "note": "A rootkit hides; it never attacks."
+    },
+    {
+      "op": "run",
+      "line": "rm .poltergeist.lock",
+      "expect": {
+        "events": [
+          "ENEMY_KILLED"
+        ]
+      }
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "enemiesLeft": 0
+      }
+    }
+  ]
+}

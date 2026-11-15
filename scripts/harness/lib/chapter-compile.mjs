@@ -1,6 +1,6 @@
 // Reads chapters/<slug>/ from disk and renders src/chapters/generated/catalog-data.ts.
 // Shared by `generate-chapter.mjs` (CLI) and the chapter editor's dev API, so both compile identically.
-import { createHash } from 'node:crypto';
+import { etagOf } from './editor-api-common.mjs';
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { projectRoot } from './load.mjs';
@@ -11,7 +11,7 @@ export const catalogFile = resolve(projectRoot, 'src/chapters/generated/catalog-
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
 
 /** Content hash of a file's text: the editor sends it back on save so a write never overwrites a newer file. */
-export const etagOf = (text) => createHash('sha1').update(text).digest('hex');
+export { etagOf };
 export const etagOfFile = (path) => (existsSync(path) ? etagOf(readFileSync(path, 'utf8')) : '');
 
 export function listChapterSlugs() {

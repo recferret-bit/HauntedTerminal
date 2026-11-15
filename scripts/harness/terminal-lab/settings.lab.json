@@ -1,0 +1,113 @@
+{
+  "id": "settings",
+  "title": "Settings: hold fire, a grant, another room, patch, emit, wait",
+  "room": {
+    "roomKind": "furnace",
+    "floorTheme": 4,
+    "mechanic": "terminal-code",
+    "cwd": "/srv/forge",
+    "title": "Settings",
+    "summary": "Everything the lab settings and the rarer steps can do."
+  },
+  "player": {
+    "ram": 32,
+    "ssd": 256,
+    "core": "qwen"
+  },
+  "clock": "manual",
+  "enemyFire": "hold",
+  "setup": [
+    {
+      "op": "enemy",
+      "id": "virus-1",
+      "type": "virus",
+      "path": "/srv/forge/virus.exe",
+      "pid": 4001,
+      "ppid": 1
+    },
+    {
+      "op": "file",
+      "path": "/srv/forge/buggy.txt",
+      "content": "a bug lives here\n"
+    },
+    {
+      "op": "patch",
+      "file": "buggy.txt",
+      "label": "Fix it",
+      "find": "bug",
+      "replace": "fixed"
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "pwd",
+      "expect": {
+        "code": 0,
+        "stdout": "/srv/forge",
+        "cwd": "/srv/forge"
+      }
+    },
+    {
+      "op": "run",
+      "line": "kiro",
+      "expect": {
+        "code": 0,
+        "stdout": "qwen"
+      },
+      "note": "the grant loaded the qwen core"
+    },
+    {
+      "op": "run",
+      "line": "status",
+      "expect": {
+        "stdout": "SSD"
+      }
+    },
+    {
+      "op": "tick",
+      "n": 12,
+      "expect": {
+        "noEvents": [
+          "ENEMY_ATTACK"
+        ],
+        "absorbed": {
+          "max": 0
+        }
+      },
+      "note": "enemy fire on hold: the virus never attacks"
+    },
+    {
+      "op": "emit",
+      "event": {
+        "type": "VIBECODER_EMOTE",
+        "emote": "relief",
+        "text": "phew"
+      }
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "events": [
+          "VIBECODER_EMOTE"
+        ]
+      }
+    },
+    {
+      "op": "wait",
+      "ms": 10,
+      "note": "skipped headless; sleeps in the browser"
+    },
+    {
+      "op": "run",
+      "line": "sed -i 's/bug/fixed/' buggy.txt",
+      "expect": {
+        "code": 0,
+        "file": {
+          "path": "/srv/forge/buggy.txt",
+          "contains": "fixed"
+        }
+      }
+    }
+  ]
+}

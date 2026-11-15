@@ -1,0 +1,147 @@
+{
+  "id": "inject-midrun",
+  "title": "Inject: add an enemy and a pickup to a running level",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Inject: add an enemy and a pickup to a running level",
+    "summary": "The room starts empty; enemies arrive mid-run."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "file",
+      "path": "/lab/readme.txt",
+      "content": "empty room\n"
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "code": 0,
+        "stdout": "readme.txt"
+      }
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "enemiesLeft": 0
+      }
+    },
+    {
+      "op": "inject",
+      "enemy": {
+        "id": "late-virus",
+        "type": "virus",
+        "path": "/lab/late.exe",
+        "pid": 77,
+        "ppid": 1
+      },
+      "note": "a virus walks in"
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "enemiesLeft": 1
+      }
+    },
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "stdout": "late.exe"
+      }
+    },
+    {
+      "op": "run",
+      "line": "ps",
+      "expect": {
+        "stdout": "77"
+      }
+    },
+    {
+      "op": "tick",
+      "n": 8,
+      "expect": {
+        "events": [
+          "ENEMY_ATTACK"
+        ],
+        "absorbed": {
+          "min": 1
+        }
+      }
+    },
+    {
+      "op": "run",
+      "line": "kill -9 77",
+      "expect": {
+        "events": [
+          "ENEMY_KILLED"
+        ]
+      }
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "enemiesLeft": 0
+      }
+    },
+    {
+      "op": "inject",
+      "pickup": {
+        "id": "late-energy",
+        "type": "energy",
+        "path": "/lab/late.cell"
+      }
+    },
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "stdout": "late.cell"
+      }
+    },
+    {
+      "op": "run",
+      "line": "source late.cell",
+      "expect": {
+        "code": 0,
+        "events": [
+          "PICKUP_COLLECTED"
+        ]
+      }
+    },
+    {
+      "op": "inject",
+      "enemy": {
+        "id": "late-worm",
+        "type": "worm",
+        "path": "/lab/port_9/worm.bin",
+        "port": "/lab/port_9"
+      }
+    },
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "stdout": "port_9"
+      }
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "enemiesLeft": 1
+      }
+    }
+  ]
+}

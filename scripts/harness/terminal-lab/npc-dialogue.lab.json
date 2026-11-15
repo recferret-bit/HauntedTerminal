@@ -1,0 +1,163 @@
+{
+  "id": "npc-dialogue",
+  "title": "NPCs: cameos, a taunt, a bubble and an ally socket",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "NPCs: cameos, a taunt, a bubble and an ally socket",
+    "summary": "Every agent speaks, a socket talks, an ally is visited."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "npc",
+      "agent": "gork",
+      "mood": "smug",
+      "text": "GROK: \"A hostile test room.\"",
+      "print": "{text}"
+    },
+    {
+      "op": "taunt",
+      "mood": "laugh",
+      "text": "CLAUDE: \"Try the other door.\""
+    },
+    {
+      "op": "dialogue",
+      "obstacleId": "bubble-1",
+      "speaker": "Speaker",
+      "mood": "cryptic",
+      "anchorSocket": "speaker.sock",
+      "text": "Read the log. Count the failures.",
+      "highlight": [
+        "cat",
+        "grep"
+      ],
+      "banner": "[ Speaker // COMIX_CLASSIC ]"
+    },
+    {
+      "op": "socket",
+      "path": "/lab/speaker.sock",
+      "content": "Read the log. Count the failures."
+    },
+    {
+      "op": "socket",
+      "path": "/lab/ally.sock"
+    },
+    {
+      "op": "task",
+      "id": "visit",
+      "rule": {
+        "kind": "talk_ally",
+        "socket": "ally.sock",
+        "description": "Talk to the ally"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "op": "say",
+      "agent": "clod",
+      "mood": "laugh",
+      "text": "CLAUDE: \"Nice try.\""
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "events": [
+          "AGENT_TAUNT"
+        ]
+      }
+    },
+    {
+      "op": "say",
+      "agent": "gork",
+      "mood": "smug",
+      "text": "GROK: \"Bold.\"",
+      "print": "{text}"
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "stdout": "Bold",
+        "events": [
+          "AGENT_TAUNT"
+        ]
+      }
+    },
+    {
+      "op": "say",
+      "agent": "codec",
+      "mood": "order",
+      "text": "CODEX: \"Format your code.\""
+    },
+    {
+      "op": "say",
+      "agent": "antigravy",
+      "mood": "annoyed",
+      "text": "AGY: \"I was here first.\""
+    },
+    {
+      "op": "say",
+      "agent": "kiro",
+      "mood": "smug",
+      "text": "KIRO: \"I can see the room.\""
+    },
+    {
+      "op": "taunt",
+      "mood": "laugh",
+      "text": "KIRO: \"Good luck.\""
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "events": [
+          "AGENT_TAUNT"
+        ]
+      }
+    },
+    {
+      "op": "dialogue",
+      "obstacleId": "bubble-2",
+      "speaker": "Speaker",
+      "mood": "hinting",
+      "anchorSocket": "speaker.sock",
+      "text": "Try grep.",
+      "highlight": [
+        "grep"
+      ],
+      "banner": "[ Speaker // COMIX_CLASSIC ]"
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "events": [
+          "OBSTACLE_DIALOGUE_RENDERED"
+        ]
+      }
+    },
+    {
+      "op": "check",
+      "id": "visit",
+      "is": "fail"
+    },
+    {
+      "op": "run",
+      "line": "cat ally.sock",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "check",
+      "id": "visit"
+    }
+  ]
+}

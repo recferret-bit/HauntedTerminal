@@ -45,6 +45,8 @@ const LAYERS = [
   { area: 'chapter-editor/', may: ['contracts/', 'editor-core/', 'game/', 'chapters/', 'procgen/'], three: false },
   // Comix editor: uses shared editor-core toolkit and validates against procgen catalogs; no three.
   { area: 'comix-editor/', may: ['contracts/', 'editor-core/', 'cinematic/', 'procgen/'], three: false },
+  // Terminal Lab: a test bench for the terminal. Builds a throwaway pack, plays it in the game iframe, never edits specs. Reuses the chapter editor's field tables.
+  { area: 'terminal-lab/', may: ['contracts/', 'editor-core/', 'chapter-editor/', 'game/', 'chapters/', 'procgen/'], three: false },
   { area: 'hub/', may: [], three: false },
   // Play page composition. main.ts only starts it. Helpers live in play/ so the entry stays small.
   { area: 'play/', may: ['assets/', 'chapters/', 'cinematic/', 'contracts/', 'game/', 'renderer/', 'sandbox/', 'ui/'], three: true },

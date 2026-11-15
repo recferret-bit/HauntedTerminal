@@ -1,0 +1,74 @@
+{
+  "id": "enemy-virus",
+  "title": "Enemy: virus",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Enemy: virus",
+    "summary": "A virus bites every few ticks. Find its PID and kill it."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "enemy",
+      "id": "virus-1",
+      "type": "virus",
+      "path": "/lab/virus.exe",
+      "pid": 4001,
+      "ppid": 1
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "code": 0,
+        "stdout": "virus.exe"
+      }
+    },
+    {
+      "op": "run",
+      "line": "ps",
+      "expect": {
+        "stdout": "4001"
+      }
+    },
+    {
+      "op": "tick",
+      "n": 8,
+      "expect": {
+        "events": [
+          "ENEMY_ATTACK"
+        ],
+        "absorbed": {
+          "min": 1
+        }
+      },
+      "note": "It attacks; the hit is counted, never applied."
+    },
+    {
+      "op": "run",
+      "line": "kill -9 4001",
+      "expect": {
+        "events": [
+          "ENEMY_KILLED"
+        ]
+      }
+    },
+    {
+      "op": "expect",
+      "expect": {
+        "enemiesLeft": 0
+      }
+    }
+  ]
+}

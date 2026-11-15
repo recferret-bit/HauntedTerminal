@@ -5,7 +5,6 @@ import assert from 'node:assert/strict';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Readable } from 'node:stream';
 import { listChapterSlugs, readChapter } from './lib/chapter-compile.mjs';
 import { listComixIds, readComix } from './lib/comix-compile.mjs';
 import {
@@ -17,24 +16,9 @@ import {
   writeAtomicText,
 } from './lib/editor-api-common.mjs';
 import { withProcgen } from './lib/load.mjs';
+import { fakeReq, testRunner } from './lib/test-kit.mjs';
 
-let passed = 0;
-async function test(name, fn) {
-  await fn();
-  passed += 1;
-  console.log(`  ok  ${name}`);
-}
-
-function fakeReq({ method = 'PUT', host = '127.0.0.1:5173', origin, contentType = 'application/json', body = '' } = {}) {
-  const stream = Readable.from(body === null ? [] : [Buffer.from(body, 'utf8')]);
-  stream.method = method;
-  stream.headers = {
-    host,
-    ...(origin !== undefined ? { origin } : {}),
-    ...(contentType !== undefined ? { 'content-type': contentType } : {}),
-  };
-  return stream;
-}
+const { test, count } = testRunner();
 
 await withProcgen(async (_procgen, vite) => {
   const dockState = await vite.ssrLoadModule('/src/editor-core/dock-state.ts');
@@ -481,4 +465,4 @@ await withProcgen(async (_procgen, vite) => {
   });
 });
 
-console.log(`\neditor-unit-test PASS (${passed} suites)`);
+console.log(`\neditor-unit-test PASS (${count()} suites)`);

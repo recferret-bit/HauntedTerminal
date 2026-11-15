@@ -1,0 +1,60 @@
+{
+  "id": "task-js-cart",
+  "title": "Task: fix a JavaScript function",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Task: fix a JavaScript function",
+    "summary": "Make cart.js add numbers, not strings."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "file",
+      "path": "/lab/cart.js",
+      "content": "// VRAM allocation calculator (cart.js)\nexport function computeCartTotal(price, shipping, qty = 1) {\n  if (qty <= 0) return 0;\n  // BUG: raw string concatenation so ('549', '15', 1) returns '54915'!\n  return price + shipping;\n}\n"
+    },
+    {
+      "op": "task",
+      "id": "cart",
+      "rule": {
+        "kind": "cart_js_valid",
+        "jsPath": "/lab/cart.js",
+        "description": "Fix cart.js so it adds numbers, not strings"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "op": "check",
+      "id": "cart",
+      "is": "fail"
+    },
+    {
+      "op": "run",
+      "line": "sed -i 's/price + shipping/Number(price) * Number(qty) + Number(shipping)/' cart.js",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "run",
+      "line": "sed -i 's/BUG/FIXED/' cart.js",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "check",
+      "id": "cart"
+    }
+  ]
+}

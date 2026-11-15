@@ -1,0 +1,86 @@
+/* ---- Terminal Lab (/terminal-lab): only what the shared workstation styles do not already cover ---- */
+
+/* Headings inside the Inspector panes: the same look as the outliner headings. */
+.lab-form h3, .lab-result h3, .lab-checks h3, .lab-goals h3, .lab-body h3 {
+  font-family: var(--display);
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 10px 0 4px;
+}
+.lab-form, .lab-result, .lab-checks, .lab-goals, .lab-body { padding: 4px 12px; }
+.lab-body .add-row { align-items: center; justify-content: space-between; }
+
+/* Plain lists and preformatted output */
+.lab-list, .lab-cmds { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.lab-tree ul { list-style: none; padding-left: 14px; }
+.lab-pre {
+  background: var(--ink);
+  border: 1px solid var(--line);
+  padding: 6px;
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-size: 11px;
+  margin: 3px 0;
+}
+.lab-meta { color: var(--muted); font-size: 11px; margin-left: 8px; }
+.lab-goal.done { color: var(--teal); }
+
+/* A selectable row in a live tab (World, Files, Transcript) and its text button */
+.lab-row-item { border-left: 3px solid transparent; padding: 1px 0 1px 4px; }
+.lab-row-item.is-selected, .lab-step.next { border-left-color: var(--yellow); background: rgba(255, 209, 102, 0.08); }
+.lab-link, .lab-step-label { background: none; border: 0; cursor: pointer; text-align: left; font-family: var(--mono); font-size: 12px; color: inherit; padding: 1px 0; }
+.lab-link:hover, .lab-step-label:hover { color: var(--yellow); }
+
+/* Scene dock: library actions, chapter-level import, rows with a remove button, palette chips & drag-drop */
+.lab-library { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 12px; }
+.lab-from-level { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px; padding: 0 12px 6px; align-items: center; }
+.lab-from-level select { min-width: 0; }
+.lab-row { display: grid; grid-template-columns: 1fr auto; align-items: stretch; }
+.lab-row .ed-item { min-width: 0; }
+.lab-row .ed-item .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lab-row .mini { margin: 4px 8px 4px 0; align-self: center; }
+.lab-group { border-top: 1px solid var(--line); }
+.lab-group > summary { cursor: pointer; padding: 6px 14px; color: var(--yellow); font-family: var(--display); letter-spacing: 1px; text-transform: uppercase; font-size: 12px; }
+.lab-group[open] > summary { color: var(--teal); }
+.lab-chips { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 12px 10px; }
+.lab-chips .chip { font-size: 12px; }
+.lab-chips .chip[draggable="true"] { cursor: grab; }
+.lab-chips .chip[draggable="true"]:active { cursor: grabbing; }
+.ed[data-palette-drag] .pv-frame { pointer-events: none; }
+.cx-stage[data-drop-over="stage"], [data-scene-drop][data-drop-over="scene"] { outline: 2px dashed var(--yellow); outline-offset: -3px; background: rgba(255, 209, 102, 0.06); }
+
+/* Script panel (bottom dock, left of the console) */
+.lab-script { display: flex; flex-direction: column; gap: 6px; min-width: 0; overflow-y: auto; }
+.lab-transport { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.lab-transport select { width: auto; }
+.lab-steps { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.lab-step { display: grid; grid-template-columns: auto 1fr auto auto auto auto auto; align-items: center; gap: 2px; border-left: 3px solid transparent; padding-left: 2px; }
+.lab-step .mini { min-inline-size: 22px; min-block-size: 22px; width: 22px; height: 22px; font-size: 11px; }
+.lab-bp.on { color: var(--fault); border-color: var(--fault); }
+.lab-step-label { display: flex; gap: 6px; min-width: 0; padding: 2px 4px; }
+.lab-step-label.on { color: var(--yellow); }
+.lab-step-no { color: var(--muted); min-width: 1.6em; text-align: right; }
+.lab-step-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lab-step-status.pass { color: var(--teal); }
+.lab-step-status.fail { color: var(--fault); }
+.lab-step-status.pending { color: var(--muted); }
+
+/* Commands tab */
+.lab-cmds > li { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 6px; }
+.lab-cmds code { color: var(--yellow); }
+.lab-cmd > summary { cursor: pointer; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.lab-cmd-usage, .lab-cmd-why { color: var(--muted); font-size: 11px; }
+.lab-cmd-missing { color: var(--fault); font-size: 11px; border: 1px solid var(--fault); border-radius: 3px; padding: 0 4px; }
+.lab-cmd-actions { display: inline-flex; gap: 4px; }
+.lab-cmd-group { font-family: var(--display); color: var(--teal); padding: 6px 0 2px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+
+/* Top bar: the locked no-damage badge */
+.ch-level-pill.lab-badge { color: var(--teal); border-color: var(--teal); max-width: none; }
+
+@media (max-width: 1360px) {
+  .ed-top .ed-chapter { width: 110px; }
+  .ed.cx-ed > .ed-top .ed-brand { font-size: 15px; }
+}

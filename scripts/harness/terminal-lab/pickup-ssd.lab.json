@@ -1,0 +1,86 @@
+{
+  "id": "pickup-ssd",
+  "title": "Pickup: ssd",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Pickup: ssd",
+    "summary": "Read it, load it. A locked twin needs chmod 644 first."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "pickup",
+      "id": "ssd-1",
+      "type": "ssd",
+      "path": "/lab/ssd_256gb.img"
+    },
+    {
+      "op": "pickup",
+      "id": "ssd-locked",
+      "type": "ssd",
+      "path": "/lab/locked_ssd_256gb.img",
+      "locked": true
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "stdout": "ssd_256gb.img"
+      }
+    },
+    {
+      "op": "run",
+      "line": "cat ssd_256gb.img",
+      "expect": {
+        "code": 0,
+        "stdout": "SSD IMAGE"
+      }
+    },
+    {
+      "op": "run",
+      "line": "source ssd_256gb.img",
+      "expect": {
+        "code": 0,
+        "events": [
+          "PICKUP_COLLECTED"
+        ]
+      }
+    },
+    {
+      "op": "run",
+      "line": "source locked_ssd_256gb.img",
+      "expect": {
+        "code": 1
+      },
+      "note": "still encrypted"
+    },
+    {
+      "op": "run",
+      "line": "chmod 644 locked_ssd_256gb.img",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "run",
+      "line": "source locked_ssd_256gb.img",
+      "expect": {
+        "code": 0,
+        "events": [
+          "PICKUP_COLLECTED"
+        ]
+      }
+    }
+  ]
+}

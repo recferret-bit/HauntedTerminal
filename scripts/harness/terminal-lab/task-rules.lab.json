@@ -1,0 +1,178 @@
+{
+  "id": "task-rules",
+  "title": "Tasks: read, remove, fix, unlock, kill",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Tasks: read, remove, fix, unlock, kill",
+    "summary": "Five plain win rules and a lab check on one level."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "file",
+      "path": "/lab/briefing.txt",
+      "content": "Read me.\n"
+    },
+    {
+      "op": "file",
+      "path": "/lab/junk.tmp",
+      "content": "junk\n"
+    },
+    {
+      "op": "file",
+      "path": "/lab/app.conf",
+      "content": "MODE=broken\n"
+    },
+    {
+      "op": "dir",
+      "path": "/lab/locked_dir",
+      "mode": 0
+    },
+    {
+      "op": "enemy",
+      "id": "virus-1",
+      "type": "virus",
+      "path": "/lab/virus.exe",
+      "pid": 4001,
+      "ppid": 1
+    },
+    {
+      "op": "task",
+      "id": "read",
+      "rule": {
+        "kind": "read_file",
+        "path": "/lab/briefing.txt",
+        "description": "Read the briefing"
+      }
+    },
+    {
+      "op": "task",
+      "id": "junk",
+      "rule": {
+        "kind": "file_absent",
+        "path": "/lab/junk.tmp",
+        "description": "Remove junk.tmp"
+      }
+    },
+    {
+      "op": "task",
+      "id": "conf",
+      "rule": {
+        "kind": "file_contains",
+        "path": "/lab/app.conf",
+        "pattern": "MODE=ok",
+        "description": "Fix app.conf"
+      }
+    },
+    {
+      "op": "task",
+      "id": "dir",
+      "rule": {
+        "kind": "dir_accessible",
+        "path": "/lab/locked_dir",
+        "description": "Open locked_dir"
+      }
+    },
+    {
+      "op": "task",
+      "id": "virus",
+      "rule": {
+        "kind": "enemy_neutralized",
+        "enemyId": "virus-1",
+        "description": "Stop the virus"
+      }
+    },
+    {
+      "op": "check",
+      "id": "killed",
+      "description": "The kill was seen",
+      "when": {
+        "kind": "event",
+        "type": "ENEMY_KILLED"
+      }
+    },
+    {
+      "op": "check",
+      "id": "said-ok",
+      "description": "Someone printed the word killed",
+      "when": {
+        "kind": "output",
+        "pattern": "re:gone"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "cat briefing.txt"
+    },
+    {
+      "op": "check",
+      "id": "read"
+    },
+    {
+      "op": "run",
+      "line": "rm junk.tmp"
+    },
+    {
+      "op": "check",
+      "id": "junk"
+    },
+    {
+      "op": "run",
+      "line": "sed -i 's/broken/ok/' app.conf"
+    },
+    {
+      "op": "check",
+      "id": "conf"
+    },
+    {
+      "op": "run",
+      "line": "chmod 755 locked_dir"
+    },
+    {
+      "op": "check",
+      "id": "dir"
+    },
+    {
+      "op": "check",
+      "id": "virus",
+      "is": "fail"
+    },
+    {
+      "op": "check",
+      "id": "killed",
+      "is": "fail"
+    },
+    {
+      "op": "run",
+      "line": "kill -9 4001",
+      "expect": {
+        "events": [
+          "ENEMY_KILLED"
+        ]
+      }
+    },
+    {
+      "op": "check",
+      "id": "virus"
+    },
+    {
+      "op": "check",
+      "id": "killed"
+    },
+    {
+      "op": "check",
+      "id": "said-ok"
+    }
+  ]
+}

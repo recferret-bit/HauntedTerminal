@@ -1,4 +1,5 @@
-// Shared safety and HTTP primitives for dev-only editor Vite plugins (`chapter-api.mjs` and `comix-api.mjs`).
+// Shared safety and HTTP primitives for the dev-only editor Vite plugins (`chapter-api.mjs`, `comix-api.mjs`, `terminal-lab-api.mjs`).
+import { createHash } from 'node:crypto';
 import { existsSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
 
@@ -6,6 +7,9 @@ export const SLUG_RE = /^[\w.-]+$/;
 const LOCAL_HOST_RE = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 const MAX_BODY_BYTES = 8 * 1024 * 1024;
 let atomicSeq = 0;
+
+/** Hash of a spec file's text: what `baseEtag` conflict checks compare. */
+export const etagOf = (text) => createHash('sha1').update(text).digest('hex');
 
 export class HttpError extends Error {
   constructor(status, message) {
@@ -111,4 +115,17 @@ export function writeAtomicText(target, text) {
     }
     throw err;
   }
+}
+
+/**
+ * A dev-server-only Vite plugin that answers `prefix` and `prefix/...` with `handle(req, res, url)`. An `HttpError` becomes
+ * its status, anything else a 500, always as `{ error }` JSON. `/api/chaptersX` is not `/api/chapters`.
+ */
+export function devApiPlugin(name, prefix, handle) {
+  const middleware = (req, res, next) => {
+    const url = new URL(req.url ?? '/', 'http://localhost');
+    if (url.pathname !== prefix && !url.pathname.startsWith(`${prefix}/`)) return next();
+    handle(req, res, url).catch((err) => sendJson(res, err instanceof HttpError ? err.status : 500, { error: String(err?.message ?? err) }));
+  };
+  return { name, apply: 'serve', configureServer: (server) => { server.middlewares.use(middleware); } };
 }

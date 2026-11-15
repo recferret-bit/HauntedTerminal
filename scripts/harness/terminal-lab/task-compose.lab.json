@@ -1,0 +1,61 @@
+{
+  "id": "task-compose",
+  "title": "Task: bring a compose stack up",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Task: bring a compose stack up",
+    "summary": "Point the website at the payment service."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "file",
+      "path": "/lab/docker-compose.yml",
+      "content": "services:\n  nginx:\n    image: nginx:alpine\n    ports:\n      - \"8080:80\"\n    depends_on:\n      - website\n  website:\n    image: byterig-web:1.0\n    environment:\n      - PAYMENT_URL=http://localhost:9999\n    depends_on:\n      - payment\n  payment:\n    image: byterig-pay:1.0\n    environment:\n      - PAYMENT_MODE=live\n    ports:\n      - \"4002:4002\"\n"
+    },
+    {
+      "op": "task",
+      "id": "stack",
+      "rule": {
+        "kind": "docker_compose_healthy",
+        "services": [
+          "nginx",
+          "website",
+          "payment"
+        ],
+        "description": "Fix docker-compose.yml and bring the stack up healthy"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "op": "check",
+      "id": "stack",
+      "is": "fail"
+    },
+    {
+      "op": "run",
+      "line": "sed -i 's|http://localhost:9999|http://payment:4002|' docker-compose.yml"
+    },
+    {
+      "op": "run",
+      "line": "docker compose up -d",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "check",
+      "id": "stack"
+    }
+  ]
+}

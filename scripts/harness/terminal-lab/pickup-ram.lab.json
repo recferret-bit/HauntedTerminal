@@ -1,0 +1,86 @@
+{
+  "id": "pickup-ram",
+  "title": "Pickup: ram",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Pickup: ram",
+    "summary": "Read it, load it. A locked twin needs chmod 644 first."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "pickup",
+      "id": "ram-1",
+      "type": "ram",
+      "path": "/lab/ram_16gb.dimm"
+    },
+    {
+      "op": "pickup",
+      "id": "ram-locked",
+      "type": "ram",
+      "path": "/lab/locked_ram_16gb.dimm",
+      "locked": true
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "stdout": "ram_16gb.dimm"
+      }
+    },
+    {
+      "op": "run",
+      "line": "cat ram_16gb.dimm",
+      "expect": {
+        "code": 0,
+        "stdout": "RAM STICK"
+      }
+    },
+    {
+      "op": "run",
+      "line": "source ram_16gb.dimm",
+      "expect": {
+        "code": 0,
+        "events": [
+          "PICKUP_COLLECTED"
+        ]
+      }
+    },
+    {
+      "op": "run",
+      "line": "source locked_ram_16gb.dimm",
+      "expect": {
+        "code": 1
+      },
+      "note": "still encrypted"
+    },
+    {
+      "op": "run",
+      "line": "chmod 644 locked_ram_16gb.dimm",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "run",
+      "line": "source locked_ram_16gb.dimm",
+      "expect": {
+        "code": 0,
+        "events": [
+          "PICKUP_COLLECTED"
+        ]
+      }
+    }
+  ]
+}

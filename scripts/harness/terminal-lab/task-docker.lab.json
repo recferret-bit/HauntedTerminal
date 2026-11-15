@@ -1,0 +1,92 @@
+{
+  "id": "task-docker",
+  "title": "Task: fix a Dockerfile, build and run it",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Task: fix a Dockerfile, build and run it",
+    "summary": "Build byterig-web:1.0 and run it on port 3000."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "file",
+      "path": "/lab/Dockerfile",
+      "content": "# Inference worker container\nFROM node:99-vibe-turbo\nWORKDIR /app\nCOPY . .\nEXPOSE 9999\nCMD [\"node\", \"broken_server.js\"]\n"
+    },
+    {
+      "op": "file",
+      "path": "/lab/server.js",
+      "content": "// Worker HTTP node (port 3000)\nconsole.log('worker listening on :3000');\n"
+    },
+    {
+      "op": "task",
+      "id": "image",
+      "rule": {
+        "kind": "docker_image_running",
+        "imageTag": "byterig-web:1.0",
+        "port": 3000,
+        "description": "Build byterig-web:1.0 and run it on port 3000"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "op": "check",
+      "id": "image",
+      "is": "fail"
+    },
+    {
+      "op": "run",
+      "line": "docker build -t byterig-web:1.0 .",
+      "expect": {
+        "code": 1
+      },
+      "note": "the Dockerfile is broken"
+    },
+    {
+      "op": "run",
+      "line": "sed -i 's/node:99-vibe-turbo/node:20-alpine/' Dockerfile"
+    },
+    {
+      "op": "run",
+      "line": "sed -i 's/EXPOSE 9999/EXPOSE 3000/' Dockerfile"
+    },
+    {
+      "op": "run",
+      "line": "sed -i 's/broken_server.js/server.js/' Dockerfile"
+    },
+    {
+      "op": "run",
+      "line": "docker build -t byterig-web:1.0 .",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "check",
+      "id": "image",
+      "is": "fail",
+      "note": "built, not running yet"
+    },
+    {
+      "op": "run",
+      "line": "docker run -d -p 3000:3000 byterig-web:1.0",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "check",
+      "id": "image"
+    }
+  ]
+}

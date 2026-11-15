@@ -1,0 +1,86 @@
+{
+  "id": "pickup-energy",
+  "title": "Pickup: energy",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Pickup: energy",
+    "summary": "Read it, load it. A locked twin needs chmod 644 first."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "pickup",
+      "id": "energy-1",
+      "type": "energy",
+      "path": "/lab/energy.cell"
+    },
+    {
+      "op": "pickup",
+      "id": "energy-locked",
+      "type": "energy",
+      "path": "/lab/locked_energy.cell",
+      "locked": true
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "stdout": "energy.cell"
+      }
+    },
+    {
+      "op": "run",
+      "line": "cat energy.cell",
+      "expect": {
+        "code": 0,
+        "stdout": "ENERGY CELL"
+      }
+    },
+    {
+      "op": "run",
+      "line": "source energy.cell",
+      "expect": {
+        "code": 0,
+        "events": [
+          "PICKUP_COLLECTED"
+        ]
+      }
+    },
+    {
+      "op": "run",
+      "line": "source locked_energy.cell",
+      "expect": {
+        "code": 1
+      },
+      "note": "still encrypted"
+    },
+    {
+      "op": "run",
+      "line": "chmod 644 locked_energy.cell",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "run",
+      "line": "source locked_energy.cell",
+      "expect": {
+        "code": 0,
+        "events": [
+          "PICKUP_COLLECTED"
+        ]
+      }
+    }
+  ]
+}
