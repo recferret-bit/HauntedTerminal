@@ -11,7 +11,9 @@ import * as code from './session-code.js';
 import * as flow from './session-flow.js';
 import * as level from './session-level.js';
 import * as rules from './session-rules.js';
+import type { LabConfig, LabInjection, LabInspect } from './session-lab-types.js';
 import type { ChapterSession, ChapterSessionOptions, ChapterState, EditorOpenPayload, LevelRuntime } from './session-state.js';
+import * as lab from './session-lab.js';
 import * as shell from './session-shell.js';
 import * as snap from './session-snapshot.js';
 import type { ChapterPack, LevelSpec } from './types.js';
@@ -37,6 +39,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   readonly chaosMode: boolean;
   readonly chaosSeed: string;
   readonly host: WorldHost;
+  readonly lab: LabConfig | null;
 
   levelIdx = 0;
   lastCmdStartedCrack = false;
@@ -66,6 +69,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
     this.chapterId = options.chapterId;
     this.tacticalMode = Boolean(options.tacticalMode);
     this.chaosMode = Boolean(options.chaosMode);
+    this.lab = options.lab ?? null;
     const pack = options.pack ?? getChapterPack(options.chapterId);
     if (!pack || pack.levels.length === 0) {
       throw new Error(`Chapter "${options.chapterId}" has no executable LevelSpec entries.`);
@@ -85,7 +89,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
         this.rt.spec.mechanic === 'hub' ||
         this.rt.levelCommands === 0 ||
         levelScript(this).safe === true ||
-        rules.allWinRulesMet(this),
+        (this.lab === null && rules.allWinRulesMet(this)),
       bossDown: () => {},
     };
 
@@ -141,6 +145,18 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
 
   arriveLevel(): TickResult {
     return flow.arriveLevel(this);
+  }
+
+  inspect(): LabInspect {
+    return lab.inspect(this);
+  }
+
+  labTick(): TickResult {
+    return lab.labTick(this);
+  }
+
+  inject(what: LabInjection): TickResult {
+    return lab.inject(this, what);
   }
 
   exec(line: string): CommandResult {

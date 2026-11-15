@@ -45,14 +45,77 @@ export function cmdPs(g: Play, args: string[], top: boolean): Step {
   return out(`${text}\n`, events);
 }
 
-export function signalOf(_g: Play, token: string | undefined): PosixSignal | null {
+export function parseSignalToken(token: string | undefined): PosixSignal | null {
   if (!token) return 'SIGTERM';
   const name = token.replace(/^-/, '').toUpperCase().replace(/^SIG/, '');
   if (name === '9' || name === 'KILL') return 'SIGKILL';
   if (name === '15' || name === 'TERM') return 'SIGTERM';
   if (name === 'STOP' || name === '19' || name === '17' || name === '23') return 'SIGSTOP';
-  if (name === 'CONT' || name === '18' || name === '19c') return 'SIGCONT';
+  if (name === 'CONT' || name === '18' || name === '19C') return 'SIGCONT';
   return null;
+}
+
+export function signalOf(_g: Play, token: string | undefined): PosixSignal | null {
+  return parseSignalToken(token);
+}
+
+export interface PkillSpec {
+  signal: PosixSignal;
+  sigFlag: string;
+  full: boolean;
+  exact: boolean;
+  ppid: number | null;
+  pattern: string | null;
+}
+
+export function parsePkillArgs(args: string[]): ({ ok: true } & PkillSpec) | { ok: false; error: string } {
+  let signal: PosixSignal = 'SIGTERM';
+  let sigFlag = '-15';
+  let full = false;
+  let exact = false;
+  let ppid: number | null = null;
+  const patterns: string[] = [];
+
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i] ?? '';
+    if (arg === '--') {
+      patterns.push(...args.slice(i + 1));
+      break;
+    }
+    if (arg === '-s') {
+      const tok = args[++i];
+      const sig = tok ? parseSignalToken(tok) : null;
+      if (!sig) return { ok: false, error: `pkill: ${tok ?? '-s'}: invalid signal\n` };
+      signal = sig;
+      sigFlag = `-${sig}`;
+    } else if (arg === '-P' || (arg.startsWith('-P') && arg.length > 2)) {
+      const raw = arg === '-P' ? args[++i] : arg.slice(2);
+      const n = raw !== undefined && raw !== '' ? Number(raw) : NaN;
+      if (!Number.isInteger(n) || n < 0) return { ok: false, error: `pkill: invalid parent process ID '${raw ?? ''}'\n` };
+      ppid = n;
+    } else if (/^-[fx]+$/.test(arg)) {
+      if (arg.includes('f')) full = true;
+      if (arg.includes('x')) exact = true;
+    } else if (arg.startsWith('-')) {
+      const sig = parseSignalToken(arg);
+      if (!sig) return { ok: false, error: `pkill: ${arg}: invalid signal\n` };
+      signal = sig;
+      sigFlag = `-${sig}`;
+    } else {
+      patterns.push(arg);
+    }
+  }
+  if (patterns.length > 1) return { ok: false, error: 'pkill: only one pattern can be provided\n' };
+  const pattern = patterns[0] ?? null;
+  if (pattern === null && ppid === null) return { ok: false, error: 'pkill: no matching criteria specified\n' };
+  return { ok: true, signal, sigFlag, full, exact, ppid, pattern };
+}
+
+export function matchesPkill(proc: ProcRow, spec: PkillSpec): boolean {
+  if (spec.ppid !== null && proc.ppid !== spec.ppid) return false;
+  if (spec.pattern === null) return true;
+  const hay = spec.full ? proc.name : (proc.name.split(/\s+/)[0] ?? proc.name);
+  return spec.exact ? hay === spec.pattern : hay.includes(spec.pattern);
 }
 
 export function cmdKill(g: Play, args: string[]): Step {
@@ -104,18 +167,15 @@ export function signalPid(g: Play, pid: number, signal: PosixSignal): Step {
 }
 
 export function cmdPkill(g: Play, args: string[]): Step {
-  const name = args.filter((arg) => !arg.startsWith('-')).pop();
-  if (!name) return empty(2, 'pkill: no matching criteria specified\n');
-  const flag = args.find((arg) => arg.startsWith('-'));
-  const signal = signalOf(g, flag);
-  if (!signal) return empty(2, `pkill: ${flag}: invalid signal\n`);
-  const hits = procs(g).filter((proc) => proc.name.includes(name) && proc.pid !== 10 && proc.pid !== SHELL_PID);
+  const parsed = parsePkillArgs(args);
+  if (!parsed.ok) return empty(2, parsed.error);
+  const hits = procs(g).filter((proc) => proc.pid !== 10 && proc.pid !== SHELL_PID && matchesPkill(proc, parsed));
   if (hits.length === 0) return empty(1);
   const events: KernelEvent[] = [];
   let stdout = '';
   let stderr = '';
   for (const proc of hits) {
-    const step = signalPid(g, proc.pid, signal);
+    const step = signalPid(g, proc.pid, parsed.signal);
     stdout += step.stdout;
     stderr += step.stderr;
     events.push(...step.events);

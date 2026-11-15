@@ -6,6 +6,7 @@ import { mountHud } from '../ui/hud.js';
 import { powerOff, powerOn } from '../ui/screen.js';
 import { colourise, mountShell } from '../ui/terminal.js';
 import { mountVisualLab } from '../ui/visual-lab.js';
+import { recordExec } from './lab.js';
 import { statsFrom } from './outro.js';
 import { FLOOR_NAMES, writeSkipPref, type Play } from './state.js';
 
@@ -13,6 +14,7 @@ function runShellLine(play: Play, line: string): { output: string; clear?: boole
   if (play.phase !== 'play') return { output: '' };
   const session = play.session;
   const res = session.exec(line);
+  recordExec(play, line, res);
   play.execTaunts = [];
   try {
     play.apply(res.events, res.snapshot, res.output);
@@ -33,22 +35,22 @@ function runShellLine(play: Play, line: string): { output: string; clear?: boole
 }
 
 export function mountPlayShell(play: Play): void {
-  const session = play.session;
   play.shell = mountShell(play.dom.termEl, {
     run: (line) => runShellLine(play, line),
-    complete: (before) => session.complete(before),
+    complete: (before) => play.session.complete(before),
     prompt() {
-      const snap = session.snapshot();
+      const snap = play.session.snapshot();
       return { cwd: snap.cwd, gold: snap.promptGold };
     },
   });
   play.shell.setBlocked(true);
   const pane = play.dom.editorPaneEl;
   const dock = play.dom.termDockEl;
-  if (pane && dock && isChapterSession(session)) {
+  if (pane && dock) {
     play.codeEditor = mountCodeEditor(pane, dock, {
       onSave: (fileName, content) => {
-        const res = session.saveEditableFile(fileName, content);
+        if (!isChapterSession(play.session)) return;
+        const res = play.session.saveEditableFile(fileName, content);
         if (res.output) play.shell.printAbove(colourise(res.output, res.stderr));
         play.apply(res.events, res.snapshot, res.output);
       },
@@ -81,32 +83,32 @@ function playAgain(play: Play, skip: boolean): void {
 }
 
 export function mountPlayHud(play: Play): void {
-  const session = play.session;
-  const chapter = isChapterSession(session) ? session : null;
+  const chapter = isChapterSession(play.session) ? play.session : null;
   play.hud = mountHud(play.dom.hudEl, play.dom.stageWrap, play.dom.statsEl, {
     maxFloors: chapter ? chapter.getLevels().length : 5,
     initialTactical: chapter ? chapter.isTacticalMode() : false,
     onToggleTactical: chapter
       ? () => {
-          const next = !chapter.isTacticalMode();
-          chapter.setTacticalMode(next);
+          if (!isChapterSession(play.session)) return false;
+          const next = !play.session.isTacticalMode();
+          play.session.setTacticalMode(next);
           play.shell.printAbove(
             colourise(`Tactical Mode: ${next ? 'ENABLED (turn-based clock)' : 'DISABLED (real-time clock)'}\n`),
           );
-          play.hud?.update(session.snapshot());
+          play.hud?.update(play.session.snapshot());
           return next;
         }
       : undefined,
     onHint: () => {
-      if (play.phase === 'play') play.hud?.showHint(session.hint());
+      if (play.phase === 'play') play.hud?.showHint(play.session.hint());
     },
     onMute: () => {
-      session.toggleMute();
-      play.hud?.update(session.snapshot());
+      play.session.toggleMute();
+      play.hud?.update(play.session.snapshot());
     },
     onRestartFloor: () => {
       if (play.phase !== 'play' || play.reasons.has('card')) return;
-      const res = session.restartFloor();
+      const res = play.session.restartFloor();
       play.shell.printAbove(colourise(res.output));
       play.apply(res.events, res.snapshot);
     },
@@ -187,12 +189,10 @@ async function devCinematic(play: Play, role: ComixRole): Promise<void> {
 }
 
 export function mountPlayDev(play: Play): void {
-  const session = play.session;
-  const debugGive = play.debugGive;
   mountDevInspector(play.dom.inspectorEl, play.stage, {
     onTeleport: (floor) => {
       if (play.phase !== 'play') return;
-      const res = session.debugTeleport(floor as 1 | 2 | 3 | 4 | 5);
+      const res = play.session.debugTeleport(floor as 1 | 2 | 3 | 4 | 5);
       play.shell.printAbove(res.output);
       const entered = res.events.some((e) => e.type === 'FLOOR_ENTERED');
       const snap = res.snapshot;
@@ -202,25 +202,24 @@ export function mountPlayDev(play: Play): void {
       play.apply(events, snap);
     },
     onHeal: () => {
-      play.paint(session.debugHeal());
+      play.paint(play.session.debugHeal());
       play.shell.printAbove('\x1b[32mHP restored.\x1b[0m');
     },
-    onGive: debugGive
-      ? (item) => {
-          const r = debugGive(item);
-          if ('snapshot' in r) {
-            if (r.output) play.shell.printAbove(r.output);
-            play.apply(r.events, r.snapshot);
-          } else play.paint(r);
-        }
-      : undefined,
+    onGive: (item) => {
+      if (!play.debugGive) return;
+      const r = play.debugGive(item);
+      if ('snapshot' in r) {
+        if (r.output) play.shell.printAbove(r.output);
+        play.apply(r.events, r.snapshot);
+      } else play.paint(r);
+    },
     onDialogue: () => {
       if (play.phase === 'play') void play.shell.submit('cat intercom.sock');
     },
     onTerminalLog: (msg) => play.shell.printAbove(msg),
     onPlayIntro: () => void devCinematic(play, 'opening'),
     onPlayOutro: () => void devCinematic(play, 'ending'),
-    onAssetsReloaded: () => play.paint(session.snapshot()),
-    emit: (ev) => play.apply([ev], session.snapshot()),
+    onAssetsReloaded: () => play.paint(play.session.snapshot()),
+    emit: (ev) => play.apply([ev], play.session.snapshot()),
   });
 }

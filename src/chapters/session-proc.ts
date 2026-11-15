@@ -1,5 +1,7 @@
 import type { KernelEvent, PosixSignal } from '../contracts/events.js';
+import { matchesPkill, parsePkillArgs, parseSignalToken } from '../game/commands-proc.js';
 import type { KillHow } from '../game/entities.js';
+import { SIGNAL_LIST } from '../game/manual.js';
 import type { Step } from '../game/shell.js';
 import { psXrayToggle } from '../game/puzzle.js';
 import { WEAK_GGUF, kiroIsWeak, levelScript, runSteps } from './script.js';
@@ -27,16 +29,22 @@ export function cmdPs(g: ChapterState, cmd: string): Step {
   }
 
 export function cmdKill(g: ChapterState, args: string[]): Step {
+    if (args[0] === '-l' || args[0] === '-L') return okStep(`${SIGNAL_LIST}\n`);
     const events: KernelEvent[] = [];
     let sig: PosixSignal = 'SIGTERM';
     const pids: number[] = [];
 
-    for (const a of args) {
-      const upper = a.toUpperCase();
-      if (upper === '-9' || upper === '-KILL' || upper === '-SIGKILL') sig = 'SIGKILL';
-      else if (upper === '-15' || upper === '-TERM' || upper === '-SIGTERM') sig = 'SIGTERM';
-      else if (upper === '-STOP' || upper === '-SIGSTOP' || upper === '-19') sig = 'SIGSTOP';
-      else if (upper === '-CONT' || upper === '-SIGCONT' || upper === '-18') sig = 'SIGCONT';
+    for (let i = 0; i < args.length; i += 1) {
+      const a = args[i] ?? '';
+      if (a === '-s') {
+        const tok = args[++i];
+        const parsed = tok ? parseSignalToken(tok) : null;
+        if (!parsed) return emptyStep(1, `kill: ${tok ?? '-s'}: invalid signal specification\n`);
+        sig = parsed;
+        continue;
+      }
+      const parsed = a.startsWith('-') ? parseSignalToken(a) : null;
+      if (parsed) sig = parsed;
       else {
         const n = Number(a);
         if (!Number.isInteger(n)) return emptyStep(1, `kill: ${a}: arguments must be process IDs\n`);
@@ -101,3 +109,12 @@ export function cmdKill(g: ChapterState, args: string[]): Step {
     refreshExitGates(g, events);
     return okStep(stdout, events, code, stderr);
   }
+
+export function cmdPkill(g: ChapterState, args: string[]): Step {
+  const parsed = parsePkillArgs(args);
+  if (!parsed.ok) return emptyStep(2, parsed.error);
+  const hits = g.rt.world.procs().filter((proc) => proc.pid !== 4242 && proc.pid !== 777 && matchesPkill(proc, parsed));
+  if (hits.length === 0) return emptyStep(1, '');
+  const res = cmdKill(g, [parsed.sigFlag, ...hits.map((p) => String(p.pid))]);
+  return { ...res, code: 0 };
+}

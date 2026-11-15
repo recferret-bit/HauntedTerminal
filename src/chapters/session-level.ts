@@ -2,11 +2,11 @@ import type { KernelEvent } from '../contracts/events.js';
 import { maxHpFor } from '../game/bestiary.js';
 import { World } from '../game/entities.js';
 import type { EnemySpawn, PickupSpawn } from '../game/floors.js';
-import { lookup, makeNode, makeRoot } from '../game/tree.js';
+import { lookup, makeRoot } from '../game/tree.js';
 import type { LevelSpec } from './types.js';
 import { readMetagame, recordTelemetry } from './catalog.js';
 import { arrivalScript, hiddenEnemyId, isNodeHidden, levelScript } from './script.js';
-import { ensureDirChain, hashSeed, resolveTauntAgent, splitParentAndName, type ChapterState, type QuestBackup } from './session-state.js';
+import { ensureDirChain, hashSeed, placeFile, resolveTauntAgent, splitParentAndName, type ChapterState, type QuestBackup } from './session-state.js';
 import { refreshExitGates } from './session-rules.js';
 
 /** Tab-complete and globs skip a tutorial file until its reveal condition is met. */
@@ -69,19 +69,9 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
 
     const quests: QuestBackup[] = [];
     for (const f of spec.files) {
-      if (f.kind === 'dir') {
-        const dir = ensureDirChain(root, f.path);
-        dir.mode = f.mode ?? 0o755;
-        dir.uid = f.uid ?? 1000;
-        continue;
-      }
-      const { parentPath, name } = splitParentAndName(f.path);
-      const parent = ensureDirChain(root, parentPath);
-      const node = makeNode(parent, name, f.kind, f.mode ?? 0o644);
-      node.uid = f.uid ?? 1000;
-      node.questCritical = f.questCritical;
-      node.content = f.content ?? '';
+      const node = placeFile(root, f);
       if (f.questCritical && f.kind === 'file') {
+        const { parentPath, name } = splitParentAndName(f.path);
         quests.push({
           path: f.path,
           name,
@@ -131,6 +121,7 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       tutorialSkipped: false,
       tutorialLastStep: 1,
       hiddenRevealed: false,
+      lab: { absorbed: {}, solved: new Set(), attempts: {}, hits: new Set() },
     };
     g.rt.world = new World(g.host, enemySpawns, pickupSpawns);
     if (autoLantern) {

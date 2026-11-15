@@ -5,12 +5,13 @@ import { lookup, makeNode } from '../game/tree.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from '../game/types.js';
 import { readMetagame, recordTelemetry } from './catalog.js';
 import type { LevelSpec } from './types.js';
-import { bullyingNote, evalCond, finishTutorial, levelScript, revealHidden, syncTutorial } from './script.js';
+import { applySkipTutorial, bullyingNote, evalCond, levelScript, syncTutorial } from './script.js';
 import { ensureDirChain, type ChapterState, type EditorOpenPayload } from './session-state.js';
 import { stepKiroCrack } from './session-kiro.js';
 import { arriveCurrentLevel, levelBannerText, loadLevel, rebootLevel } from './session-level.js';
 import { cmdHank } from './session-meta.js';
 import { allWinRulesMet, playEventsSfx, refreshExitGates, syncValidatedCodeBugs } from './session-rules.js';
+import { observe } from './session-lab-checks.js';
 import { snapshot } from './session-snapshot.js';
 
 export function applyInitialLoadout(g: ChapterState, startIdx: number): void {
@@ -107,11 +108,6 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
       };
     }
 
-    if (/^tutorial\s+skip$/i.test(typed)) {
-      const sk = skipTutorial(g);
-      return { output: sk.output, events: sk.events, snapshot: sk.snapshot };
-    }
-
     const prevLevelIdx = g.levelIdx;
     const arrivalEvents: KernelEvent[] = [];
     const arrivalOut = !g.rt.levelArrived ? arriveCurrentLevel(g, arrivalEvents) : '';
@@ -154,10 +150,12 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     combinedOutput += worldNotes + (g.deathText || '');
     combinedStderr += g.deathText || '';
     playEventsSfx(g, events);
+    if (g.lab) observe(g, { line: typed, output: combinedOutput, code: step.code, eventTypes: events.map((e) => e.type) });
 
     return {
       output: combinedOutput,
       stderr: combinedStderr || undefined,
+      code: step.code,
       events,
       snapshot: snapshot(g),
       clear: step.clear,
@@ -165,7 +163,7 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
   }
 
 export function tick(g: ChapterState): TickResult {
-    if (g.paused || g.intro || g.ended || g.tacticalMode) {
+    if (g.paused || g.intro || g.ended || g.tacticalMode || g.lab?.clock === 'manual') {
       return { output: '', events: [], snapshot: snapshot(g) };
     }
     return internalTick(g, false);
@@ -206,9 +204,7 @@ export function internalTick(g: ChapterState, _fromCommand: boolean): TickResult
     if ((!_fromCommand || !g.lastCmdStartedCrack) && g.kiro.activeCrack) {
       kiroOut = stepKiroCrack(g, events);
     }
-    const holdUntil = levelScript(g).holdEnemiesUntil;
-    const holdEnemyTicks = g.rt.levelCommands === 0 || (holdUntil !== undefined && !evalCond(g, holdUntil));
-    const tickOut = kiroOut + (holdEnemyTicks ? '' : g.rt.world.tick(events));
+    const tickOut = kiroOut + (enemiesHeld(g) ? '' : g.rt.world.tick(events));
     syncValidatedCodeBugs(g);
     g.rt.world.sync(events);
     refreshExitGates(g, events);
@@ -216,8 +212,15 @@ export function internalTick(g: ChapterState, _fromCommand: boolean): TickResult
     const stderr = g.deathText || undefined;
     const output = tickOut + notes + (g.deathText || '');
     playEventsSfx(g, events);
+    if (g.lab) observe(g, { output, eventTypes: events.map((e) => e.type) });
     return { output, stderr, events, snapshot: snapshot(g) };
   }
+
+/** The world does not tick yet: before the level's first command, and while the script's `holdEnemiesUntil` is unmet. */
+export function enemiesHeld(g: ChapterState): boolean {
+  const holdUntil = levelScript(g).holdEnemiesUntil;
+  return g.rt.levelCommands === 0 || (holdUntil !== undefined && !evalCond(g, holdUntil));
+}
 
 export function hint(g: ChapterState): string {
     const step = cmdHank(g, []);
@@ -262,13 +265,8 @@ export function debugHeal(g: ChapterState): GameSnapshot {
 
 export function skipTutorial(g: ChapterState): TickResult {
     const events: KernelEvent[] = [];
-    const tut = levelScript(g).tutorial;
-    g.rt.tutorialSkipped = true;
-    if (tut) {
-      if (!g.rt.hiddenRevealed) revealHidden(g, events);
-      finishTutorial(g, events);
-    }
-    return { output: tut?.skipText ?? '', events, snapshot: snapshot(g) };
+    const output = applySkipTutorial(g, events);
+    return { output, events, snapshot: snapshot(g) };
   }
 
 export function setPaused(g: ChapterState, paused: boolean): void {

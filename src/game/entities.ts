@@ -13,7 +13,9 @@ import {
   revealProcesses as revealProcessesWorld,
   signal as signalWorld,
   sync as syncWorld,
+  cadence as cadenceWorld,
   tick as tickWorld,
+  ticksToTell as ticksToTellWorld,
   vetoChmod as vetoChmodWorld,
   vetoRemove as vetoRemoveWorld,
 } from './entities-combat.js';
@@ -311,6 +313,23 @@ export class World {
     }
   }
 
+  /** The animation state the stage shows for `e`. */
+  stateOf(e: Enemy): ActorState {
+    if (e.dead) return 'death';
+    if (!e.revealed) return 'hidden';
+    if (this.petrified(e)) return 'petrified';
+    if (e.frozen) return 'frozen';
+    if (this.sealedPort(e)) return 'hidden';
+    if (e.told) return 'windup';
+    if (e.enraged) return 'enraged';
+    return e.revealTick === this.ticks ? 'revealed' : 'idle';
+  }
+
+  /** Ticks between `e`'s attacks (0 = never acts); the kernel's depends on the boss phase. */
+  cadence(e: Enemy): number {
+    return cadenceWorld(this, e);
+  }
+
   /** Enemies and pickups to draw in `path` (dying enemies stay for two ticks with state `death`). */
   views(path: string): EntityView[] {
     const list: EntityView[] = [];
@@ -318,17 +337,8 @@ export class World {
       if (e.dead && e.deathTicks >= 2) continue;
       const zone = e.dead ? e.deathZone : this.zone(e);
       if (!zone.includes(path) && !e.showIn.includes(path)) continue;
-      const sunk = this.sealedPort(e);
-      const unseen = (!e.revealed && !e.dead) || sunk;
-      let state: ActorState = 'idle';
-      if (e.dead) state = 'death';
-      else if (!e.revealed) state = 'hidden';
-      else if (this.petrified(e)) state = 'petrified';
-      else if (e.frozen) state = 'frozen';
-      else if (sunk) state = 'hidden';
-      else if (e.told) state = 'windup';
-      else if (e.enraged) state = 'enraged';
-      else if (e.revealTick === this.ticks) state = 'revealed';
+      const unseen = (!e.revealed && !e.dead) || this.sealedPort(e);
+      const state = this.stateOf(e);
       list.push({
         id: e.id,
         model: e.model,
@@ -406,6 +416,11 @@ export class World {
   /** After an in-place respawn: everyone takes a breath, no queued hits. */
   calm(): void {
     return calmWorld(this);
+  }
+
+  /** Ticks until `e` next tells an attack, or null when it will not (see `ticksToTell`). */
+  ticksToTell(e: Enemy): number | null {
+    return ticksToTellWorld(this, e);
   }
 
   tick(events: KernelEvent[]): string {

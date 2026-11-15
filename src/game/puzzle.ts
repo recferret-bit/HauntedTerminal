@@ -1,7 +1,9 @@
-import type { BubbleStyle, KernelEvent, SpeakerMood } from '../contracts/events.js';
+import type { BubbleStyle, KernelEvent } from '../contracts/events.js';
 import { BESTIARY } from './bestiary.js';
+import { dialogueEvent } from './dialogue.js';
 import { F3_WING_ENERGY, F3_WING_PICKUP } from './floors.js';
 import { KIRO_CORE_ORDER, inspectTextWithKiro, type KiroScanInput } from './kiro.js';
+import { labRiddleRead, labRiddleWrite } from './lab-riddle.js';
 import type { EntityView, ProcRow } from './entities.js';
 import { empty, out, type Play } from './play.js';
 import {
@@ -12,15 +14,31 @@ import { absPath, hasExec, makeNode, modeString, resolve, type VNode } from './t
 import { FLOOR_TITLES } from './floors.js';
 
 export function readSocket(g: Play, node: VNode): Step {
+  const labStep = labRiddleRead(g.lab, node);
+  if (labStep) {
+    bump(g, 'read');
+    return labStep;
+  }
   const text = socketRead(g, node.name);
   const style = socketStyle(g, node.name, false);
-  const ev = talk(g, node.name, socketSpeaker(g, node.name), style, 'cryptic', text.body, text.tokens, node.id);
+  const ev = dialogueEvent({ obstacleId: node.name, speaker: socketSpeaker(g, node.name), style, mood: 'cryptic', text: text.body, tokens: text.tokens, anchor: node.id });
   bump(g, 'read');
   return out(`${ev.payload.ansiTerminalBanner}${text.body}\n`, [ev]);
 }
 
 export function writeSocket(g: Play, node: VNode, data: string): Step {
   const body = data.trim();
+  g.run.socketInputs.set(node.name, body);
+  const labStep = labRiddleWrite(
+    g.lab,
+    g.run.lab,
+    g.run.root,
+    g.run.world,
+    node,
+    data,
+    (events) => events.forEach((ev) => cue(g, ev)),
+  );
+  if (labStep) return labStep;
   const events: KernelEvent[] = [];
   if (node.name === 'archivist_gate.sock') {
     if (Number(body) === 6) {
@@ -78,7 +96,7 @@ export function writeSocket(g: Play, node: VNode, data: string): Step {
   }
   g.run.attempts[node.name] = (g.run.attempts[node.name] ?? 0) + 1;
   const hint = socketHint(g, node.name);
-  const ev = talk(g, node.name, socketSpeaker(g, node.name), 'JAGGED_SCREAM', 'mocking', hint, [], node.id);
+  const ev = dialogueEvent({ obstacleId: node.name, speaker: socketSpeaker(g, node.name), style: 'JAGGED_SCREAM', mood: 'mocking', text: hint, tokens: [], anchor: node.id });
   events.push(ev);
   cue(g, ev);
   return { stdout: '', stderr: `${ev.payload.ansiTerminalBanner}${hint}\n`, code: 1, events };
@@ -157,21 +175,6 @@ export function socketHint(g: Play, name: string): string {
   return sets[name]?.[n - 1] ?? 'That is not the phrase.';
 }
 
-export function talk(_g: Play, obstacleId: string, speaker: string, style: BubbleStyle, mood: SpeakerMood, text: string, tokens: string[], inode: number): Extract<KernelEvent, { type: 'OBSTACLE_DIALOGUE_RENDERED' }> {
-  return {
-    type: 'OBSTACLE_DIALOGUE_RENDERED',
-    payload: {
-      obstacleId,
-      speakerName: speaker,
-      portraitSprite: 'socket_guardian',
-      mood,
-      bubbleStyle: style,
-      anchorInodeId: inode,
-      pages: [{ text, highlightedUnixTokens: tokens }],
-      ansiTerminalBanner: `\x1b[35m[ ${speaker} // ${style} ]\x1b[0m\n`,
-    },
-  };
-}
 
 export function puzzleHint(g: Play): string {
   const path = absPath(g.run.cwd);

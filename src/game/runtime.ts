@@ -2,6 +2,8 @@ import type { KernelEvent } from '../contracts/events.js';
 import { BESTIARY, PICKUP_INFO, RAM_PER_STEP, SSD_PER_BACKUP, maxHpFor, type PickupType } from './bestiary.js';
 import { World, type KillHow, type Pickup } from './entities.js';
 import { FLOOR_PATHS, FLOOR_TITLES, buildFloor } from './floors.js';
+import { ensureLabDirChain, placeLabFile } from './lab-support.js';
+import { freshLabLevelState } from './lab-types.js';
 import { COMMANDS } from './manual.js';
 import { KIRO_CORE_ORDER } from './kiro.js';
 import {
@@ -199,8 +201,12 @@ export function ensure(g: Play, path: string): VNode {
 }
 
 export function hurt(g: Play, amount: number, source: string, events: KernelEvent[]): string {
-  if (g.run.ended || g.deadNow || amount <= 0) return '';
+  if (g.run.ended || g.deadNow || amount <= 0 || g.lab?.classic?.enemyFire === 'hold') return '';
   const { amount: mitigated } = g.kiro.mitigateDamage(amount);
+  if (g.lab) {
+    if (mitigated > 0) g.run.lab.absorbed[source] = (g.run.lab.absorbed[source] ?? 0) + mitigated;
+    return '';
+  }
   g.run.hp = Math.max(0, g.run.hp - mitigated);
   push(g, events, { type: 'PLAYER_DAMAGED', amount: mitigated, hpRemaining: g.run.hp, sourceName: source });
   if (g.run.hp > 0) return '';
@@ -209,6 +215,11 @@ export function hurt(g: Play, amount: number, source: string, events: KernelEven
 
 /** The one death path: an SSD backup restores you in place, otherwise the floor restarts. */
 export function die(g: Play, events: KernelEvent[]): string {
+  if (g.lab) {
+    g.run.lab.absorbed.symlink_flood = (g.run.lab.absorbed.symlink_flood ?? 0) + 100;
+    g.run.flood = 0;
+    return '';
+  }
   g.deadNow = true;
   if (backups(g) > 0) {
     g.run.ssd -= SSD_PER_BACKUP;
@@ -293,7 +304,19 @@ export function denied(g: Play, node: VNode, message: string, command: string): 
 export function load(g: Play, floor: FloorId): void {
   g.kiro.clearRoomTransient();
   const built = buildFloor(floor);
-  const cwd = resolve(built.root, built.cwd, false).node;
+  const classic = g.lab?.classic?.floor === floor ? g.lab.classic : undefined;
+  let enemies = built.enemies;
+  let pickups = built.pickups;
+  if (classic) {
+    for (const f of classic.files) placeLabFile(built.root, f);
+    const extraEnemyIds = new Set(classic.enemies.map((e) => e.id));
+    enemies = [...enemies.filter((e) => !extraEnemyIds.has(e.id)), ...classic.enemies];
+    const extraPickupIds = new Set(classic.pickups.map((p) => p.id));
+    pickups = [...pickups.filter((p) => !extraPickupIds.has(p.id)), ...classic.pickups];
+  }
+  const cwd = classic?.cwd
+    ? ensureLabDirChain(built.root, classic.cwd)
+    : resolve(built.root, built.cwd, false).node;
   if (!cwd) throw new Error(`missing start for floor ${floor}`);
   g.run.floor = floor;
   g.run.root = built.root;
@@ -307,6 +330,9 @@ export function load(g: Play, floor: FloorId): void {
   g.run.tokenOk = false;
   g.run.archivistSolved = false;
   g.run.quests = [];
+  g.run.filesRead = new Set();
+  g.run.socketInputs = new Map();
+  g.run.lab = freshLabLevelState();
   walk(built.root, (node) => {
     if (!node.questCritical || !node.parent) return;
     g.run.quests.push({
@@ -319,7 +345,7 @@ export function load(g: Play, floor: FloorId): void {
       missing: 0,
     });
   });
-  g.run.world = new World(g.host, built.enemies, built.pickups);
+  g.run.world = new World(g.host, enemies, pickups);
 }
 
 export function canUnlink(_g: Play, node: VNode): boolean {

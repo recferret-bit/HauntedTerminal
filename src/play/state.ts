@@ -1,3 +1,5 @@
+import type { LabConfig } from '../chapters/session-lab-types.js';
+import type { ExecRecord } from '../contracts/exec-record.js';
 import type { KernelEvent } from '../contracts/events.js';
 import type { Session } from '../game/session.js';
 import type { GameSnapshot, TickResult } from '../game/types.js';
@@ -90,8 +92,15 @@ export class Play {
   codeEditor: CodeEditor | null = null;
   /** Every event the session produced, newest last (capped). The chapter editor reads it through `__game.events()`. */
   eventLog: KernelEvent[] = [];
+  /** The lab's config in a Terminal Lab game (`?lab=1` on a draft), else null. */
+  terminalLab: LabConfig | null = null;
+  /** Lab games only: the newest lines the terminal ran with what the session answered (capped), and how many ran in all. */
+  execLog: ExecRecord[] = [];
+  execCount = 0;
   /** While a typed command runs, agent taunts are appended after its output instead of printed above it. */
   execTaunts: string[] | null = null;
+  /** Incremented every time the session is swapped in place (`window.__lab.swap`). */
+  sessionSeq = 1;
   shell!: Shell;
   tutorial!: TutorialCard;
   lab!: ShaderLab;
@@ -107,10 +116,10 @@ export class Play {
   constructor(
     readonly dom: PlayDom,
     readonly stage: ComicStage,
-    readonly session: Session,
-    readonly activeBanner: string,
-    readonly debugGive: DebugGive | undefined,
-    readonly skipTutorial: SkipTutorial | undefined,
+    public session: Session,
+    public activeBanner: string,
+    public debugGive: DebugGive | undefined,
+    public skipTutorial: SkipTutorial | undefined,
     public skipIntroPref: boolean,
   ) {
     if (document.hidden) this.reasons.add('hidden');

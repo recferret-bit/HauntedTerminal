@@ -12,9 +12,17 @@ export const POWER_OFF_MS = 460;
 
 const body = () => document.body.classList;
 const wait = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
+let screenSeq = 0;
+
+/** Cancels any pending CRT power transition timer and leaves the terminal visible and settled. */
+export function resetScreen(): void {
+  screenSeq += 1;
+  body().remove('cine', 'term-off', 'term-on', 'term-down', 'stage-drop');
+}
 
 /** Fullscreen cinematic on/off. While on, the terminal is dark. */
 export function setCinematic(on: boolean): void {
+  screenSeq += 1;
   body().toggle('cine', on);
   if (on) {
     body().add('term-off');
@@ -24,20 +32,24 @@ export function setCinematic(on: boolean): void {
 
 /** Stage drops in and the terminal powers on. Resolves when the picture is up. */
 export async function powerOn(withStage = true): Promise<void> {
+  const seq = ++screenSeq;
   body().remove('term-down', 'term-on', 'stage-drop');
   void document.body.offsetWidth;
   body().remove('term-off');
   body().add('term-on');
   if (withStage) body().add('stage-drop');
   await wait(POWER_ON_MS);
+  if (screenSeq !== seq) return;
   body().remove('term-on', 'stage-drop');
 }
 
 /** The terminal powers off (line, dot, dark). Stays dark until powerOn. */
 export async function powerOff(): Promise<void> {
+  const seq = ++screenSeq;
   body().remove('term-on', 'stage-drop');
   body().add('term-down');
   await wait(POWER_OFF_MS);
+  if (screenSeq !== seq) return;
   body().add('term-off');
   body().remove('term-down');
 }

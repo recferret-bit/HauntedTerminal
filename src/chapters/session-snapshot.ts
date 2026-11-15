@@ -53,6 +53,8 @@ function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, 
         room.actors.push(actor);
       });
 
+      if (g.lab) room.actors.push(...g.lab.extraActors);
+
       // The chapter's boss cameo supervisor (manifest boss.cameoModel) stands on stage in boss levels.
       const cameoModel = g.pack.manifest.boss.cameoModel;
       if (g.rt.spec.mechanic === 'boss' && cameoModel && !room.actors.some((a) => a.model === cameoModel)) {

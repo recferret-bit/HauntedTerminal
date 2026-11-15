@@ -217,6 +217,7 @@ function bindHud(root: HTMLElement, fx: HTMLElement, handlers: HudHandlers): voi
 }
 
 function mountFx(stageWrap: HTMLElement): HTMLElement {
+  stageWrap.querySelector<HTMLElement>('.hud-fx-layer')?.remove();
   const fx = document.createElement('div');
   fx.className = 'hud-fx-layer';
   fx.innerHTML = `

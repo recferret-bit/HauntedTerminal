@@ -6,6 +6,7 @@ import type { ChapterManifest } from '../chapters/types.js';
 import { createSession, type Session } from '../game/session.js';
 import { ComicStage } from '../renderer/comic-stage.js';
 import { readInitialShaderState } from '../ui/visual-lab.js';
+import { labConfigFor } from './lab.js';
 import { readPlayRoute } from './route.js';
 import { Play, STORY, readSkipPref, type DebugGive, type PlayDom, type SkipTutorial } from './state.js';
 
@@ -32,7 +33,7 @@ function requirePlayDom(): PlayDom {
   };
 }
 
-function chapterBanner(session: Session, manifest: ChapterManifest | undefined): string {
+export function chapterBanner(session: Session, manifest: ChapterManifest | undefined): string {
   if (!isChapterSession(session)) return STORY;
   const level = session.getCurrentLevel();
   return [
@@ -73,25 +74,29 @@ export async function bootPlay(): Promise<Play> {
   // `?draft=1` plays the chapter editor's unsaved pack; its progress and scrap are never recorded.
   const draft = urlParams.get('draft') === '1' ? readDraftPack(chapterParam) : null;
   const pack = draft ?? getChapterPack(chapterParam);
-  const chapterManifest = pack?.manifest;
-  const session: Session = pack
-    ? createChapterSession({
-        chapterId: chapterParam,
-        pack,
-        preview: draft !== null || urlParams.get('preview') === '1',
-        startLevelId: levelParam,
-        tacticalMode: urlParams.get('tactical') === '1',
-        chaosMode: urlParams.get('chaos') === '1',
-        chaosSeed: urlParams.get('seed') ?? undefined,
-      })
-    : createSession();
+  const lab = labConfigFor(urlParams, draft !== null, chapterParam);
+  const chapterManifest = lab?.classic ? undefined : pack?.manifest;
+  const session: Session = lab?.classic
+    ? createSession({ lab })
+    : pack
+      ? createChapterSession({
+          chapterId: chapterParam,
+          pack,
+          preview: draft !== null || urlParams.get('preview') === '1',
+          startLevelId: levelParam,
+          tacticalMode: urlParams.get('tactical') === '1',
+          chaosMode: urlParams.get('chaos') === '1',
+          chaosSeed: urlParams.get('seed') ?? undefined,
+          ...(lab ? { lab } : {}),
+        })
+      : createSession();
 
-  if (!isChapterSession(session) && floorParam >= 2 && floorParam <= 5) {
+  if (!isChapterSession(session) && !lab?.classic && floorParam >= 2 && floorParam <= 5) {
     session.debugTeleport(floorParam as 1 | 2 | 3 | 4 | 5);
   }
   if (urlParams.get('dev') === '1') dom.inspectorEl.classList.remove('hidden');
-  if (dom.mastheadSubEl && chapterManifest) {
-    dom.mastheadSubEl.textContent = `${chapterManifest.badge} // ${chapterManifest.title}`;
+  if (dom.mastheadSubEl) {
+    dom.mastheadSubEl.textContent = chapterManifest ? `${chapterManifest.badge} // ${chapterManifest.title}` : 'CLASSIC FLOORS';
   }
 
   const debugGive = (session as Session & { debugGive?: DebugGive }).debugGive?.bind(session);
@@ -101,15 +106,9 @@ export async function bootPlay(): Promise<Play> {
     floorParam >= 2;
   const skipIntroPref =
     readSkipPref() ||
-    ((isChapterSession(session) || directMidJump) && urlParams.get('intro') !== '1');
+    ((isChapterSession(session) || Boolean(lab) || directMidJump) && urlParams.get('intro') !== '1');
 
-  return new Play(
-    dom,
-    stage,
-    session,
-    chapterBanner(session, chapterManifest),
-    debugGive,
-    skipTutorial,
-    skipIntroPref,
-  );
+  const play = new Play(dom, stage, session, chapterBanner(session, chapterManifest), debugGive, skipTutorial, skipIntroPref);
+  play.terminalLab = lab;
+  return play;
 }

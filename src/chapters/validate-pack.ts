@@ -171,13 +171,13 @@ function checkScript(c: LevelCheck): void {
   if ((k?.wrongCoreLine || k?.reactions) && !kiroRule) c.add('warn', 'script', 'kiro hub lines set, but the level has no kiro_loaded win rule');
 }
 
-function checkLevel(spec: LevelSpec, pack: ChapterPack): PackIssue[] {
+function checkLevel(spec: LevelSpec, pack: ChapterPack, winnable: boolean): PackIssue[] {
   const c = new LevelCheck(spec, pack);
   if (!spec.cwd.startsWith('/')) c.add('error', 'overview', `cwd "${spec.cwd}" must be absolute`);
   if (!ROOM_KINDS.some((k) => k === spec.roomKind)) c.add('error', 'overview', `unknown roomKind "${spec.roomKind}"`);
   if (![1, 2, 3, 4, 5].includes(spec.floorTheme)) c.add('error', 'overview', `floorTheme ${spec.floorTheme} must be 1..5`);
   if (!(MECHANICS as readonly string[]).includes(spec.mechanic)) c.add('error', 'overview', `unknown mechanic "${spec.mechanic}"`);
-  if (!spec.exitDir && !spec.exitCommand) c.add('error', 'overview', 'set exitDir (a gate to cd into) or exitCommand (e.g. exit)');
+  if (winnable && !spec.exitDir && !spec.exitCommand) c.add('error', 'overview', 'set exitDir (a gate to cd into) or exitCommand (e.g. exit)');
   if (spec.exitDir) c.needPath('overview', 'exitDir', spec.exitDir, 'dir');
 
   const seen = new Set<string>();
@@ -188,7 +188,8 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack): PackIssue[] {
   }
   for (const e of spec.enemies) {
     if (!ENEMY_TYPES.some((t) => t === e.type)) c.add('error', 'entities', `enemy "${e.id}": unknown type "${e.type}"`);
-    c.needPath('entities', `enemy "${e.id}"`, e.path, 'file');
+    // A zombie is a bare process: its path is the room it haunts.
+    c.needPath('entities', `enemy "${e.id}"`, e.path, e.type === 'zombie' ? 'dir' : 'file');
     if (e.helps) c.needEnemy('entities', `enemy "${e.id}" helps`, e.helps);
   }
   for (const p of spec.pickups) c.needPath('entities', `pickup "${p.id}"`, p.path, 'file');
@@ -196,7 +197,7 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack): PackIssue[] {
     if (![...c.paths.keys()].some((f) => baseName(f) === p.file)) c.add('error', 'entities', `patch "${p.label}": file "${p.file}" is not in files[]`);
   }
 
-  if (spec.winRules.length === 0) c.add('error', 'rules', 'a level needs at least one win rule');
+  if (winnable && spec.winRules.length === 0) c.add('error', 'rules', 'a level needs at least one win rule');
   spec.winRules.forEach((r, i) => checkRule(c, r, i));
   for (const rule of spec.winRules) {
     const critical = rule.kind === 'read_file' || rule.kind === 'file_contains' ? [rule.path] : [];
@@ -208,7 +209,9 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack): PackIssue[] {
   }
 
   const last = spec.solutionCommands[spec.solutionCommands.length - 1] ?? '';
-  if (spec.solutionCommands.length === 0) c.add('error', 'rules', 'solutionCommands is empty');
+  if (!winnable) {
+    /* a test level (the Terminal Lab) has no solution to check */
+  } else if (spec.solutionCommands.length === 0) c.add('error', 'rules', 'solutionCommands is empty');
   else if (spec.exitDir && last !== `cd ${baseName(spec.exitDir)}`) c.add('warn', 'rules', `the solution should end with "cd ${baseName(spec.exitDir)}"`);
   else if (!spec.exitDir && spec.exitCommand && last !== spec.exitCommand) c.add('warn', 'rules', `the solution should end with "${spec.exitCommand}"`);
 
@@ -219,15 +222,20 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack): PackIssue[] {
   return c.issues;
 }
 
+export interface ValidateOptions {
+  /** False skips what only a shippable level needs (an exit, a win rule, a solution): a Terminal Lab level has none. Default true. */
+  winnable?: boolean;
+}
+
 /** Static checks over the draft. The headless playthrough (`solvePack`) covers behaviour; this covers references. */
-export function validatePack(pack: ChapterPack): PackIssue[] {
+export function validatePack(pack: ChapterPack, { winnable = true }: ValidateOptions = {}): PackIssue[] {
   const issues: PackIssue[] = [];
   const ids = new Set<string>();
   pack.levels.forEach((spec, i) => {
     if (ids.has(spec.id)) issues.push({ severity: 'error', where: 'chapter', tab: 'manifest', message: `duplicate level id "${spec.id}"` });
     ids.add(spec.id);
     if (spec.index !== i + 1) issues.push({ severity: 'error', where: spec.id, tab: 'overview', message: `index ${spec.index} should be ${i + 1}` });
-    issues.push(...checkLevel(spec, pack));
+    issues.push(...checkLevel(spec, pack, winnable));
   });
   for (const s of pack.manifest.levels) {
     const spec = pack.levels.find((l) => l.id === s.id);

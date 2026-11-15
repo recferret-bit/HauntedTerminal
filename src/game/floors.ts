@@ -93,6 +93,14 @@ export const FLOOR_PATHS: Record<number, string> = {
   5: '/sys/kernel/panic_chamber',
 };
 
+export const CLASSIC_START_CWD: Record<1 | 2 | 3 | 4 | 5, string> = {
+  1: '/home/dev/nightmare_workspace/desk',
+  2: '/var/dungeon/entrance',
+  3: '/usr/local/labyrinth/wing_a/floor_3/cell_9',
+  4: '/proc_mansion/boiler_room/catwalk',
+  5: '/sys/kernel/panic_chamber',
+};
+
 const ENERGY = '#!/bin/energy\n# ENERGY CELL. source me.\n';
 const RAM = '#!/bin/dimm\n# 16 GB DDR5. source me.\n';
 const SSD = '#!/bin/ssd\n# 256 GB backup image. source me.\n';

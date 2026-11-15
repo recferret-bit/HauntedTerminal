@@ -1,4 +1,5 @@
 import type { KernelEvent } from '../contracts/events.js';
+import { dialogueEvent } from '../game/dialogue.js';
 import { lookup, type VNode } from '../game/tree.js';
 import type { TutorialState } from '../game/types.js';
 import { resolveTauntAgent, type ChapterState } from './session-state.js';
@@ -87,19 +88,17 @@ export function stepOutput(s: ScriptStep, env: StepEnv): { events: KernelEvent[]
     case 'dialogue':
       return {
         events: [
-          {
-            type: 'OBSTACLE_DIALOGUE_RENDERED',
-            payload: {
-              obstacleId: s.obstacleId,
-              speakerName: s.speaker,
-              portraitSprite: s.portrait ?? 'socket_guardian',
-              mood: s.mood,
-              bubbleStyle: 'COMIX_CLASSIC',
-              anchorInodeId: env.anchorOf(s.anchorSocket),
-              pages: [{ text: s.text, highlightedUnixTokens: s.highlight }],
-              ansiTerminalBanner: s.banner,
-            },
-          },
+          dialogueEvent({
+            obstacleId: s.obstacleId,
+            speaker: s.speaker,
+            portrait: s.portrait,
+            style: 'COMIX_CLASSIC',
+            mood: s.mood,
+            text: s.text,
+            tokens: s.highlight,
+            anchor: env.anchorOf(s.anchorSocket),
+            banner: s.banner,
+          }),
         ],
         print: '',
       };
@@ -199,6 +198,17 @@ export function syncTutorial(g: ChapterState, events: KernelEvent[]): string {
 export function finishTutorial(g: ChapterState, events: KernelEvent[]): void {
   const tut = levelScript(g).tutorial;
   if (tut) announceTutorialStep(g, tut.steps.length, true, events);
+}
+
+/** Skips any running tutorial on the current level and returns its skip text (or ''). */
+export function applySkipTutorial(g: ChapterState, events: KernelEvent[]): string {
+  const tut = levelScript(g).tutorial;
+  g.rt.tutorialSkipped = true;
+  if (tut) {
+    if (!g.rt.hiddenRevealed) revealHidden(g, events);
+    finishTutorial(g, events);
+  }
+  return tut?.skipText ?? '';
 }
 
 // ---- hidden enemy ------------------------------------------------------------------------------------------

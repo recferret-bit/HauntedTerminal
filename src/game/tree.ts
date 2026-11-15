@@ -114,7 +114,7 @@ export function resolve(cwd: VNode, path: string, follow: boolean, depth = 0): R
     const child = cursor.children.get(part);
     if (!child) return { node: null, error: `No such file or directory: ${path}` };
     const last = i === parts.length - 1;
-    if (child.kind === 'symlink' && follow) {
+    if (child.kind === 'symlink' && (follow || !last)) {
       const jumped = followLink(child);
       if (jumped) return jumped;
       if (!last && cursor.kind !== 'dir') return { node: null, error: `Not a directory: ${path}` };

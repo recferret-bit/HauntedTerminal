@@ -5,6 +5,7 @@ import {
 import { empty, globReg, out, splitShortFlags, type Play } from './play.js';
 import type { Step } from './shell.js';
 import { absPath, findId, hasExec, modeString, resolve, type VNode } from './tree.js';
+import { runReadlink } from './tree-links.js';
 import type { FloorId } from './types.js';
 
 export function transition(g: Play, from: number, ups: number, loop: boolean): KernelEvent {
@@ -168,19 +169,7 @@ export function cmdLs(g: Play, args: string[]): Step {
 }
 
 export function cmdReadlink(g: Play, args: string[]): Step {
-  const full = args.includes('-f');
-  const path = args.find((arg) => !arg.startsWith('-'));
-  if (!path) return empty(1, 'readlink: missing operand\n');
-  if (full) {
-    const found = resolve(g.run.cwd, path, true);
-    if (found.loop) return empty(1, `readlink: ${path}: Too many levels of symbolic links\n`);
-    return found.node ? out(`${absPath(found.node)}\n`) : empty(1, `readlink: ${path}: No such file or directory\n`);
-  }
-  const found = resolve(g.run.cwd, path, false);
-  if (!found.node) return empty(1, `readlink: ${path}: No such file or directory\n`);
-  if (found.node.kind !== 'symlink' || !found.node.link) return empty(1, `readlink: ${path}: not a symlink\n`);
-  const loops = found.node.link === absPath(found.node.parent ?? g.run.root);
-  return out(`${found.node.link}\n`, [], 0, loops ? `readlink: ${path} points back at this room. A trap.\n` : '');
+  return runReadlink(g.run.cwd, g.run.root, args);
 }
 
 export function cmdFind(g: Play, args: string[]): Step {

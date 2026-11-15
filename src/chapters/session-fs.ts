@@ -10,6 +10,7 @@ import { finishTutorial, isNodeHidden } from './script.js';
 import { levelBannerText, loadLevel } from './session-level.js';
 import { cmdHank } from './session-meta.js';
 import { allWinRulesMet, refreshExitGates, sinkIntoNull, unfinishedObjectives } from './session-rules.js';
+import { riddleRead } from './session-riddle.js';
 
 export function cmdLs(g: ChapterState, args: string[]): Step {
     const events: KernelEvent[] = [];
@@ -57,7 +58,7 @@ export function cmdLs(g: ChapterState, args: string[]): Step {
     if (longFmt) {
       const lines = entries.map((c) => {
         const owner = c.uid === 0 ? 'root' : 'dev ';
-        const suffix = c.kind === 'dir' ? '/' : c.kind === 'socket' ? '=' : '';
+        const suffix = c.kind === 'dir' ? '/' : c.kind === 'socket' ? '=' : c.kind === 'symlink' && c.link ? ` -> ${c.link}` : '';
         return `${modeString(c)} ${owner} ${String(c.content.length).padStart(5, ' ')} ${c.name}${suffix}`;
       });
       return okStep(lines.length ? `${lines.join('\n')}\n` : '', events);
@@ -171,6 +172,8 @@ export function cmdCat(g: ChapterState, args: string[], stdin: string): Step {
         return emptyStep(1, `cat: ${arg}: ${res.error ?? 'No such file or directory'}\n`);
       }
       if (res.node.kind === 'socket') {
+        const riddle = riddleRead(g, res.node);
+        if (riddle) return riddle;
         g.rt.talkedSockets.add(res.node.name);
         if (bossRule && bossRule.kind === 'boss_defeated' && res.node.name === bossRule.verifySocket) {
           return okStep(

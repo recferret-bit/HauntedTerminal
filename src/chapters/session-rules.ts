@@ -223,6 +223,10 @@ export function hurt(g: ChapterState, amount: number, source: string, events: Ke
       return '';
     }
     const { amount: mitigated } = g.kiro.mitigateDamage(amount);
+    if (g.lab) {
+      g.rt.lab.absorbed[source] = (g.rt.lab.absorbed[source] ?? 0) + mitigated;
+      return '';
+    }
     g.hp = Math.max(0, g.hp - mitigated);
     events.push({
       type: 'PLAYER_DAMAGED',

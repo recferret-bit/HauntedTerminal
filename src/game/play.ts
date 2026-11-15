@@ -1,6 +1,7 @@
 import type { KernelEvent } from '../contracts/events.js';
 import type { AgentDirector } from './agents.js';
 import type { World, WorldHost } from './entities.js';
+import type { LabConfig, LabLevelState } from './lab-types.js';
 import type { FloorId } from './types.js';
 import type { KiroCompanion } from './kiro.js';
 import type { Sfx } from './sfx.js';
@@ -49,6 +50,9 @@ export interface Run {
   quests: Quest[];
   line: string;
   world: World;
+  filesRead: Set<string>;
+  socketInputs: Map<string, string>;
+  lab: LabLevelState;
 }
 
 export type HeroAction = Extract<KernelEvent, { type: 'VIBECODER_ACTION' }>['action'];
@@ -64,6 +68,7 @@ export interface Play {
   readonly kiro: KiroCompanion;
   readonly agents: AgentDirector;
   readonly host: WorldHost;
+  readonly lab: LabConfig | null;
   run: Run;
   deadNow: boolean;
   deathText: string;

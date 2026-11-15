@@ -21,6 +21,7 @@ export interface LineState {
   draining: boolean;
   pendingTail: string | null;
   typing: boolean;
+  cancelType: (() => void) | null;
 }
 
 /** Visible width of a string (ANSI stripped, every code point is one cell). */
@@ -44,6 +45,7 @@ export function createLineState(term: Terminal, hooks: ShellHooks): LineState {
     draining: false,
     pendingTail: null,
     typing: false,
+    cancelType: null,
   };
 }
 

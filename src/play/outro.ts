@@ -6,6 +6,19 @@ import { powerOff, powerOn, setCinematic } from '../ui/screen.js';
 import { BANNER_MS, CARD_MS, FLOOR_NAMES, type Play } from './state.js';
 
 const nextTask = () => new Promise<void>((r) => window.setTimeout(r, 0));
+const FORM_TAG = /^(INPUT|TEXTAREA|SELECT)$/;
+
+function parentFormHasFocus(): boolean {
+  try {
+    if (window.frameElement && window.parent !== window) {
+      const active = window.parent.document.activeElement;
+      return Boolean(active && FORM_TAG.test(active.tagName));
+    }
+  } catch {
+    /* cross-origin */
+  }
+  return false;
+}
 
 export function statsFrom(snap: GameSnapshot): EndStats {
   return {
@@ -36,24 +49,29 @@ async function runOverlay<T>(play: Play, show: () => Promise<T>): Promise<T | un
 
 function beginEnding(play: Play, stats: EndStats | null): void {
   if (play.endingStarted) return;
+  const seq = play.sessionSeq;
   play.endingStarted = true;
   play.reasons.add('ended');
   play.syncPause();
   const final = stats ?? statsFrom(play.session.snapshot());
   // Let the last line and its FX land before the curtain.
   window.setTimeout(async () => {
+    if (play.sessionSeq !== seq) return;
     play.phase = 'outro';
     play.reasons.add('outro');
     play.syncPause();
     play.tutorial.hide();
     await powerOff();
+    if (play.sessionSeq !== seq) return;
     const ending = findComixByRole('ending');
     if (ending) {
       await play.runCinematic(() => playComix(ending.id, play.dom.cineEl, { muted: play.session.snapshot().muted }, final));
+      if (play.sessionSeq !== seq) return;
     }
     play.phase = 'stats';
     play.hud?.showStats(final, play.skipIntroPref);
     await powerOn(true);
+    if (play.sessionSeq !== seq) return;
     play.reasons.delete('outro');
     play.syncPause();
   }, 900);
@@ -61,6 +79,7 @@ function beginEnding(play: Play, stats: EndStats | null): void {
 
 /** Opening comix (unless skipped) then the opening floor. Used at boot and by Play Again. */
 async function startRun(play: Play): Promise<void> {
+  const seq = play.sessionSeq;
   const session = play.session;
   play.phase = 'intro';
   play.reasons.add('intro');
@@ -70,6 +89,7 @@ async function startRun(play: Play): Promise<void> {
   const res = !play.skipIntroPref && opening
     ? await play.runCinematic(() => playComix(opening.id, play.dom.cineEl, { muted: session.snapshot().muted }))
     : undefined;
+  if (play.sessionSeq !== seq) return;
   const introShowedCard = Boolean(res?.showedOverlay);
   if (!isChapterSession(session)) session.skipIntro();
   play.phase = 'play';
@@ -91,15 +111,18 @@ async function startRun(play: Play): Promise<void> {
   play.stage.triggerLightningIntro();
   play.apply(introShowedCard ? [] : [card], snap);
   await powerOn(true);
+  if (play.sessionSeq !== seq) return;
   await play.shell.typeOut(play.activeBanner, BANNER_MS);
+  if (play.sessionSeq !== seq) return;
   if (isChapterSession(session)) {
     const cardRemaining = introShowedCard ? 0 : Math.max(0, CARD_MS + 40 - (performance.now() - revealStartedAt));
     if (cardRemaining > 0) await new Promise<void>((r) => window.setTimeout(r, cardRemaining));
+    if (play.sessionSeq !== seq) return;
     play.applyTick(session.arriveLevel());
   }
   play.reasons.delete('reveal');
   play.syncPause();
-  play.shell.focus();
+  if (!parentFormHasFocus()) play.shell.focus();
 }
 
 export function wirePlayOutro(play: Play): void {

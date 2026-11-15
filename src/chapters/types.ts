@@ -1,5 +1,6 @@
 import type { EnemyType, PickupType } from '../game/bestiary.js';
 import type { EnemySpawn } from '../game/floors.js';
+import type { ClassicLabFile } from '../game/lab-types.js';
 import type { FloorId, RoomKind } from '../game/types.js';
 import type { ChapterGrant, ChapterOutro, LevelScript } from './script-types.js';
 
@@ -86,14 +87,7 @@ export interface ChapterManifest {
   levels: ChapterLevelSummary[];
 }
 
-export interface LevelFileSpec {
-  path: string;
-  kind: 'file' | 'dir' | 'socket';
-  mode?: number;
-  uid?: number;
-  questCritical?: boolean;
-  content?: string;
-}
+export type LevelFileSpec = ClassicLabFile;
 
 /** Same spawn record as a classic floor. `showIn` stays optional and unused by chapter JSON. */
 export type LevelEnemySpec = EnemySpawn;

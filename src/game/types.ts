@@ -48,6 +48,8 @@ export interface CommandResult {
   output: string;
   /** Only the error text (also contained in `output`), so the terminal can colour it. */
   stderr?: string;
+  /** Exit status of the last command of the line (0 = success). Set by the chapter session; tools read it. */
+  code?: number;
   events: KernelEvent[];
   snapshot: GameSnapshot;
   clear?: boolean;

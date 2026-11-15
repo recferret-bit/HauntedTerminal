@@ -6,6 +6,7 @@ import { writeSocket } from './puzzle.js';
 import { empty, out, splitPath, splitShortFlags, type Play } from './play.js';
 import type { Step } from './shell.js';
 import { absPath, hasExec, hasWrite, makeNode, resolve, type VNode } from './tree.js';
+import { runLn } from './tree-links.js';
 
 export function redirect(g: Play, node: VNode | null, path: string, data: string, append: boolean, argv: string[]): Step {
   if (node?.device === 'null' || path === '/dev/null') return dumpNull(g, argv);
@@ -289,18 +290,5 @@ export function cmdChmod(g: Play, args: string[]): Step {
 }
 
 export function cmdLn(g: Play, args: string[]): Step {
-  const rest = args.filter((arg) => arg !== '-s' && arg !== '-sf' && arg !== '-f');
-  if (!args.some((arg) => arg.startsWith('-s')) || rest.length < 2) return empty(1, 'ln: usage: ln -s <target> <name>\n');
-  const target = rest[0] ?? '';
-  const name = rest[1] ?? '';
-  const { dir, base } = splitPath(name);
-  const parent = resolve(g.run.cwd, dir, true).node;
-  if (!parent || parent.kind !== 'dir') return empty(1, `ln: failed to create symbolic link '${name}': No such file or directory\n`);
-  if (!hasWrite(parent)) return denied(g, parent, `ln: failed to create symbolic link '${name}': Permission denied\n`, `ln -s ${target} ${name}`);
-  if (parent.children.has(base)) return empty(1, `ln: failed to create symbolic link '${name}': File exists\n`);
-  const node = makeNode(parent, base, 'symlink', 0o777);
-  node.link = target;
-  const events: KernelEvent[] = [];
-  push(g, events, { type: 'FILE_CREATED', inodeId: node.id, name: base });
-  return out('', events);
+  return runLn(g.run.cwd, args, (ev, events) => push(g, events, ev));
 }

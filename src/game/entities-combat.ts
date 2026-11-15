@@ -319,7 +319,7 @@ function active(world: World, e: Enemy): boolean {
   return true;
 }
 
-function cadence(world: World, e: Enemy): number {
+export function cadence(world: World, e: Enemy): number {
   if (e.type === 'kernel') return kernelPhaseCadence(Math.min(2, world.host.kernelPhase()));
   return BESTIARY[e.type].every;
 }
@@ -327,6 +327,26 @@ function cadence(world: World, e: Enemy): number {
 function damage(world: World, e: Enemy): number {
   if (e.type === 'kernel') return KERNEL_PHASE_DAMAGE[Math.min(2, world.host.kernelPhase())] ?? 3;
   return BESTIARY[e.type].damage;
+}
+
+/**
+ * Ticks until `e` next tells an attack (the tick that emits ENEMY_ATTACK), counting from now: 1 means the very next tick.
+ * Null when it will not tell: dead, frozen, away from the hero, holding fire, or with nothing to do.
+ * Mirrors `tick` and `act`, so tools can show the countdown the game really runs on. Indirect actors (ransomware, forkbomb)
+ * tell only when they have something to do, so with nothing to do the answer is null.
+ */
+export function ticksToTell(world: World, e: Enemy): number | null {
+  const every = cadence(world, e);
+  if (e.dead || every <= 0 || !active(world, e) || !here(world, e) || !wants(world, e)) return null;
+  // A crack is reactive: it tells on the first tick it has a lock to pick, strikes on the next, then may tell again.
+  if (e.type === 'crack') return e.told ? 2 : 1;
+  const hurts = damage(world, e) > 0;
+  if (hurts && world.host.truce()) return null;
+  // Grace holds back attacks on the hero and keeps the clock at zero.
+  const grace = hurts ? world.grace : 0;
+  const clock = grace > 0 ? 0 : e.clock;
+  const rest = (clock + 1) % every;
+  return grace + (rest === 0 ? every : every - rest);
 }
 
 /** Indirect actors only tell when they have something to do. */

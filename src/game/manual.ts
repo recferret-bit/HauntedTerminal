@@ -1,5 +1,7 @@
 /** `help` and `man` text. Short, because the player reads it mid-fight. */
 import { BESTIARY, type EnemyType } from './bestiary.js';
+import { empty, out } from './play.js';
+import type { Step } from './shell.js';
 
 export const COMMANDS = [
   'pwd', 'ls', 'cd', 'cat', 'readlink', 'find', 'touch', 'rm', 'mv', 'cp', 'chmod', 'ln',
@@ -85,7 +87,10 @@ const MAN: Record<string, string[]> = {
     '  -STOP / -CONT          freeze and thaw.        kill -l lists signals.',
     '  Root-owned processes answer: Operation not permitted.',
   ],
-  pkill: ['pkill [-SIGNAL] <name>: signal every process whose name contains <name>.'],
+  pkill: [
+    'pkill [-SIGNAL] [-f] [-x] [-P ppid] <pattern>: signal matching processes.',
+    '  -f  match full command line   -x  exact match   -P <ppid>  only children of <ppid>.',
+  ],
   source: [
     'source <file>  (or: . <file>): load a pickup into yourself.',
     '  *.cell  energy: +25 HP          *.dimm  RAM: +16 GB, +10 max HP',
@@ -108,9 +113,28 @@ const MAN: Record<string, string[]> = {
   tutorial: ['tutorial: show the agents\' current prompt.   tutorial skip: skip the onboarding.'],
   clear: ['clear: wipe the terminal (Ctrl+L).'],
   exit: ['exit / logout: leave the machine. Only works once the kernel lets go of you.'],
+  mkdir: ['mkdir [-p] <dir>...: create directories. -p creates parent rooms too.'],
+  edit: ['edit <file>  (aliases: nano, vim, code): open the Split Code Mini-Editor (Ctrl+S saves).'],
+  docker: [
+    'docker: container image and Compose tools.',
+    '  docker build -t <tag> .              build a Dockerfile into an image.',
+    '  docker run -d -p <h>:<c> <tag>       launch a container with host:container port mapping.',
+    '  docker compose config | up -d        validate or start a multi-service stack.',
+  ],
+  hank: ['hank [status]: ask your greybeard ally for a Socratic hint, or audit the mission checklist.'],
+  tactical: ['tactical [on|off]: toggle turn-based Tactical Mode (enemies move one step per command).'],
+  grimoire: ['grimoire [<command>]: inspect unlocked Unix, code and Docker commands.'],
+  bestiary: ['bestiary [<id>]: inspect known allies and malware hardware counterplay.'],
+  workshop: ['workshop [<perk>]: view Silicon Scrap and toggle ~/.bashrc Rig Perks.'],
 };
 MAN['.'] = MAN.source ?? [];
 MAN.logout = MAN.exit ?? [];
+MAN.nano = MAN.edit ?? [];
+MAN.vim = MAN.edit ?? [];
+MAN.code = MAN.edit ?? [];
+MAN['docker-compose'] = MAN.docker ?? [];
+MAN.dossier = MAN.bestiary ?? [];
+MAN.rig = MAN.workshop ?? [];
 
 const ALIASES: Record<string, EnemyType> = {
   virus: 'virus', worm: 'worm', trojan: 'trojan', gargoyle: 'trojan', bug: 'bug', exploit: 'exploit',
@@ -127,6 +151,14 @@ export function manPage(topic: string): string | null {
   const type = ALIASES[topic.toLowerCase()];
   if (type) return BESTIARY[type].man.join('\n');
   return null;
+}
+
+export function runMan(args: string[]): Step {
+  const topic = args[0];
+  if (!topic) return empty(1, 'What manual page do you want?\nFor example, try \'man kill\' or \'man virus\'.\n');
+  const page = manPage(topic);
+  if (!page) return empty(16, `No manual entry for ${topic}\n`);
+  return out(`${page}\n`);
 }
 
 export const SIGNAL_LIST = ' 9) SIGKILL  15) SIGTERM  19) SIGSTOP  18) SIGCONT';

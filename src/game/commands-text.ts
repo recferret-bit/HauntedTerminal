@@ -8,7 +8,7 @@ function walkArgs(args: string[], on: (arg: string, next: () => string | undefin
   for (let i = 0; i < args.length; i++) on(args[i] ?? '', () => args[++i]);
 }
 import type { Step } from './shell.js';
-import { hasWrite, resolve } from './tree.js';
+import { absPath, hasWrite, resolve } from './tree.js';
 
 export function cmdCat(g: Play, args: string[], stdin: string): Step {
   if (args.length === 0) return out(stdin);
@@ -31,6 +31,7 @@ export function cmdCat(g: Play, args: string[], stdin: string): Step {
       const why = pickup ? ` (encrypted: chmod 644 ${arg})` : '';
       return { stdout: text, stderr: `cat: ${arg}: Permission denied${why}\n`, code: 1, events };
     }
+    g.run.filesRead.add(absPath(node));
     const enemy = g.run.world.enemyByInode(node.id);
     const pickup = g.run.world.pickupByInode(node.id);
     if (enemy) {
@@ -68,6 +69,7 @@ export function textFrom(g: Play, args: string[], stdin: string, applet: string)
     if (!node) return { text: '', error: `${applet}: ${arg}: No such file or directory\n` };
     if (node.kind === 'dir') return { text: '', error: `${applet}: ${arg}: Is a directory\n` };
     if ((node.mode & 0o444) === 0) return { text: '', error: `${applet}: ${arg}: Permission denied\n` };
+    g.run.filesRead.add(absPath(node));
     text += node.content;
   }
   return { text };
@@ -114,6 +116,7 @@ export function cmdGrep(g: Play, args: string[], stdin: string): Step {
         continue;
       }
       target(g, node);
+      g.run.filesRead.add(absPath(node));
       sources.push({ name: file, text: node.content });
     }
   }

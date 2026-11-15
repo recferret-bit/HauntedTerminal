@@ -1,11 +1,13 @@
 import type { World, WorldHost } from '../game/entities.js';
 import type { KiroCompanion } from '../game/kiro.js';
 import { COMMANDS } from '../game/manual.js';
+import { ensureLabDirChain, placeLabFile, splitLabParentAndName } from '../game/lab-support.js';
 import type { Session } from '../game/session.js';
 import type { Sfx } from '../game/sfx.js';
-import { absPath, hasWrite, lookup, makeNode, type VNode } from '../game/tree.js';
+import { absPath, hasWrite, lookup, type VNode } from '../game/tree.js';
 import type { CommandResult, TickResult } from '../game/types.js';
 import type { RankGrade } from './catalog.js';
+import type { LabConfig, LabInjection, LabInspect, LabLevelState } from './session-lab-types.js';
 import type { ChapterPack, LevelPatchChip, LevelSpec } from './types.js';
 
 export { empty as emptyStep, out as okStep } from '../game/play.js';
@@ -33,6 +35,15 @@ export interface ChapterSession extends Session {
   consumeEditorRequest(): EditorOpenPayload | null;
   getChecklist(): Array<{ description: string; done: boolean }>;
   arriveLevel(): TickResult;
+  /** Read-only view of the whole level for tools (the Terminal Lab). Never changes the game. */
+  inspect(): LabInspect;
+  /** One world tick on request, also with the lab's manual clock and in tactical mode. Does nothing while paused, in the intro, or ended. */
+  labTick(): TickResult;
+  /**
+   * Adds an enemy or a pickup (and the files it needs) to the running level. Throws, changing nothing, when the id is taken,
+   * the pid is in use, or its file does not exist.
+   */
+  inject(what: LabInjection): TickResult;
 }
 
 export interface ChapterSessionOptions {
@@ -45,6 +56,12 @@ export interface ChapterSessionOptions {
   pack?: ChapterPack;
   /** Preview runs leave progress, scrap and telemetry untouched. */
   preview?: boolean;
+  /**
+   * Tools only (the Terminal Lab): a lab session. Damage is counted per source in `rt.lab.absorbed` and never reaches HP, so
+   * nobody dies; enemies still attack and keep attacking after every win rule is met (the end-of-level truce is off).
+   * With `clock: 'manual'`, `tick()` does nothing and the world moves on commands and `labTick()`.
+   */
+  lab?: LabConfig;
 }
 
 export interface QuestBackup {
@@ -102,6 +119,8 @@ export interface LevelRuntime {
   tutorialLastStep: number;
   /** The script's hidden enemy has been shown. */
   hiddenRevealed: boolean;
+  /** Lab session state for this level (absorbed damage, solved riddles, latched checks). Empty in the game. */
+  lab: LabLevelState;
 }
 
 export interface ChapterState {
@@ -114,6 +133,8 @@ export interface ChapterState {
   readonly chaosMode: boolean;
   readonly chaosSeed: string;
   readonly host: WorldHost;
+  /** The lab session's config, or null in the game. */
+  readonly lab: LabConfig | null;
   levelIdx: number;
   lastCmdStartedCrack: boolean;
   hp: number;
@@ -141,12 +162,12 @@ export interface ChapterState {
 
 export const CHAPTER_COMMANDS = [
   ...COMMANDS,
+  'mkdir',
   'edit',
   'nano',
   'docker',
   'hank',
   'tactical',
-  'status',
   'grimoire',
   'bestiary',
   'workshop',
@@ -169,25 +190,9 @@ export function hashSeed(seed: string): number {
   return Math.abs(h >>> 0);
 }
 
-export function ensureDirChain(root: VNode, fullDirPath: string): VNode {
-  const parts = fullDirPath.split('/').filter(Boolean);
-  let cur = root;
-  for (const part of parts) {
-    let child = cur.children.get(part);
-    if (!child) {
-      child = makeNode(cur, part, 'dir', 0o755);
-    }
-    cur = child;
-  }
-  return cur;
-}
-
-export function splitParentAndName(fullPath: string): { parentPath: string; name: string } {
-  const clean = fullPath.replace(/\/+$/, '');
-  const idx = clean.lastIndexOf('/');
-  if (idx <= 0) return { parentPath: '/', name: clean.slice(1) };
-  return { parentPath: clean.slice(0, idx), name: clean.slice(idx + 1) };
-}
+export const ensureDirChain = ensureLabDirChain;
+export const placeFile = placeLabFile;
+export const splitParentAndName = splitLabParentAndName;
 
 export function globToRegExp(pattern: string): RegExp {
   const esc = pattern

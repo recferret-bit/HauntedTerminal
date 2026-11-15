@@ -1,6 +1,7 @@
 import type { KernelEvent } from '../contracts/events.js';
 import type { GameSnapshot, TickResult } from '../game/types.js';
 import { colourise } from '../ui/terminal.js';
+import { exposeLabHooks } from './lab.js';
 import { mountTutorial, taunt } from '../ui/tutorial.js';
 import { CARD_MS, type Play } from './state.js';
 
@@ -96,20 +97,14 @@ export function wirePlayLoop(play: Play): void {
   play.paint = (snap) => paint(play, snap);
   play.apply = (events, snap, printed = '') => applyEvents(play, events, snap, printed);
   play.applyTick = (res) => applyTick(play, res);
-  const skipTutorial = play.skipTutorial;
-  play.tutorial = mountTutorial(
-    play.dom.stageWrap,
-    skipTutorial
-      ? () => {
-          if (play.phase !== 'play') return;
-          const r = skipTutorial();
-          if (r && 'snapshot' in r) {
-            if (r.output) play.shell.printAbove(colourise(r.output, r.stderr));
-            play.apply(r.events, r.snapshot, r.output);
-          } else play.paint(r ?? play.session.snapshot());
-        }
-      : undefined,
-  );
+  play.tutorial = mountTutorial(play.dom.stageWrap, () => {
+    if (play.phase !== 'play' || !play.skipTutorial) return;
+    const r = play.skipTutorial();
+    if (r && 'snapshot' in r) {
+      if (r.output) play.shell.printAbove(colourise(r.output, r.stderr));
+      play.apply(r.events, r.snapshot, r.output);
+    } else play.paint(r ?? play.session.snapshot());
+  });
 }
 
 function exposePlayHooks(play: Play): void {
@@ -152,4 +147,5 @@ export function armPlayClock(play: Play): void {
     play.applyTick(play.session.tick());
   }, 1000);
   exposePlayHooks(play);
+  exposeLabHooks(play);
 }

@@ -63,6 +63,7 @@ function shellApi(st: LineState, fitAddon: FitAddon): Shell {
     },
     busy: () => st.blocked || st.queue.length > 0 || st.draining || st.typing,
     typeOut(text: string, ms: number) {
+      st.cancelType?.();
       const tokens = text.replace(/\r?\n/g, '\r\n').match(/\x1b\[[0-9;?]*[A-Za-z]|\r\n|[\s\S]/gu) ?? [];
       if (tokens.length === 0) return Promise.resolve();
       st.typing = true;
@@ -70,12 +71,23 @@ function shellApi(st: LineState, fitAddon: FitAddon): Shell {
       const per = Math.max(1, Math.ceil(tokens.length / frames));
       let i = 0;
       return new Promise<void>((resolve) => {
+        let timer = 0;
+        let cancelled = false;
+        st.cancelType = () => {
+          cancelled = true;
+          window.clearTimeout(timer);
+          st.typing = false;
+          st.cancelType = null;
+          resolve();
+        };
         const step = () => {
+          if (cancelled) return;
           st.term.write(tokens.slice(i, i + per).join(''));
           i += per;
-          if (i < tokens.length) window.setTimeout(step, 16);
+          if (i < tokens.length) timer = window.setTimeout(step, 16);
           else {
             st.typing = false;
+            st.cancelType = null;
             resolve();
           }
         };
@@ -83,6 +95,7 @@ function shellApi(st: LineState, fitAddon: FitAddon): Shell {
       });
     },
     reset(banner?: string) {
+      st.cancelType?.();
       st.term.reset();
       st.promptShown = false;
       st.cursorRow = 0;

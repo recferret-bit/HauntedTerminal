@@ -7,7 +7,10 @@ import { cmdKill, cmdPkill, cmdPs, cmdSource } from './commands-proc.js';
 import { cmdCat, cmdCut, cmdEcho, cmdGrep, cmdHeadTail, cmdRev, cmdSed, cmdWc } from './commands-text.js';
 import { World, type WorldHost } from './entities.js';
 import { KiroCompanion } from './kiro.js';
-import { helpText, manPage } from './manual.js';
+import { observeLab } from './lab-checks.js';
+import { applyLabInjection, buildLabInspect } from './lab-support.js';
+import { freshLabLevelState, type LabConfig, type LabInjection, type LabInspect, type LabSession } from './lab-types.js';
+import { helpText, runMan } from './manual.js';
 import { brace, empty, out, thisPlaceholder, type HeroAction, type Run } from './play.js';
 import { cmdKiro, puzzleHint, statusText, stepKiroCrack, threatHint } from './puzzle.js';
 import {
@@ -40,14 +43,20 @@ export interface Session {
   skipIntro(): void;
 }
 
-export function createSession(): Session {
-  return new Game();
+export interface ClassicSessionOptions {
+  /** Tools only (the Terminal Lab): runs a classic floor with absorbed damage, manual/live clock, props, riddles and checks. */
+  lab?: LabConfig;
 }
 
-class Game implements Session, Host {
+export function createSession(options?: ClassicSessionOptions): LabSession {
+  return new Game(options);
+}
+
+class Game implements LabSession, Host {
   readonly sfx: Sfx = createSfx();
   readonly kiro = new KiroCompanion();
   readonly agents = new AgentDirector(this.kiro);
+  readonly lab: LabConfig | null;
   deadNow = false;
   deathText = '';
   act: { action: HeroAction; target?: string } = { action: 'type' };
@@ -61,12 +70,13 @@ class Game implements Session, Host {
     hurt: (amount, source, events) => hurt(this, amount, source, events),
     alive: () => !this.deadNow,
     kernelPhase: () => kernelPhase(this),
-    truce: () => this.agents.active() && this.run.floor === 1,
+    truce: () => (this.agents.active() && this.run.floor === 1) || this.lab?.classic?.enemyFire === 'hold',
     bossDown: (_id, how) => bossDown(this, how),
   };
   run: Run;
 
-  constructor() {
+  constructor(options?: ClassicSessionOptions) {
+    this.lab = options?.lab ?? null;
     this.run = this.blank(false);
   }
 
@@ -104,8 +114,9 @@ class Game implements Session, Host {
       output += progress.text + talk.text;
       events.push(...progress.events, ...talk.events);
       events.unshift({ type: 'VIBECODER_ACTION', action: this.act.action, command: typed, targetEntityId: this.act.target });
+      observeLab(this.lab, this.run.lab, { line: typed, output, code: ran.code, eventTypes: events.map((e) => e.type) });
     }
-    return { output, stderr: ran.stderr || undefined, events, snapshot: this.snapshot(), clear: ran.clear || undefined };
+    return { output, stderr: ran.stderr || undefined, code: typed ? ran.code : 0, events, snapshot: this.snapshot(), clear: ran.clear || undefined };
   }
 
   setPaused(paused: boolean): void {
@@ -139,8 +150,23 @@ class Game implements Session, Host {
     return this.run.floor !== 1 || absPath(this.run.cwd) !== '/home/dev/nightmare_workspace/desk';
   }
 
+  private enemiesHeld(): boolean {
+    return this.lab !== null && this.run.commands === 0;
+  }
+
   tick(): TickResult {
-    if (this.run.ended || this.paused) return { output: '', events: [], snapshot: this.snapshot() };
+    if (this.run.ended || this.paused || (this.lab !== null && (this.run.intro || this.lab.clock === 'manual'))) {
+      return { output: '', events: [], snapshot: this.snapshot() };
+    }
+    return this.stepWorld();
+  }
+
+  labTick(): TickResult {
+    if (this.run.ended || this.paused || this.run.intro) return { output: '', events: [], snapshot: this.snapshot() };
+    return this.stepWorld();
+  }
+
+  private stepWorld(): TickResult {
     this.deadNow = false;
     this.deathText = '';
     const events: KernelEvent[] = [];
@@ -154,17 +180,46 @@ class Game implements Session, Host {
     if (this.kiro.activeCrack) {
       output += stepKiroCrack(this, events);
     }
-    output += this.run.world.tick(events);
+    if (!this.enemiesHeld()) {
+      output += this.run.world.tick(events);
+    }
     this.agents.cool();
     const talk = this.agents.react(events, { hp: this.run.hp, max: maxHp(this) });
     output += talk.text;
     events.push(...talk.events);
+    observeLab(this.lab, this.run.lab, { output, eventTypes: events.map((e) => e.type) });
     return { output, stderr: this.deathText || undefined, events, snapshot: this.snapshot() };
+  }
+
+  inspect(): LabInspect {
+    return buildLabInspect({
+      levelId: `floor-${this.run.floor}`,
+      root: this.run.root,
+      cwd: this.run.cwd,
+      world: this.run.world,
+      hp: this.run.hp,
+      maxHp: maxHp(this),
+      enemiesLeft: this.run.world.counts().left,
+      held: this.enemiesHeld(),
+      lab: this.lab,
+      state: this.run.lab,
+      socketInputs: this.run.socketInputs,
+      filesRead: this.run.filesRead,
+      checklist: [],
+    });
+  }
+
+  inject(what: LabInjection): TickResult {
+    const events = applyLabInjection(this.run.root, this.run.world, what);
+    observeLab(this.lab, this.run.lab, { output: '', eventTypes: events.map((e) => e.type) });
+    return { output: '', events, snapshot: this.snapshot() };
   }
 
   snapshot(): GameSnapshot {
     const cwd = absPath(this.run.cwd);
     const counts = this.run.world.counts();
+    const room = buildRoom(facts(this));
+    if (this.lab && !this.run.ended) room.actors.push(...this.lab.extraActors);
     return {
       cwd,
       floor: this.run.floor,
@@ -178,7 +233,7 @@ class Game implements Session, Host {
       rank: this.run.ended ? rank(this) : null,
       timeSec: elapsedSec(this),
       shortcuts: [...this.run.shortcuts],
-      room: buildRoom(facts(this)),
+      room,
       intro: this.run.intro,
       ram: this.run.ram,
       ssd: this.run.ssd,
@@ -345,17 +400,22 @@ class Game implements Session, Host {
   private blank(muted: boolean): Run {
     this.kiro.reset();
     this.agents.reset();
+    const classic = this.lab?.classic;
+    const startFloor: FloorId = classic?.floor ?? 1;
+    const ram = classic?.ram ?? 0;
+    const ssd = classic?.ssd ?? 0;
+    if (classic?.core) this.kiro.loadCore(classic.core);
     const placeholder = thisPlaceholder();
     this.run = {
-      floor: 1,
+      floor: startFloor,
       root: placeholder,
       cwd: placeholder,
       prev: null,
       hp: 100,
-      ram: 0,
-      ssd: 0,
-      entryRam: 0,
-      entrySsd: 0,
+      ram,
+      ssd,
+      entryRam: ram,
+      entrySsd: ssd,
       commands: 0,
       startedAt: Date.now(),
       pausedMs: 0,
@@ -374,18 +434,20 @@ class Game implements Session, Host {
       quests: [],
       line: '',
       world: new World(this.host, [], []),
+      filesRead: new Set(),
+      socketInputs: new Map(),
+      lab: freshLabLevelState(),
     };
-    load(this, 1);
+    load(this, startFloor);
+    if (startFloor !== 1 || absPath(this.run.cwd) !== '/home/dev/nightmare_workspace/desk') {
+      this.agents.abandon();
+    }
     this.run.hp = maxHp(this);
     return this.run;
   }
 
   private cmdMan(args: string[]): Step {
-    const topic = args[0];
-    if (!topic) return empty(1, 'What manual page do you want?\nFor example, try \'man kill\' or \'man virus\'.\n');
-    const page = manPage(topic);
-    if (!page) return empty(16, `No manual entry for ${topic}\n`);
-    return out(`${page}\n`);
+    return runMan(args);
   }
 
   private cmdExit(): Step {

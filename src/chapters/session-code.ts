@@ -11,6 +11,7 @@ import { cmdCat, collectPickupNode } from './session-fs.js';
 import { cmdHank, cmdHankAudit } from './session-meta.js';
 import { allWinRulesMet, hurt, liveLintFeedback, playEventsSfx, refreshExitGates, sinkIntoNull, syncValidatedCodeBugs, unfinishedObjectives } from './session-rules.js';
 import { snapshot } from './session-snapshot.js';
+import { riddleWrite } from './session-riddle.js';
 
 function commitEdited(g: ChapterState, events: KernelEvent[], inodeId: number, command: string): void {
   events.push({
@@ -94,6 +95,8 @@ export function writeRedirect(g: ChapterState, path: string, data: string, appen
     const existing = resolve(g.rt.cwd, path, true);
     if (existing.node) {
       if (existing.node.kind === 'socket') {
+        const riddle = riddleWrite(g, existing.node, data);
+        if (riddle) return riddle;
         const trimmed = data.trim();
         g.rt.socketInputs.set(existing.node.name, trimmed);
         if (existing.node.name.includes('hank') || existing.node.name.includes('dad')) {

@@ -1,14 +1,15 @@
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
-import { helpText, manPage } from '../game/manual.js';
+import { helpText, manPage, runMan } from '../game/manual.js';
 import type { Step, Word } from '../game/shell.js';
 import { absPath, resolve } from '../game/tree.js';
+import { runLn, runReadlink } from '../game/tree-links.js';
 import { CHAPTER_COMMANDS, emptyStep, globToRegExp, okStep, type ChapterState } from './session-state.js';
 import { cmdDocker, cmdEdit, cmdExit, cmdSed, cmdSource } from './session-code.js';
 import { cmdCat, cmdCd, cmdChmod, cmdCp, cmdCut, cmdFind, cmdGrep, cmdHeadTail, cmdLs, cmdMkdir, cmdMv, cmdRm, cmdTouch, cmdWc } from './session-fs.js';
 import { cmdKiro } from './session-kiro.js';
-import { isNodeHidden } from './script.js';
+import { applySkipTutorial, isNodeHidden, tutorialState } from './script.js';
 import { cmdBestiary, cmdGrimoire, cmdHank, cmdStatus, cmdWorkshop } from './session-meta.js';
-import { cmdKill, cmdPs } from './session-proc.js';
+import { cmdKill, cmdPkill, cmdPs } from './session-proc.js';
 
 /** The chapter ally answers to the first word of its id (`dad.tty` -> `dad`), like `hank`. */
 function allyCommand(g: ChapterState): string {
@@ -20,7 +21,9 @@ export function complete(g: ChapterState, line: string): { line: string; matches
     const parts = line.trimStart().split(/\s+/).filter(Boolean);
     if (parts.length === 0 || (parts.length === 1 && !endsWithSpace)) {
       const prefix = parts[0] ?? '';
-      const matches = [...CHAPTER_COMMANDS, allyCommand(g)].filter((c) => c.startsWith(prefix));
+      const ally = allyCommand(g);
+      const allCmds = [...new Set(ally ? [...CHAPTER_COMMANDS, ally] : CHAPTER_COMMANDS)];
+      const matches = allCmds.filter((c) => c.startsWith(prefix));
       if (matches.length === 1) return { line: `${matches[0]} `, matches: [...matches] };
       return { line, matches: [...matches] };
     }
@@ -102,8 +105,23 @@ export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
         return okStep(
           `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack] local .gguf Ghost companion (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  tactical               toggle turn-based Tactical Mode (${g.tacticalMode ? 'ON' : 'OFF'})\n`,
         );
-      case 'man':
-        return okStep(`${manPage(args[0] ?? '')}\n`);
+      case 'man': {
+        const ally = allyCommand(g);
+        if (ally && args[0] === ally && !manPage(ally)) {
+          return okStep(`${ally} [status]: ask ${g.pack.manifest.allyNpc.name} (${g.pack.manifest.allyNpc.id}) for a Socratic hint, or audit the mission checklist.\n`);
+        }
+        return runMan(args);
+      }
+      case 'tutorial': {
+        if (args[0] === 'skip' || args[0] === 'off') {
+          const events: Step['events'] = [];
+          const text = applySkipTutorial(g, events);
+          return okStep(text ? `${text.replace(/\n?$/, '\n')}` : 'No tutorial running.\n', events);
+        }
+        const st = tutorialState(g);
+        if (!st) return okStep('No onboarding tutorial running in this sector. Type `hank` or `status` for objectives.\n');
+        return okStep(`[${st.agent.toUpperCase()}] ${st.prompt}\n  type: ${st.command}   (step ${st.step}/${st.total}; tutorial skip to skip)\n`);
+      }
       case 'tactical': {
         g.tacticalMode = args[0] === 'off' ? false : args[0] === 'on' ? true : !g.tacticalMode;
         return okStep(`Tactical Mode: ${g.tacticalMode ? 'ENABLED (turn-based clock)' : 'DISABLED (real-time clock)'}\n`);
@@ -144,6 +162,10 @@ export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
         );
       case 'find':
         return cmdFind(g, args);
+      case 'readlink':
+        return runReadlink(g.rt.cwd, g.rt.root, args, (node) => isNodeHidden(g, node));
+      case 'ln':
+        return runLn(g.rt.cwd, args);
       case 'echo':
         return okStep(`${args.join(' ')}\n`);
       case 'touch':
@@ -170,6 +192,8 @@ export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
         return cmdPs(g, cmd);
       case 'kill':
         return cmdKill(g, args);
+      case 'pkill':
+        return cmdPkill(g, args);
       case 'edit':
       case 'nano':
       case 'vim':
@@ -180,6 +204,7 @@ export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
       case 'docker-compose':
         return cmdDocker(g, ['compose', ...args]);
       case 'exit':
+      case 'logout':
         return cmdExit(g);
       default:
         if (cmd === allyCommand(g)) return cmdHank(g, args);
