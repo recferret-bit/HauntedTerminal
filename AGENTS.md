@@ -30,6 +30,7 @@ Keep the root clean: HTML pages go in `pages/` (the Vite root; `pages/storybook.
 - Run the stack: `npm start` (dev server in the background on http://localhost:5173, returns once it answers; storybook at `/storybook.html`), `npm stop`, `npm restart`, `npm run status`. Agents use these instead of `npm run dev`, which blocks the shell. Log: `scripts/harness/out/stack/stack.log`.
 - Chapter editor: http://localhost:5173/editor (needs `npm start`). `node scripts/harness/generate-chapter.mjs` compiles; `--validate` is the fast read-only spec check; `--verify` adds the 0-death headless playthrough; `node scripts/harness/editor-smoke.mjs` drives the editor in headless Chrome.
 - Comix editor: http://localhost:5173/comix-editor (needs `npm start`). `node scripts/harness/generate-comix.mjs` compiles `comix/*` into `src/cinematic/generated/catalog-data.ts`; `--validate` runs static checks; `--verify` adds 60fps headless timeline simulation; `node scripts/harness/validate-comix.mjs` checks connected folder layout + specs; `node scripts/harness/comix-editor-smoke.mjs` drives `/comix-editor` in headless Chrome.
+- Terminal Lab: http://localhost:5173/terminal-lab (needs `npm start`). Test bench for the terminal: place enemies, pickups, files, riddles, tasks and NPCs, script them, and see the real shell and stage react. Nobody takes damage. Labs are `scripts/harness/terminal-lab/*.lab.json`. `node scripts/harness/terminal-lab.mjs --all` runs every lab headlessly (`--run <file>`, `--transcript`); `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs` and `node scripts/harness/terminal-lab-smoke.mjs` test it. Spec: `.kiro/specs/terminal-lab/`.
 - Build and check: `npm run build`, `npm run preview`, `npm run quality` (typecheck, root layout, size <= 600 lines/file and 130 lines/function, layer rules, declarative gate, no duplicates).
 
 Skill scripts live in `.kiro/skills/*/scripts/` and `scripts/harness/`; both categories run. `node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs` and `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs` are the LEVEL GEN gates.
@@ -37,7 +38,7 @@ Skill scripts live in `.kiro/skills/*/scripts/` and `scripts/harness/`; both cat
 ## Working rules
 
 - Use the matching skill before improvising rules it already defines.
-- Hooks in `.kiro/hooks/` are report-only (type-check and spec validation on save, a gate on stop) except one guard: it blocks edits to `src/chapters/generated/` and `src/cinematic/generated/` and asks before changes to the chapter or comix vocabulary. Specs for the big systems (chapters, editor, comix runtime, comix-editor) are in `.kiro/specs/`.
+- Hooks in `.kiro/hooks/` are report-only (type-check and spec validation on save, a gate on stop) except one guard: it blocks edits to `src/chapters/generated/` and `src/cinematic/generated/` and asks before changes to the chapter, comix or Terminal Lab vocabulary. Specs for the big systems (chapters, editor, comix runtime, comix-editor, terminal-lab) are in `.kiro/specs/`.
 - Run validators for what you change and report only what you actually ran.
 - Pin dependency versions. Do not hand-edit generated files.
 - Commit only when asked.

@@ -49,8 +49,12 @@ runNode('.kiro/skills/chapter-architect-intake/scripts/self-test.mjs');
 runNode('.kiro/skills/comix-story-drawer/scripts/self-test.mjs');
 runNode('.kiro/skills/chapter-level-generator/scripts/self-test.mjs');
 runNode('scripts/harness/editor-unit-test.mjs');
+// The Terminal Lab plays the chapter session and reuses the chapter editor's field tables, so its suites guard them too.
+runNode('scripts/harness/terminal-lab-unit.mjs');
+runNode('scripts/harness/terminal-lab-api-test.mjs');
+runNode('scripts/harness/terminal-lab.mjs', ['--all']);
 
-for (const specDir of ['declarative-chapter-runtime', 'chapter-editor']) {
+for (const specDir of ['declarative-chapter-runtime', 'chapter-editor', 'terminal-lab']) {
   for (const doc of ['requirements.md', 'design.md', 'tasks.md']) {
     const p = resolve(projectRoot, `.kiro/specs/${specDir}/${doc}`);
     if (!existsSync(p)) throw new Error(`Missing Kiro Chapter spec file: ${p}`);

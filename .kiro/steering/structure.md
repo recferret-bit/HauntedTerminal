@@ -35,15 +35,16 @@ src/
   chapters/       # LEVEL GEN runtime; generated/ is compiled from chapters/
   renderer/       # comic stage
   cinematic/      # generic 3D comix player & viewport selector; generated/ is compiled from comix/
-  editor-core/    # shared workstation UI primitives: dom, schema, form/form-state, schema-check, http, file-tracker, dock-state/layout, workspace, view-resizer, viewport-stage, chrome
+  editor-core/    # shared workstation UI primitives: dom, schema, form/form-state, schema-check, http, file-tracker, dock-state/layout, workspace, view-resizer, viewport-stage, play-frame, game-preview, console-dock, chrome
   comix-editor/   # /comix-editor: schema forms, bidirectional element selection, layout map, preview & 60fps verifier
   ui/             # terminal, HUD, editor
   sandbox/        # dev inspector
   pages/          # chapter select and comic reader
   chapter-editor/ # /editor: workstation studio, schema-driven chapter forms, centered game preview, checks (schema.ts is the field table)
+  terminal-lab/   # /terminal-lab: test bench for the terminal (lab model, palette, runner, Node and browser drivers, panels); reuses editor-core and the chapter editor's field tables
   hub/            # issue hub entry
   play/           # play page composition (bootstrap). main.ts only starts it
-  styles/         # game.css, hub.css, editor-workstation.css, chapter-editor.css, comix-editor.css
+  styles/         # game.css, hub.css, editor-workstation.css, chapter-editor.css, comix-editor.css, terminal-lab.css
   main.ts         # play page (/)
 comix/<slug>/                # animated 3D comix data (intro, outro, ...):
   comix.manifest.json        #   stage, cast, shared cues, skip policy, page index
@@ -52,11 +53,12 @@ chapters/<chapter-slug>/     # LEVEL GEN data, one chapter for Kiroween
   chapter.manifest.json
   story/comix.spec.json, dialogs.json, out/
   levels/level-XX-<slug>/level.spec.json, LEVEL.md
-pages/                       # HTML entry pages: index.html (player front door), play.html (game at /play/...), hub.html (redirect to /), chapter-editor.html (/editor, /editor/<chapter>/<level>), comix-editor.html (/comix-editor, /comix-editor/<slug>/<target>), dev.html (level select, jumps, QA labs), chapters.html, comic.html, cinematic.html, storybook.html
+pages/                       # HTML entry pages: index.html (player front door), play.html (game at /play/...), hub.html (redirect to /), chapter-editor.html (/editor, /editor/<chapter>/<level>), comix-editor.html (/comix-editor, /comix-editor/<slug>/<target>), terminal-lab.html (/terminal-lab, /terminal-lab/<lab-id>), dev.html (level select, jumps, QA labs), chapters.html, comic.html, cinematic.html, storybook.html
 public/assets/               # external sprites/meshes (ai-mesh-pipeline)
 public/comix/<chapter-id>/   # rendered comic pages
 scripts/harness/             # shared Node tooling
-scripts/hooks/               # scripts run by .kiro/hooks (asset dry runs)
+  terminal-lab/              # committed Terminal Lab scripts (`<id>.lab.json`): one per enemy type and pickup, riddles, tasks, NPCs, inject, no-damage soak
+scripts/hooks/               # scripts run by .kiro/hooks (asset dry runs, the generated/vocabulary guard)
 scripts/quality/             # root, size, layer, duplicate and fingerprint gates
 docs/                        # long-form docs and notes
 .kiro/

@@ -5,13 +5,16 @@
 //   src/chapters/generated/**       exit 2 (block): compiled output. Edit chapters/ and run generate-chapter.mjs.
 //   the chapter vocabulary          ask: a new spec field ripples to the interpreter, the editor schema and the validators.
 //     (src/chapters/types.ts, script-types.ts, script.ts, validate-pack.ts, src/chapter-editor/schema.ts)
+//   the comix vocabulary            ask: src/cinematic/spec-types.ts, simulate.ts, src/comix-editor/schema*.ts, check.ts
+//   the Terminal Lab vocabulary     ask: a new lab op ripples to the compiler, the runner, the form, the checks and a fixture.
+//     (src/terminal-lab/lab-types.ts, schema.ts, lab-check.ts, store.ts, src/chapters/session-lab-types.ts)
 //   anything else                   exit 0, no output.
 //
 // Usage (see .kiro/hooks/guard-chapter-files.json):  node scripts/hooks/guard-chapter-files.mjs
 import { readFileSync } from 'node:fs';
 
 const GENERATED = /(^|\/)src\/(chapters|cinematic)\/generated\//;
-const VOCABULARY = /(^|\/)src\/(chapters\/(types|script-types|script|validate-pack)\.ts|chapter-editor\/schema(-check)?\.ts|editor-core\/schema(-check)?\.ts|cinematic\/(spec-types|simulate)\.ts|comix-editor\/(schema(-fields|-letters|-tracks)?|check)\.ts)$/;
+const VOCABULARY = /(^|\/)src\/(chapters\/(types|script-types|script|validate-pack|session-lab-types)\.ts|terminal-lab\/(lab-types|schema|lab-check|store)\.ts|chapter-editor\/schema(-check)?\.ts|editor-core\/schema(-check)?\.ts|cinematic\/(spec-types|simulate)\.ts|comix-editor\/(schema(-fields|-letters|-tracks)?|check)\.ts)$/;
 
 let raw = '';
 try {
@@ -43,21 +46,18 @@ if (paths.some((p) => GENERATED.test(p))) {
 
 const hit = paths.find((p) => VOCABULARY.test(p));
 if (hit) {
-  const isComix = /cinematic\/|comix-editor\//.test(hit);
-  console.log(
-    JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: 'PreToolUse',
-        permissionDecision: 'ask',
-        permissionDecisionReason: isComix
-          ? `${hit} is part of the comix vocabulary. A spec capability is one change in four places: ` +
-            'src/cinematic/spec-types.ts (type), src/cinematic/ (interpreter), src/comix-editor/schema.ts (form), ' +
-            'src/comix-editor/check.ts (checks). Confirm you are updating all of them, then run: node scripts/harness/generate-comix.mjs --verify'
-          : `${hit} is part of the chapter vocabulary. A spec capability is one change in four places: ` +
-            'src/chapters/script-types.ts (type), src/chapters/script.ts (interpreter), src/chapter-editor/schema.ts (form), ' +
-            'src/chapters/validate-pack.ts (checks). Confirm you are updating all of them, then run: node scripts/harness/generate-chapter.mjs --verify',
-      },
-    }),
-  );
+  const reason = /cinematic\/|comix-editor\//.test(hit)
+    ? `${hit} is part of the comix vocabulary. A spec capability is one change in four places: ` +
+      'src/cinematic/spec-types.ts (type), src/cinematic/ (interpreter), src/comix-editor/schema.ts (form), ' +
+      'src/comix-editor/check.ts (checks). Confirm you are updating all of them, then run: node scripts/harness/generate-comix.mjs --verify'
+    : /terminal-lab\/|session-lab-types/.test(hit)
+      ? `${hit} is part of the Terminal Lab vocabulary (a test bench, not chapter data). A new setup or step op is: the type ` +
+        '(src/terminal-lab/lab-types.ts), lab-pack.ts or runner.ts, schema.ts (form), lab-check.ts / store.ts (checks), catalog.ts if placeable, ' +
+        'and a fixture in scripts/harness/terminal-lab/. Then run: node scripts/harness/terminal-lab-unit.mjs && node scripts/harness/terminal-lab.mjs --all'
+      : `${hit} is part of the chapter vocabulary. A spec capability is one change in four places: ` +
+        'src/chapters/script-types.ts (type), src/chapters/script.ts (interpreter), src/chapter-editor/schema.ts (form), ' +
+        'src/chapters/validate-pack.ts (checks). The Terminal Lab reuses the chapter-editor field tables, so also run ' +
+        'node scripts/harness/terminal-lab-unit.mjs. Confirm you are updating all of them, then run: node scripts/harness/generate-chapter.mjs --verify';
+  console.log(JSON.stringify({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'ask', permissionDecisionReason: reason } }));
 }
 process.exit(0);

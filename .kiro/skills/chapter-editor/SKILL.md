@@ -82,6 +82,9 @@ node scripts/harness/generate-chapter.mjs --verify     # static checks + 0-death
 npm run quality                                        # includes the declarative gate
 node scripts/harness/editor-unit-test.mjs              # unit & corner-case checks for editor-core, models, schemas & API
 node scripts/harness/editor-smoke.mjs                  # if src/chapter-editor/, src/editor-core/ or the dev API changed
+node scripts/harness/terminal-lab-unit.mjs             # if schema.ts, suggest.ts or src/editor-core/ changed (the Terminal Lab reuses them)
 ```
+
+To try one object, riddle or win rule outside a chapter, use the Terminal Lab (`/terminal-lab`): it plays the same session on a throwaway one-level pack and never writes `chapters/`.
 
 Run them, fix everything they print, and report only what you ran.

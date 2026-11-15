@@ -18,12 +18,13 @@ game/                 world, VFS, shell, session. Three-free. Room view types co
 chapters/             level runtime. Imports game and contracts. generated/ is compiled data.
 renderer/             comic stage. Three, procgen, shaders, assets. Not the game rules.
 cinematic/            generic 3D comix runtime. Three, procgen, shaders. generated/ is compiled data.
-editor-core/          shared workstation framework for spec editors: schema form builder, schema walker, HTTP/etag baseline tracker, dock layout, workspace persistence, resizable viewport stage, and chrome helpers (contracts only).
+editor-core/          shared workstation framework for spec editors: schema form builder, schema walker, HTTP/etag baseline tracker, dock layout, workspace persistence, resizable viewport stage, the game preview shell and play frame (`game-preview.ts`, `play-frame.ts`), the console dock, and chrome helpers (contracts only).
 comix-editor/         /comix-editor. editor-core, cinematic, procgen. Player runs in an iframe.
 ui/                   terminal, HUD, editor, shader dock. No three import of its own.
 sandbox/              dev inspector. Talks to the stage through its public methods.
 pages/                chapter select and comic reader scripts.
 chapter-editor/       /editor. contracts, editor-core, game, chapters, procgen. No game rules of its own; the game runs in an iframe.
+terminal-lab/         /terminal-lab. contracts, editor-core, chapter-editor (field tables, suggest), game, chapters, procgen. Builds a throwaway pack from a lab script (or imports a chapter level read-only) and plays it in the game iframe with in-page session swaps; no game rules of its own. What it needs from the game is one generic session option, `lab?: LabConfig` on `ChapterSession` and classic `createSession`, plus read-only `inspect()`, `labTick()` and `inject()` (`src/game/lab-*.ts`, `src/chapters/session-lab*.ts`).
 hub/                  issue hub stylesheet entry.
 play/                 play page composition. Wires the outer layers. main.ts only starts it.
 main.ts               loads the play page. Imports play/ and styles only.
@@ -45,4 +46,5 @@ Exact allowed imports live in `scripts/quality/check-layers.mjs`. Change the rul
 - `node scripts/harness/generate-comix.mjs --verify` & `node scripts/harness/validate-comix.mjs` : compile comix sequences, static + connected-folder checks, 60fps headless timeline simulation.
 - `node scripts/harness/editor-unit-test.mjs`, `node scripts/harness/editor-smoke.mjs` & `node scripts/harness/comix-editor-smoke.mjs` : unit/corner-case suite + chapter and comix editors in headless Chrome.
 - `npm run quality:fingerprint` : hashes of every model, texture and FX (specs, validator reports, rasters, meshes, poses). Refactors must leave it byte-identical; for intended asset changes, diff it and explain the change.
+- `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs`, `node scripts/harness/terminal-lab.mjs --all` & `node scripts/harness/terminal-lab-smoke.mjs` : Terminal Lab unit/API/headless-run suites and the lab in headless Chrome (1600x950 and 1280x820 with `--width 1280 --height 820`).
 - Storybook: `node scripts/harness/screenshot-lab.mjs --selftest`.

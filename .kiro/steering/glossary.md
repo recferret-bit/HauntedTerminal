@@ -17,3 +17,9 @@ Use these words exactly; do not invent synonyms.
 - **Field table**: an entry in `src/chapter-editor/schema.ts`; it drives the form and the schema check.
 - **Gate**: a script that fails the build (`npm run quality`, `--verify`, `editor-smoke`).
 - **Categories**: ASSET PCG makes assets; LEVEL GEN makes chapters; see `skills-map.md`.
+- **Terminal Lab**: the dev page `/terminal-lab`, a test bench for the terminal. Not a content category; it writes no chapter and no comix.
+- **Lab script**: one `scripts/harness/terminal-lab/<id>.lab.json`: a `setup` list (the scene: `file`, `dir`, `socket`, `enemy`, `pickup`, `patch`, `prop`, `npc`, `taunt`, `dialogue`, `riddle`, `task`, `check`) and a `steps` list (`run`, `tick`, `emit`, `inject`, `say`, `taunt`, `dialogue`, `check`, `wait`, `expect`). It compiles to a throwaway one-level pack plus a `LabConfig`, never to `src/chapters/generated/`.
+- **Riddle**: a lab socket that speaks a prompt on `cat` and checks the answer written to it.
+- **Goal** (lab): a thing to do in a lab level, shown with a done mark: a **task** (a game win rule placed in a lab), a **check** (a lab-only condition: `ran`, `output`, `code`, `event`, `file`, `riddle`), or a riddle.
+- **Pattern** (lab): plain text matches as a substring (a riddle answer: the exact text); `re:<regex>` or `re:/<regex>/<flags>` is a regular expression. The prefix keeps a path such as `/dev/null` plain text.
+- **Absorbed damage**: damage a lab session counts per source and never applies.

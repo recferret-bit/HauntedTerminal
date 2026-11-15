@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Run Terminal Labs on save",
+      "trigger": "PostFileSave",
+      "description": "Report-only: runs every committed Terminal Lab headlessly (steps, expects, a 30-tick no-damage soak) when a lab file is saved. Rewrites nothing.",
+      "matcher": "scripts/harness/terminal-lab/.*\\.lab\\.json$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/harness/terminal-lab.mjs --all",
+        "timeout": 120
+      }
+    }
+  ]
+}

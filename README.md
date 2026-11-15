@@ -17,6 +17,7 @@ Work in progress. What runs today:
 - **Developer** (`/dev.html`): level select, direct sector jumps, and the visual QA labs.
 - **Chapter editor** (`/editor`, dev server): centered game-stage workstation built on shared `src/editor-core/` — select a chapter, dock/float/hide panels, edit every level, dialog and comic panel with schema forms, preview and step through the real game on the unsaved draft, run checks, and save back to `chapters/`. Chapters are data; no per-chapter code (`.kiro/steering/declarative-chapters.md`).
 - **Comix editor** (`/comix-editor`, dev server): centered 3D comix workstation built on `src/editor-core/` — select any animated 3D comix in `comix/`, inspect connected page/panel layouts, click-select elements bidirectionally, edit every stage, cast, camera, letter, beat and track with forms, scrub and freeze the live 3D preview on the draft, run the 60fps timeline verifier, and save back to `comix/`. Comixes are data; no hardcoded scenes (`.kiro/steering/declarative-comix.md`).
+- **Terminal Lab** (`/terminal-lab`, dev server): a test bench for the terminal on the same workstation. Place any enemy, pickup, file, prop, NPC line, riddle or task, play it in the real game, script it step by step, and replay it headlessly with `terminal-lab.mjs`. Nobody takes damage. Labs live in `scripts/harness/terminal-lab/`.
 - **Chapter select** (`/chapters.html`), **comic reader** (`/comic.html`), **cinematics** (`/cinematic.html`).
 - **Storybook** (`/storybook.html`): every procedural model, texture and effect under the real comic
   renderer (cel shading, ink outlines, halftone, pixel-art and CRT passes).
@@ -54,6 +55,10 @@ npm run quality:fingerprint     # hashes of every model, texture and effect
 node scripts/harness/editor-unit-test.mjs             # unit suite for editor-core, chapter/comix editors & APIs
 node scripts/harness/editor-smoke.mjs                 # headless Chrome E2E suite for /editor
 node scripts/harness/comix-editor-smoke.mjs           # headless Chrome E2E suite for /comix-editor
+node scripts/harness/terminal-lab.mjs --all           # every committed Terminal Lab, headless, no damage allowed
+node scripts/harness/terminal-lab-unit.mjs            # lab session, compiler, runner, riddles, goals, store
+node scripts/harness/terminal-lab-api-test.mjs        # /api/terminal-lab hardening and conflicts
+node scripts/harness/terminal-lab-smoke.mjs           # headless Chrome E2E suite for /terminal-lab
 node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs
 node .kiro/skills/comix-implementer/scripts/verify-comix.mjs
 node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict
@@ -70,15 +75,15 @@ Everything Kiro uses lives in [`.kiro/`](./.kiro):
 - **Skills** (`.kiro/skills/`): 23 skills in two categories. *ASSET PCG* (art direction, models, malware,
   rooms, textures, shaders, lighting, animation, particles, validators, visual QA) and *LEVEL GEN*
   (chapter intake, comic story drawing, level compiler, chapter implementer, chapter editor, plus 3D comix intake, sequence generator, comix implementer, and comix editor). Each ships its own validator scripts and self-tests.
-- **Hooks** (`.kiro/hooks/`): asset dry runs, chapter/comix spec validators and typecheck on save, a stop-time verification gate, and a pre-write guard protecting `generated/` files and chapter/comix vocabulary contracts.
-- **Specs** (`.kiro/specs/`): feature specs (`requirements.md`, `design.md`, `tasks.md`) for `declarative-chapter-runtime`, `chapter-editor`, `declarative-comix-runtime`, and `comix-editor`.
+- **Hooks** (`.kiro/hooks/`): asset dry runs, chapter/comix spec validators and typecheck on save, a Terminal Lab run on lab save, a stop-time verification gate, and a pre-write guard protecting `generated/` files and the chapter, comix and lab vocabularies.
+- **Specs** (`.kiro/specs/`): feature specs (`requirements.md`, `design.md`, `tasks.md`) for `declarative-chapter-runtime`, `chapter-editor`, `declarative-comix-runtime`, `comix-editor`, and `terminal-lab`.
 
 ## Layout
 
 ```
 pages/      HTML entry pages (Vite root): player front door, game, dev, hub, chapters, comic, cinematic, editors, storybook
-src/        contracts, procgen, shaders, storybook, game, renderer, ui, cinematic, chapters, editor-core, chapter-editor, comix-editor
-scripts/    harness (sheets, screenshots, comic drawing, chapter/comix compilers, editor APIs & smoke suites), hooks, quality gates
+src/        contracts, procgen, shaders, storybook, game, renderer, ui, cinematic, chapters, editor-core, chapter-editor, comix-editor, terminal-lab
+scripts/    harness (sheets, screenshots, comic drawing, chapter/comix compilers, editor and lab APIs & smoke suites, terminal-lab/ fixtures), hooks, quality gates
 docs/       long-form notes
 .kiro/      steering, skills, hooks, specs, settings
 ```

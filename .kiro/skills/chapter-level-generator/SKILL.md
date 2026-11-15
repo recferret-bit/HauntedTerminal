@@ -71,3 +71,5 @@ node .kiro/skills/chapter-level-generator/scripts/self-test.mjs
 2. Both **CLI players** (`sed -i`) and **Split Editor players** (`edit <file>` + Patch Chips) can solve every code/config task.
 3. `node scripts/harness/generate-chapter.mjs --validate` prints `0 error(s)`.
 4. `node scripts/harness/generate-chapter.mjs --check` exits `0` (generated TS matches JSON specs on disk).
+
+To try a win rule, validator, riddle socket or enemy in isolation before it goes into a level, use the Terminal Lab (`/terminal-lab`, or headless `node scripts/harness/terminal-lab.mjs --run <file>.lab.json`); the lab's Tasks palette has a template for every rule kind, and `scripts/harness/terminal-lab/task-*.lab.json` exercise the code validators and the common rules.
