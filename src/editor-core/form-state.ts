@@ -127,6 +127,7 @@ function defaultFor(f: Field): unknown {
     case 'object':
       return blankOf(f.fields);
     case 'record':
+    case 'json':
       return {};
     case 'union': {
       const variants = f.union();

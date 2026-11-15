@@ -50,6 +50,8 @@ export type Field =
   | (Base & { type: 'numbers' })
   | (Base & { type: 'pairs'; mark?: boolean })
   | (Base & { type: 'textOrVec' })
+  /** A free-form JSON object edited as text (a raw event). Invalid text is kept in the box and not written. */
+  | (Base & { type: 'json'; rows?: number })
   | (Base & { type: 'color' })
   | (Base & { type: 'array'; item: ArrayItem })
   | (Base & { type: 'object'; fields: Field[] })

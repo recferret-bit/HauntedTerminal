@@ -33,3 +33,24 @@ export const isRec = (v: unknown): v is Rec => Boolean(v) && typeof v === 'objec
 export function clone<T>(v: T): T {
   return JSON.parse(JSON.stringify(v)) as T;
 }
+
+export const sleep = (ms: number): Promise<void> => new Promise((r) => window.setTimeout(r, ms));
+
+/** What identifies a control across a redraw: `data-focus-key`, else its `aria-label`, else its `id`. */
+function focusKey(el: Element): string | null {
+  return el.getAttribute('data-focus-key') ?? el.getAttribute('aria-label') ?? (el.id || null);
+}
+
+const byKey = (host: HTMLElement, key: string): HTMLElement | undefined =>
+  [...host.querySelectorAll<HTMLElement>('[data-focus-key], [aria-label], [id]')].find((el) => focusKey(el) === key);
+
+/**
+ * Redraws `host` without dropping keyboard focus: the control that had focus (matched by `data-focus-key`, `aria-label`
+ * or `id`) is focused again in the new DOM. `nextKey` moves focus to another key instead (a row that moved).
+ */
+export function redrawKeepingFocus(host: HTMLElement, render: () => void, nextKey?: string): void {
+  const active = document.activeElement;
+  const key = nextKey ?? (active instanceof HTMLElement && host.contains(active) ? focusKey(active) : null);
+  render();
+  if (key) byKey(host, key)?.focus();
+}

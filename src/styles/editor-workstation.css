@@ -539,6 +539,126 @@ button.cx-readout:hover { border-color: var(--yellow); }
   overflow: hidden;
 }
 
+/* ---- Game preview console dock (editor-core/console-dock.ts, game-preview.ts) ---- */
+.ed.cx-ed[data-hide-log="true"] .ch-console-body {
+  display: none;
+}
+
+.ch-level-pill {
+  background: var(--void);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 2px 7px;
+  font-size: 11px;
+  color: var(--yellow);
+  white-space: nowrap;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ch-console-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pv-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+}
+.pv-bar select { width: auto; }
+.pv-status { color: var(--teal); font-size: 12px; white-space: nowrap; }
+.pv-step { color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+.ch-console-body {
+  display: grid;
+  grid-template-columns: minmax(250px, 360px) minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+  flex: 1;
+}
+
+.ch-console-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+.pv-send-row { display: flex; gap: 6px; align-items: center; }
+.pv-send-row input { flex: 1; min-width: 0; }
+.pv-emit summary { cursor: pointer; color: var(--yellow); font-size: 12px; }
+.pv-emit-row { display: flex; gap: 6px; margin: 6px 0; }
+.pv-emit-row select { width: auto; flex: 1; min-width: 0; }
+
+.ch-console-log {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  min-height: 0;
+}
+.ch-log-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.ch-log-head h4 {
+  font-family: var(--display);
+  color: var(--yellow);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.pv-log {
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  height: 92px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 4px 6px;
+  font-size: 11px;
+}
+.ed.cx-ed[data-custom-bottom="true"] > .cx-timeline[data-slot="bottom"] .pv-log,
+.ed.cx-ed > .cx-timeline[data-slot="float"] .pv-log {
+  flex: 1;
+  height: auto;
+  min-height: 70px;
+}
+
+.pv-ev { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
+.pv-ev.talk { color: var(--paper); }
+/* An editor panel left of the console (the Terminal Lab script); the Log toggle hides only the console body. */
+.ch-console-main {
+  display: grid;
+  grid-template-columns: minmax(300px, 1.3fr) minmax(0, 2fr);
+  gap: 10px;
+  min-height: 0;
+  flex: 1;
+}
+.ch-console-main > * { min-height: 0; }
+
+/* ---- Chips: small toggle buttons (comix cue and page chips, Terminal Lab palette) ---- */
+.chip {
+  background: var(--plate-2);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 /* ---- Forms & Panes ---- */
 .form { display: flex; flex-direction: column; gap: 10px; }
 .fld { display: flex; flex-direction: column; gap: 3px; }

@@ -394,3 +394,23 @@ export class WorkspaceManager<D extends string = BaseDockId> {
     }
   }
 }
+
+/** What `attachWithStage` needs from a viewport stage. */
+export interface StageLayoutTarget {
+  updateFrameLayout(): void;
+  setPageZoom(scale: number | 'fit'): void;
+}
+
+/** Mounts the docks around a viewport stage: a layout change refits the frame, "reset view" zooms to fit. */
+export function attachWithStage<D extends string>(
+  workspace: WorkspaceManager<D>,
+  rootEl: HTMLElement,
+  panels: Record<PanelId, HTMLElement>,
+  viewport: StageLayoutTarget,
+  onSave?: (saveAll: boolean) => void,
+): void {
+  const refit = (): void => {
+    window.requestAnimationFrame(() => viewport.updateFrameLayout());
+  };
+  workspace.attach(rootEl, panels, refit, () => viewport.setPageZoom('fit'), onSave);
+}

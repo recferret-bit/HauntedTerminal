@@ -121,6 +121,18 @@ export class ViewportStageController {
     );
   }
 
+  /** The "Game" group of the stage bar: the aspect toggle, a reload button and any pills the editor adds. */
+  buildGameGroup(reloadTitle: string, onReload: () => void, ...pills: HTMLElement[]): HTMLElement {
+    return h(
+      'div',
+      { class: 'cx-bar-grp', role: 'group', 'aria-label': 'Game viewport controls' },
+      h('span', { class: 'cx-bar-lbl' }, 'Game'),
+      this.aspectBtn,
+      h('button', { type: 'button', class: 'btn small', title: reloadTitle, onclick: onReload }, '↻ Reload'),
+      ...pills,
+    );
+  }
+
   updateFrameLayout(): void {
     const matW = this.matEl.clientWidth || 800;
     const matH = this.matEl.clientHeight || 500;

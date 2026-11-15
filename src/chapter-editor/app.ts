@@ -2,8 +2,10 @@ import { writeDraftPack } from '../chapters/draft.js';
 import type { ScriptStep } from '../chapters/types.js';
 import type { LayoutState } from '../editor-core/dock-layout.js';
 import { clear, h, type Rec } from '../editor-core/dom.js';
+import { changedFolders, pollDisk } from '../editor-core/file-tracker.js';
 import { syncSelectedDetailsDom, type FormCtx } from '../editor-core/form.js';
 import {
+  attachWithStage,
   createWorkstationHookApi,
   WorkspaceManager,
   type DockButtonDef,
@@ -26,7 +28,6 @@ import { makeSuggest } from './suggest.js';
 
 const CHECK_DELAY_MS = 250;
 const PREVIEW_DELAY_MS = 500;
-const DISK_POLL_MS = 5000;
 
 const CHAPTER_DOCK_BUTTONS: readonly DockButtonDef<ChapterDockId>[] = [
   { id: 'left', label: '◧ Levels', title: 'Toggle Left Levels Outliner ([)', restoreLabel: 'Levels' },
@@ -117,12 +118,8 @@ class EditorApp {
     this.pv.stageEl.append(this.workspace.renderRestoreOverlay());
     this.gridEl = h('div', { class: 'ed cx-ed' }, this.top, this.side, this.pv.stageEl, this.pv.timelineEl, this.main);
     root.append(this.gridEl);
-    this.workspace.attach(
-      this.gridEl,
-      { left: this.side, right: this.main, timeline: this.pv.timelineEl },
-      () => window.requestAnimationFrame(() => this.pv.stage.updateFrameLayout()),
-      () => this.pv.stage.setPageZoom('fit'),
-      (saveAll) => void this.save(saveAll ? this.model.dirtyKeys() : this.currentKeys()),
+    attachWithStage(this.workspace, this.gridEl, { left: this.side, right: this.main, timeline: this.pv.timelineEl }, this.pv.stage, (saveAll) =>
+      void this.save(saveAll ? this.model.dirtyKeys() : this.currentKeys()),
     );
 
     window.addEventListener('popstate', () => {
@@ -204,8 +201,7 @@ class EditorApp {
     this.draw();
     this.loadPreview();
     this.installWindowHook();
-    window.setInterval(() => void this.checkDisk(), DISK_POLL_MS);
-    window.addEventListener('focus', () => void this.checkDisk());
+    pollDisk(() => this.checkDisk());
   }
 
   private installWindowHook(): void {
@@ -368,16 +364,10 @@ class EditorApp {
   }
 
   private async checkDisk(): Promise<void> {
-    if (!this.writable || document.hidden) return;
+    if (!this.writable) return;
     try {
       const disk = await fetchChapterDiskState(this.model.slug);
-      const stale = this.model.changedOnDisk(disk.etags);
-      if (Array.isArray(disk.slugs)) {
-        const present = new Set(this.models.map((c) => c.slug));
-        const current = new Set(disk.slugs);
-        for (const s of disk.slugs) if (!present.has(s)) stale.push(`chapters/${s}`);
-        for (const s of present) if (!current.has(s)) stale.push(`chapters/${s}`);
-      }
+      const stale = [...this.model.changedOnDisk(disk.etags), ...changedFolders(this.models.map((c) => c.slug), disk.slugs, 'chapters')];
       if (stale.join() !== this.stale.join()) {
         this.stale = stale;
         renderChapterTopBar(this.top, this.chromeDeps());

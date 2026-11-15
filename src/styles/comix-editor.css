@@ -37,15 +37,6 @@
   border-radius: 3px;
 }
 
-.chip {
-  background: var(--plate-2);
-  border: 1px solid var(--line);
-  border-radius: 3px;
-  padding: 2px 6px;
-  font-size: 11px;
-  cursor: pointer;
-  white-space: nowrap;
-}
 .chip-page { border-color: var(--teal); color: var(--teal); }
 .chip-cue { border-color: var(--orange); color: var(--yellow); }
 .chip.is-active { background: var(--yellow); color: var(--ink); border-color: var(--ink); font-weight: 700; }

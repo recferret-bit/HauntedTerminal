@@ -93,6 +93,9 @@ export class SchemaWalk {
       case 'textOrVec':
         this.textOrVec(v, path);
         break;
+      case 'json':
+        if (!isRec(v)) this.add('error', path, 'expected a JSON object');
+        break;
       case 'array':
         this.list(v, f, path);
         break;

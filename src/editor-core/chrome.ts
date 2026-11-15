@@ -37,6 +37,13 @@ export interface TopBarSpec {
   revertLabel: string;
   statusText: string;
   topTogglesEl: HTMLElement;
+  /** Label and tooltip of the save button (default "Save file"); the Terminal Lab saves to the repo. */
+  saveFileLabel?: string;
+  saveFileTitle?: string;
+  /** Default true; editors with one document per pack hide "Save all". */
+  showSaveAll?: boolean;
+  /** Editor controls placed before the status line. */
+  extras?: readonly HTMLElement[];
   onSelectPack: (slug: string) => void;
   onRevert: () => void;
   onSaveFile: () => void;
@@ -167,11 +174,11 @@ export function renderWorkstationTopBar(topEl: HTMLElement, s: TopBarSpec): void
     {
       type: 'button',
       class: 'btn',
-      title: 'Save current file (Ctrl/Cmd+S)',
+      title: s.saveFileTitle ?? 'Save current file (Ctrl/Cmd+S)',
       disabled: !s.writable || !s.curDirty,
       onclick: () => s.onSaveFile(),
     },
-    s.curDirty ? 'Save file ●' : 'Save file',
+    `${s.saveFileLabel ?? 'Save file'}${s.curDirty ? ' ●' : ''}`,
   );
   const saveAllBtn = h(
     'button',
@@ -194,8 +201,9 @@ export function renderWorkstationTopBar(topEl: HTMLElement, s: TopBarSpec): void
     picker,
     revertBtn,
     saveCurBtn,
-    saveAllBtn,
+    ...(s.showSaveAll === false ? [] : [saveAllBtn]),
     ...(reloadBtn ? [reloadBtn] : []),
+    ...(s.extras ?? []),
     h('span', { class: 'ed-status', role: 'status', 'aria-live': 'polite' }, s.statusText),
     s.topTogglesEl,
   );

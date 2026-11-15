@@ -65,6 +65,23 @@ function textField(obj: Rec, f: Of<'text'>, ctx: FormCtx): HTMLElement {
   return row(f, input, f.rows ? 'wide' : '');
 }
 
+function jsonField(obj: Rec, f: Of<'json'>, ctx: FormCtx): HTMLElement {
+  const input = h('textarea', { rows: f.rows ?? 6, class: 'mono', spellcheck: 'false' });
+  input.value = JSON.stringify(obj[f.key] ?? {}, null, 2);
+  input.addEventListener('input', () => {
+    try {
+      const parsed: unknown = JSON.parse(input.value);
+      if (!isRec(parsed)) throw new Error('not an object');
+      obj[f.key] = parsed;
+      input.removeAttribute('aria-invalid');
+      ctx.changed();
+    } catch {
+      input.setAttribute('aria-invalid', 'true');
+    }
+  });
+  return row(f, input, 'wide');
+}
+
 function numberField(obj: Rec, f: Of<'number'>, ctx: FormCtx): HTMLElement {
   const current = typeof obj[f.key] === 'number' ? (obj[f.key] as number) : undefined;
   const input = f.octal ? h('input', { type: 'text', class: 'mono' }) : h('input', { type: 'number', step: f.step ?? 1 });
@@ -453,6 +470,8 @@ function renderField(obj: Rec, f: Field, ctx: FormCtx, path: string): HTMLElemen
       return textField(obj, f, ctx);
     case 'number':
       return numberField(obj, f, ctx);
+    case 'json':
+      return jsonField(obj, f, ctx);
     case 'bool':
       return boolField(obj, f, ctx);
     case 'select':

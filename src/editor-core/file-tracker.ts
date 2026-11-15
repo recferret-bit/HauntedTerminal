@@ -84,3 +84,30 @@ export abstract class BasePackModel<K extends string, P extends { manifest: { id
     return this.tracker.etagOf(key);
   }
 }
+
+/** How often editors look for spec files changed on disk by someone else (an agent, git, another tab). */
+const DISK_POLL_MS = 5000;
+
+/**
+ * Calls `check` every `ms` and whenever the window regains focus, skipping hidden tabs. A failing check (the dev server
+ * restarting) is ignored until the next round. Returns a stop function.
+ */
+export function pollDisk(check: () => Promise<void>, ms = DISK_POLL_MS): () => void {
+  const run = (): void => {
+    if (!document.hidden) check().catch(() => undefined);
+  };
+  const timer = window.setInterval(run, ms);
+  window.addEventListener('focus', run);
+  return () => {
+    window.clearInterval(timer);
+    window.removeEventListener('focus', run);
+  };
+}
+
+/** Folders that appeared on disk or vanished from it since the editor loaded (`<prefix>/<slug>` each). */
+export function changedFolders(known: readonly string[], onDisk: readonly string[] | undefined, prefix: string): string[] {
+  if (!Array.isArray(onDisk)) return [];
+  const had = new Set(known);
+  const has = new Set(onDisk);
+  return [...onDisk.filter((s) => !had.has(s)), ...known.filter((s) => !has.has(s))].map((s) => `${prefix}/${s}`);
+}

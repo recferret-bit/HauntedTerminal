@@ -104,22 +104,38 @@ export const OVERVIEW: Field[] = [
   opt(t('exitCommand', 'Exit command (final level)', { mono: true })),
 ];
 
+/** Fields of one entry of `files[]`, `enemies[]`, `pickups[]` and `patches[]`; the Terminal Lab builds its setup forms from them. */
+export const FILE_FIELDS: Field[] = [
+  t('path', 'Path', { mono: true }),
+  sel('kind', 'Kind', ['file', 'dir', 'socket']),
+  n('mode', 'Mode (octal)', { octal: true }),
+  opt(n('uid', 'Owner uid')),
+  opt(b('questCritical', 'Quest critical (restored if deleted)')),
+  opt(t('content', 'Content', { rows: 8, mono: true })),
+];
+
+export const ENEMY_FIELDS: Field[] = [
+  t('id', 'Id'),
+  sel('type', 'Type', ENEMY_TYPES),
+  t('path', 'File', { suggest: 'paths', mono: true }),
+  opt(n('pid', 'PID')),
+  opt(n('ppid', 'PPID')),
+  opt(b('hidden', 'Starts hidden (dotfile)')),
+  opt(t('port', 'Port dir (worm)', { suggest: 'paths', mono: true })),
+  opt(t('buffer', 'Buffer (exploit)', { suggest: 'paths', mono: true })),
+  opt(t('helps', 'Helps enemy (crack)', { suggest: 'enemies' })),
+];
+
+export const PICKUP_FIELDS: Field[] = [t('id', 'Id'), sel('type', 'Type', PICKUP_TYPES), t('path', 'File', { suggest: 'paths', mono: true }), opt(b('locked', 'Starts encrypted'))];
+
+export const PATCH_FIELDS: Field[] = [t('file', 'File name'), t('label', 'Label'), t('find', 'Find', { rows: 2, mono: true }), t('replace', 'Replace', { rows: 2, mono: true })];
+
 export const FILES: Field[] = [
   {
     type: 'array',
     key: 'files',
     label: 'Files, directories and sockets',
-    item: {
-      title: (f) => `${String(f.kind)} ${String(f.path)}${f.questCritical ? ' *' : ''}`,
-      fields: [
-        t('path', 'Path', { mono: true }),
-        sel('kind', 'Kind', ['file', 'dir', 'socket']),
-        n('mode', 'Mode (octal)', { octal: true }),
-        opt(n('uid', 'Owner uid')),
-        opt(b('questCritical', 'Quest critical (restored if deleted)')),
-        opt(t('content', 'Content', { rows: 8, mono: true })),
-      ],
-    },
+    item: { title: (f) => `${String(f.kind)} ${String(f.path)}${f.questCritical ? ' *' : ''}`, fields: FILE_FIELDS },
   },
 ];
 
@@ -128,38 +144,19 @@ export const ENTITIES: Field[] = [
     type: 'array',
     key: 'enemies',
     label: 'Enemies',
-    item: {
-      title: (e) => `${String(e.id)} (${String(e.type)}) ${String(e.path)}`,
-      fields: [
-        t('id', 'Id'),
-        sel('type', 'Type', ENEMY_TYPES),
-        t('path', 'File', { suggest: 'paths', mono: true }),
-        opt(n('pid', 'PID')),
-        opt(n('ppid', 'PPID')),
-        opt(b('hidden', 'Starts hidden (dotfile)')),
-        opt(t('port', 'Port dir (worm)', { suggest: 'paths', mono: true })),
-        opt(t('buffer', 'Buffer (exploit)', { suggest: 'paths', mono: true })),
-        opt(t('helps', 'Helps enemy (crack)', { suggest: 'enemies' })),
-      ],
-    },
+    item: { title: (e) => `${String(e.id)} (${String(e.type)}) ${String(e.path)}`, fields: ENEMY_FIELDS },
   },
   {
     type: 'array',
     key: 'pickups',
     label: 'Pickups',
-    item: {
-      title: (p) => `${String(p.id)} (${String(p.type)}) ${String(p.path)}`,
-      fields: [t('id', 'Id'), sel('type', 'Type', PICKUP_TYPES), t('path', 'File', { suggest: 'paths', mono: true }), opt(b('locked', 'Starts encrypted'))],
-    },
+    item: { title: (p) => `${String(p.id)} (${String(p.type)}) ${String(p.path)}`, fields: PICKUP_FIELDS },
   },
   {
     type: 'array',
     key: 'patches',
     label: 'Patch chips (one-click fixes in the code editor)',
-    item: {
-      title: (p) => `${String(p.label)} → ${String(p.file)}`,
-      fields: [t('file', 'File name'), t('label', 'Label'), t('find', 'Find', { rows: 2, mono: true }), t('replace', 'Replace', { rows: 2, mono: true })],
-    },
+    item: { title: (p) => `${String(p.label)} → ${String(p.file)}`, fields: PATCH_FIELDS },
   },
 ];
 

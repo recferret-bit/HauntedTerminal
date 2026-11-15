@@ -1,7 +1,9 @@
 import type { LayoutState } from '../editor-core/dock-layout.js';
 import { clear, h } from '../editor-core/dom.js';
 import type { FormCtx } from '../editor-core/form.js';
+import { changedFolders, pollDisk } from '../editor-core/file-tracker.js';
 import {
+  attachWithStage,
   createWorkstationHookApi,
   WorkspaceManager,
   type DockButtonDef,
@@ -29,7 +31,6 @@ import { resolveSelectionFromPath, routeForElement, syncInspectorSelectionDom, v
 import { suggestForComix } from './suggest.js';
 
 const ISSUE_DEBOUNCE_MS = 200;
-const ETAG_POLL_MS = 5000;
 
 const COMIX_DOCK_BUTTONS: readonly DockButtonDef<ComixDockId>[] = [
   { id: 'left', label: '◧ Pages', title: 'Toggle Left Pages Outliner ([)', restoreLabel: 'Pages' },
@@ -114,13 +115,8 @@ class ComixEditorController {
     this.preview.stageEl.append(this.workspace.renderRestoreOverlay());
     this.gridEl = h('div', { class: 'ed cx-ed' }, this.topEl, this.sideEl, this.preview.stageEl, this.preview.timelineEl, this.mainEl);
     host.append(this.gridEl);
-    this.workspace.attach(
-      this.gridEl,
-      { left: this.sideEl, right: this.mainEl, timeline: this.preview.timelineEl },
-      () => window.requestAnimationFrame(() => this.preview.stage.updateFrameLayout()),
-      () => this.preview.stage.setPageZoom('fit'),
-      (saveAll) =>
-        void this.saveKeys(saveAll ? this.activeModel.dirtyEntries().map((e) => e.key) : [this.activeFileKey()]),
+    attachWithStage(this.workspace, this.gridEl, { left: this.sideEl, right: this.mainEl, timeline: this.preview.timelineEl }, this.preview.stage, (saveAll) =>
+      void this.saveKeys(saveAll ? this.activeModel.dirtyEntries().map((e) => e.key) : [this.activeFileKey()]),
     );
 
     window.addEventListener('popstate', () => {
@@ -219,8 +215,7 @@ class ComixEditorController {
     this.syncUrlRoute(true);
     this.preview.playFull();
     if (this.writable) {
-      window.setInterval(() => void this.pollDiskEtags(), ETAG_POLL_MS);
-      window.addEventListener('focus', () => void this.pollDiskEtags());
+      pollDisk(() => this.pollDiskEtags());
     }
     this.installWindowHook();
   }
@@ -417,16 +412,10 @@ class ComixEditorController {
   }
 
   private async pollDiskEtags(): Promise<void> {
-    if (document.hidden || !this.writable) return;
+    if (!this.writable) return;
     try {
       const disk = await fetchComixDiskState(this.activeModel.slug);
-      const changed = this.activeModel.changedPaths(disk.etags);
-      if (Array.isArray(disk.slugs)) {
-        const known = new Set(this.models.map((m) => m.slug));
-        const live = new Set(disk.slugs);
-        for (const s of disk.slugs) if (!known.has(s)) changed.push(`comix/${s}`);
-        for (const s of known) if (!live.has(s)) changed.push(`comix/${s}`);
-      }
+      const changed = [...this.activeModel.changedPaths(disk.etags), ...changedFolders(this.models.map((m) => m.slug), disk.slugs, 'comix')];
       if (changed.join('|') !== this.staleFiles.join('|')) {
         this.staleFiles = changed;
         renderEditorTopBar(this.topEl, this.chromeDeps());
