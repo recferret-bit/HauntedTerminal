@@ -106,6 +106,7 @@ Short, concrete requests work best. Ready to paste:
 - **A gateway "spawned subagent" is not your repo.** `kirocrew spawn run` starts the agent in an empty scratch folder (`~/workplace/kirocrew-workspace/subagent_<id>`), so it cannot see the project. Use the member's chat in the app or dashboard, not `spawn`.
 - **`kirocrew chat -m "..."` cannot approve anything** (it has no one to ask), so it is only good for read-only questions.
 - **Edit Crew's config only while the gateway is stopped, or in the dashboard.** A running gateway rewrote the member's agent back to a default once (found while testing; fixed by setting it again while stopped).
+- **MCP servers come with the agents.** `qa` starts Chrome DevTools MCP and `haunted-forge`, `chapters-designer` and `comix-designer` start `haunted-forge`, from the agent files (nothing in `.kiro/settings/mcp.json`). Run `npm ci` in the workspace first: `chrome-devtools-mcp` runs from `node_modules`. Kiro does not wait for a slow server, so do not switch it back to `npx`. Check with `node scripts/harness/mcp-probe.mjs`.
 - **Never add an `autoApprove` list** to an agent or `mcp.json`: Crew documents that such tools skip its approval gate **and `PreToolUse` hooks**, which would switch off the shell guard. `npm run crew:check` fails on it.
 - **Installed globally, the agents show up in every repo** (`~/.kiro/agents`). Their paths are repo-relative, so elsewhere they just find nothing; use them in this repo. The workspace copy takes precedence here.
 

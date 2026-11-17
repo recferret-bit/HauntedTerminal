@@ -9,6 +9,8 @@
     "shell"
   ],
   "allowedTools": [],
+  "includeMcpJson": false,
+  "includePowers": false,
   "resources": [
     "file://AGENTS.md",
     "file://.kiro/agents/prompts/team-rules.md",
@@ -203,6 +205,13 @@
           "*/.ssh/*",
           "*/.aws/*",
           "*.kiro/crew/.env*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "mcp",
+        "match": [
+          "*"
         ],
         "effect": "deny"
       }

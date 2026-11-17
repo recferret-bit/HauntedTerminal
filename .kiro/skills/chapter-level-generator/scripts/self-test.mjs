@@ -287,6 +287,17 @@ await withProcgen(async (_p, vite) => {
   kiroChap.exec('grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock');
   kiroChap.exec("sed -i 's/clod_supervisor_lock=true/clod_supervisor_lock=false/' core_anchor.conf");
   assert.ok(kiroChap.exec('kill -9 1').output.includes('Clod & Kernel Overlord'));
+
+  // Kiro parody & non-affiliation notice (`kiro disclaimer`, `kiro legal`, and `kiro` status footer).
+  assert.ok(kiroChap.exec('kiro').output.includes('kiro disclaimer'), 'kiro status must list kiro disclaimer');
+  for (const alias of ['kiro disclaimer', 'kiro legal']) {
+    const disc = kiroChap.exec(alias);
+    assert.equal(disc.code, 0, `${alias} must exit 0`);
+    for (const needle of ['PARODY & NON-AFFILIATION NOTICE', 'Anti-Gravy', 'Codec', 'Gork', 'Clod', 'no real AI brands']) {
+      assert.ok((disc.output + disc.events.map((e) => ('text' in e ? e.text : '')).join('\n')).includes(needle), `${alias} missing ${needle}`);
+    }
+  }
+
   const kiroExit = kiroChap.exec('exit');
   assert.equal(kiroExit.snapshot.ended, true);
   assert.ok(kiroExit.output.includes('CLOD ESCAPES'));
@@ -303,16 +314,6 @@ await withProcgen(async (_p, vite) => {
   const dossier = catalog.dossierOf(catalog.getChapterManifest('chapter-01-kiroween'));
   assert.ok(dossier.some((d) => d.id === 'dad.tty'), 'manifest.dossier must add the chapter ally to the bestiary');
   assert.ok(!catalog.BESTIARY_DOSSIER.some((d) => d.id === 'dad.tty'), 'the shared bestiary must not name a chapter ally');
-
-  // Kiro parody & non-affiliation notice (`kiro disclaimer`, `kiro legal`, and `kiro` status footer).
-  assert.ok(kiroChap.exec('kiro').output.includes('kiro disclaimer'), 'kiro status must list kiro disclaimer');
-  for (const alias of ['kiro disclaimer', 'kiro legal']) {
-    const disc = kiroChap.exec(alias);
-    assert.equal(disc.code, 0, `${alias} must exit 0`);
-    for (const needle of ['PARODY & NON-AFFILIATION NOTICE', 'Anti-Gravy', 'Codec', 'Gork', 'Clod', 'no real AI brands']) {
-      assert.ok((disc.output + disc.events.map((e) => ('text' in e ? e.text : '')).join('\n')).includes(needle), `${alias} missing ${needle}`);
-    }
-  }
 
   catalog.resetInMemoryStoresForTest();
   console.log('chapter-level-generator self-test PASS (all validator, chroot, hint, boss & metagame edge cases verified)');

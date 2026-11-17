@@ -32,11 +32,12 @@
     "quality:declarative": "node scripts/quality/check-declarative.mjs",
     "quality:dup": "jscpd src --min-lines 4 --min-tokens 35 --threshold 0 --reporters console --format typescript --ignore \"**/chapters/generated/**,**/cinematic/generated/**\"",
     "quality:fingerprint": "node scripts/quality/fingerprint.mjs",
-    "quality": "tsc --noEmit && npm run quality:root && npm run quality:size && npm run quality:layers && npm run quality:declarative && npm run quality:specs && npm run quality:dup && npm run quality:agents && npm run quality:brands && npm run quality:props",
+    "quality": "tsc --noEmit && npm run quality:root && npm run quality:size && npm run quality:layers && npm run quality:declarative && npm run quality:specs && npm run quality:dup && npm run quality:agents && npm run quality:brands && npm run quality:mcp && npm run quality:props",
     "quality:root": "node scripts/quality/check-root.mjs",
     "quality:specs": "node scripts/quality/check-specs.mjs",
     "quality:brands": "node scripts/quality/check-brands.mjs",
     "quality:props": "node scripts/harness/property-tests.mjs",
+    "quality:mcp": "node scripts/harness/forge-unit.mjs",
     "quality:agents": "node scripts/quality/check-agents.mjs && node scripts/harness/agents-unit.mjs",
     "agents:install": "node scripts/harness/agents-install.mjs",
     "crew:check": "node scripts/harness/crew-doctor.mjs"
@@ -47,10 +48,13 @@
     "three": "^0.180.0"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
     "@types/three": "^0.180.0",
+    "chrome-devtools-mcp": "1.13.0",
     "fast-check": "4.10.2",
     "jscpd": "5.4.3",
     "typescript": "^5.8.2",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "zod": "4.6.7"
   }
 }

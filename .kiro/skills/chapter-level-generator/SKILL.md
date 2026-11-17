@@ -66,6 +66,16 @@ node .kiro/skills/chapter-level-generator/scripts/self-test.mjs
 
 ---
 
+### Through MCP (`haunted-forge`, for agents that have it)
+
+The same checks as tools, on a draft, with no file touched until it passes (spec `.kiro/specs/mcp-devtools-and-forge/`):
+
+- `list_assets` (`kind`: `models`, `rooms`, `fx`): the ids a spec may name. Use it instead of guessing.
+- `get_level` -> edit -> `validate_level` (the editor's Check tab) and `solve_level` (the headless 0-death run of that level) on the draft `spec`.
+- `write_level` with the `etag` from `get_level`: writes canonically and recompiles the catalog, or refuses (errors, a death, a stale etag) and changes nothing. Existing levels only; a new level is added to the manifest in `/editor` first.
+
+Still run `generate-chapter.mjs --verify` before calling the chapter done: the forge checks one level at a time.
+
 ## 3. Authoring Checklist Before Marking Done
 1. Every `level.spec.json` has a non-empty `solutionCommands[]` that starts in `spec.cwd` and ends with `cd <exitDir>` (or `exit` on the final boss).
 2. Both **CLI players** (`sed -i`) and **Split Editor players** (`edit <file>` + Patch Chips) can solve every code/config task.

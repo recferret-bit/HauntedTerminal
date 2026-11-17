@@ -14,6 +14,10 @@ Seven custom agents tune the game. `lead-dev` is the entry point and the only on
 - If you are any other agent, you may do what the user asks, but follow the same rules: spec-first, no hand edits of `generated/`, canonical JSON writers, and report only what you ran. For a request that touches several features, suggest `kiro-cli --agent lead-dev` (or the Kiro Crew app, `docs/AGENTS_CREW.md`).
 - `qa` reports live in `docs/qa/`; reviews in `docs/reviews/`.
 
+## MCP tools of the team
+
+Each agent lists exactly the MCP tools it may call (`@server/tool`) and a rule refuses every other: `qa` has Chrome DevTools MCP (screenshots, console, network of `localhost` and `*.netlify.app` only, no JavaScript evaluation) and the read-only `haunted-forge` tools; `chapters-designer` has every `haunted-forge` tool and is the only one with `write_level`; `comix-designer` has `list_assets`; the others and `lead-dev` have none. Report each MCP call and what it returned. `npm run quality:agents` checks the lists; `node scripts/harness/mcp-probe.mjs` proves them in the real CLI.
+
 ## Property-based tests
 
 `node scripts/harness/property-tests.mjs` (fast-check, fixed seed, part of `npm run quality`) checks invariants of the terminal (both shells), laptop, comix, chapters and gameplay elements on generated input. Run `--only <feature>` for what you touched. A failure prints a shrunk counterexample and a seed: reproduce with `--seed`, fix the cause, and keep the counterexample in that property's `examples`. When you change behaviour a property covers, change the property in the same commit. A property that cannot fail is a bug: say so in your report. How to read and extend them: `docs/PROPERTY_TESTS.md`.

@@ -6,9 +6,69 @@
   "tools": [
     "read",
     "write",
-    "shell"
+    "shell",
+    "@chrome-devtools/list_pages",
+    "@chrome-devtools/new_page",
+    "@chrome-devtools/select_page",
+    "@chrome-devtools/navigate_page",
+    "@chrome-devtools/close_page",
+    "@chrome-devtools/resize_page",
+    "@chrome-devtools/wait_for",
+    "@chrome-devtools/take_screenshot",
+    "@chrome-devtools/take_snapshot",
+    "@chrome-devtools/list_console_messages",
+    "@chrome-devtools/get_console_message",
+    "@chrome-devtools/list_network_requests",
+    "@chrome-devtools/get_network_request",
+    "@chrome-devtools/click",
+    "@chrome-devtools/hover",
+    "@chrome-devtools/fill",
+    "@chrome-devtools/type_text",
+    "@chrome-devtools/press_key",
+    "@haunted-forge/list_assets",
+    "@haunted-forge/list_levels",
+    "@haunted-forge/get_level",
+    "@haunted-forge/validate_level",
+    "@haunted-forge/solve_level"
   ],
   "allowedTools": [],
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "node",
+      "args": [
+        "node_modules/chrome-devtools-mcp/out/Default/gen/src/bin/chrome-devtools-mcp.js",
+        "--headless",
+        "--isolated",
+        "--viewport",
+        "1280x800",
+        "--no-usage-statistics",
+        "--no-performance-crux",
+        "--no-javascript-evaluation",
+        "--no-file-navigations",
+        "--workspace",
+        "scripts/harness/out",
+        "--allowedUrlPattern",
+        "http://localhost:*/*",
+        "--allowedUrlPattern",
+        "http://127.0.0.1:*/*",
+        "--allowedUrlPattern",
+        "https://*.netlify.app/*"
+      ],
+      "env": {
+        "CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS": "1",
+        "NODE_COMPILE_CACHE": "scripts/harness/out/.node-compile-cache"
+      },
+      "timeout": 120000
+    },
+    "haunted-forge": {
+      "command": "node",
+      "args": [
+        "scripts/mcp/haunted-forge/server.mjs"
+      ]
+    }
+  },
+  "includeMcpJson": false,
+  "includePowers": false,
   "resources": [
     "file://AGENTS.md",
     "file://.kiro/agents/prompts/team-rules.md",
@@ -44,6 +104,15 @@
       "action": {
         "type": "command",
         "command": "node scripts/hooks/agent-shell-guard.mjs qa"
+      }
+    },
+    {
+      "name": "devtools-url-guard",
+      "trigger": "PreToolUse",
+      "matcher": "@chrome-devtools",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/devtools-url-guard.mjs qa"
       }
     },
     {
@@ -212,6 +281,67 @@
           "*/.ssh/*",
           "*/.aws/*",
           "*.kiro/crew/.env*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "mcp",
+        "match": [
+          "chrome-devtools/list_pages",
+          "chrome-devtools/new_page",
+          "chrome-devtools/select_page",
+          "chrome-devtools/navigate_page",
+          "chrome-devtools/close_page",
+          "chrome-devtools/resize_page",
+          "chrome-devtools/wait_for",
+          "chrome-devtools/take_screenshot",
+          "chrome-devtools/take_snapshot",
+          "chrome-devtools/list_console_messages",
+          "chrome-devtools/get_console_message",
+          "chrome-devtools/list_network_requests",
+          "chrome-devtools/get_network_request",
+          "chrome-devtools/click",
+          "chrome-devtools/hover",
+          "chrome-devtools/fill",
+          "chrome-devtools/type_text",
+          "chrome-devtools/press_key",
+          "haunted-forge/list_assets",
+          "haunted-forge/list_levels",
+          "haunted-forge/get_level",
+          "haunted-forge/validate_level",
+          "haunted-forge/solve_level"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "mcp",
+        "match": [
+          "*"
+        ],
+        "exclude": [
+          "chrome-devtools/list_pages",
+          "chrome-devtools/new_page",
+          "chrome-devtools/select_page",
+          "chrome-devtools/navigate_page",
+          "chrome-devtools/close_page",
+          "chrome-devtools/resize_page",
+          "chrome-devtools/wait_for",
+          "chrome-devtools/take_screenshot",
+          "chrome-devtools/take_snapshot",
+          "chrome-devtools/list_console_messages",
+          "chrome-devtools/get_console_message",
+          "chrome-devtools/list_network_requests",
+          "chrome-devtools/get_network_request",
+          "chrome-devtools/click",
+          "chrome-devtools/hover",
+          "chrome-devtools/fill",
+          "chrome-devtools/type_text",
+          "chrome-devtools/press_key",
+          "haunted-forge/list_assets",
+          "haunted-forge/list_levels",
+          "haunted-forge/get_level",
+          "haunted-forge/validate_level",
+          "haunted-forge/solve_level"
         ],
         "effect": "deny"
       }

@@ -28,7 +28,7 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 | **Property-based testing** | 32 fast-check properties in `npm run quality`; found 6 real bugs; planted-bug checks per feature; guards against vacuous properties | Strong. The write-up question "did PBT catch issues unit tests missed?" has a concrete answer |
 | **Sub-agents** | `lead-dev` delegates to six named agents; `semantic_reviewer` reviewed the work independently and found blockers | Good |
 | **Kiro CLI, Crew** | CLI path tested end to end; Crew prepared (agents installed, member on `lead-dev` in the repo workspace, `npm run crew:check`); the gateway honours the agents' rules; a real chat with the member is not done | Partial: needs the two-minute first test and one real task in the app |
-| **MCP** | The Netlify MCP server, bundled in the `haunted-ship` power | Used, narrowly: site and deploy questions; uploads go through the gated script |
+| **MCP** | Our own `haunted-forge` server (validate, solve, save levels), Chrome DevTools MCP for `qa`, the Netlify server in the power; exact per-agent tool lists checked by the gate and probed in the real CLI | Strong: the forge enforces the 0-death rule as a tool contract |
 | **Powers** | `haunted-ship`: manifest, keywords, Netlify MCP, a `ship` skill whose script gates every deploy and plays the chapter on the preview | Good once the first real deploy is done |
 | **Kiro IDE / Web** | Hooks and steering are written for the IDE; nothing shows it was used | Add two honest paragraphs on what each surface was used for |
 
@@ -46,7 +46,7 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 4. **Presentation of the Kiro story.** The write-up (`KIRO_USAGE.md`) still needs your own part: which Kiro surfaces you used for what, and one before and after story.
 5. **Impact claim.** The rules ask "would someone actually use this?". Frame it as learning by play: the unix commands, an HTML/CSS fix, a JS bug, a Dockerfile and a Compose file are real, and a tutorial level teaches them. Avoid claiming more.
 6. **Trademarks.** The story parodies real AI products by name. Keep logos out of the video.
-7. **MCP depth.** The power covers powers and MCP, but the MCP use is a third-party server. A project MCP server (`haunted-forge`: validate and solve a level in memory) would show more.
+7. **MCP depth.** Done: `haunted-forge` and Chrome DevTools MCP for the agents. Next, optional: package `haunted-forge` with the LEVEL GEN skills as a second power.
 
 ## Category and bonus prizes
 
