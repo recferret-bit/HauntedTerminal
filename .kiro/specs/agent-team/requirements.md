@@ -56,6 +56,8 @@ Agents: `lead-dev`, `terminal-designer`, `laptop-designer`, `comix-designer`, `c
 22. THE SYSTEM SHALL run, inside `npm run quality:agents`, a rule self-test (commands each agent must be refused or allowed, evaluated the way Kiro matches rules) and `scripts/harness/agents-unit.mjs` (guard, scope hook, installer).
 23. THE SYSTEM SHALL give every file an owner or classify it as infrastructure that only the user changes (`.kiro/agents/`, `.kiro/hooks/`, `.kiro/skills/`, `scripts/` outside the property suites, `pages/`, `package.json`); a new top-level folder is flagged until classified.
 
+24. THE SYSTEM SHALL provide a read-only readiness check, `npm run crew:check`, that reports FAIL for each missing piece of the Crew setup (agents linked, valid, a Crew workspace on this repo, a member running `lead-dev` there, no `autoApprove` list, an `origin` remote, branch protection) and WARN for the rest (Telegram, gateway, dirty tree), prints a fix for each, and never prints a secret.
+
 ## Out of scope
 
 - New game features. Agents follow `spec-first.md` like any other session.
@@ -90,6 +92,9 @@ Agents: `lead-dev`, `terminal-designer`, `laptop-designer`, `comix-designer`, `c
 
 - **Q11:** Close the review findings and the two open behaviour questions.
   **A (user delegated, 2026-11-17):** "Use your recommendations." Applied as: (1) the shell becomes an allow-list written as allow plus catch-all deny (requirement 18) with a guard hook for redirects and git (19); (2) requirement 6 is read as: each designer writes its own paths, never compiled output (21); (3) the lead also owns steering, `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/*.md`, `docs/media`, `docs/reviews`, the property runner and the shared property helpers, because the spec-first "Finish" step needs someone to update them; each property suite file belongs to the designer of its feature, so that designer can add regression examples; (4) the lead's session fence is the union of its sub-agents' write paths and shell extras, because Kiro checks a sub-agent's call against the parent session (the dry run showed `qa` blocked otherwise); the lead's own share is held by the scope hook, not by the fence; (5) branch protection on GitHub for `main` is recommended as the real barrier and left to the user; (6) `sed` with an empty pattern is refused like GNU sed, and `cp` of an unreadable file fails like the classic shell already did.
+
+- **Q13:** Prepare everything to use Kiro Crew.
+  **A (user, 2026-11-17):** "Commit this, then prepare everything to make it possible to use Kiro Crew in the best way." Applied as: the work is committed on `main` in four commits (not pushed); the agents are linked into `~/.kiro/agents`; the stale Crew workspace path is fixed and the member `haunted-lead` runs `lead-dev` in it (Crew config backed up first); a gateway was started only for tests and stopped; `npm run crew:check` and a first-test script are in `docs/AGENTS_CREW.md`. Left to the user because they need credentials or change remote settings: the Telegram bot token, starting the gateway, and GitHub branch protection.
 
 ## Open questions
 

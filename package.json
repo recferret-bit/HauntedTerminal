@@ -37,7 +37,8 @@
     "quality:specs": "node scripts/quality/check-specs.mjs",
     "quality:props": "node scripts/harness/property-tests.mjs",
     "quality:agents": "node scripts/quality/check-agents.mjs && node scripts/harness/agents-unit.mjs",
-    "agents:install": "node scripts/harness/agents-install.mjs"
+    "agents:install": "node scripts/harness/agents-install.mjs",
+    "crew:check": "node scripts/harness/crew-doctor.mjs"
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.10.0",

@@ -99,6 +99,15 @@ Probed with scratch agents on Kiro CLI 3.3.0, under `--trust-all-tools` (the ana
 - **A sub-agent's shell command is also checked against the lead's rules,** so the lead's allow list includes the sub-agents' extra commands (`qa`: `mkdir -p docs/qa/media`, `cp scripts/harness/out/* docs/qa/media/*`).
 - **Residual risk, stated plainly.** Redirects and git arguments are checked only by a hook, and the Crew docs do not say that an agent's own hooks run in a Telegram session; `node scripts/*` runs any harness script. The fence is a guard against an agent's mistakes, not a sandbox against a hostile one. The barrier that holds regardless of hooks is branch protection on `main` in GitHub (user setting), and the pushes are only to `agent/*` branches.
 
+## Found while preparing Kiro Crew (2026-11-17, Crew 0.12.1, Kiro CLI 3.4.0)
+
+- **The agent profile's rules are honoured by the gateway.** A subagent started with `--agent qa` was refused `printf` by `deny shell *` and ran an allowed script with no prompt.
+- **`kirocrew spawn run` does not run in the repo.** It starts the agent in `~/workplace/kirocrew-workspace/subagent_<id>`, an empty folder; `--crew <member>` did not change that. Only a member's own chat (dashboard, Telegram) uses the member's workspace.
+- **`kirocrew chat -m` cannot approve** ("this invocation cannot ask"), so even allowed calls are denied there.
+- **The Crew CLI creates members only from its built-in template,** but `kirocrew agent update <member> --kiro-agent lead-dev` accepts a custom agent once it is in `~/.kiro/agents`. A running gateway rewrote it back once, so config is edited with the gateway stopped.
+- **`autoApprove` lists skip `PreToolUse` hooks** (Crew security docs), so `crew:check` fails on them.
+- Not verifiable without a signed-in dashboard session or a Telegram bot: whether a member chat runs an agent's own hooks. The guide's first test answers it in two minutes and says what each outcome means.
+
 ## Layers and gates
 
 - No `src/` code changes, no layer rule, no page, no vocabulary change. Fingerprint unaffected.

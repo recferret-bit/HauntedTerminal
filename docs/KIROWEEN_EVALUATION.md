@@ -27,7 +27,7 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 | **Custom agents** | 7 agents, generated from one table, with an `fs_write` fence, a shell allow-list, a guard hook, a scope hook, one owner per file; verified with real agents under auto-approve | Strong, with a stated limit: a guard against mistakes, not a sandbox |
 | **Property-based testing** | 32 fast-check properties in `npm run quality`; found 6 real bugs; planted-bug checks per feature; guards against vacuous properties | Strong. The write-up question "did PBT catch issues unit tests missed?" has a concrete answer |
 | **Sub-agents** | `lead-dev` delegates to six named agents; `semantic_reviewer` reviewed the work independently and found blockers | Good |
-| **Kiro CLI, Crew** | CLI path tested; Crew path built and documented, not yet run from a phone | Partial: needs one real run |
+| **Kiro CLI, Crew** | CLI path tested end to end; Crew prepared (agents installed, member on `lead-dev` in the repo workspace, `npm run crew:check`); the gateway honours the agents' rules; a Telegram run is not done | Partial: needs the two-minute dashboard test and one Telegram task |
 | **MCP** | `.kiro/settings/mcp.json` is empty by choice | Not used. The write-up says why (offline scripts and skills were enough) |
 | **Powers** | None | Not used. Do not fake it |
 | **Kiro IDE / Web** | Hooks and steering are written for the IDE; nothing shows it was used | Add two honest paragraphs on what each surface was used for |
@@ -41,7 +41,7 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 ## Gaps, in the order they cost points
 
 1. **No public URL and no video** (Presentation, and the mandatory submission items). Deploy `dist/` (Netlify reads `public/_redirects`); record the demo (plan in `SUBMISSION.md`). Judges "are not required to test", so the video is where most of them will meet the game.
-2. **The phone path is unproven.** `README` and the write-up say "usable from a phone"; one Telegram task ending in a pushed `agent/<task>` branch makes that true. Until then say "built and documented".
+2. **The phone path is prepared, not proven.** Everything that can be done without your credentials is done (`npm run crew:check`); the dashboard first test and one Telegram task ending in a pushed `agent/<task>` branch make the claim true. Until then say "built and documented".
 3. **No pushed agent branch exists.** Judges looking at the Git history see 38 commits, and none made by the agents. Commit this setup yourself, then run one real task through `lead-dev` so the history shows an `agent/*` branch with a QA report.
 4. **Presentation of the Kiro story.** The write-up (`KIRO_USAGE.md`) still needs your own part: which Kiro surfaces you used for what, and one before and after story.
 5. **Impact claim.** The rules ask "would someone actually use this?". Frame it as learning by play: the unix commands, an HTML/CSS fix, a JS bug, a Dockerfile and a Compose file are real, and a tutorial level teaches them. Avoid claiming more.
