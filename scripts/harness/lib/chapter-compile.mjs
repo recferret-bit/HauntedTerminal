@@ -14,9 +14,9 @@ const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
 export { etagOf };
 export const etagOfFile = (path) => (existsSync(path) ? etagOf(readFileSync(path, 'utf8')) : '');
 
-export function listChapterSlugs() {
-  return readdirSync(chaptersDir)
-    .filter((d) => statSync(resolve(chaptersDir, d)).isDirectory() && existsSync(resolve(chaptersDir, d, 'chapter.manifest.json')))
+export function listChapterSlugs(rootDir = chaptersDir) {
+  return readdirSync(rootDir)
+    .filter((d) => statSync(resolve(rootDir, d)).isDirectory() && existsSync(resolve(rootDir, d, 'chapter.manifest.json')))
     .sort();
 }
 
@@ -25,8 +25,8 @@ export function listChapterSlugs() {
  * `levels[i].path` is the spec path declared by `manifest.levels[i].specPath`.
  * `etags` maps each of those paths (and `chapter.manifest.json`) to a hash of the file as it is on disk now.
  */
-export function readChapter(slug) {
-  const dir = resolve(chaptersDir, slug);
+export function readChapter(slug, rootDir = chaptersDir) {
+  const dir = resolve(rootDir, slug);
   const manifest = readJson(resolve(dir, 'chapter.manifest.json'));
   const levels = [];
   for (const summary of manifest.levels ?? []) {
@@ -72,16 +72,16 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = ${js
 `;
 }
 
-export function compileAll() {
-  const chapters = listChapterSlugs().map(readChapter);
+export function compileAll(rootDir = chaptersDir) {
+  const chapters = listChapterSlugs(rootDir).map((slug) => readChapter(slug, rootDir));
   return { chapters, ts: renderCatalogTs(chapters) };
 }
 
 /** Writes the catalog only when it changed. Returns whether it did. */
-export function writeCatalog(ts) {
-  const existing = existsSync(catalogFile) ? readFileSync(catalogFile, 'utf8') : '';
+export function writeCatalog(ts, file = catalogFile) {
+  const existing = existsSync(file) ? readFileSync(file, 'utf8') : '';
   if (existing === ts) return false;
-  mkdirSync(dirname(catalogFile), { recursive: true });
-  writeFileSync(catalogFile, ts);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, ts);
   return true;
 }

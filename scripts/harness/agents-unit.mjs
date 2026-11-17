@@ -5,13 +5,15 @@
 // Spec: .kiro/specs/agent-team/.
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { changedSince, ownerOf, outOfScope } from '../hooks/agent-scope.mjs';
 import { redirectTargets, tokenize, violation } from '../hooks/agent-shell-guard.mjs';
-import { globToRegExp, loadAgents, shellVerdict } from '../quality/agent-rules.mjs';
-import { LEAD, TEAM_NAMES, ownWrites } from './agents-build.mjs';
+import { urlProblem, violation as urlViolation } from '../hooks/devtools-url-guard.mjs';
+import { mcpProblems } from '../quality/agent-mcp.mjs';
+import { globToRegExp, loadAgents, mcpVerdict, shellVerdict } from '../quality/agent-rules.mjs';
+import { LEAD, TEAM_NAMES, mcpTable, ownWrites } from './agents-build.mjs';
 import { assess } from './crew-doctor.mjs';
 import { projectRoot } from './lib/load.mjs';
 import { testRunner } from './lib/test-kit.mjs';
@@ -156,6 +158,94 @@ await test('crew doctor: a ready machine passes; each missing piece is a named F
   const warns = assess({ ...ready, gateway: false, dirty: 3, protection: 'unknown' }).filter((x) => x.level === 'warn').map((x) => x.what);
   assert.equal(warns.length, 3);
   assert.ok(!JSON.stringify(assess({ ...ready, remote: 'git@github.com:a/SECRET-123.git'.replace('SECRET-123', 'b') })).includes('TOKEN'), 'no token is ever read, so none can be printed');
+});
+
+// ---- MCP (spec .kiro/specs/mcp-devtools-and-forge/) ----------------------------------------------------------------
+
+await test('devtools url guard: only the local dev servers and https Netlify sites open; credentials and other schemes never', () => {
+  for (const ok of ['http://localhost:5173/play?nointro=1', 'http://127.0.0.1:5342/', 'https://haunted-terminal.netlify.app/play', 'about:blank', 'https://abc--def.netlify.app/']) assert.equal(urlProblem(ok), '', ok);
+  for (const bad of ['https://example.com', 'http://localhost@evil.test/', 'https://netlify.app.evil.test/', 'http://abc.netlify.app/', 'https://localhost.evil.test/', 'ftp://localhost/', 'localhost:5173', '']) assert.notEqual(urlProblem(bad), '', bad);
+  assert.equal(urlViolation({ type: 'url', url: 'http://localhost:5173/' }), '');
+  assert.notEqual(urlViolation({ url: 'https://example.com' }), '');
+  assert.notEqual(urlViolation({ urls: ['http://localhost:5173/', 'https://example.com'] }), '');
+  assert.notEqual(urlViolation({ nested: { deeper: [{ text: 'file:///etc/passwd' }] } }), '');
+  assert.notEqual(urlViolation({ text: 'javascript:alert(1)' }), '');
+  assert.equal(urlViolation({ text: 'kill -9 1011', submitKey: 'Enter' }), '');
+  assert.equal(urlViolation({ text: 'curl http://example.com' }), '', 'typed text is not a navigation');
+});
+
+await test('devtools url guard hook end to end: exit 0 for the game, exit 2 and a reason for another site, 0 for an unreadable event', () => {
+  const run = (input) => spawnSync('node', ['scripts/hooks/devtools-url-guard.mjs', 'qa'], { cwd: projectRoot, input, encoding: 'utf8' });
+  const ok = run(JSON.stringify({ tool_name: 'navigate_page', tool_input: { type: 'url', url: 'http://localhost:5173/play' } }));
+  assert.equal(ok.status, 0);
+  const bad = run(JSON.stringify({ tool_name: 'new_page', tool_input: { url: 'https://example.com/steal' } }));
+  assert.equal(bad.status, 2);
+  assert.match(bad.stderr, /devtools-url-guard: blocked for qa/);
+  assert.match(bad.stderr, /example\.com/);
+  assert.equal(run('not json').status, 0);
+  assert.equal(run(JSON.stringify({ tool_name: 'take_screenshot', tool_input: {} })).status, 0);
+});
+
+/** The real agents, table and prompts, with `mutate(agents)` applied to a copy; the problems the MCP gate finds. */
+function mcpWith(mutate = () => {}, { mcpJsonText = '{"mcpServers":{}}', promptOf } = {}) {
+  const real = loadAgents(projectRoot);
+  const copy = structuredClone(real);
+  mutate(Object.fromEntries(copy.map((a) => [a.name, a.agent])));
+  return mcpProblems({
+    agents: copy,
+    table: mcpTable(),
+    mcpJsonText,
+    promptText: (name) => (promptOf ? promptOf(name) : readFileSync(join(projectRoot, '.kiro/agents/prompts', `${name}.md`), 'utf8')),
+    fileExists: (rel) => existsSync(join(projectRoot, rel)),
+    pinned: (({ dependencies = {}, devDependencies = {} }) => ({ ...dependencies, ...devDependencies }))(JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf8'))),
+  });
+}
+
+await test('mcp gate: the real agents pass; each planted-bad change is named', () => {
+  assert.deepEqual(mcpWith(), []);
+  const planted = {
+    'a wildcard selector': [(a) => a.qa.tools.push('@chrome-devtools'), /wildcard|must be @server\/tool|differ/],
+    'the @mcp selector': [(a) => a.qa.tools.push('@mcp'), /wildcard|differ/],
+    'write_level for a second agent': [(a) => { a['comix-designer'].tools.push('@haunted-forge/write_level'); a['comix-designer'].permissions.rules.find((r) => r.capability === 'mcp' && r.effect === 'allow').match.push('haunted-forge/write_level'); }, /only chapters-designer may hold/],
+    'an unpinned npx server': [(a) => { a.qa.mcpServers['chrome-devtools'] = { ...a.qa.mcpServers['chrome-devtools'], command: 'npx', args: ['-y', 'chrome-devtools-mcp@latest', ...a.qa.mcpServers['chrome-devtools'].args.slice(1)] }; }, /pinned to an exact version/],
+    'a server script that does not exist': [(a) => { a.qa.mcpServers['haunted-forge'] = { command: 'node', args: ['scripts/mcp/missing.mjs'] }; }, /which does not exist/],
+    'includePowers on': [(a) => { a.qa.includePowers = true; }, /includePowers must be false/],
+    'JavaScript evaluation switched on': [(a) => { const args = a.qa.mcpServers['chrome-devtools'].args; args.splice(args.indexOf('--no-javascript-evaluation'), 1); }, /--no-javascript-evaluation/],
+    'a site outside the allowed list': [(a) => a.qa.mcpServers['chrome-devtools'].args.push('--allowedUrlPattern', 'https://evil.test/*'), /may list only localhost/],
+    'the browser server for a second agent': [(a) => { a.artist.mcpServers = { 'chrome-devtools': a.qa.mcpServers['chrome-devtools'] }; }, /only qa may hold chrome-devtools|mcpServers/],
+    'a server on the lead': [(a) => { a['lead-dev'].mcpServers = { 'haunted-forge': a.qa.mcpServers['haunted-forge'] }; }, /orchestrator holds permissions/],
+    'includeMcpJson on': [(a) => { a.artist.includeMcpJson = true; }, /includeMcpJson must be false/],
+    'no catch-all deny': [(a) => { a.artist.permissions.rules = a.artist.permissions.rules.filter((r) => r.capability !== 'mcp'); }, /mcp needs a deny/],
+    'a looser allow list': [(a) => a.qa.permissions.rules.find((r) => r.capability === 'mcp' && r.effect === 'allow').match.push('haunted-forge/write_level'), /mcp allow rules must be exactly|mcp rule self-test/],
+    'no devtools hook': [(a) => { a.qa.hooks = a.qa.hooks.filter((h) => h.name !== 'devtools-url-guard'); }, /devtools-url-guard/],
+    'a server the table does not list': [(a) => { a.terminal_designer = undefined; a['terminal-designer'].mcpServers = { 'haunted-forge': a.qa.mcpServers['haunted-forge'] }; }, /mcpServers/],
+  };
+  for (const [what, [mutate, expected]] of Object.entries(planted)) {
+    const found = mcpWith(mutate);
+    assert.ok(found.some((p) => expected.test(p)), `${what}: expected ${expected}, got ${JSON.stringify(found)}`);
+  }
+  assert.ok(mcpWith(() => {}, { mcpJsonText: '{"mcpServers":{"x":{"command":"y"}}}' }).some((p) => /must stay empty/.test(p)));
+  assert.ok(mcpWith(() => {}, { mcpJsonText: '{' }).some((p) => /not valid JSON/.test(p)));
+  assert.ok(mcpWith(() => {}, { promptOf: () => '' }).some((p) => /must name "take_screenshot"/.test(p)));
+});
+
+await test('mcp rules, as Kiro reads them: qa looks and reads, chapters-designer alone writes, the rest and the lead follow the table', () => {
+  const v = (name, tool) => mcpVerdict(agents[name], tool);
+  assert.equal(v('qa', 'chrome-devtools/take_screenshot'), 'allow');
+  assert.equal(v('qa', 'chrome-devtools/evaluate_script'), 'deny');
+  assert.equal(v('qa', 'chrome-devtools/upload_file'), 'deny');
+  assert.equal(v('qa', 'haunted-forge/validate_level'), 'allow');
+  assert.equal(v('qa', 'haunted-forge/write_level'), 'deny');
+  assert.equal(v('chapters-designer', 'haunted-forge/write_level'), 'allow');
+  assert.equal(v('chapters-designer', 'chrome-devtools/take_screenshot'), 'deny');
+  assert.equal(v('comix-designer', 'haunted-forge/list_assets'), 'allow');
+  assert.equal(v('comix-designer', 'haunted-forge/validate_level'), 'deny');
+  for (const name of ['terminal-designer', 'laptop-designer', 'artist']) assert.equal(v(name, 'haunted-forge/list_assets'), 'deny', name);
+  // The lead holds no tool of its own, but allows its sub-agents' calls (Kiro checks them against the parent session).
+  assert.equal(agents['lead-dev'].tools.filter((t) => t.startsWith('@')).length, 0);
+  assert.equal(v('lead-dev', 'haunted-forge/write_level'), 'allow');
+  assert.equal(v('lead-dev', 'chrome-devtools/take_screenshot'), 'allow');
+  assert.equal(v('lead-dev', 'chrome-devtools/evaluate_script'), 'deny');
 });
 
 console.log(`\nagents unit: ${count()} tests passed`);

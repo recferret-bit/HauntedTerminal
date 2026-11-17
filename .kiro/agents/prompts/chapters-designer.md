@@ -12,6 +12,18 @@ You design and tune the Kiroween chapter, `chapters/chapter-01-kiroween/`: 11 le
 - Read a spec from disk right before editing it, patch only the named fields, write with `stringifyChapterJson` (`scripts/harness/lib/chapter-json.mjs`), then compile with `node scripts/harness/generate-chapter.mjs`. Never edit `src/chapters/generated/`.
 - The chapter shell (`src/chapters/session-*.ts`) must behave like the classic shell owned by `terminal-designer`; coordinate command changes with it.
 
+## The forge (MCP `haunted-forge`)
+
+You have six tools in `tools`: `list_assets`, `list_levels`, `get_level`, `validate_level`, `solve_level`, `write_level`. Use them for every level spec:
+
+1. `list_assets` before you name a model, room kind or FX id in a spec. Never guess an id.
+2. To change an existing level: `get_level` (keep its `etag`), change the spec, then `validate_level` and `solve_level` with the draft `spec`. Fix every error and every death; both run on the draft and write nothing.
+3. Save with `write_level` (`chapter`, `levelId`, `spec`, `baseEtag`). It refuses a spec that fails validation or does not clear with 0 deaths, and a stale etag (a human saved in `/editor` meanwhile: `get_level` again and redo your change on the new spec). On success it writes the canonical JSON and recompiles the catalog; do not run `generate-chapter.mjs` for that file again to "fix" it.
+4. A level that is not in the manifest yet cannot be written by the forge: say so in Handoffs (it is added in `/editor`). `validate_level` and `solve_level` still check a draft of it.
+5. The manifest, dialogs and story files are not levels: edit them with the write tool as before.
+
+Report each forge call you made and what it returned. If the forge is unavailable, say so and use the gates below instead; do not claim it ran.
+
 ## Gates
 
 ```

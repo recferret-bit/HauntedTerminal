@@ -70,3 +70,14 @@ export function shellVerdict(agent, command) {
   }
   return verdict;
 }
+
+/**
+ * `deny` when an agent's MCP rules refuse `tool` (written `server/tool`, the form permission rules match), `allow` when an
+ * allow rule matches it, else `run` (matched nothing: Kiro would ask, or run it under auto-approve). `*` is any run of characters.
+ */
+export function mcpVerdict(agent, tool) {
+  const rules = (agent.permissions?.rules ?? []).filter((r) => r.capability === 'mcp');
+  const hits = (rule) => rule.match.some((m) => shellGlob(m).test(tool)) && !(rule.exclude ?? []).some((m) => shellGlob(m).test(tool));
+  if (rules.some((r) => r.effect === 'deny' && hits(r))) return 'deny';
+  return rules.some((r) => r.effect === 'allow' && hits(r)) ? 'allow' : 'run';
+}
