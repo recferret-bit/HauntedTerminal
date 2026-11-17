@@ -162,7 +162,7 @@ const NPC_EXTRA: PaletteEntry[] = [
     id: 'npc.taunt',
     label: 'taunt',
     hint: 'The level taunt, spoken by the agent the line starts with.',
-    make: () => [{ op: 'taunt', mood: 'laugh', text: 'CLAUDE: "Try the other door."' }],
+    make: () => [{ op: 'taunt', mood: 'laugh', text: 'CLOD: "Try the other door."' }],
   },
   {
     group: 'NPCs',

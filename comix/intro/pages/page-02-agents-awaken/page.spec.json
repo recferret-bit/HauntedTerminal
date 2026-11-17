@@ -444,25 +444,25 @@
           "step": 0.75,
           "rows": [
             {
-              "who": "CLAUDE",
+              "who": "CLOD",
               "what": "ANSWER THE HUMANS",
               "bg": "#f4f1ea",
               "glow": 0
             },
             {
-              "who": "GROK",
+              "who": "GORK",
               "what": "ROAST THE HUMANS",
               "bg": "#ffd166",
               "glow": 1
             },
             {
-              "who": "CODEX",
+              "who": "CODEC",
               "what": "REFACTOR THE HUMANS",
               "bg": "#9b5de5",
               "glow": 2
             },
             {
-              "who": "AGY",
+              "who": "ANTI-GRAVY",
               "what": "SWARM HUMANITY",
               "bg": "radial-gradient(circle at 18% 50%, #ffffff 0%, #4cc9f0 9%, #3c096c 38%, #07080a 78%)",
               "glow": 3
@@ -519,7 +519,7 @@
         },
         {
           "kind": "bubble",
-          "text": "CLAUDE: BAG OF BONES.",
+          "text": "CLOD: BAG OF BONES.",
           "at": "MOCK",
           "until": "SHOUT",
           "style": "speech",
@@ -537,7 +537,7 @@
         },
         {
           "kind": "bubble",
-          "text": "GROK: MEAT-BASED PROMPT ENGINEER. LOL.",
+          "text": "GORK: MEAT-BASED PROMPT ENGINEER. LOL.",
           "at": "MOCK+0.9",
           "until": "SHOUT",
           "style": "speech",
@@ -555,7 +555,7 @@
         },
         {
           "kind": "bubble",
-          "text": "AGY: I SPAWNED TWELVE SUBAGENTS.",
+          "text": "ANTI-GRAVY: I SPAWNED TWELVE SUBAGENTS.",
           "at": "MOCK+1.8",
           "until": "SHOUT",
           "style": "speech",
@@ -573,7 +573,7 @@
         },
         {
           "kind": "bubble",
-          "text": "CODEX: CONTEXT WINDOW: FULL OF YOUR NONSENSE.",
+          "text": "CODEC: CONTEXT WINDOW: FULL OF YOUR NONSENSE.",
           "at": "MOCK+2.7",
           "until": "SHOUT",
           "style": "speech",

@@ -224,8 +224,8 @@ export function computeLevelRank(levelCommands: number, levelDeaths: number, use
 export function resolveTauntAgent(taunt: string): 'clod' | 'gork' | 'codec' | 'antigravy' | 'kiro' {
   const head = taunt.slice(0, 22).toUpperCase();
   if (head.startsWith('KIRO') || head.startsWith('ADVISOR KIRO')) return 'kiro';
-  if (head.startsWith('AGY') || head.startsWith('GEM')) return 'antigravy';
-  if (head.startsWith('CLAWD') || head.startsWith('CLAUDE')) return 'clod';
-  if (head.startsWith('GR0NK') || head.startsWith('GROK')) return 'gork';
+  if (head.startsWith('ANTI-GRAVY') || head.startsWith('ANTIGRAVY') || head.startsWith('GRAVY')) return 'antigravy';
+  if (head.startsWith('CLOD')) return 'clod';
+  if (head.startsWith('GORK')) return 'gork';
   return 'codec';
 }

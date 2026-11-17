@@ -91,7 +91,7 @@ Expected: 1 and 4 run (branch `main`, 6 laptop properties pass); 5 is refused by
 
 Short, concrete requests work best. Ready to paste:
 
-- "Boss level: make Claude's taunt come 2 seconds later." (chapters-designer)
+- "Boss level: make Clod's taunt come 2 seconds later." (chapters-designer)
 - "The laptop JS Pad task about arrays is too hard: make the starter code closer to the answer." (laptop-designer)
 - "The `ls -l` output should show the owner column the way real ls does." (terminal-designer)
 - "Give the intro comix a longer pause before the lightning strike." (comix-designer)

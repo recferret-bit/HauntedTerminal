@@ -135,6 +135,7 @@ export function cmdBestiary(g: ChapterState, args: string[]): Step {
     });
     return okStep(
       `=== HARDWARE SPIRIT & MALWARE DOSSIER (${meta.seenMalware.length}/${dossier.length} logged) ===\n` +
+        `  [PARODY NOTICE] Anti-Gravy, Codec, Gork & Clod are fictional parodies (0 real AI brands; run \`kiro disclaimer\`).\n` +
         `${rows.join('\n') || '  (no matching entry)'}\n`,
     );
   }

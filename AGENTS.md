@@ -13,7 +13,7 @@ Per `docs/kiro-best-practice.md`, project knowledge and enforcement live in `.ki
 - **Capabilities -> `.kiro/specs/<name>/`**: system features and big refactors (`requirements.md` or `bugfix.md` in EARS syntax, `design.md`, `tasks.md`), never per-level or per-page content.
 - **Procedures -> `.kiro/skills/<skill>/SKILL.md`**: 24 workflow and authoring skills tagged `[WORKFLOW]`, `[ASSET PCG]`, or `[LEVEL GEN]`, paired with deterministic validator scripts.
 - **Truth -> Declarative JSON & Exhaustive Schemas**: `chapters/<slug>/`, `comix/<slug>/`, and `scripts/harness/terminal-lab/*.lab.json` are typed against `src/chapters/{types,script-types}.ts`, `src/cinematic/spec-types.ts`, and `src/terminal-lab/lab-types.ts`, with union-keyed `schema*.ts` field tables so missing editor forms fail `tsc`. `src/chapters/generated/` and `src/cinematic/generated/` are compiled outputs — never hand-edit.
-- **Enforcement -> `.kiro/hooks/` & `scripts/quality/`**: deterministic, zero-LLM Node scripts enforce architectural, declarative, size, root, and spec gates rather than relying on memory or prose. `.kiro/settings/mcp.json` stays minimal/empty whenever offline `.mjs` scripts and skills suffice.
+- **Enforcement -> `.kiro/hooks/` & `scripts/quality/`**: deterministic, zero-LLM Node scripts enforce architectural, declarative, size, root, and spec gates rather than relying on memory or prose. `.kiro/settings/mcp.json` stays minimal/empty whenever offline `.mjs` scripts and skills suffice; an MCP server that a feature needs ships inside its power (`.kiro/powers/<name>/mcp.json`).
 
 ## Read First: Steering Map
 
@@ -83,7 +83,8 @@ Read the matching `.kiro/skills/<skill>/SKILL.md` before working in its area; ne
 - **Terminal Lab (`/terminal-lab`)**: `node scripts/harness/terminal-lab.mjs --all` (`--run <file>`, `--transcript`), `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs`, `node scripts/harness/terminal-lab-smoke.mjs` (also `--width 1280 --height 820`). Spec: `.kiro/specs/inventory/items/terminal/`.
 - **Laptop Lab (`/laptop-lab`)**: `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/laptop-lab-smoke.mjs` (also `--width 1280 --height 820`). Spec: `.kiro/specs/inventory/items/laptop/`.
 - **Assets & Storybook (`/storybook.html`)**: `node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict`, `node .kiro/skills/procedural-animation-3d/scripts/check-tags.mjs --all`, `node scripts/harness/screenshot-lab.mjs --selftest`, `npm run quality:fingerprint` (must remain byte-identical on refactors; diff and explain intended asset changes).
-- **Project-wide**: `npm run quality` (`tsc --noEmit`, `quality:root`, `quality:size`, `quality:layers`, `quality:declarative`, `quality:specs`, `quality:dup`, `quality:agents`, `quality:props`), `npm run build`, `npm run preview`.
+- **Deploy (power `haunted-ship`, `.kiro/powers/haunted-ship/`)**: `node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs preview` (gates, draft deploy to Netlify, the chapter played on the preview URL), `prod` only after the user's explicit yes (refuses a build that was not the played preview), `--dry-run`, `--selftest`. The user's command only: every team agent's shell denies it. Spec: `.kiro/specs/netlify-deploy-power/`.
+- **Project-wide**: `npm run quality` (`tsc --noEmit`, `quality:root`, `quality:size`, `quality:layers`, `quality:declarative`, `quality:specs`, `quality:dup`, `quality:agents`, `quality:brands`, `quality:props`), `npm run build`, `npm run preview`.
 
 - **Property-based tests**: `node scripts/harness/property-tests.mjs` (`--only terminal,laptop,comix,chapters,gameplay`, `--seed`, `--runs`); fast-check, fixed seed, part of `npm run quality`. A failure prints a shrunk counterexample and its seed; keep each fixed counterexample in the property's `examples`. Spec: `.kiro/specs/property-based-tests/`.
 
@@ -93,6 +94,6 @@ Seven custom agents tune the game: `lead-dev` (orchestrator, entry point, the on
 
 ## Hooks & Working Rules
 
-- **`.kiro/hooks/` enforcement**: Kiro runs `spec-first-on-prompt`, `guard-spec-first`, `guard-chapter-files`, `typecheck-on-save`, `validate-chapters-on-save`, `validate-comix-on-save`, `validate-labs-on-save`, `asset-dryrun-*`, `chapter-gates-on-stop`, `spec-status-on-stop`, `property-tests-on-stop` and `check-agents-on-save`. Agents running outside Kiro must honor the same pre-write guards and run the matching post-edit and stop gates manually.
+- **`.kiro/hooks/` enforcement**: Kiro runs `spec-first-on-prompt`, `guard-spec-first`, `guard-chapter-files`, `typecheck-on-save`, `validate-chapters-on-save`, `validate-comix-on-save`, `validate-labs-on-save`, `asset-dryrun-*`, `chapter-gates-on-stop`, `spec-status-on-stop`, `property-tests-on-stop`, `check-agents-on-save` and `check-brands-on-save`. Agents running outside Kiro must honor the same pre-write guards and run the matching post-edit and stop gates manually.
 - Report only validators you actually ran; never claim an unrun check passed.
 - Pin exact dependency versions when adding packages. Never hand-edit generated files. Commit only when asked.

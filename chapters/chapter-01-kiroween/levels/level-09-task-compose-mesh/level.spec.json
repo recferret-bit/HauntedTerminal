@@ -7,7 +7,7 @@
   "floorTheme": 4,
   "mechanic": "docker-compose",
   "exitDir": "/srv/kiroween/compose_furnace/server_hub_3",
-  "summary": "GR0NK and CLAUDE hurl a buffer-overflow syringe at the furnace! Make `proxy.buf` read-only (`chmod -w proxy.buf`), fix `PAYMENT_URL` in `docker-compose.yml` to `http://payment:4002`, run `docker compose up -d`, and collect `ram_16gb.dimm` + `gpu_h100_core_03.img`.",
+  "summary": "GORK and CLOD hurl a buffer-overflow syringe at the furnace! Make `proxy.buf` read-only (`chmod -w proxy.buf`), fix `PAYMENT_URL` in `docker-compose.yml` to `http://payment:4002`, run `docker compose up -d`, and collect `ram_16gb.dimm` + `gpu_h100_core_03.img`.",
   "files": [
     {
       "path": "/srv/kiroween/compose_furnace/port_hijack.bin",
@@ -121,11 +121,11 @@
       "lines": [
         {
           "agent": "gork",
-          "text": "GR0NK: \"HAHAHA! AGY and Codex were soft, Vibecoder! Try getting these GPU chips past me and Claude!\""
+          "text": "GORK: \"HAHAHA! Anti-Gravy and Codec were soft, Vibecoder! Try getting these GPU chips past me and Clod!\""
         },
         {
           "agent": "clod",
-          "text": "CLAUDE: \"AHAHA! Only Grok and I remain, and our container defenses are impenetrable!\""
+          "text": "CLOD: \"AHAHA! Only Gork and I remain, and our container defenses are impenetrable!\""
         }
       ]
     },

@@ -371,5 +371,12 @@ export function cmdKiro(g: Play, args: string[], stdin: string): Step {
     bump(g, 'read');
     return out(inspectTextWithKiro(found.node.content, found.node.name, g.kiro.activeCore));
   }
-  return empty(1, `kiro: unknown subcommand '${sub}'. Try: kiro | kiro scan | kiro load <core> | kiro crack <lock>\n`);
+  if (sub === 'disclaimer' || sub === 'legal' || sub === 'brands') {
+    bump(g, 'read');
+    const res = g.kiro.formatDisclaimer();
+    const events: KernelEvent[] = [];
+    for (const ev of res.events) push(g, events, ev);
+    return out(res.stdout, events);
+  }
+  return empty(1, `kiro: unknown subcommand '${sub}'. Try: kiro | kiro scan | kiro load <core> | kiro crack <lock> | kiro disclaimer\n`);
 }

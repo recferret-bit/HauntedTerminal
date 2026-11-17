@@ -298,7 +298,7 @@ export const LAYOUTS: Record<string, Layout> = {
       'ollama_bus.conf': { x: 1.65, key: 'scroll' },
       'ram_16gb.dimm': { x: 1.05 },
       'gpu_tensor_chip_01.img': { x: 0.45 },
-      '.agy_spycam': { x: -0.25 },
+      '.gravy_spycam': { x: -0.25 },
       gpu_alley: { x: -0.95, key: 'gate', model: 'door.ethernet' },
     },
   },
@@ -406,7 +406,7 @@ export const LAYOUTS: Record<string, Layout> = {
       staging_repo: { x: -0.82, key: 'gate', model: 'door.ethernet' },
       sector_ui_grid: { x: -0.82, key: 'gate', model: 'door.ethernet' },
       sector_docker_forge: { x: -0.82, key: 'gate', model: 'door.ethernet' },
-      claude_kernel_core: { x: -0.82, key: 'gate', model: 'door.ethernet' },
+      clod_kernel_core: { x: -0.82, key: 'gate', model: 'door.ethernet' },
     },
   },
   '/srv/byterig/checkout_core': {
@@ -421,16 +421,16 @@ export const LAYOUTS: Record<string, Layout> = {
       'slop_supervisor.ko': { x: -0.65, key: 'boss' },
     },
   },
-  '/sys/claude_overlord_core': {
+  '/sys/clod_overlord_core': {
     hero: 2.3,
     slots: {
       'dad.tty.sock': { x: 4.25, key: 'socket' },
       'energy.cell': { x: 3.42 },
-      'claude_prompt_flood.stream': { x: 1.62 },
+      'clod_prompt_flood.stream': { x: 1.62 },
       'open_weights_advisor.log': { x: 1.22, key: 'scroll' },
       'core_anchor.conf': { x: 0.82 },
       'kiro_override.sock': { x: 0.25, key: 'socket' },
-      'claude_overlord.ko': { x: -0.45, key: 'boss' },
+      'clod_overlord.ko': { x: -0.45, key: 'boss' },
     },
   },
 };

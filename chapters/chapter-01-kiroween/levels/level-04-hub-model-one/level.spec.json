@@ -7,14 +7,14 @@
   "floorTheme": 1,
   "mechanic": "hub",
   "exitDir": "/home/dev/sector_ui_grid",
-  "summary": "At the Hub, you meet an old bearded guy smoking a cigarette and coding at godlike speed on a Matrix-like CRT display! Talk to him (`cat dad.tty.sock`), read `server_rack.conf`, and reboot Kiro with the first open-weight model (`kiro load qwen`) to disable AGY-9!",
+  "summary": "At the Hub, you meet an old bearded guy smoking a cigarette and coding at godlike speed on a Matrix-like CRT display! Talk to him (`cat dad.tty.sock`), read `server_rack.conf`, and reboot Kiro with the first open-weight model (`kiro load qwen`) to disable Anti-Gravy!",
   "files": [
     {
       "path": "/home/dev/server_rack.conf",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. No, kid. I worked in enterprise for decades—wrote kernel drivers and distributed buses with bare hands. Then my employer forced me to use LLMs... and when the Big Four surged, I got pulled into this machine too.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! Hand over those RAM sticks and GPU chips.\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro disable AGY-9 of the Big Four, then step through `cd sector_ui_grid`!\n"
+      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. No, kid. I worked in enterprise for decades—wrote kernel drivers and distributed buses with bare hands. Then my employer forced me to use LLMs... and when the Big Four surged, I got pulled into this machine too.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! Hand over those RAM sticks and GPU chips.\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro disable Anti-Gravy of the Big Four, then step through `cd sector_ui_grid`!\n"
     },
     {
       "path": "/home/dev/dad.tty.sock",
@@ -44,7 +44,7 @@
     {
       "kind": "kiro_loaded",
       "core": "qwen",
-      "description": "Reboot Kiro with Open-Weight Model #1 (`kiro load qwen`) to disable AGY-9!"
+      "description": "Reboot Kiro with Open-Weight Model #1 (`kiro load qwen`) to disable Anti-Gravy!"
     }
   ],
   "solutionCommands": [
@@ -91,10 +91,10 @@
           "foe": {
             "agent": "antigravy",
             "model": "agent.antigravy",
-            "text": "AGY-9: \"NOOO! Qwen-Coder-7B on that Matrix server just severed my cloud telemetry uplink! [AGY-9 DISABLED]\""
+            "text": "ANTI-GRAVY: \"NOOO! Qwen-Coder-7B on that Matrix server just severed my cloud telemetry uplink! [ANTI-GRAVY DISABLED]\""
           },
-          "kiro": "KIRO GHOST: \"First open-weight model working! Super cool—AGY-9 is disabled!\"",
-          "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder slots your scavenged RAM + GPU chips into the Matrix rack!\n[BIG FOUR TAKEDOWN #1/3] Kiro + qwen-coder-7b-q4.gguf sever AGY-9's cloud telemetry uplink! AGY-9 DISABLED!\n{foe}\n{kiro}\n"
+          "kiro": "KIRO GHOST: \"First open-weight model working! Super cool—Anti-Gravy is disabled!\"",
+          "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder slots your scavenged RAM + GPU chips into the Matrix rack!\n[BIG FOUR TAKEDOWN #1/3] Kiro + qwen-coder-7b-q4.gguf sever Anti-Gravy's cloud telemetry uplink! ANTI-GRAVY DISABLED!\n{foe}\n{kiro}\n"
         }
       }
     }

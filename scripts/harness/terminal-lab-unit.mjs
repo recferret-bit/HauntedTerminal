@@ -579,7 +579,7 @@ await withProcgen(async (_p, vite) => {
       const out = speechOutput({ op: 'say', agent, mood: 'smug', text: 'hi', print: '>> {text}' }, () => 0);
       assert.deepEqual([out.events[0].agent, out.print], [agent, '>> hi']);
     }
-    assert.equal(speechOutput({ op: 'taunt', mood: 'laugh', text: 'GROK: "ha"' }, () => 0).events[0].agent, 'gork');
+    assert.equal(speechOutput({ op: 'taunt', mood: 'laugh', text: 'GORK: "ha"' }, () => 0).events[0].agent, 'gork');
     const bubble = speechOutput({ op: 'dialogue', obstacleId: 'b', speaker: 'S', mood: 'cryptic', anchorSocket: 'x.sock', text: 't', highlight: ['cat'], banner: '[ S ]' }, (n) => (n === 'x.sock' ? 42 : 0));
     assert.equal(bubble.events[0].payload.anchorInodeId, 42);
   });
@@ -587,7 +587,7 @@ await withProcgen(async (_p, vite) => {
   await test('speech setup: npc, taunt and dialogue ops play when the level starts', () => {
     const script = lab();
     script.setup = [
-      { op: 'npc', agent: 'gork', mood: 'smug', text: 'GROK: "hi"', print: 'GROK SAID HI' }, { op: 'taunt', mood: 'laugh', text: 'CLAUDE: "ha"', print: 'TAUNTED' },
+      { op: 'npc', agent: 'gork', mood: 'smug', text: 'GORK: "hi"', print: 'GORK SAID HI' }, { op: 'taunt', mood: 'laugh', text: 'CLOD: "ha"', print: 'TAUNTED' },
       { op: 'dialogue', obstacleId: 'b', speaker: 'S', mood: 'cryptic', anchorSocket: 's.sock', text: 't', highlight: [], banner: '[ S ]' }, { op: 'socket', path: '/lab/s.sock', content: '' },
     ];
     assert.deepEqual(buildLabPack(script).pack.levels[0].script.arrival.map((a) => a.kind), ['say', 'taunt', 'dialogue']);
@@ -808,6 +808,10 @@ await withProcgen(async (_p, vite) => {
     assert.ok(s2.snapshot().room.actors.some((a) => a.id === 'lab:fan-1'));
     assert.equal(s2.exec('ls').code, 0);
     assert.equal(goal(s2, 'saw-ls').done, true);
+    const classicDisc = s2.exec('kiro disclaimer');
+    assert.equal(classicDisc.code, 0);
+    assert.match(classicDisc.output, /PARODY & NON-AFFILIATION NOTICE/);
+    assert.match(s2.exec('kiro legal').output, /PARODY & NON-AFFILIATION NOTICE/);
     for (let i = 0; i < 12; i++) s2.labTick();
     assert.ok(s2.inspect().absorbedTotal > 0 && s2.snapshot().hp === s2.snapshot().maxHp);
     assert.equal(s2.exec('echo open > extra.sock').code, 0);

@@ -101,25 +101,25 @@
     {
       "id": "clod",
       "model": "agent.clod",
-      "label": "CLAUDE",
+      "label": "CLOD",
       "visible": false
     },
     {
       "id": "gork",
       "model": "agent.gork",
-      "label": "GROK",
+      "label": "GORK",
       "visible": false
     },
     {
       "id": "codec",
       "model": "agent.codec",
-      "label": "CODEX",
+      "label": "CODEC",
       "visible": false
     },
     {
       "id": "antigravy",
       "model": "agent.antigravy",
-      "label": "AGY",
+      "label": "ANTI-GRAVY",
       "visible": false
     }
   ],

@@ -218,7 +218,7 @@
         },
         {
           "kind": "label_tag",
-          "text": "CLAUDE",
+          "text": "CLOD",
           "at": "+0.6",
           "point": {
             "x": 2.88,
@@ -229,7 +229,7 @@
         },
         {
           "kind": "label_tag",
-          "text": "AGY",
+          "text": "ANTI-GRAVY",
           "at": "+0.75",
           "point": {
             "x": 2.66,
@@ -240,7 +240,7 @@
         },
         {
           "kind": "label_tag",
-          "text": "GROK",
+          "text": "GORK",
           "at": "+0.9",
           "point": {
             "x": 2.44,
@@ -251,7 +251,7 @@
         },
         {
           "kind": "label_tag",
-          "text": "CODEX",
+          "text": "CODEC",
           "at": "+1.05",
           "point": {
             "x": 2.22,

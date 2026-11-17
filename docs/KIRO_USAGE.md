@@ -97,8 +97,8 @@ Steering holds only short, non-overlapping facts and one exact vocabulary (`glos
 |---|---|---|
 | Custom agents | done: 7 agents in `.kiro/agents/` | TODO (you): note one real task you ran through `lead-dev` |
 | Property-based testing | done: 32 properties, 6 bugs found | none |
-| MCP | `.kiro/settings/mcp.json` is empty by choice | optional, see `docs/SUBMISSION.md` |
-| Powers | none installed | Skip unless one genuinely fits. Do not fake it. |
+| MCP | the Netlify MCP server (`@netlify/mcp@1.22.1`), bundled in the `haunted-ship` power; `.kiro/settings/mcp.json` stays empty | Used to ask about sites and deploys; uploads go through the gated script. A `haunted-forge` level MCP server is a later idea. |
+| Powers | `haunted-ship` (`.kiro/powers/haunted-ship/`): plugin manifest, keywords, Netlify MCP, `ship` skill with a gated deploy script | TODO (you): note the first real preview and production deploy |
 
 TODO (you): add the parts only you know.
 - Which Kiro surfaces you used (IDE, CLI, Web, Crew), what each was good and bad at, and which one wrote what.

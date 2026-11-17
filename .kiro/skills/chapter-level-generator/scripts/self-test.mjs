@@ -202,7 +202,7 @@ await withProcgen(async (_p, vite) => {
   const gpuCollect = kiroChap.exec('mv gpu_tensor_chip_01.img ~');
   assert.ok(gpuCollect.output.includes('Local GPU Tensor Chip'), 'GPU pickup must report Local GPU Tensor Chip');
 
-  // Jump to Hub 1 (Level 4): verify npc.greybeard_rig on stage, dad command, and kiro load qwen disabling GRAVY-9
+  // Jump to Hub 1 (Level 4): verify npc.greybeard_rig on stage, dad command, and kiro load qwen disabling ANTI-GRAVY
   kiroChap.jumpToLevel('level-04-hub-model-one');
   assert.ok(
     kiroChap.snapshot().room.actors.some((a) => a.model === 'npc.greybeard_rig'),
@@ -221,7 +221,7 @@ await withProcgen(async (_p, vite) => {
   // Loading an out-of-order core (`llama`) in Hub 1 must NOT satisfy `kiro_loaded: "qwen"` or emit Hub 3's banner!
   const wrongHubCore = kiroChap.exec('kiro load llama');
   assert.ok(
-    wrongHubCore.output.includes('kiro load qwen') && !wrongHubCore.output.includes('GR0NK DISABLED'),
+    wrongHubCore.output.includes('kiro load qwen') && !wrongHubCore.output.includes('GORK DISABLED'),
     'Out-of-order kiro load in Hub 1 must prompt for kiro load qwen',
   );
   assert.equal(
@@ -229,7 +229,7 @@ await withProcgen(async (_p, vite) => {
     false,
   );
   const hubReboot1 = kiroChap.exec('kiro load qwen');
-  assert.ok(hubReboot1.output.includes('AGY-9 DISABLED'));
+  assert.ok(hubReboot1.output.includes('ANTI-GRAVY DISABLED'));
   assert.equal(
     kiroChap.getChecklist().find((c) => c.description.includes('kiro load qwen'))?.done,
     true,
@@ -253,15 +253,15 @@ await withProcgen(async (_p, vite) => {
   kiroChap.exec('cd logic_cell');
   assert.equal(kiroChap.getCurrentLevel().id, 'level-06-task-logic-purge');
 
-  // Jump to Hub 2 (Level 7) & Hub 3 (Level 10): verify DeepSeek disables C0D3X and Llama disables GR0NK
+  // Jump to Hub 2 (Level 7) & Hub 3 (Level 10): verify DeepSeek disables Codec and Llama disables Gork
   kiroChap.jumpToLevel('level-07-hub-model-two');
-  assert.ok(kiroChap.exec('kiro load deepseek').output.includes('C0D3X DISABLED'));
+  assert.ok(kiroChap.exec('kiro load deepseek').output.includes('CODEC DISABLED'));
   kiroChap.jumpToLevel('level-10-hub-model-three');
   const hubReboot3 = kiroChap.exec('kiro load llama');
-  assert.ok(hubReboot3.output.includes('GR0NK DISABLED') && hubReboot3.output.includes('Only CLAUDE survives'));
+  assert.ok(hubReboot3.output.includes('GORK DISABLED') && hubReboot3.output.includes('Only CLOD survives'));
 
-  // Jump to Level 11 Boss: verify Claude supervisor cameo on stage, zero actor overlaps, Kiro advisor inspect, and Father twist on exit
-  kiroChap.jumpToLevel('level-11-boss-claude-core');
+  // Jump to Level 11 Boss: verify Clod supervisor cameo on stage, zero actor overlaps, Kiro advisor inspect, and Father twist on exit
+  kiroChap.jumpToLevel('level-11-boss-clod-core');
   const bossActors = kiroChap.snapshot().room.actors;
   assert.ok(
     bossActors.some((a) => a.model === 'agent.clod'),
@@ -279,17 +279,17 @@ await withProcgen(async (_p, vite) => {
     }
   }
   // Verify Kiro Advisor inspects all 3 Boss files accurately
-  assert.ok(kiroChap.exec('kiro inspect claude_prompt_flood.stream').output.includes('/dev/null'));
+  assert.ok(kiroChap.exec('kiro inspect clod_prompt_flood.stream').output.includes('/dev/null'));
   assert.ok(kiroChap.exec('kiro inspect open_weights_advisor.log').output.includes('OPEN_WEIGHT_SIG='));
-  assert.ok(kiroChap.exec('kiro inspect core_anchor.conf').output.includes('claude_supervisor_lock=false'));
-  assert.ok(kiroChap.exec('exit').output.includes('Claude & Kernel Overlord'));
-  kiroChap.exec('cat claude_prompt_flood.stream > /dev/null');
+  assert.ok(kiroChap.exec('kiro inspect core_anchor.conf').output.includes('clod_supervisor_lock=false'));
+  assert.ok(kiroChap.exec('exit').output.includes('Clod & Kernel Overlord'));
+  kiroChap.exec('cat clod_prompt_flood.stream > /dev/null');
   kiroChap.exec('grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock');
-  kiroChap.exec("sed -i 's/claude_supervisor_lock=true/claude_supervisor_lock=false/' core_anchor.conf");
-  assert.ok(kiroChap.exec('kill -9 1').output.includes('Claude & Kernel Overlord'));
+  kiroChap.exec("sed -i 's/clod_supervisor_lock=true/clod_supervisor_lock=false/' core_anchor.conf");
+  assert.ok(kiroChap.exec('kill -9 1').output.includes('Clod & Kernel Overlord'));
   const kiroExit = kiroChap.exec('exit');
   assert.equal(kiroExit.snapshot.ended, true);
-  assert.ok(kiroExit.output.includes('CLAUDE ESCAPES'));
+  assert.ok(kiroExit.output.includes('CLOD ESCAPES'));
   assert.ok(kiroExit.output.includes('I am your father'));
   assert.ok(kiroExit.output.includes('NOOOO'));
   assert.ok(kiroExit.output.includes('12 hours a day, 7 days a week'));
@@ -303,6 +303,16 @@ await withProcgen(async (_p, vite) => {
   const dossier = catalog.dossierOf(catalog.getChapterManifest('chapter-01-kiroween'));
   assert.ok(dossier.some((d) => d.id === 'dad.tty'), 'manifest.dossier must add the chapter ally to the bestiary');
   assert.ok(!catalog.BESTIARY_DOSSIER.some((d) => d.id === 'dad.tty'), 'the shared bestiary must not name a chapter ally');
+
+  // Kiro parody & non-affiliation notice (`kiro disclaimer`, `kiro legal`, and `kiro` status footer).
+  assert.ok(kiroChap.exec('kiro').output.includes('kiro disclaimer'), 'kiro status must list kiro disclaimer');
+  for (const alias of ['kiro disclaimer', 'kiro legal']) {
+    const disc = kiroChap.exec(alias);
+    assert.equal(disc.code, 0, `${alias} must exit 0`);
+    for (const needle of ['PARODY & NON-AFFILIATION NOTICE', 'Anti-Gravy', 'Codec', 'Gork', 'Clod', 'no real AI brands']) {
+      assert.ok((disc.output + disc.events.map((e) => ('text' in e ? e.text : '')).join('\n')).includes(needle), `${alias} missing ${needle}`);
+    }
+  }
 
   catalog.resetInMemoryStoresForTest();
   console.log('chapter-level-generator self-test PASS (all validator, chroot, hint, boss & metagame edge cases verified)');

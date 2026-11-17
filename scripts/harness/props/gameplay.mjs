@@ -151,7 +151,7 @@ export default async function gameplaySuite(ctx) {
       examples: [[2, 'mistral']],
       name: 'in a Kiro hub, a wrong or unknown core is refused and loads nothing; the wanted core (or a declared alias) satisfies the win rule',
       build: () =>
-        fc.property(fc.constantFrom(...hubs.keys()), fc.constantFrom('qwen', 'mistral', 'deepseek', 'llama', 'gpt-9', 'claude', ''), (h, core) => {
+        fc.property(fc.constantFrom(...hubs.keys()), fc.constantFrom('qwen', 'mistral', 'deepseek', 'llama', 'codec-9', 'clod', ''), (h, core) => {
           const { index, rule, aliases } = hubs[h];
           const accepted = [rule.core, ...(aliases[rule.core] ?? [])];
           const session = world.open(index);
