@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Check the agent team on save",
+      "trigger": "PostFileSave",
+      "description": "Report-only: when an agent table, prompt or hook script is saved, runs the agent gate (files match the table, shell rules, hooks, one owner per file) and its unit tests.",
+      "matcher": "^\\.kiro/agents/|scripts/harness/agents-(build|install|unit)\\.mjs$|scripts/hooks/agent-.*\\.mjs$|scripts/quality/(check-agents|agent-rules)\\.mjs$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/harness/agents-build.mjs --check && node scripts/quality/check-agents.mjs && node scripts/harness/agents-unit.mjs",
+        "timeout": 60
+      }
+    }
+  ]
+}

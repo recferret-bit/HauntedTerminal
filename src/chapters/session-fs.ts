@@ -13,6 +13,13 @@ import { cmdHank } from './session-meta.js';
 import { allWinRulesMet, refreshExitGates, sinkIntoNull, unfinishedObjectives } from './session-rules.js';
 import { riddleRead } from './session-riddle.js';
 
+/** One `ls -l` row: mode, owner, size, name and a kind suffix (`/` dir, `=` socket, `-> target` symlink). */
+function longRow(c: VNode): string {
+  const owner = c.uid === 0 ? 'root' : 'dev ';
+  const suffix = c.kind === 'dir' ? '/' : c.kind === 'socket' ? '=' : c.kind === 'symlink' && c.link ? ` -> ${c.link}` : '';
+  return `${modeString(c)} ${owner} ${String(c.content.length).padStart(5, ' ')} ${c.name}${suffix}`;
+}
+
 export function cmdLs(g: ChapterState, args: string[]): Step {
     const events: KernelEvent[] = [];
     let showAll = false;
@@ -33,7 +40,7 @@ export function cmdLs(g: ChapterState, args: string[]): Step {
       return emptyStep(1, `ls: cannot access '${targetPath}': ${res.error}\n`);
     }
     if (res.node.kind !== 'dir') {
-      return okStep(`${res.node.name}\n`);
+      return okStep(`${longFmt ? longRow(res.node) : res.node.name}\n`);
     }
     if ((res.node.mode & 0o400) === 0) {
       events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.node.id, command: 'ls' });
@@ -58,11 +65,7 @@ export function cmdLs(g: ChapterState, args: string[]): Step {
       .sort((a, b) => a.name.localeCompare(b.name));
 
     if (longFmt) {
-      const lines = entries.map((c) => {
-        const owner = c.uid === 0 ? 'root' : 'dev ';
-        const suffix = c.kind === 'dir' ? '/' : c.kind === 'socket' ? '=' : c.kind === 'symlink' && c.link ? ` -> ${c.link}` : '';
-        return `${modeString(c)} ${owner} ${String(c.content.length).padStart(5, ' ')} ${c.name}${suffix}`;
-      });
+      const lines = entries.map(longRow);
       return okStep(lines.length ? `${lines.join('\n')}\n` : '', events);
     }
 
@@ -399,6 +402,10 @@ export function cmdCp(g: ChapterState, args: string[]): Step {
     if (clean.length < 2) return emptyStep(1, 'usage: cp SRC DEST\n');
     const src = resolve(g.rt.cwd, clean[0]!, true);
     if (!src.node || src.node.kind !== 'file') return emptyStep(1, `cp: cannot stat '${clean[0]}'\n`);
+    if ((src.node.mode & 0o400) === 0) {
+      const events: KernelEvent[] = [{ type: 'PERMISSION_DENIED_RATTLE', targetId: src.node.id, command: 'cp' }];
+      return okStep('', events, 1, `cp: cannot open '${clean[0]}' for reading: Permission denied\n`);
+    }
     return writeRedirect(g, clean[1]!, src.node.content, false, ['cp']);
   }
 
@@ -432,6 +439,12 @@ export function collectPickupNode(g: ChapterState, pickup: Pickup, node: VNode, 
     refreshExitGates(g, events);
     return okStep(`[COLLECTED] ${node.name} (${label})\n`, events);
   }
+
+/** True when `node` is `ancestor` or lies below it: moving `ancestor` there would make the tree a loop. */
+function isWithin(node: VNode, ancestor: VNode): boolean {
+  for (let cur: VNode | null = node; cur; cur = cur.parent) if (cur === ancestor) return true;
+  return false;
+}
 
 export function cmdMv(g: ChapterState, args: string[]): Step {
     const clean = args.filter((a) => !a.startsWith('-'));
@@ -473,6 +486,8 @@ export function cmdMv(g: ChapterState, args: string[]): Step {
     }
 
     const dst = resolve(g.rt.cwd, destRaw, true);
+    const into = dst.node && dst.node.kind === 'dir' ? dst.node : lookup(g.rt.root, splitParentAndName(destRaw.startsWith('/') ? destRaw : `${absPath(g.rt.cwd)}/${destRaw}`).parentPath);
+    if (into && isWithin(into, src.node)) return emptyStep(1, `mv: cannot move '${clean[0]}' into itself\n`);
     if (dst.node && dst.node.kind === 'dir') {
       src.node.parent?.children.delete(src.node.name);
       src.node.parent = dst.node;

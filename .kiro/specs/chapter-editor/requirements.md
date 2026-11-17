@@ -1,6 +1,6 @@
 # Chapter editor: requirements
 
-Status: approved (legacy: written before spec-first.md; open tasks remain)
+Status: done (legacy: written before spec-first.md; closed 2026-11-17, remaining ideas are in the tasks.md backlog)
 
 Capability: a human reviews and tunes any chapter at `/editor` without writing code, on the real game. Contract: `declarative-chapters.md`, rules: `chapter-editor-rules.md`.
 
@@ -22,3 +22,7 @@ Capability: a human reviews and tunes any chapter at `/editor` without writing c
 ## Verification
 
 `node scripts/harness/editor-unit-test.mjs` covers layout/form/schema/model/API positive, negative & corner cases; `node scripts/harness/editor-smoke.mjs` covers 1-12 in headless Chrome (`1600x950` and `1280x820`); `npm run quality` covers typecheck, layers, size, and 0 duplicates.
+
+## Decisions
+
+Tasks 13-17 were never built. **A (user, 2026-11-17):** "close all the open questions" before the Kiroween submission. Applied as: tasks 1-12 are done; 13-17 (level add/delete/reorder, undo/redo and diff, per-field locks, real-inode dialogue preview, keyboard reordering and a screen-reader pass) move to the backlog in `tasks.md`. To keep any of them in scope, move it back and set the status to `approved`.

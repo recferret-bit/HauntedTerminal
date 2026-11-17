@@ -1,0 +1,27 @@
+# Property-based tests: tasks
+
+- [x] 1. Add `fast-check@4.10.2` (exact pin) as a devDependency. Write `scripts/harness/property-tests.mjs`, `props/kit.mjs` and `props/arbitraries.mjs` with `--seed`, `--runs`, `--only` and failure printing; add `quality:props` to `npm run quality`. _Req 1-3_. Gates: `npm run quality`
+- [x] 2. `props/terminal.mjs` on a lab session. _Req 4 (terminal)_. Gates: `property-tests.mjs --only terminal`
+- [x] 3. `props/laptop.mjs`. _Req 4 (laptop)_. Gates: `--only laptop`, `laptop-unit.mjs`
+- [x] 4. `props/comix.mjs`. _Req 4 (comix)_. Gates: `--only comix`, `generate-comix.mjs --verify`
+- [x] 5. `props/chapters.mjs`, including the determinism property with a fake clock. _Req 4 (chapters)_. Gates: `--only chapters`, `generate-chapter.mjs --verify`
+- [x] 6. `props/gameplay.mjs`. _Req 4 (gameplay)_. Gates: `--only gameplay`, `generate-chapter.mjs --verify`, `terminal-lab.mjs --all`
+- [x] 7. Bugs found: fix clear ones with a regression example each and list them here; stop and ask on unclear ones. _Req 6_. Gates: the suite of the fixed feature, `npm run quality:fingerprint`
+  - Fixed: `ls -l <file>` printed only the name in chapter levels (`src/chapters/session-fs.ts`, shared `longRow`).
+  - Fixed: `mv .. j` (any folder into itself) made the file tree a loop; the next path walk crashed with `RangeError` or hung forever (`cmdMv` now refuses, like the classic shell).
+  - Fixed: `checkComixPack` and `simulateComixPack` threw on null or mistyped fields of a hand-edited draft; they now report one error issue.
+  - Fixed: `checkPack` threw inside `validatePack` on deleted or mistyped fields; each check group now reports a crash as one issue, so the field errors still show.
+  - Fixed: `chapters/.../story/comix.spec.json` was not in canonical form (hand-padded numbers such as `0.50`); rewritten through `stringifyChapterJson`, values unchanged.
+  - Asked the user: `sed 's//x/g'` (empty pattern) inserts `x` between every character instead of failing like GNU sed; `cp` copies a file with mode `000` that `cat` cannot read.
+  - Fingerprint: byte-identical to `HEAD` (106 lines).
+- [x] 8. Planted-bug check: one bug per feature makes its property fail and print a counterexample; revert each. Measure the full run time against 60 s. _Req 3, 5_. Gates: `property-tests.mjs`
+  - Caught: terminal (`cp` appends a byte), laptop (closing the focused window keeps focus), comix (`CUE-d` adds), chapters (`ls` order random), gameplay (a pickup that stays on disk after it is collected). A planted hang (the `mv` fix reverted) is killed by the watchdog, exit 137.
+  - Not caught at first: an HP cap removed from energy pickups, because the session snapshot clamps HP again. Kept the pickup-room property anyway.
+  - 27 properties, 1.3 s with the default 100 runs; 2,000 runs per property also pass.
+- [x] 9. Docs: `AGENTS.md`, `CLAUDE.md`, `.kiro/steering/{architecture,tech}.md` (the gate list), `README.md`, `docs/KIRO_USAGE.md` (PBT section), `docs/SUBMISSION.md`. Add `--only <feature>` to each designer agent's gates. _All_. Gates: `npm run quality`, `check-specs.mjs`
+- [x] 10. Review fixes and the new properties (2026-11-17). _Req 8-10_. Gates: `node scripts/harness/property-tests.mjs` (32 properties, 100 and 2,000 runs), `npm run quality`
+  - Terminal properties now run on both shells (7 properties); planted `cp` bug in the classic shell only: caught.
+  - Chapters and comix: new properties that the Check tab reports ten (chapters) and eight (comix) kinds of breakage with a specific error; the "never crashes" properties stay as smoke and are labelled so.
+  - Gameplay: the hub `kiro load` property replaces the weaker one (it found that a declared `coreAliases` core was accepted by `kiro load` but not by the win rule: fixed in `session-rules.ts`); a guard property fails when random play stops reaching kills (>= 10), pickups (>= 10), attacks (>= 5) and level changes (>= 3) over 100 runs; the HP property is renamed to what it can observe, because the snapshot clamps HP.
+  - Sessions get a fresh copy of the pack; the watchdog also covers suite loading and fires after 20 s; the canonical-writer failures say how to fix the file.
+  - Fixed on the way: `sed 's//x/'` (both shells), `cp` of an unreadable file (chapter shell), the three crash wrappers now log the error with its stack.

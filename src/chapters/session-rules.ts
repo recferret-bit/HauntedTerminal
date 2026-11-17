@@ -79,12 +79,15 @@ export function evalWinRule(g: ChapterState, rule: WinRule): boolean {
       }
       case 'kiro_decrypted':
         return g.kiro.isUnlocked(rule.path);
-      case 'kiro_loaded':
-        return (
-          (g.rt.loadedCores.has(rule.core) ||
-            Array.from(g.rt.loadedCores).some((c) => c.includes(rule.core))) &&
-          (g.kiro.activeCore.id === rule.core || g.kiro.activeCore.gguf.includes(rule.core))
+      case 'kiro_loaded': {
+        // `script.kiro.coreAliases` lists other cores that count for this one ("Other names that count as a core").
+        const names = [rule.core, ...(levelScript(g).kiro?.coreAliases?.[rule.core] ?? [])];
+        return names.some(
+          (n) =>
+            (g.rt.loadedCores.has(n) || Array.from(g.rt.loadedCores).some((c) => c.includes(n))) &&
+            (g.kiro.activeCore.id === n || g.kiro.activeCore.gguf.includes(n)),
         );
+      }
       case 'enemy_neutralized': {
         const e = g.rt.world.get(rule.enemyId);
         return !e || e.dead || g.rt.world.petrified(e);

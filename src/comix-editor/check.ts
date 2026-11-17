@@ -405,8 +405,18 @@ function routeSimError(pack: ComixPack, err: string): ComixIssue {
   return { severity: 'error', where: 'comix', tab: 'check', message: err };
 }
 
-/** Comprehensive static validation of a `ComixPack` (schema, cues, assets, panel rects, timeline continuity). */
+/** Comprehensive static validation of a `ComixPack` (schema, cues, assets, panel rects, timeline continuity). Never throws. */
 export function checkComixPack(pack: ComixPack): ComixIssue[] {
+  try {
+    return checkWellFormed(pack);
+  } catch (err) {
+    // A hand-edited draft can break the spec shape the checks walk: report it as one issue instead of crashing the Check tab.
+    console.error('[checkComixPack] threw (a malformed spec, or a bug in the check if the spec looks fine):', err);
+    return [{ severity: 'error', where: 'comix', tab: 'check', message: `malformed comix spec, check stopped: ${err instanceof Error ? err.message : String(err)}` }];
+  }
+}
+
+function checkWellFormed(pack: ComixPack): ComixIssue[] {
   const out: ComixIssue[] = [];
   for (const s of objectShape(pack.manifest, ALL_MANIFEST_FIELDS, 'manifest', ['id', 'skip', 'pages'])) {
     out.push({ severity: s.severity, where: 'comix', tab: manifestTabOf(s.message), message: s.message });

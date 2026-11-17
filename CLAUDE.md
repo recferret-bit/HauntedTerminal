@@ -4,7 +4,7 @@ Instructions for Claude Code working in **Haunted Terminal** (Vite 6, TypeScript
 
 ## Always-On `.kiro` Steering
 
-Claude Code imports the 7 always-on `.kiro/steering/*.md` files directly here, matching Kiro's startup context without copying their prose:
+Claude Code imports the 8 always-on `.kiro/steering/*.md` files directly here, matching Kiro's startup context without copying their prose:
 
 - @.kiro/steering/product.md
 - @.kiro/steering/tech.md
@@ -13,6 +13,7 @@ Claude Code imports the 7 always-on `.kiro/steering/*.md` files directly here, m
 - @.kiro/steering/glossary.md
 - @.kiro/steering/skills-map.md
 - @.kiro/steering/spec-first.md
+- @.kiro/steering/team.md
 
 ## How `.kiro` Principles Govern Work Here
 
@@ -76,7 +77,7 @@ When a prompt may be a feature or big refactor, output the size-test verdict on 
 
 ### Pre-Completion Gates (match `Stop` hooks & `architecture.md`)
 Always run before declaring work done (plus targeted suites for areas touched):
-- `npm run quality` (`tsc --noEmit`, `quality:root`, `quality:size`, `quality:layers`, `quality:declarative`, `quality:specs`, `quality:dup`)
+- `npm run quality` (`tsc --noEmit`, `quality:root`, `quality:size`, `quality:layers`, `quality:declarative`, `quality:specs`, `quality:dup`, `quality:agents`, `quality:props`)
 - `node scripts/quality/check-specs.mjs --report`
 - `node scripts/harness/generate-chapter.mjs --check && node scripts/harness/generate-comix.mjs --check`
 - When chapters, comix, editors, labs, laptop, or assets changed, run the corresponding verifiers:

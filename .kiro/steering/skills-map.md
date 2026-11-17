@@ -49,6 +49,10 @@ The contract behind all four is `.kiro/steering/declarative-comix.md`, `.kiro/st
 
 Rules: specs reference existing asset IDs only (`ModelCatalog`, `RoomKind`, `FxCatalog`). Never put geometry, shader or particle definitions in a level or comix spec.
 
+## Who uses which skills (agent team)
+
+The team agents in `.kiro/agents/` split these skills by owner: `artist` uses every ASSET PCG skill; `chapters-designer` the chapter LEVEL GEN chain; `comix-designer` the comix LEVEL GEN chain; `lead-dev` the WORKFLOW skill; `qa` the validators and auditors. Kiro CLI 3.3 shows every workspace skill to every agent, so this split is each agent's focus, not a lock. See `docs/AGENTS_CREW.md`.
+
 ## Boundary
 
 - Needs a new model, room, texture, effect or animation: ASSET PCG, then return to the level.

@@ -9,5 +9,10 @@
 - [x] 7. Exhaustive variant tables typed by the spec unions; list-completeness types in `validate-pack.ts`. _Req 12_
 - [x] 8. Static checks shared by editor and CLI (`checkPack`); `generate-chapter.mjs --validate/--check/--verify`. _Req 13, 14_
 - [x] 9. Skill self-tests follow the current content and assert `dossierOf`. _Req 9_
-- [ ] 10. Move the remaining shared-but-narrative strings (`help` text mentioning `hank.tty`, grimoire wording) behind manifest fields if a second chapter needs them.
 - [x] 11. Make the intro/outro cinematics (`src/cinematic/`) data-driven; completed via connected `comix/<slug>/` specs and generic engine (`.kiro/specs/declarative-comix-runtime/`).
+
+## Backlog (post-Kiroween, not part of this spec)
+
+Moved out of the task list on 2026-11-17. The item is conditional on a second chapter, and Kiroween ships one.
+
+- 10. Move the remaining shared-but-narrative strings (`help` text mentioning `hank.tty`, grimoire wording) behind manifest fields if a second chapter needs them.
