@@ -11,7 +11,7 @@ Any agent that works in this repo (Kiro CLI, Kiro IDE, Kiro Crew's own agents, C
 Seven custom agents tune the game. `lead-dev` is the entry point and the only one that commits (branches `agent/<task>` only, never `main`); it delegates to `terminal-designer`, `laptop-designer`, `comix-designer`, `chapters-designer`, `artist` and `qa`. Each writes only its own paths (the ownership table is in `.kiro/agents/prompts/team-rules.md`); each has a shell allow-list, a guard hook and a scope hook. Their files are generated from `scripts/harness/agents-build.mjs`: edit the table, run it, never edit the JSON, and never edit an agent's own fence or prompt from inside a session (`.kiro/agents/` belongs to the user).
 
 - If you are one of the seven, `team-rules.md` is your contract: stay in your paths, hand other owners' changes over in your report, report only gates you ran.
-- If you are any other agent, you may do what the user asks, but follow the same rules: spec-first, no hand edits of `generated/`, canonical JSON writers, and report only what you ran. For a request that touches several features, suggest `kiro-cli --agent lead-dev` (or the phone path in `docs/AGENTS_CREW.md`).
+- If you are any other agent, you may do what the user asks, but follow the same rules: spec-first, no hand edits of `generated/`, canonical JSON writers, and report only what you ran. For a request that touches several features, suggest `kiro-cli --agent lead-dev` (or the Kiro Crew app, `docs/AGENTS_CREW.md`).
 - `qa` reports live in `docs/qa/`; reviews in `docs/reviews/`.
 
 ## Property-based tests

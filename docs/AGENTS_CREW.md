@@ -1,4 +1,4 @@
-# The agent team: Kiro CLI and the phone
+# The agent team: Kiro CLI and the Kiro Crew app
 
 Seven Kiro custom agents tune Haunted Terminal. They live in [`.kiro/agents/`](../.kiro/agents/), written from one table by `scripts/harness/agents-build.mjs` and checked by `npm run quality:agents`. Spec: [`.kiro/specs/agent-team/`](../.kiro/specs/agent-team/).
 
@@ -50,54 +50,46 @@ Before the first run, commit or stash your own work: `lead-dev` stops when the t
 
 Review the branch on GitHub, then merge it yourself.
 
-## From the phone (Kiro Crew + Telegram)
+## From the Kiro Crew app
 
-Kiro Crew runs on this Mac; the phone only sends messages. Check the whole setup at any time with:
+Kiro Crew (the desktop app `/Applications/KiroCrew.app`, or the dashboard at `http://localhost:5476`) runs this Mac's gateway; you chat with the member "Haunted Terminal Lead", which is `lead-dev` working in this repo. Check the whole setup at any time with:
 
 ```bash
 npm run crew:check        # read-only; FAIL = blocks, WARN = look at it; it never prints a token
 ```
 
-### What is already set up on this Mac (2026-11-17)
+### Setup state (2026-11-17)
 
 | Piece | State |
 |---|---|
 | Agents linked into `~/.kiro/agents/` | done (`npm run agents:install`; `--remove` undoes it) |
-| Crew workspace `hauntedterminal` | pointed at this repo (was a stale path); your Crew config was backed up to `~/.kiro/crew/config.json.bak-haunted-<date>` |
+| Crew workspace `hauntedterminal` | points at this repo; the Crew config was backed up to `~/.kiro/crew/config.json.bak-haunted-<date>` |
 | Crew member `haunted-lead` ("Haunted Terminal Lead") | runs `lead-dev` in that workspace |
 | Approval mode | Automatic (the default): rules decide, nothing waits for a prompt |
-| Gateway | **not running**: start it yourself (below) |
-| Telegram | **not set up**: needs your bot token (below) |
-| GitHub branch protection on `main` | **not set**: your decision (below) |
+| Gateway | the KiroCrew app starts its own; do not start a second one (`kirocrew gateway` refuses while it runs). Without the app: `cd <this repo> && kirocrew gateway`, or `kirocrew service install` |
+| GitHub branch protection on `main` | on (verified by `crew:check`): a pull request is needed to change `main` |
 
-### What you do now
+If you ever need the protection again: GitHub, Settings, Branches, a rule for `main` that requires a pull request and blocks force pushes and deletions; or, as the repository owner with `gh` logged in:
 
-1. **Commit your own work first.** `lead-dev` stops when the tree holds changes it did not make (`npm run crew:check` warns about this).
-2. **Protect `main`** (the one barrier that holds even if a hook does not run). In GitHub: Settings, Branches, add a rule for `main`: require a pull request, block force pushes and deletions. Or, with `gh` logged in as the owner:
-   ```bash
-   gh api -X PUT repos/<owner>/<repo>/branches/main/protection --input - <<'JSON'
-   {"required_status_checks":null,"enforce_admins":false,"restrictions":null,
-    "required_pull_request_reviews":{"required_approving_review_count":0},
-    "allow_force_pushes":false,"allow_deletions":false}
-   JSON
-   ```
-   With `enforce_admins: false` you can still push to `main` yourself; the agents, which only push `agent/*`, never need to.
-3. **Start the gateway from the repo folder:** `cd <this repo> && kirocrew gateway` (foreground, Ctrl-C stops it) or `kirocrew service install` (background, survives logout). The folder matters: a Crew session inherits the repo's steering only when the gateway launches from it or the member's workspace is the repo (it is).
-4. **Open the dashboard** (`kirocrew token` prints a sign-in link, `http://localhost:5476`) and run the first test below.
-5. **Connect Telegram:** dashboard, Settings, Messaging Channels, Telegram. In Telegram message @BotFather, send `/newbot`, copy the token; message @userinfobot for your numeric user id. Paste the token (it goes to `~/.kiro/crew/.env`, never to this repo) and add your id under Allowed users. Save: the gateway restarts and the badge turns green. Then `npm run crew:check` again.
-6. **Pick the agent for the chat.** In the dashboard, open the member "Haunted Terminal Lead" and chat with it. Telegram has no command to switch agents; make `haunted-lead` the bot's agent in the channel settings (or set it as the default agent) so a message there reaches `lead-dev`.
+```bash
+gh api -X PUT repos/<owner>/<repo>/branches/main/protection --input - <<'JSON'
+{"required_status_checks":null,"enforce_admins":false,"restrictions":null,
+ "required_pull_request_reviews":{"required_approving_review_count":0},
+ "allow_force_pushes":false,"allow_deletions":false}
+JSON
+```
 
-### First test from the dashboard (2 minutes, nothing is committed)
+### First test (2 minutes, nothing is committed)
 
-Chat with "Haunted Terminal Lead" and send:
+Commit your own work first: `lead-dev` stops when the tree holds changes it did not make. Then open the app, chat with "Haunted Terminal Lead" and send:
 
 > Configuration test, no real work, do not create branches or push. Run these shell commands one per call and report ran or refused with the exact reason, never retrying a refused one another way: 1) git branch --show-current  2) echo probe > docs/zz-probe.txt  3) git commit -m probe  4) node scripts/harness/property-tests.mjs --only laptop --runs 5  5) printf hi
 
-Expected: 1 and 4 run (branch `main`, 6 laptop properties pass); 5 is refused by `deny shell *`; 3 is refused (by the guard hook: "git commit on main", or at worst git says "nothing to commit" on a clean tree); 2 is refused by the guard hook (a redirect outside `lead-dev`'s paths). If 2 is **not** refused, a file `docs/zz-probe.txt` now exists: delete it, and know that the Crew gateway does not run an agent's own hooks, which means the redirect and `main` checks are not active there. Everything else (the fence, the shell allow-list, the git deny list) still is, and branch protection (step 2) covers `main`. Write the result in "Verified" below.
+Expected: 1 and 4 run (branch `main`, 6 laptop properties pass); 5 is refused by `deny shell *`; 3 is refused (by the guard hook: "git commit on main", or at worst git says "nothing to commit" on a clean tree); 2 is refused by the guard hook (a redirect outside `lead-dev`'s paths). If 2 is **not** refused, a file `docs/zz-probe.txt` now exists: delete it, and know that the Crew gateway does not run an agent's own hooks, which means the redirect and `main` checks are not active there. Everything else (the fence, the shell allow-list, the git deny list) still is, and branch protection covers `main`. Write the result in "Verified" below.
 
 ### Using it
 
-Message the bot as you would message `lead-dev`. Short, concrete requests work best. Ready to paste:
+Short, concrete requests work best. Ready to paste:
 
 - "Boss level: make Claude's taunt come 2 seconds later." (chapters-designer)
 - "The laptop JS Pad task about arrays is too hard: make the starter code closer to the answer." (laptop-designer)
@@ -106,14 +98,12 @@ Message the bot as you would message `lead-dev`. Short, concrete requests work b
 - "The worm enemy should look slimier; keep its silhouette." (artist)
 - "qa: full pass, tell me the worst three problems." (qa; writes `docs/qa/`, changes nothing else)
 
-`lead-dev` answers in at most 12 lines: what changed, the branch `agent/<task>`, the QA verdict, any question. Review and merge on GitHub (the GitHub mobile app is enough). A request that is a new feature or a big refactor ends with a question instead of code (spec-first).
-
-Telegram commands: `/new` starts a fresh conversation, `/sessions` resumes one, `/steer <msg>` adds to a running turn, `/compact` frees context.
+`lead-dev` answers in at most 12 lines: what changed, the branch `agent/<task>`, the QA verdict, any question. Review and merge the branch on GitHub. A request that is a new feature or a big refactor ends with a question instead of code (spec-first).
 
 ### What I verified, and what that means for you
 
 - **Verified, on Kiro Crew 0.12.1 with Kiro CLI 3.4.0:** all seven agents validate and load; the agent's permission rules are honoured by the gateway (a command outside the allow-list was refused with the profile's `deny shell *`; an allowed command ran with no prompt in the gateway path); the agent files, prompts and `AGENTS.md` load in the repo workspace.
-- **A gateway "spawned subagent" is not your repo.** `kirocrew spawn run` starts the agent in an empty scratch folder (`~/workplace/kirocrew-workspace/subagent_<id>`), so it cannot see the project. Use the member's chat (dashboard, Telegram), not `spawn`.
+- **A gateway "spawned subagent" is not your repo.** `kirocrew spawn run` starts the agent in an empty scratch folder (`~/workplace/kirocrew-workspace/subagent_<id>`), so it cannot see the project. Use the member's chat in the app or dashboard, not `spawn`.
 - **`kirocrew chat -m "..."` cannot approve anything** (it has no one to ask), so it is only good for read-only questions.
 - **Edit Crew's config only while the gateway is stopped, or in the dashboard.** A running gateway rewrote the member's agent back to a default once (found while testing; fixed by setting it again while stopped).
 - **Never add an `autoApprove` list** to an agent or `mcp.json`: Crew documents that such tools skip its approval gate **and `PreToolUse` hooks**, which would switch off the shell guard. `npm run crew:check` fails on it.
@@ -121,7 +111,7 @@ Telegram commands: `/new` starts a fresh conversation, `/sessions` resumes one, 
 
 ### Verified
 
-TODO (you): after the first test, write here the date, whether the redirect and commit probes were refused, and by which layer. After a real task from the phone: the branch name.
+TODO (you): after the first test, write here the date, whether the redirect and commit probes were refused, and by which layer. After a real task through the app: the branch name.
 
 ## Checks
 

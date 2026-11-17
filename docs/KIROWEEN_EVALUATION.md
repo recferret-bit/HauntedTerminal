@@ -4,7 +4,7 @@ Written November 17, 2026 against the [official rules](https://kiroween.devpost.
 
 ## Verdict
 
-Strong entry, with Technological Implementation (how deeply Kiro is used) as its best criterion. What can still lose points is not the engineering. It is three things only you can supply: a public URL, a demo video, and proof that the phone path works.
+Strong entry, with Technological Implementation (how deeply Kiro is used) as its best criterion. What can still lose points is not the engineering. It is three things only you can supply: a public URL, a demo video, and proof that the Kiro Crew app path works.
 
 | Criterion | Estimate | One line |
 |---|---|---|
@@ -27,7 +27,7 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 | **Custom agents** | 7 agents, generated from one table, with an `fs_write` fence, a shell allow-list, a guard hook, a scope hook, one owner per file; verified with real agents under auto-approve | Strong, with a stated limit: a guard against mistakes, not a sandbox |
 | **Property-based testing** | 32 fast-check properties in `npm run quality`; found 6 real bugs; planted-bug checks per feature; guards against vacuous properties | Strong. The write-up question "did PBT catch issues unit tests missed?" has a concrete answer |
 | **Sub-agents** | `lead-dev` delegates to six named agents; `semantic_reviewer` reviewed the work independently and found blockers | Good |
-| **Kiro CLI, Crew** | CLI path tested end to end; Crew prepared (agents installed, member on `lead-dev` in the repo workspace, `npm run crew:check`); the gateway honours the agents' rules; a Telegram run is not done | Partial: needs the two-minute dashboard test and one Telegram task |
+| **Kiro CLI, Crew** | CLI path tested end to end; Crew prepared (agents installed, member on `lead-dev` in the repo workspace, `npm run crew:check`); the gateway honours the agents' rules; a real chat with the member is not done | Partial: needs the two-minute first test and one real task in the app |
 | **MCP** | `.kiro/settings/mcp.json` is empty by choice | Not used. The write-up says why (offline scripts and skills were enough) |
 | **Powers** | None | Not used. Do not fake it |
 | **Kiro IDE / Web** | Hooks and steering are written for the IDE; nothing shows it was used | Add two honest paragraphs on what each surface was used for |
@@ -41,7 +41,7 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 ## Gaps, in the order they cost points
 
 1. **No public URL and no video** (Presentation, and the mandatory submission items). Deploy `dist/` (Netlify reads `public/_redirects`); record the demo (plan in `SUBMISSION.md`). Judges "are not required to test", so the video is where most of them will meet the game.
-2. **The phone path is prepared, not proven.** Everything that can be done without your credentials is done (`npm run crew:check`); the dashboard first test and one Telegram task ending in a pushed `agent/<task>` branch make the claim true. Until then say "built and documented".
+2. **The Kiro Crew path is prepared, not proven.** Setup is checked by `npm run crew:check`; the first test and one real task in the app ending in a pushed `agent/<task>` branch make the claim true. Until then say "built and documented".
 3. **No pushed agent branch exists.** Judges looking at the Git history see 38 commits, and none made by the agents. Commit this setup yourself, then run one real task through `lead-dev` so the history shows an `agent/*` branch with a QA report.
 4. **Presentation of the Kiro story.** The write-up (`KIRO_USAGE.md`) still needs your own part: which Kiro surfaces you used for what, and one before and after story.
 5. **Impact claim.** The rules ask "would someone actually use this?". Frame it as learning by play: the unix commands, an HTML/CSS fix, a JS bug, a Dockerfile and a Compose file are real, and a tutorial level teaches them. Avoid claiming more.
@@ -60,6 +60,6 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 
 1. Commit and push the setup; enable branch protection on `main`.
 2. Deploy; set the About website, description and topics (licence shows as MIT).
-3. Run one real task through `lead-dev`; run one from Telegram if you can; update `docs/AGENTS_CREW.md` with what happened.
+3. Run the first test and one real task through `lead-dev` in the Kiro Crew app; update `docs/AGENTS_CREW.md` with what happened.
 4. Record the video; fill `KIRO_USAGE.md`'s personal part.
 5. Publish the blog post and the social post; fill the Devpost form from `SUBMISSION.md`.

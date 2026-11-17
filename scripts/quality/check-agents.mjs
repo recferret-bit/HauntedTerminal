@@ -39,7 +39,7 @@ for (const { name } of agents) if (!TEAM_NAMES.includes(name)) problems.push(`.k
 for (const { file, name, agent } of agents) {
   // 2. Shape and values the validator does not check.
   if (agent.name !== name) problems.push(`${file}: name "${agent.name}" must equal the file name`);
-  if (agent.model !== 'auto') problems.push(`${file}: model must be "auto" (a pinned model can be unavailable on the phone)`);
+  if (agent.model !== 'auto') problems.push(`${file}: model must be "auto" (a pinned model can be unavailable in an unattended Crew session)`);
   if (!Array.isArray(agent.allowedTools)) problems.push(`${file}: needs "allowedTools": [] (Kiro CLI 3.3 drops a profile with permissions and no allowedTools)`);
   if (typeof agent.description !== 'string' || agent.description.length < 40) problems.push(`${file}: description too short for routing`);
   const prompt = String(agent.prompt ?? '');

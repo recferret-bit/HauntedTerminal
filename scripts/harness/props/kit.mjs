@@ -67,7 +67,7 @@ export function quietly(fn) {
 }
 
 /**
- * A hang (an endless loop in game code) would block this thread forever, and a phone session would never hear back.
+ * A hang (an endless loop in game code) would block this thread forever, and an unattended Crew session would never hear back.
  * The watchdog is a worker thread: `arm(name)` before each property; if one runs longer than `limitMs`, it prints the
  * property's name and kills the process (exit by SIGKILL, so the gate fails).
  */

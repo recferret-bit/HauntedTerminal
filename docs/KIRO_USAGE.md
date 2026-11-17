@@ -21,7 +21,7 @@ The game is tuned by a team of seven Kiro CLI custom agents, one per major featu
 
 Ownership is enforced, not only described. Each agent has a `deny` rule on every path outside its own; a `Stop` hook reports files a shell command changed outside them; and `npm run quality:agents` fails unless every source file has exactly one owner. All seven files are generated from one table (`scripts/harness/agents-build.mjs`), so they cannot drift.
 
-The same team runs from a phone: a Kiro Crew gateway on the Mac, the Telegram channel, and `lead-dev` as the member's agent.
+The same team runs from the Kiro Crew app: a Crew member bound to this repo's workspace runs `lead-dev`, and `npm run crew:check` verifies the setup.
 
 What we learned from Kiro CLI 3.3.0 while building it (each one is checked by the gate now):
 

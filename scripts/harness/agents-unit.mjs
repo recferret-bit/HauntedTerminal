@@ -137,8 +137,8 @@ await test('installer: links agents and prompts, is idempotent, refuses to overw
 await test('crew doctor: a ready machine passes; each missing piece is a named FAIL with a fix; secrets are never printed', () => {
   const links = Object.fromEntries(TEAM_NAMES.map((n) => [n, 'ours']));
   const ready = {
-    repo: '/r', kiroCli: '3.4.0', kirocrew: '0.12.1', agentLinks: links, promptsLink: 'ours', agentsValid: [...TEAM_NAMES], telegramToken: true, autoApproveListed: false, gateway: true, branch: 'main', dirty: 0, remote: 'git@github.com:a/b.git', protection: 'yes',
-    crewConfig: { workspaces: { w: { dir: '/r' } }, agents: { m: { kiro_agent: 'lead-dev', workspace: 'w' } }, agent: { approval_mode: 'auto' }, telegram: { enabled: true, allowed_user_ids: [1] } },
+    repo: '/r', kiroCli: '3.4.0', kirocrew: '0.12.1', agentLinks: links, promptsLink: 'ours', agentsValid: [...TEAM_NAMES], autoApproveListed: false, gateway: true, branch: 'main', dirty: 0, remote: 'git@github.com:a/b.git', protection: 'yes',
+    crewConfig: { workspaces: { w: { dir: '/r' } }, agents: { m: { kiro_agent: 'lead-dev', workspace: 'w' } }, agent: { approval_mode: 'auto' } },
   };
   assert.deepEqual(assess(ready).filter((r) => r.level !== 'ok'), []);
   const bad = (patch, what) => {
@@ -153,9 +153,9 @@ await test('crew doctor: a ready machine passes; each missing piece is a named F
   bad({ autoApproveListed: true }, /autoApprove/);
   bad({ remote: null }, /origin/);
   bad({ protection: 'no' }, /not protected/);
-  const warns = assess({ ...ready, gateway: false, dirty: 3, protection: 'unknown', telegramToken: false }).filter((x) => x.level === 'warn').map((x) => x.what);
-  assert.equal(warns.length, 4);
-  assert.ok(!JSON.stringify(assess({ ...ready, telegramToken: 'SECRET-123' })).includes('SECRET-123'));
+  const warns = assess({ ...ready, gateway: false, dirty: 3, protection: 'unknown' }).filter((x) => x.level === 'warn').map((x) => x.what);
+  assert.equal(warns.length, 3);
+  assert.ok(!JSON.stringify(assess({ ...ready, remote: 'git@github.com:a/SECRET-123.git'.replace('SECRET-123', 'b') })).includes('TOKEN'), 'no token is ever read, so none can be printed');
 });
 
 console.log(`\nagents unit: ${count()} tests passed`);

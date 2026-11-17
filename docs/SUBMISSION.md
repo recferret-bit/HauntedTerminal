@@ -34,8 +34,8 @@ Source: [official rules](https://kiroween.devpost.com/rules), read November 17, 
 - [ ] Decide the legal name in `LICENSE` ("Andrei Sokolov") against git's "Andrey Sokolov", and make both match.
 - [ ] Trademark decision: the story names AGY, Codex, Grok and Claude. Keep them or rename them. Either way, show no logos in the video.
 - [ ] Fill the personal parts of `docs/KIRO_USAGE.md` (surfaces, one before/after story).
-- [ ] `npm run agents:install`, fix the Crew workspace path, pick `lead-dev` for a Crew member, connect Telegram (`docs/AGENTS_CREW.md`, one-time setup).
-- [ ] Run one real task through `lead-dev` (CLI) and one from the phone; note both in `docs/AGENTS_CREW.md` and `docs/KIRO_USAGE.md`.
+- [x] Crew prepared: agents linked, workspace fixed, member `haunted-lead` on `lead-dev`, branch protection on (`npm run crew:check`).
+- [ ] Run the first test and one real task through `lead-dev` in the Kiro Crew app, and one through the CLI; note them in `docs/AGENTS_CREW.md` and `docs/KIRO_USAGE.md`.
 - [ ] Devpost form: category (Costume Contest), bonus prizes, Kiro credits request by Dec 1 12:00 PM PT.
 - [ ] Optional: blog post and `#KiroweenHackathon26` post, add their URLs.
 - [ ] Run before submitting: `node scripts/harness/editor-smoke.mjs`, `comix-editor-smoke.mjs`, `terminal-lab-smoke.mjs`, `laptop-lab-smoke.mjs`, `model-geometry-validator --all --strict`, `npm run quality:fingerprint`.
@@ -65,7 +65,7 @@ The rules ask for evidence of custom agents, hooks, specs, steering, MCP, proper
 
 Ranked by value for the Technological Implementation score against cost.
 
-1. **Built: custom agents.** Seven agents in `.kiro/agents/` (a lead, four feature designers, an artist, QA), one owner per file, tested on the CLI against the real tool. The phone path and a pushed `agent/*` branch are not yet run: say "built and documented" until they are. See `docs/AGENTS_CREW.md`.
+1. **Built: custom agents.** Seven agents in `.kiro/agents/` (a lead, four feature designers, an artist, QA), one owner per file, tested on the CLI against the real tool. The Kiro Crew app run and a pushed `agent/*` branch are not yet done: say "built and documented" until they are. See `docs/AGENTS_CREW.md`.
 2. **Done: property-based tests.** 32 fast-check properties across five features, inside `npm run quality`; six real bugs found and fixed. See `docs/PROPERTY_TESTS.md`.
 3. **A small MCP server exposing the gates (medium cost).** Tools such as `run_quality`, `verify_chapter`, `run_terminal_lab`, `list_specs`, returning structured results. Trade-off: it reverses today's "keep mcp.json empty" rule and adds `@modelcontextprotocol/sdk`. Cheaper alternative: wire an existing Chrome DevTools MCP for the visual QA you now do through a hand-written CDP client.
 4. **Powers (skip).** None fits the project. Faking one costs credibility.

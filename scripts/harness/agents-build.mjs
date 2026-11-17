@@ -29,7 +29,7 @@ const GATE_SHELL = ['npm run quality', 'npm run quality:*', 'npm run build', 'np
 const GIT_WRITES = ['git switch -c agent/*', 'git switch agent/*', 'git add -- *', 'git commit -m *', 'git push -u origin agent/*', 'git push origin agent/*'];
 /** Denied for everyone even if a future edit adds a matching allow: they bypass the write fence or rewrite history. */
 const DENY_WORDS = ['*--output*', 'git reset*', 'git checkout*', 'git stash*', 'git clean*', 'git branch -D*', 'rm *', 'sudo *', 'npm install*', 'npm i *', 'npm uninstall*', 'npm publish*'];
-/** Files that hold secrets: the Crew gateway keeps the Telegram bot token in ~/.kiro/crew/.env. */
+/** Files that hold secrets: the Crew gateway keeps its channel tokens in ~/.kiro/crew/.env. */
 const SECRET_READS = ['**/.env', '**/.env.*', '**/*.pem', '**/*.key', '~/.kiro/crew/.env', '~/.kiro/crew/auth*', '~/.ssh/**', '~/.aws/**'];
 const SECRET_SHELL = ['*.env*', '*.pem*', '*/.ssh/*', '*/.aws/*', '*.kiro/crew/.env*'];
 /** Compiled output: the compilers write it, no agent edits it by hand. */
@@ -37,7 +37,7 @@ const GENERATED = ['src/chapters/generated/**', 'src/cinematic/generated/**', 'c
 
 const TEAM = {
   'lead-dev': {
-    description: 'Lead game developer and orchestrator of the Haunted Terminal team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here, also from the phone.',
+    description: 'Lead game developer and orchestrator of the Haunted Terminal team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here; also the member that Kiro Crew runs.',
     writes: ['.kiro/specs/**', '.kiro/steering/**', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'docs/*.md', 'docs/media/**', 'docs/reviews/**', 'scripts/harness/property-tests.mjs', 'scripts/harness/props/{kit,arbitraries}.mjs', 'src/contracts/**', 'src/editor-core/**', 'src/play/**', 'src/pages/**', 'src/hub/**', 'src/styles/**', 'src/sandbox/**', 'src/main.ts', 'src/style.css', 'src/game/{session,play,runtime,types,floors,sfx,selfcheck,view,view-layouts}.ts'],
     resources: [steer('skills-map'), 'file://.kiro/specs/agent-team/requirements.md', 'file://.kiro/specs/agent-team/design.md'],
     skills: ['feature-spec-grill'],

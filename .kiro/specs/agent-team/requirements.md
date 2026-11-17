@@ -2,7 +2,7 @@
 
 Status: approved (requirements, design and tasks approved by the user 2026-11-17)
 
-Capability: a team of committed Kiro custom agents that tune each major part of Haunted Terminal. Four gameplay designers own one feature each (terminal, laptop, comix, chapters). A lead game developer orchestrates them. An artist creates and updates assets through the ASSET PCG skills. A QA agent plays the game and touches every part of it. The user runs them from Kiro CLI on the Mac and from the phone through Kiro Crew.
+Capability: a team of committed Kiro custom agents that tune each major part of Haunted Terminal. Four gameplay designers own one feature each (terminal, laptop, comix, chapters). A lead game developer orchestrates them. An artist creates and updates assets through the ASSET PCG skills. A QA agent plays the game and touches every part of it. The user runs them from Kiro CLI and from the Kiro Crew app.
 
 ## Requirements
 
@@ -41,11 +41,11 @@ Agents: `lead-dev`, `terminal-designer`, `laptop-designer`, `comix-designer`, `c
 13. WHEN `qa` runs, THE SYSTEM SHALL play the game in real Chrome (`play-browser.mjs`), run the suites of the affected features (or of all features when asked for a full pass), look at the screenshots it produces, and write a report.
 14. THE SYSTEM SHALL write the QA report to `docs/qa/<YYYY-MM-DD>-<scope>.md`, with screenshots of failures in `docs/qa/media/`, listing each check run, its result, and each finding with the owning agent.
 
-### Commits and the phone
+### Commits and Kiro Crew
 
 15. WHEN a task is done and QA passes, `lead-dev` SHALL commit it on a branch `agent/<task>` and push that branch.
 16. IF the current branch is `main`, or a push would need force, THEN `lead-dev` SHALL NOT commit or push there.
-17. THE SYSTEM SHALL document in `docs/AGENTS_CREW.md` how to run the team from Kiro CLI and from the phone through a Kiro Crew gateway started in the repo with the Telegram channel, with `lead-dev` as the entry point.
+17. THE SYSTEM SHALL document in `docs/AGENTS_CREW.md` how to run the team from Kiro CLI and from the Kiro Crew app through a Crew member bound to the repo's workspace, with `lead-dev` as the entry point.
 
 ### Added after the independent review (2026-11-17; see Decisions Q11)
 
@@ -56,13 +56,13 @@ Agents: `lead-dev`, `terminal-designer`, `laptop-designer`, `comix-designer`, `c
 22. THE SYSTEM SHALL run, inside `npm run quality:agents`, a rule self-test (commands each agent must be refused or allowed, evaluated the way Kiro matches rules) and `scripts/harness/agents-unit.mjs` (guard, scope hook, installer).
 23. THE SYSTEM SHALL give every file an owner or classify it as infrastructure that only the user changes (`.kiro/agents/`, `.kiro/hooks/`, `.kiro/skills/`, `scripts/` outside the property suites, `pages/`, `package.json`); a new top-level folder is flagged until classified.
 
-24. THE SYSTEM SHALL provide a read-only readiness check, `npm run crew:check`, that reports FAIL for each missing piece of the Crew setup (agents linked, valid, a Crew workspace on this repo, a member running `lead-dev` there, no `autoApprove` list, an `origin` remote, branch protection) and WARN for the rest (Telegram, gateway, dirty tree), prints a fix for each, and never prints a secret.
+24. THE SYSTEM SHALL provide a read-only readiness check, `npm run crew:check`, that reports FAIL for each missing piece of the Crew setup (agents linked, valid, a Crew workspace on this repo, a member running `lead-dev` there, no `autoApprove` list, an `origin` remote, branch protection) and WARN for the rest (gateway, dirty tree), prints a fix for each, and never prints a secret.
 
 ## Out of scope
 
 - New game features. Agents follow `spec-first.md` like any other session.
 - Changes to the Kiro Crew built-in agents in `~/.kiro/agents/kirocrew-*`.
-- Crew and Telegram account setup (bot token, `allowed_user_ids`): user config in `~/.kiro/crew/`, documented, not committed.
+- Messaging channels (Telegram and the others) and any phone access: dropped by the user (Q14).
 - A fifth designer for gameplay elements (Q7).
 
 ## Decisions
@@ -96,6 +96,9 @@ Agents: `lead-dev`, `terminal-designer`, `laptop-designer`, `comix-designer`, `c
 - **Q13:** Prepare everything to use Kiro Crew.
   **A (user, 2026-11-17):** "Commit this, then prepare everything to make it possible to use Kiro Crew in the best way." Applied as: the work is committed on `main` in four commits (not pushed); the agents are linked into `~/.kiro/agents`; the stale Crew workspace path is fixed and the member `haunted-lead` runs `lead-dev` in it (Crew config backed up first); a gateway was started only for tests and stopped; `npm run crew:check` and a first-test script are in `docs/AGENTS_CREW.md`. Left to the user because they need credentials or change remote settings: the Telegram bot token, starting the gateway, and GitHub branch protection.
 
+- **Q14:** Telegram.
+  **A (user, 2026-11-17):** "Skip Telegram, remove it everywhere." Applied as: no messaging channel and no phone access are part of this spec any more. Supersedes the phone parts of Q1-Q4 above (kept as history): requirement 17 and task 9 now name the Kiro Crew app; the doctor no longer checks Telegram; docs, prompts and steering no longer mention it. The reviewed document `docs/reviews/2026-11-17-agents-and-property-tests.md` keeps its original wording as a record.
+
 ## Open questions
 
 
@@ -105,4 +108,4 @@ Agents: `lead-dev`, `terminal-designer`, `laptop-designer`, `comix-designer`, `c
 - Req 4-5: `scripts/harness/agents-unit.mjs` runs the installer twice (idempotent), with a clashing file, and with `--remove`, against a temporary `HOME`.
 - Req 6-7: the check script compares each agent's write rules with the ownership table, so no path has two owners and every source folder has one; one manual denied write per agent.
 - Req 8-16: one real tuning task through `lead-dev` from the CLI, ending in a QA report and an `agent/<task>` branch.
-- Req 17: one task sent from the phone through Telegram (manual, by the user).
+- Req 17: the first test and one real task through the Kiro Crew app (manual, by the user), recorded in `docs/AGENTS_CREW.md`.

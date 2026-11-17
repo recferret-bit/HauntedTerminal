@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Is this Mac ready to run the Haunted Terminal agent team through Kiro Crew (dashboard, Telegram)?
+// Is this Mac ready to run the Haunted Terminal agent team through Kiro Crew (desktop app, dashboard)?
 //   npm run crew:check            (node scripts/harness/crew-doctor.mjs)
 // Read-only: it reads files, runs `kiro-cli`, `kirocrew`, `git` and (if installed) `gh`, and changes nothing. It never prints a token.
 // Exit 1 when something blocks the setup, 0 otherwise (warnings are things to look at). Spec: .kiro/specs/agent-team/ (req 17, 24).
@@ -30,10 +30,7 @@ export function assess(f) {
     if (bound) add('ok', `Crew member "${bound[0]}" runs lead-dev in that workspace`);
     else if (members.length) add('fail', 'a Crew member runs lead-dev, but not in the repo workspace', `kirocrew agent update ${members[0][0]} --workspace ${ws?.[0] ?? '<workspace>'}`);
     else add('fail', 'no Crew member runs lead-dev', 'kirocrew agent create --name haunted-lead --workspace <workspace>; kirocrew agent update haunted-lead --kiro-agent lead-dev');
-    f.crewConfig.agent?.approval_mode === 'auto' ? add('ok', 'Crew approval mode is Automatic (rules decide, nothing waits for a prompt)') : add('warn', `Crew approval mode is "${f.crewConfig.agent?.approval_mode}": a phone cannot answer prompts, so work would stall`, 'Settings -> Security -> Automatic');
-    const tg = f.crewConfig.telegram ?? {};
-    if (tg.enabled && f.telegramToken && (tg.allowed_user_ids ?? []).length) add('ok', 'Telegram is enabled with a bot token and an allowed user');
-    else add('warn', `Telegram is not ready (${[!tg.enabled && 'not enabled', !f.telegramToken && 'no bot token in ~/.kiro/crew/.env', !(tg.allowed_user_ids ?? []).length && 'no allowed user id'].filter(Boolean).join(', ')})`, 'dashboard: Settings -> Messaging Channels -> Telegram (docs/AGENTS_CREW.md step 4)');
+    f.crewConfig.agent?.approval_mode === 'auto' ? add('ok', 'Crew approval mode is Automatic (rules decide, nothing waits for a prompt)') : add('warn', `Crew approval mode is "${f.crewConfig.agent?.approval_mode}": nobody is there to answer prompts, so work would stall`, 'Settings -> Security -> Automatic');
     f.autoApproveListed ? add('fail', 'an autoApprove list is set in an agent or mcp.json: it skips Crew\'s tool gate AND PreToolUse hooks, which disables the shell guard', 'remove autoApprove') : add('ok', 'no autoApprove list (the shell guard hook is not bypassed)');
   }
   f.gateway ? add('ok', 'the Crew gateway is running') : add('warn', 'the Crew gateway is not running', `cd ${f.repo} && kirocrew gateway   (or kirocrew service install to keep it running)`);
@@ -77,8 +74,6 @@ export function gather() {
   try {
     crewConfig = JSON.parse(readFileSync(join(crewHome, 'config.json'), 'utf8'));
   } catch { /* reported by assess */ }
-  const envFile = join(crewHome, '.env');
-  const telegramToken = existsSync(envFile) && /^TELEGRAM_BOT_TOKEN=\S+/m.test(readFileSync(envFile, 'utf8'));
   const autoApproveListed = TEAM_NAMES.some((n) => JSON.stringify(JSON.parse(readFileSync(join(repo, '.kiro/agents', `${n}.json`), 'utf8'))).includes('autoApprove')) || (existsSync(join(repo, '.kiro/settings/mcp.json')) && readFileSync(join(repo, '.kiro/settings/mcp.json'), 'utf8').includes('autoApprove'));
   const remote = run('git', ['remote', 'get-url', 'origin'], { cwd: repo });
   let protection = 'unknown';
@@ -95,7 +90,6 @@ export function gather() {
     promptsLink: linkState('prompts', join(repo, '.kiro/agents/prompts')),
     agentsValid,
     crewConfig,
-    telegramToken,
     autoApproveListed,
     gateway: !/not running/i.test(run('kirocrew', ['status']) ?? 'not running'),
     branch: run('git', ['branch', '--show-current'], { cwd: repo }) ?? '?',

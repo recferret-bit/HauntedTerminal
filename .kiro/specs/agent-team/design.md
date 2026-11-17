@@ -17,7 +17,7 @@ Follows `requirements.md` (approved 2026-11-17). Kiro CLI 3.3.0 (V3 agent schema
 scripts/quality/check-agents.mjs   gate (npm run quality:agents, inside npm run quality)
 scripts/hooks/agent-scope.mjs      Stop hook of every agent: changed files vs that agent's write paths
 scripts/harness/agents-install.mjs npm run agents:install [-- --remove]
-docs/AGENTS_CREW.md                CLI and phone (Kiro Crew + Telegram) guide
+docs/AGENTS_CREW.md                CLI and Kiro Crew app guide
 docs/qa/README.md                  QA report template; reports land next to it
 ```
 
@@ -71,18 +71,18 @@ The exact `file://` relative-path and brace-glob behaviour is confirmed in task 
 - **Shell writes are checked after the fact.** `fs_write` rules do not see `sed -i` or a script writing a file. `agent-scope.mjs` runs at `Stop`, lists `git status --porcelain` paths outside the agent's write paths, and prints them so the agent reverts or hands off to the owner. Generated files written by the compilers (`src/chapters/generated/`, `src/cinematic/generated/`) and `scripts/harness/out/` are allowed for everyone. (Req 7-8.)
 - **No ownership table file.** The agents' own `fs_write` allow rules are the table; `check-agents.mjs` derives ownership from them. One source of truth. (Req 6.)
 - **`check-agents.mjs` validates what `kiro-cli agent validate` does not.** Validate only checks JSON types: a wrong capability or effect passes. The gate checks: known capabilities and effects; prompt files exist; `model` is `auto`; `file://` resources resolve and stay under 32 files and 100,000 characters; the lead's tools are exactly `subagent/<the six>` with no `subagent`, `@builtin` or `*`; non-lead agents deny `git commit` and `git push`; every owned file has one owner. (Req 1-3, 6, 9.)
-- **Sub-agent calls are pre-allowed.** In headless runs (Crew, Telegram) an approval prompt is denied, so the lead has `{ capability: subagent, match: [the six], effect: allow }`, and each agent's shell allow list covers its gates. Anything else stays `ask`, which is denied on the phone by design. (Req 9, 17.)
+- **Sub-agent calls are pre-allowed.** In unattended runs (Crew) an approval prompt is denied, so the lead has `{ capability: subagent, match: [the six], effect: allow }`, and each agent's shell allow list covers its gates. Anything else stays `ask`, which is denied in an unattended Crew session by design. (Req 9, 17.)
 - **Branch first, then delegate.** The lead runs `git switch -c agent/<task>` before any work. If the tree has uncommitted changes it did not make, it stops and asks. After QA passes: `git add` of the changed paths only, `git commit`, `git push -u origin agent/<task>`. Its shell rules deny `git push*main*`, `git push --force*`, `git push -f*`, `git reset --hard*`. (Req 15-16.)
 - **Lead loop.** Classify spec-first; split the request by owner; delegate; call `qa` with the affected features; send failing findings back to the owner, at most two rounds; then commit, or report what is still failing. (Req 2, 9-10.)
 - **QA report.** `docs/qa/<YYYY-MM-DD>-<scope>.md`: commands run with exit codes, screenshots looked at, findings as a table (severity, feature, owner, repro, evidence). Screenshots of failures are copied to `docs/qa/media/`. (Req 13-14.)
 - **Install by symlink.** `agents-install.mjs` links `~/.kiro/agents/<name>.json` to the repo file and `~/.kiro/agents/prompts/<name>.md` to the repo prompt (relative `file://` paths resolve from the link's folder, so the prompts are linked too; confirmed in task 4). It refuses to replace a file it did not create, and `--remove` only deletes links that point into this repo. (Req 4-5.)
-- **Phone path.** `docs/AGENTS_CREW.md`: start the gateway from the repo folder (`kiro-cli crew gateway`), Telegram bot token and `allowed_user_ids` in `~/.kiro/crew/`, select `lead-dev` in the dashboard (Customize, Agents) or as the default agent. The Crew docs do not say how a Telegram chat picks a custom agent; task 6 finds out and the guide records what works. (Req 17.)
+- **Crew path.** `docs/AGENTS_CREW.md`: the KiroCrew app's own gateway runs a member bound to the repo's workspace with `lead-dev` as its agent (set in `~/.kiro/crew/config.json` with the gateway stopped, or in the dashboard); `npm run crew:check` verifies the setup. No messaging channel is set up (Telegram was dropped 2026-11-17, Q14). (Req 17, 24.)
 
 ## Found while building (Kiro CLI 3.3.0)
 
 - **`permissions` needs `allowedTools`.** A profile with a `permissions` block and no `allowedTools` is silently dropped (`Mode '<name>' not found`), even with empty rules. Every agent carries `"allowedTools": []`; `agents-build.mjs` writes it and `check-agents.mjs` requires it.
 - **`kiro-cli agent validate` checks JSON types only.** A misspelled capability or effect passes; `check-agents.mjs` checks them.
-- **Write rules work, with prompts.** Without `--trust-all-tools`, every write in a `--no-interactive` run is denied ("approval not supported"), even inside the agent's own paths. With `--trust-all-tools`, the agent's `deny` rule still blocks writes outside its paths (verified with a probe agent: `src/laptop/a.txt` written, `docs/b.txt` refused). Crew and phone runs therefore need the agent's own allow rules plus the gateway's trust setting; the guide says so.
+- **Write rules work, with prompts.** Without `--trust-all-tools`, every write in a `--no-interactive` run is denied ("approval not supported"), even inside the agent's own paths. With `--trust-all-tools`, the agent's `deny` rule still blocks writes outside its paths (verified with a probe agent: `src/laptop/a.txt` written, `docs/b.txt` refused). Crew runs therefore need the agent's own allow rules plus the gateway's trust setting; the guide says so.
 - **Skills are inherited.** Every workspace agent sees all 24 workspace skills, whatever its `skill://` list says. The per-agent lists stay as documentation of each agent's focus and as resources the prompt names; they are not a boundary.
 - **Shared rules file.** `.kiro/agents/prompts/team-rules.md` (ownership table, spec-first, report format) is loaded by every agent through `resources`; each prompt only adds its own area.
 - **One table writes all seven files.** `scripts/harness/agents-build.mjs` holds the team table (write paths, resources, skills, sub-agents, shell rules) and writes `.kiro/agents/*.json`; `--check` fails when a file was hand-edited.
@@ -97,16 +97,16 @@ Probed with scratch agents on Kiro CLI 3.3.0, under `--trust-all-tools` (the ana
 - **A commit on `main` cannot be matched by a rule.** The guard hook reads `git branch --show-current`.
 - **`SessionStart` and `Stop` hooks both fire** (probed), so the scope hook takes a baseline and reports only what changed in the session, with owners, instead of remembering paths it already reported.
 - **A sub-agent's shell command is also checked against the lead's rules,** so the lead's allow list includes the sub-agents' extra commands (`qa`: `mkdir -p docs/qa/media`, `cp scripts/harness/out/* docs/qa/media/*`).
-- **Residual risk, stated plainly.** Redirects and git arguments are checked only by a hook, and the Crew docs do not say that an agent's own hooks run in a Telegram session; `node scripts/*` runs any harness script. The fence is a guard against an agent's mistakes, not a sandbox against a hostile one. The barrier that holds regardless of hooks is branch protection on `main` in GitHub (user setting), and the pushes are only to `agent/*` branches.
+- **Residual risk, stated plainly.** Redirects and git arguments are checked only by a hook, and the Crew docs do not say that an agent's own hooks run in a Crew member's chat; `node scripts/*` runs any harness script. The fence is a guard against an agent's mistakes, not a sandbox against a hostile one. The barrier that holds regardless of hooks is branch protection on `main` in GitHub (user setting), and the pushes are only to `agent/*` branches.
 
 ## Found while preparing Kiro Crew (2026-11-17, Crew 0.12.1, Kiro CLI 3.4.0)
 
 - **The agent profile's rules are honoured by the gateway.** A subagent started with `--agent qa` was refused `printf` by `deny shell *` and ran an allowed script with no prompt.
-- **`kirocrew spawn run` does not run in the repo.** It starts the agent in `~/workplace/kirocrew-workspace/subagent_<id>`, an empty folder; `--crew <member>` did not change that. Only a member's own chat (dashboard, Telegram) uses the member's workspace.
+- **`kirocrew spawn run` does not run in the repo.** It starts the agent in `~/workplace/kirocrew-workspace/subagent_<id>`, an empty folder; `--crew <member>` did not change that. Only a member's own chat (app, dashboard) uses the member's workspace.
 - **`kirocrew chat -m` cannot approve** ("this invocation cannot ask"), so even allowed calls are denied there.
 - **The Crew CLI creates members only from its built-in template,** but `kirocrew agent update <member> --kiro-agent lead-dev` accepts a custom agent once it is in `~/.kiro/agents`. A running gateway rewrote it back once, so config is edited with the gateway stopped.
 - **`autoApprove` lists skip `PreToolUse` hooks** (Crew security docs), so `crew:check` fails on them.
-- Not verifiable without a signed-in dashboard session or a Telegram bot: whether a member chat runs an agent's own hooks. The guide's first test answers it in two minutes and says what each outcome means.
+- Not verifiable from a script (it needs the app or a signed-in dashboard session): whether a member chat runs an agent's own hooks. The guide's first test answers it in two minutes and says what each outcome means.
 
 ## Layers and gates
 

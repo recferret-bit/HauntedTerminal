@@ -59,7 +59,7 @@ More suites (headless Chrome smoke tests, model and animation validators) are li
 
 The whole project is organised for Kiro in [`.kiro/`](./.kiro): **7 custom agents**, **15 steering files**, **24 skills**, **15 hooks** and **specs** for every large feature, with scripts that fail the build when the rules are broken. Full account: [`docs/KIRO_USAGE.md`](docs/KIRO_USAGE.md).
 
-- **Agent team** (`.kiro/agents/`): a lead game developer that orchestrates four feature designers (terminal, laptop, comix, chapters), an artist and a QA agent. Each writes only its own folders (a fence, a shell allow-list and two hooks enforce it), and `qa` plays the game after every change. Run it from the CLI (`kiro-cli --agent lead-dev`); the phone path through Kiro Crew and Telegram is built and documented, not yet run end to end: [`docs/AGENTS_CREW.md`](docs/AGENTS_CREW.md).
+- **Agent team** (`.kiro/agents/`): a lead game developer that orchestrates four feature designers (terminal, laptop, comix, chapters), an artist and a QA agent. Each writes only its own folders (a fence, a shell allow-list and two hooks enforce it), and `qa` plays the game after every change. Run it from the CLI (`kiro-cli --agent lead-dev`); the Kiro Crew app runs the same team through a member bound to this repo (set up and checked with `npm run crew:check`; the first real chat is the open step): [`docs/AGENTS_CREW.md`](docs/AGENTS_CREW.md).
 - **Specs**: new features start as `.kiro/specs/<name>/` (requirements in EARS, design, tasks) and a hook blocks new source areas until the spec is approved.
 - **Steering**: facts only (product, tech, structure, architecture, glossary, skills map), enforced by `scripts/quality/`.
 - **Skills**: asset and level pipelines, each with a validator.

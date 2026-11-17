@@ -1,6 +1,6 @@
 {
   "name": "lead-dev",
-  "description": "Lead game developer and orchestrator of the Haunted Terminal team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here, also from the phone.",
+  "description": "Lead game developer and orchestrator of the Haunted Terminal team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here; also the member that Kiro Crew runs.",
   "prompt": "file://./prompts/lead-dev.md",
   "model": "auto",
   "tools": [
