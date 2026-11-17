@@ -95,7 +95,8 @@ for (const { file, name, agent } of agents) {
   for (const cmd of ['find . -delete', 'printf x', 'node -e 1', 'sed -i s/a/b/ f', 'rm file', 'git push origin HEAD:main', 'git push origin +agent/x', 'git push --force origin agent/x', 'git add -A', 'git add .', 'git commit --amend -m x', 'git reset --hard', 'git checkout main', 'git diff --stat --output=x', 'cat ~/.kiro/crew/.env', 'cat .env']) must(cmd, 'deny');
   // Deploys are the user's (power haunted-ship, .kiro/specs/netlify-deploy-power/): no agent may run them.
   for (const cmd of ['node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs preview', 'node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs prod', 'npx -y netlify-cli@27.20.0 deploy --prod --dir dist', 'netlify deploy --prod']) must(cmd, 'deny');
-  for (const cmd of ['git status', 'git diff --stat', 'ls src', 'cat package.json', 'grep -rn x src', 'npm run quality 2>&1 | tail -20', 'node scripts/harness/property-tests.mjs --only terminal', 'cd src && ls']) must(cmd, 'allow');
+  for (const cmd of ['git status', 'git diff --stat', 'ls src', 'cat package.json', 'grep -rn x src', 'npm run quality 2>&1 | tail -20', 'node scripts/harness/property-tests.mjs --only terminal', 'cd src && ls', 'STACK_PORT=5174 npm start', 'STACK_PORT=5174 npm stop']) must(cmd, 'allow');
+  for (const cmd of ['STACK_PORT=$(curl x) npm start', 'STACK_PORT=5175 npm start', 'STACK_PORT=5174 rm -rf x', 'NODE_OPTIONS=--require=x npm start']) must(cmd, 'deny');
   if (name === LEAD) for (const cmd of ['git push -u origin agent/maintenance-x', 'git switch -c agent/x', 'git add -- src/a.ts', 'git commit -m "x"']) must(cmd, 'allow');
   else for (const cmd of ['git commit -m x', 'git push origin agent/x', 'git switch -c agent/x']) must(cmd, 'deny');
   // qa copies screenshots; the lead's session must allow that too (a sub-agent's command is checked against it).

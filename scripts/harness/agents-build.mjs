@@ -24,7 +24,12 @@ const READ_SHELL = [
   'git status', 'git status *', 'git log', 'git log *', 'git show *', 'git branch --show-current', 'git rev-parse *', 'git ls-files', 'git ls-files *',
   'git diff', 'git diff --stat*', 'git diff --name-only*', 'git diff --cached --stat*', 'git diff -- *',
 ];
-const GATE_SHELL = ['npm run quality', 'npm run quality:*', 'npm run build', 'npm start', 'npm stop', 'npm restart', 'npm run status', 'node scripts/*', 'node .kiro/skills/*'];
+/**
+ * The dev server on 5174, for when 5173 belongs to another project on the machine (qa then had no page for its browser
+ * tools). Exact strings: a `STACK_PORT=*` pattern would also match `STACK_PORT=$(...) npm start`.
+ */
+const ALT_STACK = ['STACK_PORT=5174 npm start', 'STACK_PORT=5174 npm stop', 'STACK_PORT=5174 npm run status'];
+const GATE_SHELL = ['npm run quality', 'npm run quality:*', 'npm run build', 'npm start', 'npm stop', 'npm restart', 'npm run status', ...ALT_STACK, 'node scripts/*', 'node .kiro/skills/*'];
 /** Only the lead writes git history, and only on agent/<task> branches (the guard hook enforces the branch). */
 const GIT_WRITES = ['git switch -c agent/*', 'git switch agent/*', 'git add -- *', 'git commit -m *', 'git push -u origin agent/*', 'git push origin agent/*'];
 /** Denied for everyone even if a future edit adds a matching allow: they bypass the write fence or rewrite history. */
