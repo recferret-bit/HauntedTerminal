@@ -1,5 +1,6 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { maxHpFor } from '../game/bestiary.js';
+import { starterInventory } from '../game/inventory.js';
 import { runLine, type Host } from '../game/shell.js';
 import { lookup, makeNode } from '../game/tree.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from '../game/types.js';
@@ -16,6 +17,7 @@ import { snapshot } from './session-snapshot.js';
 
 export function applyInitialLoadout(g: ChapterState, startIdx: number): void {
     g.kiro.reset();
+    g.inventory = starterInventory();
     const perks = g.preview ? [] : readMetagame().activePerks;
     let bonusRam = perks.includes('perk-overclock-dimm') ? 16 : 0;
     let bonusSsd = perks.includes('perk-nvme-snapshot') ? 256 : 0;

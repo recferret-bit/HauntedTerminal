@@ -9,11 +9,11 @@ const args = process.argv.slice(2);
 const name = args.find((a) => !a.startsWith('--') && args[args.indexOf(a) - 1] !== '--title');
 const bugfix = args.includes('--bugfix');
 const titleAt = args.indexOf('--title');
-if (!name || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(name)) {
+if (!name || !/^[a-z0-9]+(-[a-z0-9]+)*(\/[a-z0-9]+(-[a-z0-9]+)*)*$/.test(name)) {
   console.error('usage: scaffold-spec.mjs <kebab-name> [--bugfix] [--title "Title"]');
   process.exit(1);
 }
-const title = titleAt >= 0 && args[titleAt + 1] ? args[titleAt + 1] : name.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+const title = titleAt >= 0 && args[titleAt + 1] ? args[titleAt + 1] : name.split('/').pop().replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
 const folder = join(process.cwd(), '.kiro/specs', name);
 if (existsSync(folder)) {
   console.error(`.kiro/specs/${name} already exists: resume it instead.`);

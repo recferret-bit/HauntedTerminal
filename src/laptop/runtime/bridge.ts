@@ -30,16 +30,27 @@ const LOOP_CHECK = `(() => {
 function bridge(post: string): string {
   return `(() => {
   const send = (m) => ${post};
-  const fmt = (v, depth = 0) => {
+  const fmt = (v, depth = 0, seen = new Set()) => {
     if (typeof v === 'string') return depth ? JSON.stringify(v) : v;
     if (v === undefined) return 'undefined';
     if (typeof v === 'function') return 'function ' + (v.name || '(anonymous)') + '()';
     if (v instanceof Error) return v.name + ': ' + v.message;
     if (typeof v !== 'object' || v === null) return String(v);
+    if (seen.has(v)) return '[circular]';
     if (depth > 2) return Array.isArray(v) ? '[...]' : '{...}';
-    if (Array.isArray(v)) return '[' + v.map((x) => fmt(x, depth + 1)).join(', ') + ']';
-    if (typeof Element !== 'undefined' && v instanceof Element) return '<' + v.tagName.toLowerCase() + '>';
-    return '{ ' + Object.keys(v).map((k) => k + ': ' + fmt(v[k], depth + 1)).join(', ') + ' }';
+    seen.add(v);
+    try {
+      if (typeof Element !== 'undefined' && v instanceof Element) return '<' + v.tagName.toLowerCase() + '>';
+      if (Array.isArray(v)) return '[' + v.map((x) => fmt(x, depth + 1, seen)).join(', ') + ']';
+      const keys = Object.keys(v);
+      const props = keys.map((k) => {
+        try { return k + ': ' + fmt(v[k], depth + 1, seen); }
+        catch { return k + ': [restricted]'; }
+      });
+      return '{ ' + props.join(', ') + ' }';
+    } catch {
+      return Object.prototype.toString.call(v);
+    }
   };
   self.__fmt = fmt;
   self.__send = send;

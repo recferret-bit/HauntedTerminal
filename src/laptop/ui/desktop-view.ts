@@ -17,6 +17,8 @@ export interface DesktopView {
   view(app: AppId): AppView | undefined;
   /** Closes every window (a shutdown). */
   reset(): void;
+  /** Drops every window and disposes all active views. */
+  dispose(): void;
 }
 
 interface Open {
@@ -81,7 +83,11 @@ export function createDesktopView(ctx: LaptopContext, scale: () => number): Desk
 
   const render = (): void => {
     for (const [app, o] of open) {
-      if (!state.windows.some((w) => w.app === app)) { o.frame.remove(); open.delete(app); }
+      if (!state.windows.some((w) => w.app === app)) {
+        o.view.dispose?.();
+        o.frame.remove();
+        open.delete(app);
+      }
     }
     for (const w of state.windows) {
       let o = open.get(w.app);
@@ -115,6 +121,13 @@ export function createDesktopView(ctx: LaptopContext, scale: () => number): Desk
       state = emptyDesktop();
       menu.hidden = true;
       render();
+    },
+    dispose() {
+      for (const [, o] of open) o.view.dispose?.();
+      open.clear();
+      state = emptyDesktop();
+      menu.hidden = true;
+      layer.replaceChildren();
     },
   };
 }

@@ -59,9 +59,15 @@ export function reduceDesktop(state: DesktopState, action: DesktopAction): Deskt
     case 'open': {
       if (has) return raise(state, action.app, { minimized: false });
       const def = APPS[action.app];
-      // Cascade new windows so two never open exactly on top of each other.
+      // Cascade new windows so two never open exactly on top of each other, bounded within the screen.
       const step = state.windows.length % 5;
-      const win = placed({ app: action.app, x: 0, y: 0, w: def.size[0], h: def.size[1], z: state.top, minimized: false }, 24 + step * 22, 12 + step * 18);
+      const maxX = Math.max(0, SCREEN.w - def.size[0]);
+      const maxY = Math.max(0, SCREEN.h - def.size[1]);
+      const win = placed(
+        { app: action.app, x: 0, y: 0, w: def.size[0], h: def.size[1], z: state.top, minimized: false },
+        Math.min(24 + step * 22, maxX),
+        Math.min(12 + step * 18, maxY),
+      );
       return { windows: [...state.windows, win], focus: action.app, top: state.top + 1 };
     }
     case 'focus':

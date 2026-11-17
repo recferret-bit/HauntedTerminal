@@ -70,7 +70,7 @@ Change the `Status:` line only at a gate, and add the date and who approved: `St
 
 **requirements.md**: see the scaffold. Requirements are numbered and written in EARS: `WHEN <trigger>, THE SYSTEM SHALL <response>`, `IF <bad case>, THEN THE SYSTEM SHALL ...`, `WHILE <state>, THE SYSTEM SHALL ...`.
 
-**design.md**, in the style of `.kiro/specs/terminal-lab/design.md`:
+**design.md**, in the style of `.kiro/specs/inventory/items/terminal/design.md`:
 
 ```
 # <Feature>: design

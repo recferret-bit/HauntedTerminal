@@ -54,4 +54,4 @@ Rules: specs reference existing asset IDs only (`ModelCatalog`, `RoomKind`, `FxC
 - Needs a new model, room, texture, effect or animation: ASSET PCG, then return to the level.
 - Needs a new puzzle, win rule, dialogue, comic panel or level order: LEVEL GEN.
 - Level-gen skills may read `haunted-art-direction`; asset skills never depend on level skills.
-- The **Terminal Lab** (`/terminal-lab`) is a test bench, not a content category: it places existing assets and plays them in the real game, and it never writes a chapter, a level or a comix. Needs a new asset: ASSET PCG first.
+- The **Terminal Lab** (`/terminal-lab`) and **Laptop Lab** (`/laptop-lab`) are test benches / emulators, not content categories: they place or emulate tools and never write chapters or comixes. Needs a new asset: ASSET PCG first.

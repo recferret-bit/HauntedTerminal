@@ -16,7 +16,11 @@ type BridgeMessage =
   | { t: 'done'; probes: RunReport['probes']; values: RunReport['values'] };
 
 /** Folds bridge messages into a report and settles once: on `done` or on the timeout. */
-function collector(onLog: ((line: LogLine) => void) | undefined, stop: (timedOut: boolean) => void, limitMs = RUN_TIMEOUT_MS): { feed: (m: BridgeMessage) => void; result: Promise<RunReport> } {
+function collector(
+  onLog: ((line: LogLine) => void) | undefined,
+  stop: (timedOut: boolean) => void,
+  limitMs = RUN_TIMEOUT_MS,
+): { feed: (m: BridgeMessage) => void; result: Promise<RunReport>; cancel: () => void } {
   const report = emptyReport();
   let settle!: (r: RunReport) => void;
   const result = new Promise<RunReport>((res) => { settle = res; });
@@ -29,6 +33,12 @@ function collector(onLog: ((line: LogLine) => void) | undefined, stop: (timedOut
     settle(report);
   };
   const timer = window.setTimeout(() => { report.timedOut = true; finish(); }, limitMs);
+  const cancel = (): void => {
+    if (!open) return;
+    open = false;
+    window.clearTimeout(timer);
+    settle(report);
+  };
   const feed = (m: BridgeMessage): void => {
     if (!open) return;
     if (m.t === 'log') {
@@ -44,7 +54,7 @@ function collector(onLog: ((line: LogLine) => void) | undefined, stop: (timedOut
       finish();
     }
   };
-  return { feed, result };
+  return { feed, result, cancel };
 }
 
 function runScript(req: RunRequest, onLog?: (line: LogLine) => void): Promise<RunReport> {
@@ -66,25 +76,34 @@ const STOPPED_PAGE = '<!doctype html><body style="font:14px monospace;padding:12
  */
 export interface PreviewSlot {
   frame: HTMLIFrameElement;
+  cancel?: () => void;
 }
 
 /** Renders the page into the slot's frame (the visible preview) and reports from inside it. */
 function renderPage(req: RunRequest, slot: PreviewSlot, onLog: ((line: LogLine) => void) | undefined, limitMs: number): Promise<RunReport> {
+  slot.cancel?.();
   const frame = slot.frame;
   const token = `run-${++runs}-${Math.random().toString(36).slice(2)}`;
+  let cancelled = false;
   const listen = (ev: MessageEvent): void => {
+    if (cancelled) return;
     const data = ev.data as (BridgeMessage & { token?: string }) | null;
     if (ev.source === frame.contentWindow && data?.token === token) feed(data);
   };
-  const { feed, result } = collector(onLog, (timedOut) => {
+  const { feed, result, cancel } = collector(onLog, (timedOut) => {
     window.removeEventListener('message', listen);
-    if (!timedOut) return;
+    if (!timedOut || cancelled) return;
     // Drop the stuck frame: a fresh one says it was stopped.
     const fresh = frame.cloneNode(false) as HTMLIFrameElement;
     fresh.srcdoc = STOPPED_PAGE;
     frame.replaceWith(fresh);
     slot.frame = fresh;
   }, limitMs);
+  slot.cancel = () => {
+    cancelled = true;
+    window.removeEventListener('message', listen);
+    cancel();
+  };
   window.addEventListener('message', listen);
   frame.setAttribute('sandbox', 'allow-scripts');
   frame.srcdoc = pageSource(req, token);

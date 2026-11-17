@@ -9,6 +9,8 @@ export interface AppView {
   el: HTMLElement;
   /** The window came to the front. */
   shown?(): void;
+  /** The window was closed or unmounted. */
+  dispose?(): void;
 }
 
 /** An app that can take a task: the code editors. */

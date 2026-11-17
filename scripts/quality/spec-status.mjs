@@ -20,36 +20,48 @@ export function section(text, title) {
   return lines.slice(start + 1, end < 0 ? undefined : end);
 }
 
-/** Every spec folder with its parsed status. */
+function findSpecFolders(dir, rel = '') {
+  if (!existsSync(dir)) return [];
+  const entries = [];
+  for (const name of readdirSync(dir)) {
+    if (name.startsWith('.')) continue;
+    const full = join(dir, name);
+    if (!statSync(full).isDirectory()) continue;
+    const subRel = rel ? `${rel}/${name}` : name;
+    if (existsSync(join(full, 'requirements.md')) || existsSync(join(full, 'bugfix.md'))) {
+      entries.push({ name: subRel, folder: full });
+    }
+    entries.push(...findSpecFolders(full, subRel));
+  }
+  return entries;
+}
+
+/** Every spec folder with its parsed status (including nested child specs). */
 export function loadSpecs(root) {
   const dir = join(root, '.kiro/specs');
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir)
-    .filter((name) => !name.startsWith('.') && statSync(join(dir, name)).isDirectory())
-    .map((name) => {
-      const folder = join(dir, name);
-      const reqFile = existsSync(join(folder, 'bugfix.md')) ? 'bugfix.md' : 'requirements.md';
-      const requirements = read(join(folder, reqFile));
-      const design = read(join(folder, 'design.md'));
-      const tasks = read(join(folder, 'tasks.md'));
-      const statusLine = requirements.split('\n').slice(0, 12).find((l) => /^Status:/i.test(l.trim())) ?? '';
-      const status = (statusLine.match(/^Status:\s*`?([a-z-]+)`?/i)?.[1] ?? '').toLowerCase();
-      const open = (section(requirements, 'Open questions') ?? []).filter((l) => /^\s*- \[ \]/.test(l));
-      return {
-        name,
-        folder,
-        reqFile,
-        requirements,
-        design,
-        tasks,
-        status,
-        legacy: /legacy/i.test(statusLine),
-        open,
-        hasDecisions: section(requirements, 'Decisions') !== null,
-        openTasks: tasks.split('\n').filter((l) => /^\s*- \[ \]/.test(l)),
-        text: [requirements, design, tasks].join('\n'),
-      };
-    });
+  return findSpecFolders(dir).map(({ name, folder }) => {
+    const reqFile = existsSync(join(folder, 'bugfix.md')) ? 'bugfix.md' : 'requirements.md';
+    const requirements = read(join(folder, reqFile));
+    const design = read(join(folder, 'design.md'));
+    const tasks = read(join(folder, 'tasks.md'));
+    const statusLine = requirements.split('\n').slice(0, 12).find((l) => /^Status:/i.test(l.trim())) ?? '';
+    const status = (statusLine.match(/^Status:\s*`?([a-z-]+)`?/i)?.[1] ?? '').toLowerCase();
+    const open = (section(requirements, 'Open questions') ?? []).filter((l) => /^\s*- \[ \]/.test(l));
+    return {
+      name,
+      folder,
+      reqFile,
+      requirements,
+      design,
+      tasks,
+      status,
+      legacy: /legacy/i.test(statusLine),
+      open,
+      hasDecisions: section(requirements, 'Decisions') !== null,
+      openTasks: tasks.split('\n').filter((l) => /^\s*- \[ \]/.test(l)),
+      text: [requirements, design, tasks].join('\n'),
+    };
+  });
 }
 
 /** Tracked files (git index). New, untracked areas are what a spec must cover. */

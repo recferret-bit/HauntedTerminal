@@ -88,7 +88,7 @@ function heroFidget(stage: ComicStage, dt: number): void {
 
 function lightFrame(stage: ComicStage, dt: number): void {
   const h = stage.hero();
-  const lantern = h && !h.disposed && h.group.visible ? actorSocket(h, 'lantern') : null;
+  const lantern = h && !h.disposed && h.group.visible && ('lantern' in h.model.sockets) ? actorSocket(h, 'lantern') : null;
   stage.light.update(dt, {
     lantern,
     feetY: stage.feetY,

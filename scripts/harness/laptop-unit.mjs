@@ -265,24 +265,31 @@ await withProcgen(async (_p, vite) => {
   });
 
   // ---- the game inventory ----
-  await test('the inventory starts with the lantern in hand and holds only what it has', () => {
+  await test('the inventory starts with the lantern and terminal in hand and holds only what it has', () => {
     const start = inv.starterInventory();
-    assert.deepEqual(start, { items: ['lantern'], held: 'lantern' });
+    assert.deepEqual(start, { items: ['lantern', 'terminal'], held: 'lantern' });
     assert.equal(inv.holdItem(start, 'laptop'), start);
-    const both = inv.giveItem(start, 'laptop');
-    assert.equal(inv.giveItem(both, 'laptop'), both, 'an item is given once');
-    assert.equal(inv.holdItem(both, 'laptop').held, 'laptop');
+    const withLaptop = inv.giveItem(start, 'laptop');
+    assert.equal(inv.giveItem(withLaptop, 'laptop'), withLaptop, 'an item is given once');
+    assert.equal(inv.holdItem(withLaptop, 'terminal').held, 'terminal');
+    assert.equal(inv.holdItem(withLaptop, 'laptop').held, 'laptop');
+    assert.equal(inv.heroModel('terminal'), 'vibecoder.dev_terminal');
     assert.equal(inv.heroModel('laptop'), 'vibecoder.dev_laptop');
     assert.equal(inv.heroModel(undefined), 'vibecoder.dev');
   });
-  await test('inventory / hold commands', () => {
+  await test('inventory / hold commands and Tab completion', () => {
     const start = inv.giveItem(inv.starterInventory(), 'laptop');
-    assert.match(inv.inventoryCommand(start, 'inv', []).step.stdout, /\* lantern[\s\S]*laptop/);
+    assert.match(inv.inventoryCommand(start, 'inv', []).step.stdout, /\* lantern[\s\S]*terminal[\s\S]*laptop/);
     const held = inv.inventoryCommand(start, 'hold', ['laptop']);
     assert.equal(held.inv.held, 'laptop');
     assert.equal(held.step.code, 0);
+    const heldTerm = inv.inventoryCommand(start, 'hold', ['terminal']);
+    assert.equal(heldTerm.inv.held, 'terminal');
+    assert.equal(heldTerm.step.code, 0);
     assert.equal(inv.inventoryCommand(start, 'hold', ['toString']).step.code, 1, 'prototype keys are not items');
     assert.equal(inv.inventoryCommand(start, 'hold', []).step.code, 1);
+    assert.deepEqual(inv.completeHold(start, 't'), ['terminal']);
+    assert.deepEqual(inv.completeHold(start, 'l'), ['lantern', 'laptop']);
   });
 });
 console.log(`\nlaptop unit: ${count()} tests passed`);

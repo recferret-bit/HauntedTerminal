@@ -240,6 +240,20 @@ export const GRIMOIRE_ENTRIES: readonly GrimoireEntry[] = [
     realWorld: 'Runs air-gapped, self-hosted `.gguf` open-weights inference locally on your own GPU VRAM.',
     comicEffect: 'Unfolds your Destiny-style Kiro Ghost shell to scan rooms, hot-swap cores, audit files, and decrypt Cloud locks!',
   },
+  {
+    command: 'inventory',
+    category: 'POSIX',
+    syntax: 'inventory | inv',
+    realWorld: 'Inspects carried developer equipment and tools.',
+    comicEffect: 'Lists carried gear (* indicates held item in hand): lantern, terminal, and laptop.',
+  },
+  {
+    command: 'hold',
+    category: 'POSIX',
+    syntax: 'hold <lantern|terminal|laptop>',
+    realWorld: 'Equips or switches active tool into the screen-right hand.',
+    comicEffect: 'Changes developer visual model and active capabilities (lantern casts light; laptop opens coding lab).',
+  },
 ];
 
 export type BestiaryDossierEntry = DossierEntry;

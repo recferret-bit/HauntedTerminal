@@ -73,15 +73,33 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
     },
   });
 
-  const tabs = h('div', { class: 'lt-tabs' }, ...cfg.files.map((f) => h('button', { class: 'lt-tab', 'data-file': f, onclick: () => select(f) }, TAB_LABEL[f])));
+  const resetCode = (): void => {
+    if (task) {
+      files = { ...task.starter };
+      ctx.setProgress(saveDraft(ctx.progress(), task.id, files));
+    } else {
+      files = { ...cfg.scratch };
+    }
+    editor.value = files[tab];
+    consolePane.clear();
+    void bench.run();
+  };
+
+  const tabs = h('div', { class: 'lt-tabs', role: 'tablist', 'aria-label': `${cfg.app} files` }, ...cfg.files.map((f) =>
+    h('button', { class: 'lt-tab', role: 'tab', 'aria-selected': f === tab ? 'true' : 'false', 'data-file': f, onclick: () => select(f) }, TAB_LABEL[f])));
   const select = (f: CodeFile): void => {
     tab = f;
     editor.value = files[f];
-    tabs.querySelectorAll<HTMLElement>('.lt-tab').forEach((b) => b.classList.toggle('on', b.dataset.file === f));
+    tabs.querySelectorAll<HTMLButtonElement>('.lt-tab').forEach((b) => {
+      const on = b.dataset.file === f;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
   };
   const toolbar = h('div', { class: 'lt-toolbar' },
     h('button', { class: 'lt-btn95', onclick: () => void bench.run(), title: 'Run (Ctrl+Enter)' }, 'Run'),
     h('button', { class: 'lt-btn95', onclick: () => void bench.check(), title: 'Check the quest' }, 'Check'),
+    h('button', { class: 'lt-btn95', onclick: () => resetCode(), title: 'Reset code to starter' }, 'Reset'),
     h('button', { class: 'lt-btn95', onclick: () => consolePane.clear() }, 'Clear'),
     h('span', { class: 'lt-grow' }),
     h('button', { class: 'lt-btn95', onclick: () => ctx.open('quests') }, 'Quests'),
@@ -130,7 +148,12 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
       }
       return results;
     },
+    dispose() {
+      window.clearTimeout(timer);
+      preview?.cancel?.();
+    },
   };
   select(tab);
+  if (mode === 'page') void bench.run();
   return bench;
 }

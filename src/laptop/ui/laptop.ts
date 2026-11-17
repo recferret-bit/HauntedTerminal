@@ -35,6 +35,8 @@ export interface LaptopHandle {
   /** Opens a task in its app, optionally replaces the code, and runs its checks. */
   runTask(id: string, files?: CodeFiles): Promise<CheckResult[]>;
   resetProgress(): void;
+  /** Tears down listeners, observers, and desktop windows. */
+  dispose(): void;
 }
 
 /** The comic word each state change shouts. */
@@ -50,24 +52,55 @@ function store(key: string | null): { load(): Progress; save(p: Progress): void 
 }
 
 /** Real keyboard and pointer to the deck: keys press, the finger follows the pointer over the screen. */
-function wireInput(view: LaptopView): void {
-  window.addEventListener('keydown', (ev) => {
+function wireInput(view: LaptopView): () => void {
+  const onKeyDown = (ev: KeyboardEvent): void => {
     view.led('caps', ev.getModifierState?.('CapsLock') ? 'on' : 'off');
     view.keyboard.press(ev.code);
-  }, true);
-  window.addEventListener('keyup', (ev) => {
+  };
+  const onKeyUp = (ev: KeyboardEvent): void => {
     view.led('caps', ev.getModifierState?.('CapsLock') ? 'on' : 'off');
     view.keyboard.release(ev.code);
-  }, true);
-  window.addEventListener('blur', () => view.keyboard.releaseAll());
-  window.addEventListener('pointermove', (ev) => {
+  };
+  const onBlur = (): void => {
+    view.keyboard.releaseAll();
+    view.trackpad.button(0, false);
+    view.trackpad.button(2, false);
+    view.trackpad.touch(null);
+  };
+  const onPointerMove = (ev: PointerEvent): void => {
     const r = view.screen.getBoundingClientRect();
     if (r.width) view.trackpad.touch({ u: (ev.clientX - r.left) / r.width, v: (ev.clientY - r.top) / r.height });
-  }, true);
-  document.documentElement.addEventListener('pointerleave', () => view.trackpad.touch(null));
-  window.addEventListener('pointerdown', (ev) => view.trackpad.button(ev.button, true), true);
-  window.addEventListener('pointerup', (ev) => view.trackpad.button(ev.button, false), true);
-  window.addEventListener('wheel', (ev) => view.trackpad.scroll(ev.deltaY), { passive: true, capture: true });
+  };
+  const onPointerLeave = (): void => view.trackpad.touch(null);
+  const onPointerDown = (ev: PointerEvent): void => view.trackpad.button(ev.button, true);
+  const onPointerUp = (ev: PointerEvent): void => view.trackpad.button(ev.button, false);
+  const onPointerCancel = (ev: PointerEvent): void => {
+    view.trackpad.button(ev.button, false);
+    view.trackpad.touch(null);
+  };
+  const onWheel = (ev: WheelEvent): void => view.trackpad.scroll(ev.deltaY);
+
+  window.addEventListener('keydown', onKeyDown, true);
+  window.addEventListener('keyup', onKeyUp, true);
+  window.addEventListener('blur', onBlur);
+  window.addEventListener('pointermove', onPointerMove, true);
+  document.documentElement.addEventListener('pointerleave', onPointerLeave);
+  window.addEventListener('pointerdown', onPointerDown, true);
+  window.addEventListener('pointerup', onPointerUp, true);
+  window.addEventListener('pointercancel', onPointerCancel, true);
+  window.addEventListener('wheel', onWheel, { passive: true, capture: true });
+
+  return () => {
+    window.removeEventListener('keydown', onKeyDown, true);
+    window.removeEventListener('keyup', onKeyUp, true);
+    window.removeEventListener('blur', onBlur);
+    window.removeEventListener('pointermove', onPointerMove, true);
+    document.documentElement.removeEventListener('pointerleave', onPointerLeave);
+    window.removeEventListener('pointerdown', onPointerDown, true);
+    window.removeEventListener('pointerup', onPointerUp, true);
+    window.removeEventListener('pointercancel', onPointerCancel, true);
+    window.removeEventListener('wheel', onWheel, { capture: true } as EventListenerOptions);
+  };
 }
 
 export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): LaptopHandle {
@@ -80,7 +113,7 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
 
   const view = createLaptopView((_code, down) => sound.key(down));
   host.append(view.el);
-  wireInput(view);
+  const unhookInput = wireInput(view);
   view.trackpad.el.addEventListener('pointerdown', () => sound.button());
   // The device answers clicks too: the shut lid opens, the dark screen powers on.
   view.el.addEventListener('click', (ev) => {
@@ -138,7 +171,8 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
   };
   setSpeed(opts.speed ?? 1);
   view.show('closed');
-  new ResizeObserver(() => view.frame(false)).observe(view.el);
+  const ro = new ResizeObserver(() => view.frame(false));
+  ro.observe(view.el);
   const jump = (to: LaptopState): boolean => {
     quiet = true;
     const ok = machine.jump(to);
@@ -160,5 +194,12 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
       return bench.check();
     },
     resetProgress: () => ctx.setProgress(emptyProgress()),
+    dispose() {
+      unhookInput();
+      ro.disconnect();
+      view.boot.stop();
+      desktop.dispose();
+      view.el.remove();
+    },
   };
 }

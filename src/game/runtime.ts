@@ -422,6 +422,9 @@ export function completions(g: Play, token: string, command: boolean, first: str
     const topics = [...COMMANDS, ...Object.keys(BESTIARY)];
     return [...new Set(topics.filter((name) => name.startsWith(token)))].sort();
   }
+  if (first === 'hold' && !token.includes('/')) {
+    return g.run.inventory.items.filter((name) => name.startsWith(token)).sort();
+  }
   const slash = token.lastIndexOf('/');
   const dirPart = slash >= 0 ? token.slice(0, slash) || '/' : '.';
   const frag = slash >= 0 ? token.slice(slash + 1) : token;

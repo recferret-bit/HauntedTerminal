@@ -40,6 +40,12 @@ export function complete(g: ChapterState, line: string): { line: string; matches
       if (coreOpts.length === 1) return { line: `kiro load ${coreOpts[0]} `, matches: [...coreOpts] };
       if (coreOpts.length > 1) return { line, matches: [...coreOpts] };
     }
+    if (parts[0] === 'hold' && (parts.length === 1 || (parts.length === 2 && !endsWithSpace)) && !last.includes('/')) {
+      const items = g.inventory.items.filter((k) => k.startsWith(last));
+      if (items.length === 1) return { line: `hold ${items[0]} `, matches: [...items] };
+      if (items.length > 1) return { line, matches: [...items] };
+      return { line, matches: [] };
+    }
 
     const slash = last.lastIndexOf('/');
     const dirPart = slash >= 0 ? last.slice(0, slash + 1) : '';

@@ -4,26 +4,17 @@
  * route `inventory` / `inv` / `hold` here. The held item picks the hero's model (one procgen
  * `vibecoder.*` variant per item, see src/procgen/archetypes/vibecoder.ts).
  */
+import {
+  ITEM_IDS,
+  type ItemId,
+  type ItemDef,
+  ITEMS,
+  isItemId,
+} from '../contracts/inventory.js';
 import { empty, out } from './play.js';
 import type { Step } from './shell.js';
 
-export type ItemId = 'lantern' | 'laptop';
-
-export interface ItemDef {
-  id: ItemId;
-  label: string;
-  /** The item on its own (ModelCatalog id). */
-  model: string;
-  /** The developer holding it (ModelCatalog id). */
-  heroModel: string;
-  /** One line for `inventory`. */
-  use: string;
-}
-
-export const ITEMS: Readonly<Record<ItemId, ItemDef>> = {
-  lantern: { id: 'lantern', label: 'lantern', model: 'item.lantern', heroModel: 'vibecoder.dev', use: 'ls -a lights it: dotfiles and hiding malware show.' },
-  laptop: { id: 'laptop', label: 'laptop', model: 'item.laptop', heroModel: 'vibecoder.dev_laptop', use: 'an old clamshell with code editors, for coding tasks.' },
-};
+export { ITEM_IDS, type ItemId, type ItemDef, ITEMS, isItemId };
 
 export interface Inventory {
   /** In the order they were picked up. */
@@ -31,11 +22,9 @@ export interface Inventory {
   readonly held: ItemId;
 }
 
-export const isItemId = (v: string): v is ItemId => Object.prototype.hasOwnProperty.call(ITEMS, v);
-
-/** He walks in with the lantern from his desk; the laptop comes later. */
+/** He walks in with the lantern and his terminal from his desk; the laptop comes later. */
 export function starterInventory(): Inventory {
-  return { items: ['lantern'], held: 'lantern' };
+  return { items: ['lantern', 'terminal'], held: 'lantern' };
 }
 
 export function hasItem(inv: Inventory, id: ItemId): boolean {
@@ -54,11 +43,11 @@ export function holdItem(inv: Inventory, id: ItemId): Inventory {
 
 /** The hero model for the item in his hand (the lantern when nothing says otherwise). */
 export function heroModel(held: ItemId | undefined): string {
-  return ITEMS[held ?? 'lantern'].heroModel;
+  return ITEMS[held ?? 'lantern']?.heroModel ?? 'vibecoder.dev';
 }
 
 function listing(inv: Inventory): string {
-  const rows = inv.items.map((id) => `  ${inv.held === id ? '*' : ' '} ${ITEMS[id].label.padEnd(8)} ${ITEMS[id].use}`);
+  const rows = inv.items.map((id) => `  ${inv.held === id ? '*' : ' '} ${ITEMS[id].label.padEnd(9)} ${ITEMS[id].use}`);
   return `INVENTORY (* in hand)\n${rows.join('\n')}\n`;
 }
 
@@ -80,6 +69,11 @@ export function runInventory(holder: { inventory: Inventory }, cmd: string, args
   const res = inventoryCommand(holder.inventory, cmd, args);
   holder.inventory = res.inv;
   return res.step;
+}
+
+/** Tab completion matches for `hold <prefix>`. */
+export function completeHold(inv: Inventory, prefix: string): string[] {
+  return inv.items.filter((id) => id.startsWith(prefix));
 }
 
 /** Command names the inventory answers. */

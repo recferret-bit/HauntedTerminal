@@ -1,0 +1,8 @@
+# Laptop Item & Lab: tasks
+
+- [x] 1. Laptop model & hero variant: maintain `buildLaptop` in `src/procgen/archetypes/items/laptop.ts` and `vibecoder.dev_laptop` in `vibecoder.ts`; verify size and arm swing. _Req 1, 2, 3, 4_. Gates: `validate-model.mjs item.laptop vibecoder.dev_laptop --seeds 4`, `quality:fingerprint`
+- [x] 2. Run cancellation & timeout race fix (B1): add run cancellation to `PreviewSlot` in `src/laptop/runtime/runner.ts`, ensuring superseded runs cancel their timers and never display `STOPPED_PAGE` falsely. _Req 10, 12_. Gates: `laptop-lab-smoke.mjs`, `laptop-unit.mjs`
+- [x] 3. Window manager bounds clamping (B4): update `reduceDesktop` in `src/laptop/domain/desktop.ts` to clamp initial cascading window positions within `[0, SCREEN.w - w]` and `[0, SCREEN.h - h]`. _Req 9_. Gates: `laptop-unit.mjs`, `laptop-lab-smoke.mjs`
+- [x] 4. Input & trackpad fixes (B5): add `.lt-trackpad.scrolling .lt-finger` in `laptop.css`, release held trackpad buttons on window `blur`, and ignore trackpad clicks when closed. _Req 7_. Gates: `laptop-lab-smoke.mjs`, `npm run quality`
+- [x] 5. Sandbox formatting & loop guard edge cases (B6): guard property access in `fmt()` in `bridge.ts` with try/catch, and refine regex literal detection in `loop-guard.ts`. _Req 10, 11_. Gates: `laptop-unit.mjs`, `npm run quality`
+- [x] 6. Workbench UX & accessibility: add initial run on opening scratch file, per-task reset button, ARIA tab roles on file tabs, and clean up inline CSS variables in `palette.ts` / `laptop.css`. _Req 13_. Gates: `laptop-lab-smoke.mjs`, `npm run quality`

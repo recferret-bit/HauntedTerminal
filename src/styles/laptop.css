@@ -161,7 +161,8 @@
   transition: opacity 120ms, transform 120ms;
 }
 .lt-trackpad.touching .lt-finger { opacity: 1; }
-.lt-pad.pressed .lt-finger { transform: scale(0.8); }
+.lt-trackpad.scrolling .lt-finger { transform: translateY(var(--drag, 0px)) scale(0.92); }
+.lt-pad.pressed .lt-finger { transform: translateY(var(--drag, 0px)) scale(0.8); }
 .lt-btns { display: flex; gap: 6px; }
 .lt-btn {
   flex: 1; height: 20px;

@@ -11,8 +11,8 @@ import {
   animateParts, kitDisc, kitPlate, offsetParts, outlineEllipse, outlineRoundRect, outlineStroke, outlineSymmetric,
   outlineTransform, prefixParts, SCREEN_LEFT, SCREEN_RIGHT,
 } from '../kit/greebles.js';
-import { buildLantern } from './items/lantern.js';
-import { buildLaptop } from './items/laptop.js';
+import { ITEMS } from '../../contracts/inventory.js';
+import { ITEM_BUILDERS } from './items.js';
 
 // ---------------------------------------------------------------- vibecoder.dev
 
@@ -128,22 +128,15 @@ function buildHand(_seed: number): ModelSpec {
   };
 }
 
-/** One registered developer per item he can hold. `vibecoder.dev` (the lantern) is the one the game starts with. */
-const HELD_VARIANTS = [
-  {
-    id: 'vibecoder.dev', label: 'The developer', gameKey: 'vibecoder', item: buildLantern,
-    lore: 'The only human in the machine: a tired developer in an orange hoodie, carrying a lantern. The player.',
-  },
-  {
-    id: 'vibecoder.dev_laptop', label: 'The developer (laptop)', item: buildLaptop,
-    lore: 'The developer carrying his old clamshell laptop by its handle: the held item when a coding task needs it.',
-  },
-] as const;
-
-for (const v of HELD_VARIANTS) {
+/** One registered developer per item he can hold. Registered from the items contract. */
+for (const def of Object.values(ITEMS)) {
   ModelCatalog.register({
-    id: v.id, category: 'vibecoder', label: v.label, lore: v.lore, ...('gameKey' in v ? { gameKey: v.gameKey } : {}),
-    build: (seed) => buildDev(v.id, v.label, v.item(seed)),
+    id: def.heroModel,
+    category: 'vibecoder',
+    label: def.heroLabel,
+    lore: def.heroLore ?? def.lore,
+    ...(def.gameKey ? { gameKey: def.gameKey } : {}),
+    build: (seed) => buildDev(def.heroModel, def.heroLabel, ITEM_BUILDERS[def.id](seed)),
   });
 }
 
