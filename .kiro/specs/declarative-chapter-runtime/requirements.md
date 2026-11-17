@@ -1,6 +1,6 @@
 # Declarative chapter runtime: requirements
 
-Status: approved (legacy: written before spec-first.md; open tasks remain)
+Status: done (legacy: written before spec-first.md; closed 2026-11-17, remaining ideas are in the tasks.md backlog)
 
 Capability: the engine plays any chapter from its specs. No code names a chapter or a level. Contract: `.kiro/steering/declarative-chapters.md`.
 
@@ -30,3 +30,7 @@ Capability: the engine plays any chapter from its specs. No code names a chapter
 | 11 | `npm run quality:declarative` |
 | 12 | `npx tsc --noEmit` |
 | 13, 14 | `node scripts/harness/generate-chapter.mjs --validate` / `--verify` |
+
+## Decisions
+
+Task 10 depends on a second chapter, and Kiroween ships one. **A (user, 2026-11-17):** "close all the open questions" before the Kiroween submission. Applied as: tasks 1-9 and 11 are done; task 10 moves to the backlog in `tasks.md`.

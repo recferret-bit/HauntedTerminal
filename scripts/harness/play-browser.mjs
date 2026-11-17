@@ -4,7 +4,11 @@
 // (window.__term.submit, the function the Enter key calls), lets real 1 s game ticks run between lines,
 // and checks that the outro and the stats screen arrive. No npm dependency beyond Vite.
 //
-//   node scripts/harness/play-browser.mjs                         (starts its own Vite)
+//   node scripts/harness/play-browser.mjs                         (starts its own Vite; plays the whole Kiroween chapter,
+//                                                                  the script is built from every level's solutionCommands)
+//   node scripts/harness/play-browser.mjs --chapter <slug>        (another chapter folder in chapters/)
+//   node scripts/harness/play-browser.mjs --script scripts/harness/playthrough.script.json --page /play --query ''
+//                                                                  (the classic floors 1-5 instead of the chapter)
 //   node scripts/harness/play-browser.mjs --url http://127.0.0.1:5341
 //   node scripts/harness/play-browser.mjs --gap 2500 --script my.json --nointro
 //
@@ -21,15 +25,23 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { parseArgs, projectRoot, startPageServer } from './lib/load.mjs';
 
-const args = parseArgs(process.argv.slice(2), ['--url', '--page', '--query', '--script', '--gap', '--width', '--height', '--chrome', '--line-timeout']);
+const args = parseArgs(process.argv.slice(2), ['--url', '--page', '--query', '--script', '--chapter', '--gap', '--width', '--height', '--chrome', '--line-timeout']);
 const gap = Number(args.val('--gap', 1500));
 const width = Number(args.val('--width', 1280));
 const height = Number(args.val('--height', 800));
 const lineTimeout = Number(args.val('--line-timeout', 20000));
 const verbose = args.flag('--verbose');
-const scriptPath = resolve(projectRoot, args.val('--script', 'scripts/harness/playthrough.script.json'));
+const chapterSlug = args.val('--chapter', 'chapter-01-kiroween');
+const scriptPath = args.val('--script') ? resolve(projectRoot, args.val('--script')) : null;
 const outDir = resolve(projectRoot, 'scripts/harness/out');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** The chapter playthrough: each level's solutionCommands in manifest order, so the script cannot drift from the specs. */
+function chapterScript(slug) {
+  const dir = resolve(projectRoot, 'chapters', slug);
+  const manifest = JSON.parse(readFileSync(join(dir, 'chapter.manifest.json'), 'utf8'));
+  return manifest.levels.flatMap((entry) => JSON.parse(readFileSync(join(dir, entry.specPath), 'utf8')).solutionCommands);
+}
 
 function findChrome() {
   return [
@@ -85,11 +97,11 @@ function withTimeout(promise, ms, what) {
 }
 
 async function main() {
-  if (!existsSync(scriptPath)) {
+  if (scriptPath && !existsSync(scriptPath)) {
     console.error(`missing script ${scriptPath}`);
     return 2;
   }
-  const script = JSON.parse(readFileSync(scriptPath, 'utf8'));
+  const script = scriptPath ? JSON.parse(readFileSync(scriptPath, 'utf8')) : chapterScript(chapterSlug);
   const chromePath = findChrome();
   if (!chromePath) {
     console.error('No Chrome/Chromium found. Pass --chrome <path> or set CHROME_BIN.');
@@ -112,7 +124,7 @@ async function main() {
     const pagePath = args.val('--page', '/play').replace(/^\/*/, '/');
     const queryParts = [];
     if (args.val('--query')) queryParts.push(args.val('--query').replace(/^\?/, ''));
-    else if (!args.val('--script')) queryParts.push('chapter=chapter-01-kiroween');
+    else if (!scriptPath) queryParts.push(`chapter=${chapterSlug}`);
     if (args.flag('--nointro') && !queryParts.join('&').includes('nointro')) queryParts.push('nointro=1');
     const url = `${base}${pagePath}${queryParts.length ? `?${queryParts.join('&')}` : ''}`;
 

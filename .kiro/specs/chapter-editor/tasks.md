@@ -12,8 +12,13 @@
 - [x] 10. Accessibility pass: roles, labels, live regions, screen-reader text, roving ARIA tablist. _Req 11, 12_
 - [x] 11. `editor-smoke.mjs` in headless Chrome (desktop + compact workstation checks). _Req 1-12_
 - [x] 12. Upgrade to shared workstation studio (`src/editor-core/`, centered game stage, movable/hidable/swappable docks, canvas zoom/resize, `data-item-path` selection + `.cx-sel-pill`, `popstate` routing, `window.__chapterEditor`, `editor-unit-test.mjs` positive/negative/corner-case suite). _Req 11, 12_
-- [ ] 13. Add / delete / reorder levels (updates manifest `levels[]`, folder, indices).
-- [ ] 14. Undo/redo per file; side-by-side diff against disk before save.
-- [ ] 15. Per-field locks (`lockedPaths`) so agents never regenerate hand-tuned fields; today the rule is "read from disk, patch only what the task names".
-- [ ] 16. Dialogue preview anchored on the real socket inode (today anchors on inode 0).
-- [ ] 17. Keyboard reordering for list items (buttons exist; add shortcuts) and a manual screen-reader pass.
+
+## Backlog (post-Kiroween, not part of this spec)
+
+Moved out of the task list on 2026-11-17 so the spec can close. None of these is needed by the one-chapter Kiroween scope.
+
+- 13. Add / delete / reorder levels (updates manifest `levels[]`, folder, indices).
+- 14. Undo/redo per file; side-by-side diff against disk before save.
+- 15. Per-field locks (`lockedPaths`) so agents never regenerate hand-tuned fields; today the rule is "read from disk, patch only what the task names".
+- 16. Dialogue preview anchored on the real socket inode (today anchors on inode 0).
+- 17. Keyboard reordering for list items (buttons exist; add shortcuts) and a manual screen-reader pass.

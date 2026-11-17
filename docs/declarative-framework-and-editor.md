@@ -1,102 +1,33 @@
-Чтобы ИИ-агенты не галлюцинировали координатами и несуществующими спрайтами, а визуальный редактор и сама игра работали без рассинхрона, в основу фреймворка нужно положить строгий декларативный формат данных (Comic AST), полностью запретив агентам писать императивный код сцен. И генератор в харнесе, и визуальный редактор читают и модифицируют одни и те же JSON-файлы страниц, а рендерит их единый плеер комиксов, общий для игры и редактора.
+# Declarative framework and editor: design note
 
-Декларативное ядро (Comic AST)
+(English translation of the original Russian design note. It is background reading; the shipped contract lives in `.kiro/steering/declarative-chapters.md` and `declarative-comix.md`.)
 
-Схема данных описывает геометрию страницы, полигональную нарезку кадров (включая косые разрезы и пробой рамок в духе Comix Zone), ключевые кадры таймлайна и интерактивные триггеры перехода в геймплей. На уровне типов закладывается защита от выдуманных путей к файлам и защита ручных правок из редактора:
+**Goal.** AI agents must not hallucinate coordinates or sprites, and the editor and the game must never drift apart. So the framework rests on a strict declarative data format and agents are forbidden to write imperative scene code. The harness generator and the visual editor read and modify the same JSON page files, and one shared player renders them for both the game and the editor.
 
-TypeScript
-export type AssetRef =
-  | { kind: "existing"; assetId: string; animState?: string }
-  | { kind: "proposed"; proposalId: `prop_${string}`; placeholder: "actor" | "prop" | "vfx" | "sfx" };
+## Declarative core
 
-export interface ComicPageAST {
-  pageId: string;
-  canvas: { width: number; height: number; gutterWidth: number; paperTheme: string };
-  panels: PanelNode[];
-  timeline: TimelineTrack[];   // Камера, трансформации, печать текста, шейдеры, аудио
-  triggers: TriggerRule[];     // Условия, клики, ветвления, передача стейта в уровень
-  lockedPaths: string[];       // JSON-пути ручных правок из редактора (запрет на перезапись ИИ)
-}
+The schema describes page geometry, polygonal panel cuts (diagonal cuts and frame-breaking in the Comix Zone spirit), timeline keyframes and interactive triggers that hand over to gameplay. Types protect against invented file paths and protect manual edits made in the editor: an asset reference is either an existing registry id or a proposal for a new asset, and the page lists `lockedPaths` that an agent may not overwrite. Panels carry a polygon, actors (with a transform and an optional gutter break), bubbles (speech, thought, kernel panic, terminal prompt) and hit boxes bound to triggers.
 
-export interface PanelNode {
-  panelId: string;
-  polygon: Array<[number, number]>; // Прямые и диагональные рамки кадра
-  actors: Array<{
-    id: string;
-    asset: AssetRef;
-    transform: { x: number; y: number; scale: number; rotation: number };
-    breakGutter?: boolean;          // Выход объекта за маску кадра поверх белой рамки
-  }>;
-  bubbles: Array<{
-    id: string;
-    style: "speech" | "thought" | "kernel_panic" | "terminal_prompt";
-    bounds: { x: number; y: number; w: number; h: number };
-    text: string;
-  }>;
-  hitboxes: Array<{
-    zoneId: string;
-    polygon: Array<[number, number]>;
-    cursor: "hand" | "wrench" | "cursor_drag";
-    triggerId: string;              // Например, вручную протолкнуть пакет или начать уровень
-  }>;
-}
-Реестр ассетов и плейсхолдеры
+## Asset registry and placeholders
 
-Агент получает доступ к ресурсам игры не через сырую файловую систему, а через локальный инструмент поиска (CLI или MCP-сервер поверх индексатора):
+- Agents reach game resources through a registry, not the raw file system. A builder indexes sprites, animations, sounds and shaders with sizes, durations, states and tags.
+- References are strictly typed: only a valid registry id or an explicit proposal is accepted.
+- Every missing asset needs a proposal with size, duration, a brief for the art or sound and a placeholder type.
+- The engine renders proposals as pencil-sketch placeholders so a scene can be tested before the art exists.
 
-Автоиндексация манифеста: сборщик сканирует спрайты, анимации, звуки и шейдеры проекта, формируя единый реестр с размерами, длительностью, стейтами и семантическими тегами.
+## Interview mode
 
-Строгая типизация ссылок: агент не может подставить выдуманный путь к файлу — схема принимает только валидный ID из реестра или явную ссылку на заявку нового ассета.
+Discovery is a state machine with a completeness check: while the chapter draft has empty slots, spec generation is blocked. It covers the chapter frame (metaphor, levels, state flags), transitions into gameplay, storyboard and rhythm, and an audit of missing assets that the user approves before any spec folder is created.
 
-Контракт новых ассетов: для каждого недостающего элемента агент обязан заполнить спецификацию с размерами, длительностью, ТЗ на графику или звук и типом заглушки.
+## Specs and validation harness
 
-Мгновенные плейсхолдеры: движок рендерит новые заявки как стилизованные карандашные скетчи с подписями стейтов, позволяя тестировать сцену до отрисовки графики.
+After approval, a chapter folder holds the arc, the storyboard, the approved asset proposals and the acceptance invariants, plus the generated pages. The harness loops generation against a deterministic validator that returns exact errors until four checks pass:
 
-Интерактивный режим интервью
+1. Reference check: asset ids, animation states, sound keys and level ids exist in the registry or in approved proposals.
+2. Geometry solver: panel polygons stay on the canvas, actor anchors stay in frame, text fits the bubbles with real font metrics.
+3. Trigger graph: no dead ends; every interactive page has a path to a level start.
+4. Headless frame render: key timecodes are rendered to a buffer and checked so bubbles do not cover faces or click zones.
 
-Чтобы агент не додумывал детали сам и не заваливал простыней из двадцати вопросов сразу, режим дискавери строится как конечный автомат с проверкой полноты (пока в черновике главы есть незаполненные слоты, генерация спеки заблокирована):
+## Visual editor
 
-Каркас главы: агент выясняет метафору локации внутри ПК (например, ручная сборка мусора или разбор дедлока), список уровней и флаги состояния между ними.
-
-Переходы в геймплей: уточняет швы в духе Comix Zone — как именно вайбкодер пробивает рамку кадра, падает в стек вызовов или переносится курсором на старт уровня.
-
-Раскадровка и ритм: фиксирует разбивку на страницы и панели, плотность диалогов, гэги и точки, где игрок вручную прожимает интерактивный объект в кадре.
-
-Аудит недостающих ассетов: сверяет сцены с реестром и выносит на твое утверждение список новых спрайтов, анимаций и звуков до создания папки спецификаций.
-
-Спецификации и харнес валидации
-
-После аппрува интервью создается изолированная папка главы со спецификациями, по которой агент в харнесе собирает рабочие страницы комикса:
-
-Plaintext
-chapters/
-  ch01_manual_garbage_collector/
-    specs/
-      01_chapter_arc.md          # Сюжет главы, контракты входов и выходов между уровнями
-      02_storyboard.md           # Постраничная раскадровка, реплики, тайминги и триггеры
-      03_asset_proposals.json    # Утвержденные заявки на новые ассеты, эффекты и звуки
-      04_invariants.json         # Правила приемки для автоматического прогона харнеса
-    pages/
-      01_intro.page.json         # Сгенерированные и провалидированные страницы комикса
-      02_bridge_lvl1_2.page.json
-Харнес запускает генерацию в цикле обратной связи с детерминированным валидатором (validate-comic), возвращая агенту точные ошибки до полного прохождения четырех проверок:
-
-Ссылочный контроль: валидатор сверяет все ID ассетов, названия стейтов анимаций, звуковые ключи и идентификаторы уровней с реестром и утвержденными заявками.
-
-Геометрический солвер: проверяет, что полигоны панелей не выходят за холст, якоря актеров внутри кадра, а текст влезает в баблы с учетом реальных метрик шрифта.
-
-Анализ графа триггеров: строит граф переходов таймлайна и гарантирует отсутствие тупиков — с каждой интерактивной страницы должен быть путь к старту уровня.
-
-Headless-рендер кадров: рендерит ключевые таймкоды в буфер и проверяет пересечение рамок, чтобы текстовые баблы не перекрывали лица героев и зоны клика.
-
-Визуальный редактор комиксов
-
-Чтобы превью в редакторе на 100% совпадало с игрой, внутрь веб-оболочки редактора монтируется сам игровой рендерер комиксов в режиме редактирования:
-
-Нарезка кадров: визуальный сплиттер для прямых и диагональных разрезов страницы в стиле Comix Zone с настройкой межпанельных полей, масок обрезки и камер.
-
-Многодорожечный таймлайн: покадровый скраббинг с кривыми интерполяции для движения камеры, смены анимаций, скорости печати текста, шейдеров и звуковых волн.
-
-Интерактив и триггеры: рисование полигональных хитбоксов прямо поверх кадра и привязка реакций — от клика по зависшему терминалу до запуска нужного уровня.
-
-Защита ручных правок: любое поле, измененное тобой в редакторе, заносится в lockedPaths, чтобы при перегенерации главы агент не затер ручные тайминги и координаты.
+The game's own comic renderer is mounted inside the editor shell so the preview matches the game exactly. It offers a panel splitter, a multi-track timeline with interpolation curves, hit-box drawing with trigger binding, and protection of manual edits: any field changed in the editor goes into `lockedPaths` so regeneration never overwrites hand-tuned timings and coordinates.
