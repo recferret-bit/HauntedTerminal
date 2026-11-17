@@ -1,6 +1,6 @@
 # Netlify deploy power: requirements
 
-Status: approved (requirements, design and tasks: every answer delegated by the user, "use your recommendations across all the questions, then go", 2026-11-17)
+Status: done (requirements, design and tasks: every answer delegated by the user, "use your recommendations across all the questions, then go", 2026-11-17; first production deploy 2026-11-17)
 
 Capability: a project Kiro power, `haunted-ship`, that puts Haunted Terminal on a public Netlify URL only after the project's gates pass and the whole chapter has been played on the deployed preview. Production gets exactly the build that was played, and only after the user says yes. It gives the Kiroween submission its working-app URL and is the project's use of Kiro powers and MCP.
 

@@ -1,12 +1,14 @@
 # Haunted Terminal
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/63e4efdf-c141-4b4d-84dd-1a4132007e82/deploy-status)](https://app.netlify.com/projects/haunted-terminal/deploys)
+
 **A 90s comic-book game where the only controller is a unix terminal.**
 Lightning pulls a developer inside his own computer. He is the only human in there. To get out he types real commands: `ls -a` lights up what hides in the dark, `kill -9` fights malware, `chmod -x` turns a monster to stone, `cat` reads the machine's secrets, and a few levels ask for real HTML, JavaScript, Dockerfiles and Compose files.
 
 ![Level 1 of Haunted Terminal: the comic stage above a live terminal](docs/media/gameplay-level-01.png)
 
 > **Kiroween 2026 entry** · category **Costume Contest** · built entirely with [Kiro](https://kiro.dev)
-> **Play it:** `<LIVE_URL>` · **Demo video:** `<YOUTUBE_URL>` · **How Kiro was used:** [`docs/KIRO_USAGE.md`](docs/KIRO_USAGE.md)
+> **Play it:** https://haunted-terminal.netlify.app · **Demo video:** `<YOUTUBE_URL>` · **How Kiro was used:** [`docs/KIRO_USAGE.md`](docs/KIRO_USAGE.md)
 
 ## Why it is different
 
@@ -24,7 +26,7 @@ The campaign also ships as a comic you can read ([contact sheet](docs/media/comi
 
 ## Play
 
-Hosted: `<LIVE_URL>`. Use a desktop browser with WebGL and a keyboard. Click the terminal and type `ls`. Type `help` for commands and `hank` for hints.
+Hosted: https://haunted-terminal.netlify.app. Use a desktop browser with WebGL and a keyboard. Click the terminal and type `ls`. Type `help` for commands and `hank` for hints.
 
 Locally (Node.js 20 or newer, developed on 24):
 
