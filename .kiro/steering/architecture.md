@@ -42,7 +42,7 @@ Exact allowed imports live in `scripts/quality/check-layers.mjs`. Change the rul
 
 ## Gates (run before saying a change is done)
 
-- `npm run quality` : typecheck, root layout, size, layers, declarative (no chapter, level, or comix page named in code), specs (every spec has a valid `Status:`, no open questions past `draft`, every new `src/<area>/` or page is named by an approved spec; `spec-first.md`), duplicates.
+- `npm run quality` : typecheck, root layout, size, layers, declarative (no chapter, level, or comix page named in code), specs (every spec has a valid `Status:`, no open questions past `draft`, every new `src/<area>/` or page is named by an approved spec; `spec-first.md`), duplicates, agents (`check-agents.mjs`: the team agents match their table and every source file has one owner), properties (`property-tests.mjs`: fast-check properties per feature, fixed seed).
 - `node scripts/harness/generate-chapter.mjs --verify` : compile chapters, static spec checks, 0-death headless playthrough.
 - `node scripts/harness/generate-comix.mjs --verify` & `node scripts/harness/validate-comix.mjs` : compile comix sequences, static + connected-folder checks, 60fps headless timeline simulation.
 - `node scripts/harness/editor-unit-test.mjs`, `node scripts/harness/editor-smoke.mjs` & `node scripts/harness/comix-editor-smoke.mjs` : unit/corner-case suite + chapter and comix editors in headless Chrome.

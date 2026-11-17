@@ -1,0 +1,220 @@
+{
+  "name": "terminal-designer",
+  "description": "Designs and tunes the terminal: the shell, its commands, the virtual file system, man pages, terminal UI and the Terminal Lab (src/game shell files, src/ui, src/terminal-lab, lab scripts).",
+  "prompt": "file://./prompts/terminal-designer.md",
+  "model": "auto",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "allowedTools": [],
+  "resources": [
+    "file://AGENTS.md",
+    "file://.kiro/agents/prompts/team-rules.md",
+    "file://.kiro/steering/product.md",
+    "file://.kiro/steering/tech.md",
+    "file://.kiro/steering/structure.md",
+    "file://.kiro/steering/architecture.md",
+    "file://.kiro/steering/glossary.md",
+    "file://.kiro/steering/spec-first.md",
+    "file://.kiro/steering/terminal-lab-rules.md",
+    "file://.kiro/specs/inventory/items/terminal/requirements.md",
+    "file://.kiro/specs/inventory/items/terminal/design.md",
+    "skill://.kiro/skills/chapter-level-generator/SKILL.md"
+  ],
+  "hooks": [
+    {
+      "name": "agent-baseline",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/agent-scope.mjs terminal-designer --snapshot"
+      }
+    },
+    {
+      "name": "agent-shell-guard",
+      "trigger": "PreToolUse",
+      "matcher": "^execute_bash$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/agent-shell-guard.mjs terminal-designer"
+      }
+    },
+    {
+      "name": "agent-scope",
+      "trigger": "Stop",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/agent-scope.mjs terminal-designer"
+      }
+    }
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_write",
+        "match": [
+          "**"
+        ],
+        "exclude": [
+          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,tree,tree-links,manual,lab-checks,lab-riddle,lab-support,lab-types}.ts",
+          "src/ui/**",
+          "src/terminal-lab/**",
+          "scripts/harness/terminal-lab/**",
+          "scripts/harness/props/terminal.mjs"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,tree,tree-links,manual,lab-checks,lab-riddle,lab-support,lab-types}.ts",
+          "src/ui/**",
+          "src/terminal-lab/**",
+          "scripts/harness/terminal-lab/**",
+          "scripts/harness/props/terminal.mjs"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "src/chapters/generated/**",
+          "src/cinematic/generated/**",
+          "chapters/*/story/out/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_read",
+        "match": [
+          "**/.env",
+          "**/.env.*",
+          "**/*.pem",
+          "**/*.key",
+          "~/.kiro/crew/.env",
+          "~/.kiro/crew/auth*",
+          "~/.ssh/**",
+          "~/.aws/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "pwd",
+          "ls",
+          "ls *",
+          "cat *",
+          "head *",
+          "tail *",
+          "wc *",
+          "grep *",
+          "which *",
+          "echo *",
+          "cd *",
+          "sleep *",
+          "git status",
+          "git status *",
+          "git log",
+          "git log *",
+          "git show *",
+          "git branch --show-current",
+          "git rev-parse *",
+          "git ls-files",
+          "git ls-files *",
+          "git diff",
+          "git diff --stat*",
+          "git diff --name-only*",
+          "git diff --cached --stat*",
+          "git diff -- *",
+          "npm run quality",
+          "npm run quality:*",
+          "npm run build",
+          "npm start",
+          "npm stop",
+          "npm restart",
+          "npm run status",
+          "node scripts/*",
+          "node .kiro/skills/*"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*"
+        ],
+        "exclude": [
+          "pwd",
+          "ls",
+          "ls *",
+          "cat *",
+          "head *",
+          "tail *",
+          "wc *",
+          "grep *",
+          "which *",
+          "echo *",
+          "cd *",
+          "sleep *",
+          "git status",
+          "git status *",
+          "git log",
+          "git log *",
+          "git show *",
+          "git branch --show-current",
+          "git rev-parse *",
+          "git ls-files",
+          "git ls-files *",
+          "git diff",
+          "git diff --stat*",
+          "git diff --name-only*",
+          "git diff --cached --stat*",
+          "git diff -- *",
+          "npm run quality",
+          "npm run quality:*",
+          "npm run build",
+          "npm start",
+          "npm stop",
+          "npm restart",
+          "npm run status",
+          "node scripts/*",
+          "node .kiro/skills/*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*--output*",
+          "git reset*",
+          "git checkout*",
+          "git stash*",
+          "git clean*",
+          "git branch -D*",
+          "rm *",
+          "sudo *",
+          "npm install*",
+          "npm i *",
+          "npm uninstall*",
+          "npm publish*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*.env*",
+          "*.pem*",
+          "*/.ssh/*",
+          "*/.aws/*",
+          "*.kiro/crew/.env*"
+        ],
+        "effect": "deny"
+      }
+    ]
+  },
+  "welcomeMessage": "terminal-designer: which command, output or terminal behaviour should change?"
+}

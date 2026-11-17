@@ -26,4 +26,7 @@ Use these words exactly; do not invent synonyms.
 - **Pattern** (lab): plain text matches as a substring (a riddle answer: the exact text); `re:<regex>` or `re:/<regex>/<flags>` is a regular expression. The prefix keeps a path such as `/dev/null` plain text.
 - **Absorbed damage**: damage a lab session counts per source and never applies.
 - **Kiro spec**: one folder `.kiro/specs/<name>/` (`requirements.md` or `bugfix.md`, `design.md`, `tasks.md`) for a feature or a big refactor. Not a chapter spec. Its `Status:` is `draft`, `requirements-approved`, `design-approved`, `approved` or `done`; code is written only from `approved` on (`spec-first.md`).
+- **Agent** (team): one Kiro custom agent in `.kiro/agents/<name>.json`: `lead-dev`, `terminal-designer`, `laptop-designer`, `comix-designer`, `chapters-designer`, `artist`, `qa`. Its **owned paths** are the only files it writes; every source file has exactly one owner. Not an AI-agent character of the story (Clod, Gork, Codec, Anti-Gravy).
+- **QA report**: one `docs/qa/<YYYY-MM-DD>-<scope>.md` written by `qa`: the checks run with exit codes, the findings with owners, a `PASS` / `FAIL` verdict.
+- **Property** (test): an invariant checked on many generated inputs by `scripts/harness/property-tests.mjs` (fast-check). A failure gives a shrunk **counterexample** and a seed.
 - **Grill**: the rounds of questions the agent asks before a Kiro spec leaves `draft`. Answers are recorded under `## Decisions`; unanswered ones stay under `## Open questions`.
