@@ -1,5 +1,7 @@
 # Chapter editor: requirements
 
+Status: approved (legacy: written before spec-first.md; open tasks remain)
+
 Capability: a human reviews and tunes any chapter at `/editor` without writing code, on the real game. Contract: `declarative-chapters.md`, rules: `chapter-editor-rules.md`.
 
 ## Requirements

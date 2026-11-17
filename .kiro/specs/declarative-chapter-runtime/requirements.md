@@ -1,5 +1,7 @@
 # Declarative chapter runtime: requirements
 
+Status: approved (legacy: written before spec-first.md; open tasks remain)
+
 Capability: the engine plays any chapter from its specs. No code names a chapter or a level. Contract: `.kiro/steering/declarative-chapters.md`.
 
 ## Requirements

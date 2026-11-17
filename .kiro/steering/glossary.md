@@ -23,3 +23,5 @@ Use these words exactly; do not invent synonyms.
 - **Goal** (lab): a thing to do in a lab level, shown with a done mark: a **task** (a game win rule placed in a lab), a **check** (a lab-only condition: `ran`, `output`, `code`, `event`, `file`, `riddle`), or a riddle.
 - **Pattern** (lab): plain text matches as a substring (a riddle answer: the exact text); `re:<regex>` or `re:/<regex>/<flags>` is a regular expression. The prefix keeps a path such as `/dev/null` plain text.
 - **Absorbed damage**: damage a lab session counts per source and never applies.
+- **Kiro spec**: one folder `.kiro/specs/<name>/` (`requirements.md` or `bugfix.md`, `design.md`, `tasks.md`) for a feature or a big refactor. Not a chapter spec. Its `Status:` is `draft`, `requirements-approved`, `design-approved`, `approved` or `done`; code is written only from `approved` on (`spec-first.md`).
+- **Grill**: the rounds of questions the agent asks before a Kiro spec leaves `draft`. Answers are recorded under `## Decisions`; unanswered ones stay under `## Open questions`.

@@ -1,5 +1,7 @@
 # Comix editor studio: requirements
 
+Status: done (legacy: written before spec-first.md)
+
 The Comix Editor (`/comix-editor`) is a workstation studio in `src/comix-editor/` built on `src/editor-core/` and `src/styles/editor-workstation.css` for reviewing, scrubbing, framing, and tuning connected `comix/<slug>/` sequences on desktop and headless Chrome, without owning separate game or comix logic.
 
 ## Requirements

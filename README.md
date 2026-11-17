@@ -71,12 +71,12 @@ node scripts/harness/screenshot-lab.mjs --selftest    # headless WebGL screensho
 
 Everything Kiro uses lives in [`.kiro/`](./.kiro):
 
-- **Steering** (`.kiro/steering/`): product, tech, structure, architecture, declarative chapter/comix rules, editor rules, and the skills map. Architecture and declarative rules are enforced by scripts in `scripts/quality/`, not by prose.
-- **Skills** (`.kiro/skills/`): 23 skills in two categories. *ASSET PCG* (art direction, models, malware,
+- **Steering** (`.kiro/steering/`): product, tech, structure, architecture, spec-first workflow, declarative chapter/comix rules, editor rules, and the skills map. Architecture and declarative rules are enforced by scripts in `scripts/quality/`, not by prose.
+- **Skills** (`.kiro/skills/`): 24 skills. `feature-spec-grill` (*WORKFLOW*) runs first for any new feature or big refactor; the others fall in two categories. *ASSET PCG* (art direction, models, malware,
   rooms, textures, shaders, lighting, animation, particles, validators, visual QA) and *LEVEL GEN*
   (chapter intake, comic story drawing, level compiler, chapter implementer, chapter editor, plus 3D comix intake, sequence generator, comix implementer, and comix editor). Each ships its own validator scripts and self-tests.
-- **Hooks** (`.kiro/hooks/`): asset dry runs, chapter/comix spec validators and typecheck on save, a Terminal Lab run on lab save, a stop-time verification gate, and a pre-write guard protecting `generated/` files and the chapter, comix and lab vocabularies.
-- **Specs** (`.kiro/specs/`): feature specs (`requirements.md`, `design.md`, `tasks.md`) for `declarative-chapter-runtime`, `chapter-editor`, `declarative-comix-runtime`, `comix-editor`, and `terminal-lab`.
+- **Hooks** (`.kiro/hooks/`): asset dry runs, chapter/comix spec validators and typecheck on save, a Terminal Lab run on lab save, a stop-time verification gate, a spec-first reminder on feature-like prompts and a spec status report on stop, a pre-write guard protecting `generated/` files and the chapter, comix and lab vocabularies, and a pre-write guard that blocks new source areas and pages without an approved spec.
+- **Specs** (`.kiro/specs/`): every new feature or big refactor is spec-first (`.kiro/steering/spec-first.md`). The user is grilled until every question is answered, and approves requirements, design and tasks before code is written. Specs (`requirements.md`, `design.md`, `tasks.md`, each with a `Status:`): `declarative-chapter-runtime`, `chapter-editor`, `declarative-comix-runtime`, `comix-editor`, `terminal-lab`. `npm run quality:specs` checks them.
 
 ## Layout
 

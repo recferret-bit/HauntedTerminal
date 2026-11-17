@@ -1,5 +1,7 @@
 # Terminal Lab: requirements
 
+Status: done (legacy: written before spec-first.md)
+
 Capability: a developer builds any test scene at `/terminal-lab` (files, enemies, pickups, props, NPC lines, riddles, tasks), plays it in the real terminal on the real comic stage, and replays it as a script, in the browser or headless. The player never takes damage. The lab writes nothing to `chapters/` or `comix/` and adds no chapter or comix vocabulary. Rules: `terminal-lab-rules.md`.
 
 ## Requirements

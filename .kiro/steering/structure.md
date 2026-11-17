@@ -58,8 +58,8 @@ public/assets/               # external sprites/meshes (ai-mesh-pipeline)
 public/comix/<chapter-id>/   # rendered comic pages
 scripts/harness/             # shared Node tooling
   terminal-lab/              # committed Terminal Lab scripts (`<id>.lab.json`): one per enemy type and pickup, riddles, tasks, NPCs, inject, no-damage soak
-scripts/hooks/               # scripts run by .kiro/hooks (asset dry runs, the generated/vocabulary guard)
-scripts/quality/             # root, size, layer, duplicate and fingerprint gates
+scripts/hooks/               # scripts run by .kiro/hooks (asset dry runs, the generated/vocabulary guard, the spec-first guard and reminder)
+scripts/quality/             # root, size, layer, declarative, spec, duplicate and fingerprint gates
 docs/                        # long-form docs and notes
 .kiro/
   steering/ skills/ specs/ hooks/ settings/

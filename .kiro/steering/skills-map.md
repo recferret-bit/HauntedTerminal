@@ -1,6 +1,10 @@
 # Skills map
 
-Skills live in `.kiro/skills/`. Every skill description starts with its category tag, `[ASSET PCG]` or `[LEVEL GEN]`. Activate the matching skill before working in its area; do not improvise rules the skill already defines.
+Skills live in `.kiro/skills/`. Every skill description starts with its category tag, `[ASSET PCG]`, `[LEVEL GEN]` or `[WORKFLOW]`. Activate the matching skill before working in its area; do not improvise rules the skill already defines.
+
+## Before both: WORKFLOW
+
+`feature-spec-grill`: a new feature or a big refactor starts here, before any other skill (`spec-first.md`). It writes `.kiro/specs/<name>/`, grills the user until every open question is answered, and gets requirements, design and tasks approved. The approved tasks then name the ASSET PCG and LEVEL GEN skills that do the work.
 
 ## Category 1: ASSET PCG (procedural content generation of game assets)
 

@@ -1,5 +1,7 @@
 # Declarative comix runtime: requirements
 
+Status: done (legacy: written before spec-first.md)
+
 The 3D animated Comix engine (`src/cinematic/`) is a generic comic-page renderer and timeline runner. Animated sequences live strictly as connected specs in `comix/<slug>/`, compiled to `src/cinematic/generated/catalog-data.ts`. **Zero TypeScript files in `src/cinematic/` or `src/comix-editor/` may name a sequence slug, page ID, panel ID, or scene-specific role.**
 
 ## Requirements
