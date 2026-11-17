@@ -92,7 +92,7 @@ Change the `Status:` line only at a gate, and add the date and who approved: `St
 
 - [ ] 1. <one reviewable change>. _Req 1, 3_. Gates: `npm run quality`, `<suite>`
 - [ ] 2. ...
-- [ ] N. Docs: steering (architecture, structure, tech, glossary), AGENTS.md, skills-map, README. _All_
+- [ ] N. Docs: steering (architecture, structure, tech, glossary), AGENTS.md, CLAUDE.md, skills-map, README. _All_
 ```
 
 ## 5. Done

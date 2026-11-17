@@ -14,7 +14,7 @@ Only these may sit at the root; `npm run quality:root` (`scripts/quality/check-r
 | `comix/` | Declarative animated 3D comix sequences, one connected folder per sequence (`comix.manifest.json` + `pages/page-XX-<slug>/page.spec.json`). |
 | `docs/` | Long-form docs and notes. |
 | `.kiro/` | Steering, skills, specs, hooks, settings. |
-| files | Only tool configs that must live at the root (`package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `.gitignore`) plus `AGENTS.md`, `README.md` and `LICENSE` (the open source licence the Kiroween rules require; GitHub detects it at the root). |
+| files | Only tool configs that must live at the root (`package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `.gitignore`) plus `AGENTS.md`, `CLAUDE.md`, `README.md` and `LICENSE` (the open source licence the Kiroween rules require; GitHub detects it at the root). |
 
 Rules:
 - A new page is a new `pages/<name>.html` plus an entry in `build.rollupOptions.input` of `vite.config.ts`. Never put HTML at the root.

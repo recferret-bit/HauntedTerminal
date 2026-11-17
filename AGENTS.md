@@ -1,50 +1,92 @@
 # AGENTS.md
 
-Haunted Terminal: a web game (Vite, TypeScript, Three.js, xterm.js) with Comix Zone visuals, played by typing unix commands and code into a terminal.
+Haunted Terminal: a web game (Vite 6, TypeScript 5 strict, Three.js 0.180, xterm.js 5) with 1995 *Comix Zone* visuals where a terminal is the only input (unix commands and code).
 
-## Read first
+- **Premise**: lightning pulls a developer inside his own computer; he is human, everything else is the machine.
+- **Kiroween scope**: ships **one chapter of about 11 levels** (default: 1 tutorial, 6 task levels, 3 hubs, 1 boss). Do not start a second chapter. Every level must clear headlessly with **0 deaths**.
 
-- `.kiro/steering/product.md`, `tech.md`, `structure.md`, `architecture.md`, `skills-map.md` (always loaded in Kiro).
+## Kiro Architecture Principles ("Roles Don't Blur")
 
-## New features and big refactors: spec first
+Per `docs/kiro-best-practice.md`, project knowledge and enforcement live in `.kiro/` with strict separation of concerns:
 
-Any new feature or big refactor (a new command, mechanic, item, page, lab, layer, model category, contract or save-data change; any rework, redesign or migration) starts as a Kiro spec in `.kiro/specs/<name>/`, not as code. Use the `feature-spec-grill` skill. Grill the user until every open question is answered and recorded under `## Decisions`. Get requirements, design and tasks approved one at a time, and only then write code. Rule and size test: `.kiro/steering/spec-first.md`. The `guard-spec-first` hook blocks new `src/<area>/` and `pages/*.html` without an approved spec, and `npm run quality:specs` fails on them.
+- **Facts -> `.kiro/steering/`**: short, non-overlapping context rules and exact vocabulary (`glossary.md` — never invent synonyms). Do not bloat steering with long-form design docs (`docs/`) or copy-pasted schemas.
+- **Capabilities -> `.kiro/specs/<name>/`**: system features and big refactors (`requirements.md` or `bugfix.md` in EARS syntax, `design.md`, `tasks.md`), never per-level or per-page content.
+- **Procedures -> `.kiro/skills/<skill>/SKILL.md`**: 24 workflow and authoring skills tagged `[WORKFLOW]`, `[ASSET PCG]`, or `[LEVEL GEN]`, paired with deterministic validator scripts.
+- **Truth -> Declarative JSON & Exhaustive Schemas**: `chapters/<slug>/`, `comix/<slug>/`, and `scripts/harness/terminal-lab/*.lab.json` are typed against `src/chapters/{types,script-types}.ts`, `src/cinematic/spec-types.ts`, and `src/terminal-lab/lab-types.ts`, with union-keyed `schema*.ts` field tables so missing editor forms fail `tsc`. `src/chapters/generated/` and `src/cinematic/generated/` are compiled outputs — never hand-edit.
+- **Enforcement -> `.kiro/hooks/` & `scripts/quality/`**: deterministic, zero-LLM Node scripts enforce architectural, declarative, size, root, and spec gates rather than relying on memory or prose. `.kiro/settings/mcp.json` stays minimal/empty whenever offline `.mjs` scripts and skills suffice.
 
-## Two categories of work
+## Read First: Steering Map
 
-1. **ASSET PCG**: procedural content generation of game assets. Start with the `haunted-art-direction` skill.
-2. **LEVEL GEN**: levels and the chapter they form. Start with `chapter-architect-intake`.
+**Always-on steering** (loaded automatically in Kiro; read upfront in other agents):
+`.kiro/steering/product.md`, `tech.md`, `structure.md`, `architecture.md`, `glossary.md`, `skills-map.md`, `spec-first.md`.
 
-Skill descriptions carry a `[ASSET PCG]` or `[LEVEL GEN]` tag. Full mapping and order: `.kiro/steering/skills-map.md`. Level generation uses assets but never creates them.
+**Path-scoped steering (`inclusion: fileMatch`)** — read before touching matching paths:
 
-## Chapters and Comixes are data
+| When touching | Read steering |
+|---|---|
+| `src/{procgen,shaders,renderer}/**` | `.kiro/steering/asset-pcg-rules.md` |
+| `{chapters,src/chapters}/**` | `.kiro/steering/level-gen-rules.md` |
+| `{chapters/**,src/chapters/**,src/chapter-editor/**,src/editor-core/**,src/play/**,src/ui/**,src/pages/**}` | `.kiro/steering/declarative-chapters.md` |
+| `{comix/**,src/cinematic/**,src/comix-editor/**,src/editor-core/**}` | `.kiro/steering/declarative-comix.md` |
+| `src/chapter-editor/**`, `src/editor-core/**`, `scripts/harness/lib/chapter-*.mjs`, `pages/chapter-editor.html` | `.kiro/steering/chapter-editor-rules.md` |
+| `src/comix-editor/**`, `src/cinematic/**`, `src/editor-core/**`, `scripts/harness/lib/comix-*.mjs`, `pages/comix-editor.html` | `.kiro/steering/comix-editor-rules.md` |
+| `src/terminal-lab/**`, `src/game/lab-*.ts`, `src/chapters/session-lab*.ts`, `scripts/harness/terminal-lab*`, `pages/terminal-lab.html` | `.kiro/steering/terminal-lab-rules.md` |
 
-The engine names no chapter, no level, and no comix scene. Chapter behaviour lives in `chapters/<slug>/` (`level.spec.json -> script`, manifest, dialogs, comic) and is played by `src/chapters/script.ts` (`.kiro/steering/declarative-chapters.md`, tuned in `/editor`, skill `chapter-editor`). Animated 3D comix sequences live in `comix/<slug>/` (`comix.manifest.json` + connected `pages/page-XX-<slug>/page.spec.json`) and are played by `src/cinematic/` (`.kiro/steering/declarative-comix.md`, tuned in `/comix-editor`, skills `comix-architect-intake`, `comix-sequence-generator`, `comix-implementer`, `comix-editor`).
+## New Features and Big Refactors: Spec First
 
-## Scope
+Follow `.kiro/steering/spec-first.md` and skill `feature-spec-grill` (`.kiro/skills/feature-spec-grill/SKILL.md`).
 
-Kiroween ships **one chapter of about 11 levels**. Do not start more chapters.
+- **State the size-test verdict on line 1** (`Spec-first: yes/no, <reason>`). When unsure, it qualifies (**yes**).
+- **Qualifies**: any new player/dev command, mechanic, item, page, mode, lab, or UI surface; any new `src/<area>/`, `pages/*.html`, layer rule, route, model category, or dependency; any vocabulary, `src/contracts/`, save-data, or security-boundary change; any rework, redesign, rewrite, migration, or multi-layer behavior change.
+- **Does not qualify**: clear-behavior bug fixes, tuned values, content inside an existing vocabulary, a single asset made via its skill, or docs.
+- **Workflow**:
+  1. **Stop — write zero source code.** Resume an existing `.kiro/specs/<name>/` or scaffold one with `node .kiro/skills/feature-spec-grill/scripts/scaffold-spec.mjs <kebab-name> [--bugfix]`.
+  2. **Grill** in rounds of at most 5 concrete questions, each offering 2–4 options with one `(Recommended)` default and a one-clause trade-off. Never guess or self-answer; move every user answer into `## Decisions` (`**A (user, YYYY-MM-DD):** ...`) and track unresolved items as `- [ ]` under `## Open questions`.
+  3. **Gate sequentially with explicit user approval**: write EARS requirements (`WHEN / IF / WHILE ..., THE SYSTEM SHALL ...`), then progress `draft` -> `requirements-approved` -> `design-approved` -> `approved` -> `done`. Silence is not approval. Run `node scripts/quality/check-specs.mjs` after each spec edit.
+  4. **Retroactive specs**: if code was written before its spec, do not delete or keep extending it — document existing behavior as *(proposed, from code)*, list unapproved choices under `## Open questions`, and grill until `approved`.
+- **Enforced by**: `guard-spec-first` (`scripts/hooks/guard-spec-first.mjs`, blocking new `src/<area>/` and `pages/*.html` without an approved spec) and `npm run quality:specs`.
 
-## Repository layout
+## Skill Categories & Pipelines
 
-Keep the root clean: HTML pages go in `pages/` (the Vite root; `pages/storybook.html` is served at `/storybook.html`), docs in `docs/`, tooling in `scripts/`, source in `src/`. Only tool configs, `AGENTS.md`, `README.md` and `LICENSE` sit at the root. `npm run quality:root` enforces it. Full table: `.kiro/steering/structure.md`.
+Read the matching `.kiro/skills/<skill>/SKILL.md` before working in its area; never improvise rules a skill already defines (`.kiro/steering/skills-map.md`):
 
-## Commands
+- **`[WORKFLOW]`**: `feature-spec-grill` — runs first for any qualifying feature or big refactor and chooses which asset/level skills execute the tasks.
+- **`[ASSET PCG]`** (procedural models, rooms, textures, shaders, lighting, animation, particles):
+  - Read `haunted-art-direction` **first**, then the area creator skill: `procedural-kitbash-3d`, `procedural-malware-3d`, `procedural-rooms-3d`, `procedural-texture-synthesis`, `shader-texture-tuning`, `comic-lighting-and-lightning`, `procedural-animation-3d`, `procedural-malware-animation`, `procedural-particles-3d`, or `ai-mesh-pipeline`.
+  - Pair every change with its deterministic validator (`model-geometry-validator`, `particle-effect-validator`, `check-tags.mjs`, `npm run quality:fingerprint`) and a visual QA pass (`comic-panel-viewport-auditor`). Stay inside the single palette and fixed cel light (no smooth gradients, extra Three.js lights, shadow maps, or bloom); only `vibecoder.*` and `item.*` use human palette zones.
+- **`[LEVEL GEN]`** (ordered pipelines; each step consumes the previous output):
+  - *Chapters & Levels (`chapters/<slug>/`)*: `chapter-architect-intake` -> `comix-story-drawer` -> `chapter-level-generator` -> `chapter-implementer` (`verify-chapter.mjs`) -> `chapter-editor` (`/editor`).
+  - *Animated 3D Comix (`comix/<slug>/`)*: `comix-architect-intake` -> `comix-sequence-generator` -> `comix-implementer` (`verify-comix.mjs`) -> `comix-editor` (`/comix-editor`).
+- **Strict Boundary**: LEVEL GEN specs reference existing `ModelCatalog`, `RoomKind`, and `FxCatalog` IDs only — never embed geometry, shaders, or particles in level or comix specs. Missing assets require an `[ASSET PCG]` pass first. **Terminal Lab** (`/terminal-lab`) and **Laptop Lab** (`/laptop-lab`) are test benches/emulators, not content categories, and never write `chapters/` or `comix/`.
 
-- Run the stack: `npm start` (dev server in the background on http://localhost:5173, returns once it answers; storybook at `/storybook.html`), `npm stop`, `npm restart`, `npm run status`. Agents use these instead of `npm run dev`, which blocks the shell. Log: `scripts/harness/out/stack/stack.log`.
-- Chapter editor: http://localhost:5173/editor (needs `npm start`). `node scripts/harness/generate-chapter.mjs` compiles; `--validate` is the fast read-only spec check; `--verify` adds the 0-death headless playthrough; `node scripts/harness/editor-smoke.mjs` drives the editor in headless Chrome.
-- Comix editor: http://localhost:5173/comix-editor (needs `npm start`). `node scripts/harness/generate-comix.mjs` compiles `comix/*` into `src/cinematic/generated/catalog-data.ts`; `--validate` runs static checks; `--verify` adds 60fps headless timeline simulation; `node scripts/harness/validate-comix.mjs` checks connected folder layout + specs; `node scripts/harness/comix-editor-smoke.mjs` drives `/comix-editor` in headless Chrome.
-- Terminal Lab: http://localhost:5173/terminal-lab (needs `npm start`). Test bench for the terminal: place enemies, pickups, files, riddles, tasks and NPCs, script them, and see the real shell and stage react. Nobody takes damage. Labs are `scripts/harness/terminal-lab/*.lab.json`. `node scripts/harness/terminal-lab.mjs --all` runs every lab headlessly (`--run <file>`, `--transcript`); `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs` and `node scripts/harness/terminal-lab-smoke.mjs` test it. Spec: `.kiro/specs/terminal-lab/`.
-- Laptop Lab: http://localhost:5173/laptop-lab (needs `npm start`). The developer's inventory laptop: open it, dive in, boot, use the desktop apps to write and run JS and HTML/CSS pages, and solve the coding tasks. Real keys and the real mouse drive its keys and trackpad. `node scripts/harness/laptop-unit.mjs` and `node scripts/harness/laptop-lab-smoke.mjs` test it. Spec: `.kiro/specs/laptop-inventory/`.
-- Build and check: `npm run build`, `npm run preview`, `npm run quality` (typecheck, root layout, size <= 600 lines/file and 130 lines/function, layer rules, declarative gate, spec gate, no duplicates).
+## Declarative Content, Four-Place Rule & Co-Editing Care
 
-Skill scripts live in `.kiro/skills/*/scripts/` and `scripts/harness/`; both categories run. `node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs` and `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs` are the LEVEL GEN gates.
+- **Zero hardcoded content**: engine code may never name a chapter, level, level index (`spec.index === N`), or comix sequence/page (`npm run quality:declarative`).
+- **Four-place vocabulary rule** (one coordinated change, guarded by `guard-chapter-files`):
+  - *Chapters*: (1) types (`src/chapters/{types,script-types}.ts`), (2) interpreter (`src/chapters/script.ts`), (3) exhaustive editor forms (`src/chapter-editor/schema.ts`), (4) pack checks (`src/chapters/validate-pack.ts`). Also run `terminal-lab-unit.mjs` since Terminal Lab reuses chapter-editor field tables.
+  - *Comix*: (1) `src/cinematic/spec-types.ts`, (2) runtime in `src/cinematic/`, (3) `src/comix-editor/schema*.ts`, (4) `src/cinematic/simulate.ts` + `src/comix-editor/check.ts`.
+  - *Terminal Lab*: `src/terminal-lab/lab-types.ts` + `src/chapters/session-lab-types.ts`, `lab-pack.ts` / `runner.ts`, `schema.ts`, `lab-check.ts` / `store.ts`, `catalog.ts` (if placeable), and a fixture in `scripts/harness/terminal-lab/`.
+- **Co-editing care**: humans tune in `/editor` and `/comix-editor` with etag `409` conflict protection. Read spec JSON files from disk immediately before editing, patch only the fields named by the task (never overwrite human edits from templates), and format with canonical writers (`scripts/harness/lib/chapter-json.mjs` -> `stringifyChapterJson`, `scripts/harness/lib/comix-json.mjs` -> `stringifyComixJson`, `scripts/harness/lib/lab-json.mjs`) so untouched saves change zero bytes.
 
-## Working rules
+## Clean Architecture, Hard Limits & Repository Layout
 
-- Use the matching skill before improvising rules it already defines.
-- New feature or big refactor: spec first (`spec-first.md`, skill `feature-spec-grill`). No code until the spec says `Status: approved`. If code was written before its spec, write the spec from it and grill the user; do not keep extending the code.
-- Hooks in `.kiro/hooks/` are report-only (type-check and spec validation on save, gates and a spec status report on stop, a spec-first reminder on feature-like prompts), except two guards. `guard-chapter-files` blocks edits to `src/chapters/generated/` and `src/cinematic/generated/` and asks before changes to the chapter, comix or Terminal Lab vocabulary. `guard-spec-first` blocks new `src/<area>/` and `pages/*.html` without an approved spec and asks before edits to `check-layers.mjs` and `vite.config.ts`. Specs live in `.kiro/specs/`, each with a `Status:` line.
-- Run validators for what you change and report only what you actually ran.
-- Pin dependency versions. Do not hand-edit generated files.
-- Commit only when asked.
+- **Inward layers** (enforced by `scripts/quality/check-layers.mjs`): dependencies point inward (`contracts` -> `procgen` / `game` -> `chapters` / `renderer` / `cinematic` / `editor-core` -> editors / labs / `ui` / `play` -> `main.ts`). Update `check-layers.mjs` and `.kiro/steering/architecture.md` in the same commit when changing layers.
+- **Hard limits**: `<= 600` lines/file, `<= 130` lines/function (split by responsibility), `0` duplicate blocks (`jscpd`, 4 lines / 35 tokens), strict TypeScript with **no `any`**, KISS (plain functions and data tables before classes). (`src/chapters/generated/` and `src/cinematic/generated/` are excluded compiled data.)
+- **Workstation & runtime safety**: build DOM with `h()` (text nodes, never `innerHTML`), preserve focus on live redraws (`redrawKeepingFocus`), keep player code isolated in Workers or `sandbox="allow-scripts"` iframes, and keep dev APIs restricted to local Host, same Origin, whitelisted paths, atomic writes, and `baseEtag` `409` checks.
+- **Clean root** (`npm run quality:root` / `scripts/quality/check-root.mjs`): HTML entry pages go in `pages/` (the Vite root; e.g., `pages/storybook.html` -> `/storybook.html`) plus `vite.config.ts`, docs in `docs/`, tooling in `scripts/`, source in `src/`. Only tool configs, `AGENTS.md`, `CLAUDE.md`, `README.md`, and `LICENSE` sit at the root. Update `check-root.mjs` and `.kiro/steering/structure.md` together if root entries change.
+
+## Commands & Verification Gates
+
+- **Stack**: `npm start` (background Vite on `http://localhost:5173`, waits until ready; log at `scripts/harness/out/stack/stack.log`), `npm stop`, `npm restart`, `npm run status`, `STACK_PORT=5174 npm start` (prefer `STACK_PORT=` over `--port`). Never run foreground `npm run dev` from an agent shell.
+- **Chapters & Chapter Editor (`/editor`)**: `node scripts/harness/generate-chapter.mjs` (`--validate`, `--check`, `--verify`), `node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs`, `node scripts/harness/editor-unit-test.mjs`, `node scripts/harness/editor-smoke.mjs`.
+- **Comix & Comix Editor (`/comix-editor`)**: `node scripts/harness/generate-comix.mjs` (`--validate`, `--check`, `--verify`), `node scripts/harness/validate-comix.mjs`, `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs`, `node scripts/harness/comix-editor-smoke.mjs`.
+- **Terminal Lab (`/terminal-lab`)**: `node scripts/harness/terminal-lab.mjs --all` (`--run <file>`, `--transcript`), `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs`, `node scripts/harness/terminal-lab-smoke.mjs` (also `--width 1280 --height 820`).
+- **Laptop Lab (`/laptop-lab`)**: `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/laptop-lab-smoke.mjs` (also `--width 1280 --height 820`).
+- **Assets & Storybook (`/storybook.html`)**: `node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict`, `node .kiro/skills/procedural-animation-3d/scripts/check-tags.mjs --all`, `node scripts/harness/screenshot-lab.mjs --selftest`, `npm run quality:fingerprint` (must remain byte-identical on refactors; diff and explain intended asset changes).
+- **Project-wide**: `npm run quality` (`tsc --noEmit`, `quality:root`, `quality:size`, `quality:layers`, `quality:declarative`, `quality:specs`, `quality:dup`), `npm run build`, `npm run preview`.
+
+## Hooks & Working Rules
+
+- **`.kiro/hooks/` enforcement**: Kiro runs `spec-first-on-prompt`, `guard-spec-first`, `guard-chapter-files`, `typecheck-on-save`, `validate-chapters-on-save`, `validate-comix-on-save`, `validate-labs-on-save`, `asset-dryrun-*`, `chapter-gates-on-stop`, and `spec-status-on-stop`. Agents running outside Kiro must honor the same pre-write guards and run the matching post-edit and stop gates manually.
+- Report only validators you actually ran; never claim an unrun check passed.
+- Pin exact dependency versions when adding packages. Never hand-edit generated files. Commit only when asked.

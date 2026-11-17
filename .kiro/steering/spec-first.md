@@ -27,7 +27,7 @@ Say the result in one line before doing anything else, for example: "Spec-first:
 4. **Approve requirements.** Once `## Open questions` is empty, show the requirements and ask for approval. Approval has to be explicit; silence or "looks fine so far" does not count. Then set `Status: requirements-approved`.
 5. **Design**, then ask for approval, then set `design-approved`. Then write **tasks**, ask for approval, and set `approved`. Every task names the requirements it covers and the gates it runs.
 6. **Implement** task by task and tick each one. A new question or a scope change stops the work: ask the user, record the answer, and update the requirements first.
-7. **Finish.** Run the gates. Update steering, `AGENTS.md`, skills and hooks in the same change. Set `Status: done` once every task is ticked.
+7. **Finish.** Run the gates. Update steering, `AGENTS.md`, `CLAUDE.md`, skills and hooks in the same change. Set `Status: done` once every task is ticked.
 
 Statuses, in order: `draft`, `requirements-approved`, `design-approved`, `approved`, `done`. A bugfix spec uses `bugfix.md` in place of `requirements.md`.
 

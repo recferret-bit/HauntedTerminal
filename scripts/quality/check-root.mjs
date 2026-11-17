@@ -16,8 +16,8 @@ const DIRS = {
   scripts: 'Node tooling: harness, hooks, quality gates',
   src: 'TypeScript source',
 };
-/** Files allowed at the root: tool configs that must live there, the agent entry doc, the readme and the licence. */
-const FILES = new Set(['.gitignore', 'AGENTS.md', 'LICENSE', 'README.md', 'package.json', 'package-lock.json', 'tsconfig.json', 'vite.config.ts']);
+/** Files allowed at the root: tool configs that must live there, the agent entry docs, the readme and the licence. */
+const FILES = new Set(['.gitignore', 'AGENTS.md', 'CLAUDE.md', 'LICENSE', 'README.md', 'package.json', 'package-lock.json', 'tsconfig.json', 'vite.config.ts']);
 
 const listed = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '--deduplicate'], { encoding: 'utf8' })
   .split('\n')
