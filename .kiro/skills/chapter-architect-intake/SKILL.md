@@ -105,7 +105,7 @@ Put arrival lines, tutorials, taunts and Kiro/boss reactions in each `level.spec
    - `exploit`: `kill` is blocked (`Operation not permitted`); make its `buffer` read-only (`chmod -w <buffer>`).
    - `kernel` boss: `kill` is blocked; complete the 3-phase stream/socket/anchor sequence so `kernelPhase()` reaches `3/3`, which automatically drops `hp` to `0` and unlocks `exit`.
 2. **Art-Bible Palette Guard (`HUMAN_ZONE_MISUSE`):**
-   - Only `vibecoder.dev` and `vibecoder.hand` use `human` palette zones. Ally NPCs must use `door.socket`, `door.loopback`, or `door.firewall`.
+   - Only the vibecoder models (`vibecoder.*`) and his items (`item.*`) use `human` palette zones. Ally NPCs must use `door.socket`, `door.loopback`, or `door.firewall`.
 3. **Anti-Softlock Protection:**
    - Mark every config, HTML, CSS, JS, `Dockerfile`, and `docker-compose.yml` required by `winRules` with `"questCritical": true` so `cron_restorer` respawns it if a player runs `rm` by mistake.
 

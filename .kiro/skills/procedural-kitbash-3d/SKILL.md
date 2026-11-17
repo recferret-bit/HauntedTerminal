@@ -34,7 +34,8 @@ functions of a `seed`.
 |---|---|
 | `src/procgen/kit/shapes.ts` | Outlines (`outlineRoundRect`, `outlineArch`, `outlineComb`, `outlineStroke`, ...), part constructors (`kitPlate`, `kitBox`, `kitDisc`, `kitRing`), list transforms (`mirrorX`, `offsetParts`, `prefixParts`, `tiltParts`, `animateParts`) |
 | `src/procgen/kit/greebles.ts` | The hardware vocabulary, `greeble*()`. Re-exports `shapes.ts`, so import everything from here |
-| `src/procgen/archetypes/vibecoder.ts` | `vibecoder.dev`, `vibecoder.hand` |
+| `src/procgen/archetypes/vibecoder.ts` | `vibecoder.dev` (holds the lantern), `vibecoder.dev_laptop`, `vibecoder.hand`. The developer is his body plus one held item: `HELD_VARIANTS` registers one model per item, `holdItem()` puts the item's `grip` socket in his hand |
+| `src/procgen/archetypes/items.ts`, `items/` | The inventory: `item.lantern`, `item.laptop` |
 | `src/procgen/archetypes/pickups.ts` | `pickup.energy`, `pickup.ram`, `pickup.ssd` |
 | `src/procgen/archetypes/doors.ts` | `door.usb` `.ethernet` `.hdmi` `.serial` `.firewall` `.loopback` `.devnull` `.socket` |
 | `src/procgen/archetypes/props.ts` | `prop.file` `.tar` `.fuse` `.chip` `.capacitor` `.heatsink` `.fan` `.cables` `.crt` `.tombstone` |
@@ -92,6 +93,7 @@ triangle costs). Worked example: [examples/prop-floppy.ts](./examples/prop-flopp
 | `vibecoder` | `vibecoder.dev` 1.6 tall | `human` zones; round, soft outlines (large corner radii, bevels 0.02 to 0.03); legs tagged `legWalk` with phases 0 and 0.5 and the hip as pivot, the free arm `armSwing`; lantern on the screen-right; sockets `bubble`, `hand`, `lantern`, `fx` | Hardware or malware zones, sharp corners |
 | `pickup` | 0.3 to 0.5, centred near y = 0.5 | `tags: ['hover']`; exactly one `signal` zone on a small part with `pulse`; every other part `bob` with the same tag (`animateParts`); a silhouette that says what you gain | Detail under 2 px, a second glowing zone |
 | `door` | 0.7 to 1.1 wide, 1.4 to 1.9 tall | A shell (`solder`, `heatsink` or `plastic`), visible contacts (`gold`), a lamp part named exactly `led` (the game recolours it: `lockRed` locked, `powerAmber` busy, `phosphor` open), a `lock` socket, a base that touches y = 0 | Malware zones; glow other than LEDs |
+| `item` | 0.25 to 0.6, feet at y = 0 | A `grip` socket where a hand closes (a part named `handle` is drawn behind the hand); a `light` socket if it is a light (it becomes the holder's `lantern` socket); colours that stay within the holder's zone budget (he has 5) | Malware zones |
 | `prop` | Items 0.3 to 0.9, set dressing up to ~1.3 | Feet at y = 0 (or `hover` + `wall` for things that hang); low contrast for set dressing so actors pop | Any `signal` zone: props do not glow. Use `glass` sparingly |
 
 Shared rules that the validator cannot see:

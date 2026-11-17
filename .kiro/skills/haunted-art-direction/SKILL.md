@@ -93,7 +93,7 @@ One palette, defined once in [`src/procgen/core/palette.ts`](../../../src/procge
 
 | Family | Zones | Who may use it |
 |---|---|---|
-| `human` | `skin` `hoodie` `denim` `hair` `lantern` | The vibecoder and the System Hand only |
+| `human` | `skin` `hoodie` `denim` `hair` `lantern` | The vibecoder, the System Hand, and the items he carries (`item.*`) |
 | `hardware` | `pcb` `pcbDark` `solder` `heatsink` `gold` `copper` `silicon` `plastic` `rubber` | The world: rooms, doors, props, pickups, and the bodies of malware |
 | `signal` | `phosphor` `dataCyan` `powerAmber` `lockRed` (all emissive) | System light: LEDs, pickups, ports |
 | `malware` | `corruptMagenta` `corruptViolet` `toxicGreen` `voidPurple` `malwareEye` `ghostViolet` | Hostile things only, and every hostile thing must use it |
@@ -132,7 +132,7 @@ src/procgen/
   core/        palette, types (ModelSpec / PartSpec / ShapeSpec / AnimTag / PixelBuffer), catalogs,
                geometry baking, buildModel() -> THREE.Group, rasterizeModel() software preview
   kit/         greebles: reusable part groups (pins, fins, port shells, LEDs, cables)
-  archetypes/  vibecoder, npc, agents, malware, pickups, doors, props, rooms: each registers in ModelCatalog
+  archetypes/  vibecoder, items, npc, agents, malware, pickups, doors, props, rooms: each registers in ModelCatalog
   textures/    palette-locked comic textures as PixelBuffers: each registers in TextureCatalog
   anim/        AnimTag evaluators and state poses
   fx/          comic particle / onomatopoeia presets

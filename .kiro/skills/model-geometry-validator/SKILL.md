@@ -31,7 +31,7 @@ node .kiro/skills/model-geometry-validator/scripts/self-test.mjs      # proves t
 
 | Option | Effect |
 |---|---|
-| `<id>...`, `--all`, `--category <c>` | Which models. Categories: vibecoder, npc, agent, malware, boss, pickup, door, prop, room, fx. |
+| `<id>...`, `--all`, `--category <c>` | Which models. Categories: vibecoder, item, npc, agent, malware, boss, pickup, door, prop, room, fx. |
 | `--seed n` | Build with this seed (default 1). |
 | `--seeds n` | Build and validate seeds 1..n. Builders take a seed and vary; a model that passes on seed 1 can break on seed 5. Always run this on an archetype that uses the rng. |
 | `--strict` | Warnings fail too. |

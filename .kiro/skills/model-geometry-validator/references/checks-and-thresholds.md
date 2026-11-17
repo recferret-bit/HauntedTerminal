@@ -32,7 +32,7 @@ Runs first. If a shape cannot be baked, the geometry and read checks are skipped
 |---|---|---|---|---|
 | `NOT_GROUNDED` | E | Lowest point within ±0.03 of `y = 0`. Rooms: lowest point ≤ 0.03 (a floor may extend below). Skipped for tags `hover` and `wall` | Actors are placed by their feet on the panel's floor line | Shift every `pos.y` by the amount in the message, or tag `hover` / `wall` |
 | `HOVER_BAND` | W | Tagged `hover`: lowest point between 0 and 1.6. Pickups: at least 0.08 above the floor | A pickup lying on the floor does not read as a pickup; a model above 1.6 leaves the band where actors live | Centre pickups around `y = 0.5` |
-| `SIZE_RANGE` | W | ±5% tolerance. `vibecoder.dev` height 1.6. Malware: larger of width and height 0.6..1.6. Boss height 1.8..2.6. Pickup: larger of width and height 0.3..0.5. Door height 1.4..1.9, width 0.7..1.1 | Scale is the threat read: minions are smaller than the vibecoder, bosses tower | Scale sizes and positions by the factor in the message |
+| `SIZE_RANGE` | W | ±5% tolerance. `vibecoder.dev` height 1.6. Malware: larger of width and height 0.6..1.6. Boss height 1.8..2.6. Pickup: larger of width and height 0.3..0.5. Item: larger of width and height 0.25..0.6. Door height 1.4..1.9, width 0.7..1.1 | Scale is the threat read: minions are smaller than the vibecoder, bosses tower | Scale sizes and positions by the factor in the message |
 | `TOO_DEEP` | W | Depth (z extent) ≤ 60% of max(width, height). Rooms: depth ≤ 3 | The camera never sees depth; it only costs triangles and makes parts poke through neighbours | Thin the deepest parts or pull them toward `z = 0` |
 
 ## Contacts
@@ -77,8 +77,8 @@ surface, so a glass screen owns its pixels.
 | `TOO_MANY_ZONES` | W | ≤ 5 zones (rooms ≤ 8), not counting `ink`, `paper` and lights (emissive ≥ 0.3) | Flat colour reads by role; more than five roles is noise | Merge the smallest zones into a neighbour of the same family |
 | `PALETTE_FLAT` | W | Largest zone ≤ 80% of visible pixels. Not for rooms; not when the largest zone is `ink` or `paper` | 60/30/10: a model in one colour has no form | Give a large sub-shape a second zone |
 | `PALETTE_PATCHWORK` | W | Largest zone ≥ 35%. Not for rooms | No dominant colour: it reads as confetti | Move mid-sized parts onto the body zone |
-| `NO_ACCENT` | W | Zones other than the two largest hold ≥ 1% together. Not for rooms and props | The 10 of 60/30/10 is what the eye lands on | Add or enlarge a small high-contrast detail on the −z face |
-| `TOO_MUCH_GLOW` | W | Emissive zones (≥ 0.3, `glass` family excluded) ≤ 35% of visible pixels. Not for pickups | If everything glows, nothing says "look here" | Move large glowing surfaces to a non-emissive zone |
+| `NO_ACCENT` | W | Zones other than the two largest hold ≥ 1% together. Not for rooms, props, npcs and items | The 10 of 60/30/10 is what the eye lands on | Add or enlarge a small high-contrast detail on the −z face |
+| `TOO_MUCH_GLOW` | W | Emissive zones (≥ 0.3, `glass` family excluded) ≤ 35% of visible pixels. Not for pickups and items (a lantern is mostly lamp) | If everything glows, nothing says "look here" | Move large glowing surfaces to a non-emissive zone |
 | `LIGHT_NOT_VISIBLE` | E | The required light shows ≥ 4 px: `malwareEye` (malware, boss), a signal zone (pickup, door), `lantern` (`vibecoder.dev`) | The light is the gameplay read; hidden behind the body it does not exist | Move it to the −z face, at least 0.05 units across |
 
 ## Palette families and category contracts
@@ -87,7 +87,7 @@ Skipped by `--geometry-only`.
 
 | Code | Sev | Rule | Why | Fix |
 |---|---|---|---|---|
-| `HUMAN_ZONE_MISUSE` | E | `skin` `hoodie` `denim` `hair` `lantern` only in category `vibecoder` and in `room.outro` | Warm colour means "the vibecoder" | Use `plastic`, `copper`, `gold`, `powerAmber` |
+| `HUMAN_ZONE_MISUSE` | E | `skin` `hoodie` `denim` `hair` `lantern` only in categories `vibecoder` and `item` (what he carries) and in `room.outro` / `room.intro` | Warm colour means "the vibecoder" | Use `plastic`, `copper`, `gold`, `powerAmber` |
 | `MALWARE_ZONE_MISUSE` | E | Malware-family zones only in `malware` and `boss` | Magenta and violet mean "this will hurt you" | Use hardware, signal or glass zones |
 | `MALWARE_NO_CORRUPTION` | E | malware, boss: at least one part in a malware zone other than `malwareEye` | Without it the enemy is plain hardware | Put the growths, spikes, claws in a corruption zone |
 | `MALWARE_NO_EYE` | E | malware, boss: at least one `malwareEye` part | The one focal light every enemy has | Add an eye, core or keyhole on the −z face |

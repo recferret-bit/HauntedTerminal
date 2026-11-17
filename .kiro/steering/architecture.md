@@ -25,6 +25,7 @@ sandbox/              dev inspector. Talks to the stage through its public metho
 pages/                chapter select and comic reader scripts.
 chapter-editor/       /editor. contracts, editor-core, game, chapters, procgen. No game rules of its own; the game runs in an iframe.
 terminal-lab/         /terminal-lab. contracts, editor-core, chapter-editor (field tables, suggest), game, chapters, procgen. Builds a throwaway pack from a lab script (or imports a chapter level read-only) and plays it in the game iframe with in-page session swaps; no game rules of its own. What it needs from the game is one generic session option, `lab?: LabConfig` on `ChapterSession` and classic `createSession`, plus read-only `inspect()`, `labTick()` and `inject()` (`src/game/lab-*.ts`, `src/chapters/session-lab*.ts`).
+laptop/               /laptop-lab. domain/ (pure: lifecycle state machine, desktop reducer, tasks and checks, keyboard, boot, geometry, progress) <- runtime/ (Worker and sandboxed-iframe runner, loop guard, WebAudio) <- ui/ (editor-core, procgen/core palette) <- lab/. No three; no game rules. Player code never runs in the page's own realm.
 hub/                  issue hub stylesheet entry.
 play/                 play page composition. Wires the outer layers. main.ts only starts it.
 main.ts               loads the play page. Imports play/ and styles only.
@@ -47,4 +48,5 @@ Exact allowed imports live in `scripts/quality/check-layers.mjs`. Change the rul
 - `node scripts/harness/editor-unit-test.mjs`, `node scripts/harness/editor-smoke.mjs` & `node scripts/harness/comix-editor-smoke.mjs` : unit/corner-case suite + chapter and comix editors in headless Chrome.
 - `npm run quality:fingerprint` : hashes of every model, texture and FX (specs, validator reports, rasters, meshes, poses). Refactors must leave it byte-identical; for intended asset changes, diff it and explain the change.
 - `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs`, `node scripts/harness/terminal-lab.mjs --all` & `node scripts/harness/terminal-lab-smoke.mjs` : Terminal Lab unit/API/headless-run suites and the lab in headless Chrome (1600x950 and 1280x820 with `--width 1280 --height 820`).
+- `node scripts/harness/laptop-unit.mjs` & `node scripts/harness/laptop-lab-smoke.mjs` : laptop domain, loop guard and inventory units, and the Laptop Lab in headless Chrome with real key and mouse input (1600x950 and `--width 1280 --height 820`).
 - Storybook: `node scripts/harness/screenshot-lab.mjs --selftest`.

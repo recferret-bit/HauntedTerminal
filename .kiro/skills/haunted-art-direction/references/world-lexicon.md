@@ -11,6 +11,16 @@ Model ids are `<category>.<name>`. `gameKey` is the key the game's stage and
 | `vibecoder.dev` | `vibecoder` | Tired developer, 1.6 units. Orange hoodie with the hood up, jeans, pale sneakers, messy hair edge, a lantern held out at the screen-right side. The only round, soft shapes in the game. Legs and arms tagged for `legWalk` / `armSwing`. |
 | `vibecoder.hand` | `system_hand` | The System Hand: a paper-white hand holding a stylus, palm to the camera, fingers pointing down. Enters from above the panel. |
 
+## Inventory items
+
+What he carries. Each stands on the floor with a `grip` socket; the developer holds one at a time (`vibecoder.dev_<item>`).
+
+| id | Brief |
+|---|---|
+| `item.lantern` | The oil lantern from his desk: brown cap, handle ring and foot around a glowing `lantern` glass. `ls -a` lights it. Held by `vibecoder.dev` |
+| `item.laptop` | His old clamshell, shut and carried like a briefcase: beige `plastic` with a brown handle and hinge, a `>_` sticker and one `powerAmber` sleep light. Opened, it is the Laptop Lab emulator. Held by `vibecoder.dev_laptop` |
+| `vibecoder.dev_laptop` | The developer with the laptop in his screen-right hand instead of the lantern |
+
 ## Malware bestiary
 
 Every enemy: a hardware body (`silicon`, `pcbDark`, `solder`, `plastic`) taken over by corruption
