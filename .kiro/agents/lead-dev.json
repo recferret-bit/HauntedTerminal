@@ -15,6 +15,8 @@
     "subagent/qa"
   ],
   "allowedTools": [],
+  "includeMcpJson": false,
+  "includePowers": false,
   "resources": [
     "file://AGENTS.md",
     "file://.kiro/agents/prompts/team-rules.md",
@@ -323,6 +325,69 @@
           "qa"
         ],
         "effect": "allow"
+      },
+      {
+        "capability": "mcp",
+        "match": [
+          "haunted-forge/list_assets",
+          "haunted-forge/list_levels",
+          "haunted-forge/get_level",
+          "haunted-forge/validate_level",
+          "haunted-forge/solve_level",
+          "haunted-forge/write_level",
+          "chrome-devtools/list_pages",
+          "chrome-devtools/new_page",
+          "chrome-devtools/select_page",
+          "chrome-devtools/navigate_page",
+          "chrome-devtools/close_page",
+          "chrome-devtools/resize_page",
+          "chrome-devtools/wait_for",
+          "chrome-devtools/take_screenshot",
+          "chrome-devtools/take_snapshot",
+          "chrome-devtools/list_console_messages",
+          "chrome-devtools/get_console_message",
+          "chrome-devtools/list_network_requests",
+          "chrome-devtools/get_network_request",
+          "chrome-devtools/click",
+          "chrome-devtools/hover",
+          "chrome-devtools/fill",
+          "chrome-devtools/type_text",
+          "chrome-devtools/press_key"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "mcp",
+        "match": [
+          "*"
+        ],
+        "exclude": [
+          "haunted-forge/list_assets",
+          "haunted-forge/list_levels",
+          "haunted-forge/get_level",
+          "haunted-forge/validate_level",
+          "haunted-forge/solve_level",
+          "haunted-forge/write_level",
+          "chrome-devtools/list_pages",
+          "chrome-devtools/new_page",
+          "chrome-devtools/select_page",
+          "chrome-devtools/navigate_page",
+          "chrome-devtools/close_page",
+          "chrome-devtools/resize_page",
+          "chrome-devtools/wait_for",
+          "chrome-devtools/take_screenshot",
+          "chrome-devtools/take_snapshot",
+          "chrome-devtools/list_console_messages",
+          "chrome-devtools/get_console_message",
+          "chrome-devtools/list_network_requests",
+          "chrome-devtools/get_network_request",
+          "chrome-devtools/click",
+          "chrome-devtools/hover",
+          "chrome-devtools/fill",
+          "chrome-devtools/type_text",
+          "chrome-devtools/press_key"
+        ],
+        "effect": "deny"
       }
     ]
   },

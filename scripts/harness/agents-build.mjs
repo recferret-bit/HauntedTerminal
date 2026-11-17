@@ -35,6 +35,39 @@ const SECRET_SHELL = ['*.env*', '*.pem*', '*/.ssh/*', '*/.aws/*', '*.kiro/crew/.
 /** Compiled output: the compilers write it, no agent edits it by hand. */
 const GENERATED = ['src/chapters/generated/**', 'src/cinematic/generated/**', 'chapters/*/story/out/**'];
 
+/**
+ * MCP servers an agent may declare (spec .kiro/specs/mcp-devtools-and-forge/). Each agent lists the tools it may call in
+ * its `mcp` field below; `.kiro/settings/mcp.json` stays empty so a person's own session never loads these by accident.
+ * Chrome DevTools MCP: headless, isolated profile, no telemetry, no JavaScript evaluation, no file: URLs, and Chrome itself
+ * refuses every site but the local dev servers and Netlify (--allowedUrlPattern, Chrome 149+). Screenshots written with
+ * `filePath` may only go under scripts/harness/out (--workspace), which is git-ignored.
+ */
+export const MCP_SERVERS = {
+  // Run from node_modules (devDependency pinned to 1.13.0), not `npx -y`: the npx lookup took ~1 s, and Kiro CLI 3.4 starts
+  // the agent's first turn with the servers connected by then, so qa saw no browser tools (probed, see the spec).
+  'chrome-devtools': {
+    command: 'node',
+    args: [
+      'node_modules/chrome-devtools-mcp/out/Default/gen/src/bin/chrome-devtools-mcp.js', '--headless', '--isolated', '--viewport', '1280x800',
+      '--no-usage-statistics', '--no-performance-crux', '--no-javascript-evaluation', '--no-file-navigations',
+      '--workspace', 'scripts/harness/out',
+      '--allowedUrlPattern', 'http://localhost:*/*', '--allowedUrlPattern', 'http://127.0.0.1:*/*', '--allowedUrlPattern', 'https://*.netlify.app/*',
+    ],
+    // Node's compile cache (git-ignored) cuts the server's start by ~20%: Kiro fixes an agent's tools when its first turn
+    // starts (~450 ms after the prompt) and does not wait for a slower MCP server (probed, see the spec).
+    env: { CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS: '1', NODE_COMPILE_CACHE: 'scripts/harness/out/.node-compile-cache' },
+    timeout: 120000,
+  },
+  'haunted-forge': { command: 'node', args: ['scripts/mcp/haunted-forge/server.mjs'] },
+};
+/** What qa may use of Chrome DevTools MCP: look, read the console and network, and drive the page's own inputs. No emulation, uploads, traces or recordings. */
+const DEVTOOLS_LOOK = [
+  'list_pages', 'new_page', 'select_page', 'navigate_page', 'close_page', 'resize_page', 'wait_for',
+  'take_screenshot', 'take_snapshot', 'list_console_messages', 'get_console_message', 'list_network_requests', 'get_network_request',
+  'click', 'hover', 'fill', 'type_text', 'press_key',
+];
+const FORGE_READ = ['list_levels', 'get_level', 'validate_level', 'solve_level'];
+
 const TEAM = {
   'lead-dev': {
     description: 'Lead game developer and orchestrator of the Haunted Terminal team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here; also the member that Kiro Crew runs.',
@@ -64,6 +97,8 @@ const TEAM = {
     writes: ['comix/**', 'src/cinematic/**', 'src/comix-editor/**', 'scripts/harness/props/comix.mjs'],
     resources: [steer('declarative-comix'), steer('comix-editor-rules'), steer('skills-map')],
     skills: ['comix-architect-intake', 'comix-sequence-generator', 'comix-implementer', 'comix-editor'],
+    mcp: { 'haunted-forge': ['list_assets'] },
+    mcpNames: ['haunted-forge', 'list_assets'],
     welcome: 'comix-designer: which comix, page or beat should change?',
   },
   'chapters-designer': {
@@ -71,6 +106,8 @@ const TEAM = {
     writes: ['chapters/**', 'src/chapters/**', 'src/chapter-editor/**', 'src/game/{entities,entities-combat,bestiary,puzzle,inventory,kiro,dialogue,agents}.ts', 'scripts/harness/props/{chapters,gameplay,sessions}.mjs'],
     resources: [steer('level-gen-rules'), steer('declarative-chapters'), steer('chapter-editor-rules'), steer('skills-map')],
     skills: ['chapter-architect-intake', 'comix-story-drawer', 'chapter-level-generator', 'chapter-implementer', 'chapter-editor'],
+    mcp: { 'haunted-forge': ['list_assets', ...FORGE_READ, 'write_level'] },
+    mcpNames: ['haunted-forge', 'list_assets', 'validate_level', 'solve_level', 'write_level'],
     welcome: 'chapters-designer: which level, enemy, pickup, puzzle or line of dialogue should change?',
   },
   artist: {
@@ -90,6 +127,8 @@ const TEAM = {
     shellExtra: ['mkdir -p docs/qa/media', 'cp scripts/harness/out/* docs/qa/media/*'],
     resources: [steer('skills-map'), steer('declarative-chapters'), steer('declarative-comix'), steer('terminal-lab-rules')],
     skills: ['comic-panel-viewport-auditor', 'chapter-implementer', 'comix-implementer', 'model-geometry-validator', 'particle-effect-validator'],
+    mcp: { 'chrome-devtools': DEVTOOLS_LOOK, 'haunted-forge': ['list_assets', ...FORGE_READ] },
+    mcpNames: ['chrome-devtools', 'take_screenshot', 'list_console_messages', 'haunted-forge', 'validate_level'],
     welcome: 'qa: which features should I play and test? (default: a full pass)',
   },
 };
@@ -103,13 +142,30 @@ function sessionWrites(a) {
   return [...new Set([...a.writes, ...(a.subagents ?? []).flatMap((s) => TEAM[s].writes)])];
 }
 
+/** What each agent's MCP use is, for check-agents.mjs: the tools it lists, and the words its prompt must contain (Req 15). */
+export function mcpTable() {
+  return Object.fromEntries(Object.entries(TEAM).map(([name, a]) => [name, { mcp: a.mcp ?? {}, mustName: a.mcpNames ?? [], subagents: a.subagents ?? [] }]));
+}
+
+/** `server/tool` names (the form permission rules use) of the MCP tools an agent lists, in table order. */
+export function mcpTools(a) {
+  return Object.entries(a.mcp ?? {}).flatMap(([server, tools]) => tools.map((t) => `${server}/${t}`));
+}
+
+/** MCP tools a session must allow: its own, and (for an orchestrator) its sub-agents', because Kiro checks a sub-agent's call against the parent too. */
+function sessionMcp(a) {
+  return [...new Set([...mcpTools(a), ...(a.subagents ?? []).flatMap((s) => mcpTools(TEAM[s]))])];
+}
+
 /** The agent file for one table entry. Key order is fixed, so `--check` can compare text. */
 export function agentFile(name, a) {
   // Kiro checks a sub-agent's command against the parent session too (the stricter wins), so the lead also allows the
   // sub-agents' extra commands; each sub-agent's own deny still keeps the others out of them.
   const subExtra = (a.subagents ?? []).flatMap((s) => TEAM[s].shellExtra ?? []);
   const allow = [...READ_SHELL, ...GATE_SHELL, ...(a.shellExtra ?? []), ...subExtra, ...(a.gitWrites ? GIT_WRITES : [])];
-  const tools = ['read', 'write', 'shell', ...(a.subagents ?? []).map((s) => `subagent/${s}`)];
+  const tools = ['read', 'write', 'shell', ...(a.subagents ?? []).map((s) => `subagent/${s}`), ...mcpTools(a).map((t) => `@${t}`)];
+  const servers = Object.keys(a.mcp ?? {});
+  const mcpAllow = sessionMcp(a);
   const fence = sessionWrites(a);
   const rules = [
     { capability: 'fs_write', match: ['**'], exclude: fence, effect: 'deny' },
@@ -121,6 +177,9 @@ export function agentFile(name, a) {
     { capability: 'shell', match: DENY_WORDS, effect: 'deny' },
     { capability: 'shell', match: SECRET_SHELL, effect: 'deny' },
     ...(a.subagents?.length ? [{ capability: 'subagent', match: a.subagents, effect: 'allow' }] : []),
+    // MCP: exactly the listed tools run; everything else is refused, also where Kiro would auto-approve an unmatched call.
+    ...(mcpAllow.length ? [{ capability: 'mcp', match: mcpAllow, effect: 'allow' }] : []),
+    { capability: 'mcp', match: ['*'], ...(mcpAllow.length ? { exclude: mcpAllow } : {}), effect: 'deny' },
   ];
   const hook = (hookName, trigger, command, matcher) => ({ name: hookName, trigger, ...(matcher ? { matcher } : {}), action: { type: 'command', command } });
   return {
@@ -131,10 +190,15 @@ export function agentFile(name, a) {
     tools,
     // Kiro CLI 3.3.0 drops a profile with `permissions` and no `allowedTools` ("Mode not found"); the empty list keeps it.
     allowedTools: [],
+    ...(servers.length ? { mcpServers: Object.fromEntries(servers.map((s) => [s, MCP_SERVERS[s]])) } : {}),
+    includeMcpJson: false,
+    // Installed powers bring their own MCP servers (haunted-ship's Netlify server loaded into every agent in the probe).
+    includePowers: false,
     resources: [...BASE, ...a.resources, ...a.skills.map(skill)],
     hooks: [
       hook('agent-baseline', 'SessionStart', `node scripts/hooks/agent-scope.mjs ${name} --snapshot`),
       hook('agent-shell-guard', 'PreToolUse', `node scripts/hooks/agent-shell-guard.mjs ${name}`, '^execute_bash$'),
+      ...(servers.includes('chrome-devtools') ? [hook('devtools-url-guard', 'PreToolUse', `node scripts/hooks/devtools-url-guard.mjs ${name}`, '@chrome-devtools')] : []),
       hook('agent-scope', 'Stop', `node scripts/hooks/agent-scope.mjs ${name}`),
     ],
     permissions: { rules },

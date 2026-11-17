@@ -6,9 +6,20 @@
   "tools": [
     "read",
     "write",
-    "shell"
+    "shell",
+    "@haunted-forge/list_assets"
   ],
   "allowedTools": [],
+  "mcpServers": {
+    "haunted-forge": {
+      "command": "node",
+      "args": [
+        "scripts/mcp/haunted-forge/server.mjs"
+      ]
+    }
+  },
+  "includeMcpJson": false,
+  "includePowers": false,
   "resources": [
     "file://AGENTS.md",
     "file://.kiro/agents/prompts/team-rules.md",
@@ -212,6 +223,23 @@
           "*/.ssh/*",
           "*/.aws/*",
           "*.kiro/crew/.env*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "mcp",
+        "match": [
+          "haunted-forge/list_assets"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "mcp",
+        "match": [
+          "*"
+        ],
+        "exclude": [
+          "haunted-forge/list_assets"
         ],
         "effect": "deny"
       }

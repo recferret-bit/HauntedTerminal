@@ -23,7 +23,7 @@ Per `docs/kiro-best-practice.md`, never blur these five roles:
 2. **Specs (`.kiro/specs/<name>/`) = Capabilities**: system features and big refactors, never per-level or per-page content.
 3. **Skills (`.kiro/skills/<name>/SKILL.md`) = Procedures**: 24 step-by-step workflows (`[WORKFLOW]`, `[ASSET PCG]`, `[LEVEL GEN]`) paired with deterministic scripts.
 4. **Schemas & JSON Specs = Content Truth**: `chapters/<slug>/`, `comix/<slug>/`, and `scripts/harness/terminal-lab/*.lab.json` typed by `script-types.ts` / `types.ts` / `spec-types.ts` / `lab-types.ts` and union-keyed `schema*.ts` field tables so missing editor forms fail `tsc`.
-5. **Hooks & Gates (`.kiro/hooks/`, `scripts/quality/`) = Enforcement**: zero-LLM Node scripts enforce pass/fail, not memory. `.kiro/settings/mcp.json` stays empty/minimal whenever offline `.mjs` scripts + skills suffice; a feature's MCP server ships in its power (`.kiro/powers/<name>/`).
+5. **Hooks & Gates (`.kiro/hooks/`, `scripts/quality/`) = Enforcement**: zero-LLM Node scripts enforce pass/fail, not memory. `.kiro/settings/mcp.json` stays empty/minimal whenever offline `.mjs` scripts + skills suffice; team agents declare their MCP servers per agent in `scripts/harness/agents-build.mjs`; a feature's MCP server for others ships in its power (`.kiro/powers/<name>/`).
 
 **Scope guard**: Kiroween ships **one chapter of about 11 levels**, all solvable headlessly with **0 deaths**. Never start a second chapter.
 
@@ -86,6 +86,7 @@ Always run before declaring work done (plus targeted suites for areas touched):
   - Comix/editor: `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs`, `node scripts/harness/comix-editor-smoke.mjs`
   - Terminal Lab: `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs`, `node scripts/harness/terminal-lab.mjs --all`, `node scripts/harness/terminal-lab-smoke.mjs` (1600x950 and `--width 1280 --height 820`)
   - Laptop Lab: `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/laptop-lab-smoke.mjs` (1600x950 and `--width 1280 --height 820`)
+  - MCP: `node scripts/harness/forge-unit.mjs` (`npm run quality:mcp`); `node scripts/harness/mcp-probe.mjs` (manual, real Kiro CLI)
   - Deploy (power `haunted-ship`): `node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs preview`, then `prod` only after the user's explicit yes; follow `.kiro/powers/haunted-ship/skills/ship/SKILL.md`
   - Assets/storybook: `npm run quality:fingerprint` (byte-identical on refactors; diff and explain intended changes) and `node scripts/harness/screenshot-lab.mjs --selftest`
 

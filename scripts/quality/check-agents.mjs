@@ -6,7 +6,8 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { GENERATED_PATHS, LEAD, TEAM_NAMES, agentTexts, ownWrites } from '../harness/agents-build.mjs';
+import { GENERATED_PATHS, LEAD, TEAM_NAMES, agentTexts, mcpTable, ownWrites } from '../harness/agents-build.mjs';
+import { mcpProblems } from './agent-mcp.mjs';
 import { globToRegExp, loadAgents, shellVerdict, writeRules } from './agent-rules.mjs';
 
 const root = process.cwd();
@@ -144,6 +145,17 @@ if (unowned > 20) problems.push(`... and ${unowned - 20} more unowned or unclass
 
 // 8. The prompts the agents load exist next to their files.
 if (!existsSync(join(root, '.kiro/agents/prompts/team-rules.md'))) problems.push('.kiro/agents/prompts/team-rules.md is missing');
+
+// 9. MCP: exact tool lists, pinned and fenced servers, nothing in the workspace settings, prompts that name their tools.
+const readIfThere = (rel) => (existsSync(join(root, rel)) ? readFileSync(join(root, rel), 'utf8') : '');
+problems.push(...mcpProblems({
+  agents,
+  table: mcpTable(),
+  mcpJsonText: readIfThere('.kiro/settings/mcp.json'),
+  promptText: (name) => readIfThere(`.kiro/agents/prompts/${name}.md`),
+  fileExists: (rel) => existsSync(join(root, rel)),
+  pinned: (({ dependencies = {}, devDependencies = {} }) => ({ ...dependencies, ...devDependencies }))(JSON.parse(readIfThere('package.json') || '{}')),
+}));
 
 if (problems.length) {
   console.error(`agent gate FAILED (${problems.length}):`);

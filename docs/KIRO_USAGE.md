@@ -97,7 +97,7 @@ Steering holds only short, non-overlapping facts and one exact vocabulary (`glos
 |---|---|---|
 | Custom agents | done: 7 agents in `.kiro/agents/` | TODO (you): note one real task you ran through `lead-dev` |
 | Property-based testing | done: 32 properties, 6 bugs found | none |
-| MCP | the Netlify MCP server (`@netlify/mcp@1.22.1`), bundled in the `haunted-ship` power; `.kiro/settings/mcp.json` stays empty | Used to ask about sites and deploys; uploads go through the gated script. A `haunted-forge` level MCP server is a later idea. |
+| MCP | `haunted-forge` (ours: validate, solve and save levels through tools; a level that fails or dies is never written), Chrome DevTools MCP for `qa` (it looks at the real game), the Netlify MCP server in the `haunted-ship` power. Per-agent exact tool lists; `.kiro/settings/mcp.json` stays empty | Probed in the real CLI (`mcp-probe.mjs`, 9/9). What MCP made possible: an agent cannot save a level that does not clear with 0 deaths, and QA claims about the screen come from screenshots the agent took. |
 | Powers | `haunted-ship` (`.kiro/powers/haunted-ship/`): plugin manifest, keywords, Netlify MCP, `ship` skill with a gated deploy script | TODO (you): note the first real preview and production deploy |
 
 TODO (you): add the parts only you know.
