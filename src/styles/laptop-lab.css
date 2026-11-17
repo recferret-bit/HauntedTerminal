@@ -1,0 +1,42 @@
+/* ---- Laptop Lab (/laptop-lab): the page around the laptop. The laptop itself is laptop.css. ---- */
+.ll-shell { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+.ll-top {
+  display: flex; align-items: baseline; gap: 14px;
+  padding: 8px 14px;
+  background: var(--plate); border-bottom: 2px solid var(--line);
+}
+.ll-top b { font: 700 20px var(--display); letter-spacing: 3px; }
+.ll-top b span { color: var(--orange); }
+.ll-top small { color: var(--muted); }
+.ll-back { color: var(--yellow); text-decoration: none; font-weight: 600; }
+
+.ll-main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; min-height: 0; }
+/* A comic panel: paper gutter, thick ink frame, a yellow caption box. */
+.ll-panel { position: relative; min-height: 0; padding: 12px; background: var(--paper); }
+.ll-stage { position: absolute; inset: 12px; border: 5px solid var(--ink); overflow: hidden; }
+.ll-caption {
+  position: absolute; left: 26px; top: 26px; max-width: 46%;
+  padding: 6px 10px;
+  background: var(--yellow); color: var(--ink);
+  border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink);
+  font: 700 13px/1.35 var(--display); text-transform: uppercase; letter-spacing: 0.5px;
+  z-index: 10; pointer-events: none;
+}
+
+.ll-side { overflow-y: auto; background: var(--plate); border-left: 2px solid var(--line); padding: 6px 0; }
+.ll-box { padding: 6px 12px 10px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+.ll-box h3 { font: 700 12px var(--display); letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+.ll-state { font: 700 22px var(--display); color: var(--yellow); letter-spacing: 2px; }
+.ll-chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.ll-chip { font-size: 10px; padding: 1px 5px; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); }
+.ll-chip.on { background: var(--yellow); color: var(--ink); border-color: var(--ink); font-weight: 700; }
+.ll-actions { display: flex; flex-wrap: wrap; gap: 4px; }
+.ll-kv { font-size: 12px; white-space: pre; }
+.ll-note { color: var(--muted); font-size: 11px; }
+.ll-quests { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.ll-quests li { display: flex; justify-content: space-between; gap: 6px; }
+.ll-quests li.done .ll-link { color: var(--teal); }
+.ll-quests small { color: var(--muted); }
+.ll-link { background: none; border: 0; cursor: pointer; color: inherit; text-align: left; font: inherit; }
+.ll-link:hover { color: var(--yellow); }
+.ll-side select { background: var(--plate-2); border: 2px solid var(--line); padding: 2px 4px; }

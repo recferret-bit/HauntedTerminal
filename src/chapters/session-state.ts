@@ -1,4 +1,5 @@
 import type { World, WorldHost } from '../game/entities.js';
+import type { Inventory } from '../game/inventory.js';
 import type { KiroCompanion } from '../game/kiro.js';
 import { COMMANDS } from '../game/manual.js';
 import { ensureLabDirChain, placeLabFile, splitLabParentAndName } from '../game/lab-support.js';
@@ -155,6 +156,8 @@ export interface ChapterState {
   deadNow: boolean;
   deathText: string;
   tacticalMode: boolean;
+  /** What he carries and holds; kept across levels. */
+  inventory: Inventory;
   pendingEditor: EditorOpenPayload | null;
   currentRedirectTarget: string;
   rt: LevelRuntime;

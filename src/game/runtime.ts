@@ -149,6 +149,7 @@ export function facts(g: Play): SceneFacts {
     cwd,
     ended: g.run.ended,
     lantern: g.run.lantern,
+    held: g.run.inventory.held,
     xray: g.run.xray,
     flood: g.run.flood,
     things,

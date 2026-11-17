@@ -2,6 +2,7 @@ import type { KernelEvent } from '../contracts/events.js';
 import {
   boss, cut, denied, die, enterFloorEvents, find, gargoyleNeutral, load, plankBridged, push, spawnRoom, target,
 } from './runtime.js';
+import { holdItem } from './inventory.js';
 import { empty, globReg, out, splitShortFlags, type Play } from './play.js';
 import type { Step } from './shell.js';
 import { absPath, findId, hasExec, modeString, resolve, type VNode } from './tree.js';
@@ -162,6 +163,7 @@ export function cmdLs(g: Play, args: string[]): Step {
     chunks.push(head + body);
   }
   if (all && !g.run.lantern) g.run.lantern = true;
+  if (all) g.run.inventory = holdItem(g.run.inventory, 'lantern');
   if (all) push(g, events, { type: 'LANTERN_REVEAL', dirId: g.run.cwd.id, revealedInodes: revealed });
   const fileBlock = files.length ? files.join(long ? '\n' : '  ') : '';
   const text = [fileBlock, ...chunks].filter((chunk) => chunk.length > 0).join('\n\n');

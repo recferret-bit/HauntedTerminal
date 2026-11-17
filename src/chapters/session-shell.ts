@@ -1,3 +1,4 @@
+import { runInventory } from '../game/inventory.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
 import { helpText, manPage, runMan } from '../game/manual.js';
 import type { Step, Word } from '../game/shell.js';
@@ -99,6 +100,10 @@ export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
         return okStep(`${absPath(g.rt.cwd)}\n`, [{ type: 'VIBECODER_ACTION', action: 'read', command: 'pwd' }]);
       case 'whoami':
         return okStep('dev\n');
+      case 'inventory':
+      case 'inv':
+      case 'hold':
+        return runInventory(g, cmd, args);
       case 'clear':
         return { stdout: '', stderr: '', code: 0, events: [], clear: true };
       case 'help':

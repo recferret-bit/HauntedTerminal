@@ -1,6 +1,6 @@
 # Inventory and Laptop Lab: requirements
 
-Status: approved
+Status: done
 
 Written after the code (see `.kiro/steering/spec-first.md`, "Code that was written before its spec"). The open questions are decided (see Decisions). Requirements approved by the user.
 

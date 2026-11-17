@@ -1,4 +1,5 @@
 import type { EntityView } from './entities.js';
+import type { ItemId } from './inventory.js';
 import type { ActorKind, FloorId, LegacyActorKey } from './types.js';
 
 export interface ViewThing {
@@ -15,6 +16,8 @@ export interface SceneFacts {
   cwd: string;
   ended: boolean;
   lantern: boolean;
+  /** The item in his hand: picks the hero model. Default: the lantern. */
+  held?: ItemId;
   xray: boolean;
   flood: number;
   /** Children of the cwd. */

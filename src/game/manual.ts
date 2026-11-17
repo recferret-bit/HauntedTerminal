@@ -7,6 +7,7 @@ export const COMMANDS = [
   'pwd', 'ls', 'cd', 'cat', 'readlink', 'find', 'touch', 'rm', 'mv', 'cp', 'chmod', 'ln',
   'echo', 'grep', 'wc', 'cut', 'rev', 'sed', 'head', 'tail', 'ps', 'top', 'kill', 'pkill',
   'source', '.', 'kiro', 'help', 'man', 'status', 'whoami', 'tutorial', 'clear', 'exit', 'logout',
+  'inventory', 'inv', 'hold',
 ];
 
 export function helpText(hint: string): string {
@@ -20,6 +21,7 @@ export function helpText(hint: string): string {
     '  loot   source <file>  or  . <file>   (*.cell heal, *.dimm RAM, *.img SSD backup)',
     '  ghost  kiro [scan | load <qwen|mistral|deepseek|llama> | crack <lock>]   cat <file> | kiro',
     '  shell  ;  &&  ||  |  >  >>   globs *.log   braces {a,b,c}.rune   Tab completes',
+    '  carry  inventory (inv)   hold <item>   (ls -a raises the lantern)',
     '  tutorial  the agents\' current prompt   (tutorial skip skips the onboarding)',
     '  man <command>, or man <malware>: virus worm trojan bug exploit crack ransomware spyware rootkit zombie forkbomb kernel',
     `\x1b[1;96mHint:\x1b[0m ${hint}`,
@@ -110,6 +112,9 @@ const MAN: Record<string, string[]> = {
   man: ['man <command> | man <malware>: the manual.'],
   status: ['status: HP, RAM, SSD backups, malware left on this floor, where you are.'],
   whoami: ['whoami: who you are in here.'],
+  inventory: ['inventory (inv): what you carry; * marks the item in your hand.'],
+  inv: ['inv: short for inventory.'],
+  hold: ['hold <item>: take an item you carry in your hand (hold lantern, hold laptop).'],
   tutorial: ['tutorial: show the agents\' current prompt.   tutorial skip: skip the onboarding.'],
   clear: ['clear: wipe the terminal (Ctrl+L).'],
   exit: ['exit / logout: leave the machine. Only works once the kernel lets go of you.'],

@@ -97,6 +97,8 @@ export async function launchBrowser({ width = 1440, height = 900, chrome: explic
     problems,
     evaluate,
     open: (url) => cdp.send('Page.navigate', { url }),
+    /** Raw DevTools call, for real input: `send('Input.dispatchKeyEvent', {...})`. */
+    send: (method, params) => cdp.send(method, params),
     async waitFor(expression, ms, what) {
       const until = Date.now() + ms;
       for (;;) {

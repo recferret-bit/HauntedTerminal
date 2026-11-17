@@ -1,6 +1,7 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { PICKUP_INFO, maxHpFor } from '../game/bestiary.js';
 import type { Pickup } from '../game/entities.js';
+import { holdItem } from '../game/inventory.js';
 import type { Step } from '../game/shell.js';
 import { absPath, lookup, makeNode, modeString, resolve, walk, type VNode } from '../game/tree.js';
 import { recordLevelClear } from './catalog.js';
@@ -41,6 +42,7 @@ export function cmdLs(g: ChapterState, args: string[]): Step {
 
     if (showAll && res.node === g.rt.cwd) {
       g.rt.lantern = true;
+      g.inventory = holdItem(g.inventory, 'lantern');
       const revealed = g.rt.world.reveal(res.node, events);
       events.push({ type: 'LANTERN_REVEAL', dirId: res.node.id, revealedInodes: revealed });
       events.push({ type: 'VIBECODER_ACTION', action: 'lantern', command: 'ls -a' });

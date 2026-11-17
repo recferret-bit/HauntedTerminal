@@ -118,6 +118,7 @@ export function snapshot(g: ChapterState): GameSnapshot {
       cwd: cwdPath,
       ended: g.ended,
       lantern: g.rt.lantern,
+      held: g.inventory.held,
       xray: g.rt.xray,
       flood: 0,
       things,

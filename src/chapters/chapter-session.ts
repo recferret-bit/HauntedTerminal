@@ -1,4 +1,5 @@
 import type { WorldHost } from '../game/entities.js';
+import { starterInventory } from '../game/inventory.js';
 import { KiroCompanion } from '../game/kiro.js';
 import type { Session } from '../game/session.js';
 import type { Host, Step, Word } from '../game/shell.js';
@@ -61,6 +62,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   deadNow = false;
   deathText = '';
   tacticalMode = false;
+  inventory = starterInventory();
   pendingEditor: EditorOpenPayload | null = null;
   currentRedirectTarget = '';
   rt!: LevelRuntime;

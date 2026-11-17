@@ -6,6 +6,7 @@ import { cmdCd, cmdFind, cmdLs, cmdReadlink } from './commands-move.js';
 import { cmdKill, cmdPkill, cmdPs, cmdSource } from './commands-proc.js';
 import { cmdCat, cmdCut, cmdEcho, cmdGrep, cmdHeadTail, cmdRev, cmdSed, cmdWc } from './commands-text.js';
 import { World, type WorldHost } from './entities.js';
+import { runInventory, starterInventory } from './inventory.js';
 import { KiroCompanion } from './kiro.js';
 import { observeLab } from './lab-checks.js';
 import { applyLabInjection, buildLabInspect } from './lab-support.js';
@@ -390,6 +391,7 @@ class Game implements LabSession, Host {
         return out(this.agents.describe());
       }
       case 'whoami': return out('dev\n(worker #1 of the agents, apparently. You did not sign anything.)\n');
+      case 'inventory': case 'inv': case 'hold': return runInventory(this.run, name, args);
       case 'clear': return { stdout: '', stderr: '', code: 0, events: [], clear: true };
       case 'exit':
       case 'logout': return this.cmdExit();
@@ -425,6 +427,7 @@ class Game implements LabSession, Host {
       ended: false,
       intro: true,
       lantern: false,
+      inventory: starterInventory(),
       xray: false,
       flood: 0,
       attempts: {},

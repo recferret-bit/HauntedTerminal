@@ -15,6 +15,7 @@ export const MODEL_RULES = {
   /** Part and triangle budgets. Below `minParts` is a warning, above the maxima is an error. */
   budgets: {
     vibecoder: { minParts: 6, maxParts: 40, maxTris: 3500 },
+    item: { minParts: 3, maxParts: 40, maxTris: 3500 },
     npc: { minParts: 3, maxParts: 40, maxTris: 3500 },
     agent: { minParts: 6, maxParts: 40, maxTris: 3500 },
     malware: { minParts: 6, maxParts: 40, maxTris: 3500 },
@@ -71,6 +72,8 @@ export const MODEL_RULES = {
     malwareMajor: [0.6, 1.6] as [number, number],
     bossHeight: [1.8, 2.6] as [number, number],
     pickupMajor: [0.3, 0.5] as [number, number],
+    /** Inventory items: carried in one hand of a 1.6-unit developer. */
+    itemMajor: [0.25, 0.6] as [number, number],
     doorHeight: [1.4, 1.9] as [number, number],
     doorWidth: [0.7, 1.1] as [number, number],
   },

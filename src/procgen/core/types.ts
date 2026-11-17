@@ -71,8 +71,11 @@ export interface PartSpec {
   anim?: AnimTag;
 }
 
-/** Every model category, in display order. `agent` and `npc` are cast: AI agents and friendly characters. */
-export const MODEL_CATEGORIES = ['vibecoder', 'npc', 'agent', 'malware', 'boss', 'pickup', 'door', 'prop', 'room', 'fx'] as const;
+/**
+ * Every model category, in display order. `agent` and `npc` are cast: AI agents and friendly characters.
+ * `item` is the developer's inventory: things he carries in his hand (lantern, laptop).
+ */
+export const MODEL_CATEGORIES = ['vibecoder', 'item', 'npc', 'agent', 'malware', 'boss', 'pickup', 'door', 'prop', 'room', 'fx'] as const;
 export type ModelCategory = (typeof MODEL_CATEGORIES)[number];
 
 /** Categories drawn as corrupted hardware with one glowing eye: every hostile-model rule applies to them. */

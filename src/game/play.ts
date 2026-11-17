@@ -2,6 +2,7 @@ import type { KernelEvent } from '../contracts/events.js';
 import type { AgentDirector } from './agents.js';
 import type { World, WorldHost } from './entities.js';
 import type { LabConfig, LabLevelState } from './lab-types.js';
+import type { Inventory } from './inventory.js';
 import type { FloorId } from './types.js';
 import type { KiroCompanion } from './kiro.js';
 import type { Sfx } from './sfx.js';
@@ -41,6 +42,8 @@ export interface Run {
   ended: boolean;
   intro: boolean;
   lantern: boolean;
+  /** What he carries and holds; kept across floors. */
+  inventory: Inventory;
   xray: boolean;
   flood: number;
   attempts: Record<string, number>;

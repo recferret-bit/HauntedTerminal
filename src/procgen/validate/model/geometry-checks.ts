@@ -46,6 +46,7 @@ function checkSize(spec: ModelSpec, bounds: ModelBounds, rules: ModelRules, sink
   else if (cat === 'malware' || cat === 'agent') range('larger of width and height', Math.max(w, h), s.malwareMajor);
   else if (cat === 'boss') range('height', h, s.bossHeight);
   else if (cat === 'pickup') range('larger of width and height', Math.max(w, h), s.pickupMajor);
+  else if (cat === 'item') range('larger of width and height', Math.max(w, h), s.itemMajor);
   else if (cat === 'door') { range('height', h, s.doorHeight); range('width', w, s.doorWidth); }
 }
 

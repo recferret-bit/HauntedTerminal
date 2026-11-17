@@ -1,0 +1,82 @@
+/**
+ * The desktop's window manager as a reducer: one window per app, a z order, one focused window.
+ * Pure: the desktop view renders a `DesktopState` and dispatches `DesktopAction`s.
+ */
+import { APPS, type AppId } from './apps.js';
+
+export interface Win {
+  app: AppId;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  z: number;
+  minimized: boolean;
+}
+
+export interface DesktopState {
+  windows: readonly Win[];
+  focus: AppId | null;
+  /** Next z value: the most recently focused window is on top. */
+  top: number;
+}
+
+export type DesktopAction =
+  | { type: 'open'; app: AppId }
+  | { type: 'close'; app: AppId }
+  | { type: 'focus'; app: AppId }
+  | { type: 'minimize'; app: AppId }
+  | { type: 'move'; app: AppId; x: number; y: number };
+
+/** The screen the windows live on, in desktop pixels (a 640 x 480 panel minus the taskbar). */
+export const SCREEN = { w: 640, h: 452 } as const;
+
+export const emptyDesktop = (): DesktopState => ({ windows: [], focus: null, top: 1 });
+
+const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
+
+/** Keeps at least the title bar on screen. */
+function placed(win: Win, x: number, y: number): Win {
+  return { ...win, x: clamp(Math.round(x), 40 - win.w, SCREEN.w - 40), y: clamp(Math.round(y), 0, SCREEN.h - 24) };
+}
+
+function raise(state: DesktopState, app: AppId, patch: Partial<Win> = {}): DesktopState {
+  return {
+    windows: state.windows.map((w) => (w.app === app ? { ...w, ...patch, z: state.top } : w)),
+    focus: app,
+    top: state.top + 1,
+  };
+}
+
+function topVisible(windows: readonly Win[]): AppId | null {
+  const shown = windows.filter((w) => !w.minimized);
+  return shown.length ? shown.reduce((a, b) => (b.z > a.z ? b : a)).app : null;
+}
+
+export function reduceDesktop(state: DesktopState, action: DesktopAction): DesktopState {
+  const has = state.windows.some((w) => w.app === action.app);
+  switch (action.type) {
+    case 'open': {
+      if (has) return raise(state, action.app, { minimized: false });
+      const def = APPS[action.app];
+      // Cascade new windows so two never open exactly on top of each other.
+      const step = state.windows.length % 5;
+      const win = placed({ app: action.app, x: 0, y: 0, w: def.size[0], h: def.size[1], z: state.top, minimized: false }, 24 + step * 22, 12 + step * 18);
+      return { windows: [...state.windows, win], focus: action.app, top: state.top + 1 };
+    }
+    case 'focus':
+      return has ? raise(state, action.app, { minimized: false }) : state;
+    case 'close': {
+      if (!has) return state;
+      const windows = state.windows.filter((w) => w.app !== action.app);
+      return { ...state, windows, focus: state.focus === action.app ? topVisible(windows) : state.focus };
+    }
+    case 'minimize': {
+      if (!has) return state;
+      const windows = state.windows.map((w) => (w.app === action.app ? { ...w, minimized: true } : w));
+      return { ...state, windows, focus: state.focus === action.app ? topVisible(windows) : state.focus };
+    }
+    case 'move':
+      return has ? { ...state, windows: state.windows.map((w) => (w.app === action.app ? placed(w, action.x, action.y) : w)) } : state;
+  }
+}

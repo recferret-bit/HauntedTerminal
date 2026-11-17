@@ -5,6 +5,7 @@
  * to -1.15 (screen-right); the hero stands near 2.4.
  */
 import type { ActorKind, FloorId, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomView } from './types.js';
+import { heroModel } from './inventory.js';
 import { F3, LAYOUTS, type Layout, type SceneFacts, type ViewThing } from './view-layouts.js';
 
 export type { SceneFacts, ViewThing };
@@ -85,7 +86,7 @@ export function buildRoom(facts: SceneFacts): RoomView {
       title: 'DAWN // BACK AT THE DESK',
       caption: 'The lightning throws you back. The agents lose their worker.',
       neighbors: [],
-      actors: [{ key: 'vibecoder', id: 'vibecoder', model: 'vibecoder.dev', kind: 'vibecoder', state: 'idle', x: 0.4, hidden: false, label: 'dev' }],
+      actors: [{ key: 'vibecoder', id: 'vibecoder', model: heroModel(facts.held), kind: 'vibecoder', state: 'idle', x: 0.4, hidden: false, label: 'dev' }],
     };
   }
 
@@ -101,7 +102,7 @@ export function buildRoom(facts: SceneFacts): RoomView {
   const actors: RoomActor[] = [];
   const AUTO = Number.NaN;
   const heroX = place.take(layout.hero ?? 2.4);
-  actors.push({ key: 'vibecoder', id: 'vibecoder', model: 'vibecoder.dev', kind: 'vibecoder', state: 'idle', x: heroX, hidden: false, label: 'dev' });
+  actors.push({ key: 'vibecoder', id: 'vibecoder', model: heroModel(facts.held), kind: 'vibecoder', state: 'idle', x: heroX, hidden: false, label: 'dev' });
   if (facts.kiro) {
     const slotX = facts.kiro.target ? slots[facts.kiro.target]?.x : undefined;
     actors.push({

@@ -47,6 +47,11 @@ const LAYERS = [
   { area: 'comix-editor/', may: ['contracts/', 'editor-core/', 'cinematic/', 'procgen/'], three: false },
   // Terminal Lab: a test bench for the terminal. Builds a throwaway pack, plays it in the game iframe, never edits specs. Reuses the chapter editor's field tables.
   { area: 'terminal-lab/', may: ['contracts/', 'editor-core/', 'chapter-editor/', 'game/', 'chapters/', 'procgen/'], three: false },
+  // Laptop: the developer's inventory laptop (emulator, desktop, code apps, coding tasks). domain <- runtime <- ui <- lab.
+  { area: 'laptop/domain/', may: [], three: false },
+  { area: 'laptop/runtime/', may: ['laptop/domain/'], three: false },
+  { area: 'laptop/ui/', may: ['laptop/domain/', 'laptop/runtime/', 'editor-core/', 'procgen/core/'], three: false },
+  { area: 'laptop/', may: ['laptop/', 'editor-core/'], three: false },
   { area: 'hub/', may: [], three: false },
   // Play page composition. main.ts only starts it. Helpers live in play/ so the entry stays small.
   { area: 'play/', may: ['assets/', 'chapters/', 'cinematic/', 'contracts/', 'game/', 'renderer/', 'sandbox/', 'ui/'], three: true },

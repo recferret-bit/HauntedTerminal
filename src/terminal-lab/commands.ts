@@ -11,7 +11,7 @@ const GROUP_ORDER = ['Look', 'Move', 'Files', 'Text', 'Fight', 'Loot & Ghost', '
 export type CommandGroup = (typeof GROUP_ORDER)[number];
 
 const GROUPS: Record<CommandGroup, readonly string[]> = {
-  Look: ['pwd', 'ls', 'cat', 'readlink', 'find', 'status', 'whoami'],
+  Look: ['pwd', 'ls', 'cat', 'readlink', 'find', 'status', 'whoami', 'inventory', 'inv', 'hold'],
   Move: ['cd'],
   Files: ['touch', 'mkdir', 'rm', 'mv', 'cp', 'chmod', 'ln', 'echo'],
   Text: ['grep', 'wc', 'cut', 'rev', 'sed', 'head', 'tail'],
@@ -28,7 +28,7 @@ const EXAMPLES: Record<string, string> = {
   ln: 'ln -s readme.txt link', echo: 'echo hello', grep: 'grep -i lab readme.txt', wc: 'wc -l readme.txt', cut: 'cut -d: -f1 readme.txt',
   rev: 'rev readme.txt', sed: "sed 's/lab/LAB/' readme.txt", head: 'head -n 1 readme.txt', tail: 'tail -n 1 readme.txt', ps: 'ps', top: 'top',
   kill: 'kill -l', pkill: 'pkill nothing', source: 'source readme.txt', '.': '. readme.txt', kiro: 'kiro', help: 'help', man: 'man ls',
-  status: 'status', whoami: 'whoami', tutorial: 'tutorial', clear: 'clear', exit: 'exit', logout: 'logout', edit: 'edit readme.txt',
+  status: 'status', whoami: 'whoami', inventory: 'inventory', inv: 'inv', hold: 'hold lantern', tutorial: 'tutorial', clear: 'clear', exit: 'exit', logout: 'logout', edit: 'edit readme.txt',
   nano: 'nano readme.txt', docker: 'docker images', hank: 'hank', tactical: 'tactical off', grimoire: 'grimoire', bestiary: 'bestiary', workshop: 'workshop',
 };
 

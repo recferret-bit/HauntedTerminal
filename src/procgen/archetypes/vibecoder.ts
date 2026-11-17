@@ -1,18 +1,22 @@
 /**
  * The two human things in the machine: the developer and the System Hand.
  * They are the only models allowed to use the `human` palette family and the only round, soft shapes.
+ * The developer holds one item of his inventory (`./items.ts`) out in his screen-right hand; each
+ * held item is one registered variant (`HELD_VARIANTS`).
  * Briefs: .kiro/skills/haunted-art-direction/references/world-lexicon.md
  */
 import { ModelCatalog } from '../core/catalog.js';
 import type { AnimTag, ModelSpec, PartSpec, Vec2, Vec3 } from '../core/types.js';
 import {
-  kitDisc, kitPlate, kitRing, outlineEllipse, outlineRoundRect, outlineStroke, outlineSymmetric, outlineTransform,
-  SCREEN_LEFT, SCREEN_RIGHT,
+  animateParts, kitDisc, kitPlate, offsetParts, outlineEllipse, outlineRoundRect, outlineStroke, outlineSymmetric,
+  outlineTransform, prefixParts, SCREEN_LEFT, SCREEN_RIGHT,
 } from '../kit/greebles.js';
+import { buildLantern } from './items/lantern.js';
+import { buildLaptop } from './items/laptop.js';
 
 // ---------------------------------------------------------------- vibecoder.dev
 
-function buildDev(_seed: number): ModelSpec {
+function buildDev(id: string, label: string, item: ModelSpec): ModelSpec {
   const parts: PartSpec[] = [];
   const HIP_Y = 0.62;
   const SHOULDER_Y = 1.04;
@@ -46,19 +50,13 @@ function buildDev(_seed: number): ModelSpec {
     kitDisc('hand.l', 0.07, 0.12, 'skin', [0.37 * SCREEN_LEFT, 0.56, -0.05], { anim: swing }),
   );
 
-  // Lantern arm on the screen-right, held out. Arm, hand and lantern move as one piece.
+  // Holding arm on the screen-right, held out. Arm, hand and the held item move as one piece.
   const R = SCREEN_RIGHT;
   const hold: AnimTag = { type: 'armSwing', axis: 'x', amp: 0.08, phase: 0.5, pivot: [0.28 * R, SHOULDER_Y, 0] };
   const armPath: Vec2[] = [[0.2 * R, 1.01], [0.36 * R, 0.93], [0.52 * R, 0.9]];
-  const lx = 0.57 * R;
-  parts.push(
-    kitPlate('arm.r', outlineStroke(armPath, 0.15), 0.17, 'hoodie', [0, 0, -0.05], { bevel: 0.02, anim: hold }),
-    kitRing('lantern.handle', 0.075, 0.045, 0.04, 'hair', [lx, 0.84, -0.07], { sides: 12, anim: hold }),
-    kitDisc('hand.r', 0.075, 0.14, 'skin', [0.55 * R, 0.9, -0.08], { anim: hold }),
-    kitPlate('lantern.cap', outlineSymmetric([[0.085, 0], [0.085, 0.025], [0.035, 0.07]]), 0.14, 'hair', [lx, 0.735, -0.07], { anim: hold }),
-    kitPlate('lantern.glass', outlineRoundRect(0.15, 0.2, 0.04, 2), 0.12, 'lantern', [lx, 0.645, -0.07], { anim: hold }),
-    kitPlate('lantern.foot', outlineRoundRect(0.19, 0.05, 0.02, 1), 0.14, 'hair', [lx, 0.535, -0.07], { anim: hold }),
-  );
+  const hand = kitDisc('hand.r', 0.075, 0.14, 'skin', [0.55 * R, 0.9, -0.08], { anim: hold });
+  const held = holdItem(item, [0.57 * R, 0.84, -0.07], hand, hold);
+  parts.push(kitPlate('arm.r', outlineStroke(armPath, 0.15), 0.17, 'hoodie', [0, 0, -0.05], { bevel: 0.02, anim: hold }), ...held.parts);
 
   // Head: the hood is up, so the head silhouette is the hood and the face sits inside it.
   parts.push(
@@ -73,10 +71,28 @@ function buildDev(_seed: number): ModelSpec {
     bubble: [0, 1.72, 0],
     fx: [0, 0.85, -0.2],
     hand: [0.55 * R, 0.9, -0.1],
-    lantern: [lx, 0.645, -0.14],
+    ...held.sockets,
     eye: [0, 1.205, -0.21],
   };
-  return { id: 'vibecoder.dev', category: 'vibecoder', label: 'The developer', parts, sockets };
+  return { id, category: 'vibecoder', label, parts, sockets };
+}
+
+/**
+ * Puts `item`'s `grip` socket at `anchor` and moves every item part with the holding arm. A hand
+ * closes over a handle, so parts named `handle` go behind the hand and the rest of the item in front.
+ * An item with a `light` socket gives the holder its `lantern` socket: where the stage's light sits.
+ */
+function holdItem(item: ModelSpec, anchor: Vec3, hand: PartSpec, anim: AnimTag): { parts: PartSpec[]; sockets: Record<string, Vec3> } {
+  const grip = item.sockets?.grip ?? [0, 0, 0];
+  const by: Vec3 = [anchor[0] - grip[0], anchor[1] - grip[1], anchor[2] - grip[2]];
+  const key = item.id.slice(item.id.indexOf('.') + 1);
+  const moved = animateParts(prefixParts(offsetParts(item.parts, by), key), anim);
+  const isHandle = (p: PartSpec): boolean => p.name === `${key}.handle`;
+  const light = item.sockets?.light;
+  return {
+    parts: [...moved.filter(isHandle), hand, ...moved.filter((p) => !isHandle(p))],
+    sockets: light ? { lantern: [light[0] + by[0], light[1] + by[1], light[2] + by[2]] } : {},
+  };
 }
 
 // ---------------------------------------------------------------- vibecoder.hand
@@ -112,11 +128,24 @@ function buildHand(_seed: number): ModelSpec {
   };
 }
 
-ModelCatalog.register({
-  id: 'vibecoder.dev', category: 'vibecoder', label: 'The developer', gameKey: 'vibecoder',
-  lore: 'The only human in the machine: a tired developer in an orange hoodie, carrying a lantern. The player.',
-  build: buildDev,
-});
+/** One registered developer per item he can hold. `vibecoder.dev` (the lantern) is the one the game starts with. */
+const HELD_VARIANTS = [
+  {
+    id: 'vibecoder.dev', label: 'The developer', gameKey: 'vibecoder', item: buildLantern,
+    lore: 'The only human in the machine: a tired developer in an orange hoodie, carrying a lantern. The player.',
+  },
+  {
+    id: 'vibecoder.dev_laptop', label: 'The developer (laptop)', item: buildLaptop,
+    lore: 'The developer carrying his old clamshell laptop by its handle: the held item when a coding task needs it.',
+  },
+] as const;
+
+for (const v of HELD_VARIANTS) {
+  ModelCatalog.register({
+    id: v.id, category: 'vibecoder', label: v.label, lore: v.lore, ...('gameKey' in v ? { gameKey: v.gameKey } : {}),
+    build: (seed) => buildDev(v.id, v.label, v.item(seed)),
+  });
+}
 
 ModelCatalog.register({
   id: 'vibecoder.hand', category: 'vibecoder', label: 'The System Hand', gameKey: 'system_hand',

@@ -1,6 +1,6 @@
 # Inventory and Laptop Lab: design
 
-Status: approved
+Status: done
 
 ## Procgen (ASSET PCG)
 

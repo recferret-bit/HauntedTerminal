@@ -12,7 +12,7 @@ import { terminalLabApi } from './scripts/harness/lib/terminal-lab-api.mjs';
 const pages = (file = ''): string => fileURLToPath(new URL(`./pages/${file}`, import.meta.url));
 const project = (dir: string): string => fileURLToPath(new URL(`./${dir}`, import.meta.url));
 
-/** `/play/<chapter>/<level>` is the game, `/editor/...` the chapter editor, `/comix-editor/...` the comix editor, `/terminal-lab/...` the terminal lab; the browser keeps the path. */
+/** `/play/<chapter>/<level>` is the game, `/editor/...` the chapter editor, `/comix-editor/...` the comix editor, `/terminal-lab/...` the terminal lab, `/laptop-lab` the laptop lab; the browser keeps the path. */
 const playPaths = (): Connect.NextHandleFunction => (req, _res, next) => {
   const url = req.url ?? '';
   const q = url.indexOf('?');
@@ -22,6 +22,7 @@ const playPaths = (): Connect.NextHandleFunction => (req, _res, next) => {
   if (path === '/editor' || path.startsWith('/editor/')) req.url = `/chapter-editor.html${search}`;
   if (path === '/comix-editor' || path.startsWith('/comix-editor/')) req.url = `/comix-editor.html${search}`;
   if (path === '/terminal-lab' || path.startsWith('/terminal-lab/')) req.url = `/terminal-lab.html${search}`;
+  if (path === '/laptop-lab') req.url = `/laptop-lab.html${search}`;
   next();
 };
 
@@ -58,6 +59,7 @@ export default defineConfig({
         editor: pages('chapter-editor.html'),
         comixEditor: pages('comix-editor.html'),
         terminalLab: pages('terminal-lab.html'),
+        laptopLab: pages('laptop-lab.html'),
       },
     },
   },

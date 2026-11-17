@@ -20,6 +20,7 @@ export * from './runtime/index.js';
 
 // Importing these registers their entries in ModelCatalog / TextureCatalog.
 import './textures/index.js';
+import './archetypes/items.js';
 import './archetypes/vibecoder.js';
 import './archetypes/npc.js';
 import './archetypes/agents.js';

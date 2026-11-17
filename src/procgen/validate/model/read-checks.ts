@@ -148,7 +148,7 @@ function checkColor(ctx: ReadCtx): void {
   const cat = ctx.spec.category;
   if (cat === 'room' || !shares.length) return;
   checkDominantZone(ctx, shares);
-  if (cat !== 'prop' && cat !== 'npc') checkAccent(ctx, shares);
+  if (cat !== 'prop' && cat !== 'npc' && cat !== 'item') checkAccent(ctx, shares);
 }
 
 /** Emissive share limit, then the category's required light must show enough pixels. */
@@ -161,7 +161,7 @@ function checkLight(ctx: ReadCtx): void {
     if (z && z.family !== 'glass' && (z.emissive ?? 0) >= c.emissiveMin) glow += front[b.index];
   }
   stats.emissiveShare = Math.round((glow / topFilled) * 1000) / 1000;
-  if (cat !== 'pickup' && stats.emissiveShare > c.emissiveMaxShare) {
+  if (cat !== 'pickup' && cat !== 'item' && stats.emissiveShare > c.emissiveMaxShare) {
     sink.add('warning', 'TOO_MUCH_GLOW',
       `${pct(stats.emissiveShare)} of the visible model is emissive (limit ${pct(c.emissiveMaxShare)}): when everything glows, nothing does`,
       'Keep emissive zones for the eye/core, LEDs and the lantern. Move large glowing surfaces to a non-emissive zone of the same hue family.');
