@@ -8,7 +8,7 @@ Strong entry, with Technological Implementation (how deeply Kiro is used) as its
 
 | Criterion | Estimate | One line |
 |---|---|---|
-| Technological Implementation (Kiro) | 8.5 to 9.5 | Specs, steering, skills, hooks, seven custom agents with enforced ownership, property tests that found real bugs; no MCP, no powers |
+| Technological Implementation (Kiro) | 8.5 to 9.5 | Specs, steering, skills, hooks, seven custom agents with enforced ownership, property tests that found real bugs; a project power with the Netlify MCP server |
 | Design | 7.5 to 8.5 | A coherent, polished comic look and a full campaign; judged from screenshots and the video, not the repo |
 | Innovation / Idea | 8 to 9 | A terminal as the only controller, code-generated Comix Zone art, a declarative engine with its own editors |
 | Potential Impact | 5.5 to 7 | Teaches real unix, HTML, JS and Docker through play; the audience claim is the weakest part of the story |
@@ -28,8 +28,8 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 | **Property-based testing** | 32 fast-check properties in `npm run quality`; found 6 real bugs; planted-bug checks per feature; guards against vacuous properties | Strong. The write-up question "did PBT catch issues unit tests missed?" has a concrete answer |
 | **Sub-agents** | `lead-dev` delegates to six named agents; `semantic_reviewer` reviewed the work independently and found blockers | Good |
 | **Kiro CLI, Crew** | CLI path tested end to end; Crew prepared (agents installed, member on `lead-dev` in the repo workspace, `npm run crew:check`); the gateway honours the agents' rules; a real chat with the member is not done | Partial: needs the two-minute first test and one real task in the app |
-| **MCP** | `.kiro/settings/mcp.json` is empty by choice | Not used. The write-up says why (offline scripts and skills were enough) |
-| **Powers** | None | Not used. Do not fake it |
+| **MCP** | The Netlify MCP server, bundled in the `haunted-ship` power | Used, narrowly: site and deploy questions; uploads go through the gated script |
+| **Powers** | `haunted-ship`: manifest, keywords, Netlify MCP, a `ship` skill whose script gates every deploy and plays the chapter on the preview | Good once the first real deploy is done |
 | **Kiro IDE / Web** | Hooks and steering are written for the IDE; nothing shows it was used | Add two honest paragraphs on what each surface was used for |
 
 ### What makes this more than a feature list
@@ -46,7 +46,7 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 4. **Presentation of the Kiro story.** The write-up (`KIRO_USAGE.md`) still needs your own part: which Kiro surfaces you used for what, and one before and after story.
 5. **Impact claim.** The rules ask "would someone actually use this?". Frame it as learning by play: the unix commands, an HTML/CSS fix, a JS bug, a Dockerfile and a Compose file are real, and a tutorial level teaches them. Avoid claiming more.
 6. **Trademarks.** The story parodies real AI products by name. Keep logos out of the video.
-7. **MCP and powers** stay unused. Optional: one small MCP server exposing the gates. It is the only remaining Kiro feature the rules list that the project does not touch.
+7. **MCP depth.** The power covers powers and MCP, but the MCP use is a third-party server. A project MCP server (`haunted-forge`: validate and solve a level in memory) would show more.
 
 ## Category and bonus prizes
 

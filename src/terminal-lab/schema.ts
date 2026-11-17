@@ -13,7 +13,7 @@ const keep = (fields: Field[], keys: readonly string[]): Field[] =>
   fields.filter((f) => keys.includes(f.key)).map((f) => (f.key === 'mode' ? opt(f) : f));
 
 const SAY_FIELDS: Field[] = [sel('agent', 'Agent', AGENTS), sel('mood', 'Mood', MOODS), t('text', 'Line', { rows: 3 }), opt(t('print', 'Also print', { mono: true, hint: '{text} is the line' }))];
-const TAUNT_FIELDS: Field[] = [sel('mood', 'Mood', MOODS), t('text', 'Line', { rows: 2, hint: 'begins with the agent: CLAUDE: ..., GROK: ..., KIRO: ...' }), opt(t('print', 'Also print', { mono: true, hint: '{text} is the line' }))];
+const TAUNT_FIELDS: Field[] = [sel('mood', 'Mood', MOODS), t('text', 'Line', { rows: 2, hint: 'begins with the agent: CLOD: ..., GORK: ..., KIRO: ...' }), opt(t('print', 'Also print', { mono: true, hint: '{text} is the line' }))];
 
 /** What a lab check watches. `ran`, `output`, `code` and `event` stay passed once seen; `file` and `riddle` are read live. */
 export const COND_VARIANTS = (): Record<LabCond['kind'], Field[]> => ({

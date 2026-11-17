@@ -6,14 +6,14 @@ type TauntSpeakerId = Extract<KernelEvent, { type: 'AGENT_TAUNT' }>['agent'];
 
 /** One colour per AI agent (plus local Kiro Ghost), shared by the prompt card and terminal lines. */
 export const AGENTS: Record<TauntSpeakerId, { name: string; colour: string; ink: string; rgb: [number, number, number] }> = {
-  clod: { name: 'CLAUDE', colour: '#ff8a3d', ink: '#140f12', rgb: [255, 138, 61] },
-  gork: { name: 'GROK', colour: '#ef476f', ink: '#ffffff', rgb: [255, 92, 122] },
-  codec: { name: 'CODEX', colour: '#06d6a0', ink: '#140f12', rgb: [6, 214, 160] },
-  antigravy: { name: 'AGY', colour: '#5b8cff', ink: '#ffffff', rgb: [127, 165, 255] },
+  clod: { name: 'CLOD', colour: '#ff8a3d', ink: '#140f12', rgb: [255, 138, 61] },
+  gork: { name: 'GORK', colour: '#ef476f', ink: '#ffffff', rgb: [255, 92, 122] },
+  codec: { name: 'CODEC', colour: '#06d6a0', ink: '#140f12', rgb: [6, 214, 160] },
+  antigravy: { name: 'ANTI-GRAVY', colour: '#5b8cff', ink: '#ffffff', rgb: [127, 165, 255] },
   kiro: { name: 'KIRO.D', colour: '#4cc9f0', ink: '#110e1b', rgb: [76, 201, 240] },
 };
 
-/** `[GROK] text` in the agent's colour, for the terminal. */
+/** `[GORK] text` in the agent's colour, for the terminal. */
 export function taunt(ev: Extract<KernelEvent, { type: 'AGENT_TAUNT' }>): string {
   const a = AGENTS[ev.agent];
   const [r, g, b] = a.rgb;

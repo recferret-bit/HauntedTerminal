@@ -4,7 +4,7 @@ import type { PlayFrame } from './play-frame.js';
 
 /** Templates for the "fire an event" box: what the stage and the terminal do with each one. */
 const EVENT_PRESETS: Record<string, KernelEvent> = {
-  AGENT_TAUNT: { type: 'AGENT_TAUNT', agent: 'clod', model: 'agent.clod', text: 'CLAUDE: "Test line."', mood: 'laugh' },
+  AGENT_TAUNT: { type: 'AGENT_TAUNT', agent: 'clod', model: 'agent.clod', text: 'CLOD: "Test line."', mood: 'laugh' },
   VIBECODER_EMOTE: { type: 'VIBECODER_EMOTE', emote: 'shock', text: 'WHAT?!' },
   KIRO_ACTION: { type: 'KIRO_ACTION', action: 'scan', core: 'qwen', message: 'Kiro scans the room.' },
   ENTITY_SPAWNED: { type: 'ENTITY_SPAWNED', entityId: 'preview_virus', model: 'malware.virus', reason: 'script' },

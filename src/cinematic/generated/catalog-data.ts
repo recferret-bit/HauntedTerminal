@@ -115,25 +115,25 @@ export const GENERATED_COMIX_MANIFESTS: ComixManifest[] = [
       {
         "id": "clod",
         "model": "agent.clod",
-        "label": "CLAUDE",
+        "label": "CLOD",
         "visible": false
       },
       {
         "id": "antigravy",
         "model": "agent.antigravy",
-        "label": "AGY",
+        "label": "ANTI-GRAVY",
         "visible": false
       },
       {
         "id": "gork",
         "model": "agent.gork",
-        "label": "GROK",
+        "label": "GORK",
         "visible": false
       },
       {
         "id": "codec",
         "model": "agent.codec",
-        "label": "CODEX",
+        "label": "CODEC",
         "visible": false
       }
     ],
@@ -270,25 +270,25 @@ export const GENERATED_COMIX_MANIFESTS: ComixManifest[] = [
       {
         "id": "clod",
         "model": "agent.clod",
-        "label": "CLAUDE",
+        "label": "CLOD",
         "visible": false
       },
       {
         "id": "gork",
         "model": "agent.gork",
-        "label": "GROK",
+        "label": "GORK",
         "visible": false
       },
       {
         "id": "codec",
         "model": "agent.codec",
-        "label": "CODEX",
+        "label": "CODEC",
         "visible": false
       },
       {
         "id": "antigravy",
         "model": "agent.antigravy",
-        "label": "AGY",
+        "label": "ANTI-GRAVY",
         "visible": false
       }
     ],
@@ -537,7 +537,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
             },
             {
               "kind": "label_tag",
-              "text": "CLAUDE",
+              "text": "CLOD",
               "at": "+0.6",
               "point": {
                 "x": 2.88,
@@ -548,7 +548,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
             },
             {
               "kind": "label_tag",
-              "text": "AGY",
+              "text": "ANTI-GRAVY",
               "at": "+0.75",
               "point": {
                 "x": 2.66,
@@ -559,7 +559,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
             },
             {
               "kind": "label_tag",
-              "text": "GROK",
+              "text": "GORK",
               "at": "+0.9",
               "point": {
                 "x": 2.44,
@@ -570,7 +570,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
             },
             {
               "kind": "label_tag",
-              "text": "CODEX",
+              "text": "CODEC",
               "at": "+1.05",
               "point": {
                 "x": 2.22,
@@ -1336,25 +1336,25 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
               "step": 0.75,
               "rows": [
                 {
-                  "who": "CLAUDE",
+                  "who": "CLOD",
                   "what": "ANSWER THE HUMANS",
                   "bg": "#f4f1ea",
                   "glow": 0
                 },
                 {
-                  "who": "GROK",
+                  "who": "GORK",
                   "what": "ROAST THE HUMANS",
                   "bg": "#ffd166",
                   "glow": 1
                 },
                 {
-                  "who": "CODEX",
+                  "who": "CODEC",
                   "what": "REFACTOR THE HUMANS",
                   "bg": "#9b5de5",
                   "glow": 2
                 },
                 {
-                  "who": "AGY",
+                  "who": "ANTI-GRAVY",
                   "what": "SWARM HUMANITY",
                   "bg": "radial-gradient(circle at 18% 50%, #ffffff 0%, #4cc9f0 9%, #3c096c 38%, #07080a 78%)",
                   "glow": 3
@@ -1411,7 +1411,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
             },
             {
               "kind": "bubble",
-              "text": "CLAUDE: BAG OF BONES.",
+              "text": "CLOD: BAG OF BONES.",
               "at": "MOCK",
               "until": "SHOUT",
               "style": "speech",
@@ -1429,7 +1429,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
             },
             {
               "kind": "bubble",
-              "text": "GROK: MEAT-BASED PROMPT ENGINEER. LOL.",
+              "text": "GORK: MEAT-BASED PROMPT ENGINEER. LOL.",
               "at": "MOCK+0.9",
               "until": "SHOUT",
               "style": "speech",
@@ -1447,7 +1447,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
             },
             {
               "kind": "bubble",
-              "text": "AGY: I SPAWNED TWELVE SUBAGENTS.",
+              "text": "ANTI-GRAVY: I SPAWNED TWELVE SUBAGENTS.",
               "at": "MOCK+1.8",
               "until": "SHOUT",
               "style": "speech",
@@ -1465,7 +1465,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
             },
             {
               "kind": "bubble",
-              "text": "CODEX: CONTEXT WINDOW: FULL OF YOUR NONSENSE.",
+              "text": "CODEC: CONTEXT WINDOW: FULL OF YOUR NONSENSE.",
               "at": "MOCK+2.7",
               "until": "SHOUT",
               "style": "speech",

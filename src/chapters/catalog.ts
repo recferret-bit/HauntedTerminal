@@ -236,7 +236,7 @@ export const GRIMOIRE_ENTRIES: readonly GrimoireEntry[] = [
   {
     command: 'kiro',
     category: 'POSIX',
-    syntax: 'kiro [scan | load <qwen|mistral|deepseek|llama> | crack <lock>] | cat <file> | kiro',
+    syntax: 'kiro [scan | load <qwen|mistral|deepseek|llama> | crack <lock> | disclaimer] | cat <file> | kiro',
     realWorld: 'Runs air-gapped, self-hosted `.gguf` open-weights inference locally on your own GPU VRAM.',
     comicEffect: 'Unfolds your Destiny-style Kiro Ghost shell to scan rooms, hot-swap cores, audit files, and decrypt Cloud locks!',
   },
@@ -350,7 +350,7 @@ export const BESTIARY_DOSSIER: readonly DossierEntry[] = [
   },
   {
     id: 'kernel',
-    name: 'Slop-Weaver Code-X (slop_supervisor.ko, PID 1)',
+    name: 'Slop-Weaver Codec (slop_supervisor.ko, PID 1)',
     model: 'boss.kernel',
     role: 'BOSS',
     hostHardware: 'Monolithic autonomous AI supervisor gripping live cart checkout.',

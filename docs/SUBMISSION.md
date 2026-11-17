@@ -28,11 +28,11 @@ Source: [official rules](https://kiroween.devpost.com/rules), read November 17, 
 
 ## TODO for you (placeholders I cannot fill)
 
-- [ ] Deploy `dist/` (Netlify reads `public/_redirects`), then replace `<LIVE_URL>` in `README.md` (2 places) and set the GitHub About website.
+- [ ] Deploy with the `haunted-ship` power: `npx netlify-cli@27.20.0 login` once, then `node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs preview`, check the URL, then `prod`. Then replace `<LIVE_URL>` in `README.md` (2 places) and set the GitHub About website.
 - [ ] Record the demo video (plan below), upload to YouTube as public, replace `<YOUTUBE_URL>` in `README.md`.
 - [ ] Set the GitHub About box: description, topics, and confirm it shows the MIT license.
 - [ ] Decide the legal name in `LICENSE` ("Andrei Sokolov") against git's "Andrey Sokolov", and make both match.
-- [ ] Trademark decision: the story names AGY, Codex, Grok and Claude. Keep them or rename them. Either way, show no logos in the video.
+- [x] Trademark decision: refactored all story/code agent names to parody cast names (`Anti-Gravy`, `Codec`, `Gork`, `Clod`). Keep logos out of the demo video.
 - [ ] Fill the personal parts of `docs/KIRO_USAGE.md` (surfaces, one before/after story).
 - [x] Crew prepared: agents linked, workspace fixed, member `haunted-lead` on `lead-dev`, branch protection on (`npm run crew:check`).
 - [ ] Run the first test and one real task through `lead-dev` in the Kiro Crew app, and one through the CLI; note them in `docs/AGENTS_CREW.md` and `docs/KIRO_USAGE.md`.
@@ -50,11 +50,11 @@ Source: [official rules](https://kiroween.devpost.com/rules), read November 17, 
 | 4 | Browser playthrough failed | **Fixed.** The script was the old classic-floor one pointed at the chapter. `play-browser.mjs` now builds its script from every level's `solutionCommands`, so it cannot drift. It plays all 11 levels in real Chrome: 64 commands, 85 s, rank S, no console errors. The old script still drives `--script ... --query ''` (classic floors). |
 | 5 | Two specs with open tasks | **Closed.** `chapter-editor` and `declarative-chapter-runtime` are `done`; unbuilt items moved to a "Backlog" section of each `tasks.md`, recorded under `## Decisions`. Revert if you want any of them in scope. |
 | 6 | Legacy specs written after code | **Disclosed.** Their status line keeps "legacy: written before spec-first.md". Do not claim spec-first for them. |
-| 7 | Trademarks in the story | TODO (yours) |
+| 7 | Trademarks in the story | **Fixed.** Uses parody cast names (Anti-Gravy, Codec, Gork, Clod). |
 | 8 | README start date | **Fixed.** Uses the first commit date, Nov 12. |
 | 9 | Screenshots only in ignored `out/` | **Fixed.** Copied to `docs/media/`. |
 | 10 | Some suites not run | TODO, command list above |
-| 11 | Kiro features not visible in the repo | **Fixed for custom agents and PBT** (`.kiro/agents/`, `property-tests.mjs`). MCP and powers stay unused by choice. |
+| 11 | Kiro features not visible in the repo | **Fixed for custom agents and PBT** (`.kiro/agents/`, `property-tests.mjs`). Powers and MCP: the `haunted-ship` power bundles the Netlify MCP server (2026-11-17). |
 | 12 | Audio needs a first click | Check once in a real browser. Audio is WebAudio, no files. |
 
 ## Kiro depth (status 2026-11-17)
@@ -68,7 +68,7 @@ Ranked by value for the Technological Implementation score against cost.
 1. **Built: custom agents.** Seven agents in `.kiro/agents/` (a lead, four feature designers, an artist, QA), one owner per file, tested on the CLI against the real tool. The Kiro Crew app run and a pushed `agent/*` branch are not yet done: say "built and documented" until they are. See `docs/AGENTS_CREW.md`.
 2. **Done: property-based tests.** 32 fast-check properties across five features, inside `npm run quality`; six real bugs found and fixed. See `docs/PROPERTY_TESTS.md`.
 3. **A small MCP server exposing the gates (medium cost).** Tools such as `run_quality`, `verify_chapter`, `run_terminal_lab`, `list_specs`, returning structured results. Trade-off: it reverses today's "keep mcp.json empty" rule and adds `@modelcontextprotocol/sdk`. Cheaper alternative: wire an existing Chrome DevTools MCP for the visual QA you now do through a hand-written CDP client.
-4. **Powers (skip).** None fits the project. Faking one costs credibility.
+4. **Built: a power.** `haunted-ship` (`.kiro/powers/haunted-ship/`) bundles the Netlify MCP server with a gated deploy skill. Spec: `.kiro/specs/netlify-deploy-power/`.
 5. **Surface comparison (free).** Write two paragraphs on what you used the CLI, IDE and Crew for. Pure text, but the rules ask for it.
 
 ## Demo video plan (under 3:00)

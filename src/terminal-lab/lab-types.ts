@@ -44,7 +44,7 @@ export type LabSetupOp =
   | { op: 'prop'; id: string; model: string; x: number; y?: number; label?: string }
   /** An agent cameo that speaks when the level starts. */
   | { op: 'npc'; agent: ScriptAgent; mood: ScriptMood; text: string; print?: string }
-  /** The level's taunt when it starts. The agent is the one the text begins with (`CLAUDE: ...`, `KIRO: ...`). */
+  /** The level's taunt when it starts. The agent is the one the text begins with (`CLOD: ...`, `KIRO: ...`). */
   | { op: 'taunt'; mood: ScriptMood; text: string; print?: string }
   /** A speech bubble anchored on a socket when the level starts. */
   | ({ op: 'dialogue' } & LabDialogue)

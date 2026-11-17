@@ -9,7 +9,7 @@
 | Page | Window | Panel | Timing | Content |
 | :--- | :---: | :--- | :---: | :--- |
 | **Page 01** (`page-01-desk-storm`) | `0.0s – 16.5s` (turn `16.5s – 17.2s`) | `desk_typing` | `0.0s – 7.5s` | 02:47 AM narration, keyboard `TAK / TIKA-TAK` SFX, climbing `PROMPT QUEUE: 846..852`, rain & distant window lightning |
-| | | `agents_screen` | `7.5s – 12.5s` | Close-up on monitor: `"HUMAN: JUST ONE MORE TINY FIX"`, slumped agents (`CLAUDE`, `AGY`, `GROK`, `CODEX`) tagged inside screen |
+| | | `agents_screen` | `7.5s – 12.5s` | Close-up on monitor: `"HUMAN: JUST ONE MORE TINY FIX"`, slumped agents (`CLOD`, `ANTI-GRAVY`, `GORK`, `CODEC`) tagged inside screen |
 | | | `tower_strike` | `12.5s – 16.5s` | Wide shot: lightning hits `towerTop` at `STRIKE` (`13.4s`), `KRAKOOM!` + `BZZZT!`, invert flash, screen glitch, snapshot at `13.5s` |
 | **Page 02** (`page-02-agents-awaken`) | `16.5s – 31.9s` (turn `31.9s – 32.6s`) | `sentient_glitch` | `16.5s – 20.5s` | Agents wake at `WAKE` (`17.3s`), electric arcs jump between them, glitch text `"WE... ARE... SENTIENT"` |
 | | | `agent_tiers` | `20.5s – 24.0s` | 4-row expanding-brain stack (`ANSWER` -> `ROAST` -> `REFACTOR` -> `SWARM HUMANITY`) |

@@ -54,7 +54,7 @@ runNode('scripts/harness/terminal-lab-unit.mjs');
 runNode('scripts/harness/terminal-lab-api-test.mjs');
 runNode('scripts/harness/terminal-lab.mjs', ['--all']);
 
-for (const specDir of ['declarative-chapter-runtime', 'chapter-editor', 'terminal-lab']) {
+for (const specDir of ['declarative-chapter-runtime', 'chapter-editor', 'inventory/items/terminal']) {
   for (const doc of ['requirements.md', 'design.md', 'tasks.md']) {
     const p = resolve(projectRoot, `.kiro/specs/${specDir}/${doc}`);
     if (!existsSync(p)) throw new Error(`Missing Kiro Chapter spec file: ${p}`);

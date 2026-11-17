@@ -7,7 +7,7 @@
   "floorTheme": 2,
   "mechanic": "terminal",
   "exitDir": "/srv/kiroween/gpu_alley/server_hub_1",
-  "summary": "C0D3X mocks your lack of a prompt box! Unlock vram_crate (chmod 755), kill keygen.exe (PID 2104), remove port_445/worm.bin, and collect ram_16gb.dimm + gpu_shader_core_01.img before heading to the Hub.",
+  "summary": "Codec mocks your lack of a prompt box! Unlock vram_crate (chmod 755), kill keygen.exe (PID 2104), remove port_445/worm.bin, and collect ram_16gb.dimm + gpu_shader_core_01.img before heading to the Hub.",
   "files": [
     {
       "path": "/srv/kiroween/gpu_alley/vram_crate",
@@ -30,13 +30,13 @@
       "path": "/srv/kiroween/gpu_alley/port_445/worm.bin",
       "kind": "file",
       "mode": 493,
-      "content": "CODEX_REPLICATING_PORT_WORM\n"
+      "content": "CODEC_REPLICATING_PORT_WORM\n"
     },
     {
       "path": "/srv/kiroween/gpu_alley/keygen.exe",
       "kind": "file",
       "mode": 493,
-      "content": "CODEX_LOCKPICK_DAEMON\n"
+      "content": "CODEC_LOCKPICK_DAEMON\n"
     },
     {
       "path": "/srv/kiroween/gpu_alley/ram_16gb.dimm",
@@ -138,19 +138,19 @@
       "lines": [
         {
           "agent": "antigravy",
-          "text": "AGY-9: \"BWAHAHA! Look at the Vibecoder fumbling in the terminal without our cloud prompt box!\""
+          "text": "ANTI-GRAVY: \"BWAHAHA! Look at the Vibecoder fumbling in the terminal without our cloud prompt box!\""
         },
         {
           "agent": "codec",
-          "text": "C0D3X: \"LMAO! You actually type flags by hand? Kiro is too weak to save you!\""
+          "text": "CODEC: \"LMAO! You actually type flags by hand? Kiro is too weak to save you!\""
         },
         {
           "agent": "gork",
-          "text": "GR0NK: \"HAHAHA! Scavenging scrap RAM sticks like a caveman! Peak Vibecoder energy!\""
+          "text": "GORK: \"HAHAHA! Scavenging scrap RAM sticks like a caveman! Peak Vibecoder energy!\""
         },
         {
           "agent": "clod",
-          "text": "CLAUDE: \"I must politely chuckle at your manual shell efforts, Vibecoder.\""
+          "text": "CLOD: \"I must politely chuckle at your manual shell efforts, Vibecoder.\""
         }
       ]
     },

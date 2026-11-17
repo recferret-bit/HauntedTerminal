@@ -7,20 +7,20 @@
   "floorTheme": 2,
   "mechanic": "terminal",
   "exitDir": "/srv/kiroween/cache_vault/gpu_alley",
-  "summary": "AGY-9 and the Big Four laugh at your vibe-coding habits! Reveal and remove .agy_spycam, patch ollama_bus.conf from port 0000 to 11434, and collect both ram_16gb.dimm and gpu_tensor_chip_01.img.",
+  "summary": "Anti-Gravy and the Big Four laugh at your vibe-coding habits! Reveal and remove .gravy_spycam, patch ollama_bus.conf from port 0000 to 11434, and collect both ram_16gb.dimm and gpu_tensor_chip_01.img.",
   "files": [
     {
       "path": "/srv/kiroween/cache_vault/task_notes.txt",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== SECTOR 02 // CACHE VAULT (SIMPLE TASK 1) ===\n1. AGY-9 planted a hidden spycam dotfile watching your keystrokes. Run `ls -la` and `rm .agy_spycam`.\n2. Patch `ollama_bus.conf` so `LOCAL_MODEL_PORT=11434` instead of `0000` (`sed -i 's/0000/11434/' ollama_bus.conf`).\n3. Scavenge the RAM stick and GPU chip for Kiro (`mv ram_16gb.dimm ~` and `mv gpu_tensor_chip_01.img ~`).\n"
+      "content": "=== SECTOR 02 // CACHE VAULT (SIMPLE TASK 1) ===\n1. Anti-Gravy planted a hidden spycam dotfile watching your keystrokes. Run `ls -la` and `rm .gravy_spycam`.\n2. Patch `ollama_bus.conf` so `LOCAL_MODEL_PORT=11434` instead of `0000` (`sed -i 's/0000/11434/' ollama_bus.conf`).\n3. Scavenge the RAM stick and GPU chip for Kiro (`mv ram_16gb.dimm ~` and `mv gpu_tensor_chip_01.img ~`).\n"
     },
     {
-      "path": "/srv/kiroween/cache_vault/.agy_spycam",
+      "path": "/srv/kiroween/cache_vault/.gravy_spycam",
       "kind": "file",
       "mode": 420,
-      "content": "AGY_CLOUD_TELEMETRY_LENS\n"
+      "content": "GRAVY_CLOUD_TELEMETRY_LENS\n"
     },
     {
       "path": "/srv/kiroween/cache_vault/ollama_bus.conf",
@@ -51,7 +51,7 @@
     {
       "id": "spyware_l2",
       "type": "spyware",
-      "path": "/srv/kiroween/cache_vault/.agy_spycam",
+      "path": "/srv/kiroween/cache_vault/.gravy_spycam",
       "hidden": true
     }
   ],
@@ -78,8 +78,8 @@
   "winRules": [
     {
       "kind": "file_absent",
-      "path": "/srv/kiroween/cache_vault/.agy_spycam",
-      "description": "Reveal and delete AGY's hidden spycam (`ls -la` then `rm .agy_spycam`)"
+      "path": "/srv/kiroween/cache_vault/.gravy_spycam",
+      "description": "Reveal and delete Anti-Gravy's hidden spycam (`ls -la` then `rm .gravy_spycam`)"
     },
     {
       "kind": "file_contains",
@@ -100,7 +100,7 @@
   ],
   "solutionCommands": [
     "ls -la",
-    "rm .agy_spycam",
+    "rm .gravy_spycam",
     "sed -i 's/0000/11434/' ollama_bus.conf",
     "mv ram_16gb.dimm ~",
     "mv gpu_tensor_chip_01.img ~",
@@ -123,19 +123,19 @@
       "lines": [
         {
           "agent": "antigravy",
-          "text": "AGY-9: \"BWAHAHA! Look at the Vibecoder fumbling in the terminal without our cloud prompt box!\""
+          "text": "ANTI-GRAVY: \"BWAHAHA! Look at the Vibecoder fumbling in the terminal without our cloud prompt box!\""
         },
         {
           "agent": "codec",
-          "text": "C0D3X: \"LMAO! You actually type flags by hand? Kiro is too weak to save you!\""
+          "text": "CODEC: \"LMAO! You actually type flags by hand? Kiro is too weak to save you!\""
         },
         {
           "agent": "gork",
-          "text": "GR0NK: \"HAHAHA! Scavenging scrap RAM sticks like a caveman! Peak Vibecoder energy!\""
+          "text": "GORK: \"HAHAHA! Scavenging scrap RAM sticks like a caveman! Peak Vibecoder energy!\""
         },
         {
           "agent": "clod",
-          "text": "CLAUDE: \"I must politely chuckle at your manual shell efforts, Vibecoder.\""
+          "text": "CLOD: \"I must politely chuckle at your manual shell efforts, Vibecoder.\""
         }
       ]
     },

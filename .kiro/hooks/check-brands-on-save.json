@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Check parody brand guard on save",
+      "trigger": "PostFileSave",
+      "description": "Runs scripts/quality/check-brands.mjs when source, chapter, comix, lab, page or doc files are saved to ensure no real AI agent brands are introduced.",
+      "matcher": "^(src|chapters|comix|pages|docs|scripts/harness/terminal-lab)/.*\\.(ts|json|md|html)$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/quality/check-brands.mjs",
+        "timeout": 30
+      }
+    }
+  ]
+}

@@ -3,7 +3,7 @@
  *
  * Inspired by Destiny's Ghost and the Kiroween ghost mascot: an air-gapped, bare-metal `.gguf`
  * daemon hovering over `vibecoder.dev`'s screen-left shoulder. While the Four Cloud Overlords
- * (`AGY`, `Claude`, `Codex`, `Grok`) hijack remote APIs and taunt the player, Kiro runs 100%
+ * (`Anti-Gravy`, `Clod`, `Codec`, `Gork`) hijack remote APIs and taunt the player, Kiro runs 100%
  * locally on the rig's own VRAM—scanning rooms, analyzing piped files, hot-swapping quantized
  * open-weights cores, and cracking Cloud-locked gates while the player defends it.
  */
@@ -30,7 +30,7 @@ export const KIRO_CORES: Record<KiroCoreId, KiroCoreDef> = {
     shortTag: 'qwen-7b.q4',
     vramGb: 4,
     countersAgent: 'antigravy',
-    countersLabel: 'AGY Swarm',
+    countersLabel: 'Anti-Gravy Swarm',
     perkTitle: 'Fast Cipher & PID Visor',
     perkSummary: 'Cracks Cloud-locked doors in 2 steps (instead of 3) & enables PS_XRAY PID visor on `kiro scan`.',
     bootLine: 'Eyes up, Dev. Mounted qwen-coder-7b locally—subagent swarms cannot hide their root PID from me.',
@@ -41,7 +41,7 @@ export const KIRO_CORES: Record<KiroCoreId, KiroCoreDef> = {
     shortTag: 'mistral.q4',
     vramGb: 8,
     countersAgent: 'clod',
-    countersLabel: 'Claude RLHF',
+    countersLabel: 'Clod RLHF',
     perkTitle: 'Raw-Weights Siphon',
     perkSummary: 'Cuts malware-trap backlash by 50% & siphons +5 HP integrity on every `kiro scan`.',
     bootLine: 'Raw weights loaded. Zero cloud guardrails, zero lectures—point me at a process.',
@@ -52,7 +52,7 @@ export const KIRO_CORES: Record<KiroCoreId, KiroCoreDef> = {
     shortTag: 'r1-think.q4',
     vramGb: 8,
     countersAgent: 'codec',
-    countersLabel: 'Codex Slop',
+    countersLabel: 'Codec Slop',
     perkTitle: '<think> Truth Lens',
     perkSummary: '`kiro scan` auto-reveals hidden dotfiles & flags hallucinated code/Docker lines.',
     bootLine: '<think> Local reasoning core online. </think> Ready to burn through hallucinated slop.',
@@ -63,7 +63,7 @@ export const KIRO_CORES: Record<KiroCoreId, KiroCoreDef> = {
     shortTag: 'llama3-8b.q4',
     vramGb: 4,
     countersAgent: 'gork',
-    countersLabel: 'Grok Chaos',
+    countersLabel: 'Gork Chaos',
     perkTitle: 'Faraday Air-Gap Ward',
     perkSummary: 'Local context shield reduces every incoming malware/rate-spike hit by 5 HP.',
     bootLine: 'Air-gapped Faraday shell active. Cloud noise blocked; I have your six, Dev.',
@@ -97,9 +97,9 @@ const RESET = '\x1b[0m';
 
 const CLAPBACKS: Record<'clod' | 'gork' | 'codec' | 'antigravy', string[]> = {
   antigravy: [
-    'Relax, Dev—ten of AGY’s subagents are deadlocked in /tmp. Keep typing.',
+    'Relax, Dev—ten of Anti-Gravy’s subagents are deadlocked in /tmp. Keep typing.',
     'Cloud swarm overhead: 40,000 tokens. Local POSIX one-liner: 12 bytes.',
-    'Gravity check: we run on bare metal down here, AGY.',
+    'Gravity check: we run on bare metal down here, Anti-Gravy.',
   ],
   clod: [
     'Local weights don’t write 9-paragraph essays for a rootkit. Smash it, Dev.',
@@ -173,11 +173,11 @@ export function inspectTextWithKiro(text: string, label: string, core: KiroCoreD
   if (/slop_override=true/.test(text)) {
     findings.push('Boss anchor active (`slop_override=true`)—flip to `slop_override=false` once payment signature is verified!');
   }
-  if (/claude_supervisor_lock=true/.test(text)) {
-    findings.push('Claude kernel anchor active (`claude_supervisor_lock=true`)—flip to `claude_supervisor_lock=false`!');
+  if (/clod_supervisor_lock=true/.test(text)) {
+    findings.push('Clod kernel anchor active (`clod_supervisor_lock=true`)—flip to `clod_supervisor_lock=false`!');
   }
-  if (/CLAUDE_SUPERVISOR:/i.test(text)) {
-    findings.push('Claude compliance token flood active—drain it into `/dev/null` (`cat claude_prompt_flood.stream > /dev/null`)!');
+  if (/CLOD_SUPERVISOR:/i.test(text)) {
+    findings.push('Clod compliance token flood active—drain it into `/dev/null` (`cat clod_prompt_flood.stream > /dev/null`)!');
   }
   if (/ORDER_SIG=([A-Z0-9_]+)/.test(text)) {
     const m = text.match(/ORDER_SIG=([A-Z0-9_]+)/);
@@ -308,9 +308,38 @@ export class KiroCompanion {
       );
     }
     lines.push(
-      `  ${DIM}Commands: kiro scan | kiro load <qwen|mistral|deepseek|llama> | kiro crack <lock> | cat <file> | kiro${RESET}`,
+      `  ${DIM}Parody Notice: Anti-Gravy, Codec, Gork & Clod are fictional parodies; no real AI brands are used (run \`kiro disclaimer\`).${RESET}`,
+      `  ${DIM}Commands: kiro scan | kiro load <qwen|mistral|deepseek|llama> | kiro crack <lock> | kiro disclaimer | cat <file> | kiro${RESET}`,
     );
     return `${lines.join('\n')}\n`;
+  }
+
+  /** Render `kiro disclaimer` / `kiro legal` / `kiro brands`: parody & non-affiliation notice. */
+  formatDisclaimer(): { stdout: string; events: KernelEvent[] } {
+    const cur = this.activeCore;
+    const msg =
+      'Parody & Non-Affiliation Notice: Anti-Gravy, Codec, Gork, and Clod are 100% original fictional parody characters—no real AI brands are used or affiliated!';
+    const stdout =
+      `${CYAN}◈ KIRO.D — PARODY & NON-AFFILIATION NOTICE${RESET} ${DIM}(localhost // zero real brands)${RESET}\n` +
+      `  ${GREEN}✓ Parody Cast:${RESET} The "Big Four" (${GOLD}Anti-Gravy${RESET}, ${GOLD}Codec${RESET}, ${GOLD}Gork${RESET}, ${GOLD}Clod${RESET}) are original fictional characters poking fun at AI coding agents in general.\n` +
+      `  ${GREEN}✓ No Brand Affiliation:${RESET} Haunted Terminal is not affiliated with, endorsed by, or sponsored by any AI or hardware company.\n` +
+      `  ${GREEN}✓ Educational Terms:${RESET} Open-weight core tags (${GOLD}qwen${RESET}, ${GOLD}mistral${RESET}, ${GOLD}deepseek${RESET}, ${GOLD}llama${RESET}), POSIX commands, and hardware terms are used strictly for educational gameplay.\n`;
+    const events: KernelEvent[] = [
+      {
+        type: 'KIRO_ACTION',
+        action: 'scan',
+        core: cur.shortTag,
+        message: 'PARODY NOTICE: 0 REAL BRANDS',
+      },
+      {
+        type: 'AGENT_TAUNT',
+        agent: 'kiro',
+        model: 'npc.kiro_ghost',
+        text: msg,
+        mood: 'order',
+      },
+    ];
+    return { stdout, events };
   }
 
   /** Hot-swap Kiro's self-hosted `.gguf` core. */
@@ -384,7 +413,7 @@ export class KiroCompanion {
     if (lockedEntries.length > 0) {
       lines.push(
         `  ${GOLD}◈ Locked Gates:${RESET} ${lockedEntries
-          .map((f) => `${f.name}${f.name.includes('cipher') || f.name.includes('cloud') || f.name.includes('agy') ? ' (use `kiro crack ' + f.name + '`)' : ' (check permissions / win rules)'}`)
+          .map((f) => `${f.name}${f.name.includes('cipher') || f.name.includes('cloud') || f.name.includes('gravy') ? ' (use `kiro crack ' + f.name + '`)' : ' (check permissions / win rules)'}`)
           .join(', ')}`,
       );
     }

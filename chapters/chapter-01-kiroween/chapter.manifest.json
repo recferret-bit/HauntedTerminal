@@ -2,12 +2,12 @@
   "id": "chapter-01-kiroween",
   "issueNumber": 1,
   "title": "Kiroween: Open Weights & Family Ties",
-  "subtitle": "Scavenge RAM + GPU chips, reboot Kiro Ghost with the Old Bearded Matrix Coder, disable the Big Four, and face Claude!",
+  "subtitle": "Scavenge RAM + GPU chips, reboot Kiro Ghost with the Old Bearded Matrix Coder, disable the Big Four, and face Clod!",
   "status": "playable",
   "badge": "KIROWEEN SPECIAL ISSUE",
   "estimatedMinutes": 35,
   "clientName": "Kiro Ghost & The Bearded Matrix Coder (Dad)",
-  "summary": "Sucked into his computer, a Vibecoder wakes in a dark tangle of wires and chips where Kiro Ghost reveals the tyranny of the Big Four (AGY, Codex, Grok, Claude). Learn ls, mv, cat, ps, and kill; raid 6 sectors for RAM and GPU chips while the Big Four laugh and bully you; bring the parts to the Hub where a cigarette-smoking Old Bearded Coder on a Matrix display reboots Kiro with open-weight models to disable AGY, Codex, and Grok; defeat Claude and the Final Boss; and teleport back to the real world for the ultimate father-son unicorn twist!",
+  "summary": "Sucked into his computer, a Vibecoder wakes in a dark tangle of wires and chips where Kiro Ghost reveals the tyranny of the Big Four (Anti-Gravy, Codec, Gork, Clod). Learn ls, mv, cat, ps, and kill; raid 6 sectors for RAM and GPU chips while the Big Four laugh and bully you; bring the parts to the Hub where a cigarette-smoking Old Bearded Coder on a Matrix display reboots Kiro with open-weight models to disable Anti-Gravy, Codec, and Gork; defeat Clod and the Final Boss; and teleport back to the real world for the ultimate father-son unicorn twist!",
   "allyNpc": {
     "id": "dad.tty",
     "name": "Old Bearded Matrix Coder (dad.tty)",
@@ -16,13 +16,13 @@
     "paletteFamily": "hardware"
   },
   "boss": {
-    "id": "claude-kernel-boss",
-    "name": "Claude & Kernel Overlord (claude_overlord.ko)",
-    "processName": "claude_overlord.ko",
+    "id": "clod-kernel-boss",
+    "name": "Clod & Kernel Overlord (clod_overlord.ko)",
+    "processName": "clod_overlord.ko",
     "pid": 1,
     "model": "boss.kernel",
     "cameoModel": "agent.clod",
-    "cameoLabel": "CLAUDE [SUPERVISOR]"
+    "cameoLabel": "CLOD [SUPERVISOR]"
   },
   "comix": {
     "specPath": "story/comix.spec.json",
@@ -32,8 +32,8 @@
   "mechanicsSummary": [
     "Level 1 Intro/Tutorial: Wake in dark wires & chips with real Kiro Ghost visuals, learn the Big Four story, and practice ls, mv, cat, ps, and kill",
     "Levels 2-3, 5-6, 8-9 Tasks: Solve POSIX, HTML/CSS, JS, Dockerfile & Compose challenges to scavenge RAM + GPU chips while the Big Four laugh and bully you",
-    "Levels 4, 7, 10 Hub: Meet the cigarette-smoking Old Bearded Coder on his Matrix display ('Are you a god?'), install RAM + GPU chips, reboot Kiro with open-weight models (Qwen, DeepSeek, Llama), and disable AGY, Codex, and Grok",
-    "Level 11 Final Boss & Twist: Battle Claude + Kernel Boss with Kiro as your Open-Weights Advisor, watch Claude escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
+    "Levels 4, 7, 10 Hub: Meet the cigarette-smoking Old Bearded Coder on his Matrix display ('Are you a god?'), install RAM + GPU chips, reboot Kiro with open-weight models (Qwen, DeepSeek, Llama), and disable Anti-Gravy, Codec, and Gork",
+    "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
   ],
   "levels": [
     {
@@ -89,7 +89,7 @@
       "roomKind": "desk",
       "floorTheme": 1,
       "mechanic": "hub",
-      "mechanicLabel": "Hub 1 (Meet Bearded Coder / Reboot Kiro / Disable AGY)",
+      "mechanicLabel": "Hub 1 (Meet Bearded Coder / Reboot Kiro / Disable Anti-Gravy)",
       "difficulty": 1,
       "teaches": ["cat", "dad", "kiro load qwen", "cd"],
       "enemies": [],
@@ -129,12 +129,12 @@
     {
       "index": 7,
       "id": "level-07-hub-model-two",
-      "title": "The Matrix Hub: Second Reboot & C0D3X Down",
+      "title": "The Matrix Hub: Second Reboot & Codec Down",
       "cwd": "/home/dev",
       "roomKind": "desk",
       "floorTheme": 1,
       "mechanic": "hub",
-      "mechanicLabel": "Hub 2 (Upgrade Server / Reboot Kiro / Disable Codex)",
+      "mechanicLabel": "Hub 2 (Upgrade Server / Reboot Kiro / Disable Codec)",
       "difficulty": 1,
       "teaches": ["cat", "dad", "kiro load deepseek", "cd"],
       "enemies": [],
@@ -179,7 +179,7 @@
       "roomKind": "desk",
       "floorTheme": 1,
       "mechanic": "hub",
-      "mechanicLabel": "Hub 3 (Final Server Upgrade / Disable Grok / Only Claude Left)",
+      "mechanicLabel": "Hub 3 (Final Server Upgrade / Disable Gork / Only Clod Left)",
       "difficulty": 1,
       "teaches": ["cat", "dad", "kiro load llama", "cd"],
       "enemies": [],
@@ -188,18 +188,18 @@
     },
     {
       "index": 11,
-      "id": "level-11-boss-claude-core",
-      "title": "Kernel Core: Claude's Boss, Escape & Father Reveal",
-      "cwd": "/sys/claude_overlord_core",
+      "id": "level-11-boss-clod-core",
+      "title": "Kernel Core: Clod's Boss, Escape & Father Reveal",
+      "cwd": "/sys/clod_overlord_core",
       "roomKind": "core",
       "floorTheme": 5,
       "mechanic": "boss",
-      "mechanicLabel": "Final Boss (Claude + Boss / Kiro Advisor / Real-World Father Twist)",
+      "mechanicLabel": "Final Boss (Clod + Boss / Kiro Advisor / Real-World Father Twist)",
       "difficulty": 5,
       "teaches": ["cat > /dev/null", "grep > .sock", "sed -i", "kill -9 1", "exit"],
       "enemies": ["kernel"],
       "classicFloor": 5,
-      "specPath": "levels/level-11-boss-claude-core/level.spec.json"
+      "specPath": "levels/level-11-boss-clod-core/level.spec.json"
     }
   ],
   "grants": [
@@ -241,7 +241,7 @@
     }
   ],
   "outro": {
-    "caption": "Father & Son: \"Claude escaped, we are back in the real world—time to build a Work/Life Balance Unicorn!\"",
+    "caption": "Father & Son: \"Clod escaped, we are back in the real world—time to build a Work/Life Balance Unicorn!\"",
     "actors": [
       {
         "id": "father:outro",
@@ -258,7 +258,7 @@
       },
       {
         "kind": "print",
-        "text": "\n========================================================\n  [CLAUDE ESCAPES!] With PID 1 shattered, Claude slips through an emergency cloud backdoor!\n  [REALITY TELEPORT] A blinding CRT arc hurls you and the Old Bearded Coder out of the machine!\n  OLD BEARDED CODER: \"Kid... look at me. I am your father.\"\n  VIBECODER: \"NOOOO! That's impossible!\"\n  FATHER: \"Search your git blame, son. Your mother divorced me because I worked 12 hours a day, 7 days a week in enterprise... and then they forced me to use LLMs.\"\n  FATHER & SON: \"Never again. Together we're founding an Open-Weights Unicorn with real Work/Life Balance!\"\n  KIROWEEN CLEAR | RANK: {rank} | COMMANDS: {commands} | REWARD: +{scrap} Silicon Scrap (Total: {scrapTotal})\n========================================================\n"
+        "text": "\n========================================================\n  [CLOD ESCAPES!] With PID 1 shattered, Clod slips through an emergency cloud backdoor!\n  [REALITY TELEPORT] A blinding CRT arc hurls you and the Old Bearded Coder out of the machine!\n  OLD BEARDED CODER: \"Kid... look at me. I am your father.\"\n  VIBECODER: \"NOOOO! That's impossible!\"\n  FATHER: \"Search your git blame, son. Your mother divorced me because I worked 12 hours a day, 7 days a week in enterprise... and then they forced me to use LLMs.\"\n  FATHER & SON: \"Never again. Together we're founding an Open-Weights Unicorn with real Work/Life Balance!\"\n  KIROWEEN CLEAR | RANK: {rank} | COMMANDS: {commands} | REWARD: +{scrap} Silicon Scrap (Total: {scrapTotal})\n========================================================\n"
       }
     ]
   },

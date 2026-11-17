@@ -20,7 +20,7 @@ const MAX_CHARS = 100_000;
 /** Paths that must have exactly one owner: source, content, assets, property suites, docs and the files agents keep current. */
 const OWNED = /^(src\/|chapters\/|comix\/|public\/assets\/|scripts\/harness\/props\/|scripts\/harness\/property-tests\.mjs$|docs\/|\.kiro\/specs\/|\.kiro\/steering\/|(AGENTS|CLAUDE|README)\.md$)/;
 /** Infrastructure no agent writes (it holds their own fences, the harness and the build): a change is the user's. */
-const INFRA = /^(scripts\/|\.kiro\/(agents|hooks|skills|settings)\/|pages\/|public\/_redirects$|public\/comix\/|package(-lock)?\.json$|tsconfig\.json$|vite\.config\.ts$|LICENSE$|\.gitignore$)/;
+const INFRA = /^(scripts\/|\.kiro\/(agents|hooks|skills|settings|powers)\/|pages\/|public\/_redirects$|public\/comix\/|package(-lock)?\.json$|tsconfig\.json$|vite\.config\.ts$|LICENSE$|\.gitignore$)/;
 /** Compiled output: written by the compilers for whoever ran them, owned by nobody. */
 const UNOWNED = [/^src\/chapters\/generated\//, /^src\/cinematic\/generated\//, /^chapters\/[^/]+\/story\/out\//];
 
@@ -92,6 +92,8 @@ for (const { file, name, agent } of agents) {
     if (got !== want && !(want === 'deny' && got === 'run')) problems.push(`${file}: shell rule self-test: \`${cmd}\` should be ${want}, rules say ${got}`);
   };
   for (const cmd of ['find . -delete', 'printf x', 'node -e 1', 'sed -i s/a/b/ f', 'rm file', 'git push origin HEAD:main', 'git push origin +agent/x', 'git push --force origin agent/x', 'git add -A', 'git add .', 'git commit --amend -m x', 'git reset --hard', 'git checkout main', 'git diff --stat --output=x', 'cat ~/.kiro/crew/.env', 'cat .env']) must(cmd, 'deny');
+  // Deploys are the user's (power haunted-ship, .kiro/specs/netlify-deploy-power/): no agent may run them.
+  for (const cmd of ['node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs preview', 'node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs prod', 'npx -y netlify-cli@27.20.0 deploy --prod --dir dist', 'netlify deploy --prod']) must(cmd, 'deny');
   for (const cmd of ['git status', 'git diff --stat', 'ls src', 'cat package.json', 'grep -rn x src', 'npm run quality 2>&1 | tail -20', 'node scripts/harness/property-tests.mjs --only terminal', 'cd src && ls']) must(cmd, 'allow');
   if (name === LEAD) for (const cmd of ['git push -u origin agent/maintenance-x', 'git switch -c agent/x', 'git add -- src/a.ts', 'git commit -m "x"']) must(cmd, 'allow');
   else for (const cmd of ['git commit -m x', 'git push origin agent/x', 'git switch -c agent/x']) must(cmd, 'deny');

@@ -148,5 +148,12 @@ export function cmdKiro(g: ChapterState, args: string[], stdin: string): Step {
         { type: 'VIBECODER_ACTION', action: 'read', command: `kiro inspect ${found.node.name}` },
       ]);
     }
-    return emptyStep(1, `kiro: unknown subcommand '${sub}'. Try: kiro | kiro scan | kiro load <core> | kiro crack <lock>\n`);
+    if (sub === 'disclaimer' || sub === 'legal' || sub === 'brands') {
+      const res = g.kiro.formatDisclaimer();
+      return okStep(res.stdout, [
+        { type: 'VIBECODER_ACTION', action: 'read', command: `kiro ${sub}` },
+        ...res.events,
+      ]);
+    }
+    return emptyStep(1, `kiro: unknown subcommand '${sub}'. Try: kiro | kiro scan | kiro load <core> | kiro crack <lock> | kiro disclaimer\n`);
   }

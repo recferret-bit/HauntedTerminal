@@ -21,13 +21,13 @@
       "op": "npc",
       "agent": "gork",
       "mood": "smug",
-      "text": "GROK: \"A hostile test room.\"",
+      "text": "GORK: \"A hostile test room.\"",
       "print": "{text}"
     },
     {
       "op": "taunt",
       "mood": "laugh",
-      "text": "CLAUDE: \"Try the other door.\""
+      "text": "CLOD: \"Try the other door.\""
     },
     {
       "op": "dialogue",
@@ -66,7 +66,7 @@
       "op": "say",
       "agent": "clod",
       "mood": "laugh",
-      "text": "CLAUDE: \"Nice try.\""
+      "text": "CLOD: \"Nice try.\""
     },
     {
       "op": "expect",
@@ -80,7 +80,7 @@
       "op": "say",
       "agent": "gork",
       "mood": "smug",
-      "text": "GROK: \"Bold.\"",
+      "text": "GORK: \"Bold.\"",
       "print": "{text}"
     },
     {
@@ -96,13 +96,13 @@
       "op": "say",
       "agent": "codec",
       "mood": "order",
-      "text": "CODEX: \"Format your code.\""
+      "text": "CODEC: \"Format your code.\""
     },
     {
       "op": "say",
       "agent": "antigravy",
       "mood": "annoyed",
-      "text": "AGY: \"I was here first.\""
+      "text": "ANTI-GRAVY: \"I was here first.\""
     },
     {
       "op": "say",

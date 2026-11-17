@@ -21,7 +21,8 @@ export function renderBinder(els: ChaptersPageEls, state: ChaptersViewState, met
     }).join('');
     return;
   }
-  els.binderContentEl.innerHTML = dossierOf(state.activeChapter).map((b) => {
+  const parodyBanner = `<div class="workshop-flash">◈ KIRO PARODY &amp; NON-AFFILIATION NOTICE: The "Big Four" (Anti-Gravy, Codec, Gork, Clod) are original fictional parody characters—no real AI brands are used or affiliated. Run <code>kiro disclaimer</code> in the terminal for details.</div>`;
+  els.binderContentEl.innerHTML = parodyBanner + dossierOf(state.activeChapter).map((b) => {
     const seen = meta.seenMalware.includes(b.id);
     return `
             <article class="binder-card">

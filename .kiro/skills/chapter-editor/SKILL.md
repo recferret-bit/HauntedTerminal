@@ -37,7 +37,7 @@ Saving writes only changed files, refreshes the manifest's level summaries and r
 Do not copy a template; read a real, gated spec:
 `chapters/chapter-01-kiroween/levels/level-04-hub-model-one/level.spec.json` (a hub: `arrival` = emote + dialogue + print, `kiro` = labels, `weak`/`weakUntilCore`, `wrongCoreLine`, `reactions`),
 `.../level-01-tutorial-awakening/level.spec.json` (a tutorial: `tutorial` with `doneWhen` conditions and a `hide` enemy, `safe`, `holdEnemiesUntil`, `signalAliases`),
-`.../level-11-boss-claude-core/level.spec.json` (`onBossKill`), and `chapter.manifest.json` (`grants`, `outro.finale`, `dossier`).
+`.../level-11-boss-clod-core/level.spec.json` (`onBossKill`), and `chapter.manifest.json` (`grants`, `outro.finale`, `dossier`).
 The vocabulary is `src/chapters/script-types.ts`; the field tables are `src/chapter-editor/schema.ts`.
 
 ## Code map (`src/chapter-editor/` + `src/editor-core/`)
