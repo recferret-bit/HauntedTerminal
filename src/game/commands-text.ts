@@ -193,6 +193,13 @@ export function cmdRev(g: Play, args: string[], stdin: string): Step {
   return out(rows.length ? `${rows.join('\n')}\n` : '');
 }
 
+/** `s//x/`: an empty pattern. GNU sed has no previous expression to reuse here and refuses; so do we. */
+export function emptySedPattern(script: string): boolean {
+  return script.length >= 3 && script[0] === 's' && script[2] === script[1];
+}
+
+export const SED_EMPTY_PATTERN = 'sed: -e expression #1, char 0: no previous regular expression\n';
+
 export function sedScript(_g: Play, script: string): ((text: string) => string) | null {
   if (script[0] !== 's' || script.length < 4) return null;
   const delim = script[1] ?? '/';
@@ -229,6 +236,7 @@ export function cmdSed(g: Play, args: string[], stdin: string): Step {
   }
   const script = rest[0];
   if (!script) return empty(1, 'sed: missing script\n');
+  if (emptySedPattern(script)) return empty(1, SED_EMPTY_PATTERN);
   const apply = sedScript(g, script);
   if (!apply) return empty(1, `sed: -e expression #1: unknown command (only s/old/new/[g] is supported)\n`);
   const files = rest.slice(1);

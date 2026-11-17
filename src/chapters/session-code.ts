@@ -1,5 +1,6 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { SOURCE_MALWARE_DAMAGE } from '../game/bestiary.js';
+import { SED_EMPTY_PATTERN, emptySedPattern } from '../game/commands-text.js';
 import type { Step } from '../game/shell.js';
 import { absPath, hasWrite, makeNode, resolve } from '../game/tree.js';
 import type { CommandResult } from '../game/types.js';
@@ -154,6 +155,7 @@ export function cmdSed(g: ChapterState, args: string[], stdin: string): Step {
       else rest.push(a);
     }
     const expr = rest[0] ?? '';
+    if (emptySedPattern(expr)) return emptyStep(1, SED_EMPTY_PATTERN);
     const m = /^s(.)((?:\\.|(?!\1).)*)\1((?:\\.|(?!\1).)*)\1([gi]*)$/.exec(expr);
     if (!m) return emptyStep(1, "sed: expected s/old/new/[g] expression (e.g. sed -i 's/0000/3000/' file)\n");
 

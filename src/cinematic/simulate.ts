@@ -269,6 +269,19 @@ function collectTimelineItems(
  * snapshot keyframe, page turn, beat trigger, letter cue, track evaluation, and skip rule.
  */
 export function simulateComixPack(pack: ComixPack): ComixSimResult {
+  try {
+    return simulateWellFormed(pack);
+  } catch (err) {
+    // A hand-edited draft can break the spec shape (a null cast, a string where a list goes): report it, never crash.
+    console.error('[simulateComixPack] threw (a malformed spec, or a bug in the simulator if the spec looks fine):', err);
+    const manifest: Partial<ComixPack['manifest']> = pack?.manifest ?? {};
+    const id = typeof manifest.id === 'string' ? manifest.id : 'unknown';
+    const durationSec = typeof manifest.durationSec === 'number' ? manifest.durationSec : 0;
+    return emptySimResult(id, durationSec, [`malformed comix spec: ${err instanceof Error ? err.message : String(err)}`]);
+  }
+}
+
+function simulateWellFormed(pack: ComixPack): ComixSimResult {
   const errors: string[] = [];
   let timeline: ResolvedTimeline;
   try {
