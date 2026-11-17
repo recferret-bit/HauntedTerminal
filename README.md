@@ -1,5 +1,7 @@
 # Haunted Terminal
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/63e4efdf-c141-4b4d-84dd-1a4132007e82/deploy-status)](https://app.netlify.com/projects/haunted-terminal/deploys)
+
 **A 90s comic-book game where the only controller is a unix terminal.**
 Lightning pulls a developer inside his own computer. He is the only human in there. To get out he types real commands: `ls -a` lights up what hides in the dark, `kill -9` fights malware, `chmod -x` turns a monster to stone, `cat` reads the machine's secrets, and a few levels ask for real HTML, JavaScript, Dockerfiles and Compose files.
 
