@@ -8,7 +8,7 @@ Lightning pulls a developer inside his own computer. He is the only human in the
 ![Level 1 of Haunted Terminal: the comic stage above a live terminal](docs/media/gameplay-level-01.png)
 
 > **Kiroween 2026 entry** · category **Costume Contest** · built entirely with [Kiro](https://kiro.dev)
-> **Play it:** `<LIVE_URL>` · **Demo video:** `<YOUTUBE_URL>` · **How Kiro was used:** [`docs/KIRO_USAGE.md`](docs/KIRO_USAGE.md)
+> **Play it:** https://haunted-terminal.netlify.app · **Demo video:** `<YOUTUBE_URL>` · **How Kiro was used:** [`docs/KIRO_USAGE.md`](docs/KIRO_USAGE.md)
 
 ## Why it is different
 
@@ -26,7 +26,7 @@ The campaign also ships as a comic you can read ([contact sheet](docs/media/comi
 
 ## Play
 
-Hosted: `<LIVE_URL>`. Use a desktop browser with WebGL and a keyboard. Click the terminal and type `ls`. Type `help` for commands and `hank` for hints.
+Hosted: https://haunted-terminal.netlify.app. Use a desktop browser with WebGL and a keyboard. Click the terminal and type `ls`. Type `help` for commands and `hank` for hints.
 
 Locally (Node.js 20 or newer, developed on 24):
 

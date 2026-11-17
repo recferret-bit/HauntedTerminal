@@ -5,4 +5,4 @@
 - [x] 3. The `ship` skill. _Req 1, 4, 6, 10, 12_. Gates: read-through against the requirements
 - [x] 4. Agents cannot deploy: `.kiro/powers/` as INFRA and the deny probes in `check-agents.mjs`. _Req 11_. Gates: `npm run quality:agents`
 - [x] 5. Docs: `structure.md`, `tech.md`, `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/KIRO_USAGE.md`, `docs/SUBMISSION.md`, `docs/KIROWEEN_EVALUATION.md`. _All_. Gates: `npm run quality`
-- [ ] 6. First real preview and production deploy (needs the user's `netlify login`). _Req 4, 7, 12_. Gates: `ship.mjs preview`, then `ship.mjs prod` after the user's yes
+- [x] 6. First real preview and production deploy (2026-11-17: preview and production both played to the stats screen; found and fixed the team-login protection and 12 missing-sprite 404s) (needs the user's `netlify login`). _Req 4, 7, 12_. Gates: `ship.mjs preview`, then `ship.mjs prod` after the user's yes

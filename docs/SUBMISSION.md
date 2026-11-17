@@ -11,7 +11,7 @@ Source: [official rules](https://kiroween.devpost.com/rules), read November 17, 
 | OSI license file, detected in the repo's About box | MIT file present. TODO: check the About box shows "MIT". |
 | `/.kiro` at the root, not in `.gitignore` | OK. 146 tracked files; `.gitignore` has no `.kiro` line. |
 | All source, assets and run instructions in the repo | OK. See README. |
-| URL to a working app | **TODO (yours).** |
+| URL to a working app | OK. https://haunted-terminal.netlify.app |
 | Demo video under 3 minutes, public on YouTube, no third-party trademarks or copyrighted music | **TODO (yours).** |
 | Text description | Draft below. |
 | Write-up on how Kiro was used | [`KIRO_USAGE.md`](KIRO_USAGE.md), needs your personal details. |
@@ -28,7 +28,7 @@ Source: [official rules](https://kiroween.devpost.com/rules), read November 17, 
 
 ## TODO for you (placeholders I cannot fill)
 
-- [ ] Deploy with the `haunted-ship` power: `npx netlify-cli@27.20.0 login` once, then `node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs preview`, check the URL, then `prod`. Then replace `<LIVE_URL>` in `README.md` (2 places) and set the GitHub About website.
+- [x] Deployed 2026-11-17: https://haunted-terminal.netlify.app (`haunted-ship` power, preview played to the end, then production; README and the GitHub About website point at it). How it was done: `npx netlify-cli@27.20.0 login` once, then `node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs preview`, check the URL, then `prod`. Then replace `<LIVE_URL>` in `README.md` (2 places) and set the GitHub About website.
 - [ ] Record the demo video (plan below), upload to YouTube as public, replace `<YOUTUBE_URL>` in `README.md`.
 - [ ] Set the GitHub About box: description, topics, and confirm it shows the MIT license.
 - [ ] Decide the legal name in `LICENSE` ("Andrei Sokolov") against git's "Andrey Sokolov", and make both match.
