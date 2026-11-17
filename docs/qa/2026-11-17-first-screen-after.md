@@ -1,6 +1,6 @@
 # QA 2026-11-17: first screen after the CSS fix (level 1, tutorial card open)
 
-Branch: agent/first-screen-polish  ·  Asked by: lead-dev  ·  Scope: first screen of `/play?chapter=chapter-01-kiroween` after the `src/styles/game.css` change (masthead wraps, `#titleblock` max-width 42%, `#tutorial-card` moved to bottom-right of the stage), at 1600x950 and 1280x820. Compared with `docs/qa/2026-first-screen-before.md`. No game file was changed.
+Branch: agent/first-screen-polish  ·  Asked by: lead-dev  ·  Scope: first screen of `/play?chapter=chapter-01-kiroween` after the `src/styles/game.css` change (masthead wraps, `#titleblock` max-width 42%, `#tutorial-card` moved to bottom-right of the stage), at 1600x950 and 1280x820. Compared with `docs/qa/2026-11-17-first-screen-before.md`. No game file was changed.
 
 ## Verdict
 

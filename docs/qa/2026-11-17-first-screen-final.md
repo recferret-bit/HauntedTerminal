@@ -31,7 +31,7 @@ MCP calls: none made (tools loaded, server unreachable as above).
  M src/renderer/stage-overlay.ts
  M src/styles/game.css
 ?? docs/qa/2026-11-17-first-screen-after.md
-?? docs/qa/2026-first-screen-before.md
+?? docs/qa/2026-11-17-first-screen-before.md
 ?? docs/qa/labs/
 ?? docs/qa/media/2026-11-17-first-screen-1280.png
 ?? docs/qa/media/2026-11-17-first-screen-1600.png
