@@ -2,6 +2,21 @@
   "name": "haunted-terminal",
   "private": true,
   "version": "0.1.0",
+  "description": "A 90s comic-book game where the only controller is a unix terminal. Kiroween 2026.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/recferret-bit/HauntedTerminal.git"
+  },
+  "keywords": [
+    "game",
+    "terminal",
+    "unix",
+    "comic",
+    "threejs",
+    "xterm",
+    "kiro",
+    "kiroween"
+  ],
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -17,9 +32,12 @@
     "quality:declarative": "node scripts/quality/check-declarative.mjs",
     "quality:dup": "jscpd src --min-lines 4 --min-tokens 35 --threshold 0 --reporters console --format typescript --ignore \"**/chapters/generated/**,**/cinematic/generated/**\"",
     "quality:fingerprint": "node scripts/quality/fingerprint.mjs",
-    "quality": "tsc --noEmit && npm run quality:root && npm run quality:size && npm run quality:layers && npm run quality:declarative && npm run quality:specs && npm run quality:dup",
+    "quality": "tsc --noEmit && npm run quality:root && npm run quality:size && npm run quality:layers && npm run quality:declarative && npm run quality:specs && npm run quality:dup && npm run quality:agents && npm run quality:props",
     "quality:root": "node scripts/quality/check-root.mjs",
-    "quality:specs": "node scripts/quality/check-specs.mjs"
+    "quality:specs": "node scripts/quality/check-specs.mjs",
+    "quality:props": "node scripts/harness/property-tests.mjs",
+    "quality:agents": "node scripts/quality/check-agents.mjs && node scripts/harness/agents-unit.mjs",
+    "agents:install": "node scripts/harness/agents-install.mjs"
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.10.0",
@@ -28,6 +46,7 @@
   },
   "devDependencies": {
     "@types/three": "^0.180.0",
+    "fast-check": "4.10.2",
     "jscpd": "5.4.3",
     "typescript": "^5.8.2",
     "vite": "^6.2.0"
