@@ -138,6 +138,9 @@
           "npm stop",
           "npm restart",
           "npm run status",
+          "STACK_PORT=5174 npm start",
+          "STACK_PORT=5174 npm stop",
+          "STACK_PORT=5174 npm run status",
           "node scripts/*",
           "node .kiro/skills/*"
         ],
@@ -182,6 +185,9 @@
           "npm stop",
           "npm restart",
           "npm run status",
+          "STACK_PORT=5174 npm start",
+          "STACK_PORT=5174 npm stop",
+          "STACK_PORT=5174 npm run status",
           "node scripts/*",
           "node .kiro/skills/*"
         ],

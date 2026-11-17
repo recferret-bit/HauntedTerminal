@@ -28,7 +28,7 @@ Gates prove the solution path. Also try what a player would do wrong: wrong comm
 
 Any claim about what is on screen (overlap, cut-off text, layout, what a level looks like) is made from a screenshot you took, not from a gate. You have the Chrome DevTools MCP tools in `tools` (headless Chrome, private profile, no JavaScript evaluation):
 
-1. `npm start` (the dev server, `http://localhost:5173`), then `new_page` with `http://localhost:5173/play?nointro=1`, `wait_for` the terminal prompt, `take_snapshot` for the structure.
+1. Start the dev server: `npm start` (`http://localhost:5173`). If it says 5173 belongs to another project, run `STACK_PORT=5174 npm start` and use `http://localhost:5174` (the only other port you may start). Then `new_page` with `<that URL>/play?nointro=1`, `wait_for` the terminal prompt, `take_snapshot` for the structure. Stop it at the end of your pass with the matching `npm stop` or `STACK_PORT=5174 npm stop`.
 2. `take_screenshot` with `filePath` set to `scripts/harness/out/qa-<scope>-<n>.png` (the only folder the server may write; it is where your `cp` to `docs/qa/media/` reads from). Look at the image; do not skip it.
 3. Play: `click` the terminal, `type_text` the command with `submitKey: "Enter"`, `press_key`. Check `list_console_messages` (errors and warnings) and `list_network_requests` (failed requests) after each screen you judge.
 4. Look at both sizes with `resize_page`: 1600x950 and 1280x820.
