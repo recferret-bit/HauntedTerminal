@@ -13,6 +13,13 @@ export interface PanelBounds {
 const INK = '#110e1b';
 const PAPER = '#efe6d2';
 const YELLOW = '#ffd166';
+/** Bundled lettering stack for canvas text (public/fonts via styles/fonts.css); never a system font. */
+const CARD_FONT = '"Chakra Petch", "IBM Plex Mono", monospace';
+
+// Canvas text does not trigger @font-face loading by itself: ask for the faces up front.
+if (typeof document !== 'undefined' && document.fonts) {
+  for (const w of [600, 700]) void document.fonts.load(`${w} 40px "Chakra Petch"`).catch(() => undefined);
+}
 
 function freshCanvas(w: number, h: number): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D | null } {
   const canvas = document.createElement('canvas');
@@ -71,7 +78,7 @@ function halftone(ctx: CanvasRenderingContext2D, w: number, h: number, color: st
 function fitText(ctx: CanvasRenderingContext2D, text: string, maxW: number, size: number, weight = 800): number {
   let s = size;
   for (; s > 18; s -= 4) {
-    ctx.font = `${weight} ${s}px Menlo, monospace`;
+    ctx.font = `${Math.min(weight, 700)} ${s}px ${CARD_FONT}`;
     if (ctx.measureText(text).width <= maxW) break;
   }
   return s;
@@ -109,7 +116,7 @@ export function floorCardTexture(kicker: string, title: string, path: string, ac
   ctx.restore();
   // Yellow caption box, centred under the page's masthead strip.
   const ks = fitText(ctx, kicker, w - 360, 58);
-  ctx.font = `800 ${ks}px Menlo, monospace`;
+  ctx.font = `700 ${ks}px ${CARD_FONT}`;
   const kw = Math.min(w - 260, ctx.measureText(kicker).width + 70);
   const ky = 230;
   ctx.fillStyle = YELLOW;
@@ -138,7 +145,7 @@ export function floorCardTexture(kicker: string, title: string, path: string, ac
   ctx.fillText(title, w / 2, h / 2 + 70);
   // Path in a paper strip.
   const ps = fitText(ctx, path, w - 420, 64, 700);
-  ctx.font = `700 ${ps}px Menlo, monospace`;
+  ctx.font = `700 ${ps}px ${CARD_FONT}`;
   const pw = Math.min(w - 300, ctx.measureText(path).width + 70);
   ctx.fillStyle = PAPER;
   ctx.fillRect(w / 2 - pw / 2, h - 230, pw, 100);
@@ -179,7 +186,7 @@ export function tearHalfTexture(side: 'left' | 'right', text: string, seed: numb
   halftone(ctx, w, h, 'rgba(239,71,111,0.18)', 20, 4);
   ctx.fillStyle = '#ef476f';
   for (let i = 0; i < 9; i++) ctx.fillRect(rnd() * w, rnd() * h, 80 + rnd() * 240, 8 + rnd() * 18);
-  ctx.font = '800 120px Menlo, monospace';
+  ctx.font = `700 120px ${CARD_FONT}`;
   ctx.textAlign = 'center';
   ctx.lineWidth = 16;
   ctx.strokeStyle = INK;

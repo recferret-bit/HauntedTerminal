@@ -124,7 +124,7 @@ export function cmdGrimoire(_g: ChapterState, args: string[]): Step {
       (g) => !filter || g.command.toLowerCase().includes(filter) || g.category.toLowerCase().includes(filter),
     ).map((g) => {
       const seen = meta.usedCommands.includes(g.command.split(' ')[0]!);
-      return `  ${seen ? '[★]' : '[ ]'} ${g.command.padEnd(15, ' ')} (${g.category}) :: ${g.syntax}\n      -> ${g.comicEffect}`;
+      return `  ${seen ? '[*]' : '[ ]'} ${g.command.padEnd(15, ' ')} (${g.category}) :: ${g.syntax}\n      -> ${g.comicEffect}`;
     });
     return okStep(
       `=== DE-VIBED COMMAND GRIMOIRE (${meta.usedCommands.length} practiced) ===\n` +
@@ -217,7 +217,7 @@ export function cmdAchievements(g: ChapterState, args: string[]): Step {
       (!a.secret || Boolean(store.unlocked[a.id])) && a.title.toLowerCase().includes(sub),
   ).map((a) => {
     const view = presentAchievement(a, store);
-    const stamp = view.unlocked ? '[★ UNLOCKED]' : '[  LOCKED  ]';
+    const stamp = view.unlocked ? '[* UNLOCKED]' : '[  LOCKED  ]';
     return `  ${stamp} ${view.title.padEnd(28, ' ')} [${view.category}] (${view.steamApiName})\n                ${view.description}`;
   });
 

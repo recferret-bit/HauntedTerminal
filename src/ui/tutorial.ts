@@ -42,7 +42,7 @@ export function mountTutorial(parent: HTMLElement, onSkip?: () => void): Tutoria
     <header><span class="tut-agent"></span><span class="tut-kind">AGENT PROMPT</span><span class="tut-step"></span></header>
     <p class="tut-text"></p>
     <div class="tut-cmd"><span class="tut-label">TYPE</span><code></code></div>
-    <div class="tut-stamp" aria-hidden="true"><i>&#10003;</i>DONE</div>
+    <div class="tut-stamp" aria-hidden="true"><i>OK</i> DONE</div>
     ${onSkip ? '<button type="button" class="tut-skip">skip tutorial &raquo;</button>' : ''}
   `;
   parent.appendChild(card);

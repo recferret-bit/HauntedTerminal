@@ -71,7 +71,7 @@ function renderChips(st: EditorState): void {
     st.currentPatches
       .map((chip, idx) => {
         const applied = !st.area.value.includes(chip.find) && st.area.value.includes(chip.replace);
-        return `<button type="button" class="ce-chip ${applied ? 'applied' : ''}" data-idx="${idx}">${applied ? '✓ ' : '+ '}${escHtml(chip.label)}</button>`;
+        return `<button type="button" class="ce-chip ${applied ? 'applied' : ''}" data-idx="${idx}">${applied ? '[x] ' : '+ '}${escHtml(chip.label)}</button>`;
       })
       .join('');
 

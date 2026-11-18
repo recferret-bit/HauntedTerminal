@@ -63,9 +63,9 @@ body {
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
-  max-width: 42%;
+  max-width: 36%;
 }
 
 #masthead {
@@ -137,9 +137,10 @@ body {
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.04em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.25;
+  /* wrap long paths instead of cutting them with an ellipsis */
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 /* ---- HUD: one comic strip of boxed cells ---- */
@@ -150,7 +151,7 @@ body {
   justify-content: flex-end;
   align-items: stretch;
   gap: 6px;
-  flex: 0 1 auto;
+  flex: 1 1 0;
   min-width: 0;
 }
 
@@ -533,6 +534,18 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
 }
 
 .tut-cmd { display: flex; align-items: center; gap: 8px; padding: 0 10px; }
+/* Narrow stage (1024 wide): a slimmer card keeps the locked-door badge uncovered. */
+@media (max-width: 1100px) {
+  #tutorial-card { width: min(196px, calc(100% - 24px)); right: 10px; bottom: 40px; padding-bottom: 2px; }
+  #tutorial-card .tut-skip { margin-top: 1px; }
+  #tutorial-card .tut-text { font-size: 10.5px; line-height: 1.25; padding: 3px 8px 3px; }
+  #tutorial-card .tut-cmd { flex-wrap: wrap; gap: 2px 6px; padding: 0 8px; }
+  #tutorial-card .tut-cmd code { font-size: 11px; padding: 1px 6px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+  #titleblock { max-width: 28%; }
+  #tutorial-card header { gap: 5px; padding: 2px 6px; }
+  .tut-kind { display: none; }
+  .tut-agent { flex: 1; }
+}
 .tut-label { font-family: var(--display); font-weight: 700; font-size: 10px; letter-spacing: 0.14em; color: #5c5348; }
 .tut-cmd code {
   font-family: var(--mono);
@@ -590,6 +603,10 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
 
 @media (max-width: 1180px) {
   #masthead p { display: none; }
+  /* narrow stage: tighter HUD cells so the strip wraps into fewer rows */
+  #hud { gap: 4px; }
+  .hud-cell { padding: 3px 6px; gap: 4px; }
+  .hp-bar { width: 72px; }
   .hp-bar { width: 64px; }
 }
 

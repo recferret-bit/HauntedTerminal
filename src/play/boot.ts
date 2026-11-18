@@ -115,7 +115,7 @@ export async function bootPlay(): Promise<Play> {
       chapLink.textContent = 'Chapters';
       const wishLink = document.createElement('a');
       wishLink.id = 'masthead-wishlist-link';
-      wishLink.textContent = '★ Steam';
+      wishLink.textContent = '* Steam';
       wireSteamWishlistLink(wishLink);
       dom.mastheadSubEl.replaceChildren(
         document.createTextNode(`${compact} · `),

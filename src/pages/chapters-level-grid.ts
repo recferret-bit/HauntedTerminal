@@ -13,7 +13,7 @@ export function renderLevelGrid(
     .map((lvl) => {
       const isSelected = lvl.id === state.activeLevel.id;
       const rec = progress[state.activeChapter.id]?.[lvl.id];
-      const stars = '★'.repeat(lvl.difficulty) + '☆'.repeat(5 - lvl.difficulty);
+      const stars = '*'.repeat(lvl.difficulty) + '-'.repeat(5 - lvl.difficulty);
       return `
           <button type="button" class="level-card ${isSelected ? 'active' : ''}" data-level-id="${esc(lvl.id)}">
             <div>
@@ -28,7 +28,7 @@ export function renderLevelGrid(
               <span title="Difficulty ${lvl.difficulty}/5">${stars}</span>
               ${
                 rec?.cleared
-                  ? `<span class="rank-pill">RANK ${esc(rec.bestRank)}${rec.chaosCleared ? ' ⚡' : ''}</span>`
+                  ? `<span class="rank-pill">RANK ${esc(rec.bestRank)}${rec.chaosCleared ? ' !' : ''}</span>`
                   : `<span>${lvl.enemies.length ? `${lvl.enemies.length} threat(s)` : 'Safe Zone'}</span>`
               }
             </div>
@@ -53,7 +53,7 @@ function comixStripHtml(chapter: ChapterManifest): string {
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11px;">
             <strong style="color:var(--yellow);">COMIX STORY PAGES (${chapter.comix.pageCount})</strong>
-            <a href="/comic.html?chapter=${encodeURIComponent(chapter.id)}" style="color:var(--teal);">Open Full Reader →</a>
+            <a href="/comic.html?chapter=${encodeURIComponent(chapter.id)}" style="color:var(--teal);">Open Full Reader ></a>
           </div>
           <div class="comix-strip-thumbs">
             ${Array.from({ length: chapter.comix.pageCount }, (_, i) => {
@@ -70,7 +70,7 @@ function personalBestHtml(rec: LevelClearRecord | undefined): string {
   if (!rec?.cleared) return '';
   return `
         <div class="pb-banner">
-          <strong>SECTOR RECORD:</strong> Rank <b>${esc(rec.bestRank)}</b> • ${rec.bestCommands} cmd(s) • ${rec.bestTimeSec}s${rec.chaosCleared ? ' • ⚡ Chaos Contract Cleared' : ''}
+          <strong>SECTOR RECORD:</strong> Rank <b>${esc(rec.bestRank)}</b> • ${rec.bestCommands} cmd(s) • ${rec.bestTimeSec}s${rec.chaosCleared ? ' • Chaos Contract Cleared' : ''}
         </div>
       `;
 }
@@ -102,7 +102,7 @@ function deployControlsHtml(state: ChaptersViewState, playFastUrl: string, playF
             ${toggles}
             <div style="display:flex;flex-wrap:wrap;gap:10px;">
               <a id="deploy-fast-btn" class="comic-btn primary" href="${esc(playFastUrl)}" style="flex:1;">
-                Deploy To Level ${String(state.activeLevel.index).padStart(2, '0')} →
+                Deploy To Level ${String(state.activeLevel.index).padStart(2, '0')} >
               </a>
               ${introLink}
             </div>

@@ -27,7 +27,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     title: 'Boot Sequence',
     description: 'Clear the opening onboarding sector and step deeper into the machine.',
     category: 'CAMPAIGN',
-    icon: '⚡',
+    icon: '>_',
     statKey: 'STAT_SECTORS_CLEARED',
   },
   {
@@ -36,7 +36,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     title: 'Dotfile Exorcist',
     description: 'Sweep a dark directory with `ls -a` or `kiro scan` to expose hidden dotfiles.',
     category: 'COMBAT',
-    icon: '🔦',
+    icon: 'LS',
   },
   {
     id: 'sigkill_hunter',
@@ -44,7 +44,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     title: 'Untrappable Signal',
     description: 'Terminate a live malware process with `SIGKILL` (`kill -9`).',
     category: 'COMBAT',
-    icon: '☠',
+    icon: '-9',
     statKey: 'STAT_MALWARE_KILLED',
   },
   {
@@ -53,7 +53,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     title: 'Permission Denied',
     description: 'Petrify or neutralize executable malware by stripping permissions with `chmod`.',
     category: 'COMBAT',
-    icon: '🗿',
+    icon: '000',
   },
   {
     id: 'open_weights_init',
@@ -61,7 +61,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     title: 'Local Weights Online',
     description: 'Hot-swap your first air-gapped `.gguf` open-weight model into Kiro Ghost.',
     category: 'CRAFT',
-    icon: '👻',
+    icon: 'GG',
   },
   {
     id: 'full_stack_fixer',
@@ -69,7 +69,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     title: 'Full-Stack Firefighter',
     description: 'Clear HTML/CSS, JavaScript, Dockerfile, and Docker Compose repair sectors.',
     category: 'CRAFT',
-    icon: '🛠',
+    icon: 'FX',
   },
   {
     id: 'big_four_silenced',
@@ -77,7 +77,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     title: 'Air-Gapped Sovereignty',
     description: 'Boot `qwen`, `deepseek`, and `llama` cores across server hubs to silence rival agents.',
     category: 'CAMPAIGN',
-    icon: '🛡',
+    icon: '[4]',
   },
   {
     id: 'bashrc_artisan',
@@ -85,7 +85,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     title: 'Dotfiles Artisan',
     description: 'Unlock a persistent `~/.bashrc` workstation upgrade in the Rig Workshop.',
     category: 'CRAFT',
-    icon: '⚙',
+    icon: 'RC',
   },
   {
     id: 'chaos_contractor',
@@ -93,7 +93,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     title: 'Chaos Contractor',
     description: 'Clear any sector while a `cron_chaos` Chaos Contract is active.',
     category: 'MASTERY',
-    icon: '🔥',
+    icon: '*!',
   },
   {
     id: 'speed_demon_s',
@@ -101,7 +101,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     title: 'One-Liner Virtuoso',
     description: 'Earn an `S` Rank on any sector with zero deaths and no spoiler hints.',
     category: 'MASTERY',
-    icon: '★',
+    icon: 'S',
     statKey: 'STAT_S_RANKS',
   },
   {
@@ -111,7 +111,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     description: 'Defeat the Kernel Boss, run `exit`, and uncover who was guiding you on the hub socket.',
     hiddenDescription: 'Defeat the final Kernel supervisor and `exit` the machine.',
     category: 'CAMPAIGN',
-    icon: '🏆',
+    icon: 'EX',
     secret: true,
   },
   {
@@ -121,7 +121,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     description: 'Complete an entire campaign run with 0 deaths and an overall `S` Rank.',
     hiddenDescription: 'Finish a full campaign run at peak efficiency without a single crash.',
     category: 'MASTERY',
-    icon: '👑',
+    icon: '0!',
     secret: true,
   },
 ];
@@ -265,7 +265,7 @@ export function unlockAchievement(id: string, opts?: { preview?: boolean; lab?: 
 export function formatAchievementLines(unlocked: readonly AchievementEvent[]): string {
   if (unlocked.length === 0) return '';
   const lines = unlocked.map(
-    (u) => `[★ ACHIEVEMENT UNLOCKED] ${u.title} (${u.steamApiName}) — ${u.description}`,
+    (u) => `[* ACHIEVEMENT UNLOCKED] ${u.title} (${u.steamApiName}) — ${u.description}`,
   );
   return `\n${lines.join('\n')}\n`;
 }

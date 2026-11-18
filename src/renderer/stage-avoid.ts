@@ -14,6 +14,19 @@ export interface Box {
 /** DOM elements of the page that paint over the stage. */
 export const CHROME_IDS = ['titleblock', 'hud', 'tutorial-card', 'shader-dock'];
 
+/** Bottom edge (px, in `base` space) of the stat strip and buttons that paint over the stage top; 0 when absent. */
+export function hudBottom(base: { left: number; top: number }): number {
+  const e = document.getElementById('hud');
+  if (!e) return 0;
+  const b = e.getBoundingClientRect();
+  return b.width > 0 && b.height > 0 ? b.bottom - base.top : 0;
+}
+
+/** Tail offset (px from the balloon's left edge) that points at `speakerX`, kept on the rounded body. */
+export function tailOffset(speakerX: number, left: number, width: number): number {
+  return Math.max(12, Math.min(width - 30, speakerX - left - 9));
+}
+
 const hits = (a: Box, o: Box): boolean => a.l < o.r && a.r > o.l && a.t < o.b && a.b > o.t;
 
 const shift = (a: Box, dx: number, dy: number): Box => ({ l: a.l + dx, r: a.r + dx, t: a.t + dy, b: a.b + dy });

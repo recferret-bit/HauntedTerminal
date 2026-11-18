@@ -139,6 +139,26 @@ export default async function chaptersSuite(ctx) {
         }),
     },
     {
+      name: 'a death text (SSD restore or kernel panic) appears once in stdout and at most once in stderr, per command and per tick',
+      // Found by the visual audit (finding 5): hurt() returned the text and the flow appended g.deathText again.
+      // Idle play (a first command, then many ticks) makes the enemies kill the player on levels that have them.
+      examples: [[0, 60, ['ls']], [1, 80, ['ls']], [2, 80, ['ls']], [4, 80, ['ls']], [10, 120, ['ls']]],
+      build: () =>
+        fc.property(fc.nat(world.levels.length - 1), fc.integer({ min: 20, max: 120 }), fc.constantFrom(['ls'], ['ls', 'cat *'], ['pwd', 'ps']), (levelIdx, ticks, cmds) => {
+          const marks = ['[SSD SNAPSHOT RESTORED]', '[KERNEL PANIC]'];
+          const count = (text, mark) => (text ?? '').split(mark).length - 1;
+          const check = (r, label) => {
+            for (const mark of marks) {
+              expect(count(r.output, mark) <= 1, `${mark} printed ${count(r.output, mark)}x in stdout after ${label}`);
+              expect(count(r.stderr, mark) <= 1, `${mark} printed ${count(r.stderr, mark)}x in stderr after ${label}`);
+            }
+          };
+          const session = world.open(levelIdx);
+          for (const c of cmds) check(session.exec(c), c);
+          for (let i = 0; i < ticks; i++) check(session.tick(), `tick ${i}`);
+        }),
+    },
+    {
       name: 'the same play twice gives the same output, events and snapshots',
       build: () =>
         fc.property(world.play, ([levelIdx, steps]) => {

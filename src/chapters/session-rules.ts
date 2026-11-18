@@ -221,6 +221,10 @@ export function sinkIntoNull(g: ChapterState, events: KernelEvent[], inodeId: nu
   refreshExitGates(g, events);
 }
 
+/**
+ * Applies damage. A death sets `g.deathText` and returns ''. `exec` and `internalTick` (session-flow.ts) append
+ * `g.deathText` once to stdout and stderr, so callers must not embed it themselves.
+ */
 export function hurt(g: ChapterState, amount: number, source: string, events: KernelEvent[]): string {
     if (g.rt.spec.mechanic === 'hub' || levelScript(g).safe || amount <= 0) {
       return '';
@@ -248,11 +252,11 @@ export function hurt(g: ChapterState, amount: number, source: string, events: Ke
       g.hp = Math.ceil(maxHpFor(g.ram) * 0.6);
       events.push({ type: 'PLAYER_RESPAWNED', from: 'ssd_backup', hp: g.hp });
       g.deathText = `\n[SSD SNAPSHOT RESTORED] ${source} crashed your shell, but your 256GB NVMe backup restored you in place!\n`;
-      return g.deathText;
+      return '';
     }
 
     const arrival = rebootLevel(g, events);
     events.push({ type: 'PLAYER_RESPAWNED', from: 'floor_restart', hp: g.hp });
     g.deathText = `\n[KERNEL PANIC] ${source} wiped your session! Rebooted at ${g.rt.spec.cwd}.\n${arrival}`;
-    return g.deathText;
+    return '';
   }

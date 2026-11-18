@@ -53,7 +53,7 @@ function renderWorkshop(els: ChaptersPageEls, state: ChaptersViewState, meta: Me
       }
       const achSuffix =
         res.unlockedAchievements && res.unlockedAchievements.length > 0
-          ? ` [★ Trophy Unlocked: ${res.unlockedAchievements.map((a) => `${a.title} (${a.steamApiName})`).join(', ')}]`
+          ? ` [* Trophy Unlocked: ${res.unlockedAchievements.map((a) => `${a.title} (${a.steamApiName})`).join(', ')}]`
           : '';
       state.workshopBanner = `${res.message}${achSuffix}`;
       renderMetagame(els, state);
@@ -81,7 +81,7 @@ export function renderMetagame(els: ChaptersPageEls, state: ChaptersViewState, o
   const focusSel = captureActiveFocusSelector();
   const meta = readMetagame();
   if (els.scrapPillEl) {
-    els.scrapPillEl.textContent = `⚙ ${meta.scrap} SILICON SCRAP`;
+    els.scrapPillEl.textContent = `${meta.scrap} SILICON SCRAP`;
   }
   const achCount = Object.keys(readAchievements().unlocked).length;
   if (els.metagameSummaryEl) {
