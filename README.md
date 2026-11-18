@@ -1,6 +1,6 @@
 # Haunted Terminal
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/63e4efdf-c141-4b4d-84dd-1a4132007e82/deploy-status)](https://app.netlify.com/projects/haunted-terminal/deploys)
+[![Play in the browser](https://img.shields.io/badge/play-haunted--terminal.netlify.app-ff3b3b)](https://haunted-terminal.netlify.app) [![Desktop builds](https://img.shields.io/github/v/release/recferret-bit/HauntedTerminal?label=desktop%20builds&color=2b2b2b)](https://github.com/recferret-bit/HauntedTerminal/releases/latest)
 
 **A 90s comic-book game where the only controller is a unix terminal.**
 Lightning pulls a developer inside his own computer. He is the only human in there. To get out he types real commands: `ls -a` lights up what hides in the dark, `kill -9` fights malware, `chmod -x` turns a monster to stone, `cat` reads the machine's secrets, and a few levels ask for real HTML, JavaScript, Dockerfiles and Compose files.
@@ -89,6 +89,7 @@ The whole project is organised for Kiro in [`.kiro/`](./.kiro): **7 custom agent
 - **Skills**: asset and level pipelines, each with a validator.
 - **MCP** (`.kiro/specs/mcp-devtools-and-forge/`): `haunted-forge`, our own MCP server, lets the chapter designer agent check and save levels through tools: `validate_level` and `solve_level` run the editor's checks and the 0-death headless solver on a draft, and `write_level` saves only a level that passes both. The QA agent drives the real game through Chrome DevTools MCP (headless, local sites only, no script evaluation) and judges screenshots it took itself. Each agent gets an exact tool list, a gate checks it, and a probe against the real Kiro CLI proves it.
 - **Power** (`.kiro/powers/haunted-ship/`): a project Kiro power that bundles the Netlify MCP server with a gated `ship` skill. A deploy runs the quality gates and the 0-death chapter verify, uploads a preview, plays the whole chapter on it in Chrome, and only then offers production, which gets exactly the build that was played. The agent team cannot deploy.
+- **Powers** (`.kiro/powers/haunted-release/`, `.kiro/powers/haunted-tauri-local/`): `haunted-release` checks a clean `main`, runs the gates and pushes tag `v<version>` so GitHub builds the desktop installers and Release, then makes the Netlify preview. `haunted-tauri-local` builds the desktop app on this machine, unversioned and unpublished. Both are the user's command only.
 - **Hooks**: typecheck and validators on save, spec-first reminder on prompt, verification gate on stop.
 - **Property-based tests**: 34 fast-check properties across the terminal (both shells), laptop, comix, chapters/achievements/saves and gameplay elements, inside `npm run quality`. They found seven real bugs; how to use them: [`docs/PROPERTY_TESTS.md`](docs/PROPERTY_TESTS.md). Our own assessment against the Kiroween criteria: [`docs/KIROWEEN_EVALUATION.md`](docs/KIROWEEN_EVALUATION.md).
 
