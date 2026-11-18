@@ -32,13 +32,21 @@ const ALT_STACK = ['STACK_PORT=5174 npm start', 'STACK_PORT=5174 npm stop', 'STA
 const GATE_SHELL = ['npm run quality', 'npm run quality:*', 'npm run build', 'npm start', 'npm stop', 'npm restart', 'npm run status', ...ALT_STACK, 'node scripts/*', 'node .kiro/skills/*'];
 /** Only the lead writes git history, and only on agent/<task> branches (the guard hook enforces the branch). */
 const GIT_WRITES = ['git switch -c agent/*', 'git switch agent/*', 'git add -- *', 'git commit -m *', 'git push -u origin agent/*', 'git push origin agent/*'];
+/**
+ * Visual-audit baselines are approved by a person only (spec .kiro/specs/qa-visual-audit/, Q13): no agent runs `--update`,
+ * names the baseline folder in a command, or copies along a `..` path (which could reach it from docs/qa/media/).
+ */
+const PERSON_ONLY = ['docs/qa/baselines/**'];
+const PERSON_ONLY_SHELL = ['*visual-audit*--update*', '*docs/qa/baselines*', 'cp *..*'];
 /** Denied for everyone even if a future edit adds a matching allow: they bypass the write fence or rewrite history. */
-const DENY_WORDS = ['*--output*', 'git reset*', 'git checkout*', 'git stash*', 'git clean*', 'git branch -D*', 'rm *', 'sudo *', 'npm install*', 'npm i *', 'npm uninstall*', 'npm publish*'];
+const DENY_WORDS = ['*--output*', 'git reset*', 'git checkout*', 'git stash*', 'git clean*', 'git branch -D*', 'rm *', 'sudo *', 'npm install*', 'npm i *', 'npm uninstall*', 'npm publish*', ...PERSON_ONLY_SHELL];
 /** Files that hold secrets: the Crew gateway keeps its channel tokens in ~/.kiro/crew/.env. */
 const SECRET_READS = ['**/.env', '**/.env.*', '**/*.pem', '**/*.key', '~/.kiro/crew/.env', '~/.kiro/crew/auth*', '~/.ssh/**', '~/.aws/**'];
 const SECRET_SHELL = ['*.env*', '*.pem*', '*/.ssh/*', '*/.aws/*', '*.kiro/crew/.env*'];
 /** Compiled output: the compilers write it, no agent edits it by hand. */
 const GENERATED = ['src/chapters/generated/**', 'src/cinematic/generated/**', 'chapters/*/story/out/**'];
+/** The visual audit of qa (spec .kiro/specs/qa-visual-audit/, Q11): the lead owns it, so qa cannot change its own checks. */
+const VISUAL_AUDIT = ['scripts/harness/visual-audit.mjs', 'scripts/harness/lib/visual-*.mjs', 'scripts/harness/visual/**'];
 
 /**
  * MCP servers an agent may declare (spec .kiro/specs/mcp-devtools-and-forge/). Each agent lists the tools it may call in
@@ -65,18 +73,23 @@ export const MCP_SERVERS = {
   },
   'haunted-forge': { command: 'node', args: ['scripts/mcp/haunted-forge/server.mjs'] },
 };
-/** What qa may use of Chrome DevTools MCP: look, read the console and network, and drive the page's own inputs. No emulation, uploads, traces or recordings. */
+/**
+ * What qa may use of Chrome DevTools MCP: look, read the console and network, drive the page's own inputs, throttle the CPU
+ * (`emulate`, CPU only: devtools-url-guard refuses every other field) and record performance traces (spec
+ * .kiro/specs/qa-visual-audit/, Q5). No uploads, recordings or JavaScript evaluation.
+ */
 const DEVTOOLS_LOOK = [
   'list_pages', 'new_page', 'select_page', 'navigate_page', 'close_page', 'resize_page', 'wait_for',
   'take_screenshot', 'take_snapshot', 'list_console_messages', 'get_console_message', 'list_network_requests', 'get_network_request',
   'click', 'hover', 'fill', 'type_text', 'press_key',
+  'emulate', 'performance_start_trace', 'performance_stop_trace', 'performance_analyze_insight',
 ];
 const FORGE_READ = ['list_levels', 'get_level', 'validate_level', 'solve_level'];
 
 const TEAM = {
   'lead-dev': {
     description: 'Lead game developer and orchestrator of the Haunted Terminal team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here; also the member that Kiro Crew runs.',
-    writes: ['.kiro/specs/**', '.kiro/steering/**', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'docs/*.md', 'docs/media/**', 'docs/reviews/**', 'scripts/harness/property-tests.mjs', 'scripts/harness/props/{kit,arbitraries}.mjs', 'src/contracts/**', 'src/editor-core/**', 'src/play/**', 'src/pages/**', 'src/hub/**', 'src/styles/**', 'src/sandbox/**', 'src/main.ts', 'src/style.css', 'src/game/{session,play,runtime,types,floors,sfx,selfcheck,view,view-layouts}.ts'],
+    writes: ['.kiro/specs/**', '.kiro/steering/**', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'docs/*.md', 'docs/media/**', 'docs/reviews/**', 'scripts/harness/property-tests.mjs', 'scripts/harness/props/{kit,arbitraries}.mjs', 'src/contracts/**', 'src/editor-core/**', 'src/play/**', 'src/pages/**', 'src/hub/**', 'src/styles/**', 'src/sandbox/**', 'src/main.ts', 'src/style.css', 'src/game/{session,play,runtime,types,floors,sfx,selfcheck,view,view-layouts}.ts', ...VISUAL_AUDIT],
     resources: [steer('skills-map'), 'file://.kiro/specs/agent-team/requirements.md', 'file://.kiro/specs/agent-team/design.md'],
     skills: ['feature-spec-grill'],
     subagents: ['terminal-designer', 'laptop-designer', 'comix-designer', 'chapters-designer', 'artist', 'qa'],
@@ -128,7 +141,8 @@ const TEAM = {
   },
   qa: {
     description: 'Plays Haunted Terminal and tests every part of it: the chapter in real Chrome, the terminal, laptop, comixes, editors, labs and assets, through the harness suites and screenshots. Writes a report to docs/qa/ and changes no game file.',
-    writes: ['docs/qa/**'],
+    // Not docs/qa/baselines/: a person approves baselines (spec .kiro/specs/qa-visual-audit/, Q13).
+    writes: ['docs/qa/*.md', 'docs/qa/media/**', 'docs/qa/labs/**'],
     shellExtra: ['mkdir -p docs/qa/media', 'cp scripts/harness/out/* docs/qa/media/*'],
     resources: [steer('skills-map'), steer('declarative-chapters'), steer('declarative-comix'), steer('terminal-lab-rules')],
     skills: ['comic-panel-viewport-auditor', 'chapter-implementer', 'comix-implementer', 'model-geometry-validator', 'particle-effect-validator'],
@@ -176,6 +190,7 @@ export function agentFile(name, a) {
     { capability: 'fs_write', match: ['**'], exclude: fence, effect: 'deny' },
     { capability: 'fs_write', match: fence, effect: 'allow' },
     { capability: 'fs_write', match: GENERATED, effect: 'deny' },
+    { capability: 'fs_write', match: PERSON_ONLY, effect: 'deny' },
     { capability: 'fs_read', match: SECRET_READS, effect: 'deny' },
     { capability: 'shell', match: allow, effect: 'allow' },
     { capability: 'shell', match: ['*'], exclude: allow, effect: 'deny' },
@@ -216,6 +231,7 @@ export const TEAM_NAMES = Object.keys(TEAM);
 /** The shell commands an agent may run (its allow rule), for the rule self-test in check-agents.mjs. */
 export const SHELL_DENY_WORDS = DENY_WORDS;
 export const GENERATED_PATHS = GENERATED;
+export const PERSON_ONLY_PATHS = PERSON_ONLY;
 
 /** The paths a team agent writes itself (not what its session allows for its sub-agents); null for an unknown name. */
 export function ownWrites(name) {

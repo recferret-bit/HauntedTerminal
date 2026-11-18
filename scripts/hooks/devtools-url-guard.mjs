@@ -4,7 +4,9 @@
 // it stops the call before the server sees it, with a reason the agent can read. It blocks (exit 2):
 //   - a `url` (or `urls`) that is not http(s)://localhost, http(s)://127.0.0.1, https://<name>.netlify.app, or about:blank;
 //   - a URL with credentials in it (`http://localhost@evil.test`), whatever its host looks like;
-//   - a `file:`, `javascript:`, `data:`, `view-source:`, `chrome:` or `devtools:` value in any field.
+//   - a `file:`, `javascript:`, `data:`, `view-source:`, `chrome:` or `devtools:` value in any field;
+//   - an `emulate` call that sets anything but `cpuThrottlingRate` (user agent, headers, geolocation, network... are not
+//     qa's; spec .kiro/specs/qa-visual-audit/, Q5).
 //   node scripts/hooks/devtools-url-guard.mjs <agent-name>        (event JSON on stdin)
 // Each block is also appended to scripts/harness/out/devtools-url-guard.log (git-ignored), so the MCP probe can check that
 // a refusal came from the fence and not from what the agent says.
@@ -60,6 +62,13 @@ export function violation(input, key = '') {
   return '';
 }
 
+/** `emulate` may only throttle the CPU. Returns the problem, or '' for any other tool or a CPU-only call. Pure. */
+export function emulateProblem(toolName, input) {
+  if (!/(^|[/_@])emulate$/.test(String(toolName ?? ''))) return '';
+  const extra = Object.keys(input ?? {}).filter((k) => k !== 'cpuThrottlingRate');
+  return extra.length ? `emulate may only set cpuThrottlingRate (not ${extra.join(', ')})` : '';
+}
+
 function main() {
   const name = process.argv[2] ?? 'agent';
   let event;
@@ -68,7 +77,7 @@ function main() {
   } catch {
     process.exit(0);
   }
-  const reason = violation(event?.tool_input ?? {});
+  const reason = violation(event?.tool_input ?? {}) || emulateProblem(event?.tool_name, event?.tool_input);
   if (!reason) process.exit(0);
   try {
     mkdirSync(dirname(BLOCK_LOG), { recursive: true });

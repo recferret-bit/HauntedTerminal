@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { changedSince, ownerOf, outOfScope } from '../hooks/agent-scope.mjs';
 import { redirectTargets, tokenize, violation } from '../hooks/agent-shell-guard.mjs';
-import { urlProblem, violation as urlViolation } from '../hooks/devtools-url-guard.mjs';
+import { emulateProblem, urlProblem, violation as urlViolation } from '../hooks/devtools-url-guard.mjs';
 import { mcpProblems } from '../quality/agent-mcp.mjs';
 import { globToRegExp, loadAgents, mcpVerdict, shellVerdict } from '../quality/agent-rules.mjs';
 import { LEAD, TEAM_NAMES, mcpTable, ownWrites } from './agents-build.mjs';
@@ -172,6 +172,13 @@ await test('devtools url guard: only the local dev servers and https Netlify sit
   assert.notEqual(urlViolation({ text: 'javascript:alert(1)' }), '');
   assert.equal(urlViolation({ text: 'kill -9 1011', submitKey: 'Enter' }), '');
   assert.equal(urlViolation({ text: 'curl http://example.com' }), '', 'typed text is not a navigation');
+  // emulate: CPU throttling only (spec qa-visual-audit, Q5).
+  for (const name of ['emulate', '@chrome-devtools/emulate', 'chrome-devtools_emulate']) {
+    assert.equal(emulateProblem(name, { cpuThrottlingRate: 4 }), '', name);
+    assert.notEqual(emulateProblem(name, { cpuThrottlingRate: 4, userAgent: 'x' }), '', name);
+    assert.notEqual(emulateProblem(name, { extraHttpHeaders: { a: 'b' } }), '', name);
+  }
+  assert.equal(emulateProblem('take_screenshot', { userAgent: 'x' }), '');
 });
 
 await test('devtools url guard hook end to end: exit 0 for the game, exit 2 and a reason for another site, 0 for an unreadable event', () => {

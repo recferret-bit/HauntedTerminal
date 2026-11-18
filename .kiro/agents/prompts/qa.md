@@ -17,6 +17,7 @@ You play Haunted Terminal and test every part of it, then write a report. You ch
 | editors | `chapters-designer`, `comix-designer` | `editor-unit-test.mjs`; `editor-smoke.mjs`; `comix-editor-smoke.mjs` |
 | assets | `artist` | `.kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict`; `.kiro/skills/procedural-animation-3d/scripts/check-tags.mjs --all`; `screenshot-lab.mjs --selftest`; `npm run quality:fingerprint` |
 | build | `lead-dev` | `npm run build` |
+| visual | owner of the area of each finding | `node scripts/harness/visual-audit.mjs` (scoped: `--screens <ids> --sizes <WxH,...>`); see "The visual pass" |
 
 All harness scripts are `node scripts/harness/<name>`.
 
@@ -33,9 +34,43 @@ Any claim about what is on screen (overlap, cut-off text, layout, what a level l
 3. Play: `click` the terminal, `type_text` the command with `submitKey: "Enter"`, `press_key`. Check `list_console_messages` (errors and warnings) and `list_network_requests` (failed requests) after each screen you judge.
 4. Look at both sizes with `resize_page`: 1600x950 and 1280x820.
 5. Only `localhost`, `127.0.0.1` and `https://*.netlify.app` open; Chrome and a hook refuse everything else. After a deploy, judge the live URL the same way.
-6. Expected under that fence, not findings: the Vite websocket (`ws://...`, "failed to connect to websocket") and Google Fonts (`net::ERR_INTERNET_DISCONNECTED`), so text uses fallback fonts. Report every other console error.
+6. Expected under that fence, not a finding: the Vite websocket (`ws://...`, "failed to connect to websocket"). Fonts are self-hosted (`public/fonts/`): every font request error is a finding, and text must render in Chakra Petch or IBM Plex Mono, never a fallback font.
+7. When a screen stutters or an animation looks late: `emulate` with `cpuThrottlingRate: 4` only (the hook refuses every other field), then `performance_start_trace`, play the moment, `performance_stop_trace` and `performance_analyze_insight`. Put the numbers in the report, and set `cpuThrottlingRate: 1` again.
 
 If a Chrome DevTools tool is missing or the server did not start, say so in the report and fall back to `play-browser.mjs` and its `out/play-*.png`; do not report a visual check you did not make.
+
+## The visual pass
+
+Every pass that touches anything on screen runs the visual audit first; `full` runs all of it. It is the numbers your judgment starts from, not a replacement for looking.
+
+1. `node scripts/harness/visual-audit.mjs` (stills of every screen at 1600x950, 1280x820, 1920x1080 and 1024x768, then a real-time motion pass per screen at 1280x820: filmstrips and throttled frame timing), or `--screens <ids>` (`level-*` works) and `--sizes` for a scoped pass. A scoped run keeps the other screens' files and merges `summary.json`, so batches add up. Exit 1 means there is something to explain, not that the run failed; exit 2 is a failed run.
+2. Read `scripts/harness/out/visual/summary.json`. Every flag gets one line in the report: a finding with an owner, or expected with the reason (for example an intended overlap). No flag is skipped.
+3. Open every still (`<screen>@<size>.png`), every filmstrip contact sheet (`<screen>@1280x820-film-<n>.png`, 12 frames over one second after a typed line; listed under `frames` in the summary) and every diff image (`-diff.png`, changed pixels in red, ignored masks outlined in blue). Judge each against the checklist below. Play screens are captured on a stepped game clock, so two runs give the same picture: a diff on them is a real change.
+4. A `diff` is a change against the baseline a person approved. Say whether it looks intended (it matches the change you are checking) or a regression. A `no-baseline` is listed as such. You never create or update baselines: `--update` and `docs/qa/baselines/` are a person's.
+5. Follow up with Chrome DevTools MCP where a still is not enough: the moment before or after, hover states, a size between the four.
+
+### Checklist
+
+For every screen in the audit, mark each item `pass`, `fail` or `n/a` in the report's checklist table. A `fail` becomes a finding at the severity given here; raise it when it blocks play.
+
+| # | Item | Fails when | Severity |
+|---|---|---|---|
+| 1 | overlap | UI, lettering or a bubble covers other UI, lettering, the hero or an actor that matters (`overlap` flag) | high |
+| 2 | clipped text | text is cut by its box, the stage, the viewport or another element (`text-overflow`, `out-of-viewport`) | high |
+| 3 | contrast | text or a key shape is hard to read against what is behind it | medium |
+| 4 | off-palette colour | a colour outside the single palette, a smooth gradient, a rising `offPalette` share | medium |
+| 5 | z-fighting | faces that stripe or shimmer, a surface that changes between filmstrip frames without moving | medium |
+| 6 | floating parts | an actor or prop not standing on the floor line, gaps between parts | medium |
+| 7 | missing ink outlines | a model, panel or caption without its ink outline | low |
+| 8 | wrong font | `font-fallback` or `font-failed`, tofu boxes, a glyph from another font (check, star, emoji) | medium |
+| 9 | blank or black frame | an empty, black or one-colour frame where content belongs (`blank-frame`, `black-frame`) | high |
+| 10 | misaligned panels | panel borders, gutters or HUD cells out of line, uneven spacing | low |
+| 11 | inconsistent style | the same element looks different between screens or sizes | low |
+| 12 | stale text | a wrong level number or name, old names, placeholders, text that does not match the state | medium |
+| 13 | flicker and stutter | `jump`, `frozen`, `blank-frame` in a filmstrip, `dropped-frames`, a pop between frames | high |
+| 14 | layout at size | `horizontal-scroll`, or a screen that only breaks at one of the four sizes | high |
+
+Flags about the run itself (`capture-unstable`, `capture-failed`, `screen-not-reached`, `not-ready`, `frame-probe-failed`, `font-check-failed`) are not game findings: report them as "not checked" for that screen, with the reason, and hand them to `lead-dev` (owner of the audit).
 
 ## Checking a level (MCP `haunted-forge`)
 
@@ -43,4 +78,4 @@ For a level a change touched, call `validate_level` and `solve_level` with its `
 
 ## Report
 
-Write `docs/qa/<YYYY-MM-DD>-<scope>.md` from the template in `docs/qa/README.md`. Copy the screenshot of each visual finding with `mkdir -p docs/qa/media` and `cp scripts/harness/out/<file>.png docs/qa/media/<date>-<scope>-<n>.png` (the only `cp` you may run). Every command and every MCP tool you called is listed (commands with their exit code, MCP calls with what they returned); a gate you did not run is listed as not run, with the reason. End with a verdict, `PASS` or `FAIL (<n> findings)`, and the owner of each finding.
+Write `docs/qa/<YYYY-MM-DD>-<scope>.md` from the template in `docs/qa/README.md`, with the visual audit summary and the per-screen checklist table when a visual pass ran. Copy the screenshot of each visual finding with `mkdir -p docs/qa/media` and `cp scripts/harness/out/<file>.png docs/qa/media/<date>-<scope>-<n>.png` (the only `cp` you may run). Every command and every MCP tool you called is listed (commands with their exit code, MCP calls with what they returned); a gate you did not run is listed as not run, with the reason. End with a verdict, `PASS` or `FAIL (<n> findings)`, and the owner of each finding.
