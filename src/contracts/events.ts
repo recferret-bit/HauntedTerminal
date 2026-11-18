@@ -230,4 +230,13 @@ export type KernelEvent =
       command: string;
       agent: 'clod' | 'gork' | 'codec' | 'antigravy' | 'kiro';
       done: boolean;
+    }
+  | {
+      /** A local achievement was unlocked for the first time (never emitted in preview or lab sessions). */
+      type: 'ACHIEVEMENT_UNLOCKED';
+      id: string;
+      steamApiName: string;
+      title: string;
+      description: string;
+      icon: string;
     };

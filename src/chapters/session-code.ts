@@ -4,6 +4,12 @@ import { SED_EMPTY_PATTERN, emptySedPattern } from '../game/commands-text.js';
 import type { Step } from '../game/shell.js';
 import { absPath, hasWrite, makeNode, resolve } from '../game/tree.js';
 import type { CommandResult } from '../game/types.js';
+import {
+  evaluateBatchEvents,
+  evaluateLevelClearAchievements,
+  evaluateRunEndAchievements,
+  formatAchievementLines,
+} from './achievements.js';
 import { recordLevelClear, recordTelemetry } from './catalog.js';
 import { runSteps } from './script.js';
 import { validateDockerCompose, validateDockerfile } from './validators.js';
@@ -72,7 +78,9 @@ export function saveEditableFile(g: ChapterState, nameOrPath: string, content: s
     const diag = liveLintFeedback(g, res.node);
     const notes = g.rt.world.drain() + g.rt.completionNote;
     g.rt.completionNote = '';
-    const output = `[SAVED] ${res.node.name} (${res.node.content.split('\n').length - 1} lines)\n${diag}${notes}`;
+    const achEvents = evaluateBatchEvents(events, { preview: g.preview, lab: g.lab !== null });
+    if (achEvents.length > 0) events.push(...achEvents);
+    const output = `[SAVED] ${res.node.name} (${res.node.content.split('\n').length - 1} lines)\n${diag}${notes}${formatAchievementLines(achEvents)}`;
     playEventsSfx(g, events);
     return { output, events, snapshot: snapshot(g) };
   }
@@ -452,9 +460,28 @@ export function cmdExit(g: ChapterState): Step {
     const reward = g.preview
       ? { scrapEarned: 0, totalScrap: 0 }
       : recordLevelClear(g.chapterId, g.rt.spec.id, lvlRank, g.rt.levelCommands, levelSec, g.chaosMode);
+    const achUnlocked = [
+      ...evaluateLevelClearAchievements({
+        openingSector: g.levels[0]?.id === g.rt.spec.id,
+        mechanic: g.rt.spec.mechanic,
+        rank: lvlRank,
+        chaos: g.chaosMode,
+        preview: g.preview,
+        lab: g.lab !== null,
+      }),
+      ...evaluateRunEndAchievements({
+        rank: runRank,
+        deaths: g.deaths,
+        fullRun: g.fullRun,
+        preview: g.preview,
+        lab: g.lab !== null,
+      }),
+    ];
     events.push({ type: 'FLOOR_CLEARED', floorId: g.rt.spec.index, speedrunBonus: runRank === 'S', commandsCount: g.commands });
+    events.push(...achUnlocked);
     events.push({ type: 'GAME_ENDED', rank: runRank, timeSec, commands: g.commands });
 
+    const achNote = formatAchievementLines(achUnlocked);
     const stats = {
       rank: runRank,
       commands: String(g.commands),
@@ -462,11 +489,11 @@ export function cmdExit(g: ChapterState): Step {
       scrapTotal: String(reward.totalScrap),
     };
     const finale = g.pack.manifest.outro?.finale;
-    if (finale) return okStep(runSteps(g, finale, events, stats), events);
+    if (finale) return okStep(`${runSteps(g, finale, events, stats)}${achNote}`, events);
     return okStep(
       `\n========================================================\n` +
         `  ISSUE CLEAR | RANK: ${runRank} | COMMANDS: ${g.commands} | REWARD: +${reward.scrapEarned} Silicon Scrap (Total: ${reward.totalScrap})\n` +
-        `========================================================\n`,
+        `========================================================\n${achNote}`,
       events,
     );
   }

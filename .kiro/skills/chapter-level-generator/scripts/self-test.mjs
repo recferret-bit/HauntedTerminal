@@ -7,6 +7,8 @@ import { withProcgen } from '../../../../scripts/harness/lib/load.mjs';
 await withProcgen(async (_p, vite) => {
   const validators = await vite.ssrLoadModule('/src/chapters/validators.ts');
   const catalog = await vite.ssrLoadModule('/src/chapters/catalog.ts');
+  const achievements = await vite.ssrLoadModule('/src/chapters/achievements.ts');
+  const portableSave = await vite.ssrLoadModule('/src/chapters/portable-save.ts');
   const { createChapterSession } = await vite.ssrLoadModule('/src/chapters/chapter-session.ts');
 
   catalog.resetInMemoryStoresForTest();
@@ -315,6 +317,150 @@ await withProcgen(async (_p, vite) => {
   assert.ok(dossier.some((d) => d.id === 'dad.tty'), 'manifest.dossier must add the chapter ally to the bestiary');
   assert.ok(!catalog.BESTIARY_DOSSIER.some((d) => d.id === 'dad.tty'), 'the shared bestiary must not name a chapter ally');
 
+  // ---- 8. Local Achievements (1:1 Steamworks ACH_*), Preview Isolation & Portable Save Bundle Edge Cases ----
+  const achAfterRun = achievements.readAchievements();
+  for (const expectedId of ['first_boot', 'sigkill_hunter', 'open_weights_init', 'big_four_silenced', 'campaign_clear']) {
+    assert.ok(achAfterRun.unlocked[expectedId], `Expected achievement "${expectedId}" to be unlocked during campaign run`);
+    assert.match(achAfterRun.unlocked[expectedId].steamApiName, /^ACH_[A-Z0-9_]+$/);
+  }
+  assert.equal(
+    achAfterRun.unlocked.zero_panic_run,
+    undefined,
+    'zero_panic_run must NOT unlock when levels were skipped via jumpToLevel()',
+  );
+
+  // Verify full 11-level 0-death S-rank playthrough unlocks all 10 non-chaos/non-workshop achievements (including full_stack_fixer & zero_panic_run)
   catalog.resetInMemoryStoresForTest();
-  console.log('chapter-level-generator self-test PASS (all validator, chroot, hint, boss & metagame edge cases verified)');
+  const fullRunSession = createChapterSession({ chapterId: 'chapter-01-kiroween', tacticalMode: true });
+  fullRunSession.skipIntro();
+  for (const lvl of catalog.getChapterLevels('chapter-01-kiroween')) {
+    for (const cmd of lvl.solutionCommands) {
+      fullRunSession.exec(cmd);
+    }
+  }
+  const fullRunAch = achievements.readAchievements();
+  for (const expectedId of [
+    'first_boot',
+    'lantern_sweep',
+    'sigkill_hunter',
+    'stone_cold_chmod',
+    'open_weights_init',
+    'full_stack_fixer',
+    'big_four_silenced',
+    'speed_demon_s',
+    'campaign_clear',
+    'zero_panic_run',
+  ]) {
+    assert.ok(fullRunAch.unlocked[expectedId], `Full 11-level run must unlock "${expectedId}"`);
+  }
+  // Idempotent: unlocking an already-unlocked achievement returns null
+  assert.equal(achievements.unlockAchievement('first_boot'), null, 'Duplicate unlock must return null');
+
+  // CLI commands: `achievements`, `ach combat`, `achievements export`, `achievements sync`, `man achievements`
+  const achListOut = kiroChap.exec('achievements').output;
+  assert.ok(achListOut.includes('LOCAL ACHIEVEMENTS') && achListOut.includes('ACH_FIRST_BOOT'));
+  assert.ok(achListOut.includes('Open Weights & Family Ties'), 'Unlocked secret achievement must reveal its real title');
+  const achCombatOut = kiroChap.exec('ach combat').output;
+  assert.ok(achCombatOut.includes('ACH_SIGKILL_HUNTER') && !achCombatOut.includes('ACH_FIRST_BOOT'));
+  const achExport = JSON.parse(kiroChap.exec('achievements export').output);
+  assert.equal(achExport.schemaVersion, 1);
+  assert.equal(achExport.totalCount, 12);
+  assert.ok(achExport.steamApiNames.includes('ACH_CAMPAIGN_CLEAR'));
+  assert.ok(kiroChap.exec('achievements sync').output.includes('ACH_*'));
+  assert.ok(kiroChap.exec('man achievements').output.includes('achievements export'));
+  assert.ok(
+    kiroChap.exec('achievements; ls').output.includes('Issue complete!'),
+    'Post-end achievements pass-through must block chained shell commands',
+  );
+
+  // Preview isolation: a preview session neither emits ACHIEVEMENT_UNLOCKED nor leaks unlocked state
+  const previewSess = createChapterSession({ chapterId: 'chapter-01-kiroween', preview: true, tacticalMode: true });
+  previewSess.skipIntro();
+  const prevKill = previewSess.exec('kill -9 1011');
+  assert.equal(
+    prevKill.events.some((e) => e.type === 'ACHIEVEMENT_UNLOCKED'),
+    false,
+    'Preview sessions must never emit ACHIEVEMENT_UNLOCKED',
+  );
+  const prevAchJson = JSON.parse(previewSess.exec('achievements export').output);
+  assert.equal(prevAchJson.unlockedCount, 0, 'Preview sessions must report 0 unlocked achievements deterministically');
+
+  // Secret masking before unlock + portable save export/import validation & merge
+  const savedBundle = portableSave.exportPortableSaveBundle();
+  assert.equal(savedBundle.format, 'haunted-terminal-save');
+  catalog.resetInMemoryStoresForTest();
+  assert.equal(Object.keys(achievements.readAchievements().unlocked).length, 0);
+  const freshSession = createChapterSession({ chapterId: 'chapter-01-kiroween', tacticalMode: true });
+  freshSession.skipIntro();
+  const emptyDirSweep = freshSession.exec('ls -a');
+  assert.equal(
+    emptyDirSweep.events.some((e) => e.type === 'ACHIEVEMENT_UNLOCKED' && e.id === 'lantern_sweep'),
+    false,
+    'ls -a in a directory with 0 dotfiles must NOT falsely unlock lantern_sweep',
+  );
+  const freshList = freshSession.exec('achievements').output;
+  assert.ok(freshList.includes('???? (Secret Achievement)'), 'Locked secret achievements must mask their title');
+  assert.ok(!freshList.includes('Open Weights & Family Ties'), 'Locked secret achievement must not leak spoiler title');
+  const freshExportOut = freshSession.exec('achievements export').output;
+  assert.ok(
+    !freshExportOut.includes('Open Weights & Family Ties') && !freshExportOut.includes('Zero Kernel Panics'),
+    'achievements export must mask locked secret achievement titles until unlocked',
+  );
+
+  // Reject malformed / wrong-format / oversized inputs cleanly
+  assert.equal(portableSave.importPortableSaveBundle('').ok, false);
+  assert.equal(portableSave.importPortableSaveBundle('{not json').ok, false);
+  assert.equal(portableSave.importPortableSaveBundle('{"format":"other","version":1}').ok, false);
+
+  // Sanitize unknown achievement IDs & prototype pollution keys while restoring valid unlocks
+  const tampered = structuredClone(savedBundle);
+  tampered.achievements.unlocked.fake_injected = { id: 'fake_injected', steamApiName: 'ACH_FAKE', unlockedAt: 123 };
+  tampered.progress.__proto__ = { bad: { cleared: true, bestRank: 'S', bestCommands: 1, bestTimeSec: 1, updatedAt: 1 } };
+  const imported = portableSave.importPortableSaveBundle(JSON.stringify(tampered));
+  assert.equal(imported.ok, true);
+  assert.equal(achievements.readAchievements().unlocked.fake_injected, undefined, 'Unknown achievement IDs must be stripped');
+  assert.ok(achievements.readAchievements().unlocked.campaign_clear, 'Valid achievements must be restored on import');
+
+  // Auto-Cloud hydration must NOT dirty-rewrite haunted-terminal-save.json on read-only boots when local state adds nothing new
+  const diskJson = JSON.stringify(portableSave.exportPortableSaveBundle());
+  const fakeStorage = new Map();
+  const prevStorage = globalThis.localStorage;
+  const prevWin = globalThis.window;
+  try {
+    globalThis.localStorage = {
+      getItem: (k) => fakeStorage.get(k) ?? null,
+      setItem: (k, v) => fakeStorage.set(k, String(v)),
+    };
+    const tauriCalls = [];
+    globalThis.window = {
+      __TAURI_INTERNALS__: {
+        invoke: async (cmd) => {
+          tauriCalls.push(cmd);
+          if (cmd === 'desktop_read_save_bundle') return diskJson;
+          return true;
+        },
+      },
+    };
+    const hydrated = await portableSave.hydrateFromDesktopSaveBundle();
+    await new Promise((r) => setTimeout(r, 15));
+    assert.equal(hydrated, true, 'Empty localStorage must hydrate from populated desktop save bundle');
+    assert.equal(
+      tauriCalls.includes('desktop_write_save_bundle'),
+      false,
+      'Read-only Tauri boot hydration must NOT dirty-rewrite haunted-terminal-save.json on disk',
+    );
+    // Second boot when localStorage already matches diskJson -> changedLocal is false, still 0 disk writes
+    const secondHydrate = await portableSave.hydrateFromDesktopSaveBundle();
+    await new Promise((r) => setTimeout(r, 15));
+    assert.equal(secondHydrate, false, 'Identical Tauri boot hydration must report no local mutation');
+    assert.equal(tauriCalls.includes('desktop_write_save_bundle'), false);
+  } finally {
+    if (prevStorage === undefined) delete globalThis.localStorage;
+    else globalThis.localStorage = prevStorage;
+    if (prevWin === undefined) delete globalThis.window;
+    else globalThis.window = prevWin;
+  }
+
+  catalog.resetInMemoryStoresForTest();
+  console.log('chapter-level-generator self-test PASS (all validator, chroot, hint, boss, achievements & metagame edge cases verified)');
 });

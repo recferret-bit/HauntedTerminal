@@ -9,7 +9,7 @@ import { cmdDocker, cmdEdit, cmdExit, cmdSed, cmdSource } from './session-code.j
 import { cmdCat, cmdCd, cmdChmod, cmdCp, cmdCut, cmdFind, cmdGrep, cmdHeadTail, cmdLs, cmdMkdir, cmdMv, cmdRm, cmdTouch, cmdWc } from './session-fs.js';
 import { cmdKiro } from './session-kiro.js';
 import { applySkipTutorial, isNodeHidden, tutorialState } from './script.js';
-import { cmdBestiary, cmdGrimoire, cmdHank, cmdStatus, cmdWorkshop } from './session-meta.js';
+import { cmdAchievements, cmdBestiary, cmdGrimoire, cmdHank, cmdStatus, cmdWorkshop } from './session-meta.js';
 import { cmdKill, cmdPkill, cmdPs } from './session-proc.js';
 
 /** The chapter ally answers to the first word of its id (`dad.tty` -> `dad`), like `hank`. */
@@ -39,6 +39,11 @@ export function complete(g: ChapterState, line: string): { line: string; matches
       const coreOpts = KIRO_CORE_ORDER.filter((k) => k.startsWith(last));
       if (coreOpts.length === 1) return { line: `kiro load ${coreOpts[0]} `, matches: [...coreOpts] };
       if (coreOpts.length > 1) return { line, matches: [...coreOpts] };
+    }
+    if ((parts[0] === 'achievements' || parts[0] === 'ach' || parts[0] === 'trophies') && (parts.length === 1 || (parts.length === 2 && !endsWithSpace)) && !last.includes('/')) {
+      const achOpts = ['export', 'sync', 'campaign', 'combat', 'craft', 'mastery'].filter((k) => k.startsWith(last));
+      if (achOpts.length === 1) return { line: `${parts[0]} ${achOpts[0]} `, matches: achOpts };
+      if (achOpts.length > 1) return { line, matches: achOpts };
     }
     if (parts[0] === 'hold' && (parts.length === 1 || (parts.length === 2 && !endsWithSpace)) && !last.includes('/')) {
       const items = g.inventory.items.filter((k) => k.startsWith(last));
@@ -114,7 +119,7 @@ export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
         return { stdout: '', stderr: '', code: 0, events: [], clear: true };
       case 'help':
         return okStep(
-          `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack] local .gguf Ghost companion (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  tactical               toggle turn-based Tactical Mode (${g.tacticalMode ? 'ON' : 'OFF'})\n`,
+          `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack] local .gguf Ghost companion (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 12 local trophies & Steamworks ACH_* payload\n  tactical               toggle turn-based Tactical Mode (${g.tacticalMode ? 'ON' : 'OFF'})\n`,
         );
       case 'man': {
         const ally = allyCommand(g);
@@ -149,6 +154,10 @@ export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
       case 'workshop':
       case 'rig':
         return cmdWorkshop(g, args);
+      case 'achievements':
+      case 'ach':
+      case 'trophies':
+        return cmdAchievements(g, args);
       case 'ls':
         return cmdLs(g, args);
       case 'cd':

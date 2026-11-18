@@ -4,6 +4,7 @@ import type { Pickup } from '../game/entities.js';
 import { holdItem } from '../game/inventory.js';
 import type { Step } from '../game/shell.js';
 import { absPath, lookup, makeNode, modeString, resolve, walk, type VNode } from '../game/tree.js';
+import { evaluateLevelClearAchievements, formatAchievementLines } from './achievements.js';
 import { recordLevelClear } from './catalog.js';
 import { computeLevelRank, creatableParent, emptyStep, ensureDirChain, globToRegExp, okStep, splitParentAndName, type ChapterState } from './session-state.js';
 import { writeRedirect } from './session-code.js';
@@ -51,6 +52,9 @@ export function cmdLs(g: ChapterState, args: string[]): Step {
       g.rt.lantern = true;
       g.inventory = holdItem(g.inventory, 'lantern');
       const revealed = g.rt.world.reveal(res.node, events);
+      for (const child of res.node.children.values()) {
+        if (!isNodeHidden(g, child) && child.name.startsWith('.') && !revealed.includes(child.id)) revealed.push(child.id);
+      }
       events.push({ type: 'LANTERN_REVEAL', dirId: res.node.id, revealedInodes: revealed });
       events.push({ type: 'VIBECODER_ACTION', action: 'lantern', command: 'ls -a' });
     } else {
@@ -120,6 +124,7 @@ export function cmdCd(g: ChapterState, args: string[]): Step {
 
       const clearedIndex = g.rt.spec.index;
       const clearedId = g.rt.spec.id;
+      const clearedMechanic = g.rt.spec.mechanic;
       const levelSec = Math.max(1, Math.floor((Date.now() - g.rt.levelStartedAt) / 1000));
       const lvlRank = computeLevelRank(
         g.rt.levelCommands,
@@ -129,6 +134,14 @@ export function cmdCd(g: ChapterState, args: string[]): Step {
       const reward = g.preview
         ? { scrapEarned: 0, totalScrap: 0 }
         : recordLevelClear(g.chapterId, clearedId, lvlRank, g.rt.levelCommands, levelSec, g.chaosMode);
+      const achUnlocked = evaluateLevelClearAchievements({
+        openingSector: g.levels[0]?.id === clearedId,
+        mechanic: clearedMechanic,
+        rank: lvlRank,
+        chaos: g.chaosMode,
+        preview: g.preview,
+        lab: g.lab !== null,
+      });
       if (!g.rt.tutorialSkipped) finishTutorial(g, events);
       events.push({
         type: 'FLOOR_CLEARED',
@@ -136,11 +149,12 @@ export function cmdCd(g: ChapterState, args: string[]): Step {
         speedrunBonus: lvlRank === 'S',
         commandsCount: g.rt.levelCommands,
       });
+      events.push(...achUnlocked);
 
       if (g.levelIdx + 1 < g.levels.length) {
         loadLevel(g, g.levelIdx + 1, false, events);
         return okStep(
-          `[SECTOR ${String(clearedIndex).padStart(2, '0')} CLEAR — RANK ${lvlRank} | +${reward.scrapEarned} Silicon Scrap (Total: ${reward.totalScrap})]\n` +
+          `[SECTOR ${String(clearedIndex).padStart(2, '0')} CLEAR — RANK ${lvlRank} | +${reward.scrapEarned} Silicon Scrap (Total: ${reward.totalScrap})]${formatAchievementLines(achUnlocked)}\n` +
             levelBannerText(g),
           events,
         );

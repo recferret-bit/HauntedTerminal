@@ -4,6 +4,12 @@ import {
   GENERATED_LEVELS_BY_CHAPTER,
   GENERATED_MANIFESTS,
 } from './generated/catalog-data.js';
+import {
+  evaluateWorkshopAchievement,
+  resetAchievementsForTest,
+  type AchievementEvent,
+} from './achievements.js';
+import { scheduleDesktopSaveSync } from './steam-bridge.js';
 import type {
   ChapterDialogs,
   ChapterLevelSummary,
@@ -254,6 +260,13 @@ export const GRIMOIRE_ENTRIES: readonly GrimoireEntry[] = [
     realWorld: 'Equips or switches active tool into the screen-right hand.',
     comicEffect: 'Changes developer visual model and active capabilities (lantern casts light; laptop opens coding lab).',
   },
+  {
+    command: 'achievements',
+    category: 'POSIX',
+    syntax: 'achievements [export | sync | <category>]',
+    realWorld: 'Inspects persistent local achievement trophies and exports 1:1 Steamworks `ACH_*` unlock payloads.',
+    comicEffect: 'Stamps unlocked comic trophies onto your dossier and syncs with the Tauri + Steamworks desktop bridge.',
+  },
 ];
 
 export type BestiaryDossierEntry = DossierEntry;
@@ -372,7 +385,7 @@ const METAGAME_KEY = 'haunted-terminal:metagame:v1';
 const RANK_WEIGHT: Record<RankGrade, number> = { C: 1, B: 2, A: 3, S: 4 };
 const SCRAP_BY_RANK: Record<RankGrade, number> = { C: 25, B: 45, A: 70, S: 100 };
 
-function freshMetagame(): MetagameStore {
+export function freshMetagame(): MetagameStore {
   return {
     scrap: 0,
     unlockedPerks: [],
@@ -389,6 +402,18 @@ let memoryMetagame: MetagameStore = freshMetagame();
 export function resetInMemoryStoresForTest(): void {
   memoryProgress = {};
   memoryMetagame = freshMetagame();
+  resetAchievementsForTest();
+}
+
+export function writeChapterProgress(next: ChapterProgressStore): void {
+  memoryProgress = next;
+  if (typeof localStorage === 'undefined') return;
+  try {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(next));
+    scheduleDesktopSaveSync();
+  } catch {
+    // Ignore storage quota errors in private mode
+  }
 }
 
 export function readChapterProgress(): ChapterProgressStore {
@@ -422,11 +447,12 @@ export function readMetagame(): MetagameStore {
   }
 }
 
-function writeMetagame(next: MetagameStore): void {
+export function writeMetagame(next: MetagameStore): void {
   memoryMetagame = next;
   if (typeof localStorage === 'undefined') return;
   try {
     localStorage.setItem(METAGAME_KEY, JSON.stringify(next));
+    scheduleDesktopSaveSync();
   } catch {
     // Ignore storage quota errors in private mode
   }
@@ -455,6 +481,7 @@ export function purchaseOrTogglePerk(perkId: string): {
   action: 'purchased' | 'enabled' | 'disabled' | 'error';
   message: string;
   metagame: MetagameStore;
+  unlockedAchievements?: AchievementEvent[];
 } {
   const perk = RIG_PERKS.find((p) => p.id === perkId || p.id.endsWith(perkId));
   const meta = readMetagame();
@@ -479,11 +506,13 @@ export function purchaseOrTogglePerk(perkId: string): {
     meta.unlockedPerks.push(perk.id);
     if (!meta.activePerks.includes(perk.id)) meta.activePerks.push(perk.id);
     writeMetagame(meta);
+    const unlockedAchievements = evaluateWorkshopAchievement(true, false);
     return {
       ok: true,
       action: 'purchased',
       message: `Installed "${perk.title}" (${perk.bashrcLine}) into ~/.bashrc! Remaining Silicon Scrap: ${meta.scrap}.`,
       metagame: meta,
+      unlockedAchievements,
     };
   }
 

@@ -94,6 +94,9 @@ function kiroScan(g: ChapterState): Step {
       if (res.revealHidden) {
         g.rt.lantern = true;
         const revealed = g.rt.world.reveal(g.rt.cwd, events);
+        for (const child of g.rt.cwd.children.values()) {
+          if (!isNodeHidden(g, child) && child.name.startsWith('.') && !revealed.includes(child.id)) revealed.push(child.id);
+        }
         events.push({ type: 'LANTERN_REVEAL', dirId: g.rt.cwd.id, revealedInodes: revealed });
       }
       events.push(...res.events);

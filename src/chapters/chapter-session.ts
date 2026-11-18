@@ -59,6 +59,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   muted = false;
   intro = true;
   ended = false;
+  fullRun = true;
   deadNow = false;
   deathText = '';
   tacticalMode = false;
@@ -100,6 +101,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
       const found = this.levels.findIndex((l) => l.id === options.startLevelId);
       if (found >= 0) startIdx = found;
     }
+    this.fullRun = startIdx === 0;
 
     flow.applyInitialLoadout(this, startIdx);
     level.loadLevel(this, startIdx, false, []);

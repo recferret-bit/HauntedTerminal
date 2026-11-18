@@ -132,6 +132,13 @@ const MAN: Record<string, string[]> = {
   grimoire: ['grimoire [<command>]: inspect unlocked Unix, code and Docker commands.'],
   bestiary: ['bestiary [<id>]: inspect known allies and malware hardware counterplay.'],
   workshop: ['workshop [<perk>]: view Silicon Scrap and toggle ~/.bashrc Rig Perks.'],
+  achievements: [
+    'achievements [export | sync | <category>]  (aliases: ach, trophies):',
+    '  achievements            list all 12 local trophies and their 1:1 Steamworks ACH_* keys.',
+    '  achievements <filter>   filter by category (campaign, combat, craft, mastery) or title.',
+    '  achievements export     print Steamworks-ready JSON payload for desktop/Steam migration.',
+    '  achievements sync       push unlocked ACH_* keys to the Tauri + Steamworks bridge.',
+  ],
 };
 MAN['.'] = MAN.source ?? [];
 MAN.logout = MAN.exit ?? [];
@@ -141,6 +148,8 @@ MAN.code = MAN.edit ?? [];
 MAN['docker-compose'] = MAN.docker ?? [];
 MAN.dossier = MAN.bestiary ?? [];
 MAN.rig = MAN.workshop ?? [];
+MAN.ach = MAN.achievements ?? [];
+MAN.trophies = MAN.achievements ?? [];
 
 const ALIASES: Record<string, EnemyType> = {
   virus: 'virus', worm: 'worm', trojan: 'trojan', gargoyle: 'trojan', bug: 'bug', exploit: 'exploit',

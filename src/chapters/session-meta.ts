@@ -1,10 +1,19 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { maxHpFor } from '../game/bestiary.js';
 import type { Step } from '../game/shell.js';
+import {
+  ACHIEVEMENT_SPECS,
+  exportSteamAchievementPayload,
+  formatAchievementLines,
+  freshAchievementStore,
+  presentAchievement,
+  readAchievements,
+} from './achievements.js';
 import { GRIMOIRE_ENTRIES, dossierOf, RIG_PERKS, purchaseOrTogglePerk, readMetagame } from './catalog.js';
 import { levelScript } from './script.js';
 import { emptyStep, okStep, type ChapterState } from './session-state.js';
 import { getChecklist, liveLintFeedback, refreshExitGates } from './session-rules.js';
+import { isTauriDesktop, syncSteamAchievements } from './steam-bridge.js';
 
 function allyVoice(g: ChapterState): { allyId: string; allySpeaker: string; allySock: string } {
   const allyId = g.pack.manifest.allyNpc.id;
@@ -144,6 +153,9 @@ export function cmdWorkshop(g: ChapterState, args: string[]): Step {
     const sub = args[0] ?? '';
     const targetId = sub === 'buy' || sub === 'toggle' ? (args[1] ?? '') : sub;
     if (targetId) {
+      if (g.preview || g.lab !== null) {
+        return emptyStep(1, '[WORKSHOP] Persistent ~/.bashrc upgrades are disabled in preview/lab sessions.\n');
+      }
       const res = purchaseOrTogglePerk(targetId);
       // Apply live if purchased/enabled while inside Level 1 (/home/dev)
       if (res.ok && g.rt.spec.mechanic === 'hub') {
@@ -156,7 +168,11 @@ export function cmdWorkshop(g: ChapterState, args: string[]): Step {
           }
         }
       }
-      return res.ok ? okStep(`[WORKSHOP] ${res.message}\n`) : emptyStep(1, `[WORKSHOP] ${res.message}\n`);
+      const achEvents = res.unlockedAchievements ?? [];
+      const achNote = formatAchievementLines(achEvents);
+      return res.ok
+        ? okStep(`[WORKSHOP] ${res.message}\n${achNote}`, [...achEvents])
+        : emptyStep(1, `[WORKSHOP] ${res.message}\n`);
     }
 
     const meta = readMetagame();
@@ -172,3 +188,42 @@ export function cmdWorkshop(g: ChapterState, args: string[]): Step {
         `Usage: \`workshop <perk-id>\` to unlock or toggle.\n`,
     );
   }
+
+export function cmdAchievements(g: ChapterState, args: string[]): Step {
+  const sub = (args[0] ?? '').toLowerCase();
+  const isolated = g.preview || g.lab !== null;
+  if (sub === 'export' || sub === 'json' || sub === 'sync') {
+    const payload = exportSteamAchievementPayload(isolated ? freshAchievementStore() : undefined);
+    if (sub === 'sync' && !isolated) {
+      void syncSteamAchievements(payload.steamApiNames);
+    }
+    const modeNote =
+      sub === 'sync'
+        ? isTauriDesktop()
+          ? `[STEAMWORKS BRIDGE] Dispatched ${payload.steamApiNames.length} ACH_* key(s) to Tauri desktop runtime.\n`
+          : `[LOCAL -> STEAM READY] ${payload.steamApiNames.length}/${payload.totalCount} ACH_* key(s) queued locally (launch Tauri Steam build to push to SteamUserStats).\n`
+        : '';
+    return okStep(`${modeNote}${JSON.stringify(payload, null, 2)}\n`);
+  }
+
+  const store = isolated ? freshAchievementStore() : readAchievements();
+  const unlockedCount = Object.keys(store.unlocked).length;
+  const rows = ACHIEVEMENT_SPECS.filter(
+    (a) =>
+      !sub ||
+      a.category.toLowerCase().includes(sub) ||
+      a.id.includes(sub) ||
+      a.steamApiName.toLowerCase().includes(sub) ||
+      (!a.secret || Boolean(store.unlocked[a.id])) && a.title.toLowerCase().includes(sub),
+  ).map((a) => {
+    const view = presentAchievement(a, store);
+    const stamp = view.unlocked ? '[★ UNLOCKED]' : '[  LOCKED  ]';
+    return `  ${stamp} ${view.title.padEnd(28, ' ')} [${view.category}] (${view.steamApiName})\n                ${view.description}`;
+  });
+
+  return okStep(
+    `=== LOCAL ACHIEVEMENTS (${unlockedCount}/${ACHIEVEMENT_SPECS.length} UNLOCKED · 1:1 STEAMWORKS READY) ===\n` +
+      `${rows.join('\n') || '  (no matching achievement)'}\n` +
+      `Tip: run \`achievements export\` for Steamworks JSON or \`achievements sync\` in the desktop build.\n`,
+  );
+}
