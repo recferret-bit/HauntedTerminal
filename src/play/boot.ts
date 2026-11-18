@@ -2,6 +2,14 @@ import { AssetRegistry } from '../assets/asset-registry.js';
 import { CHAPTER_MANIFESTS, getChapterPack } from '../chapters/catalog.js';
 import { createChapterSession, isChapterSession } from '../chapters/chapter-session.js';
 import { readDraftPack } from '../chapters/draft.js';
+import { hydrateFromDesktopSaveBundle } from '../chapters/portable-save.js';
+import {
+  isTauriDesktop,
+  querySteamStatus,
+  requestSteamFloatingKeyboard,
+  wireExternalLinksForDesktop,
+  wireSteamWishlistLink,
+} from '../chapters/steam-bridge.js';
 import type { ChapterManifest } from '../chapters/types.js';
 import { createSession, type Session } from '../game/session.js';
 import { ComicStage } from '../renderer/comic-stage.js';
@@ -75,6 +83,8 @@ export async function bootPlay(): Promise<Play> {
   const draft = urlParams.get('draft') === '1' ? readDraftPack(chapterParam) : null;
   const pack = draft ?? getChapterPack(chapterParam);
   const lab = labConfigFor(urlParams, draft !== null, chapterParam);
+  const isPreview = draft !== null || urlParams.get('preview') === '1';
+  if (!isPreview && !lab) await hydrateFromDesktopSaveBundle();
   const chapterManifest = lab?.classic ? undefined : pack?.manifest;
   const session: Session = lab?.classic
     ? createSession({ lab })
@@ -82,7 +92,7 @@ export async function bootPlay(): Promise<Play> {
       ? createChapterSession({
           chapterId: chapterParam,
           pack,
-          preview: draft !== null || urlParams.get('preview') === '1',
+          preview: isPreview,
           startLevelId: levelParam,
           tacticalMode: urlParams.get('tactical') === '1',
           chaosMode: urlParams.get('chaos') === '1',
@@ -95,8 +105,41 @@ export async function bootPlay(): Promise<Play> {
     session.debugTeleport(floorParam as 1 | 2 | 3 | 4 | 5);
   }
   if (urlParams.get('dev') === '1') dom.inspectorEl.classList.remove('hidden');
+  wireExternalLinksForDesktop();
   if (dom.mastheadSubEl) {
-    dom.mastheadSubEl.textContent = chapterManifest ? `${chapterManifest.badge} // ${chapterManifest.title}` : 'CLASSIC FLOORS';
+    const label = chapterManifest ? `${chapterManifest.badge} // ${chapterManifest.title}` : 'CLASSIC FLOORS';
+    if (!isPreview && !lab) {
+      const compact = chapterManifest?.badge ?? 'CLASSIC';
+      const chapLink = document.createElement('a');
+      chapLink.href = '/chapters.html';
+      chapLink.textContent = 'Chapters';
+      const wishLink = document.createElement('a');
+      wishLink.id = 'masthead-wishlist-link';
+      wishLink.textContent = '★ Steam';
+      wireSteamWishlistLink(wishLink);
+      dom.mastheadSubEl.replaceChildren(
+        document.createTextNode(`${compact} · `),
+        chapLink,
+        document.createTextNode(' · '),
+        wishLink,
+      );
+    } else {
+      dom.mastheadSubEl.textContent = label;
+    }
+  }
+  if (!isPreview && !lab && isTauriDesktop()) {
+    void querySteamStatus().then((st) => {
+      if (!st.steamDeck) return;
+      dom.termEl.addEventListener('pointerup', () => {
+        const r = dom.termEl.getBoundingClientRect();
+        void requestSteamFloatingKeyboard({
+          x: Math.round(r.left),
+          y: Math.round(r.top),
+          width: Math.max(200, Math.round(r.width)),
+          height: Math.max(80, Math.round(r.height)),
+        });
+      });
+    });
   }
 
   const debugGive = (session as Session & { debugGive?: DebugGive }).debugGive?.bind(session);

@@ -3,11 +3,61 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Haunted Terminal</title>
+    <meta name="theme-color" content="#140f12" />
+    <meta
+      name="description"
+      content="Haunted Terminal — a 1995 Comix Zone-inspired game where the only controller is a Unix terminal. Play the full 11-level Chapter 1 Demo free in your browser, download tagged desktop builds, and join the Steam Coming Soon waitlist."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Haunted Terminal — Play Free Demo &amp; Wishlist on Steam" />
+    <meta
+      property="og:description"
+      content="Pulled inside your PC. Your only weapon is a real Unix terminal. Play all 11 Chapter 1 sectors free in your browser, unlock 12 Steamworks-ready ACH_* trophies, or download native desktop builds."
+    />
+    <meta property="og:image" content="/comix/chapter-01-kiroween/page-01.png" />
+    <meta property="og:image:alt" content="Haunted Terminal Issue #1 comic cover — developer pulled into tangled dark wires alongside Kiro Ghost" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Haunted Terminal — Play Free Demo &amp; Wishlist on Steam" />
+    <meta
+      name="twitter:description"
+      content="A 1995 Comix Zone action-puzzle game controlled entirely by real POSIX, HTML/CSS, JS, and Docker commands. Play Chapter 1 free now."
+    />
+    <meta name="twitter:image" content="/comix/chapter-01-kiroween/page-01.png" />
+    <meta name="twitter:image:alt" content="Haunted Terminal Issue #1 comic cover — developer pulled into tangled dark wires alongside Kiro Ghost" />
+    <title>Haunted Terminal — Play Free Demo &amp; Steam Coming Soon</title>
+    <link rel="preload" href="/fonts/chakra-petch-700-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23140f12'/%3E%3Crect x='2' y='3' width='12' height='9' fill='%23ffd166'/%3E%3Crect x='4' y='6' width='2' height='2' fill='%23140f12'/%3E%3Crect x='7' y='9' width='5' height='1' fill='%23ff6a13'/%3E%3C/svg%3E" />
     <script>
       (function () {
         var params = new URLSearchParams(location.search);
+        var p = location.pathname;
+        if (p === '/editor' || p.indexOf('/editor/') === 0) {
+          location.replace('/chapter-editor.html' + location.search + location.hash);
+          return;
+        }
+        if (p === '/comix-editor' || p.indexOf('/comix-editor/') === 0) {
+          location.replace('/comix-editor.html' + location.search + location.hash);
+          return;
+        }
+        if (p === '/terminal-lab' || p.indexOf('/terminal-lab/') === 0) {
+          location.replace('/terminal-lab.html' + location.search + location.hash);
+          return;
+        }
+        if (p === '/laptop-lab' || p.indexOf('/laptop-lab/') === 0) {
+          location.replace('/laptop-lab.html' + location.search + location.hash);
+          return;
+        }
+        if (p === '/play' || p.indexOf('/play/') === 0) {
+          var segs = p.split('/').filter(Boolean);
+          if (segs[1] === 'floor' && segs[2]) params.set('floor', segs[2]);
+          else if (segs[1]) params.set('chapter', decodeURIComponent(segs[1]));
+          if (segs[2] === 'floor' && segs[3]) params.set('floor', segs[3]);
+          else if (segs[2] && segs[1] !== 'floor') params.set('level', decodeURIComponent(segs[2]));
+          var pq = params.toString();
+          location.replace('/play.html' + (pq ? '?' + pq : '') + location.hash);
+          return;
+        }
         var play = ['chapter', 'level', 'floor', 'nointro', 'skipIntro', 'tactical', 'chaos', 'play', 'dev'].some(function (k) { return params.has(k); });
         if (!play) return;
         var parts = ['/play'];
@@ -22,87 +72,372 @@
   </head>
   <body>
     <script type="module" src="/src/hub/hub.ts"></script>
-    <main class="hub-shell">
+    <header class="hub-header-wrap">
+      <a class="skip-link" href="#main-heading">Skip to main content</a>
       <nav class="hub-nav" aria-label="Primary Navigation">
         <a class="hub-brand" href="/">
           <span class="hub-logo-badge">COMIX // TTY</span>
           <strong>HAUNTED <span>TERMINAL</span></strong>
         </a>
         <div class="hub-nav-links">
-          <a class="comic-btn primary" href="/play/chapter-01-kiroween">Play Kiroween</a>
-          <a class="comic-btn teal" href="/comic.html?chapter=chapter-01-kiroween">Read the Comix</a>
+          <a class="comic-btn primary" href="/play/chapter-01-kiroween">Play Free Demo</a>
+          <button type="button" class="comic-btn steam-cta" data-open-waitlist="1">★ Steam Coming Soon</button>
+          <a class="comic-btn teal" href="#desktop-builds">Desktop Builds</a>
+          <a class="comic-btn paper" href="#achievements-showcase">Achievements</a>
+          <a class="comic-btn paper" href="/comic.html?chapter=chapter-01-kiroween">6-Page Comix</a>
+          <a class="comic-btn paper" href="/chapters.html">Chapters &amp; Workshop</a>
         </div>
       </nav>
+    </header>
 
-      <section class="hero-panel">
+    <main class="hub-shell">
+      <section class="hero-panel funnel-hero" aria-labelledby="main-heading">
         <div class="hero-copy">
-          <span class="caption-tag">KIROWEEN CAMPAIGN // 11 LEVELS</span>
-          <h1>KIRO GHOST, THE BIG FOUR &amp; THE <span>MATRIX GREYBEARD</span>.</h1>
+          <div class="hero-kicker-row">
+            <span class="caption-tag">FREE BROWSER DEMO // 11 LEVELS</span>
+            <span class="caption-tag teal-tag" data-steam-status-tag="1">STEAM EDITION // COMING SOON</span>
+          </div>
+          <h1 id="main-heading" tabindex="-1">PULLED INSIDE YOUR PC. YOUR ONLY WEAPON IS A <span>UNIX TERMINAL</span>.</h1>
           <p>
-            Sucked into your computer into a dark tangle of wires and chips, you are found by
-            <strong>Kiro Ghost</strong>. Learn <code>ls</code>, <code>mv</code>, <code>cat</code>,
-            <code>ps</code>, and <code>kill</code>; raid 6 task levels for RAM &amp; GPU chips while the
-            <strong>Big Four</strong> (Anti-Gravy, Codec, Gork, Clod) laugh at and bully you; bring parts to the Hub
-            where a cigarette-smoking <strong>Old Bearded Matrix Coder</strong> reboots Kiro with open-weight models
-            to disable the Big Four; defeat Clod's Final Boss; and teleport home for the ultimate Father reveal!
+            A 1995 <em>Comix Zone</em>-styled action-puzzle adventure where every move, spell, and boss counterplay is real
+            POSIX, HTML/CSS, JavaScript, and Docker. Team up with <strong>Kiro Ghost</strong> and a cigarette-smoking
+            <strong>Old Bearded Matrix Coder</strong> to out-type the <strong>Big Four</strong> parody agents
+            (<strong>Anti-Gravy</strong>, <strong>Codec</strong>, <strong>Gork</strong>, <strong>Clod</strong>), reboot local
+            open-weight cores, and escape your own machine.
           </p>
           <div class="hero-cta-row">
-            <a class="comic-btn primary" href="/play/chapter-01-kiroween">
-              Launch Kiroween Campaign (11 Levels) →
+            <a class="comic-btn primary cta-lg" id="hero-play-cta" href="/play/chapter-01-kiroween">
+              ▶ Play Free Demo in Browser (Chapter 1 — 11 Levels) →
             </a>
-            <a class="comic-btn teal" href="/comic.html?chapter=chapter-01-kiroween">
-              Read 6-Page Kiroween Comix
+            <span id="hero-resume-slot"></span>
+            <button type="button" class="comic-btn steam-cta cta-lg" id="open-steam-waitlist-btn" data-open-waitlist="1">
+              ★ Wishlist on Steam (Coming Soon)
+            </button>
+            <a class="comic-btn teal cta-lg" id="hero-desktop-cta" href="#desktop-builds">
+              ⬇ Tagged Desktop Builds
             </a>
           </div>
+          <div class="hero-telemetry" id="hero-telemetry-strip" aria-live="polite">
+            <span class="telemetry-chip">Demo Progress: <strong>0/11 Sectors</strong></span>
+            <span class="telemetry-chip">Local Trophies: <strong>0/12 ACH_*</strong></span>
+            <span class="telemetry-chip">Runtime: <strong>WebGL + Offline Fonts</strong></span>
+          </div>
         </div>
-        <a class="hero-art-frame" href="/comic.html?chapter=chapter-01-kiroween" title="Open Kiroween Comix Reader">
-          <img src="/comix/chapter-01-kiroween/page-01.png" alt="Kiroween Issue #1 Page 1 Comix Preview" />
-          <span class="hero-art-stamp">6 FULL COMIX PAGES</span>
-        </a>
+
+        <div class="hero-preview-stack">
+          <a class="hero-art-frame" href="/comic.html?chapter=chapter-01-kiroween">
+            <img
+              src="/comix/chapter-01-kiroween/page-01.png"
+              alt="Haunted Terminal Issue #1 Page 1 — pulled into a tangle of dark wires and Kiro Ghost"
+              fetchpriority="high"
+              width="768"
+              height="1024"
+            />
+            <span class="hero-art-stamp">100% PROCEDURAL 3D · READ 6-PAGE COMIX →</span>
+          </a>
+          <div class="tty-mini-card" role="region" aria-label="Sample In-Game Terminal Commands">
+            <div class="tty-mini-head"><span>TTY0 // LIVE MECHANIC PREVIEW</span><span>ZERO FAKE QTEs</span></div>
+            <span class="tty-mini-line"><b>$ ls -la</b> &rarr; <em>Lantern sweeps room, exposing hidden .spycam</em></span>
+            <span class="tty-mini-line"><b>$ chmod -x price_skimmer.bin</b> &rarr; <em>Trojan petrified to stone!</em></span>
+            <span class="tty-mini-line"><b>$ kiro load qwen</b> &rarr; <em>Air-gapped .gguf silences Anti-Gravy!</em></span>
+          </div>
+        </div>
       </section>
 
-      <div class="section-head">
-        <h2>Choose Your Entry Door</h2>
-        <span>Play the campaign, or read the issue first.</span>
+      <div class="section-head" id="funnel-steps">
+        <h2>How the Demo-to-Steam Funnel Works</h2>
+        <span>Zero install friction in the browser today &rarr; native Steamworks edition next.</span>
       </div>
 
-      <section class="door-grid">
+      <section class="funnel-steps-grid" aria-labelledby="funnel-steps">
+        <article class="funnel-step-card">
+          <span class="funnel-step-num">STEP 01 // PLAY FREE NOW</span>
+          <h3>Full 11-Level Chapter 1 Browser Demo</h3>
+          <p>
+            Jump straight into Issue #1 with zero account wall or download wait: 1 onboarding tutorial, 6 real coding &amp;
+            sysadmin sectors, 3 Matrix Greybeard hubs, 1 Kernel Boss, plus animated 3D intro &amp; outro cinematics.
+          </p>
+        </article>
+        <article class="funnel-step-card">
+          <span class="funnel-step-num">STEP 02 // EARN &amp; PORT</span>
+          <h3>12 Local Achievements (1:1 Steamworks Keys)</h3>
+          <p>
+            Every trophy you unlock in the browser or desktop demo is stored locally with its exact
+            <code>ACH_*</code> Steamworks API key and exports as a portable JSON bundle ready for Steam Auto-Cloud sync.
+          </p>
+        </article>
+        <article class="funnel-step-card">
+          <span class="funnel-step-num">STEP 03 // DESKTOP &amp; STEAM</span>
+          <h3>GitHub Tagged Builds &amp; Steam Next Fest</h3>
+          <p>
+            Prefer a native offline window? Download tagged Tauri v2 desktop builds from GitHub Releases today and join the
+            Steam Coming Soon waitlist for the Next Fest Demo &amp; Chapters 2–5 launch.
+          </p>
+        </article>
+      </section>
+
+      <div class="section-head" id="steam-funnel">
+        <h2>Free Chapter 1 Demo vs. Full Steam Edition Roadmap</h2>
+        <span>Startup roadmap built on a 100% procedural, zero-third-party-art 3D comic engine.</span>
+      </div>
+
+      <section class="edition-grid" aria-labelledby="steam-funnel">
+        <article class="edition-card">
+          <div>
+            <div class="door-card-top">
+              <span class="door-kicker teal">AVAILABLE FREE NOW</span>
+              <span>Web + GitHub Tags + Steam Demo</span>
+            </div>
+            <h3>Chapter 1: Kiroween Free Demo</h3>
+            <ul class="edition-list" role="list">
+              <li><strong>11 Zero-Death-Verified Sectors:</strong> POSIX files, permissions, signals, HTML/CSS grid repair, JS cart fix, Dockerfile &amp; Compose orchestration.</li>
+              <li><strong>Story &amp; 3D Cinematics:</strong> 6-page rendered comic issue + real-time 3D orthographic intro &amp; Father-reveal finale.</li>
+              <li><strong>Local Metagame &amp; 12 Trophies:</strong> Silicon Scrap, persistent <code>~/.bashrc</code> Rig Perks, and 12 local <code>ACH_*</code> achievements.</li>
+              <li><strong>100% Offline-Ready Desktop:</strong> Self-hosted OFL fonts and downloadable Tauri desktop binaries on GitHub Release tags.</li>
+            </ul>
+          </div>
+          <div class="hero-cta-row">
+            <a class="comic-btn primary" href="/play/chapter-01-kiroween">Play Chapter 1 Demo →</a>
+            <a class="comic-btn paper" href="/comic.html?chapter=chapter-01-kiroween">Read 6-Page Issue</a>
+          </div>
+        </article>
+
+        <article class="edition-card steam-edition">
+          <div>
+            <div class="door-card-top">
+              <span class="door-kicker orange">COMING SOON TO STEAM</span>
+              <span>Full Commercial Release</span>
+            </div>
+            <h3>Haunted Terminal — Full Steam Edition</h3>
+            <ul class="edition-list" role="list">
+              <li><strong>Chapters 2–5 Campaign Arc:</strong> SSH Tunnels &amp; Port Knocking, Git Rebase Time-Loops, Deadlock SQL/Redis Daemons, and Cluster Bosses.</li>
+              <li><strong>Native Steamworks Integration:</strong> Live Steam Achievements (auto-syncing your Chapter 1 <code>ACH_*</code> unlocks), cross-OS Steam Auto-Cloud saves, and per-sector Speedrun Leaderboards.</li>
+              <li><strong>Steam Workshop &amp; Creator Studio:</strong> Author and share custom declarative chapters &amp; 3D comics using the built-in Chapter Studio and Comix Studio.</li>
+              <li><strong>Procedural Engine Moat:</strong> Zero external meshes, textures, or licensed art — deterministic procedural assets keep macOS &amp; Windows native installers under 15 MB.</li>
+            </ul>
+          </div>
+          <div class="hero-cta-row">
+            <button type="button" class="comic-btn primary" data-open-waitlist="1">
+              ★ Wishlist / Get Steam Launch Alert →
+            </button>
+            <a class="comic-btn teal" href="https://github.com/recferret-bit/HauntedTerminal/releases" target="_blank" rel="noopener noreferrer">
+              Follow GitHub Releases ↗
+            </a>
+          </div>
+        </article>
+      </section>
+
+      <div class="section-head" id="desktop-builds">
+        <h2>Dedicated Downloadable Desktop Builds (Tauri + Steamworks)</h2>
+        <span>Every <code>v*</code> GitHub tag builds native offline installers + SHA-256 checksums.</span>
+      </div>
+
+      <section class="os-build-grid" aria-labelledby="desktop-builds">
+        <article class="os-card">
+          <div>
+            <div class="door-card-top">
+              <span class="door-kicker">MACOS</span>
+              <span>Universal / Apple Silicon</span>
+            </div>
+            <h3>macOS Native App (.dmg)</h3>
+            <p>WebKit Tauri v2 Game bundle with bundled offline fonts, <code>app_data_dir</code> Auto-Cloud save sync, and Steamworks bridge.</p>
+            <code>Haunted-Terminal_*_universal.dmg</code>
+          </div>
+          <a class="comic-btn primary" href="https://github.com/recferret-bit/HauntedTerminal/releases/latest" target="_blank" rel="noopener noreferrer">
+            Download macOS Release ↗
+          </a>
+        </article>
+
+        <article class="os-card">
+          <div>
+            <div class="door-card-top">
+              <span class="door-kicker blue">WINDOWS</span>
+              <span>x64 Installer</span>
+            </div>
+            <h3>Windows Setup (.msi / .exe)</h3>
+            <p>Compact native WebView2 desktop executable (&lt; 25 MB) ready for offline play and Steam depot packaging.</p>
+            <code>Haunted-Terminal_*_x64-setup.exe</code>
+          </div>
+          <a class="comic-btn primary" href="https://github.com/recferret-bit/HauntedTerminal/releases/latest" target="_blank" rel="noopener noreferrer">
+            Download Windows Release ↗
+          </a>
+        </article>
+
+        <article class="os-card">
+          <div>
+            <div class="door-card-top">
+              <span class="door-kicker teal">LINUX &amp; STEAM DECK</span>
+              <span>x86_64</span>
+            </div>
+            <h3>Linux (.AppImage / .deb)</h3>
+            <p>Self-contained AppImage &amp; Debian package tested for offline Linux workstations and Steam Deck desktop/gaming mode.</p>
+            <code>Haunted-Terminal_*_amd64.AppImage</code>
+          </div>
+          <a class="comic-btn primary" href="https://github.com/recferret-bit/HauntedTerminal/releases/latest" target="_blank" rel="noopener noreferrer">
+            Download Linux Release ↗
+          </a>
+        </article>
+      </section>
+
+      <section class="portability-bar" aria-label="Browser to Desktop Save Portability">
+        <div class="portability-copy">
+          <strong>⇄ BROWSER ↔ DESKTOP ↔ STEAM SAVE &amp; TROPHY PORTABILITY</strong>
+          <span>
+            Cleared Chapter 1 in your browser? Export your progress, Silicon Scrap, <code>~/.bashrc</code> perks, and
+            <code>ACH_*</code> achievements as JSON to import straight into the downloaded desktop build (persisted to
+            <code>haunted-terminal-save.json</code> for cross-OS Steam Auto-Cloud sync).
+          </span>
+        </div>
+        <div class="portability-actions">
+          <button type="button" class="comic-btn teal" id="export-save-btn">⬇ Export Save &amp; Trophies (.json)</button>
+          <button type="button" class="comic-btn paper" id="import-save-btn">⬆ Import Save Bundle (.json)</button>
+          <input type="file" id="import-save-input" accept="application/json,.json" hidden />
+        </div>
+        <div id="save-portability-feedback" class="save-feedback" role="status" aria-live="polite" hidden></div>
+      </section>
+
+      <div class="section-head" id="achievements-showcase">
+        <h2>Local Achievements Trophy Rack (Steamworks-Ready)</h2>
+        <span>Type <code>achievements</code> or <code>achievements export</code> in-game at any time.</span>
+      </div>
+
+      <section class="binder-panel" id="achievements-rack-host" aria-labelledby="achievements-showcase"></section>
+
+      <div class="section-head" id="startup-thesis">
+        <h2>Why It Works — Audience, Unit Economics &amp; Steam FAQ</h2>
+        <span>Real CLI muscle memory meets zero-server-cost indie distribution.</span>
+      </div>
+
+      <section class="funnel-steps-grid" aria-labelledby="startup-thesis">
+        <article class="funnel-step-card">
+          <span class="funnel-step-num">AUDIENCE // PROVEN NICHE</span>
+          <h3>Zachtronics Fans, Devs &amp; CS Learners</h3>
+          <p>
+            Built for players of <em>TIS-100</em>, <em>Hacknet</em>, and <em>Shenzhen I/O</em> plus students and self-taught
+            engineers who want tactile fluency in real POSIX, HTML/CSS, JS, and Docker without dry video lectures.
+          </p>
+        </article>
+        <article class="funnel-step-card">
+          <span class="funnel-step-num">ECONOMICS // $0 SERVER CAC</span>
+          <h3>100% Client-Side Browser Demo Funnel</h3>
+          <p>
+            The VFS, shell, JS Worker, and sandboxed-iframe validator run entirely in the player's browser: 100,000 viral
+            demo players cost $0 in backend servers while converting directly into Steam wishlists.
+          </p>
+        </article>
+        <article class="funnel-step-card">
+          <span class="funnel-step-num">MOAT // DECLARATIVE ENGINE</span>
+          <h3>Zero Art Royalties &amp; Creator Studios</h3>
+          <p>
+            Every 3D character, shader, particle, and sound is generated by code, paired with in-browser Chapter &amp; Comix
+            Studios ready to power Steam Workshop community campaigns and classroom packs.
+          </p>
+        </article>
+      </section>
+
+      <section class="faq-stack" aria-label="Steam Release and Gameplay Frequently Asked Questions">
+        <details class="comic-faq" name="steam-faq" open>
+          <summary>Will my browser demo saves and 12 ACH_* achievements transfer to Steam?</summary>
+          <p>
+            Yes. Every sector rank, Silicon Scrap perk, and local trophy uses its exact 1:1 Steamworks API key
+            (<code>ACH_FIRST_BOOT</code> through <code>ACH_ZERO_PANIC_RUN</code>). Export <code>haunted-terminal-save.json</code>
+            here (or on the Chapter 1 Victory Screen) and import it in the desktop/Steam build to sync automatically to
+            <code>SteamUserStats</code> and Steam Auto-Cloud.
+          </p>
+        </details>
+        <details class="comic-faq" name="steam-faq">
+          <summary>Are the Unix, JavaScript, and Docker commands real or scripted QTEs?</summary>
+          <p>
+            Real syntax and real execution. You navigate a live virtual filesystem with pipes, globs, redirects, octals
+            (<code>chmod 755</code> / <code>chmod -x</code>), and signals (<code>kill -9</code>), repair live HTML/CSS and
+            JavaScript inside a sandboxed split editor, and author valid <code>Dockerfile</code> and
+            <code>docker-compose.yml</code> specs verified by deterministic gates.
+          </p>
+        </details>
+        <details class="comic-faq" name="steam-faq">
+          <summary>Does the desktop game run 100% offline and on Linux / Steam Deck?</summary>
+          <p>
+            Yes. All runtime fonts (<code>Chakra Petch</code> &amp; <code>IBM Plex Mono</code> SIL OFL <code>.woff2</code>),
+            procedural 3D assets, and WebAudio effects are bundled locally with zero CDN calls, verified on every build by
+            <code>npm run desktop:verify</code>. Linux <code>.AppImage</code> / <code>.deb</code> builds run natively on SteamOS
+            with physical or Steam Virtual Keyboard input.
+          </p>
+        </details>
+      </section>
+
+      <div class="section-head" id="entry-doors">
+        <h2>Choose Your Entry Door</h2>
+        <span>Jump into the campaign, read Issue #1, select an exact sector, or inspect the creator studios.</span>
+      </div>
+
+      <section class="door-grid" aria-labelledby="entry-doors">
         <a class="door-card" href="/play/chapter-01-kiroween?nointro=1">
           <div>
             <div class="door-card-top">
-              <span class="door-kicker orange">11 PLAYABLE LEVELS</span>
-              <span>Kiroween #1</span>
+              <span class="door-kicker orange">QUICK LAUNCH</span>
+              <span>Skip Intro</span>
             </div>
-            <h3>Issue #1: Kiroween — Open Weights &amp; Family Ties</h3>
+            <h3>Issue #1: Kiroween Campaign</h3>
             <p>
-              Wake in dark wires &amp; chips with Kiro Ghost, learn <code>ls</code>/<code>mv</code>/<code>cat</code>/<code>ps</code>/<code>kill</code>,
-              raid 6 sectors for RAM + GPU chips while the Big Four laugh and bully you, reboot Kiro at the Hub with the
-              cigarette-smoking Old Bearded Matrix Coder, defeat Clod, and discover the Father twist!
+              Drop directly onto Floor 01 with Kiro Ghost, raid 6 sectors for RAM &amp; GPU tensor chips, reboot open-weight
+              models with the Matrix Greybeard, and topple Clod's Kernel Boss.
             </p>
           </div>
-          <span class="door-go">Play Kiroween (#1) →</span>
+          <span class="door-go">Quick-Play Kiroween (#1) →</span>
         </a>
 
         <a class="door-card" href="/comic.html?chapter=chapter-01-kiroween">
           <div>
             <div class="door-card-top">
-              <span class="door-kicker">COMIX ZONE READER</span>
+              <span class="door-kicker">COMIX READER</span>
               <span>Pages 1–6</span>
             </div>
-            <h3>Kiroween 6-Page Comix Story</h3>
+            <h3>6-Page Issue #1 Comic</h3>
             <p>
-              Read the 6-page Kiroween comic issue rendered with real 3D <code>prop.kiro_ghost</code>,
-              <code>prop.greybeard_rig</code>, the Big Four, Clod &amp; the Kernel Boss, and the Father-Son Unicorn ending!
+              Read the full 6-page Kiroween comic issue rendered from real 3D procedural stage actors, speech balloons, and the
+              Father-Son ending twist.
             </p>
           </div>
-          <span class="door-go">Read Kiroween Comix →</span>
+          <span class="door-go">Read Issue #1 Comix →</span>
+        </a>
+
+        <a class="door-card" href="/chapters.html?chapter=chapter-01-kiroween">
+          <div>
+            <div class="door-card-top">
+              <span class="door-kicker teal">METAGAME &amp; SELECTOR</span>
+              <span>11 Sectors</span>
+            </div>
+            <h3>Level Select, Rig Workshop &amp; Grimoire</h3>
+            <p>
+              Replay any sector for an <code>S</code> Rank, toggle Tactical Mode or Chaos Contracts, equip
+              <code>~/.bashrc</code> perks, and browse the Command Grimoire &amp; Malware Dossier.
+            </p>
+          </div>
+          <span class="door-go">Open Selector &amp; Workshop →</span>
+        </a>
+
+        <a class="door-card" href="/dev.html">
+          <div>
+            <div class="door-card-top">
+              <span class="door-kicker blue">BUILT-IN TOOLS</span>
+              <span>Studios &amp; Labs</span>
+            </div>
+            <h3>Creator Studios &amp; Asset Storybook</h3>
+            <p>
+              Explore the 3D Asset Storybook (<code>/storybook.html</code>), Laptop Lab (<code>/laptop-lab</code>), Cinematic
+              Studio, and the foundation of our upcoming Steam Workshop modding tools.
+            </p>
+          </div>
+          <span class="door-go">Inspect Creator Tools →</span>
         </a>
       </section>
+    </main>
 
-      <section class="pill-box" aria-label="Parody and Non-Affiliation Notice">
+    <footer class="hub-footer-wrap">
+      <section class="pill-box" aria-labelledby="parody-notice-heading">
         <div class="section-head">
-          <h2>◈ Kiro Ghost Parody &amp; Non-Affiliation Notice</h2>
-          <span>Type <code>kiro disclaimer</code> in-game at any time</span>
+          <h2 id="parody-notice-heading">◈ Kiro Ghost Parody &amp; Non-Affiliation Notice</h2>
+          <span>MIT Open Source · Type <code>kiro disclaimer</code> in-game at any time</span>
         </div>
         <p>
           The "Big Four" AI agents (<strong>Anti-Gravy</strong>, <strong>Codec</strong>, <strong>Gork</strong>, and <strong>Clod</strong>) are
@@ -111,6 +446,81 @@
           are included strictly for educational gameplay.
         </p>
       </section>
-    </main>
+    </footer>
+
+    <dialog id="steam-waitlist-dialog" class="comic-dialog" closedby="any" aria-labelledby="waitlist-dialog-title">
+      <div class="dialog-inner">
+        <div class="dialog-head">
+          <div>
+            <span class="door-kicker orange">STEAM COMING SOON // LAUNCH PASS</span>
+            <h2 id="waitlist-dialog-title">Wishlist &amp; Next Fest Notification</h2>
+          </div>
+          <button type="button" class="comic-btn paper" id="waitlist-close-btn" aria-label="Close Steam waitlist dialog">✕</button>
+        </div>
+        <p class="dialog-lead">
+          Our Steamworks Partner store page &amp; free Chapter 1 Steam Demo are in preparation. Save your target platform pass
+          below and watch GitHub Releases to grab every tagged desktop build the moment it drops.
+        </p>
+
+        <form id="steam-waitlist-form">
+          <div class="waitlist-field">
+            <label for="waitlist-email">Email for Launch &amp; Next Fest Alert <span aria-hidden="true">*</span></label>
+            <span id="waitlist-email-hint" class="field-hint">Format: dev@domain.tld (stored locally until newsletter cutover; zero trackers)</span>
+            <input
+              type="email"
+              id="waitlist-email"
+              name="email"
+              class="waitlist-input"
+              required
+              autofocus
+              autocomplete="email"
+              inputmode="email"
+              autocorrect="off"
+              autocapitalize="none"
+              spellcheck="false"
+              enterkeyhint="done"
+              placeholder="you@domain.tld"
+              aria-describedby="waitlist-email-hint"
+              data-error="waitlist-email-error"
+            />
+            <div id="waitlist-email-error" class="field-error-msg">
+              <span role="img" aria-label="Error">❌</span> Enter an email address in the format you@example.com.
+            </div>
+          </div>
+
+          <div class="waitlist-field">
+            <label for="waitlist-platform">Preferred Desktop / Handheld Target</label>
+            <select id="waitlist-platform" name="platform" class="waitlist-select">
+              <option value="macos">macOS (.dmg Universal / Apple Silicon)</option>
+              <option value="windows">Windows 10/11 (.msi / .exe)</option>
+              <option value="linux-deck">Linux / SteamOS Steam Deck (.AppImage / .deb)</option>
+            </select>
+          </div>
+
+          <fieldset class="waitlist-checks">
+            <legend>Notify me about</legend>
+            <label><input type="checkbox" id="waitlist-chk-steam" name="notify_steam" value="1" checked /> <span>Steam "Coming Soon" Store Page &amp; Wishlist launch</span></label>
+            <label><input type="checkbox" id="waitlist-chk-fest" name="notify_fest" value="1" checked /> <span>Free Chapter 1 Steam Demo &amp; Steam Next Fest</span></label>
+            <label><input type="checkbox" id="waitlist-chk-tags" name="notify_tags" value="1" checked /> <span>New <code>v*</code> tagged Tauri desktop builds on GitHub</span></label>
+          </fieldset>
+
+          <p class="waitlist-note">
+            <strong>Privacy-first local mode:</strong> Haunted Terminal ships zero third-party analytics or ad scripts. Saving stores your Launch Pass in browser storage (exportable as JSON) while you follow live <code>v*</code> releases on GitHub.
+          </p>
+
+          <div id="waitlist-dialog-status" class="save-feedback" role="status" aria-live="polite" hidden></div>
+
+          <div class="dialog-actions">
+            <button type="submit" class="comic-btn primary">★ Save Steam Launch Pass</button>
+            <div class="dialog-secondary-actions">
+              <button type="button" class="comic-btn teal" id="waitlist-export-btn">Export Pass (.json)</button>
+              <a class="comic-btn paper" href="https://github.com/recferret-bit/HauntedTerminal/releases" target="_blank" rel="noopener noreferrer">
+                Watch GitHub Tags ↗
+              </a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </dialog>
   </body>
 </html>

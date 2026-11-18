@@ -1,6 +1,7 @@
 import '../styles/hub.css';
 import '../styles/comix-reader.css';
 import { buildPlayUrl, CHAPTER_MANIFESTS, getChapterComix, getChapterManifest } from '../chapters/catalog.js';
+import { wireExternalLinksForDesktop, wireSteamWishlistLink } from '../chapters/steam-bridge.js';
 import type { ComixPageSpec, ComixStorySpec } from '../chapters/types.js';
 import { escHtml as esc } from '../renderer/html-escape.js';
 import { sheetHtml, shellHtml } from './comix-dom.js';
@@ -130,6 +131,8 @@ function missing(mount: HTMLElement, chapterId: string): void {
 function boot(): void {
   const mount = document.getElementById('reader-mount');
   const playCta = document.getElementById('reader-play-cta') as HTMLAnchorElement | null;
+  wireExternalLinksForDesktop();
+  wireSteamWishlistLink(document.getElementById('reader-wishlist-cta') as HTMLAnchorElement | null);
   if (!mount) return;
   const params = new URLSearchParams(location.search);
   const chapterId = params.get('chapter') ?? CHAPTER_MANIFESTS[0]?.id ?? '';

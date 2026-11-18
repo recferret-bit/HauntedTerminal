@@ -1,3 +1,10 @@
-# Netlify: the game is one HTML page served under /play/<chapter>/<level> (see playPaths in vite.config.ts).
-/play        /play.html  200
-/play/*      /play.html  200
+# Netlify SPA route rewrites (mirrors playPaths in vite.config.ts and materializePlayStaticRoutes in scripts/desktop/).
+/play            /play.html            200
+/play/*          /play.html            200
+/laptop-lab      /laptop-lab.html      200
+/editor          /chapter-editor.html  200
+/editor/*        /chapter-editor.html  200
+/comix-editor    /comix-editor.html    200
+/comix-editor/*  /comix-editor.html    200
+/terminal-lab    /terminal-lab.html    200
+/terminal-lab/*  /terminal-lab.html    200

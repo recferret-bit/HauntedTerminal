@@ -1,3 +1,4 @@
+import { forwardSteamAchievement } from '../chapters/steam-bridge.js';
 import type { KernelEvent } from '../contracts/events.js';
 import type { GameSnapshot, TickResult } from '../game/types.js';
 import { colourise } from '../ui/terminal.js';
@@ -79,6 +80,10 @@ function applyEvents(play: Play, events: KernelEvent[], snap: GameSnapshot, prin
         break;
       case 'GAME_ENDED':
         play.beginEnding({ rank: ev.rank, timeSec: ev.timeSec, commands: ev.commands, shortcuts: snap.shortcuts });
+        break;
+      case 'ACHIEVEMENT_UNLOCKED':
+        play.hud?.achievement(ev);
+        void forwardSteamAchievement(ev.steamApiName);
         break;
       default:
         break;
