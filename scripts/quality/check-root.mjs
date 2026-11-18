@@ -7,6 +7,7 @@ import { execFileSync } from 'node:child_process';
 
 /** Folders allowed at the root, with what belongs in them. */
 const DIRS = {
+  '.github': 'GitHub Actions workflows (tagged desktop release builds)',
   '.kiro': 'Kiro steering, skills, specs, hooks, settings',
   chapters: 'LEVEL GEN data: one folder per chapter',
   comix: 'declarative animated 3D comix sequences: one folder per comix',
