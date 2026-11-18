@@ -89,6 +89,7 @@ Always run before declaring work done (plus targeted suites for areas touched):
   - Visual audit (qa): `node scripts/harness/visual-audit.mjs` (`--screens`, `--sizes`, `--selftest`; report only, exit 1 = flags to explain); baselines in `docs/qa/baselines/` are approved by a person only (`--update`). Spec: `.kiro/specs/qa-visual-audit/`
   - MCP: `node scripts/harness/forge-unit.mjs` (`npm run quality:mcp`); `node scripts/harness/mcp-probe.mjs` (manual, real Kiro CLI)
   - Deploy (power `haunted-ship`): `node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs preview`, then `prod` only after the user's explicit yes; follow `.kiro/powers/haunted-ship/skills/ship/SKILL.md`
+  - Release (powers `haunted-release`, `haunted-tauri-local`): `node .kiro/powers/haunted-release/skills/release/scripts/release.mjs release <version>` prints a plan, `--yes` runs the gates and pushes tag `v<version>`; `node .kiro/powers/haunted-tauri-local/skills/tauri-local/scripts/tauri-local.mjs` builds a local, unversioned Tauri app. The user's command only; follow each `SKILL.md`
   - Assets/storybook: `npm run quality:fingerprint` (byte-identical on refactors; diff and explain intended changes) and `node scripts/harness/screenshot-lab.mjs --selftest`
 
 ## Shell, Code & Co-Editing Rules
