@@ -68,7 +68,7 @@
             "time": "Time",
             "commands": "Commands",
             "shortcuts": "Shortcuts",
-            "press": "PRESS ANY KEY ▸"
+            "press": "PRESS ANY KEY >"
           },
           "emptyShortcuts": "none",
           "fallbackBackground": "#3a506b"

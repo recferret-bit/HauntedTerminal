@@ -232,7 +232,7 @@ function wireWaitlistSubmitAndExport(
       ghLink.href = GITHUB_RELEASES_URL;
       ghLink.target = '_blank';
       ghLink.rel = 'noopener noreferrer';
-      ghLink.textContent = 'Watch GitHub Releases ↗';
+      ghLink.textContent = 'Watch GitHub Releases >';
       statusEl.replaceChildren(
         document.createTextNode(`Saved Launch Pass (${entry.email} • ${entry.platform.toUpperCase()}). Next: `),
         ghLink,

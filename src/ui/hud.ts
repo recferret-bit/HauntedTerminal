@@ -101,8 +101,8 @@ const STATS_HTML = `
       <label class="skip-row"><input type="checkbox" id="outro-skip" /> Skip the intro next time</label>
       <div class="outro-actions">
         <button type="button" id="outro-again">Play Again</button>
-        <a class="hud-link hud-steam" id="outro-wishlist" href="/?wishlist=1">★ Wishlist on Steam</a>
-        <button type="button" id="outro-export">⬇ Export Save (.json)</button>
+        <a class="hud-link hud-steam" id="outro-wishlist" href="/?wishlist=1">* Wishlist on Steam</a>
+        <button type="button" id="outro-export">Export Save (.json)</button>
         <a class="hud-link" href="/">Home</a>
       </div>
     </div>
@@ -284,9 +284,9 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
   const exportBtn = q<HTMLButtonElement>('#outro-export', stats);
   exportBtn.onclick = () => {
     downloadPortableSaveFile();
-    exportBtn.textContent = '✓ Save Exported';
+    exportBtn.textContent = 'Save Exported';
     window.setTimeout(() => {
-      exportBtn.textContent = '⬇ Export Save (.json)';
+      exportBtn.textContent = 'Export Save (.json)';
     }, 2400);
   };
   const hint = q('#fx-hint', fx);

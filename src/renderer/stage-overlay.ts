@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { TextureCatalog, ZONES, type FxPreset, type ZoneId } from '../procgen/index.js';
 import { escHtml as esc } from './html-escape.js';
-import { avoidOffset, CHROME_IDS, type Box } from './stage-avoid.js';
+import { fitBalloonText, fitWordWidth, type Item } from './stage-fit.js';
+import { avoidOffset, CHROME_IDS, hudBottom, tailOffset, type Box } from './stage-avoid.js';
 import './stage-overlay.css';
 
 /**
@@ -26,23 +27,6 @@ export interface PxRect {
   y: number;
   w: number;
   h: number;
-}
-
-interface Item {
-  wrap: HTMLDivElement;
-  el: HTMLElement;
-  t: number;
-  life: number;
-  world: (() => THREE.Vector3 | null) | null;
-  /** Fixed px position (used when `world` is null). */
-  px: { x: number; y: number } | null;
-  dy: number;
-  clamp: boolean;
-  halfW: number;
-  /** Lettering that slides clear of page chrome, cameos and earlier captions (stage-avoid.ts). */
-  avoid: boolean;
-  render: ((t01: number, ms: number) => void) | null;
-  done: boolean;
 }
 
 export interface BadgeState {
@@ -208,11 +192,17 @@ export class StageOverlay {
     } else return;
     y += it.dy;
     if (it.clamp) {
+      const rawX = x;
+      if (it.fit) y = this.fitBalloon(it, y);
+      else if (it.center && !it.sized) this.fitWord(it);
       if (!it.halfW) it.halfW = (it.el.offsetWidth || 0) / 2;
       const r = this.panelRect;
       const m = 6;
       x = Math.min(r.x + r.w - it.halfW - m, Math.max(r.x + it.halfW + m, x));
-      y = Math.max(r.y + m + (it.el.offsetHeight || 0) * 0.5, Math.min(r.y + r.h - m, y));
+      const h = it.el.offsetHeight || 0;
+      if (it.center) y = Math.min(r.y + r.h - m - h * 0.55, Math.max(r.y + m + h * 0.55, y));
+      else y = Math.max(r.y + m + h * 0.5, Math.min(r.y + r.h - m, y));
+      if (it.fit) it.el.style.setProperty('--tail', `${tailOffset(rawX, x - it.halfW, it.halfW * 2).toFixed(1)}px`);
     }
     if (it.avoid) {
       const o = this.avoidLetter(it, x, y);
@@ -223,6 +213,35 @@ export class StageOverlay {
     it.wrap.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
   }
 
+  /** Top of the stage that is free of the HUD strip (px, overlay space). */
+  private safeTop(): number {
+    return Math.max(this.panelRect.y + 6, hudBottom(this.root.getBoundingClientRect()) + 6);
+  }
+
+  /**
+   * Fit a balloon between the HUD strip and the speaker: shrink the font (down to 10 px), then cap the
+   * height at whole lines. Returns the (possibly pushed-down) bottom anchor y; the tail stays on the speaker.
+   */
+  private fitBalloon(it: Item, y: number): number {
+    const tail = 14;
+    const top = this.safeTop();
+    const room = Math.floor(y - tail - top);
+    if (it.fitKey !== room) {
+      it.fitKey = room;
+      fitBalloonText(it.el, room);
+      it.halfW = (it.el.offsetWidth || 0) / 2;
+    }
+    return Math.max(y, top + tail + (it.el.offsetHeight || 0));
+  }
+
+  /** Shrink FX lettering that is wider than the panel so the whole word reads. */
+  private fitWord(it: Item): void {
+    if (this.panelRect.w <= 1) return;
+    it.sized = true;
+    fitWordWidth(it.el, this.panelRect.w - 24);
+    it.halfW = (it.el.offsetWidth || 0) / 2;
+  }
+
   /** Pixel boxes (overlay space) the lettering must not cover; captions placed this frame are appended. */
   private obstacles: Box[] | null = null;
 
@@ -230,14 +249,17 @@ export class StageOverlay {
     const base = this.root.getBoundingClientRect();
     const m = 4;
     const boxes: Box[] = [];
-    const push = (e: Element | null): void => {
-      if (!e || (e as HTMLElement).style?.visibility === 'hidden') return;
+    const push = (e: Element | null, blinks = false): void => {
+      if (!e || (!blinks && (e as HTMLElement).style?.visibility === 'hidden')) return;
       const b = e.getBoundingClientRect();
       if (b.width <= 0 || b.height <= 0) return;
       boxes.push({ l: b.left - base.left - m, t: b.top - base.top - m, r: b.right - base.left + m, b: b.bottom - base.top + m });
     };
     for (const id of CHROME_IDS) push(document.getElementById(id));
-    this.cameoLayer.querySelectorAll('.win, .balloon').forEach(push);
+    this.cameoLayer.querySelectorAll('.win, .balloon').forEach((e) => push(e));
+    this.badgeLayer.querySelectorAll('.st-lock').forEach((e) => push(e)); // padlock badges: lettering stays off them
+    // The death card flickers (visibility toggles) but its box stays: keep words off it the whole time.
+    this.cardLayer.querySelectorAll('.st-tear').forEach((e) => push(e, true));
     return boxes;
   }
 
@@ -246,7 +268,7 @@ export class StageOverlay {
     this.obstacles ??= this.collectObstacles();
     const hw = it.halfW || (it.el.offsetWidth || 0) / 2;
     const h = it.el.offsetHeight || 0;
-    const box: Box = { l: x - hw, r: x + hw, t: y - h - 0.3 * this.u, b: y };
+    const box: Box = it.center ? { l: x - hw, r: x + hw, t: y - h * 0.55, b: y + h * 0.55 } : { l: x - hw, r: x + hw, t: y - h - 0.3 * this.u, b: y };
     const r = this.panelRect;
     const bounds: Box = { l: r.x + 4, t: r.y + 4, r: r.x + r.w - 4, b: r.y + r.h - 4 };
     const o = avoidOffset(box, this.obstacles, bounds);
@@ -258,12 +280,12 @@ export class StageOverlay {
     return this.add(el, life, { px: { x: 0, y: 0 }, layer: this.cardLayer, render });
   }
 
-  private add(el: HTMLElement, life: number, opts: { world?: (() => THREE.Vector3 | null) | null; px?: { x: number; y: number }; dy?: number; clamp?: boolean; avoid?: boolean; render?: (t01: number, ms: number) => void; layer?: HTMLElement }): Item {
+  private add(el: HTMLElement, life: number, opts: { world?: (() => THREE.Vector3 | null) | null; px?: { x: number; y: number }; dy?: number; clamp?: boolean; avoid?: boolean; fit?: boolean; center?: boolean; render?: (t01: number, ms: number) => void; layer?: HTMLElement }): Item {
     const wrap = document.createElement('div');
     wrap.className = 'st-anchor';
     wrap.appendChild(el);
     (opts.layer ?? this.transient).appendChild(wrap);
-    const it: Item = { wrap, el, t: 0, life, world: opts.world ?? null, px: opts.px ?? null, dy: opts.dy ?? 0, clamp: !!opts.clamp, halfW: 0, avoid: !!opts.avoid, render: opts.render ?? null, done: false };
+    const it: Item = { wrap, el, t: 0, life, world: opts.world ?? null, px: opts.px ?? null, dy: opts.dy ?? 0, clamp: !!opts.clamp, halfW: 0, avoid: !!opts.avoid, fit: !!opts.fit, center: !!opts.center, fitKey: NaN, sized: false, render: opts.render ?? null, done: false };
     this.items.push(it);
     this.obstacles = null;
     this.place(it);
@@ -298,6 +320,8 @@ export class StageOverlay {
     this.add(el, w.holdMs, {
       world: () => pos,
       clamp: true,
+      center: true,
+      avoid: true,
       render: (_t, ms) => {
         const n = Math.floor((ms / 1000) * fps);
         let sc = 1;
@@ -352,6 +376,7 @@ export class StageOverlay {
     const it = this.add(el, life, {
       world: at,
       clamp: true,
+      fit: true,
       render: (_t, ms) => {
         const n = Math.floor(ms / 83);
         const pop = n === 0 ? 0.6 : n === 1 ? 1.08 : 1;
