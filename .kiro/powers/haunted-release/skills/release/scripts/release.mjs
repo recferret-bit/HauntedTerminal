@@ -93,6 +93,22 @@ function step(label, cmd, args) {
   return sh(cmd, args, { stdio: 'inherit' }).status === 0;
 }
 
+/** The `gh` arguments that find the run a tag started. Pure. */
+export function runListArgs(version) {
+  return ['run', 'list', '--workflow', 'desktop-release.yml', '--branch', `v${version}`, '--limit', '1', '--json', 'databaseId', '--jq', '.[0].databaseId'];
+}
+
+/** Wait for the run of tag v<version> (it can take a few seconds to appear) and return whether it succeeded. */
+function watchTagRun(version) {
+  for (let i = 0; i < 12; i++) {
+    const id = out('gh', runListArgs(version));
+    if (id) return step(`watch run ${id} of v${version}`, 'gh', ['run', 'watch', id, '--exit-status']);
+    spawnSync('sleep', ['5']);
+  }
+  console.error(`no workflow run found for v${version}`);
+  return false;
+}
+
 function release(o) {
   const state = readState(o.version);
   const sha = out('git', ['rev-parse', '--short', 'HEAD']);
@@ -113,8 +129,12 @@ function release(o) {
   if (!step(`tag v${o.version}`, 'git', ['tag', '-a', `v${o.version}`, '-m', `Haunted Terminal v${o.version}`])) return 1;
   if (!step(`push v${o.version}`, 'git', ['push', 'origin', `v${o.version}`])) return 1;
   console.log('\nTag pushed. Workflows: https://github.com/recferret-bit/HauntedTerminal/actions');
-  if (sh('gh', ['--version']).status === 0) step('watch the latest run', 'gh', ['run', 'watch', '--exit-status']);
-  else console.log('gh is not installed: open the Actions URL above to follow the builds.');
+  if (sh('gh', ['--version']).status === 0) {
+    if (!watchTagRun(o.version)) {
+      console.error(`\nThe desktop build for v${o.version} did not succeed. The tag stays pushed; see the Actions URL above. Netlify preview skipped.`);
+      return 1;
+    }
+  } else console.log('gh is not installed: open the Actions URL above to follow the builds.');
   if (o.netlify && !step('Netlify preview', 'node', [SHIP, 'preview'])) return 1;
   console.log(`\nDone. Netlify production is not promoted: after you say yes, run  node ${SHIP} prod`);
   return 0;
@@ -141,6 +161,8 @@ function selftest() {
   eq(failedChecks({ ...ok, tagLocal: true }).length, 1, 'tag exists locally');
   eq(failedChecks({ ...ok, pkgVersion: '1.1.0' }).length, 1, 'package.json mismatch');
   eq(failedChecks({ ...ok, branch: 'x', dirty: true }).length, 2, 'every failure is listed');
+  eq(runListArgs('1.2.0').includes('v1.2.0'), true, 'the run is found by its tag');
+  eq(runListArgs('1.2.0').includes('--branch'), true, 'gh run list filters by ref');
   const plan = planText('1.2.0', 'abc1234', true);
   eq(plan.includes('Nothing changed'), true, 'plan states it changed nothing');
   eq(plan.includes('v1.2.0'), true, 'plan names the tag');
