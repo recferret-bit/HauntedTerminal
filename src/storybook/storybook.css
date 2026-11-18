@@ -1,5 +1,5 @@
 /* Storybook page. Tokens copied from src/styles/game.css so the lab reads as a page of the same comic. */
-@import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+@import "../styles/fonts.css";
 
 :root {
   --ink: #140f12;

@@ -1,0 +1,13 @@
+Bundled Offline Fonts — SIL Open Font License 1.1 (OFL-1.1)
+
+1. Chakra Petch (weights 600, 700; latin, latin-ext)
+   Copyright 2018 The Chakra Petch Project Authors (Cadson Demak).
+   Licensed under the SIL Open Font License, Version 1.1 (https://openfontlicense.org).
+
+2. IBM Plex Mono (weights 400, 500, 600; latin, latin-ext, symbols2)
+   Copyright 2017 IBM Corp.
+   Licensed under the SIL Open Font License, Version 1.1 (https://openfontlicense.org).
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of the Font Software,
+to use, study, copy, merge, embed, modify, redistribute, and sell modified and unmodified copies
+of the Font Software under the terms of the SIL Open Font License Version 1.1.
