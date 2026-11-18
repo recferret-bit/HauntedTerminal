@@ -65,18 +65,20 @@ body {
   gap: 8px;
   flex: 0 1 auto;
   min-width: 0;
+  max-width: 42%;
 }
 
 #masthead {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 10px;
+  gap: 3px 10px;
   background: var(--yellow);
   color: var(--ink);
   border: 3px solid var(--ink);
   box-shadow: 3px 3px 0 var(--ink);
   padding: 5px 8px 4px;
-  white-space: nowrap;
+  min-width: 0;
 }
 
 #masthead h1 {
@@ -89,9 +91,12 @@ body {
 
 #masthead h1 span { color: var(--orange); }
 
+#masthead h1 { white-space: nowrap; }
+
 #masthead p {
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: 11px;
+  line-height: 1.25;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #5c5348;
 }
@@ -470,16 +475,16 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
   --agent: var(--orange-hi);
   --agent-ink: var(--ink);
   position: absolute;
-  left: 12px;
-  top: 100px;
+  right: 12px;
+  bottom: 50px;
   z-index: 7;
-  width: min(330px, calc(100% - 24px));
+  width: min(236px, calc(100% - 24px));
   background: var(--paper);
   color: var(--ink);
   border: 3px solid var(--ink);
   box-shadow: 5px 5px 0 var(--ink);
-  padding: 0 0 9px;
-  transform: rotate(-1deg);
+  padding: 0 0 7px;
+  transform: rotate(1deg);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -490,8 +495,8 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
 #tutorial-card.enter { animation: tut-enter 0.42s cubic-bezier(.3, 1.6, .5, 1) both; }
 
 @keyframes tut-enter {
-  0% { transform: translateX(-30px) rotate(-6deg) scale(0.7); opacity: 0; }
-  100% { transform: rotate(-1deg); opacity: 1; }
+  0% { transform: translateX(30px) rotate(6deg) scale(0.7); opacity: 0; }
+  100% { transform: rotate(1deg); opacity: 1; }
 }
 
 #tutorial-card header {
@@ -516,7 +521,16 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
   padding: 1px 6px;
 }
 
-.tut-text { padding: 8px 10px 6px; font-size: 12.5px; line-height: 1.4; }
+.tut-text { padding: 6px 10px 5px; font-size: 12px; line-height: 1.35; }
+
+/* Short windows (1280x820): shrink the card so it stays below the locked-door label. */
+@media (max-height: 880px) {
+  #tutorial-card { bottom: 44px; padding-bottom: 4px; }
+  #tutorial-card header { padding: 2px 8px; }
+  #tutorial-card .tut-text { padding: 4px 10px 3px; font-size: 11px; line-height: 1.3; }
+  #tutorial-card .tut-cmd code { font-size: 12px; padding: 1px 8px; }
+  #tutorial-card .tut-skip { margin-top: 3px; }
+}
 
 .tut-cmd { display: flex; align-items: center; gap: 8px; padding: 0 10px; }
 .tut-label { font-family: var(--display); font-weight: 700; font-size: 10px; letter-spacing: 0.14em; color: #5c5348; }

@@ -27,7 +27,7 @@ How it really works, from `src/assets/asset-registry.ts` and `src/renderer/comic
 1. At boot (`src/main.ts`) and when you press **Hot-reload PNG assets** in the F2 inspector,
    `AssetRegistry.reloadAll()` fetches `/assets/manifest.json` and, for each key, sends a `HEAD` request
    for its `textureUrl`. If the response is OK and its content type is an image, the PNG is loaded as an
-   sRGB texture; otherwise the key is marked `PROCEDURAL`. A missing file is normal, not an error.
+   sRGB texture; otherwise the key is marked `PROCEDURAL`. A missing file falls back cleanly, but on a static host (Netlify) the probe is a real 404 and Chrome logs a console error, so list a key only once its PNG exists (`manifest.json` is `{}` until then; the keys are in `README_ASSETS.md`).
 2. `ComicStage.buildScene()` then walks the scene. Every mesh whose `userData.assetKey` equals a
    manifest key and that uses the comic material gets the texture as `uMap`.
 3. The comic shader mixes it in: `colour = mix(zoneColour × band, texture.rgb × band, 0.86)`. Cel bands,

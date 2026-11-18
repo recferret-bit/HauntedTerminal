@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { TextureCatalog, ZONES, type FxPreset, type ZoneId } from '../procgen/index.js';
 import { escHtml as esc } from './html-escape.js';
+import { avoidOffset, CHROME_IDS, type Box } from './stage-avoid.js';
 import './stage-overlay.css';
 
 /**
@@ -38,6 +39,8 @@ interface Item {
   dy: number;
   clamp: boolean;
   halfW: number;
+  /** Lettering that slides clear of page chrome, cameos and earlier captions (stage-avoid.ts). */
+  avoid: boolean;
   render: ((t01: number, ms: number) => void) | null;
   done: boolean;
 }
@@ -173,6 +176,7 @@ export class StageOverlay {
   /** Advance transient items by `dtMs` of stage time and re-place everything anchored. */
   update(dtMs: number): void {
     this.clock += dtMs;
+    this.obstacles = null;
     for (let i = this.items.length - 1; i >= 0; i--) {
       const it = this.items[i]!;
       it.t += dtMs;
@@ -210,22 +214,60 @@ export class StageOverlay {
       x = Math.min(r.x + r.w - it.halfW - m, Math.max(r.x + it.halfW + m, x));
       y = Math.max(r.y + m + (it.el.offsetHeight || 0) * 0.5, Math.min(r.y + r.h - m, y));
     }
+    if (it.avoid) {
+      const o = this.avoidLetter(it, x, y);
+      x += o.dx;
+      y += o.dy;
+    }
     it.wrap.style.display = '';
     it.wrap.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+  }
+
+  /** Pixel boxes (overlay space) the lettering must not cover; captions placed this frame are appended. */
+  private obstacles: Box[] | null = null;
+
+  private collectObstacles(): Box[] {
+    const base = this.root.getBoundingClientRect();
+    const m = 4;
+    const boxes: Box[] = [];
+    const push = (e: Element | null): void => {
+      if (!e || (e as HTMLElement).style?.visibility === 'hidden') return;
+      const b = e.getBoundingClientRect();
+      if (b.width <= 0 || b.height <= 0) return;
+      boxes.push({ l: b.left - base.left - m, t: b.top - base.top - m, r: b.right - base.left + m, b: b.bottom - base.top + m });
+    };
+    for (const id of CHROME_IDS) push(document.getElementById(id));
+    this.cameoLayer.querySelectorAll('.win, .balloon').forEach(push);
+    return boxes;
+  }
+
+  /** Offset that keeps a caption (with its rise) off the chrome, the cameo and earlier captions. */
+  private avoidLetter(it: Item, x: number, y: number): { dx: number; dy: number } {
+    this.obstacles ??= this.collectObstacles();
+    const hw = it.halfW || (it.el.offsetWidth || 0) / 2;
+    const h = it.el.offsetHeight || 0;
+    const box: Box = { l: x - hw, r: x + hw, t: y - h - 0.3 * this.u, b: y };
+    const r = this.panelRect;
+    const bounds: Box = { l: r.x + 4, t: r.y + 4, r: r.x + r.w - 4, b: r.y + r.h - 4 };
+    const o = avoidOffset(box, this.obstacles, bounds);
+    this.obstacles.push({ l: box.l + o.dx - 3, r: box.r + o.dx + 3, t: box.t + o.dy - 3, b: box.b + o.dy + 3 });
+    return o;
   }
 
   private pinCard(el: HTMLElement, life: number, render: (t01: number, ms: number) => void): Item {
     return this.add(el, life, { px: { x: 0, y: 0 }, layer: this.cardLayer, render });
   }
 
-  private add(el: HTMLElement, life: number, opts: { world?: (() => THREE.Vector3 | null) | null; px?: { x: number; y: number }; dy?: number; clamp?: boolean; render?: (t01: number, ms: number) => void; layer?: HTMLElement }): Item {
+  private add(el: HTMLElement, life: number, opts: { world?: (() => THREE.Vector3 | null) | null; px?: { x: number; y: number }; dy?: number; clamp?: boolean; avoid?: boolean; render?: (t01: number, ms: number) => void; layer?: HTMLElement }): Item {
     const wrap = document.createElement('div');
     wrap.className = 'st-anchor';
     wrap.appendChild(el);
     (opts.layer ?? this.transient).appendChild(wrap);
-    const it: Item = { wrap, el, t: 0, life, world: opts.world ?? null, px: opts.px ?? null, dy: opts.dy ?? 0, clamp: !!opts.clamp, halfW: 0, render: opts.render ?? null, done: false };
+    const it: Item = { wrap, el, t: 0, life, world: opts.world ?? null, px: opts.px ?? null, dy: opts.dy ?? 0, clamp: !!opts.clamp, halfW: 0, avoid: !!opts.avoid, render: opts.render ?? null, done: false };
     this.items.push(it);
+    this.obstacles = null;
     this.place(it);
+    this.obstacles = null;
     it.render?.(0, 0);
     return it;
   }
@@ -292,6 +334,7 @@ export class StageOverlay {
     this.add(el, 980, {
       world: () => new THREE.Vector3(base.x, base.y + dyWorld, base.z),
       clamp: true,
+      avoid: true,
       render: (t) => {
         const k = stepped(t, 6);
         el.style.transform = `translate(-50%, calc(-100% - ${(k * 0.28 * this.u).toFixed(1)}px)) scale(${t < 0.08 ? 1.18 : 1})`;
