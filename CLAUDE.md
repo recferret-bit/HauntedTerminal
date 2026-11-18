@@ -78,7 +78,7 @@ When a prompt may be a feature or big refactor, output the size-test verdict on 
 
 ### Pre-Completion Gates (match `Stop` hooks & `architecture.md`)
 Always run before declaring work done (plus targeted suites for areas touched):
-- `npm run quality` (`tsc --noEmit`, `quality:root`, `quality:size`, `quality:layers`, `quality:declarative`, `quality:specs`, `quality:dup`, `quality:agents`, `quality:brands`, `quality:props`)
+- `npm run quality` (`tsc --noEmit`, `quality:root`, `quality:size`, `quality:layers`, `quality:declarative`, `quality:specs`, `quality:dup`, `quality:agents`, `quality:brands`, `quality:mcp`, `quality:props`)
 - `node scripts/quality/check-specs.mjs --report`
 - `node scripts/harness/generate-chapter.mjs --check && node scripts/harness/generate-comix.mjs --check`
 - When chapters, comix, editors, labs, laptop, or assets changed, run the corresponding verifiers:
@@ -95,4 +95,4 @@ Always run before declaring work done (plus targeted suites for areas touched):
 - **Background dev server only**: use `npm start`, `npm stop`, `npm restart`, `npm run status`, or `STACK_PORT=5174 npm start` (prefer `STACK_PORT=` over `--port`). Never run foreground `npm run dev` (it blocks the shell).
 - **Co-editing specs safely**: `/editor` and `/comix-editor` use etag `409` conflict protection. Read spec JSON from disk immediately before editing, change only fields named by the task, and format via canonical writers (`stringifyChapterJson` in `scripts/harness/lib/chapter-json.mjs`, `stringifyComixJson` in `scripts/harness/lib/comix-json.mjs`, `scripts/harness/lib/lab-json.mjs`) so no-op saves change zero bytes.
 - **Hard limits & safety**: inward layer imports only (`scripts/quality/check-layers.mjs`), `<= 600` lines/file, `<= 130` lines/function, `0` `jscpd` duplicate clones, no `any`, plain functions and data tables before classes, DOM built via `h()` (never `innerHTML`), live redraws preserving focus (`redrawKeepingFocus`), player code isolated in Workers or `sandbox="allow-scripts"` iframes, and dev APIs restricted to localhost + same-origin + `baseEtag`.
-- **Clean root & hygiene**: keep root limited to tool configs, `AGENTS.md`, `CLAUDE.md`, `README.md`, and `LICENSE` (update `scripts/quality/check-root.mjs` and `.kiro/steering/structure.md` together if changed). Pin exact dependency versions, report only checks you actually ran, and commit only when asked.
+- **Clean root & hygiene**: keep root limited to tool configs, `.github/`, `.kiro/`, `AGENTS.md`, `CLAUDE.md`, `README.md`, and `LICENSE` (update `scripts/quality/check-root.mjs` and `.kiro/steering/structure.md` together if changed). Pin exact dependency versions, report only checks you actually ran, and commit only when asked.
