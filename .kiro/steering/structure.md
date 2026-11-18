@@ -13,6 +13,7 @@ Only these may sit at the root; `npm run quality:root` (`scripts/quality/check-r
 | `chapters/` | LEVEL GEN data, one folder per chapter. |
 | `comix/` | Declarative animated 3D comix sequences, one connected folder per sequence (`comix.manifest.json` + `pages/page-XX-<slug>/page.spec.json`). |
 | `docs/` | Long-form docs and notes; `docs/qa/` holds the `qa` agent's reports. |
+| `.github/` | GitHub Actions workflows (tagged desktop release builds on `v*`). |
 | `.kiro/` | Steering, skills, specs, hooks, settings, agents, powers. |
 | files | Only tool configs that must live at the root (`package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `.gitignore`) plus `AGENTS.md`, `CLAUDE.md`, `README.md` and `LICENSE` (the open source licence the Kiroween rules require; GitHub detects it at the root). |
 
@@ -57,6 +58,8 @@ chapters/<chapter-slug>/     # LEVEL GEN data, one chapter for Kiroween
 pages/                       # HTML entry pages: index.html (player front door), play.html (game at /play/...), hub.html (redirect to /), chapter-editor.html (/editor, /editor/<chapter>/<level>), comix-editor.html (/comix-editor, /comix-editor/<slug>/<target>), terminal-lab.html (/terminal-lab, /terminal-lab/<lab-id>), laptop-lab.html (/laptop-lab), dev.html (level select, jumps, QA labs), chapters.html, comic.html, cinematic.html, storybook.html
 public/assets/               # external sprites/meshes (ai-mesh-pipeline)
 public/comix/<chapter-id>/   # rendered comic pages
+public/fonts/                # self-hosted SIL OFL 1.1 Chakra Petch & IBM Plex Mono .woff2 runtime fonts
+scripts/desktop/             # Tauri v2 + Steamworks desktop generator, icon synthesizer, offline verifier & unit tests
 scripts/harness/             # shared Node tooling
   terminal-lab/              # committed Terminal Lab scripts (`<id>.lab.json`): one per enemy type and pickup, riddles, tasks, NPCs, inject, no-damage soak
 scripts/mcp/haunted-forge/   # the level MCP server of the agent team (tools.mjs pure, server.mjs stdio)

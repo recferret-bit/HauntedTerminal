@@ -184,7 +184,7 @@ export function playEventsSfx(g: ChapterState, events: KernelEvent[]): void {
         g.sfx.play('denied');
         return;
       }
-      if (ev.type === 'LANTERN_REVEAL') {
+      if (ev.type === 'LANTERN_REVEAL' || ev.type === 'ACHIEVEMENT_UNLOCKED') {
         g.sfx.play('reveal');
         return;
       }

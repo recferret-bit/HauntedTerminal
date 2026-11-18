@@ -9,13 +9,13 @@ Source: [official rules](https://kiroween.devpost.com/rules), read November 17, 
 | Project built in the Submission Period (Oct 30 to Dec 4, 2026) | OK. First commit is Nov 12, 2026. |
 | Public GitHub repo, not GitLab or Bitbucket | OK. `recferret-bit/HauntedTerminal` is public. |
 | OSI license file, detected in the repo's About box | MIT file present. TODO: check the About box shows "MIT". |
-| `/.kiro` at the root, not in `.gitignore` | OK. 146 tracked files; `.gitignore` has no `.kiro` line. |
+| `/.kiro` at the root, not in `.gitignore` | OK. 180+ files across agents, steering, specs, skills, hooks, and powers; `.gitignore` has no `.kiro` line. |
 | All source, assets and run instructions in the repo | OK. See README. |
 | URL to a working app | OK. https://haunted-terminal.netlify.app |
 | Demo video under 3 minutes, public on YouTube, no third-party trademarks or copyrighted music | **TODO (yours).** |
 | Text description | Draft below. |
 | Write-up on how Kiro was used | [`KIRO_USAGE.md`](KIRO_USAGE.md), needs your personal details. |
-| Category chosen | Recommended: Costume Contest. |
+| Category chosen | Recommended: Costume Contest + **Best Startup Project** bonus track. |
 | English materials | Fixed (two Russian docs translated). |
 
 ## Judging (five equal criteria, 10 points each)
@@ -36,7 +36,7 @@ Source: [official rules](https://kiroween.devpost.com/rules), read November 17, 
 - [ ] Fill the personal parts of `docs/KIRO_USAGE.md` (surfaces, one before/after story).
 - [x] Crew prepared: agents linked, workspace fixed, member `haunted-lead` on `lead-dev`, branch protection on (`npm run crew:check`).
 - [ ] Run the first test and one real task through `lead-dev` in the Kiro Crew app, and one through the CLI; note them in `docs/AGENTS_CREW.md` and `docs/KIRO_USAGE.md`.
-- [ ] Devpost form: category (Costume Contest), bonus prizes, Kiro credits request by Dec 1 12:00 PM PT.
+- [ ] Devpost form: category (Costume Contest), opt in to **Best Startup Project** bonus prize (paste pitch draft below), Kiro credits request by Dec 1 12:00 PM PT.
 - [ ] Optional: blog post and `#KiroweenHackathon26` post, add their URLs.
 - [ ] Run before submitting: `node scripts/harness/editor-smoke.mjs`, `comix-editor-smoke.mjs`, `terminal-lab-smoke.mjs`, `laptop-lab-smoke.mjs`, `model-geometry-validator --all --strict`, `npm run quality:fingerprint`.
 
@@ -57,37 +57,44 @@ Source: [official rules](https://kiroween.devpost.com/rules), read November 17, 
 | 11 | Kiro features not visible in the repo | **Fixed for custom agents and PBT** (`.kiro/agents/`, `property-tests.mjs`). Powers and MCP: the `haunted-ship` power bundles the Netlify MCP server (2026-11-17). |
 | 12 | Audio needs a first click | Check once in a real browser. Audio is WebAudio, no files. |
 
-## Kiro depth (status 2026-11-17)
+## Kiro depth (status 2026-11-18)
 
-The rules ask for evidence of custom agents, hooks, specs, steering, MCP, property-based testing and powers; judges verify through the repo and the write-up. The repo now shows 7 custom agents, 15 hooks, 15 steering files, 24 skills, 10 specs and 32 properties. Our own scoring against the five criteria: `docs/KIROWEEN_EVALUATION.md`. MCP and powers are not used, and the write-up says so.
+The rules ask for evidence of custom agents, hooks, specs, steering, MCP, property-based testing and powers; judges verify through the repo and the write-up. The repo ships **7 custom agents**, **16 hooks** (plus 3 per team agent), **15 steering files**, **24 skills**, **15 specs**, **2 agent MCP servers** (`haunted-forge` + Chrome DevTools MCP), **1 deploy power** (`haunted-ship` bundling Netlify MCP), and **34 property-based tests** inside an **11-gate `npm run quality` suite**. Our own scoring against the five criteria: `docs/KIROWEEN_EVALUATION.md`.
 
-## Kiro depth plan (items 1 and 2 done 2026-11-17)
+## Kiro depth — built & verified
 
 Ranked by value for the Technological Implementation score against cost.
 
-1. **Built: custom agents.** Seven agents in `.kiro/agents/` (a lead, four feature designers, an artist, QA), one owner per file, tested on the CLI against the real tool. The Kiro Crew app run and a pushed `agent/*` branch are not yet done: say "built and documented" until they are. See `docs/AGENTS_CREW.md`.
-2. **Done: property-based tests.** 32 fast-check properties across five features, inside `npm run quality`; six real bugs found and fixed. See `docs/PROPERTY_TESTS.md`.
-3. **Built: two MCP servers for the agents** (`haunted-forge` and Chrome DevTools MCP, spec `.kiro/specs/mcp-devtools-and-forge/`). The original idea follows. **A small MCP server exposing the gates (medium cost).** Tools such as `run_quality`, `verify_chapter`, `run_terminal_lab`, `list_specs`, returning structured results. Trade-off: it reverses today's "keep mcp.json empty" rule and adds `@modelcontextprotocol/sdk`. Cheaper alternative: wire an existing Chrome DevTools MCP for the visual QA you now do through a hand-written CDP client.
-4. **Built: a power.** `haunted-ship` (`.kiro/powers/haunted-ship/`) bundles the Netlify MCP server with a gated deploy skill. Spec: `.kiro/specs/netlify-deploy-power/`.
+1. **Built: custom agents.** Seven agents in `.kiro/agents/` (a lead, four feature designers, an artist, QA), one owner per file, tested on the CLI against the real tool (`agent/*` branches merged via PRs #2 and #5). Running a live chat task through the Kiro Crew desktop app remains your final check (`npm run crew:check`). See `docs/AGENTS_CREW.md`.
+2. **Built: property-based tests.** 34 fast-check properties across five features, inside `npm run quality`; seven real bugs found and fixed. See `docs/PROPERTY_TESTS.md`.
+3. **Built: two MCP servers for the agents** (`haunted-forge` and Chrome DevTools MCP, spec `.kiro/specs/mcp-devtools-and-forge/`). `haunted-forge` validates and solves level drafts headlessly with 0 deaths before allowing `write_level`; `qa` inspects live screenshots, console, and network through headless Chrome DevTools MCP without JS evaluation.
+4. **Built: a power.** `haunted-ship` (`.kiro/powers/haunted-ship/`) bundles the Netlify MCP server with a gated `ship` skill that verifies 0-death browser playthroughs on the preview URL before allowing production promotion. Spec: `.kiro/specs/netlify-deploy-power/`.
 5. **Surface comparison (free).** Write two paragraphs on what you used the CLI, IDE and Crew for. Pure text, but the rules ask for it.
 
 ## Demo video plan (under 3:00)
 
-- 0:00 Hook: "What if the only controller was your terminal?" Show level 1, type `ls`.
-- 0:20 Play: `cat`, `kill -9`, `chmod -x` on a monster; show a code task.
-- 1:10 The comic issue and the 3D intro.
-- 1:35 Under the hood: generate-by-code assets, the storybook, the chapter editor.
-- 2:05 Kiro: `.kiro` folder, spec, hook blocking, quality gate output.
-- 2:40 Close with the URL and the repo.
+- 0:00 Hook: `/` startup front door ("Pulled inside your PC — your only weapon is a Unix terminal") -> click **Play Free Demo**, type `ls -la` in Level 1.
+- 0:25 Play: `chmod -x` petrifying malware, `kill -9`, Split Code Editor fixing JS/Docker, unlocking a live `ACH_*` Steamworks-keyed comic toast.
+- 1:10 Story & Art: 6-page rendered comic issue and real-time 3D orthographic intro/outro on a 100% code-generated zero-third-party-art stage.
+- 1:35 Startup & Steam Wishlist Funnel: `/editor` & `/comix-editor` (future Steam Workshop creator tools), `/` Steam Coming Soon `<dialog>` waitlist, portable `haunted-terminal-save.json` Auto-Cloud save export, and offline Tauri v2 + Steamworks desktop installers (`~4 MB` on macOS, plus Windows & Linux/Steam Deck) built on GitHub `v*` tags.
+- 2:10 Kiro Depth: `.kiro/` architecture (15 specs, 16 hooks, 24 skills, 7 custom agents, `haunted-forge` MCP, `haunted-ship` power, 34 property tests).
+- 2:45 Close: Live browser demo URL, Steam Wishlist / GitHub Releases, and repo.
 
 Record on the device it targets (desktop browser). Use no music you do not own.
 
 ## Description draft (Devpost)
 
-Haunted Terminal is a 90s comic-book game where the only controller is a unix terminal. Lightning pulls a developer inside his own computer, and he survives by typing real commands. One 11-level chapter teaches `ls`, `cat`, `grep`, `chmod`, `kill`, and real HTML, JavaScript and Docker tasks, with a hub, a boss, a six-page comic and animated 3D cinematics. Everything on screen is generated by code: no art files. Content is declarative JSON checked by deterministic scripts, and the repo includes a chapter editor, a 3D comix editor and a Terminal Lab. Built entirely with Kiro: 7 custom agents, 15 steering files, 24 skills, 15 hooks, 32 property tests and spec-first development.
+Haunted Terminal is a 90s comic-book game where the only controller is a unix terminal. Lightning pulls a developer inside his own computer, and he survives by typing real commands. One 11-level chapter teaches `ls`, `cat`, `grep`, `chmod`, `kill`, and real HTML, JavaScript and Docker tasks, with 3 hubs, a boss, a six-page comic and animated 3D cinematics. Everything on screen is generated by code: no third-party art files, zero runtime CDN dependencies, and compact offline Tauri v2 desktop builds (`~4 MB` macOS `.dmg`, `< 15 MB` Windows setup, plus self-contained Linux/Steam Deck `.AppImage`/`.deb`). Content is declarative JSON checked by deterministic scripts, paired with a browser-demo-to-Steam conversion funnel (`/`), 12 local `ACH_*` Steamworks-keyed achievements, portable Auto-Cloud JSON saves, a chapter editor, a 3D comix editor, a Terminal Lab, and a Laptop Lab. Built entirely with Kiro: 7 custom agents, 15 steering files, 24 skills, 16 hooks, 15 specs, 2 MCP servers, 1 deploy power, and 34 property tests.
+
+## Best Startup Project Bonus Prize — Devpost Pitch Draft
+
+- **Problem & Audience:** Millions of CS students, bootcamp learners, and junior developers bounce off dry CLI/Docker documentation, while terminal/programming puzzle games (*TIS-100*, *Shenzhen I/O*, *Hacknet*) have proven a dedicated multi-hundred-thousand-copy commercial market on Steam.
+- **Zero-CAC Browser-to-Steam Funnel:** Visitors play the full 11-level Chapter 1 Demo instantly in their browser (`/` -> `/play/chapter-01-kiroween`) with **zero backend server compute cost** (the VFS, POSIX shell, JS Worker, and sandboxed-iframe validator run 100% client-side). Every rank, `~/.bashrc` upgrade, and `ACH_*` trophy exports as a portable JSON save bundle (`haunted-terminal-save.json`) that imports into native tagged Tauri desktop builds today and syncs automatically to Steam Achievements & Steam Auto-Cloud on launch.
+- **Commercial Roadmap & Procedural Engine Moat:** Free permanent Chapter 1 Demo (Web + GitHub Release tags + Steam Next Fest Demo) converts players into the paid **Full Steam Edition** ($12.99–$14.99: Chapters 2–5 covering SSH/Networking, Git Rebase, SQL/Redis, and Cluster Bosses + Steam Workshop community campaigns authored in the built-in `/editor` and `/comix-editor`), plus classroom/bootcamp cohort packs—all with **$0 third-party asset royalties**.
 
 ## Optional bonus prizes
 
+- **Best Startup Project**: opt in on the Devpost form and paste the Startup pitch above (companion playbook: `docs/STEAM_RELEASE_PLAYBOOK.md`, founder cutover checklist: `.kiro/specs/steamworks-store-release/`).
 - **Bonus Blog**: publish a post during the period that says it is part of Kiroween 2026, and add its URL.
 - **Social Blitz**: post starting with `#KiroweenHackathon26`, add the URL.
 - **Best Demo**: automatic.

@@ -1,5 +1,7 @@
 node_modules
 dist
+dist-desktop
+src-tauri
 .DS_Store
 *.local
 .netlify

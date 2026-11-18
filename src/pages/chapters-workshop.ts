@@ -1,3 +1,4 @@
+import { ACHIEVEMENT_SPECS, readAchievements } from '../chapters/achievements.js';
 import {
   dossierOf,
   RIG_PERKS,
@@ -5,6 +6,7 @@ import {
   readMetagame,
   type MetagameStore,
 } from '../chapters/catalog.js';
+import { forwardSteamAchievement } from '../chapters/steam-bridge.js';
 import { esc } from './html-text.js';
 import { renderBinder } from './chapters-binder.js';
 import type { ChaptersPageEls, ChaptersViewState } from './chapters-page-model.js';
@@ -46,24 +48,56 @@ function renderWorkshop(els: ChaptersPageEls, state: ChaptersViewState, meta: Me
   els.workshopEl.querySelectorAll<HTMLButtonElement>('.perk-action-btn').forEach((btn) => {
     btn.onclick = () => {
       const res = purchaseOrTogglePerk(btn.dataset.perkId ?? '');
-      state.workshopBanner = res.message;
+      for (const ev of res.unlockedAchievements ?? []) {
+        void forwardSteamAchievement(ev.steamApiName);
+      }
+      const achSuffix =
+        res.unlockedAchievements && res.unlockedAchievements.length > 0
+          ? ` [★ Trophy Unlocked: ${res.unlockedAchievements.map((a) => `${a.title} (${a.steamApiName})`).join(', ')}]`
+          : '';
+      state.workshopBanner = `${res.message}${achSuffix}`;
       renderMetagame(els, state);
     };
   });
 }
 
-export function renderMetagame(els: ChaptersPageEls, state: ChaptersViewState): void {
+export function captureActiveFocusSelector(): string | null {
+  const active = document.activeElement;
+  if (!(active instanceof HTMLElement) || active === document.body) return null;
+  if (active.id) return `#${CSS.escape(active.id)}`;
+  for (const attr of ['data-perk-id', 'data-level-id', 'data-chapter-id']) {
+    const val = active.getAttribute(attr);
+    if (val) return `[${attr}="${CSS.escape(val)}"]`;
+  }
+  return null;
+}
+
+export function restoreActiveFocus(selector: string | null): void {
+  if (!selector) return;
+  document.querySelector<HTMLElement>(selector)?.focus();
+}
+
+export function renderMetagame(els: ChaptersPageEls, state: ChaptersViewState, onFullRefresh?: () => void): void {
+  const focusSel = captureActiveFocusSelector();
   const meta = readMetagame();
   if (els.scrapPillEl) {
     els.scrapPillEl.textContent = `⚙ ${meta.scrap} SILICON SCRAP`;
   }
+  const achCount = Object.keys(readAchievements().unlocked).length;
   if (els.metagameSummaryEl) {
-    els.metagameSummaryEl.textContent = `${meta.scrap} Silicon Scrap • ${meta.activePerks.length}/${RIG_PERKS.length} ~/.bashrc Perks Active • ${meta.usedCommands.length} Commands Practiced • ${meta.seenMalware.length}/${dossierOf(state.activeChapter).length} Entities Logged`;
+    els.metagameSummaryEl.textContent = `${meta.scrap} Silicon Scrap • ${achCount}/${ACHIEVEMENT_SPECS.length} Trophies • ${meta.activePerks.length}/${RIG_PERKS.length} ~/.bashrc Perks Active • ${meta.usedCommands.length} Commands Practiced • ${meta.seenMalware.length}/${dossierOf(state.activeChapter).length} Entities Logged`;
   }
   if (els.tabGrimoireBtn && els.tabBestiaryBtn) {
     els.tabGrimoireBtn.className = `comic-btn ${state.activeBinderTab === 'grimoire' ? 'teal' : 'paper'}`;
     els.tabBestiaryBtn.className = `comic-btn ${state.activeBinderTab === 'bestiary' ? 'teal' : 'paper'}`;
+    els.tabGrimoireBtn.setAttribute('aria-pressed', String(state.activeBinderTab === 'grimoire'));
+    els.tabBestiaryBtn.setAttribute('aria-pressed', String(state.activeBinderTab === 'bestiary'));
+  }
+  if (els.tabAchievementsBtn) {
+    els.tabAchievementsBtn.className = `comic-btn ${state.activeBinderTab === 'achievements' ? 'teal' : 'paper'}`;
+    els.tabAchievementsBtn.setAttribute('aria-pressed', String(state.activeBinderTab === 'achievements'));
   }
   renderWorkshop(els, state, meta);
-  renderBinder(els, state, meta);
+  renderBinder(els, state, meta, onFullRefresh ?? (() => renderMetagame(els, state)));
+  restoreActiveFocus(focusSel);
 }

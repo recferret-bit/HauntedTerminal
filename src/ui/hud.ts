@@ -1,3 +1,6 @@
+import { ACHIEVEMENT_SPECS, readAchievements } from '../chapters/achievements.js';
+import { downloadPortableSaveFile } from '../chapters/portable-save.js';
+import { wireExternalLinksForDesktop, wireSteamWishlistLink } from '../chapters/steam-bridge.js';
 import type { GameSnapshot } from '../game/types.js';
 import { escHtml as esc } from '../renderer/html-escape.js';
 
@@ -26,6 +29,8 @@ export interface Hud {
   pickup(item: 'energy' | 'ram' | 'ssd', label: string): void;
   /** Big banner: an SSD backup saved the run. */
   backupUsed(hp: number): void;
+  /** Non-blocking comic stamp when a local achievement unlocks. */
+  achievement(item: { icon: string; title: string; steamApiName: string; description: string }): void;
   /** Paper note under the Hint button. */
   showHint(text: string): void;
   showStats(stats: EndStats, skipIntro: boolean): void;
@@ -91,10 +96,13 @@ const STATS_HTML = `
         <dt>Time</dt><dd id="outro-time">0:00</dd>
         <dt>Commands</dt><dd id="outro-cmd">0</dd>
         <dt>Shortcuts</dt><dd id="outro-cuts">none</dd>
+        <dt>Trophies</dt><dd id="outro-ach">0/${ACHIEVEMENT_SPECS.length}</dd>
       </dl>
       <label class="skip-row"><input type="checkbox" id="outro-skip" /> Skip the intro next time</label>
       <div class="outro-actions">
         <button type="button" id="outro-again">Play Again</button>
+        <a class="hud-link hud-steam" id="outro-wishlist" href="/?wishlist=1">★ Wishlist on Steam</a>
+        <button type="button" id="outro-export">⬇ Export Save (.json)</button>
         <a class="hud-link" href="/">Home</a>
       </div>
     </div>
@@ -118,6 +126,9 @@ interface HudView {
   flash: HTMLElement;
   hint: HTMLElement;
   backup: HTMLElement;
+  achToast: HTMLElement;
+  achQueue: Array<{ icon: string; title: string; steamApiName: string; description: string }>;
+  achTimer: number;
   skipBox: HTMLInputElement;
   lastHp: number;
   lastPips: string;
@@ -180,6 +191,25 @@ function hudApi(view: HudView): Hud {
       q('span', view.backup).textContent = `SSD backup loaded. HP ${hp}.`;
       replay(view.backup, 'show');
     },
+    achievement(item) {
+      view.achQueue.push(item);
+      if (view.achTimer) return;
+      const showNext = (): void => {
+        const next = view.achQueue.shift();
+        if (!next) {
+          view.achToast.classList.remove('open');
+          view.achTimer = 0;
+          return;
+        }
+        q('.ach-icon', view.achToast).textContent = next.icon;
+        q('.ach-title', view.achToast).textContent = next.title;
+        q('.ach-key', view.achToast).textContent = next.steamApiName;
+        q('.ach-desc', view.achToast).textContent = next.description;
+        replay(view.achToast, 'open');
+        view.achTimer = window.setTimeout(showNext, 3400);
+      };
+      showNext();
+    },
     showHint(text) {
       q('p', view.hint).innerHTML = esc(text).replace(/\n/g, '<br>');
       replay(view.hint, 'open');
@@ -191,6 +221,8 @@ function hudApi(view: HudView): Hud {
       q('#outro-time', view.stats).textContent = clock(s.timeSec);
       q('#outro-cmd', view.stats).textContent = String(s.commands);
       q('#outro-cuts', view.stats).textContent = s.shortcuts.length ? s.shortcuts.join(', ') : 'none';
+      const unlockedCount = Object.keys(readAchievements().unlocked).length;
+      q('#outro-ach', view.stats).textContent = `${unlockedCount}/${ACHIEVEMENT_SPECS.length} local (Steam-ready)`;
       view.skipBox.checked = skipIntro;
       view.stats.classList.add('open');
       q<HTMLButtonElement>('#outro-again', view.stats).focus();
@@ -224,6 +256,14 @@ function mountFx(stageWrap: HTMLElement): HTMLElement {
     <div class="damage-flash" id="fx-damage"></div>
     <div class="hint-note" id="fx-hint" role="status"><span class="hint-pin"></span><p></p><small>click to close</small></div>
     <div class="backup-banner" id="fx-backup"><b>BACKUP RESTORED!</b><span></span></div>
+    <div class="achievement-toast" id="fx-achievement" aria-live="polite">
+      <span class="ach-icon"></span>
+      <div class="ach-body">
+        <div class="ach-head"><b>TROPHY UNLOCKED</b><code class="ach-key"></code></div>
+        <strong class="ach-title"></strong>
+        <small class="ach-desc"></small>
+      </div>
+    </div>
   `;
   stageWrap.appendChild(fx);
   return fx;
@@ -239,6 +279,16 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
   stats.innerHTML = STATS_HTML;
   const skipBox = q<HTMLInputElement>('#outro-skip', stats);
   q<HTMLButtonElement>('#outro-again', stats).onclick = () => handlers.onPlayAgain(skipBox.checked);
+  wireExternalLinksForDesktop(stats);
+  wireSteamWishlistLink(q<HTMLAnchorElement>('#outro-wishlist', stats));
+  const exportBtn = q<HTMLButtonElement>('#outro-export', stats);
+  exportBtn.onclick = () => {
+    downloadPortableSaveFile();
+    exportBtn.textContent = '✓ Save Exported';
+    window.setTimeout(() => {
+      exportBtn.textContent = '⬇ Export Save (.json)';
+    }, 2400);
+  };
   const hint = q('#fx-hint', fx);
   return hudApi({
     root,
@@ -258,6 +308,9 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     flash: q('#fx-damage', fx),
     hint,
     backup: q('#fx-backup', fx),
+    achToast: q('#fx-achievement', fx),
+    achQueue: [],
+    achTimer: 0,
     skipBox,
     lastHp: -1,
     lastPips: '',

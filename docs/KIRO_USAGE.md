@@ -6,9 +6,9 @@ Haunted Terminal is built around one idea: **Kiro works best when knowledge, pro
 |---|---|---|
 | People | `.kiro/agents/` | 7 custom agents (a lead, 4 feature designers, an artist, QA) |
 | Facts | `.kiro/steering/` | 15 files |
-| Capabilities | `.kiro/specs/<name>/` | 7 spec families (inventory has 3 child specs), 10 spec folders |
+| Capabilities | `.kiro/specs/<name>/` | 15 spec folders (including inventory's 3 child specs, Steam launch funnel & Steamworks release checklist) |
 | Procedures | `.kiro/skills/` | 24 skills, each with validator scripts |
-| Enforcement | `.kiro/hooks/` + `scripts/quality/` | 15 hooks plus 3 per agent, 9 quality gates (including agents and properties) |
+| Enforcement | `.kiro/hooks/` + `scripts/quality/` | 16 hooks plus 3 per agent, 11 quality gates (types, root, size, layers, declarative, specs, duplicates, agents, brands, MCP, and 34 properties) |
 
 ## Custom agents
 
@@ -34,15 +34,15 @@ What we learned from Kiro CLI 3.3.0 while building it (each one is checked by th
 
 ## Property-based testing
 
-32 fast-check properties cover the five major features, run inside `npm run quality` with a fixed seed (spec `.kiro/specs/property-based-tests/`):
+34 fast-check properties cover the five major features, run inside `npm run quality` with a fixed seed (spec `.kiro/specs/property-based-tests/`):
 
 - **Terminal:** the shell never throws on any line; `cp`, `mv`, `chmod` and `rm` keep their unix meaning.
 - **Laptop:** the state machine with timers firing at any moment; the window manager; the loop guard; saved progress.
 - **Comix:** tuned and corrupted intro and outro; the canonical writer; cue arithmetic.
-- **Chapters:** random play on all 11 levels; determinism; the writer; corrupted packs.
+- **Chapters:** random play on all 11 levels; determinism; the writer; corrupted packs; preview `ACH_*` isolation; monotonic portable save merges.
 - **Gameplay:** HP bounds; dead enemies stay dead; pickups once; inventory; exits only when win rules hold; refused Kiro cores.
 
-They found six real bugs that 11 levels of example tests had missed:
+They found seven real bugs that 11 levels of example tests had missed:
 
 - `mv .. j` made the virtual file system a loop, which crashed or hung the game.
 - `ls -l <file>` printed only the name in chapter levels.
@@ -50,12 +50,13 @@ They found six real bugs that 11 levels of example tests had missed:
 - A level-10 Kiro core alias was accepted by `kiro load` but not by the win rule, which would have left the exit locked.
 - The comix check and simulator crashed on a hand-edited draft, and so did the chapter check.
 - A chapter spec file was not in canonical form.
+- Importing a portable save bundle whose `progress` map contained prototype keys such as `toString` read `Object.prototype.toString` from `merged[chapId]` (`src/chapters/portable-save.ts`, now guarded with `Object.hasOwn` + `FORBIDDEN_KEYS`).
 
 A planted bug in each feature makes its property fail, and a planted hang is killed by a watchdog. An independent review (a Kiro sub-agent) also found properties that could not fail; they were rewritten, and a guard now fails when random play stops reaching kills, pickups and exits. How to use them: `docs/PROPERTY_TESTS.md`.
 
 ## Spec-driven development
 
-Every new feature or big refactor starts as a spec (`requirements.md` in EARS syntax, `design.md`, `tasks.md`) with a `Status:` that moves `draft` → `requirements-approved` → `design-approved` → `approved` → `done`. The `feature-spec-grill` skill interviews the user in rounds of at most five questions with a recommended default, records answers under `## Decisions`, and never fills gaps with guesses. Specs: declarative chapter runtime, chapter editor, declarative comix runtime, comix editor, and the inventory (lantern, terminal, laptop).
+Every new feature or big refactor starts as a spec (`requirements.md` in EARS syntax, `design.md`, `tasks.md`) with a `Status:` that moves `draft` → `requirements-approved` → `design-approved` → `approved` → `done`. The `feature-spec-grill` skill interviews the user in rounds of at most five questions with a recommended default, records answers under `## Decisions`, and never fills gaps with guesses. All 15 spec folders in `.kiro/specs/`: declarative chapter runtime, chapter editor, declarative comix runtime, comix editor, inventory (plus lantern, terminal, and laptop child specs), agent team, property-based tests, parody brand guard, MCP devtools & forge, Netlify deploy power, Steam launch funnel, and Steamworks store release.
 
 Compared with vibe coding: the specs became the contract that the validators check. The `inventory` spec family, for example, was implemented task by task and closed only after every quality gate passed.
 
@@ -69,14 +70,14 @@ Steering holds only short, non-overlapping facts and one exact vocabulary (`glos
 
 ## Hooks
 
-15 hooks in `.kiro/hooks/` (and three per team agent):
+16 hooks in `.kiro/hooks/` (and three per team agent):
 
 - `spec-first-on-prompt`: reminds the agent when a prompt reads like a feature.
 - `guard-spec-first`: blocks new `src/<area>/` and `pages/*.html` until a spec is approved.
 - `guard-chapter-files`: protects compiled `generated/` files and the four-place vocabulary rule.
-- `typecheck-on-save`, `validate-chapters-on-save`, `validate-comix-on-save`, `validate-labs-on-save`: validators run when specs or labs are saved.
+- `typecheck-on-save`, `validate-chapters-on-save`, `validate-comix-on-save`, `validate-labs-on-save`, `check-agents-on-save`, `check-brands-on-save`: validators run when source, specs, labs, agents, or docs are saved.
 - `asset-dryrun-*` (model, texture, effect, character): dry-run an asset before it is accepted.
-- `chapter-gates-on-stop`, `spec-status-on-stop`: verification gate and spec report at the end of a turn.
+- `chapter-gates-on-stop`, `spec-status-on-stop`, `property-tests-on-stop`: verification gate, spec status report, and property suite at the end of a turn.
 
 ## What was verified by machines, not by eye
 
@@ -88,7 +89,7 @@ Steering holds only short, non-overlapping facts and one exact vocabulary (`glos
 ## Evidence judges can check in the repo
 
 - `.kiro/specs/inventory/` (and its three child specs): every design choice is a `**A (user, 2026-11-17):**` line, the record of a grill round.
-- `git log`: 38 commits with spec, steering and hook changes next to the code they govern.
+- `git log`: 50+ commits with spec, steering and hook changes next to the code they govern.
 - `npm run quality` and the `--verify` scripts: the gates the hooks call.
 
 ## Coverage of the Kiro features the rules ask about
@@ -96,7 +97,7 @@ Steering holds only short, non-overlapping facts and one exact vocabulary (`glos
 | Feature | State | Plan |
 |---|---|---|
 | Custom agents | done: 7 agents in `.kiro/agents/` | TODO (you): note one real task you ran through `lead-dev` |
-| Property-based testing | done: 32 properties, 6 bugs found | none |
+| Property-based testing | done: 34 properties, 7 bugs found | none |
 | MCP | `haunted-forge` (ours: validate, solve and save levels through tools; a level that fails or dies is never written), Chrome DevTools MCP for `qa` (it looks at the real game), the Netlify MCP server in the `haunted-ship` power. Per-agent exact tool lists; `.kiro/settings/mcp.json` stays empty | Probed in the real CLI (`mcp-probe.mjs`, 9/9). What MCP made possible: an agent cannot save a level that does not clear with 0 deaths, and QA claims about the screen come from screenshots the agent took. |
 | Powers | `haunted-ship` (`.kiro/powers/haunted-ship/`): plugin manifest, keywords, Netlify MCP, `ship` skill with a gated deploy script | TODO (you): note the first real preview and production deploy |
 

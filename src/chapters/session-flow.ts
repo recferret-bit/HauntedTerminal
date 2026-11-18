@@ -4,6 +4,7 @@ import { starterInventory } from '../game/inventory.js';
 import { runLine, type Host } from '../game/shell.js';
 import { lookup, makeNode } from '../game/tree.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from '../game/types.js';
+import { evaluateBatchEvents, formatAchievementLines } from './achievements.js';
 import { readMetagame, recordTelemetry } from './catalog.js';
 import type { LevelSpec } from './types.js';
 import { applySkipTutorial, bullyingNote, evalCond, levelScript, syncTutorial } from './script.js';
@@ -72,6 +73,7 @@ export function jumpToLevel(g: ChapterState, levelIdOrIndex: string | number): T
       idx = g.levels.findIndex((l) => l.id === levelIdOrIndex);
     }
     if (idx < 0) idx = 0;
+    g.fullRun = false;
     g.ended = false;
     g.endedAt = null;
     g.intro = false;
@@ -103,8 +105,12 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
         const r = restart(g);
         return { output: r.output, events: r.events, snapshot: r.snapshot };
       }
+      if (!/[;&|<>]/.test(typed) && /^(?:achievements|ach|trophies|man\s+achievements)(?:\s|$)/i.test(typed)) {
+        const s = runLine(typed, host);
+        return { output: s.output, stderr: s.stderr || undefined, code: s.code, events: s.events, snapshot: snapshot(g) };
+      }
       return {
-        output: 'Issue complete! Run `restart` or open CHAPTERS to select another level.\n',
+        output: 'Issue complete! Run `restart`, `achievements`, or open CHAPTERS to select another level.\n',
         events: [],
         snapshot: snapshot(g),
       };
@@ -151,6 +157,11 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     g.rt.completionNote = '';
     combinedOutput += worldNotes + (g.deathText || '');
     combinedStderr += g.deathText || '';
+    const achEvents = evaluateBatchEvents(events, { preview: g.preview, lab: g.lab !== null });
+    if (achEvents.length > 0) {
+      events.push(...achEvents);
+      combinedOutput += formatAchievementLines(achEvents);
+    }
     playEventsSfx(g, events);
     if (g.lab) observe(g, { line: typed, output: combinedOutput, code: step.code, eventTypes: events.map((e) => e.type) });
 
@@ -212,7 +223,9 @@ export function internalTick(g: ChapterState, _fromCommand: boolean): TickResult
     refreshExitGates(g, events);
     const notes = g.rt.world.drain();
     const stderr = g.deathText || undefined;
-    const output = tickOut + notes + (g.deathText || '');
+    const achEvents = _fromCommand ? [] : evaluateBatchEvents(events, { preview: g.preview, lab: g.lab !== null });
+    if (achEvents.length > 0) events.push(...achEvents);
+    const output = tickOut + notes + (g.deathText || '') + formatAchievementLines(achEvents);
     playEventsSfx(g, events);
     if (g.lab) observe(g, { output, eventTypes: events.map((e) => e.type) });
     return { output, stderr, events, snapshot: snapshot(g) };
@@ -244,6 +257,7 @@ export function restart(g: ChapterState): TickResult {
     g.pausedMs = 0;
     g.ended = false;
     g.endedAt = null;
+    g.fullRun = true;
     g.intro = false;
     applyInitialLoadout(g, 0);
     loadLevel(g, 0, false, events);

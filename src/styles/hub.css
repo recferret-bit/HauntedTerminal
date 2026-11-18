@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+@import "./fonts.css";
 
 :root {
   --ink: #140f12;
@@ -27,6 +27,7 @@ html, body {
   background-size: 6px 6px;
   color: var(--ink);
   font-family: var(--mono);
+  font-size-adjust: from-font;
   line-height: 1.5;
 }
 
@@ -109,10 +110,21 @@ a { color: inherit; }
 
 .comic-btn:hover { background: var(--orange-hi); }
 .comic-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
-.comic-btn.primary { background: var(--orange); color: #fff; }
+.comic-btn:focus-visible,
+.door-card:focus-visible,
+.jump-pill:focus-visible,
+.issue-tab:focus-visible,
+.level-card:focus-visible,
+.hub-brand:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+}
+.comic-btn.primary { background: var(--orange); color: var(--ink); }
 .comic-btn.primary:hover { background: var(--orange-hi); color: var(--ink); }
 .comic-btn.teal { background: var(--teal); color: var(--ink); }
 .comic-btn.paper { background: var(--card); color: var(--ink); }
+.comic-btn.steam-cta { background: #1b2838; color: var(--yellow); border-color: var(--yellow); box-shadow: 4px 4px 0 #000; }
+.comic-btn.steam-cta:hover { background: var(--yellow); color: var(--ink); border-color: var(--ink); }
 
 /* ---- Hero Splash Panel ---- */
 .hero-panel {
@@ -275,11 +287,12 @@ a { color: inherit; }
   padding: 2px 7px;
   border: 2px solid var(--ink);
   background: var(--yellow);
+  color: var(--ink);
 }
 
-.door-kicker.teal { background: var(--teal); }
-.door-kicker.orange { background: var(--orange); color: #fff; }
-.door-kicker.blue { background: var(--blue); color: #fff; }
+.door-kicker.teal { background: var(--teal); color: var(--ink); }
+.door-kicker.orange { background: var(--orange); color: var(--ink); }
+.door-kicker.blue { background: var(--blue); color: var(--ink); }
 
 .door-card h3 {
   font-family: var(--display);
@@ -294,11 +307,16 @@ a { color: inherit; }
 }
 
 .door-go {
+  align-self: flex-start;
   font-family: var(--display);
   font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.1em;
-  color: var(--orange);
+  background: var(--orange);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  padding: 3px 9px;
   text-transform: uppercase;
 }
 
@@ -470,7 +488,7 @@ a { color: inherit; }
 .mech-tag.hub { background: var(--teal); }
 .mech-tag.html-css { background: var(--yellow); }
 .mech-tag.docker-image, .mech-tag.docker-compose { background: #9bf6ff; }
-.mech-tag.boss { background: var(--fault); color: #fff; }
+.mech-tag.boss { background: var(--fault); color: var(--ink); }
 
 .level-card h4 {
   font-family: var(--display);

@@ -1,0 +1,720 @@
+/* Startup conversion funnel, roadmap comparison, desktop downloads, trophy rack, FAQ & native <dialog> modal. */
+/* Strict Comix Zone palette: flat cel blocks, ink borders, halftone paper, zero smooth gradients. */
+
+.hub-header-wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 20px 0;
+  position: relative;
+}
+
+.hub-header-wrap + .hub-shell {
+  padding-top: 22px;
+  padding-bottom: 22px;
+}
+
+.hub-footer-wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px 56px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 20px;
+  top: 8px;
+  z-index: 40;
+  padding: 6px 12px;
+  background: var(--yellow);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.skip-link:focus-visible {
+  clip-path: none;
+  width: auto;
+  height: auto;
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.funnel-hero {
+  grid-template-columns: minmax(0, 1.32fr) minmax(0, 0.98fr);
+  align-items: stretch;
+}
+
+@media (max-width: 880px) {
+  .funnel-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.funnel-hero .hero-copy {
+  min-width: 0;
+}
+
+.hero-kicker-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.caption-tag.teal-tag {
+  background: var(--teal);
+  color: var(--ink);
+}
+
+.comic-btn.cta-lg {
+  font-size: 13px;
+  padding: 10px 16px;
+  max-width: 100%;
+  text-align: center;
+}
+
+.hero-telemetry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 2px dashed #352c4d;
+}
+
+.telemetry-chip {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  background: #1b152b;
+  color: var(--paper);
+  border: 2px solid #45386b;
+}
+
+.telemetry-chip strong {
+  color: var(--yellow);
+}
+
+.hero-preview-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tty-mini-card {
+  background: #0b0912;
+  border: 3px solid var(--yellow);
+  padding: 10px 12px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #dffef4;
+}
+
+.tty-mini-head {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--display);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: var(--yellow);
+  border-bottom: 1px solid #2e2547;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+}
+
+.tty-mini-line {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tty-mini-line b {
+  color: var(--orange-hi);
+}
+
+.tty-mini-line em {
+  font-style: normal;
+  color: var(--teal);
+}
+
+/* ---- 3-Step Conversion Funnel & Startup Thesis ---- */
+.funnel-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 900px) {
+  .funnel-steps-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.funnel-step-card {
+  background: var(--card);
+  border: 4px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.funnel-step-num {
+  align-self: flex-start;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  padding: 2px 8px;
+  background: var(--ink);
+  color: var(--yellow);
+}
+
+.funnel-step-card h3 {
+  font-family: var(--display);
+  font-size: 18px;
+  line-height: 1.18;
+}
+
+.funnel-step-card p {
+  font-size: 12.5px;
+  color: #3a332c;
+}
+
+/* ---- Free Demo vs Full Steam Edition Comparison ---- */
+.edition-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .edition-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.edition-card {
+  background: var(--card);
+  border: 5px solid var(--ink);
+  box-shadow: 7px 7px 0 var(--ink);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.edition-card.steam-edition {
+  background: var(--void);
+  color: var(--paper);
+}
+
+.edition-card h3 {
+  font-family: var(--display);
+  font-size: 22px;
+  line-height: 1.15;
+  margin-top: 6px;
+}
+
+.edition-card.steam-edition h3 {
+  color: var(--yellow);
+}
+
+.edition-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 12.5px;
+}
+
+.edition-list li {
+  padding-left: 18px;
+  position: relative;
+}
+
+.edition-list li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: var(--orange);
+  font-weight: 700;
+}
+
+.edition-card.steam-edition .edition-list li::before {
+  color: var(--teal);
+}
+
+/* ---- Desktop Builds & Save Portability ---- */
+.os-build-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 14px;
+}
+
+.os-card {
+  background: var(--card);
+  border: 4px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.os-card h3 {
+  font-family: var(--display);
+  font-size: 17px;
+  margin-top: 4px;
+}
+
+.os-card p {
+  font-size: 12px;
+  color: #3d3630;
+}
+
+.os-card code {
+  display: block;
+  font-size: 11px;
+  padding: 4px 7px;
+  background: var(--void);
+  color: var(--yellow);
+  border: 2px solid var(--ink);
+}
+
+.portability-bar {
+  background: var(--plate);
+  color: var(--paper);
+  border: 4px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  padding: 14px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.portability-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 66ch;
+}
+
+.portability-copy strong {
+  font-family: var(--display);
+  font-size: 15px;
+  color: var(--yellow);
+  letter-spacing: 0.05em;
+}
+
+.portability-copy span {
+  font-size: 12px;
+  color: #d6cebe;
+}
+
+.portability-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.save-feedback {
+  width: 100%;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  background: var(--teal);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+}
+
+.save-feedback.err {
+  background: #b81d3a;
+  color: #fff;
+}
+
+.save-feedback[hidden] {
+  display: none;
+}
+
+/* ---- Local Achievements Trophy Rack ---- */
+.ach-meter-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+progress.ach-progress {
+  flex: 1 1 220px;
+  height: 16px;
+  appearance: none;
+  border: 3px solid var(--ink);
+  background: var(--void);
+  accent-color: var(--teal);
+}
+
+progress.ach-progress::-webkit-progress-bar {
+  background: var(--void);
+}
+
+progress.ach-progress::-webkit-progress-value {
+  background: var(--teal);
+}
+
+progress.ach-progress::-moz-progress-bar {
+  background: var(--teal);
+}
+
+.trophy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(265px, 100%), 1fr));
+  gap: 12px;
+}
+
+.trophy-card {
+  background: #fffdf8;
+  border: 3px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.trophy-card.unlocked {
+  background: #ebfff8;
+  border-color: #0a6b4f;
+}
+
+.trophy-card.locked {
+  opacity: 0.88;
+}
+
+.trophy-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.trophy-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  font-size: 16px;
+}
+
+.trophy-card.locked .trophy-icon-badge {
+  background: #ded6c1;
+}
+
+.trophy-title {
+  font-family: var(--display);
+  font-size: 15px;
+  line-height: 1.2;
+  margin-top: 6px;
+}
+
+.trophy-desc {
+  font-size: 12px;
+  color: #3a322a;
+  margin-top: 4px;
+}
+
+.trophy-empty {
+  font-size: 12.5px;
+}
+
+.trophy-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding-top: 5px;
+  border-top: 1px dashed #c8bea6;
+  font-size: 10.5px;
+}
+
+.trophy-api-key {
+  font-family: var(--mono);
+  background: var(--void);
+  color: var(--yellow);
+  padding: 1px 6px;
+}
+
+/* ---- Exclusive Native <details name="steam-faq"> Accordion ---- */
+.faq-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+details.comic-faq {
+  background: var(--card);
+  border: 4px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  padding: 11px 14px;
+}
+
+details.comic-faq summary {
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+details.comic-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+details.comic-faq summary::after {
+  content: "+";
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  font-family: var(--mono);
+  font-size: 15px;
+}
+
+details.comic-faq[open] summary::after {
+  content: "−";
+  background: var(--teal);
+}
+
+details.comic-faq summary:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 3px;
+}
+
+details.comic-faq p {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #c8bea6;
+  font-size: 12.5px;
+  color: #3a332c;
+}
+
+/* ---- Native Modal <dialog> & :user-invalid Form Rules ---- */
+dialog.comic-dialog {
+  margin: auto;
+  width: min(540px, calc(100vw - 28px));
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  background: var(--card);
+  color: var(--ink);
+  border: 5px solid var(--ink);
+  box-shadow: 10px 10px 0 var(--ink);
+  padding: 0;
+}
+
+dialog.comic-dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog.comic-dialog::backdrop {
+  background: rgba(15, 12, 24, 0.78);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.dialog-inner {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dialog-head .door-kicker {
+  display: inline-block;
+}
+
+.dialog-head h2 {
+  font-family: var(--display);
+  font-size: 22px;
+  line-height: 1.15;
+  margin-top: 6px;
+}
+
+.dialog-lead {
+  font-size: 12.5px;
+}
+
+#steam-waitlist-form {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.waitlist-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.waitlist-field label {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.field-hint {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.waitlist-input,
+.waitlist-select {
+  font-family: var(--mono);
+  font-size: max(1rem, 13px);
+  min-height: 44px;
+  padding: 8px 10px;
+  background: #fff;
+  color: var(--ink);
+  border: 3px solid var(--ink);
+}
+
+.waitlist-input:focus-visible,
+.waitlist-select:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.waitlist-input:is(:user-invalid, .user-invalid-fallback) {
+  border-color: #b81d3a;
+  background-color: #ffe9ee;
+}
+
+.waitlist-input:is(:user-valid, .user-valid-fallback) {
+  border-color: #0a6b4f;
+}
+
+.field-error-msg {
+  display: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b81d3a;
+}
+
+.waitlist-input:is(:user-invalid, .user-invalid-fallback) + .field-error-msg {
+  display: block;
+}
+
+fieldset.waitlist-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  padding: 8px 11px 10px;
+}
+
+fieldset.waitlist-checks legend {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  padding: 1px 7px;
+}
+
+fieldset.waitlist-checks label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+fieldset.waitlist-checks input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--teal);
+}
+
+.waitlist-note {
+  font-size: 11.5px;
+  color: #4a4137;
+  background: #fff8df;
+  border: 2px solid var(--ink);
+  padding: 8px 10px;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.dialog-secondary-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.visually-hidden:where(:not(:focus-within, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comic-btn,
+  .door-card {
+    transition: none;
+  }
+}

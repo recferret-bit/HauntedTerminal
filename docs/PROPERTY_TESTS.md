@@ -5,7 +5,7 @@
 ## Run it
 
 ```bash
-node scripts/harness/property-tests.mjs                        # all 32 properties, the gate
+node scripts/harness/property-tests.mjs                        # all 34 properties, the gate
 node scripts/harness/property-tests.mjs --only terminal,laptop # one or more features: terminal laptop comix chapters gameplay
 node scripts/harness/property-tests.mjs --runs 2000           # look harder (the gate stays at 100)
 node scripts/harness/property-tests.mjs --seed 7 --runs 500   # other random inputs
@@ -21,7 +21,7 @@ A line per property: `ok` or `FAIL`, the time, the name, the runs. Exit code 0 i
 | terminal (both shells) | the shell never throws on any line; `cp`, `mv`, `chmod`, `rm` keep their unix meaning; an unreadable file cannot be copied; `sed` with an empty pattern is refused |
 | laptop | the state machine stays in known states with timers firing at any moment; one window per app and a sane focus; the loop guard leaves loop-free code alone and still compiles guarded code; saved progress never throws |
 | comix | the shipped comixes simulate after random tuning; the Check tab reports eight kinds of breakage; the canonical writer reproduces every file; cue arithmetic |
-| chapters | random play never throws on any of the 11 levels; the same play gives the same transcript; the Check tab reports ten kinds of breakage; the canonical writer |
+| chapters | random play never throws on any of the 11 levels; the same play gives the same transcript; the Check tab reports ten kinds of breakage; the canonical writer; preview sessions never leak `ACH_*` unlocks; portable save import rejects prototype keys and merges monotonically |
 | gameplay | HP stays in range; dead enemies stay dead; a pickup is collected once; the inventory; a level is left only when its win rules hold; a Kiro hub refuses the wrong core; random play still reaches kills, pickups, attacks and exits |
 
 ## Reading a failure
@@ -49,4 +49,4 @@ Rules of thumb:
 
 ## Bugs they have found
 
-Mutation-style checks and the first runs found: `mv .. j` turning the file tree into a loop (crash or hang); `ls -l <file>` printing only the name in chapter levels; the comix and chapter checks crashing on a hand-edited draft; `sed 's//x/g'` inserting `x` between every character; `cp` copying a file `cat` cannot read; and a level-10 Kiro core alias that `kiro load` accepted but the exit rule did not. Details: the property spec's `tasks.md`.
+Mutation-style checks and property runs found seven real bugs: `mv .. j` turning the file tree into a loop (crash or hang); `ls -l <file>` printing only the name in chapter levels; the comix and chapter checks crashing on a hand-edited draft; `sed 's//x/g'` inserting `x` between every character; `cp` copying a file `cat` cannot read; a level-10 Kiro core alias that `kiro load` accepted but the exit rule did not; and portable save import reading `Object.prototype.toString` on `progress: { toString: ... }`. Details: `.kiro/specs/property-based-tests/tasks.md` and `scripts/harness/props/chapters.mjs`.

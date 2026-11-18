@@ -26,8 +26,92 @@ const BREAKAGES = [
 ];
 import { chapterWorld } from './sessions.mjs';
 
+function portableSaveAndPreviewProps(deps) {
+  const {
+    world,
+    readAchievements,
+    unlockAchievement,
+    readChapterProgress,
+    readMetagame,
+    recordLevelClear,
+    resetInMemoryStoresForTest,
+    exportPortableSaveBundle,
+    importPortableSaveBundle,
+  } = deps;
+  return [
+    {
+      name: 'preview sessions never record or emit ACH_* achievements under random play',
+      build: () =>
+        fc.property(world.play, ([levelIdx, steps]) => {
+          resetInMemoryStoresForTest();
+          world.drive(world.open(levelIdx), steps, (r, s) => {
+            expect(
+              r.events.every((e) => e.type !== 'ACHIEVEMENT_UNLOCKED'),
+              `preview session emitted ACHIEVEMENT_UNLOCKED after ${JSON.stringify(s)}`,
+            );
+          });
+          expect(
+            Object.keys(readAchievements().unlocked).length === 0,
+            'preview session mutated unlocked achievements in storage',
+          );
+        }),
+    },
+    {
+      name: 'portable save import never throws on arbitrary JSON and merges ranks, scrap and ACH_* trophies monotonically',
+      // Found during review: `progress: { toString: ... }` previously read `Object.prototype.toString` from `merged[chapId]`.
+      examples: [
+        ['toString', { progress: { toString: { x: { cleared: true } } } }],
+        ['__proto__', { progress: { __proto__: { x: { cleared: true } } } }],
+      ],
+      build: () =>
+        fc.property(
+          fc.oneof(fc.constantFrom('toString', 'constructor', '__proto__', 'valueOf', ''), fc.string({ maxLength: 30 })),
+          jsonValue,
+          (badKey, fuzz) => {
+            resetInMemoryStoresForTest();
+            expect(importPortableSaveBundle(JSON.stringify(fuzz)).ok === false, 'arbitrary non-save JSON was accepted');
+
+            const chapId = world.pack.manifest.id;
+            const lvlId = world.levels[0].id;
+            recordLevelClear(chapId, lvlId, 'S', 4, 12, true);
+            unlockAchievement('first_boot', { now: 1000 });
+            unlockAchievement('campaign_clear', { now: 2000 });
+            const baselineScrap = readMetagame().scrap;
+            const exported = JSON.stringify(exportPortableSaveBundle());
+
+            resetInMemoryStoresForTest();
+            expect(importPortableSaveBundle(exported).ok === true, 'round-trip save export failed to import');
+            expect(readChapterProgress()[chapId]?.[lvlId]?.bestRank === 'S', 'round-trip lost S rank');
+
+            const downgrade = JSON.stringify({
+              format: 'haunted-terminal-save',
+              version: 1,
+              exportedAt: '2026-11-17T00:00:00Z',
+              progress: {
+                ...(badKey ? { [badKey]: { x: { cleared: true, bestRank: 'C', bestCommands: 99, bestTimeSec: 99 } } } : {}),
+                [chapId]: { [lvlId]: { cleared: true, bestRank: 'C', bestCommands: 999, bestTimeSec: 999, chaosCleared: false } },
+              },
+              metagame: { scrap: 0, unlockedPerks: ['fake-perk'], activePerks: ['fake-perk'], awardedRanks: { [`${chapId}:${lvlId}`]: 'C' } },
+              achievements: fuzz,
+            });
+            expect(importPortableSaveBundle(downgrade).ok === true, 'valid-header downgrade bundle failed to import');
+            const rec = readChapterProgress()[chapId]?.[lvlId];
+            expect(rec?.bestRank === 'S' && rec.bestCommands === 4 && rec.chaosCleared === true, 'import downgraded sector bestRank/commands/chaos');
+            expect(readMetagame().scrap >= baselineScrap, 'import decreased Silicon Scrap');
+            const ach = readAchievements().unlocked;
+            expect(Boolean(ach.first_boot && ach.campaign_clear), 'import lost unlocked ACH_* trophies');
+            expect(!Object.hasOwn(readChapterProgress(), 'toString'), 'prototype key leaked into progress store');
+          },
+        ),
+    },
+  ];
+}
+
 export default async function chaptersSuite(ctx) {
   const { checkPack } = await ctx.load('/src/chapter-editor/check.ts');
+  const { readAchievements, unlockAchievement } = await ctx.load('/src/chapters/achievements.ts');
+  const { readChapterProgress, readMetagame, recordLevelClear, resetInMemoryStoresForTest } = await ctx.load('/src/chapters/catalog.ts');
+  const { exportPortableSaveBundle, importPortableSaveBundle } = await ctx.load('/src/chapters/portable-save.ts');
   const world = await chapterWorld(ctx);
   const chaptersDir = join(projectRoot, 'chapters');
   const files = filesUnder(chaptersDir, '.json', readdirSync, join);
@@ -117,5 +201,16 @@ export default async function chaptersSuite(ctx) {
           expect(Array.isArray(issues), 'checkPack did not return a list');
         }),
     },
+    ...portableSaveAndPreviewProps({
+      world,
+      readAchievements,
+      unlockAchievement,
+      readChapterProgress,
+      readMetagame,
+      recordLevelClear,
+      resetInMemoryStoresForTest,
+      exportPortableSaveBundle,
+      importPortableSaveBundle,
+    }),
   ];
 }

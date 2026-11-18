@@ -153,6 +153,8 @@ export interface ChapterState {
   muted: boolean;
   intro: boolean;
   ended: boolean;
+  /** True when the run started on Level 1 and never teleported via `jumpToLevel`. */
+  fullRun: boolean;
   deadNow: boolean;
   deathText: string;
   tacticalMode: boolean;
@@ -174,6 +176,7 @@ export const CHAPTER_COMMANDS = [
   'grimoire',
   'bestiary',
   'workshop',
+  'achievements',
 ] as const;
 
 export function creatableParent(root: VNode, cwd: VNode, raw: string): { parent: VNode; name: string } | null {

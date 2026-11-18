@@ -18,7 +18,7 @@ const GROUPS: Record<CommandGroup, readonly string[]> = {
   Fight: ['ps', 'top', 'kill', 'pkill'],
   'Loot & Ghost': ['source', '.', 'kiro'],
   Code: ['edit', 'nano', 'docker'],
-  'Help & game': ['help', 'man', 'tutorial', 'clear', 'exit', 'logout', 'hank', 'tactical', 'grimoire', 'bestiary', 'workshop'],
+  'Help & game': ['help', 'man', 'tutorial', 'clear', 'exit', 'logout', 'hank', 'tactical', 'grimoire', 'bestiary', 'workshop', 'achievements'],
 };
 
 /** A line that runs when the command's Run button is clicked in the default lab room (it has `/lab/readme.txt`). */
@@ -29,7 +29,7 @@ const EXAMPLES: Record<string, string> = {
   rev: 'rev readme.txt', sed: "sed 's/lab/LAB/' readme.txt", head: 'head -n 1 readme.txt', tail: 'tail -n 1 readme.txt', ps: 'ps', top: 'top',
   kill: 'kill -l', pkill: 'pkill nothing', source: 'source readme.txt', '.': '. readme.txt', kiro: 'kiro', help: 'help', man: 'man ls',
   status: 'status', whoami: 'whoami', inventory: 'inventory', inv: 'inv', hold: 'hold lantern', tutorial: 'tutorial', clear: 'clear', exit: 'exit', logout: 'logout', edit: 'edit readme.txt',
-  nano: 'nano readme.txt', docker: 'docker images', hank: 'hank', tactical: 'tactical off', grimoire: 'grimoire', bestiary: 'bestiary', workshop: 'workshop',
+  nano: 'nano readme.txt', docker: 'docker images', hank: 'hank', tactical: 'tactical off', grimoire: 'grimoire', bestiary: 'bestiary', workshop: 'workshop', achievements: 'achievements',
 };
 
 /** One-line usage for commands that have no `man` page of their own. */

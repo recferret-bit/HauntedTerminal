@@ -30,3 +30,4 @@ Use these words exactly; do not invent synonyms.
 - **QA report**: one `docs/qa/<YYYY-MM-DD>-<scope>.md` written by `qa`: the checks run with exit codes, the findings with owners, a `PASS` / `FAIL` verdict.
 - **Property** (test): an invariant checked on many generated inputs by `scripts/harness/property-tests.mjs` (fast-check). A failure gives a shrunk **counterexample** and a seed.
 - **Grill**: the rounds of questions the agent asks before a Kiro spec leaves `draft`. Answers are recorded under `## Decisions`; unanswered ones stay under `## Open questions`.
+- **Achievement**: one of the 12 declarative local trophies in `src/chapters/achievements.ts` (`haunted-terminal:achievements:v1`), paired 1:1 with a Steamworks `ACH_*` API key, surfaced via `achievements` (`ach`, `trophies`), the HUD toast, `/` and `/chapters.html`, and never recorded in `preview` or `lab` sessions.

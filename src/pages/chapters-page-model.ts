@@ -5,7 +5,7 @@ export interface ChaptersViewState {
   activeLevel: ChapterLevelSummary;
   launchTactical: boolean;
   launchChaos: boolean;
-  activeBinderTab: 'grimoire' | 'bestiary';
+  activeBinderTab: 'grimoire' | 'bestiary' | 'achievements';
   workshopBanner: string;
 }
 
@@ -21,6 +21,7 @@ export interface ChaptersPageEls {
   binderContentEl: HTMLElement | null;
   tabGrimoireBtn: HTMLButtonElement | null;
   tabBestiaryBtn: HTMLButtonElement | null;
+  tabAchievementsBtn: HTMLButtonElement | null;
   metagameSummaryEl: HTMLElement | null;
 }
 
@@ -30,6 +31,6 @@ export function syncChaptersUrl(state: ChaptersViewState): void {
   q.set('level', state.activeLevel.id);
   if (state.launchTactical) q.set('tactical', '1');
   if (state.launchChaos) q.set('chaos', '1');
-  if (state.activeBinderTab === 'bestiary') q.set('tab', 'bestiary');
+  if (state.activeBinderTab !== 'grimoire') q.set('tab', state.activeBinderTab);
   window.history.replaceState(null, '', `/chapters.html?${q.toString()}`);
 }
