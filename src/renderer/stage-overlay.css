@@ -132,7 +132,8 @@
   background-size: 9px 9px;
 }
 .st-ncard .mk { font-weight: 700; font-size: max(18px, calc(var(--u) * 0.48)); line-height: 1; color: #ffd166; -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--ink); }
-.st-ncard .lb { font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: max(11px, calc(var(--u) * 0.2)); color: #f4f1ea; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-ncard .lb { font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: max(11px, calc(var(--u) * 0.2)); color: #f4f1ea; line-height: 1.15; white-space: normal; overflow-wrap: anywhere; min-width: 0; }
+@media (max-width: 1100px) { .st-ncard .lb { font-size: max(10px, calc(var(--u) * 0.17)); } }
 .st-ncard.locked { background-color: #3a1820; }
 .st-ncard.locked .mk { color: #ef476f; }
 .st-ncard.down .mk { color: #06d6a0; }
