@@ -53,7 +53,7 @@ function findNextUnclearLevel(): { url: string; label: string } | null {
   if (!next) return null;
   return {
     url: buildPlayUrl(manifest.id, next, true),
-    label: `Continue Sector ${String(next.index).padStart(2, '0')} (${clearedIds.length}/${manifest.levels.length} Cleared) →`,
+    label: `Continue Sector ${String(next.index).padStart(2, '0')} (${clearedIds.length}/${manifest.levels.length} Cleared) >`,
   };
 }
 

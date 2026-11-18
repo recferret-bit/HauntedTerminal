@@ -2730,7 +2730,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
                 "time": "Time",
                 "commands": "Commands",
                 "shortcuts": "Shortcuts",
-                "press": "PRESS ANY KEY ▸"
+                "press": "PRESS ANY KEY >"
               },
               "emptyShortcuts": "none",
               "fallbackBackground": "#3a506b"

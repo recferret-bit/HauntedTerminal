@@ -108,10 +108,10 @@ const CSS = /* css */ `
 .htc-chip { font: 600 max(11px, min(2.3cqh, 3cqw))/1 "IBM Plex Mono", ui-monospace, monospace; padding: 0.3em 0.5em; background: var(--ink); color: var(--yellow); }
 .htc-meme {
   position: absolute; left: 3cqw; right: 3cqw; text-align: center; pointer-events: none; z-index: 2;
-  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Black", sans-serif; font-weight: 900;
-  text-transform: uppercase; color: #fff; letter-spacing: 0.01em; line-height: 1.0;
+  font-family: "Chakra Petch", "Arial Narrow", system-ui, sans-serif; font-weight: 700;
+  text-transform: uppercase; color: #fff; letter-spacing: 0; line-height: 1.0;
   -webkit-text-stroke: 0.09em #000; paint-order: stroke fill; text-shadow: 0 0.04em 0 #000;
-  font-size: max(15px, min(8.5cqh, 5.6cqw));
+  font-size: max(13px, min(6.8cqh, 4.4cqw));
 }
 .htc-meme.htc-top { top: 3cqh; }
 .htc-meme.htc-bottom { bottom: 3cqh; }
@@ -122,8 +122,8 @@ const CSS = /* css */ `
 }
 .htc-glitch {
   position: absolute; left: 0; right: 0; bottom: 6cqh; text-align: center; pointer-events: none; z-index: 2;
-  font-family: Impact, Haettenschweiler, "Arial Black", sans-serif; font-weight: 900; color: #fff;
-  font-size: max(18px, min(13cqh, 10cqw)); line-height: 1; letter-spacing: 0.04em; white-space: nowrap;
+  font-family: "Chakra Petch", "Arial Narrow", system-ui, sans-serif; font-weight: 700; color: #fff;
+  font-size: max(16px, min(10.5cqh, 7.8cqw)); line-height: 1; letter-spacing: 0.02em; white-space: nowrap;
   -webkit-text-stroke: 0.06em #000; paint-order: stroke fill;
   text-shadow: 0.06em 0 0 #ef476f, -0.06em 0 0 #4cc9f0;
 }
@@ -138,8 +138,8 @@ const CSS = /* css */ `
 .htc-brain { position: absolute; inset: 0; display: grid; grid-template-rows: repeat(4, 1fr); background: var(--ink); gap: 4px; }
 .htc-brain > div { position: relative; display: grid; grid-template-columns: 34% 1fr; align-items: center; overflow: hidden; padding: 0 3cqw; }
 .htc-brain svg { width: 100%; height: 86%; overflow: visible; }
-.htc-brain b { font-family: Impact, Haettenschweiler, "Arial Black", sans-serif; font-weight: 900; text-transform: uppercase; line-height: 1.02;
-  font-size: max(10px, min(6.4cqh, 9.5cqw)); color: #fff; -webkit-text-stroke: 0.08em #000; paint-order: stroke fill; }
+.htc-brain b { font-family: "Chakra Petch", "Arial Narrow", system-ui, sans-serif; font-weight: 700; text-transform: uppercase; line-height: 1.02;
+  font-size: max(9px, min(5.2cqh, 7.8cqw)); color: #fff; -webkit-text-stroke: 0.08em #000; paint-order: stroke fill; }
 .htc-brain > div.htc-light b { color: var(--ink); -webkit-text-stroke: 0; text-shadow: 2px 2px 0 rgba(255,255,255,0.7); }
 .htc-brain small { display: table; font: 700 max(8px, min(3.2cqh, 5cqw))/1 "Chakra Petch", system-ui, sans-serif; letter-spacing: 0.1em; color: var(--yellow);
   background: var(--ink); padding: 0.2em 0.4em 0.15em; -webkit-text-stroke: 0; text-shadow: none; margin-bottom: 0.35em; }
@@ -155,7 +155,7 @@ const CSS = /* css */ `
 .htc-btn:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
 .htc-root.htc-paused::after {
   content: "PAUSED"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-4deg); z-index: 5;
-  font: 900 max(28px, 9vmin)/1 Impact, Haettenschweiler, "Arial Black", sans-serif; color: #fff; letter-spacing: 0.04em;
+  font: 700 max(26px, 7.5vmin)/1 "Chakra Petch", "Arial Narrow", system-ui, sans-serif; color: #fff; letter-spacing: 0.04em;
   -webkit-text-stroke: 0.08em #000; paint-order: stroke fill; text-shadow: 0.08em 0.08em 0 #ef476f; pointer-events: none;
 }
 .htc-press { font-weight: 700; font-size: max(12px, min(2.6cqh, 3.4cqw)); letter-spacing: 0.1em; text-transform: uppercase; }

@@ -195,9 +195,9 @@ export function inspectTextWithKiro(text: string, label: string, core: KiroCoreD
   const head = `${CYAN}[KIRO.D // ${core.shortTag}]${RESET} Local Weight Audit ${DIM}(${label})${RESET}\n`;
   if (findings.length === 0) {
     const lineCount = text ? text.split('\n').length : 0;
-    return `${head}  ${GREEN}✓${RESET} Clean buffer (${lineCount} lines, 0 cloud hallucinations detected).\n`;
+    return `${head}  ${GREEN}+${RESET} Clean buffer (${lineCount} lines, 0 cloud hallucinations detected).\n`;
   }
-  return `${head}${findings.map((f) => `  ${GOLD}▸${RESET} ${f}`).join('\n')}\n`;
+  return `${head}${findings.map((f) => `  ${GOLD}>${RESET} ${f}`).join('\n')}\n`;
 }
 
 export class KiroCompanion {
@@ -290,7 +290,7 @@ export class KiroCompanion {
     const vramPool = 8 + Math.floor(ramGb / 16) * 4;
     const cur = this.activeCore;
     const lines: string[] = [
-      `${CYAN}◈ KIRO.D — SELF-HOSTED GHOST COMPANION${RESET} ${DIM}(localhost // 0 cloud API calls)${RESET}`,
+      `${CYAN}* KIRO.D — SELF-HOSTED GHOST COMPANION${RESET} ${DIM}(localhost // 0 cloud API calls)${RESET}`,
       `  Active Shell : ${GOLD}${cur.gguf}${RESET}  [VRAM: ${cur.vramGb}GB / ${vramPool}GB local]`,
       `  Active Perk  : ${GREEN}${cur.perkTitle}${RESET} — ${cur.perkSummary}`,
     ];
@@ -302,7 +302,7 @@ export class KiroCompanion {
     lines.push('  Local `.gguf` Cores (`kiro load <name>`):');
     for (const id of KIRO_CORE_ORDER) {
       const c = KIRO_CORES[id];
-      const mark = id === this.coreId ? `${GREEN}●${RESET}` : `${DIM}○${RESET}`;
+      const mark = id === this.coreId ? `${GREEN}*${RESET}` : `${DIM}-${RESET}`;
       lines.push(
         `    ${mark} ${GOLD}${c.id.padEnd(9)}${RESET} ${c.gguf.padEnd(27)} ${DIM}vs ${c.countersLabel.padEnd(11)}${RESET} — ${c.perkTitle}`,
       );
@@ -320,10 +320,10 @@ export class KiroCompanion {
     const msg =
       'Parody & Non-Affiliation Notice: Anti-Gravy, Codec, Gork, and Clod are 100% original fictional parody characters—no real AI brands are used or affiliated!';
     const stdout =
-      `${CYAN}◈ KIRO.D — PARODY & NON-AFFILIATION NOTICE${RESET} ${DIM}(localhost // zero real brands)${RESET}\n` +
-      `  ${GREEN}✓ Parody Cast:${RESET} The "Big Four" (${GOLD}Anti-Gravy${RESET}, ${GOLD}Codec${RESET}, ${GOLD}Gork${RESET}, ${GOLD}Clod${RESET}) are original fictional characters poking fun at AI coding agents in general.\n` +
-      `  ${GREEN}✓ No Brand Affiliation:${RESET} Haunted Terminal is not affiliated with, endorsed by, or sponsored by any AI or hardware company.\n` +
-      `  ${GREEN}✓ Educational Terms:${RESET} Open-weight core tags (${GOLD}qwen${RESET}, ${GOLD}mistral${RESET}, ${GOLD}deepseek${RESET}, ${GOLD}llama${RESET}), POSIX commands, and hardware terms are used strictly for educational gameplay.\n`;
+      `${CYAN}* KIRO.D — PARODY & NON-AFFILIATION NOTICE${RESET} ${DIM}(localhost // zero real brands)${RESET}\n` +
+      `  ${GREEN}+ Parody Cast:${RESET} The "Big Four" (${GOLD}Anti-Gravy${RESET}, ${GOLD}Codec${RESET}, ${GOLD}Gork${RESET}, ${GOLD}Clod${RESET}) are original fictional characters poking fun at AI coding agents in general.\n` +
+      `  ${GREEN}+ No Brand Affiliation:${RESET} Haunted Terminal is not affiliated with, endorsed by, or sponsored by any AI or hardware company.\n` +
+      `  ${GREEN}+ Educational Terms:${RESET} Open-weight core tags (${GOLD}qwen${RESET}, ${GOLD}mistral${RESET}, ${GOLD}deepseek${RESET}, ${GOLD}llama${RESET}), POSIX commands, and hardware terms are used strictly for educational gameplay.\n`;
     const events: KernelEvent[] = [
       {
         type: 'KIRO_ACTION',
@@ -368,7 +368,7 @@ export class KiroCompanion {
     ];
     const stdout =
       `${CYAN}[KIRO.D // localhost]${RESET} Swapped local weights -> ${GOLD}${def.gguf}${RESET}\n` +
-      `  ${GREEN}▸ ${def.perkTitle}:${RESET} ${def.perkSummary}\n` +
+      `  ${GREEN}> ${def.perkTitle}:${RESET} ${def.perkSummary}\n` +
       `  ${CYAN}"${def.bootLine}"${RESET}\n`;
     return { ok: true, stdout, events };
   }
@@ -386,11 +386,11 @@ export class KiroCompanion {
     const enableXray = this.coreId === 'qwen';
     const healAmount = this.coreId === 'mistral' ? 5 : 0;
     const lines: string[] = [
-      `${CYAN}[KIRO.D // ${cur.shortTag}]${RESET} ◈ GHOST SCAN — ${GOLD}${input.cwd}${RESET}`,
+      `${CYAN}[KIRO.D // ${cur.shortTag}]${RESET} * GHOST SCAN — ${GOLD}${input.cwd}${RESET}`,
     ];
 
     if (input.enemies.length === 0) {
-      lines.push(`  ${GREEN}✓ Threats:${RESET} Sector clear (0 active malware processes).`);
+      lines.push(`  ${GREEN}+ Threats:${RESET} Sector clear (0 active malware processes).`);
     } else {
       lines.push(`  ${RED}! Threats (${input.enemies.length}):${RESET}`);
       for (const e of input.enemies) {
@@ -403,7 +403,7 @@ export class KiroCompanion {
     const hiddenFiles = input.files.filter((f) => f.hidden);
     if (hiddenFiles.length > 0) {
       lines.push(
-        `  ${CYAN}◈ Hidden Inodes (${hiddenFiles.length}):${RESET} ${hiddenFiles.map((f) => f.name).join(', ')}${
+        `  ${CYAN}* Hidden Inodes (${hiddenFiles.length}):${RESET} ${hiddenFiles.map((f) => f.name).join(', ')}${
           revealHidden ? ' (illuminated!)' : ' (use `ls -la` to expose)'
         }`,
       );
@@ -412,7 +412,7 @@ export class KiroCompanion {
     const lockedEntries = input.files.filter((f) => f.locked);
     if (lockedEntries.length > 0) {
       lines.push(
-        `  ${GOLD}◈ Locked Gates:${RESET} ${lockedEntries
+        `  ${GOLD}* Locked Gates:${RESET} ${lockedEntries
           .map((f) => `${f.name}${f.name.includes('cipher') || f.name.includes('cloud') || f.name.includes('gravy') ? ' (use `kiro crack ' + f.name + '`)' : ' (check permissions / win rules)'}`)
           .join(', ')}`,
       );
@@ -424,15 +424,15 @@ export class KiroCompanion {
       const snippet = inspectTextWithKiro(f.content, f.name, cur);
       if (!snippet.includes('Clean buffer')) {
         const firstFinding = snippet.split('\n')[1]?.trim() ?? '';
-        if (firstFinding) lines.push(`  ${GOLD}◈ ${f.name}:${RESET} ${firstFinding.replace(/^▸\s*/, '')}`);
+        if (firstFinding) lines.push(`  ${GOLD}* ${f.name}:${RESET} ${firstFinding.replace(/^>\s*/, '')}`);
       }
     }
 
     if (enableXray) {
-      lines.push(`  ${CYAN}◈ Qwen PID Visor:${RESET} PS_XRAY overlay engaged.`);
+      lines.push(`  ${CYAN}* Qwen PID Visor:${RESET} PS_XRAY overlay engaged.`);
     }
     if (healAmount > 0) {
-      lines.push(`  ${GREEN}◈ Mistral Raw Siphon:${RESET} +${healAmount} HP shell integrity restored.`);
+      lines.push(`  ${GREEN}* Mistral Raw Siphon:${RESET} +${healAmount} HP shell integrity restored.`);
     }
 
     const events: KernelEvent[] = [
@@ -478,7 +478,7 @@ export class KiroCompanion {
     ];
     const stdout =
       `${CYAN}[KIRO.D // ${this.activeCore.shortTag}]${RESET} Shell unfolded at ${GOLD}${targetName}${RESET} [0/${required}]!\n` +
-      `  ${GOLD}▸ DEFEND KIRO:${RESET} Survive or execute ${required} actions/ticks in this room while local inference breaks the lock!\n`;
+      `  ${GOLD}> DEFEND KIRO:${RESET} Survive or execute ${required} actions/ticks in this room while local inference breaks the lock!\n`;
     return { stdout, events };
   }
 

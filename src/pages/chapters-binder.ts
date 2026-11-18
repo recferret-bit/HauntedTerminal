@@ -19,8 +19,8 @@ function renderAchievementsBinder(host: HTMLElement, state: ChaptersViewState, o
   const summary = document.createElement('span');
   summary.textContent =
     state.workshopBanner && state.activeBinderTab === 'achievements'
-      ? `🏆 ${unlockedCount}/${ACHIEVEMENT_SPECS.length} LOCAL ACHIEVEMENTS UNLOCKED • ${state.workshopBanner}`
-      : `🏆 ${unlockedCount}/${ACHIEVEMENT_SPECS.length} LOCAL ACHIEVEMENTS UNLOCKED • 1:1 Steamworks API keys (ACH_*) ready for desktop & Auto-Cloud sync.`;
+      ? `${unlockedCount}/${ACHIEVEMENT_SPECS.length} LOCAL ACHIEVEMENTS UNLOCKED • ${state.workshopBanner}`
+      : `${unlockedCount}/${ACHIEVEMENT_SPECS.length} LOCAL ACHIEVEMENTS UNLOCKED • 1:1 Steamworks API keys (ACH_*) ready for desktop & Auto-Cloud sync.`;
 
   const actions = document.createElement('div');
   actions.style.display = 'flex';
@@ -31,7 +31,7 @@ function renderAchievementsBinder(host: HTMLElement, state: ChaptersViewState, o
   expBtn.type = 'button';
   expBtn.id = 'chapters-export-save-btn';
   expBtn.className = 'comic-btn paper';
-  expBtn.textContent = '⬇ Export Save (.json)';
+  expBtn.textContent = 'Export Save (.json)';
   expBtn.onclick = async () => {
     const { savedPath } = await exportPortableSaveFile();
     const label = savedPath ? savedPath.split(/[\\/]/).pop() ?? savedPath : '';
@@ -51,7 +51,7 @@ function renderAchievementsBinder(host: HTMLElement, state: ChaptersViewState, o
   impBtn.type = 'button';
   impBtn.id = 'chapters-import-save-btn';
   impBtn.className = 'comic-btn primary';
-  impBtn.textContent = '⬆ Import Save (.json)';
+  impBtn.textContent = 'Import Save (.json)';
   impBtn.onclick = () => impInput.click();
 
   impInput.onchange = async () => {
@@ -114,7 +114,7 @@ export function renderBinder(
             <article class="binder-card">
               <div class="level-card-top">
                 <strong style="font-family:var(--display);font-size:16px;">${esc(g.command)}</strong>
-                <span class="mech-tag">${esc(g.category)}${practiced ? ' ✓' : ''}</span>
+                <span class="mech-tag">${esc(g.category)}${practiced ? ' [x]' : ''}</span>
               </div>
               <code class="binder-syntax">${esc(g.syntax)}</code>
               <p style="font-size:12px;"><strong>Linux Reality:</strong> ${esc(g.realWorld)}</p>
