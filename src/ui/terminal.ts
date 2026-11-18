@@ -12,11 +12,27 @@ import type { Shell, ShellHooks } from './terminal-types.js';
 export type { Shell, ShellHooks } from './terminal-types.js';
 export { colourise } from './terminal-colour.js';
 
+const TERM_FONT = '"IBM Plex Mono", ui-monospace, monospace';
+
+/**
+ * The terminal opens before its web font may have arrived; xterm then measures the fallback font's cells, and the rows
+ * stay the wrong height after IBM Plex Mono loads (seen by the visual audit: 16 rows in one run, 18 in another). Once the
+ * font is in, set the family again so xterm measures it, and refit.
+ */
+function remeasureWhenFontLoads(term: Terminal, fitAddon: FitAddon): void {
+  if (typeof document === 'undefined' || !document.fonts) return;
+  void document.fonts.load(`${term.options.fontSize ?? 13}px "IBM Plex Mono"`).then(() => {
+    term.options.fontFamily = `${TERM_FONT} `; // a changed value is what makes xterm measure again
+    term.options.fontFamily = TERM_FONT;
+    try { fitAddon.fit(); } catch { /* hidden host */ }
+  }, () => { /* offline without the font: the fallback stays */ });
+}
+
 function openTerm(host: HTMLElement): { term: Terminal; fitAddon: FitAddon } {
   const term = new Terminal({
     cursorBlink: true,
     cursorStyle: 'block',
-    fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+    fontFamily: TERM_FONT,
     fontSize: 13,
     lineHeight: 1.05,
     scrollback: 1000,
@@ -42,6 +58,7 @@ function openTerm(host: HTMLElement): { term: Terminal; fitAddon: FitAddon } {
   term.loadAddon(fitAddon);
   term.open(host);
   try { fitAddon.fit(); } catch { /* hidden host */ }
+  remeasureWhenFontLoads(term, fitAddon);
   return { term, fitAddon };
 }
 

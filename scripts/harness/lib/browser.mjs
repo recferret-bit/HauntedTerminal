@@ -95,6 +95,8 @@ export async function launchBrowser({ width = 1440, height = 900, chrome: explic
   };
   return {
     problems,
+    /** Every DevTools event, for a caller that needs one (`Emulation.virtualTimeBudgetExpired`). */
+    on: (fn) => cdp.on(fn),
     evaluate,
     open: (url) => cdp.send('Page.navigate', { url }),
     /** Raw DevTools call, for real input: `send('Input.dispatchKeyEvent', {...})`. */

@@ -25,6 +25,10 @@
     "@chrome-devtools/fill",
     "@chrome-devtools/type_text",
     "@chrome-devtools/press_key",
+    "@chrome-devtools/emulate",
+    "@chrome-devtools/performance_start_trace",
+    "@chrome-devtools/performance_stop_trace",
+    "@chrome-devtools/performance_analyze_insight",
     "@haunted-forge/list_assets",
     "@haunted-forge/list_levels",
     "@haunted-forge/get_level",
@@ -132,14 +136,18 @@
           "**"
         ],
         "exclude": [
-          "docs/qa/**"
+          "docs/qa/*.md",
+          "docs/qa/media/**",
+          "docs/qa/labs/**"
         ],
         "effect": "deny"
       },
       {
         "capability": "fs_write",
         "match": [
-          "docs/qa/**"
+          "docs/qa/*.md",
+          "docs/qa/media/**",
+          "docs/qa/labs/**"
         ],
         "effect": "allow"
       },
@@ -149,6 +157,13 @@
           "src/chapters/generated/**",
           "src/cinematic/generated/**",
           "chapters/*/story/out/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "docs/qa/baselines/**"
         ],
         "effect": "deny"
       },
@@ -275,7 +290,10 @@
           "npm install*",
           "npm i *",
           "npm uninstall*",
-          "npm publish*"
+          "npm publish*",
+          "*visual-audit*--update*",
+          "*docs/qa/baselines*",
+          "cp *..*"
         ],
         "effect": "deny"
       },
@@ -311,6 +329,10 @@
           "chrome-devtools/fill",
           "chrome-devtools/type_text",
           "chrome-devtools/press_key",
+          "chrome-devtools/emulate",
+          "chrome-devtools/performance_start_trace",
+          "chrome-devtools/performance_stop_trace",
+          "chrome-devtools/performance_analyze_insight",
           "haunted-forge/list_assets",
           "haunted-forge/list_levels",
           "haunted-forge/get_level",
@@ -343,6 +365,10 @@
           "chrome-devtools/fill",
           "chrome-devtools/type_text",
           "chrome-devtools/press_key",
+          "chrome-devtools/emulate",
+          "chrome-devtools/performance_start_trace",
+          "chrome-devtools/performance_stop_trace",
+          "chrome-devtools/performance_analyze_insight",
           "haunted-forge/list_assets",
           "haunted-forge/list_levels",
           "haunted-forge/get_level",

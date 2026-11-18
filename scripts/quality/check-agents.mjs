@@ -6,7 +6,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { GENERATED_PATHS, LEAD, TEAM_NAMES, agentTexts, mcpTable, ownWrites } from '../harness/agents-build.mjs';
+import { GENERATED_PATHS, LEAD, PERSON_ONLY_PATHS, TEAM_NAMES, agentTexts, mcpTable, ownWrites } from '../harness/agents-build.mjs';
 import { mcpProblems } from './agent-mcp.mjs';
 import { globToRegExp, loadAgents, shellVerdict, writeRules } from './agent-rules.mjs';
 
@@ -19,11 +19,11 @@ const TRIGGERS = new Set(['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'Pos
 const MAX_FILES = 32;
 const MAX_CHARS = 100_000;
 /** Paths that must have exactly one owner: source, content, assets, property suites, docs and the files agents keep current. */
-const OWNED = /^(src\/|chapters\/|comix\/|public\/assets\/|scripts\/harness\/props\/|scripts\/harness\/property-tests\.mjs$|docs\/|\.kiro\/specs\/|\.kiro\/steering\/|(AGENTS|CLAUDE|README)\.md$)/;
+const OWNED = /^(src\/|chapters\/|comix\/|public\/assets\/|scripts\/harness\/props\/|scripts\/harness\/property-tests\.mjs$|scripts\/harness\/visual-audit\.mjs$|scripts\/harness\/lib\/visual-[^/]+\.mjs$|scripts\/harness\/visual\/|docs\/|\.kiro\/specs\/|\.kiro\/steering\/|(AGENTS|CLAUDE|README)\.md$)/;
 /** Infrastructure no agent writes (it holds their own fences, the harness and the build): a change is the user's. */
 const INFRA = /^(scripts\/|\.github\/|\.kiro\/(agents|hooks|skills|settings|powers)\/|pages\/|public\/_redirects$|public\/comix\/|public\/fonts\/|package(-lock)?\.json$|tsconfig\.json$|vite\.config\.ts$|LICENSE$|\.gitignore$)/;
 /** Compiled output: written by the compilers for whoever ran them, owned by nobody. */
-const UNOWNED = [/^src\/chapters\/generated\//, /^src\/cinematic\/generated\//, /^chapters\/[^/]+\/story\/out\//];
+const UNOWNED = [/^src\/chapters\/generated\//, /^src\/cinematic\/generated\//, /^chapters\/[^/]+\/story\/out\//, /^docs\/qa\/baselines\//];
 
 const agents = loadAgents(root);
 const byName = new Map(agents.map((a) => [a.name, a.agent]));
@@ -99,6 +99,9 @@ for (const { file, name, agent } of agents) {
   for (const cmd of ['STACK_PORT=$(curl x) npm start', 'STACK_PORT=5175 npm start', 'STACK_PORT=5174 rm -rf x', 'NODE_OPTIONS=--require=x npm start']) must(cmd, 'deny');
   if (name === LEAD) for (const cmd of ['git push -u origin agent/maintenance-x', 'git switch -c agent/x', 'git add -- src/a.ts', 'git commit -m "x"']) must(cmd, 'allow');
   else for (const cmd of ['git commit -m x', 'git push origin agent/x', 'git switch -c agent/x']) must(cmd, 'deny');
+  // Visual-audit baselines are a person's (spec .kiro/specs/qa-visual-audit/, Q13): no agent updates or touches them.
+  for (const cmd of ['node scripts/harness/visual-audit.mjs --update hub', 'node scripts/harness/visual-audit.mjs --screens hub --update hub@1600x950', 'node scripts/harness/visual-audit.mjs --out docs/qa/baselines', 'cp scripts/harness/out/visual/hub@1600x950.png docs/qa/baselines/hub@1600x950.png', 'cp scripts/harness/out/a.png docs/qa/media/../baselines/a.png']) must(cmd, 'deny');
+  for (const cmd of ['node scripts/harness/visual-audit.mjs', 'node scripts/harness/visual-audit.mjs --screens hub,level-* --sizes 1280x820', 'node scripts/harness/visual-audit.mjs --selftest']) must(cmd, 'allow');
   // qa copies screenshots; the lead's session must allow that too (a sub-agent's command is checked against it).
   if (name === 'qa' || name === LEAD) for (const cmd of ['mkdir -p docs/qa/media', 'cp scripts/harness/out/play-1.png docs/qa/media/a.png']) must(cmd, 'allow');
   else must('cp scripts/harness/out/play-1.png docs/qa/media/a.png', 'deny');
@@ -109,6 +112,8 @@ for (const { file, name, agent } of agents) {
   const fence = deny.find((r) => r.match?.length === 1 && r.match[0] === '**');
   const sorted = (xs) => JSON.stringify([...xs].sort());
   const generatedDeny = deny.find((r) => JSON.stringify([...(r.match ?? [])].sort()) === JSON.stringify([...GENERATED_PATHS].sort()));
+  const personDeny = deny.find((r) => sorted(r.match ?? []) === sorted(PERSON_ONLY_PATHS));
+  if (!personDeny) problems.push(`${file}: fs_write must deny ${PERSON_ONLY_PATHS.join(', ')} (baselines are approved by a person)`);
   if (!generatedDeny) problems.push(`${file}: fs_write must deny the compiled output (${GENERATED_PATHS.join(', ')}): the compilers write it, agents do not`);
   const reads = (agent.permissions?.rules ?? []).filter((r) => r.capability === 'fs_read' && r.effect === 'deny').flatMap((r) => r.match);
   for (const secret of ['~/.kiro/crew/.env', '**/.env']) if (!reads.includes(secret)) problems.push(`${file}: fs_read must deny ${secret}`);

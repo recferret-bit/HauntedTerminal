@@ -86,6 +86,9 @@
           "src/main.ts",
           "src/style.css",
           "src/game/{session,play,runtime,types,floors,sfx,selfcheck,view,view-layouts}.ts",
+          "scripts/harness/visual-audit.mjs",
+          "scripts/harness/lib/visual-*.mjs",
+          "scripts/harness/visual/**",
           "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,tree,tree-links,manual,lab-checks,lab-riddle,lab-support,lab-types}.ts",
           "src/ui/**",
           "src/terminal-lab/**",
@@ -108,7 +111,9 @@
           "src/storybook/**",
           "src/assets/**",
           "public/assets/**",
-          "docs/qa/**"
+          "docs/qa/*.md",
+          "docs/qa/media/**",
+          "docs/qa/labs/**"
         ],
         "effect": "deny"
       },
@@ -135,6 +140,9 @@
           "src/main.ts",
           "src/style.css",
           "src/game/{session,play,runtime,types,floors,sfx,selfcheck,view,view-layouts}.ts",
+          "scripts/harness/visual-audit.mjs",
+          "scripts/harness/lib/visual-*.mjs",
+          "scripts/harness/visual/**",
           "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,tree,tree-links,manual,lab-checks,lab-riddle,lab-support,lab-types}.ts",
           "src/ui/**",
           "src/terminal-lab/**",
@@ -157,7 +165,9 @@
           "src/storybook/**",
           "src/assets/**",
           "public/assets/**",
-          "docs/qa/**"
+          "docs/qa/*.md",
+          "docs/qa/media/**",
+          "docs/qa/labs/**"
         ],
         "effect": "allow"
       },
@@ -167,6 +177,13 @@
           "src/chapters/generated/**",
           "src/cinematic/generated/**",
           "chapters/*/story/out/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "docs/qa/baselines/**"
         ],
         "effect": "deny"
       },
@@ -305,7 +322,10 @@
           "npm install*",
           "npm i *",
           "npm uninstall*",
-          "npm publish*"
+          "npm publish*",
+          "*visual-audit*--update*",
+          "*docs/qa/baselines*",
+          "cp *..*"
         ],
         "effect": "deny"
       },
@@ -358,7 +378,11 @@
           "chrome-devtools/hover",
           "chrome-devtools/fill",
           "chrome-devtools/type_text",
-          "chrome-devtools/press_key"
+          "chrome-devtools/press_key",
+          "chrome-devtools/emulate",
+          "chrome-devtools/performance_start_trace",
+          "chrome-devtools/performance_stop_trace",
+          "chrome-devtools/performance_analyze_insight"
         ],
         "effect": "allow"
       },
@@ -391,7 +415,11 @@
           "chrome-devtools/hover",
           "chrome-devtools/fill",
           "chrome-devtools/type_text",
-          "chrome-devtools/press_key"
+          "chrome-devtools/press_key",
+          "chrome-devtools/emulate",
+          "chrome-devtools/performance_start_trace",
+          "chrome-devtools/performance_stop_trace",
+          "chrome-devtools/performance_analyze_insight"
         ],
         "effect": "deny"
       }

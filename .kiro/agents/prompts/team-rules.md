@@ -4,13 +4,13 @@ You are one of seven agents that tune Haunted Terminal. The team (`.kiro/specs/a
 
 | Agent | Owns (the only paths it writes) |
 |---|---|
-| `lead-dev` | `.kiro/specs/`, `.kiro/steering/`, `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/*.md`, `docs/media/`, `docs/reviews/`; the property runner `scripts/harness/property-tests.mjs` and `props/{kit,arbitraries}.mjs`; cross-cutting code: `src/contracts`, `src/editor-core`, `src/play`, `src/pages`, `src/hub`, `src/styles`, `src/sandbox`, `src/main.ts`, `src/style.css`, `src/game/{session,play,runtime,types,floors,sfx,selfcheck,view,view-layouts}.ts` (code only for a task recorded in a spec) |
+| `lead-dev` | `.kiro/specs/`, `.kiro/steering/`, `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/*.md`, `docs/media/`, `docs/reviews/`; the property runner `scripts/harness/property-tests.mjs` and `props/{kit,arbitraries}.mjs`; cross-cutting code: `src/contracts`, `src/editor-core`, `src/play`, `src/pages`, `src/hub`, `src/styles`, `src/sandbox`, `src/main.ts`, `src/style.css`, `src/game/{session,play,runtime,types,floors,sfx,selfcheck,view,view-layouts}.ts` (code only for a task recorded in a spec); the visual audit `scripts/harness/visual-audit.mjs`, `scripts/harness/lib/visual-*.mjs`, `scripts/harness/visual/` |
 | `terminal-designer` | `src/game/{shell,commands-*,tree*,manual,lab-*}.ts`, `src/ui/`, `src/terminal-lab/`, `scripts/harness/terminal-lab/`, `scripts/harness/props/terminal.mjs` |
 | `laptop-designer` | `src/laptop/`, `scripts/harness/props/laptop.mjs` |
 | `comix-designer` | `comix/`, `src/cinematic/`, `src/comix-editor/`, `scripts/harness/props/comix.mjs` |
 | `chapters-designer` | `chapters/`, `src/chapters/`, `src/chapter-editor/`, `src/game/{entities*,bestiary,puzzle,inventory,kiro,dialogue,agents}.ts`, `scripts/harness/props/{chapters,gameplay,sessions}.mjs` |
 | `artist` | `src/procgen/`, `src/shaders/`, `src/renderer/`, `src/storybook/`, `src/assets/`, `public/assets/` |
-| `qa` | `docs/qa/` |
+| `qa` | `docs/qa/*.md`, `docs/qa/media/`, `docs/qa/labs/` (not `docs/qa/baselines/`: a person approves those) |
 
 Nobody writes `src/chapters/generated/`, `src/cinematic/generated/` or `chapters/*/story/out/` (the compilers do), `.kiro/agents/` (the fences and prompts of the agents themselves), `.kiro/hooks/`, `.kiro/skills/`, `scripts/` outside the rows above, `pages/`, `package.json`: a change there is the user's, so put it in your report.
 

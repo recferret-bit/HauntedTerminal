@@ -1,0 +1,32 @@
+{
+  "seed": 1995,
+  "sizes": ["1600x950", "1280x820", "1920x1080", "1024x768"],
+  "frameSize": "1280x820",
+  "fonts": ["Chakra Petch", "IBM Plex Mono"],
+  "pages": {
+    "play": {
+      "selectors": ["#masthead", "#hud", "#tutorial-card", "#shader-dock", "#stage-caption", "#terminal-dock", "#pixel-dlg", ".st-card", ".st-say", ".st-lock", ".st-plate", ".st-badges", ".st-pips"],
+      "ignoreOverflow": [".xterm", "#dev-inspector"],
+      "allowOverlap": []
+    },
+    "hub": {
+      "selectors": [".hub-nav", ".hero-copy", ".hero-art-frame", ".hero-cta-row", ".telemetry-chip", ".comic-btn", ".door-card", ".edition-card", ".funnel-step-card", ".os-card", ".section-head"],
+      "ignoreOverflow": [".skip-link"],
+      "allowOverlap": []
+    },
+    "cinematic": { "selectors": ["#menu"], "ignoreOverflow": [], "allowOverlap": [] },
+    "laptop": { "selectors": [], "ignoreOverflow": [], "allowOverlap": [] }
+  },
+  "levels": { "page": "play", "ready": "play", "settle": 1500, "animates": true },
+  "screens": [
+    { "id": "hub", "page": "hub", "url": "/", "settle": 1500, "fullPage": true },
+    { "id": "intro-early", "page": "cinematic", "url": "/cinematic.html?play=intro&t=3", "settle": 800 },
+    { "id": "intro-late", "page": "cinematic", "url": "/cinematic.html?play=intro&t=12", "settle": 800 },
+    { "id": "dialogue", "page": "play", "ready": "play", "url": "/play/{chapter}/{level:4}?nointro=1", "steps": [{ "solution": { "level": 4, "count": 2 } }], "settle": 1200, "expect": { "events": ["OBSTACLE_DIALOGUE_RENDERED"] } },
+    { "id": "damage", "page": "play", "ready": "play", "url": "/play/{chapter}/{level:3}?nointro=1", "steps": ["ls", { "until": "window.__game && window.__game.events().some((e) => e.type === 'PLAYER_DAMAGED')", "max": 30000 }], "settle": 300, "expect": { "events": ["PLAYER_DAMAGED"] } },
+    { "id": "death-respawn", "page": "play", "ready": "play", "url": "/play/{chapter}/{level:3}?nointro=1", "steps": ["ls", { "until": "window.__game && window.__game.events().some((e) => e.type === 'PLAYER_RESPAWNED')", "max": 120000 }], "settle": 600, "expect": { "events": ["PLAYER_RESPAWNED"] } },
+    { "id": "boss-fight", "page": "play", "ready": "play", "url": "/play/{chapter}/{level:11}?nointro=1", "steps": [{ "solution": { "level": 11, "count": 2 } }], "settle": 1200, "animates": true },
+    { "id": "stats", "page": "play", "ready": "play", "url": "/play/{chapter}/{level:11}?nointro=1", "steps": [{ "solution": { "level": 11 } }, { "wait": 6000 }, { "key": "Escape" }, { "wait": 1500 }, { "key": "Escape" }, { "wait": 1500 }, { "key": "Escape" }, { "wait": 1500 }, { "key": "Enter" }, { "until": "stats", "max": 60000 }], "settle": 1000, "expect": { "stats": true } },
+    { "id": "laptop", "page": "laptop", "url": "/laptop-lab?state=desktop&speed=0&mute=1", "settle": 1500 }
+  ]
+}

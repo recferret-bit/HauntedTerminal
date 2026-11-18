@@ -99,6 +99,13 @@
         "effect": "deny"
       },
       {
+        "capability": "fs_write",
+        "match": [
+          "docs/qa/baselines/**"
+        ],
+        "effect": "deny"
+      },
+      {
         "capability": "fs_read",
         "match": [
           "**/.env",
@@ -217,7 +224,10 @@
           "npm install*",
           "npm i *",
           "npm uninstall*",
-          "npm publish*"
+          "npm publish*",
+          "*visual-audit*--update*",
+          "*docs/qa/baselines*",
+          "cp *..*"
         ],
         "effect": "deny"
       },

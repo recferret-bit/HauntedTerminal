@@ -57,6 +57,8 @@
     "chrome-devtools-mcp": "1.13.0",
     "fast-check": "4.10.2",
     "jscpd": "5.4.3",
+    "pixelmatch": "8.0.0",
+    "pngjs": "7.0.0",
     "typescript": "^5.8.2",
     "vite": "^6.2.0",
     "zod": "4.6.7"

@@ -1,0 +1,3 @@
+{
+  "_doc": "Animated regions the visual audit ignores, per screen id: [{ \"rect\": [x, y, w, h] in CSS px, \"size\": \"WxH\" (optional, else every size), \"why\": \"...\" }]. Written by a person only (spec .kiro/specs/qa-visual-audit/)."
+}
