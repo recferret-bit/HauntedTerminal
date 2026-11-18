@@ -601,6 +601,12 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
 
 .tut-skip:hover { color: var(--orange); }
 
+/* 1280 wide: the widest HUD (1024 GB SSD with five pips, on the hub levels) wrapped its timer onto the button row */
+@media (max-width: 1320px) {
+  #hud { gap: 4px; }
+  .hud-cell { padding: 3px 6px; gap: 4px; }
+}
+
 @media (max-width: 1180px) {
   #masthead p { display: none; }
   /* narrow stage: tighter HUD cells so the strip wraps into fewer rows */
