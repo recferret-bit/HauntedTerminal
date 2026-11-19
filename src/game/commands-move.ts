@@ -59,7 +59,7 @@ export function cmdCd(g: Play, path: string | undefined): Step {
   if (resolved.loop) return empty(1, 'cd: too many levels of symbolic links\n');
   if (!resolved.node) {
     if (resolved.denied) return denied(g, resolved.denied, 'cd: Permission denied\n', `cd ${path}`);
-    return empty(1, `cd: ${resolved.error ?? 'No such file or directory'}\n`);
+    return empty(1, `cd: ${path}: ${resolved.error ?? 'No such file or directory'}\n`);
   }
   const node = resolved.node;
   if (node.kind !== 'dir') return empty(1, `cd: not a directory: ${path}\n`);

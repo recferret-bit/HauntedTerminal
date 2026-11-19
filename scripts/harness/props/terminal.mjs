@@ -118,6 +118,18 @@ export default async function terminalSuite({ load }) {
         }),
     },
     {
+      name: 'a failed `cd` names the missing path exactly once (both shells)',
+      // Found by QA: the chapter shell printed `cd: nowhere: No such file or directory: nowhere`.
+      examples: [['chapter', 'nowhere'], ['classic', 'nowhere']],
+      build: () =>
+        fc.property(shellKind, fileName.filter(usable), (kind, name) => {
+          const session = room(kind, {});
+          const r = session.exec(`cd ${name}_missing`);
+          const count = r.output.split(`${name}_missing`).length - 1;
+          expect(r.code !== 0 && count === 1, `${kind}: cd ${name}_missing gave ${JSON.stringify(r.output)} (path ${count}x)`);
+        }),
+    },
+    {
       name: 'after `rm f`, `ls` never lists `f` (both shells)',
       build: () =>
         fc.property(shellKind, fc.uniqueArray(fileName.filter(usable), { minLength: 1, maxLength: 4 }), fc.nat(), (kind, names, pick) => {

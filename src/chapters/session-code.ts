@@ -35,7 +35,7 @@ function commitEdited(g: ChapterState, events: KernelEvent[], inodeId: number, c
 
 export function readEditableFile(g: ChapterState, nameOrPath: string): ({ ok: true } & EditorOpenPayload) | { ok: false; error: string } {
     const res = resolve(g.rt.cwd, nameOrPath, true);
-    if (!res.node) return { ok: false, error: res.error ?? `No such file: ${nameOrPath}` };
+    if (!res.node) return { ok: false, error: `${nameOrPath}: ${res.error ?? 'No such file or directory'}` };
     if (res.node.kind !== 'file') return { ok: false, error: `${nameOrPath}: Not a regular file` };
     if ((res.node.mode & 0o400) === 0) return { ok: false, error: `${nameOrPath}: Permission denied` };
     const full = absPath(res.node);
@@ -56,9 +56,10 @@ export function saveEditableFile(g: ChapterState, nameOrPath: string, content: s
     const events: KernelEvent[] = [];
     const res = resolve(g.rt.cwd, nameOrPath, true);
     if (!res.node || res.node.kind !== 'file') {
+      const msg = `edit: ${nameOrPath}: ${res.error ?? (res.node ? 'Not a regular file' : 'cannot save file')}\n`;
       return {
-        output: `edit: ${res.error ?? 'cannot save file'}\n`,
-        stderr: `edit: ${res.error ?? 'cannot save file'}\n`,
+        output: msg,
+        stderr: msg,
         events,
         snapshot: snapshot(g),
       };

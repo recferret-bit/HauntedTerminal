@@ -625,11 +625,13 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
 
 #shader-dock {
   position: absolute;
-  right: 12px;
+  /* bottom centre: the room cards fill the right edge of the stage and the F2 button sits at the left */
+  left: 50%;
+  transform: translateX(-50%);
   bottom: 12px;
   z-index: 6;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   pointer-events: none;
 }
 

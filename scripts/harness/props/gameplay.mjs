@@ -146,6 +146,27 @@ export default async function gameplaySuite(ctx) {
         ),
     },
     {
+      // Found by QA (full-main finding 1): the ended room kept the floor theme, so the stats HUD read `FL 5 /11` after a full run.
+      name: 'the room floor is the level index in every snapshot, also on the ended (stats) room',
+      build: () =>
+        fc.property(deepPlay, ([levelIdx, steps]) =>
+          watch(levelIdx, steps, (s, _b, r) => {
+            expect(r.snapshot.room.floor === s.rt.spec.index, `room.floor ${r.snapshot.room.floor} != level index ${s.rt.spec.index} (ended ${r.snapshot.ended})`);
+          }),
+        ),
+    },
+    {
+      name: 'the chapter end: after the last level is solved and `exit` is typed, the ended room floor is that level index',
+      check: () => {
+        const last = world.levels.length - 1;
+        const session = world.open(last);
+        for (const c of world.levels[last].solutionCommands ?? []) session.exec(c);
+        const snap = session.exec('exit').snapshot;
+        expect(snap.ended, 'the last level did not end the chapter after its solution and `exit`');
+        expect(snap.room.floor === session.rt.spec.index, `ended room.floor ${snap.room.floor} != level index ${session.rt.spec.index}`);
+      },
+    },
+    {
       // Found by this property: hub 3 accepted `kiro load mistral` (a declared alias of llama) but its win rule only accepted llama,
       // so following the alias left the exit locked (fixed in session-rules.ts: the rule honours `coreAliases`).
       examples: [[2, 'mistral']],
