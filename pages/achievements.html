@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#140f12" />
+    <meta name="description" content="The 12 local achievements of Haunted Terminal, with their Steamworks ACH_* keys, and JSON export and import of your save." />
+    <title>Haunted Terminal — Achievements</title>
+    <link rel="preload" href="/fonts/chakra-petch-700-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23140f12'/%3E%3Crect x='2' y='3' width='12' height='9' fill='%23ffd166'/%3E%3Crect x='4' y='6' width='2' height='2' fill='%23140f12'/%3E%3Crect x='7' y='9' width='5' height='1' fill='%23ff6a13'/%3E%3C/svg%3E" />
+    <script type="module" src="/src/hub/page-achievements.ts"></script>
+  </head>
+  <body>
+    <header id="hub-header" class="hub-header-wrap"></header>
+
+    <main class="hub-shell">
+      <div class="section-head">
+        <h1 id="main-heading">Achievements</h1>
+        <span>Local trophies with 1:1 Steamworks keys. Type <code>achievements</code> in-game at any time.</span>
+      </div>
+
+      <section class="binder-panel" id="achievements-rack-host" aria-labelledby="main-heading"></section>
+
+      <section class="portability-bar" aria-label="Browser to Desktop Save Portability">
+        <div class="portability-copy">
+          <strong>BROWSER / DESKTOP / STEAM SAVE &amp; TROPHY PORTABILITY</strong>
+          <span>
+            Cleared Chapter 1 in your browser? Export your progress, Silicon Scrap, <code>~/.bashrc</code> perks, and
+            <code>ACH_*</code> achievements as JSON to import straight into the downloaded desktop build (persisted to
+            <code>haunted-terminal-save.json</code> for cross-OS Steam Auto-Cloud sync).
+          </span>
+        </div>
+        <div class="portability-actions">
+          <button type="button" class="comic-btn teal" id="export-save-btn">Export Save &amp; Trophies (.json)</button>
+          <button type="button" class="comic-btn paper" id="import-save-btn">Import Save Bundle (.json)</button>
+          <input type="file" id="import-save-input" accept="application/json,.json" hidden />
+        </div>
+        <div id="save-portability-feedback" class="save-feedback" role="status" aria-live="polite" hidden></div>
+      </section>
+    </main>
+  </body>
+</html>

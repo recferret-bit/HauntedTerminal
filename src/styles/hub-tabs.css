@@ -1,0 +1,57 @@
+/* Landing tabs: the current tab of the shared header, and the Comix page tiles (spec .kiro/specs/landing-tabs/). */
+/* Same palette and cel look as hub.css: flat blocks, ink borders, no gradients. */
+
+/* The page title of a tab page is an h1 with the look of the section heads. */
+.section-head h1 {
+  font-family: var(--display);
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--yellow);
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 3px 10px;
+}
+
+.hub-nav .comic-btn.active {
+  background: var(--yellow);
+  box-shadow: inset 0 -6px 0 var(--orange), 4px 4px 0 var(--ink);
+}
+
+.hub-brand[aria-current='page'] strong { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 4px; }
+
+.comix-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.comix-tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--card);
+  color: var(--ink);
+  border: 4px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  padding: 16px;
+}
+
+.comix-tile h3 { margin: 6px 0 4px; font-family: var(--display); font-size: 20px; }
+.comix-tile p { margin: 0; font-size: 13px; color: var(--muted); }
+.comix-tile-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.comix-tile-progress { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; }
+.comix-tile-progress progress { width: 100%; height: 12px; accent-color: var(--teal); }
+.comix-tile-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.comix-tile.locked {
+  background: var(--paper-dot);
+  color: var(--muted);
+  box-shadow: 3px 3px 0 var(--ink);
+  border-style: dashed;
+}
+
+.comix-tile.locked h3 { color: var(--muted); }
+.comix-tile-lock { font-family: var(--display); font-weight: 700; letter-spacing: 0.14em; font-size: 12px; }
