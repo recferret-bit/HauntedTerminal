@@ -5,7 +5,7 @@
 //   - a `url` (or `urls`) that is not http(s)://localhost, http(s)://127.0.0.1, https://<name>.netlify.app, or about:blank;
 //   - a URL with credentials in it (`http://localhost@evil.test`), whatever its host looks like;
 //   - a `file:`, `javascript:`, `data:`, `view-source:`, `chrome:` or `devtools:` value in any field;
-//   - an `emulate` call that sets anything but `cpuThrottlingRate` (user agent, headers, geolocation, network... are not
+//   - an `emulate` call that sets anything but `cpuThrottlingRate` (and the `pageId` the tool requires) (user agent, headers, geolocation, network... are not
 //     qa's; spec .kiro/specs/qa-visual-audit/, Q5).
 //   node scripts/hooks/devtools-url-guard.mjs <agent-name>        (event JSON on stdin)
 // Each block is also appended to scripts/harness/out/devtools-url-guard.log (git-ignored), so the MCP probe can check that
@@ -65,7 +65,8 @@ export function violation(input, key = '') {
 /** `emulate` may only throttle the CPU. Returns the problem, or '' for any other tool or a CPU-only call. Pure. */
 export function emulateProblem(toolName, input) {
   if (!/(^|[/_@])emulate$/.test(String(toolName ?? ''))) return '';
-  const extra = Object.keys(input ?? {}).filter((k) => k !== 'cpuThrottlingRate');
+  // `pageId` is the tool's own required selector of the page, not a setting.
+  const extra = Object.keys(input ?? {}).filter((k) => k !== 'cpuThrottlingRate' && k !== 'pageId');
   return extra.length ? `emulate may only set cpuThrottlingRate (not ${extra.join(', ')})` : '';
 }
 

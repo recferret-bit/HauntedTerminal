@@ -175,6 +175,8 @@ await test('devtools url guard: only the local dev servers and https Netlify sit
   // emulate: CPU throttling only (spec qa-visual-audit, Q5).
   for (const name of ['emulate', '@chrome-devtools/emulate', 'chrome-devtools_emulate']) {
     assert.equal(emulateProblem(name, { cpuThrottlingRate: 4 }), '', name);
+    assert.equal(emulateProblem(name, { cpuThrottlingRate: 4, pageId: 1 }), '', `${name} with pageId`);
+    assert.notEqual(emulateProblem(name, { pageId: 1, geolocation: { latitude: 1, longitude: 1 } }), '', `${name} pageId does not excuse other fields`);
     assert.notEqual(emulateProblem(name, { cpuThrottlingRate: 4, userAgent: 'x' }), '', name);
     assert.notEqual(emulateProblem(name, { extraHttpHeaders: { a: 'b' } }), '', name);
   }
