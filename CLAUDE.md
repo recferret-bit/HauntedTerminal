@@ -86,6 +86,7 @@ Always run before declaring work done (plus targeted suites for areas touched):
   - Comix/editor: `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs`, `node scripts/harness/comix-editor-smoke.mjs`
   - Terminal Lab: `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs`, `node scripts/harness/terminal-lab.mjs --all`, `node scripts/harness/terminal-lab-smoke.mjs` (1600x950 and `--width 1280 --height 820`)
   - Laptop Lab: `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/laptop-lab-smoke.mjs` (1600x950 and `--width 1280 --height 820`)
+  - Landing tabs: `node scripts/harness/hub-unit.mjs` and `node scripts/desktop/landing-smoke.mjs` (Home, Desktop Builds, Achievements, Comix pages). Spec: `.kiro/specs/landing-tabs/`
   - Visual audit (qa): `node scripts/harness/visual-audit.mjs` (`--screens`, `--sizes`, `--selftest`; report only, exit 1 = flags to explain); baselines in `docs/qa/baselines/` are approved by a person only (`--update`). Spec: `.kiro/specs/qa-visual-audit/`
   - MCP: `node scripts/harness/forge-unit.mjs` (`npm run quality:mcp`); `node scripts/harness/mcp-probe.mjs` (manual, real Kiro CLI)
   - Deploy (power `haunted-ship`): `node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs preview`, then `prod` only after the user's explicit yes; follow `.kiro/powers/haunted-ship/skills/ship/SKILL.md`
