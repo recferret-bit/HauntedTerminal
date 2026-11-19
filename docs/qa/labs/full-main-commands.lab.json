@@ -1,0 +1,31 @@
+{
+  "id": "full-main-commands",
+  "title": "QA: help, man, hank, inventory, hold, achievements, typos",
+  "room": { "roomKind": "lab_hall", "floorTheme": 2, "mechanic": "terminal", "cwd": "/lab", "title": "QA", "summary": "QA throwaway" },
+  "player": { "ram": 0, "ssd": 0, "core": "" },
+  "clock": "manual",
+  "enemyFire": "hold",
+  "setup": [],
+  "steps": [
+    { "op": "run", "line": "help" },
+    { "op": "run", "line": "man cat" },
+    { "op": "run", "line": "man nosuchthing" },
+    { "op": "run", "line": "hank" },
+    { "op": "run", "line": "hank" },
+    { "op": "run", "line": "inventory" },
+    { "op": "run", "line": "hold laptop" },
+    { "op": "run", "line": "hold lantern" },
+    { "op": "run", "line": "hold" },
+    { "op": "run", "line": "hold nothing" },
+    { "op": "run", "line": "inv" },
+    { "op": "run", "line": "achievements" },
+    { "op": "run", "line": "cat" },
+    { "op": "run", "line": "rm -rf" },
+    { "op": "run", "line": "kill" },
+    { "op": "run", "line": "kill -9 99999" },
+    { "op": "run", "line": "chmod 999 x" },
+    { "op": "run", "line": "cd /nowhere/deep" },
+    { "op": "run", "line": "exit" },
+    { "op": "run", "line": "ls" }
+  ]
+}

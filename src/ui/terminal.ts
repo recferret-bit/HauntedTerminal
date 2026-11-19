@@ -57,6 +57,11 @@ function openTerm(host: HTMLElement): { term: Terminal; fitAddon: FitAddon } {
   const fitAddon = new FitAddon();
   term.loadAddon(fitAddon);
   term.open(host);
+  if (term.textarea) {
+    // Chrome flags form fields without id/name; the helper textarea is xterm's keyboard input.
+    term.textarea.name = 'terminal-input';
+    if (!term.textarea.id) term.textarea.id = 'terminal-input';
+  }
   try { fitAddon.fit(); } catch { /* hidden host */ }
   remeasureWhenFontLoads(term, fitAddon);
   return { term, fitAddon };

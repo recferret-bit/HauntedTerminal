@@ -112,7 +112,7 @@ export function resolve(cwd: VNode, path: string, follow: boolean, depth = 0): R
     if (cursor.kind !== 'dir') return { node: null, error: `Not a directory: ${absPath(cursor)}` };
     if ((cursor.mode & 0o111) === 0) return { node: null, denied: cursor, error: `Permission denied: ${absPath(cursor)}` };
     const child = cursor.children.get(part);
-    if (!child) return { node: null, error: `No such file or directory: ${path}` };
+    if (!child) return { node: null, error: 'No such file or directory' };
     const last = i === parts.length - 1;
     if (child.kind === 'symlink' && (follow || !last)) {
       const jumped = followLink(child);

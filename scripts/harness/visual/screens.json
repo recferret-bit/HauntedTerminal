@@ -5,7 +5,7 @@
   "fonts": ["Chakra Petch", "IBM Plex Mono"],
   "pages": {
     "play": {
-      "selectors": ["#masthead", "#hud", "#tutorial-card", "#shader-dock", "#stage-caption", "#terminal-dock", "#pixel-dlg", ".st-card", ".st-say", ".st-lock", ".st-plate", ".st-badges", ".st-pips"],
+      "selectors": ["#masthead", "#hud", "#tutorial-card", "#shader-dock", ".st-ncard", "#stage-caption", "#terminal-dock", "#pixel-dlg", ".st-card", ".st-say", ".st-lock", ".st-plate", ".st-badges", ".st-pips"],
       "ignoreOverflow": [".xterm", "#dev-inspector"],
       "allowOverlap": []
     },
@@ -21,7 +21,7 @@
   "screens": [
     { "id": "hub", "page": "hub", "url": "/", "settle": 1500, "fullPage": true },
     { "id": "intro-early", "page": "cinematic", "url": "/cinematic.html?play=intro&t=3", "settle": 800 },
-    { "id": "intro-late", "page": "cinematic", "url": "/cinematic.html?play=intro&t=12", "settle": 800 },
+    { "id": "intro-late", "page": "cinematic", "url": "/cinematic.html?play=intro&t=14", "settle": 800 },
     { "id": "dialogue", "page": "play", "ready": "play", "url": "/play/{chapter}/{level:4}?nointro=1", "steps": [{ "solution": { "level": 4, "count": 2 } }], "settle": 1200, "expect": { "events": ["OBSTACLE_DIALOGUE_RENDERED"] } },
     { "id": "damage", "page": "play", "ready": "play", "url": "/play/{chapter}/{level:3}?nointro=1", "steps": ["ls", { "until": "window.__game && window.__game.events().some((e) => e.type === 'PLAYER_DAMAGED')", "max": 30000 }], "settle": 300, "expect": { "events": ["PLAYER_DAMAGED"] } },
     { "id": "death-respawn", "page": "play", "ready": "play", "url": "/play/{chapter}/{level:3}?nointro=1", "steps": ["ls", { "until": "window.__game && window.__game.events().some((e) => e.type === 'PLAYER_RESPAWNED')", "max": 120000 }], "settle": 600, "expect": { "events": ["PLAYER_RESPAWNED"] } },

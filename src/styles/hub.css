@@ -20,6 +20,10 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* The browser default for code is the system mono (Menlo): use the bundled one. */
+code, kbd, samp, pre { font-family: var(--mono); }
+button, input, select, textarea { font-family: inherit; }
+
 html, body {
   min-height: 100vh;
   background-color: var(--paper);

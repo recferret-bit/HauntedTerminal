@@ -11,9 +11,10 @@ function kiroStageActor(g: ChapterState, cwdPath: string, exitOpen: boolean) {
 }
 
 function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, exitBase: string, exitOpen: boolean): void {
+    // The HUD floor is the level index, also on the ended (stats) room.
+    room.floor = g.rt.spec.index;
     if (!g.ended) {
       room.kind = g.rt.spec.roomKind;
-      room.floor = g.rt.spec.index;
       const modeBadges = [
         ...(g.chaosMode ? ['CHAOS'] : []),
       ];
