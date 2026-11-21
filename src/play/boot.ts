@@ -1,5 +1,5 @@
 import { AssetRegistry } from '../assets/asset-registry.js';
-import { CHAPTER_MANIFESTS, getChapterPack } from '../chapters/catalog.js';
+import { CHAPTER_MANIFESTS, getChapterPack, hasChapterProgress, readChapterProgress } from '../chapters/catalog.js';
 import { createChapterSession, isChapterSession } from '../chapters/chapter-session.js';
 import { readDraftPack } from '../chapters/draft.js';
 import { hydrateFromDesktopSaveBundle } from '../chapters/portable-save.js';
@@ -149,7 +149,8 @@ export async function bootPlay(): Promise<Play> {
     floorParam >= 2;
   const skipIntroPref =
     readSkipPref() ||
-    ((isChapterSession(session) || Boolean(lab) || directMidJump) && urlParams.get('intro') !== '1');
+    ((Boolean(lab) || directMidJump || (isChapterSession(session) && hasChapterProgress(readChapterProgress(), chapterParam))) &&
+      urlParams.get('intro') !== '1');
 
   const play = new Play(dom, stage, session, chapterBanner(session, chapterManifest), debugGive, skipTutorial, skipIntroPref);
   play.terminalLab = lab;

@@ -5,7 +5,7 @@ import { ROADMAP_CHAPTER_NUMBERS, roadmapLabel } from './roadmap.js';
 
 /** One tile of the Comix page. An `open` tile has a progress and links; a `locked` tile has neither. */
 export interface ComixTile {
-  kind: 'open' | 'locked';
+  kind: 'open' | 'locked' | 'sequence';
   key: string;
   title: string;
   badge: string;
@@ -13,7 +13,10 @@ export interface ComixTile {
   progress?: { cleared: number; total: number };
   readHref?: string;
   playHref?: string;
+  watchHref?: string;
 }
+
+type SequenceView = { id: string; title: string; subtitle: string; role?: string; status: string };
 
 type ManifestView = Pick<ChapterManifest, 'id' | 'title' | 'subtitle' | 'badge' | 'status'> & { levels: readonly unknown[] };
 
@@ -54,6 +57,23 @@ export function buildComixTiles(
   return [...fromManifests, ...fromRoadmap];
 }
 
+/**
+ * One watchable tile per playable comix sequence whose role is `opening` or `ending` (the intro and the outro), in the
+ * order of the manifests. They never depend on progress.
+ */
+export function buildSequenceTiles(sequences: readonly SequenceView[]): ComixTile[] {
+  return sequences
+    .filter((s) => s.status === 'playable' && (s.role === 'opening' || s.role === 'ending'))
+    .map<ComixTile>((s) => ({
+      kind: 'sequence',
+      key: s.id,
+      title: s.title,
+      badge: s.role === 'opening' ? 'INTRO' : 'OUTRO',
+      subtitle: s.subtitle,
+      watchHref: `/cinematic.html?play=${encodeURIComponent(s.id)}`,
+    }));
+}
+
 function renderTile(tile: ComixTile): HTMLElement {
   const top = el('div', { class: 'comix-tile-top' }, el('span', { class: 'door-kicker' }, tile.badge));
   const heading = [top, el('h3', {}, tile.title), el('p', {}, tile.subtitle)];
@@ -61,11 +81,13 @@ function renderTile(tile: ComixTile): HTMLElement {
     top.append(el('span', { class: 'comix-tile-lock' }, 'LOCKED'));
     return el('article', { class: 'comix-tile locked', 'aria-disabled': 'true', 'data-tile': tile.key }, el('div', {}, ...heading));
   }
+  const open = (...rest: HTMLElement[]): HTMLElement =>
+    el('article', { class: 'comix-tile open', 'data-tile': tile.key }, el('div', {}, ...heading), ...rest);
+  if (tile.kind === 'sequence') {
+    return open(el('div', { class: 'comix-tile-actions' }, el('a', { class: 'comic-btn primary', href: tile.watchHref ?? '#' }, 'Watch')));
+  }
   const p = tile.progress ?? { cleared: 0, total: 0 };
-  return el(
-    'article',
-    { class: 'comix-tile open', 'data-tile': tile.key },
-    el('div', {}, ...heading),
+  return open(
     el(
       'div',
       { class: 'comix-tile-progress' },

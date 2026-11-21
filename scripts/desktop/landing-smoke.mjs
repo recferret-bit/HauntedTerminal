@@ -345,6 +345,9 @@ async function verifyComixPage(cdp, evalJs, base, externalUrls) {
       interactive: t.querySelectorAll('a, button, [tabindex]').length,
     })),
   }))()`);
+  // The intro and the outro come first (Watch tiles), then one open tile per playable chapter.
+  assert.deepEqual(tiles.open.slice(0, 2).map((t) => t.hrefs), [['/cinematic.html?play=intro'], ['/cinematic.html?play=outro']], 'Intro and Outro Watch tiles first');
+  tiles.open.splice(0, 2);
   assert.equal(tiles.open.length, 1, '/comix.html must show one open tile per playable chapter');
   assert.equal(tiles.open[0].progress, '1/11 levels cleared', 'The open tile shows the progress of the imported save');
   assert.deepEqual(tiles.open[0].hrefs, ['/comic.html?chapter=chapter-01-kiroween', '/play/chapter-01-kiroween']);

@@ -416,6 +416,11 @@ export function writeChapterProgress(next: ChapterProgressStore): void {
   }
 }
 
+/** True when the chapter has at least one cleared level in the saved progress: the player is past a new game. */
+export function hasChapterProgress(progress: ChapterProgressStore, chapterId: string): boolean {
+  return Object.values(progress[chapterId] ?? {}).some((rec) => rec.cleared);
+}
+
 export function readChapterProgress(): ChapterProgressStore {
   if (typeof localStorage === 'undefined') return memoryProgress;
   try {
