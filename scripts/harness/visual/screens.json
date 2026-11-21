@@ -10,7 +10,7 @@
       "allowOverlap": []
     },
     "hub": {
-      "selectors": [".hub-nav", ".hero-copy", ".hero-art-frame", ".hero-cta-row", ".telemetry-chip", ".comic-btn", ".door-card", ".edition-card", ".funnel-step-card", ".os-card", ".section-head"],
+      "selectors": [".hub-nav", ".hero-copy", ".hero-art-frame", ".hero-cta-row", ".telemetry-chip", ".comic-btn", ".door-card", ".edition-card", ".funnel-step-card", ".os-card", ".section-head", ".comix-tile", ".trophy-card", ".portability-bar"],
       "ignoreOverflow": [".skip-link"],
       "allowOverlap": []
     },
@@ -20,6 +20,9 @@
   "levels": { "page": "play", "ready": "play", "settle": 1500, "animates": true },
   "screens": [
     { "id": "hub", "page": "hub", "url": "/", "settle": 1500, "fullPage": true },
+    { "id": "desktop", "page": "hub", "url": "/desktop.html", "settle": 1000, "fullPage": true },
+    { "id": "achievements", "page": "hub", "url": "/achievements.html", "settle": 1000, "fullPage": true },
+    { "id": "comix", "page": "hub", "url": "/comix.html", "settle": 1000, "fullPage": true },
     { "id": "intro-early", "page": "cinematic", "url": "/cinematic.html?play=intro&t=3", "settle": 800 },
     { "id": "intro-late", "page": "cinematic", "url": "/cinematic.html?play=intro&t=14", "settle": 800 },
     { "id": "dialogue", "page": "play", "ready": "play", "url": "/play/{chapter}/{level:4}?nointro=1", "steps": [{ "solution": { "level": 4, "count": 2 } }], "settle": 1200, "expect": { "events": ["OBSTACLE_DIALOGUE_RENDERED"] } },

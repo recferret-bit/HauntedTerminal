@@ -153,9 +153,13 @@ async function verifyHeroAndWaitlistDialog(cdp, evalJs, base, externalUrls) {
     fontPreloads: document.querySelectorAll('link[rel="preload"][as="font"]').length,
     skipLink: Boolean(document.querySelector('a.skip-link[href="#main-heading"]')),
     faqCount: document.querySelectorAll('details.comic-faq[name="steam-faq"]').length,
-    trophyCards: document.querySelectorAll('#achievements-rack-host .trophy-card').length,
-    hasProgressTag: Boolean(document.querySelector('#achievements-rack-host progress.ach-progress')),
-    secretMasked: [...document.querySelectorAll('#achievements-rack-host .trophy-title')].filter((n) => n.textContent.includes('????')).length,
+    movedOut: {
+      trophyRack: Boolean(document.getElementById('achievements-rack-host')),
+      saveBar: Boolean(document.getElementById('export-save-btn') || document.getElementById('import-save-btn') || document.querySelector('.portability-bar')),
+      osCards: document.querySelectorAll('.os-card').length,
+      oldAnchors: document.querySelectorAll('a[href="#desktop-builds"], a[href="#achievements-showcase"]').length,
+    },
+    desktopCtaHref: document.getElementById('hero-desktop-cta')?.getAttribute('href'),
     parodyText: document.body.textContent.includes('Anti-Gravy') && document.body.textContent.includes('kiro disclaimer'),
   }))()`);
 
@@ -168,9 +172,8 @@ async function verifyHeroAndWaitlistDialog(cdp, evalJs, base, externalUrls) {
   assert.equal(initial.fontPreloads, 2, 'Primary local WOFF2 display & mono fonts must preload');
   assert.equal(initial.skipLink, true, 'Skip link must target #main-heading');
   assert.equal(initial.faqCount, 3, 'Exclusive native <details name="steam-faq"> accordion must render');
-  assert.equal(initial.trophyCards, 12, 'Landing page must render all 12 local achievement cards');
-  assert.equal(initial.hasProgressTag, true, 'Trophy rack must use native <progress> bar');
-  assert.equal(initial.secretMasked, 2, 'Both secret achievements must mask their titles when locked');
+  assert.deepEqual(initial.movedOut, { trophyRack: false, saveBar: false, osCards: 0, oldAnchors: 0 }, 'The trophy rack, the save bar and the OS cards live on their own tab pages, not on /');
+  assert.equal(initial.desktopCtaHref, '/desktop.html', 'The hero desktop button must open the Desktop Builds tab');
   assert.equal(initial.parodyText, true, 'Parody & non-affiliation notice must be present on /');
   assert.deepEqual(externalUrls, [], `Expected 0 external runtime requests on /, saw: ${externalUrls.join(', ')}`);
 
@@ -211,18 +214,70 @@ async function verifyHeroAndWaitlistDialog(cdp, evalJs, base, externalUrls) {
   writeFileSync(join(outDir, 'landing-dialog.png'), Buffer.from(shotDialog.data, 'base64'));
 }
 
-async function verifySavePortabilityAndTauriIpc(evalJs) {
+const SAMPLE_BUNDLE_JS = `{
+  format: 'haunted-terminal-save',
+  version: 1,
+  exportedAt: '2026-11-17T18:00:00.000Z',
+  progress: { 'chapter-01-kiroween': { 'level-01-tutorial-awakening': { cleared: true, bestRank: 'S', bestCommands: 6, bestTimeSec: 18, updatedAt: 1700000000000 } } },
+  metagame: { scrap: 120, unlockedPerks: ['perk-overclock-dimm'], activePerks: ['perk-overclock-dimm'], seenMalware: ['hank.tty'], usedCommands: ['ls'], awardedRanks: {} },
+  achievements: { schemaVersion: 1, unlocked: { first_boot: { id: 'first_boot', steamApiName: 'ACH_FIRST_BOOT', unlockedAt: 1700000000000 }, campaign_clear: { id: 'campaign_clear', steamApiName: 'ACH_CAMPAIGN_CLEAR', unlockedAt: 1700000001000 } }, stats: { malwareKilled: 3, sectorsCleared: 1, sRanksEarned: 1, clearedMechanics: ['terminal'], loadedCores: [] } },
+}`;
+
+/** The header every tab page shares: six items, the current tab marked, Steam as a button on Home and a link elsewhere. */
+async function checkHeader(evalJs, path, currentLabel, steamKind) {
+  const h = await evalJs(`(() => ({
+    items: [...document.querySelectorAll('#hub-header .hub-nav-links > *')].map((e) => e.textContent.trim()),
+    current: [...document.querySelectorAll('#hub-header [aria-current="page"]')].map((e) => e.textContent.trim()),
+    active: [...document.querySelectorAll('#hub-header .hub-nav-links .active')].map((e) => e.textContent.trim()),
+    steam: document.querySelector('#hub-header [data-open-waitlist]') ? 'button' : (document.querySelector('#hub-header a[href="/?wishlist=1"]') ? 'link' : 'none'),
+    dialog: Boolean(document.getElementById('steam-waitlist-dialog')),
+    skip: Boolean(document.querySelector('#hub-header a.skip-link[href="#main-heading"]')) && Boolean(document.getElementById('main-heading')),
+    hrefs: Object.fromEntries([...document.querySelectorAll('#hub-header .hub-nav-links a')].map((a) => [a.textContent.trim(), a.getAttribute('href')])),
+  }))()`);
+  assert.deepEqual(h.items, ['Play Free Demo', 'Steam Coming Soon', 'Desktop Builds', 'Achievements', 'Comix', 'Chapters & Workshop'], `${path}: header items`);
+  assert.deepEqual(h.current, [currentLabel], `${path}: exactly the own tab is aria-current`);
+  assert.equal(h.steam, steamKind, `${path}: Steam Coming Soon is a ${steamKind}`);
+  assert.equal(h.dialog, steamKind === 'button', `${path}: the waitlist dialog exists on Home only`);
+  assert.equal(h.skip, true, `${path}: skip link targets #main-heading`);
+  assert.equal(h.hrefs['Desktop Builds'], '/desktop.html');
+  assert.equal(h.hrefs.Achievements, '/achievements.html');
+  assert.equal(h.hrefs.Comix, '/comix.html');
+  assert.equal(h.hrefs['Chapters & Workshop'], '/chapters.html');
+  assert.match(h.hrefs['Play Free Demo'], /^\/play\/[^/]+$/);
+  if (!currentLabel.startsWith('COMIX // TTY')) assert.deepEqual(h.active, [currentLabel], `${path}: the own tab is styled active`);
+}
+
+async function openPage(cdp, base, path, waitFor) {
+  await cdp.send('Page.navigate', { url: `${base}${path}` });
+  for (let i = 0; i < 40; i++) {
+    await sleep(100);
+    const ready = await makeEvaluator(cdp)(`Boolean(${waitFor})`).catch(() => false);
+    if (ready) return;
+  }
+  throw new Error(`${path}: ${waitFor} never appeared`);
+}
+
+async function verifyAchievementsPage(cdp, evalJs, base, externalUrls) {
+  await openPage(cdp, base, '/achievements.html', `document.querySelector('#achievements-rack-host .trophy-card')`);
+  await checkHeader(evalJs, '/achievements.html', 'Achievements', 'link');
+  const fresh = await evalJs(`(() => ({
+    trophyCards: document.querySelectorAll('#achievements-rack-host .trophy-card').length,
+    hasProgressTag: Boolean(document.querySelector('#achievements-rack-host progress.ach-progress')),
+    secretMasked: [...document.querySelectorAll('#achievements-rack-host .trophy-title')].filter((n) => n.textContent.includes('????')).length,
+    bar: ['export-save-btn', 'import-save-btn', 'import-save-input', 'save-portability-feedback'].every((id) => document.getElementById(id)),
+    osCards: document.querySelectorAll('.os-card').length,
+  }))()`);
+  assert.equal(fresh.trophyCards, 12, '/achievements.html must render all 12 local achievement cards');
+  assert.equal(fresh.hasProgressTag, true, 'Trophy rack must use native <progress> bar');
+  assert.equal(fresh.secretMasked, 2, 'Both secret achievements must mask their titles when locked');
+  assert.equal(fresh.bar, true, '/achievements.html must carry the save export/import bar with its ids');
+  assert.equal(fresh.osCards, 0, 'The OS cards are not on /achievements.html');
+  const shot = await cdp.send('Page.captureScreenshot', { format: 'png' });
+  writeFileSync(join(outDir, 'landing-achievements.png'), Buffer.from(shot.data, 'base64'));
+
   await installTauriMock(evalJs, { renameSave: true });
   const importCheck = await evalJs(`(async () => {
-    document.getElementById('waitlist-close-btn').click();
-    const sampleBundle = {
-      format: 'haunted-terminal-save',
-      version: 1,
-      exportedAt: '2026-11-17T18:00:00.000Z',
-      progress: { 'chapter-01-kiroween': { 'level-01-tutorial-awakening': { cleared: true, bestRank: 'S', bestCommands: 6, bestTimeSec: 18, updatedAt: 1700000000000 } } },
-      metagame: { scrap: 120, unlockedPerks: ['perk-overclock-dimm'], activePerks: ['perk-overclock-dimm'], seenMalware: ['hank.tty'], usedCommands: ['ls'], awardedRanks: {} },
-      achievements: { schemaVersion: 1, unlocked: { first_boot: { id: 'first_boot', steamApiName: 'ACH_FIRST_BOOT', unlockedAt: 1700000000000 }, campaign_clear: { id: 'campaign_clear', steamApiName: 'ACH_CAMPAIGN_CLEAR', unlockedAt: 1700000005000 } }, stats: { malwareKilled: 3, sectorsCleared: 1, sRanksEarned: 1, clearedMechanics: ['tutorial'], loadedCores: ['qwen'] } }
-    };
+    const sampleBundle = ${SAMPLE_BUNDLE_JS};
     const dt = new DataTransfer();
     dt.items.add(new File([JSON.stringify(sampleBundle)], 'save.json', { type: 'application/json' }));
     const input = document.getElementById('import-save-input');
@@ -231,12 +286,85 @@ async function verifySavePortabilityAndTauriIpc(evalJs) {
     await new Promise((r) => setTimeout(r, 120));
     const importFeedback = document.getElementById('save-portability-feedback').textContent;
     document.querySelector('[data-focus-key="ach-filter-unlocked"]').click();
-    // Click an external GitHub Releases anchor while inside simulated Tauri shell -> must dispatch desktop_open_external_url IPC exactly once
-    document.querySelector('a[href="https://github.com/recferret-bit/HauntedTerminal/releases/latest"]')?.click();
-    // Click Export Save & Trophies (.json) inside simulated Tauri shell -> must dispatch desktop_export_json_file IPC (not cancelled <a download>)
+    // Export Save & Trophies (.json) inside simulated Tauri shell -> must dispatch desktop_export_json_file IPC (not cancelled <a download>)
     document.getElementById('export-save-btn')?.click();
     await new Promise((r) => setTimeout(r, 40));
-    const exportFeedback = document.getElementById('save-portability-feedback').textContent;
+    return {
+      feedback: importFeedback,
+      exportFeedback: document.getElementById('save-portability-feedback').textContent,
+      unlockedShown: document.querySelectorAll('#achievements-rack-host .trophy-card.unlocked').length,
+      ipcCalls: window.__ipcCalls,
+    };
+  })()`);
+  assert.ok(importCheck.feedback.includes('2/12 achievements unlocked'));
+  assert.ok(importCheck.exportFeedback.includes('Exported haunted-terminal-save-2.json (2/12 ACH_*'));
+  assert.equal(importCheck.unlockedShown, 2);
+  assert.ok(
+    importCheck.ipcCalls.some((c) => c.cmd === 'desktop_export_json_file' && c.args?.filename === 'haunted-terminal-save.json'),
+    'Export Save (.json) inside Tauri must route through desktop_export_json_file IPC',
+  );
+  assert.ok(importCheck.ipcCalls.some((c) => c.cmd === 'steam_sync_achievements'), 'Save bundle import must immediately sync ACH_* keys to Tauri DesktopBridge');
+  assert.ok(importCheck.ipcCalls.some((c) => c.cmd === 'desktop_write_save_bundle'), 'Save bundle import must mirror haunted-terminal-save.json to Tauri app_data_dir for Steam Auto-Cloud');
+  assert.deepEqual(externalUrls, [], `Expected 0 external runtime requests on /achievements.html, saw: ${externalUrls.join(', ')}`);
+}
+
+async function verifyDesktopPage(cdp, evalJs, base, externalUrls) {
+  await openPage(cdp, base, '/desktop.html', `document.querySelector('.os-card')`);
+  await checkHeader(evalJs, '/desktop.html', 'Desktop Builds', 'link');
+  const page = await evalJs(`(() => ({
+    osCards: [...document.querySelectorAll('.os-card h3')].map((h) => h.textContent.trim()),
+    trophyRack: Boolean(document.getElementById('achievements-rack-host')),
+    saveBar: Boolean(document.getElementById('export-save-btn')),
+  }))()`);
+  assert.equal(page.osCards.length, 3, '/desktop.html must show the macOS, Windows and Linux cards');
+  assert.deepEqual([page.trophyRack, page.saveBar], [false, false], 'The trophy rack and the save bar are not on /desktop.html');
+  await installTauriMock(evalJs);
+  const calls = await evalJs(`(async () => {
+    // An external GitHub Releases anchor inside the simulated Tauri shell -> desktop_open_external_url IPC exactly once
+    document.querySelector('a[href="https://github.com/recferret-bit/HauntedTerminal/releases/latest"]')?.click();
+    await new Promise((r) => setTimeout(r, 40));
+    return window.__ipcCalls;
+  })()`);
+  const openUrlCalls = calls.filter((c) => c.cmd === 'desktop_open_external_url' && String(c.args?.url).startsWith('https://github.com/recferret-bit/HauntedTerminal/releases'));
+  assert.equal(openUrlCalls.length, 1, 'External release links clicked inside Tauri must route through desktop_open_external_url IPC exactly once');
+  assert.deepEqual(externalUrls, [], `Expected 0 external runtime requests on /desktop.html, saw: ${externalUrls.join(', ')}`);
+}
+
+async function verifyComixPage(cdp, evalJs, base, externalUrls) {
+  await openPage(cdp, base, '/comix.html', `document.querySelector('.comix-tile')`);
+  await checkHeader(evalJs, '/comix.html', 'Comix', 'link');
+  const tiles = await evalJs(`(() => ({
+    open: [...document.querySelectorAll('.comix-tile.open')].map((t) => ({
+      title: t.querySelector('h3')?.textContent,
+      progress: t.querySelector('.comix-tile-progress span')?.textContent,
+      hrefs: [...t.querySelectorAll('a')].map((a) => a.getAttribute('href')),
+    })),
+    locked: [...document.querySelectorAll('.comix-tile.locked')].map((t) => ({
+      title: t.querySelector('h3')?.textContent,
+      disabled: t.getAttribute('aria-disabled'),
+      interactive: t.querySelectorAll('a, button, [tabindex]').length,
+    })),
+  }))()`);
+  assert.equal(tiles.open.length, 1, '/comix.html must show one open tile per playable chapter');
+  assert.equal(tiles.open[0].progress, '1/11 levels cleared', 'The open tile shows the progress of the imported save');
+  assert.deepEqual(tiles.open[0].hrefs, ['/comic.html?chapter=chapter-01-kiroween', '/play/chapter-01-kiroween']);
+  assert.deepEqual(tiles.locked.map((t) => t.title), ['CHAPTER 2', 'CHAPTER 3', 'CHAPTER 4', 'CHAPTER 5']);
+  assert.ok(tiles.locked.every((t) => t.disabled === 'true' && t.interactive === 0), 'Locked tiles are rendered, disabled and have no link, button or tab stop');
+  const shot = await cdp.send('Page.captureScreenshot', { format: 'png' });
+  writeFileSync(join(outDir, 'landing-comix.png'), Buffer.from(shot.data, 'base64'));
+  // The reader the Read link opens.
+  await cdp.send('Page.navigate', { url: `${base}${tiles.open[0].hrefs[0]}` });
+  await sleep(500);
+  assert.equal(await evalJs(`Boolean(document.getElementById('reader-mount'))`), true, 'The Read link must open the comic reader');
+  assert.deepEqual(externalUrls, [], `Expected 0 external runtime requests on /comix.html, saw: ${externalUrls.join(', ')}`);
+}
+
+/** Home after the import: the resume slot and the live telemetry, then the waitlist pass export through the Tauri mock. */
+async function verifyHomeAfterImport(cdp, evalJs, base) {
+  await openPage(cdp, base, '/', `document.getElementById('open-steam-waitlist-btn')`);
+  await checkHeader(evalJs, '/', 'COMIX // TTYHAUNTED TERMINAL', 'button');
+  await installTauriMock(evalJs, { renameSave: true });
+  const home = await evalJs(`(async () => {
     document.getElementById('open-steam-waitlist-btn')?.click();
     document.getElementById('waitlist-export-btn')?.click();
     document.getElementById('waitlist-close-btn')?.click();
@@ -247,43 +375,16 @@ async function verifySavePortabilityAndTauriIpc(evalJs) {
     }));
     window.dispatchEvent(new StorageEvent('storage', { key: 'haunted-terminal:metagame:v1' }));
     return {
-      feedback: importFeedback,
-      exportFeedback,
-      unlockedShown: document.querySelectorAll('#achievements-rack-host .trophy-card.unlocked').length,
       resumeHref: document.querySelector('#hero-resume-slot a')?.getAttribute('href') || '',
       telemetryAfterStorage: document.getElementById('hero-telemetry-strip').textContent,
       ipcCalls: window.__ipcCalls,
     };
   })()`);
-
-  assert.ok(importCheck.feedback.includes('2/12 achievements unlocked'));
-  assert.ok(importCheck.exportFeedback.includes('Exported haunted-terminal-save-2.json (2/12 ACH_*'));
-  assert.equal(importCheck.unlockedShown, 2);
-  assert.ok(importCheck.resumeHref.includes('/play/chapter-01-kiroween/level-02-task-ram-heist'));
-  assert.ok(importCheck.telemetryAfterStorage.includes('250'), 'Cross-tab storage event must live-refresh telemetry strip');
-  const openUrlCalls = importCheck.ipcCalls.filter(
-    (c) => c.cmd === 'desktop_open_external_url' && String(c.args?.url).startsWith('https://github.com/recferret-bit/HauntedTerminal/releases'),
-  );
-  assert.equal(
-    openUrlCalls.length,
-    1,
-    'External release links clicked inside Tauri must route through desktop_open_external_url IPC exactly once',
-  );
+  assert.ok(home.resumeHref.includes('/play/chapter-01-kiroween/level-02-task-ram-heist'));
+  assert.ok(home.telemetryAfterStorage.includes('250'), 'Cross-tab storage event must live-refresh telemetry strip');
   assert.ok(
-    importCheck.ipcCalls.some((c) => c.cmd === 'desktop_export_json_file' && c.args?.filename === 'haunted-terminal-save.json'),
-    'Export Save (.json) inside Tauri must route through desktop_export_json_file IPC',
-  );
-  assert.ok(
-    importCheck.ipcCalls.some((c) => c.cmd === 'desktop_export_json_file' && c.args?.filename === 'haunted-terminal-steam-waitlist.json'),
+    home.ipcCalls.some((c) => c.cmd === 'desktop_export_json_file' && c.args?.filename === 'haunted-terminal-steam-waitlist.json'),
     'Export Pass (.json) inside Tauri must route through desktop_export_json_file IPC',
-  );
-  assert.ok(
-    importCheck.ipcCalls.some((c) => c.cmd === 'steam_sync_achievements'),
-    'Save bundle import must immediately sync ACH_* keys to Tauri DesktopBridge',
-  );
-  assert.ok(
-    importCheck.ipcCalls.some((c) => c.cmd === 'desktop_write_save_bundle'),
-    'Save bundle import must mirror haunted-terminal-save.json to Tauri app_data_dir for Steam Auto-Cloud',
   );
 }
 
@@ -434,7 +535,10 @@ async function verifySteamStoreCutoverAndAutoCloud(cdp, evalJs, base) {
 async function verifyLandingFlows(cdp, base, externalUrls) {
   const evalJs = makeEvaluator(cdp);
   await verifyHeroAndWaitlistDialog(cdp, evalJs, base, externalUrls);
-  await verifySavePortabilityAndTauriIpc(evalJs);
+  await verifyAchievementsPage(cdp, evalJs, base, externalUrls);
+  await verifyDesktopPage(cdp, evalJs, base, externalUrls);
+  await verifyComixPage(cdp, evalJs, base, externalUrls);
+  await verifyHomeAfterImport(cdp, evalJs, base);
   await verifyWishlistDeepLinkAndMobileViewport(cdp, evalJs, base);
   await verifyChaptersAchievementsBinder(cdp, evalJs, base);
   await verifySteamStoreCutoverAndAutoCloud(cdp, evalJs, base);
@@ -461,7 +565,7 @@ async function main() {
     await verifyLandingFlows(launched.cdp, base, externalUrls);
     assert.deepEqual(errors, [], `Console/page errors during landing-smoke: ${errors.join(' | ')}`);
     launched.cdp.close();
-    console.log('PASS landing-smoke: funnel, <dialog> validation, offline fonts (0 external URLs), save import & /chapters.html verified');
+    console.log('PASS landing-smoke: Home, the Achievements, Desktop Builds and Comix tab pages, <dialog> validation, offline fonts (0 external URLs), save import & /chapters.html verified');
   } finally {
     if (chrome && chrome.exitCode === null) chrome.kill();
     if (vite) await vite.close();

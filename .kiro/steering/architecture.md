@@ -26,7 +26,7 @@ pages/                chapter select and comic reader scripts.
 chapter-editor/       /editor. contracts, editor-core, game, chapters, procgen. No game rules of its own; the game runs in an iframe.
 terminal-lab/         /terminal-lab. contracts, editor-core, chapter-editor (field tables, suggest), game, chapters, procgen. Builds a throwaway pack from a lab script (or imports a chapter level read-only) and plays it in the game iframe with in-page session swaps; no game rules of its own. What it needs from the game is one generic session option, `lab?: LabConfig` on `ChapterSession` and classic `createSession`, plus read-only `inspect()`, `labTick()` and `inject()` (`src/game/lab-*.ts`, `src/chapters/session-lab*.ts`).
 laptop/               /laptop-lab. domain/ (pure: lifecycle state machine, desktop reducer, tasks and checks, keyboard, boot, geometry, progress) <- runtime/ (Worker and sandboxed-iframe runner, loop guard, WebAudio) <- ui/ (editor-core, procgen/core palette) <- lab/. No three; no game rules. Player code never runs in the page's own realm.
-hub/                  front-door funnel entry (`pages/index.html`). Imports contracts and chapters; no three.
+hub/                  the landing: Home (`pages/index.html`) and the tab pages Desktop Builds, Achievements, Comix (`pages/{desktop,achievements,comix}.html`), one shared header (`nav.ts`, items in `tabs.ts`) and one entry script per page. Imports contracts and chapters; no three. Spec: `.kiro/specs/landing-tabs/`.
 play/                 play page composition. Wires the outer layers. main.ts only starts it.
 main.ts               loads the play page. Imports play/ and styles only.
 ```

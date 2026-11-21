@@ -72,23 +72,7 @@
   </head>
   <body>
     <script type="module" src="/src/hub/hub.ts"></script>
-    <header class="hub-header-wrap">
-      <a class="skip-link" href="#main-heading">Skip to main content</a>
-      <nav class="hub-nav" aria-label="Primary Navigation">
-        <a class="hub-brand" href="/">
-          <span class="hub-logo-badge">COMIX // TTY</span>
-          <strong>HAUNTED <span>TERMINAL</span></strong>
-        </a>
-        <div class="hub-nav-links">
-          <a class="comic-btn primary" href="/play/chapter-01-kiroween">Play Free Demo</a>
-          <button type="button" class="comic-btn steam-cta" data-open-waitlist="1">Steam Coming Soon</button>
-          <a class="comic-btn teal" href="#desktop-builds">Desktop Builds</a>
-          <a class="comic-btn paper" href="#achievements-showcase">Achievements</a>
-          <a class="comic-btn paper" href="/comic.html?chapter=chapter-01-kiroween">6-Page Comix</a>
-          <a class="comic-btn paper" href="/chapters.html">Chapters &amp; Workshop</a>
-        </div>
-      </nav>
-    </header>
+    <header id="hub-header" class="hub-header-wrap"></header>
 
     <main class="hub-shell">
       <section class="hero-panel funnel-hero" aria-labelledby="main-heading">
@@ -113,7 +97,7 @@
             <button type="button" class="comic-btn steam-cta cta-lg" id="open-steam-waitlist-btn" data-open-waitlist="1">
               Wishlist on Steam (Coming Soon)
             </button>
-            <a class="comic-btn teal cta-lg" id="hero-desktop-cta" href="#desktop-builds">
+            <a class="comic-btn teal cta-lg" id="hero-desktop-cta" href="/desktop.html">
               Tagged Desktop Builds
             </a>
           </div>
@@ -226,82 +210,6 @@
           </div>
         </article>
       </section>
-
-      <div class="section-head" id="desktop-builds">
-        <h2>Dedicated Downloadable Desktop Builds (Tauri + Steamworks)</h2>
-        <span>Every <code>v*</code> GitHub tag builds native offline installers + SHA-256 checksums.</span>
-      </div>
-
-      <section class="os-build-grid" aria-labelledby="desktop-builds">
-        <article class="os-card">
-          <div>
-            <div class="door-card-top">
-              <span class="door-kicker">MACOS</span>
-              <span>Universal / Apple Silicon</span>
-            </div>
-            <h3>macOS Native App (.dmg)</h3>
-            <p>WebKit Tauri v2 Game bundle with bundled offline fonts, <code>app_data_dir</code> Auto-Cloud save sync, and Steamworks bridge.</p>
-            <code>Haunted-Terminal_*_universal.dmg</code>
-          </div>
-          <a class="comic-btn primary" href="https://github.com/recferret-bit/HauntedTerminal/releases/latest" target="_blank" rel="noopener noreferrer">
-            Download macOS Release
-          </a>
-        </article>
-
-        <article class="os-card">
-          <div>
-            <div class="door-card-top">
-              <span class="door-kicker blue">WINDOWS</span>
-              <span>x64 Installer</span>
-            </div>
-            <h3>Windows Setup (.msi / .exe)</h3>
-            <p>Compact native WebView2 desktop executable (&lt; 25 MB) ready for offline play and Steam depot packaging.</p>
-            <code>Haunted-Terminal_*_x64-setup.exe</code>
-          </div>
-          <a class="comic-btn primary" href="https://github.com/recferret-bit/HauntedTerminal/releases/latest" target="_blank" rel="noopener noreferrer">
-            Download Windows Release
-          </a>
-        </article>
-
-        <article class="os-card">
-          <div>
-            <div class="door-card-top">
-              <span class="door-kicker teal">LINUX &amp; STEAM DECK</span>
-              <span>x86_64</span>
-            </div>
-            <h3>Linux (.AppImage / .deb)</h3>
-            <p>Self-contained AppImage &amp; Debian package tested for offline Linux workstations and Steam Deck desktop/gaming mode.</p>
-            <code>Haunted-Terminal_*_amd64.AppImage</code>
-          </div>
-          <a class="comic-btn primary" href="https://github.com/recferret-bit/HauntedTerminal/releases/latest" target="_blank" rel="noopener noreferrer">
-            Download Linux Release
-          </a>
-        </article>
-      </section>
-
-      <section class="portability-bar" aria-label="Browser to Desktop Save Portability">
-        <div class="portability-copy">
-          <strong>BROWSER / DESKTOP / STEAM SAVE &amp; TROPHY PORTABILITY</strong>
-          <span>
-            Cleared Chapter 1 in your browser? Export your progress, Silicon Scrap, <code>~/.bashrc</code> perks, and
-            <code>ACH_*</code> achievements as JSON to import straight into the downloaded desktop build (persisted to
-            <code>haunted-terminal-save.json</code> for cross-OS Steam Auto-Cloud sync).
-          </span>
-        </div>
-        <div class="portability-actions">
-          <button type="button" class="comic-btn teal" id="export-save-btn">Export Save &amp; Trophies (.json)</button>
-          <button type="button" class="comic-btn paper" id="import-save-btn">Import Save Bundle (.json)</button>
-          <input type="file" id="import-save-input" accept="application/json,.json" hidden />
-        </div>
-        <div id="save-portability-feedback" class="save-feedback" role="status" aria-live="polite" hidden></div>
-      </section>
-
-      <div class="section-head" id="achievements-showcase">
-        <h2>Local Achievements Trophy Rack (Steamworks-Ready)</h2>
-        <span>Type <code>achievements</code> or <code>achievements export</code> in-game at any time.</span>
-      </div>
-
-      <section class="binder-panel" id="achievements-rack-host" aria-labelledby="achievements-showcase"></section>
 
       <div class="section-head" id="startup-thesis">
         <h2>Why It Works — Audience, Unit Economics &amp; Steam FAQ</h2>
@@ -436,7 +344,7 @@
     <footer class="hub-footer-wrap">
       <section class="pill-box" aria-labelledby="parody-notice-heading">
         <div class="section-head">
-          <h2 id="parody-notice-heading">◈ Kiro Ghost Parody &amp; Non-Affiliation Notice</h2>
+          <h2 id="parody-notice-heading">Kiro Ghost Parody &amp; Non-Affiliation Notice</h2>
           <span>MIT Open Source · Type <code>kiro disclaimer</code> in-game at any time</span>
         </div>
         <p>
