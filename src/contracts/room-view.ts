@@ -48,6 +48,8 @@ export interface RoomView {
   kind: RoomKind;
   flood: number;
   lantern: boolean;
+  /** True while the developer does not hold the lantern: the room is almost black and only a faint self-glow lights him. */
+  dark?: boolean;
   xray: boolean;
   actors: RoomActor[];
   neighbors: NeighborPanel[];

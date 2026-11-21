@@ -78,6 +78,7 @@ export function buildRoom(facts: SceneFacts): RoomView {
     kind,
     flood: kind === 'cell' ? facts.flood : 0,
     lantern: facts.lantern,
+    dark: facts.dark ?? false,
     xray: facts.xray,
   };
   if (kind === 'outro') {

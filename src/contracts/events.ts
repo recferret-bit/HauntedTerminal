@@ -120,6 +120,8 @@ export type KernelEvent =
       /** procgen ModelCatalog id, e.g. `malware.worm`, `pickup.ram`. */
       model: string;
       reason: 'room_enter' | 'boss_fork' | 'cron_restore' | 'virus_split' | 'script';
+      /** How the stage brings the actor in: `appear` (default) or `glide` in from the panel edge to its slot beside the hero. */
+      entrance?: 'appear' | 'glide';
     }
   | {
       /** An enemy starts an attack. Damage (if any) follows as PLAYER_DAMAGED in the same batch or the next tick. */
@@ -152,7 +154,7 @@ export type KernelEvent =
   | {
       type: 'PICKUP_COLLECTED';
       entityId: string;
-      item: 'energy' | 'ram' | 'ssd';
+      item: 'energy' | 'ram' | 'ssd' | 'lantern';
       /** HP healed, GB of RAM or GB of SSD gained. */
       amount: number;
       /** Short HUD/FX word, e.g. `+25HP`, `+16GB RAM`. */
@@ -230,6 +232,19 @@ export type KernelEvent =
       command: string;
       agent: 'clod' | 'gork' | 'codec' | 'antigravy' | 'kiro';
       done: boolean;
+    }
+  | {
+      /** A chapter script `dialog_box` step: one line in the dialog box in the screen corner, with the speaker's avatar. */
+      type: 'DIALOG_BOX';
+      /** `vibecoder` or an agent id (`kiro`, `clod`, ...). */
+      speaker: string;
+      /** Display name in the box. */
+      name: string;
+      /** procgen model id drawn as the avatar (`vibecoder.dev_terminal`, `npc.kiro_ghost`). */
+      model: string;
+      text: string;
+      /** How long the box stays after the text is shown, in ms. */
+      holdMs: number;
     }
   | {
       /** A local achievement was unlocked for the first time (never emitted in preview or lab sessions). */
