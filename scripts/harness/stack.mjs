@@ -5,7 +5,7 @@
 //   npm stop             stop it (only processes started from this project; other Vite servers are left alone)
 //   npm restart          stop, then start
 //   npm run status       is it running, on which port, where is the log
-// Options: --port <n> (or STACK_PORT), default 5173 from vite.config.ts.
+// Options: --port <n> (or STACK_PORT), default 5400 from vite.config.ts.
 // State: scripts/harness/out/stack/stack.json (pid, port) and stack.log (server output). Both git-ignored.
 import { spawn, execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -21,7 +21,7 @@ const viteBin = resolve(root, 'node_modules/vite/bin/vite.js');
 const args = process.argv.slice(2);
 const command = args[0] ?? 'status';
 const portArg = args.indexOf('--port');
-const port = Number(portArg >= 0 ? args[portArg + 1] : process.env.STACK_PORT ?? 5173);
+const port = Number(portArg >= 0 ? args[portArg + 1] : process.env.STACK_PORT ?? 5400);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const rel = (p) => relative(root, p);
 

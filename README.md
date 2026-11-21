@@ -32,7 +32,7 @@ Locally (Node.js 20 or newer, developed on 24):
 
 ```bash
 npm ci
-npm start      # Vite in the background: http://localhost:5173/
+npm start      # Vite in the background: http://localhost:5400/
 npm run build && npm run preview   # production bundle
 npm stop
 ```

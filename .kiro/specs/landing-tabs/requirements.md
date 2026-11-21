@@ -13,7 +13,7 @@ Facts from the code (2026-11-18): the header has six links (`Play Free Demo`, `S
 1. THE SYSTEM SHALL render one shared header from `src/hub/nav.ts` on `/`, `/desktop.html`, `/achievements.html` and `/comix.html`, with the items `Play Free Demo`, `Steam Coming Soon`, `Desktop Builds`, `Achievements`, `Comix` and `Chapters & Workshop`. (Q1, Q9)
 2. WHILE a tab page is open, THE SYSTEM SHALL mark its own tab as the current one (`aria-current="page"`) and style it as active. Home is the tab of the brand link and of `/`. (Q1)
 3. THE header items `Desktop Builds`, `Achievements` and `Comix` SHALL be links to `/desktop.html`, `/achievements.html` and `/comix.html`; `Chapters & Workshop` SHALL stay a link to `/chapters.html`; `Play Free Demo` SHALL stay a link into the game. (Q1, Q2, Q7)
-4. WHEN `Steam Coming Soon` is clicked on `/`, THE SYSTEM SHALL open the waitlist dialog as today; on every other tab page it SHALL be a link to `/?wishlist=1`, which opens the dialog on Home. The dialog and its code SHALL exist on Home only. (Q8)
+4. WHEN `Steam Coming Soon` is clicked on any hub page (`/`, `/desktop.html`, `/achievements.html`, `/comix.html`), THE SYSTEM SHALL open the waitlist dialog in place, without navigating. The dialog is rendered by `src/hub/waitlist-dialog.ts` on every hub page. `/?wishlist=1` still opens it on Home. (Q8, changed by the user 2026-11-21)
 5. WHEN a tab page loads, THE SYSTEM SHALL load only that page's content and scripts, not those of the other tabs. (Q2)
 6. `chapters.html` and `comic.html` SHALL keep their own headers and layout. (Q9)
 
@@ -25,7 +25,7 @@ Facts from the code (2026-11-18): the header has six links (`Play Free Demo`, `S
 ### Desktop Builds page
 
 9. WHEN `/desktop.html` opens, THE SYSTEM SHALL show the three OS download cards (macOS, Windows, Linux) as today. (Q6)
-10. THE `/` page SHALL NOT contain the OS download cards; every link that pointed at `#desktop-builds` (the hero's `Tagged Desktop Builds` button) SHALL point to `/desktop.html`. (Q6)
+10. THE `/` page SHALL NOT contain the OS download cards; the hero SHALL NOT have the `Play Free Demo in Browser`, `Wishlist on Steam` and `Tagged Desktop Builds` buttons (removed by the user 2026-11-21; the header has the same actions), only the resume link when a save exists. (Q6)
 
 ### Comix page
 
@@ -39,6 +39,8 @@ Facts from the code (2026-11-18): the header has six links (`Play Free Demo`, `S
 15. THE `landing-smoke.mjs` check SHALL verify each moved piece on its new page: the trophy rack and the export/import bar on `/achievements.html`, the OS cards on `/desktop.html`, the open and locked Comix tiles with progress and a non-clickable locked tile on `/comix.html`, and that none of them is on `/`. (Q10)
 16. THE visual audit's screen list SHALL include `/achievements.html`, `/desktop.html` and `/comix.html` (four sizes each); the baselines of Home change and are approved by the user. (Q10)
 17. THE change SHALL keep `npm run quality`, `npm run build`, `desktop:verify` and `desktop-unit.mjs` green, including the font and offline checks (no external URLs). (Q10)
+
+17. WHEN a hub page is shown, THE SYSTEM SHALL fetch the other hub pages in the background, and WHEN a tab link (`/`, `/desktop.html`, `/achievements.html`, `/comix.html`) is clicked, THE SYSTEM SHALL swap the page content in the same document without a page load, keep the header and the waitlist dialog in place, update the URL and the title, and support Back and Forward. IF a page is not fetched yet or the fetch fails, THE SYSTEM SHALL wait for it or fall back to a normal navigation. (changed by the user 2026-11-21: tab switching must be instant)
 
 ## Out of scope
 
@@ -78,7 +80,7 @@ Facts from the code (2026-11-18): the header has six links (`Play Free Demo`, `S
 
 ## Verification
 
-- Req 1-6: `landing-smoke.mjs` loads the four tab pages and checks the header items, the current-tab mark and the waitlist link on each page, and that the dialog exists on Home only; a unit check on `src/hub/nav.ts`.
+- Req 1-6: `landing-smoke.mjs` loads the four tab pages and checks the header items, the current-tab mark and the Steam button on each page, and that the dialog exists on every hub page and opens in place; a unit check on `src/hub/nav.ts`.
 - Req 7-10: `landing-smoke.mjs` (trophy rack and export/import on `/achievements.html`, OS cards on `/desktop.html`, none on `/`, no `#desktop-builds` link left).
 - Req 11-14: `landing-smoke.mjs` on `/comix.html` (one open tile with progress, four locked tiles, locked tiles not links), `npm run quality:declarative`.
 - Req 15-17: `landing-smoke.mjs`, `visual-audit.mjs --selftest`, a full `visual-audit.mjs` run (Home diffs listed and opened), `npm run quality`, `npm run build`, `npm run desktop:verify`, `node scripts/desktop/desktop-unit.mjs`.

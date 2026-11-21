@@ -10,12 +10,15 @@ src/hub/dom.ts                        el() (moved from hub.ts): DOM from text no
 src/hub/tabs.ts                       the header items as data: id, label, href, kind (tab | link | action), style
 src/hub/nav.ts                        renderHubNav(current): fills #hub-header from tabs.ts; marks the current tab
 src/hub/boot.ts                       bootHubPage(current): renderHubNav, wireExternalLinksForDesktop, Tauri save hydration hook
-src/hub/hub.ts                        Home entry: hero telemetry, resume slot, waitlist (what stays after the moves)
+src/hub/app.ts                        the one entry of every hub page: bootHubPage, then startHubRouter
+src/hub/router.ts                     in-page tab switching: fetches the other pages, swaps `<main>`/footer, pushState, popstate, mounts the page
+src/hub/waitlist-dialog.ts            the Steam waitlist dialog, built with el() on every hub page
+src/hub/hub.ts                        Home page: `mount()` draws hero telemetry and the resume slot
 src/hub/trophy-rack.ts                renderTrophyRack (moved from hub.ts)
 src/hub/portable-saves.ts             wirePortableSaves (moved from hub.ts)
-src/hub/page-achievements.ts          Achievements entry: boot + trophy rack + save bar + storage/pageshow refresh
-src/hub/page-desktop.ts               Desktop Builds entry: boot only (the cards are static markup)
-src/hub/page-comix.ts                 Comix entry: boot + renderComixTiles
+src/hub/page-achievements.ts          Achievements `mount()`: trophy rack + save bar
+src/hub/page-desktop.ts               Desktop Builds `mount()`: nothing to draw (the cards are static markup)
+src/hub/page-comix.ts                 Comix `mount()`: renderComixTiles
 src/hub/comix-tiles.ts                pure: buildComixTiles(manifests, progress, roadmap) -> tile models; renderComixTiles(host, tiles)
 src/hub/roadmap.ts                    the locked placeholder list: chapters 2 to 5 (labels only)
 src/styles/hub-tabs.css               active/current tab style, comix tiles, locked tile style
@@ -40,7 +43,7 @@ All files stay under 600 lines and all functions under 130. `hub.ts` shrinks by 
 
 - `tabs.ts` is the one table: `home` (the brand link), `play` (link, `/play/<chapter>`), `steam` (action), `desktop`, `achievements`, `comix` (tabs), `chapters` (link, `/chapters.html`). The play link uses the first manifest's id from `CHAPTER_MANIFESTS`, so no chapter id is written in code.
 - `nav.ts`: `renderHubNav(current)` builds `<nav class="hub-nav" aria-label="Primary Navigation">` with `el()`. The current tab gets `aria-current="page"` and the class `active`. The skip link and the brand are part of the module.
-- `steam`: on `home` it is `<button data-open-waitlist="1">`, so the existing waitlist code finds it. On every other page it is `<a href="/?wishlist=1">` (Req 4). `waitlist.ts` is imported by `hub.ts` only, so the dialog code ships with Home only.
+- `steam`: on every page it is `<button data-open-waitlist="1">` (Req 4, changed 2026-11-21). `bootHubPage` renders the dialog (`waitlist-dialog.ts`) and calls `wireSteamWaitlist`, so the dialog code ships on every hub page.
 
 ## The Comix tiles
 
@@ -52,9 +55,10 @@ All files stay under 600 lines and all functions under 130. `hub.ts` shrinks by 
 ## Decisions
 
 - **Header rendered by JS, not copied into four HTML files.** This is Q9's one shared module. A Vite HTML transform would avoid the one-frame empty header and work without JavaScript, but it changes the build for every page; the game needs JavaScript anyway, so JS rendering wins. The header is the first thing the entry does, before any other work.
-- **Separate Vite entries, not one page with `?tab=`.** Q2. The cost is three small HTML files with a repeated `<head>`; the gain is that nothing of another tab loads.
+- **Separate HTML pages, one shared script (2026-11-21).** Q2 kept the four URLs; the user then required instant tab switching, so `router.ts` fetches the other pages and swaps the content in place (Req 16). A direct load of any URL still works on its own. Browser prerender was tried first and dropped: it is not guaranteed (Chrome only, off with DevTools, Data Saver or the Preload setting).
+- **(superseded) Separate Vite entries, not one page with `?tab=`.** Q2. The cost is three small HTML files with a repeated `<head>`; the gain is that nothing of another tab loads.
 - **`.html` URLs.** Q7: they match `/chapters.html` and `/comic.html` and need no Netlify or desktop route rewrites.
-- **The waitlist is not duplicated.** Q8: other tabs link to `/?wishlist=1`, which `waitlist.ts` already handles. Known limitation: after the live Steam cutover, the label on the three other tabs keeps saying "Steam Coming Soon" (its link still lands on Home, which then opens the store URL). Fixing it would pull `waitlist.ts` into every page; it is not part of this step.
+- **The waitlist is not duplicated.** Since 2026-11-21 every hub page renders the one dialog and wires the one `waitlist.ts`; the Steam button opens it in place. After the live Steam cutover `syncSteamCtaLabels` relabels the button on every page.
 - **`el()` moves to `src/hub/dom.ts`.** Home, nav and the tiles all need it, and a third copy would fail `quality:dup`.
 - **`desktop.html` has static cards.** The three OS cards are plain markup moved as they are; it needs no data, so `page-desktop.ts` only boots the header.
 - **Chapters and the reader keep their headers** (Req 6, Q9), so their layouts are not touched in this step.

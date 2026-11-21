@@ -10,7 +10,7 @@ description: "[LEVEL GEN] Step 5 of level generation (human review and final tun
 ## Run it
 
 ```bash
-npm start                                  # dev server; then open http://localhost:5173/editor
+npm start                                  # dev server; then open http://localhost:5400/editor
 # deep links: /editor/<chapter>/<level>?tab=script    /editor/<chapter>?tab=comic
 node scripts/harness/editor-smoke.mjs      # headless Chrome drives the whole loop (own server on 5343)
 ```

@@ -10,8 +10,8 @@ description: "[LEVEL GEN] Step 4 of animated 3D Comix generation (human review, 
 ## Run It
 
 ```bash
-npm start                                         # dev server on http://localhost:5173
-# open http://localhost:5173/comix-editor
+npm start                                         # dev server on http://localhost:5400
+# open http://localhost:5400/comix-editor
 # deep links:
 #   /comix-editor/intro/manifest?tab=stage
 #   /comix-editor/intro/page-01-desk-storm?tab=panels

@@ -5,7 +5,7 @@
 //   file changed on disk by someone else, and prove saves are lossless and the API refuses unsafe writes.
 //
 //   node scripts/harness/editor-smoke.mjs                  (starts its own Vite on 5343)
-//   node scripts/harness/editor-smoke.mjs --url http://localhost:5173
+//   node scripts/harness/editor-smoke.mjs --url http://localhost:5400
 // Screenshots: scripts/harness/out/editor-*.png. Exit 0 = every check passed.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';

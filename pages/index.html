@@ -71,7 +71,7 @@
     </script>
   </head>
   <body>
-    <script type="module" src="/src/hub/hub.ts"></script>
+    <script type="module" src="/src/hub/app.ts"></script>
     <header id="hub-header" class="hub-header-wrap"></header>
 
     <main class="hub-shell">
@@ -89,18 +89,7 @@
             (<strong>Anti-Gravy</strong>, <strong>Codec</strong>, <strong>Gork</strong>, <strong>Clod</strong>), reboot local
             open-weight cores, and escape your own machine.
           </p>
-          <div class="hero-cta-row">
-            <a class="comic-btn primary cta-lg" id="hero-play-cta" href="/play/chapter-01-kiroween">
-              Play Free Demo in Browser (Chapter 1 — 11 Levels)
-            </a>
-            <span id="hero-resume-slot"></span>
-            <button type="button" class="comic-btn steam-cta cta-lg" id="open-steam-waitlist-btn" data-open-waitlist="1">
-              Wishlist on Steam (Coming Soon)
-            </button>
-            <a class="comic-btn teal cta-lg" id="hero-desktop-cta" href="/desktop.html">
-              Tagged Desktop Builds
-            </a>
-          </div>
+          <div class="hero-cta-row"><span id="hero-resume-slot"></span></div>
           <div class="hero-telemetry" id="hero-telemetry-strip" aria-live="polite">
             <span class="telemetry-chip">Demo Progress: <strong>0/11 Sectors</strong></span>
             <span class="telemetry-chip">Local Trophies: <strong>0/12 ACH_*</strong></span>
@@ -355,80 +344,5 @@
         </p>
       </section>
     </footer>
-
-    <dialog id="steam-waitlist-dialog" class="comic-dialog" closedby="any" aria-labelledby="waitlist-dialog-title">
-      <div class="dialog-inner">
-        <div class="dialog-head">
-          <div>
-            <span class="door-kicker orange">STEAM COMING SOON // LAUNCH PASS</span>
-            <h2 id="waitlist-dialog-title">Wishlist &amp; Next Fest Notification</h2>
-          </div>
-          <button type="button" class="comic-btn paper" id="waitlist-close-btn" aria-label="Close Steam waitlist dialog">✕</button>
-        </div>
-        <p class="dialog-lead">
-          Our Steamworks Partner store page &amp; free Chapter 1 Steam Demo are in preparation. Save your target platform pass
-          below and watch GitHub Releases to grab every tagged desktop build the moment it drops.
-        </p>
-
-        <form id="steam-waitlist-form">
-          <div class="waitlist-field">
-            <label for="waitlist-email">Email for Launch &amp; Next Fest Alert <span aria-hidden="true">*</span></label>
-            <span id="waitlist-email-hint" class="field-hint">Format: dev@domain.tld (stored locally until newsletter cutover; zero trackers)</span>
-            <input
-              type="email"
-              id="waitlist-email"
-              name="email"
-              class="waitlist-input"
-              required
-              autofocus
-              autocomplete="email"
-              inputmode="email"
-              autocorrect="off"
-              autocapitalize="none"
-              spellcheck="false"
-              enterkeyhint="done"
-              placeholder="you@domain.tld"
-              aria-describedby="waitlist-email-hint"
-              data-error="waitlist-email-error"
-            />
-            <div id="waitlist-email-error" class="field-error-msg">
-              <span role="img" aria-label="Error">❌</span> Enter an email address in the format you@example.com.
-            </div>
-          </div>
-
-          <div class="waitlist-field">
-            <label for="waitlist-platform">Preferred Desktop / Handheld Target</label>
-            <select id="waitlist-platform" name="platform" class="waitlist-select">
-              <option value="macos">macOS (.dmg Universal / Apple Silicon)</option>
-              <option value="windows">Windows 10/11 (.msi / .exe)</option>
-              <option value="linux-deck">Linux / SteamOS Steam Deck (.AppImage / .deb)</option>
-            </select>
-          </div>
-
-          <fieldset class="waitlist-checks">
-            <legend>Notify me about</legend>
-            <label><input type="checkbox" id="waitlist-chk-steam" name="notify_steam" value="1" checked /> <span>Steam "Coming Soon" Store Page &amp; Wishlist launch</span></label>
-            <label><input type="checkbox" id="waitlist-chk-fest" name="notify_fest" value="1" checked /> <span>Free Chapter 1 Steam Demo &amp; Steam Next Fest</span></label>
-            <label><input type="checkbox" id="waitlist-chk-tags" name="notify_tags" value="1" checked /> <span>New <code>v*</code> tagged Tauri desktop builds on GitHub</span></label>
-          </fieldset>
-
-          <p class="waitlist-note">
-            <strong>Privacy-first local mode:</strong> Haunted Terminal ships zero third-party analytics or ad scripts. Saving stores your Launch Pass in browser storage (exportable as JSON) while you follow live <code>v*</code> releases on GitHub.
-          </p>
-
-          <div id="waitlist-dialog-status" class="save-feedback" role="status" aria-live="polite" hidden></div>
-
-          <div class="dialog-actions">
-            <button type="submit" class="comic-btn primary">Save Steam Launch Pass</button>
-            <div class="dialog-secondary-actions">
-              <button type="button" class="comic-btn teal" id="waitlist-export-btn">Export Pass (.json)</button>
-              <a class="comic-btn paper" href="https://github.com/recferret-bit/HauntedTerminal/releases" target="_blank" rel="noopener noreferrer">
-                Watch GitHub Tags
-              </a>
-            </div>
-          </div>
-        </form>
-      </div>
-    </dialog>
   </body>
 </html>

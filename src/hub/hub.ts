@@ -2,9 +2,9 @@ import { ACHIEVEMENT_SPECS, readAchievements } from '../chapters/achievements.js
 import { CHAPTER_MANIFESTS, buildPlayUrl, readChapterProgress, readMetagame } from '../chapters/catalog.js';
 import { countClearedSectors } from '../chapters/portable-save.js';
 import { isTauriDesktop, querySteamStatus } from '../chapters/steam-bridge.js';
-import { bootHubPage, refreshOnSaveChange } from './boot.js';
+import { refreshOnSaveChange } from './boot.js';
 import { el } from './dom.js';
-import { readWaitlistEntry, wireSteamWaitlist } from './waitlist.js';
+import { readWaitlistEntry } from './waitlist.js';
 
 function findNextUnclearLevel(): { url: string; label: string } | null {
   const manifest = CHAPTER_MANIFESTS[0];
@@ -50,18 +50,13 @@ function renderHeroTelemetry(runtimeLabel: string): void {
   }
 }
 
-function bootstrapLandingFunnel(): void {
-  bootHubPage('home');
+let runtimeLabel = isTauriDesktop() ? 'Tauri Desktop' : 'WebGL + Offline Fonts';
+
+/** Home: the hero telemetry and resume slot, redrawn when the save or the waitlist pass changes. */
+export function mount(): void {
   if (!document.getElementById('steam-funnel')) return;
-  let runtimeLabel = isTauriDesktop() ? 'Tauri Desktop' : 'WebGL + Offline Fonts';
-
-  const refresh = (): void => {
-    renderHeroTelemetry(runtimeLabel);
-  };
-
+  const refresh = (): void => renderHeroTelemetry(runtimeLabel);
   refresh();
-  wireSteamWaitlist(() => refresh());
-
   refreshOnSaveChange(refresh);
 
   void querySteamStatus().then((st) => {
@@ -73,5 +68,3 @@ function bootstrapLandingFunnel(): void {
     }
   });
 }
-
-bootstrapLandingFunnel();

@@ -7,6 +7,7 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { projectRoot, startPageServer } from '../harness/lib/load.mjs';
+import { verifySteamOpensInPlace, verifyTabSwitching } from './landing-tabs-check.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const outDir = resolve(projectRoot, 'scripts/harness/out');
@@ -148,7 +149,7 @@ async function verifyHeroAndWaitlistDialog(cdp, evalJs, base, externalUrls) {
   await sleep(900);
 
   const initial = await evalJs(`(() => ({
-    playHref: document.getElementById('hero-play-cta')?.getAttribute('href'),
+    playHref: document.querySelector('#hub-header a.comic-btn.primary')?.getAttribute('href'),
     ogImage: document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
     fontPreloads: document.querySelectorAll('link[rel="preload"][as="font"]').length,
     skipLink: Boolean(document.querySelector('a.skip-link[href="#main-heading"]')),
@@ -159,12 +160,12 @@ async function verifyHeroAndWaitlistDialog(cdp, evalJs, base, externalUrls) {
       osCards: document.querySelectorAll('.os-card').length,
       oldAnchors: document.querySelectorAll('a[href="#desktop-builds"], a[href="#achievements-showcase"]').length,
     },
-    desktopCtaHref: document.getElementById('hero-desktop-cta')?.getAttribute('href'),
+    heroButtons: document.querySelectorAll('.hero-copy .hero-cta-row .comic-btn:not([href*="/play/"])').length + document.querySelectorAll('#hero-play-cta, #open-steam-waitlist-btn, #hero-desktop-cta').length,
     parodyText: document.body.textContent.includes('Anti-Gravy') && document.body.textContent.includes('kiro disclaimer'),
   }))()`);
 
   assert.equal(initial.playHref, '/play/chapter-01-kiroween');
-  for (const sel of ['#hero-play-cta', '#open-steam-waitlist-btn', '.door-go']) {
+  for (const sel of ['#hub-header a.comic-btn.primary', '#hub-header [data-open-waitlist]', '.door-go']) {
     const ratio = await measureContrast(evalJs, sel);
     assert.ok(ratio >= 4.5, `${sel} must meet WCAG AA >= 4.5:1 contrast, got ${ratio.toFixed(2)}`);
   }
@@ -173,7 +174,7 @@ async function verifyHeroAndWaitlistDialog(cdp, evalJs, base, externalUrls) {
   assert.equal(initial.skipLink, true, 'Skip link must target #main-heading');
   assert.equal(initial.faqCount, 3, 'Exclusive native <details name="steam-faq"> accordion must render');
   assert.deepEqual(initial.movedOut, { trophyRack: false, saveBar: false, osCards: 0, oldAnchors: 0 }, 'The trophy rack, the save bar and the OS cards live on their own tab pages, not on /');
-  assert.equal(initial.desktopCtaHref, '/desktop.html', 'The hero desktop button must open the Desktop Builds tab');
+  assert.equal(initial.heroButtons, 0, 'The hero has no Play, Wishlist or Desktop Builds buttons (the header has them); only the resume link may appear');
   assert.equal(initial.parodyText, true, 'Parody & non-affiliation notice must be present on /');
   assert.deepEqual(externalUrls, [], `Expected 0 external runtime requests on /, saw: ${externalUrls.join(', ')}`);
 
@@ -182,7 +183,7 @@ async function verifyHeroAndWaitlistDialog(cdp, evalJs, base, externalUrls) {
   writeFileSync(join(outDir, 'landing-1440.png'), Buffer.from(shotLanding.data, 'base64'));
 
   const dialogResult = await evalJs(`(() => {
-    document.getElementById('open-steam-waitlist-btn').click();
+    document.querySelector('#hub-header [data-open-waitlist]').click();
     const dlg = document.getElementById('steam-waitlist-dialog');
     const email = document.getElementById('waitlist-email');
     const form = document.getElementById('steam-waitlist-form');
@@ -223,13 +224,13 @@ const SAMPLE_BUNDLE_JS = `{
   achievements: { schemaVersion: 1, unlocked: { first_boot: { id: 'first_boot', steamApiName: 'ACH_FIRST_BOOT', unlockedAt: 1700000000000 }, campaign_clear: { id: 'campaign_clear', steamApiName: 'ACH_CAMPAIGN_CLEAR', unlockedAt: 1700000001000 } }, stats: { malwareKilled: 3, sectorsCleared: 1, sRanksEarned: 1, clearedMechanics: ['terminal'], loadedCores: [] } },
 }`;
 
-/** The header every tab page shares: six items, the current tab marked, Steam as a button on Home and a link elsewhere. */
+/** The header every tab page shares: six items, the current tab marked, Steam as a button that opens the waitlist dialog in place. */
 async function checkHeader(evalJs, path, currentLabel, steamKind) {
   const h = await evalJs(`(() => ({
     items: [...document.querySelectorAll('#hub-header .hub-nav-links > *')].map((e) => e.textContent.trim()),
     current: [...document.querySelectorAll('#hub-header [aria-current="page"]')].map((e) => e.textContent.trim()),
     active: [...document.querySelectorAll('#hub-header .hub-nav-links .active')].map((e) => e.textContent.trim()),
-    steam: document.querySelector('#hub-header [data-open-waitlist]') ? 'button' : (document.querySelector('#hub-header a[href="/?wishlist=1"]') ? 'link' : 'none'),
+    steam: document.querySelector('#hub-header button[data-open-waitlist]') ? 'button' : 'none',
     dialog: Boolean(document.getElementById('steam-waitlist-dialog')),
     skip: Boolean(document.querySelector('#hub-header a.skip-link[href="#main-heading"]')) && Boolean(document.getElementById('main-heading')),
     hrefs: Object.fromEntries([...document.querySelectorAll('#hub-header .hub-nav-links a')].map((a) => [a.textContent.trim(), a.getAttribute('href')])),
@@ -237,7 +238,8 @@ async function checkHeader(evalJs, path, currentLabel, steamKind) {
   assert.deepEqual(h.items, ['Play Free Demo', 'Steam Coming Soon', 'Desktop Builds', 'Achievements', 'Comix', 'Chapters & Workshop'], `${path}: header items`);
   assert.deepEqual(h.current, [currentLabel], `${path}: exactly the own tab is aria-current`);
   assert.equal(h.steam, steamKind, `${path}: Steam Coming Soon is a ${steamKind}`);
-  assert.equal(h.dialog, steamKind === 'button', `${path}: the waitlist dialog exists on Home only`);
+  assert.equal(h.dialog, true, `${path}: the waitlist dialog exists on every hub page`);
+  await verifySteamOpensInPlace(evalJs, path);
   assert.equal(h.skip, true, `${path}: skip link targets #main-heading`);
   assert.equal(h.hrefs['Desktop Builds'], '/desktop.html');
   assert.equal(h.hrefs.Achievements, '/achievements.html');
@@ -259,7 +261,7 @@ async function openPage(cdp, base, path, waitFor) {
 
 async function verifyAchievementsPage(cdp, evalJs, base, externalUrls) {
   await openPage(cdp, base, '/achievements.html', `document.querySelector('#achievements-rack-host .trophy-card')`);
-  await checkHeader(evalJs, '/achievements.html', 'Achievements', 'link');
+  await checkHeader(evalJs, '/achievements.html', 'Achievements', 'button');
   const fresh = await evalJs(`(() => ({
     trophyCards: document.querySelectorAll('#achievements-rack-host .trophy-card').length,
     hasProgressTag: Boolean(document.querySelector('#achievements-rack-host progress.ach-progress')),
@@ -310,7 +312,7 @@ async function verifyAchievementsPage(cdp, evalJs, base, externalUrls) {
 
 async function verifyDesktopPage(cdp, evalJs, base, externalUrls) {
   await openPage(cdp, base, '/desktop.html', `document.querySelector('.os-card')`);
-  await checkHeader(evalJs, '/desktop.html', 'Desktop Builds', 'link');
+  await checkHeader(evalJs, '/desktop.html', 'Desktop Builds', 'button');
   const page = await evalJs(`(() => ({
     osCards: [...document.querySelectorAll('.os-card h3')].map((h) => h.textContent.trim()),
     trophyRack: Boolean(document.getElementById('achievements-rack-host')),
@@ -332,8 +334,10 @@ async function verifyDesktopPage(cdp, evalJs, base, externalUrls) {
 
 async function verifyComixPage(cdp, evalJs, base, externalUrls) {
   await openPage(cdp, base, '/comix.html', `document.querySelector('.comix-tile')`);
-  await checkHeader(evalJs, '/comix.html', 'Comix', 'link');
+  await checkHeader(evalJs, '/comix.html', 'Comix', 'button');
   const tiles = await evalJs(`(() => ({
+    heads: [...document.querySelectorAll('.comix-section-head')].map((h) => h.textContent),
+    sizes: [...new Set([...document.querySelectorAll('.comix-tile')].map((t) => t.offsetWidth + 'x' + t.offsetHeight))],
     open: [...document.querySelectorAll('.comix-tile.open')].map((t) => ({
       title: t.querySelector('h3')?.textContent,
       progress: t.querySelector('.comix-tile-progress span')?.textContent,
@@ -346,8 +350,11 @@ async function verifyComixPage(cdp, evalJs, base, externalUrls) {
     })),
   }))()`);
   // The intro and the outro come first (Watch tiles), then one open tile per playable chapter.
-  assert.deepEqual(tiles.open.slice(0, 2).map((t) => t.hrefs), [['/cinematic.html?play=intro'], ['/cinematic.html?play=outro']], 'Intro and Outro Watch tiles first');
-  tiles.open.splice(0, 2);
+  assert.deepEqual([tiles.open[0].hrefs, tiles.open[2].hrefs], [['/cinematic.html?play=intro'], ['/cinematic.html?play=outro']], 'Intro first and Outro last, around the issue');
+  assert.deepEqual(tiles.heads, ['CHAPTER 1'], 'Only chapter 1 has a sub header');
+  assert.equal(tiles.sizes.length, 1, 'Every tile has the size of the issue tile');
+  tiles.open.splice(2, 1);
+  tiles.open.splice(0, 1);
   assert.equal(tiles.open.length, 1, '/comix.html must show one open tile per playable chapter');
   assert.equal(tiles.open[0].progress, '1/11 levels cleared', 'The open tile shows the progress of the imported save');
   assert.deepEqual(tiles.open[0].hrefs, ['/comic.html?chapter=chapter-01-kiroween', '/play/chapter-01-kiroween']);
@@ -364,11 +371,11 @@ async function verifyComixPage(cdp, evalJs, base, externalUrls) {
 
 /** Home after the import: the resume slot and the live telemetry, then the waitlist pass export through the Tauri mock. */
 async function verifyHomeAfterImport(cdp, evalJs, base) {
-  await openPage(cdp, base, '/', `document.getElementById('open-steam-waitlist-btn')`);
+  await openPage(cdp, base, '/', `document.querySelector('#hub-header [data-open-waitlist]')`);
   await checkHeader(evalJs, '/', 'COMIX // TTYHAUNTED TERMINAL', 'button');
   await installTauriMock(evalJs, { renameSave: true });
   const home = await evalJs(`(async () => {
-    document.getElementById('open-steam-waitlist-btn')?.click();
+    document.querySelector('#hub-header [data-open-waitlist]')?.click();
     document.getElementById('waitlist-export-btn')?.click();
     document.getElementById('waitlist-close-btn')?.click();
     await new Promise((r) => setTimeout(r, 50));
@@ -411,7 +418,7 @@ async function verifyWishlistDeepLinkAndMobileViewport(cdp, evalJs, base) {
   const shotMobile = await cdp.send('Page.captureScreenshot', { format: 'png' });
   writeFileSync(join(outDir, 'landing-360.png'), Buffer.from(shotMobile.data, 'base64'));
   const mobileCheck = await evalJs(`(() => {
-    document.getElementById('open-steam-waitlist-btn').click();
+    document.querySelector('#hub-header [data-open-waitlist]').click();
     const dlg = document.getElementById('steam-waitlist-dialog').getBoundingClientRect();
     return {
       winW: window.innerWidth,
@@ -517,7 +524,7 @@ async function verifySteamStoreCutoverAndAutoCloud(cdp, evalJs, base) {
     await new Promise((r) => setTimeout(r, 30));
     return { updatedBtns, btnLabels, heroTag, validHref, badHref, allowChecks, hydrated, ipcCalls: window.__ipcCalls };
   })()`);
-  assert.equal(cutover.updatedBtns, 3, 'All 3 [data-open-waitlist] CTAs on / must update on live Steam Store cutover');
+  assert.equal(cutover.updatedBtns, 2, 'Both [data-open-waitlist] CTAs (header and funnel) on / must update on live Steam Store cutover');
   assert.ok(cutover.btnLabels.every((t) => t === '★ Wishlist on Steam ↗'), `Expected uniform Steam CTA labels, got: ${cutover.btnLabels.join(' | ')}`);
   assert.equal(cutover.heroTag, 'STEAM EDITION // AVAILABLE ON STEAM');
   assert.deepEqual(cutover.validHref, { href: 'https://store.steampowered.com/app/480/?utm_source=web', external: true });
@@ -535,12 +542,18 @@ async function verifySteamStoreCutoverAndAutoCloud(cdp, evalJs, base) {
   );
 }
 
+async function verifyTabSwitchingFlow(cdp, evalJs, base) {
+  await openPage(cdp, base, '/comix.html', `document.querySelector('.comix-tile')`);
+  await verifyTabSwitching(evalJs);
+}
+
 async function verifyLandingFlows(cdp, base, externalUrls) {
   const evalJs = makeEvaluator(cdp);
   await verifyHeroAndWaitlistDialog(cdp, evalJs, base, externalUrls);
   await verifyAchievementsPage(cdp, evalJs, base, externalUrls);
   await verifyDesktopPage(cdp, evalJs, base, externalUrls);
   await verifyComixPage(cdp, evalJs, base, externalUrls);
+  await verifyTabSwitchingFlow(cdp, evalJs, base);
   await verifyHomeAfterImport(cdp, evalJs, base);
   await verifyWishlistDeepLinkAndMobileViewport(cdp, evalJs, base);
   await verifyChaptersAchievementsBinder(cdp, evalJs, base);

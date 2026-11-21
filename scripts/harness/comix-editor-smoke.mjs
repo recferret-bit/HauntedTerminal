@@ -10,7 +10,7 @@
 //   8. Proves API saves are byte-for-byte lossless and unsafe writes are rejected
 //
 //   node scripts/harness/comix-editor-smoke.mjs
-//   node scripts/harness/comix-editor-smoke.mjs --url http://localhost:5173
+//   node scripts/harness/comix-editor-smoke.mjs --url http://localhost:5400
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { launchBrowser, sleep } from './lib/browser.mjs';

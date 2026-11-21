@@ -110,7 +110,7 @@ export function renderTauriConf(cfg) {
     identifier: cfg.identifier,
     build: {
       beforeDevCommand: 'npm start',
-      devUrl: 'http://localhost:5173',
+      devUrl: 'http://localhost:5400',
       beforeBuildCommand: 'npm run build && node scripts/desktop/generate-tauri-steam.mjs',
       frontendDist: '../dist',
     },

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Drives the Laptop Lab (/laptop-lab) in headless Chrome with real input. Exit 0 = every check passed.
 //   node scripts/harness/laptop-lab-smoke.mjs                 own Vite on 5346
-//   node scripts/harness/laptop-lab-smoke.mjs --url http://localhost:5173
+//   node scripts/harness/laptop-lab-smoke.mjs --url http://localhost:5400
 //   node scripts/harness/laptop-lab-smoke.mjs --width 1280 --height 820
 // Covers: the lifecycle (open, dive, boot, desktop, shut down, close) with screenshots of each phase, real key
 // presses on the deck, the pointer on the trackpad, the desktop windows, the JS and page runners (errors, endless
