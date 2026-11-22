@@ -280,6 +280,9 @@ export function validatePack(pack: ChapterPack, { winnable = true }: ValidateOpt
     ['startItems', pack.manifest.startItems],
     ...(pack.manifest.grants ?? []).map((g, i): [string, readonly string[] | undefined] => [`grants[${i}].items`, g.items]),
   ];
+  if (pack.manifest.startItems?.length === 0) {
+    issues.push({ severity: 'error', where: 'chapter', tab: 'manifest', message: 'startItems: an empty list leaves him with nothing to hold; name at least one item or remove the field' });
+  }
   for (const [where, items] of manifestItems) {
     for (const item of items ?? []) {
       if (!isItemId(item)) issues.push({ severity: 'error', where: 'chapter', tab: 'manifest', message: `${where}: unknown item "${item}" (${ITEM_IDS.join(', ')})` });

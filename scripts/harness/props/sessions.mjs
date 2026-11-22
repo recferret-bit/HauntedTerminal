@@ -26,6 +26,15 @@ export async function chapterWorld({ load }) {
     return session;
   };
 
+  /** Like `open`, on a copy of the pack that `mutate(pack)` changed first (a manifest or a level edited the way a human would). */
+  const openWith = (levelIdx, mutate) => {
+    const copy = structuredClone(pack);
+    mutate(copy);
+    const session = createChapterSession({ chapterId: copy.manifest.id, pack: copy, preview: true, startLevelId: copy.levels[levelIdx].id });
+    session.skipIntro();
+    return session;
+  };
+
   const command = fc.oneof(
     { weight: 4, arbitrary: fc.constantFrom(...solutions) },
     { weight: 3, arbitrary: fc.constantFrom(...GENERIC) },
@@ -45,5 +54,5 @@ export async function chapterWorld({ load }) {
     }
   };
 
-  return { pack, levels, open, play, drive };
+  return { pack, levels, open, openWith, play, drive };
 }
