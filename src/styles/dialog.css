@@ -2,7 +2,7 @@
 .dialog-box {
   position: absolute;
   left: 10px;
-  bottom: 44px;
+  top: 10px;
   z-index: 20;
   display: flex;
   gap: 8px;

@@ -42,9 +42,10 @@ const MODES: Record<LightMode, ModeDef> = {
 
 /**
  * facts.dark: the developer holds only the terminal. The only light is its screen glow: phosphor green,
- * a tight pool, almost full darkness, no halo and no rays. Same stepped banding as every other source.
+ * a tight pool, near-black room, no halo and no rays. Same stepped banding as every other source.
+ * `dark` above 1 pushes the cool darkening past its usual end point (the shader extrapolates; 1.5 would clip to black).
  */
-const DARK_DEF: ModeDef = { color: 0x58ff9a, dark: 0.93, power: 0.55, radius: 1.15, halo: 0, source: 'lantern' };
+const DARK_DEF: ModeDef = { color: 0x58ff9a, dark: 1.4, power: 0.55, radius: 1.15, halo: 0, source: 'lantern' };
 
 const HALO_FRAG = /* glsl */ `
 uniform vec3 uColor;

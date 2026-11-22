@@ -19,6 +19,7 @@ export const MECHANICS = ['hub', 'terminal', 'html-css', 'terminal-code', 'docke
 export const ENEMY_TYPES = ['virus', 'worm', 'trojan', 'bug', 'exploit', 'crack', 'ransomware', 'spyware', 'rootkit', 'zombie', 'forkbomb', 'kernel'] as const satisfies readonly EnemyType[];
 export const PICKUP_TYPES = ['energy', 'ram', 'ssd', 'lantern'] as const satisfies readonly PickupType[];
 const SPEAKERS: readonly string[] = ['clod', 'gork', 'codec', 'antigravy', 'kiro'];
+const KIRO_HIDE_WHEN = ['intro', 'exit_open', 'before_spawn'] as const;
 const SIGNALS = ['SIGTERM', 'SIGKILL', 'SIGSTOP', 'SIGCONT'];
 
 /** Compile-time proof that the lists above name every member of the game's unions: a new RoomKind or EnemyType breaks the build here. */
@@ -183,6 +184,12 @@ function checkScript(c: LevelCheck): void {
   const b = script.bullying;
   if (b && (b.lines.length === 0 || b.every < 1)) c.add('error', 'script', 'script.bullying needs lines[] and every >= 1');
   const k = script.kiro;
+  for (const w of k?.hideWhen ?? []) {
+    if (!KIRO_HIDE_WHEN.some((x) => x === w)) c.add('error', 'script', `kiro.hideWhen "${String(w)}" must be one of ${KIRO_HIDE_WHEN.join(', ')}`);
+  }
+  if (k?.hideWhen?.includes('before_spawn') && !(script.timed ?? []).concat([{ afterSec: 0, steps: script.arrival ?? [] }]).some((t) => t.steps.some((st) => st.kind === 'spawn' && st.entityId === 'kiro'))) {
+    c.add('error', 'script', 'kiro.hideWhen has before_spawn, but no arrival or timed step spawns "kiro": he would never appear');
+  }
   const kiroRule = c.spec.winRules.find((r) => r.kind === 'kiro_loaded');
   if (k?.reactions) {
     for (const core of Object.keys(k.reactions)) {

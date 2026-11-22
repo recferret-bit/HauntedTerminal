@@ -150,6 +150,7 @@ export function runSteps(g: ChapterState, steps: ScriptStep[], events: KernelEve
   let out = '';
   for (const s of steps) {
     const r = stepOutput(s, env);
+    if (s.kind === 'spawn') g.rt.spawned.add(s.entityId);
     events.push(...r.events);
     out += r.print;
   }
@@ -290,6 +291,9 @@ export function kiroIsWeak(g: ChapterState): boolean {
   return !(k.weakUntilCore && g.rt.loadedCores.has(k.weakUntilCore));
 }
 
+/** The stage id of the companion (what a `spawn` step names to bring him in). */
+const KIRO_ENTITY = 'kiro';
+
 /** Where Kiro stands in the room: `undefined` = not on stage. */
 export function kiroStage<T extends object>(g: ChapterState, base: T, cwdPath: string, exitOpen: boolean): T | undefined {
   const k = levelScript(g).kiro;
@@ -298,6 +302,7 @@ export function kiroStage<T extends object>(g: ChapterState, base: T, cwdPath: s
   if (stage === 'hidden') return undefined;
   if (stage === 'crack_only') return g.kiro.activeCrack?.dirPath === cwdPath ? base : undefined;
   if ((k.hideWhen?.includes('intro') && g.intro) || (k.hideWhen?.includes('exit_open') && exitOpen)) return undefined;
+  if (k.hideWhen?.includes('before_spawn') && !g.rt.spawned.has(KIRO_ENTITY)) return undefined;
   const loaded = k.labelLoaded?.cores.some((c) => g.rt.loadedCores.has(c));
   const label = loaded && k.labelLoaded ? k.labelLoaded.label : k.label;
   return label ? { ...base, label } : base;

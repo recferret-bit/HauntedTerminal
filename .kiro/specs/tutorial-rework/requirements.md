@@ -1,6 +1,6 @@
 # Tutorial rework: requirements
 
-Status: approved (requirements, design and tasks approved by the user 2026-11-21)
+Status: done (all tasks ticked and gates run 2026-11-22)
 
 Capability: the tutorial level (level 1) opens in the dark. The vibecoder wakes with no lantern and only a faint glow around him, and he talks to himself in a dialog box with his avatar in the screen corner. About 8 seconds after his monologue, Kiro Ghost floats over and tells him to take the lantern. `ls` is blocked until he has it, so `mv` is the first command he learns. Once he holds the lantern, `ls` works and the rest of the level plays as it does today. A new indicator shows the items he carries, with the lantern on it once he has it.
 

@@ -120,6 +120,8 @@ export interface LevelRuntime {
   tutorialLastStep: number;
   /** The script's hidden enemy has been shown. */
   hiddenRevealed: boolean;
+  /** Entity ids a `spawn` step has brought in on this level (Kiro stays off stage until his is, with `hideWhen: before_spawn`). */
+  spawned: Set<string>;
   /** Seconds (world ticks) since the level started: drives `script.timed`. */
   levelTicks: number;
   /** Indexes of `script.timed` entries that already fired. */

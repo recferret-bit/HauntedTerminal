@@ -303,7 +303,7 @@ export const SCRIPT: Field[] = [
     optional: true,
     fields: [
       opt(sel('stage', 'On stage', ['show', 'crack_only', 'hidden'])),
-      opt({ type: 'strings', key: 'hideWhen', label: 'Hide while (intro / exit_open, one per line)' }),
+      opt({ type: 'strings', key: 'hideWhen', label: 'Hide while (intro / exit_open / before_spawn, one per line)' }),
       opt(t('label', 'Stage label')),
       opt({ type: 'object', key: 'labelLoaded', label: 'Label once a core is loaded', fields: [{ type: 'strings', key: 'cores', label: 'Cores (one per line)' }, t('label', 'Label')] }),
       opt(b('weak', 'Weak: runs the tiny core (ps and kiro status show it)')),

@@ -348,7 +348,7 @@
     },
     "kiro": {
       "stage": "show",
-      "hideWhen": ["intro", "exit_open"],
+      "hideWhen": ["intro", "exit_open", "before_spawn"],
       "label": "kiro.d [weak // need RAM+GPU]",
       "weak": true,
       "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro at the Hub server!)\n",

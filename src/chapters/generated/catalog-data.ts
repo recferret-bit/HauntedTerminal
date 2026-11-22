@@ -720,7 +720,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "stage": "show",
           "hideWhen": [
             "intro",
-            "exit_open"
+            "exit_open",
+            "before_spawn"
           ],
           "label": "kiro.d [weak // need RAM+GPU]",
           "weak": true,

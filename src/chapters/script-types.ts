@@ -103,8 +103,8 @@ export interface ScriptCoreReaction {
 export interface ScriptKiro {
   /** `crack_only`: Kiro stands in the room only while cracking a lock here. */
   stage?: 'show' | 'crack_only' | 'hidden';
-  /** With `show`: also hide Kiro while the intro runs or once the exit is open. */
-  hideWhen?: Array<'intro' | 'exit_open'>;
+  /** With `show`: also hide Kiro while the intro runs, once the exit is open, or until a `spawn` step names him (`before_spawn`). */
+  hideWhen?: Array<'intro' | 'exit_open' | 'before_spawn'>;
   label?: string;
   /** Replaces `label` once any of `cores` is loaded. */
   labelLoaded?: { cores: string[]; label: string };

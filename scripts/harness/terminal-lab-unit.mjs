@@ -42,7 +42,7 @@ await withProcgen(async (_p, vite) => {
   const { normaliseLabConfig } = await load('/src/chapters/lab-config.ts');
   const { matchesPattern, answerMatches, patternError } = await load('/src/chapters/session-lab-checks.ts');
   const { validatePack } = await load('/src/chapters/validate-pack.ts');
-  const { BESTIARY } = await load('/src/game/bestiary.ts');
+  const { BESTIARY, PICKUP_INFO } = await load('/src/game/bestiary.ts');
   const { buildLabPack, newLabScript, labPackId } = await load('/src/terminal-lab/lab-pack.ts');
   const { paletteGroups, expectedPaletteIds } = await load('/src/terminal-lab/catalog.ts');
   const { checkLab } = await load('/src/terminal-lab/lab-check.ts');
@@ -226,7 +226,7 @@ await withProcgen(async (_p, vite) => {
     const script = lab();
     for (const e of entries().filter((x) => x.group === 'Enemies' || x.group === 'Pickups')) script.setup.push(...e.make(script));
     assert.deepEqual(checkLab(script).filter((i) => i.severity === 'error'), []);
-    assert.equal(play(script).inspect().entities.length, Object.keys(BESTIARY).length + 3);
+    assert.equal(play(script).inspect().entities.length, Object.keys(BESTIARY).length + Object.keys(PICKUP_INFO).length);
   });
 
   await test('buildLabPack: implied files (worm port, exploit buffer, pickup), user files win, and the config carries clock and props', () => {

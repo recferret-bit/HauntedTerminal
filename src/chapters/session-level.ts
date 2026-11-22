@@ -121,6 +121,7 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       tutorialSkipped: false,
       tutorialLastStep: 1,
       hiddenRevealed: false,
+      spawned: new Set(),
       levelTicks: 0,
       timedFired: new Set(),
       lab: { absorbed: {}, solved: new Set(), attempts: {}, hits: new Set() },
