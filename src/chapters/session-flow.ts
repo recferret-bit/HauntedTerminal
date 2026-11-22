@@ -1,13 +1,13 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { maxHpFor } from '../game/bestiary.js';
-import { starterInventory } from '../game/inventory.js';
+import { giveItem, hasItem, holdItem, starterInventory } from '../game/inventory.js';
 import { runLine, type Host } from '../game/shell.js';
 import { lookup, makeNode } from '../game/tree.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from '../game/types.js';
 import { evaluateBatchEvents, formatAchievementLines } from './achievements.js';
 import { readMetagame, recordTelemetry } from './catalog.js';
 import type { LevelSpec } from './types.js';
-import { applySkipTutorial, bullyingNote, evalCond, levelScript, syncTutorial } from './script.js';
+import { applySkipTutorial, bullyingNote, evalCond, levelScript, runTimed, syncTutorial } from './script.js';
 import { ensureDirChain, type ChapterState, type EditorOpenPayload } from './session-state.js';
 import { stepKiroCrack } from './session-kiro.js';
 import { arriveCurrentLevel, levelBannerText, loadLevel, rebootLevel } from './session-level.js';
@@ -18,7 +18,7 @@ import { snapshot } from './session-snapshot.js';
 
 export function applyInitialLoadout(g: ChapterState, startIdx: number): void {
     g.kiro.reset();
-    g.inventory = starterInventory();
+    g.inventory = starterInventory(g.pack.manifest.startItems);
     const perks = g.preview ? [] : readMetagame().activePerks;
     let bonusRam = perks.includes('perk-overclock-dimm') ? 16 : 0;
     let bonusSsd = perks.includes('perk-nvme-snapshot') ? 256 : 0;
@@ -30,7 +30,10 @@ export function applyInitialLoadout(g: ChapterState, startIdx: number): void {
       bonusRam += grant.ram ?? 0;
       bonusSsd += grant.ssd ?? 0;
       if (grant.core) core = grant.core;
+      for (const item of grant.items ?? []) g.inventory = giveItem(g.inventory, item);
     }
+    // A grant that gives the lantern also puts it in his hand.
+    if (hasItem(g.inventory, 'lantern')) g.inventory = holdItem(g.inventory, 'lantern');
     if (core) g.kiro.loadCore(core);
 
     g.ram = bonusRam;
@@ -217,7 +220,8 @@ export function internalTick(g: ChapterState, _fromCommand: boolean): TickResult
     if ((!_fromCommand || !g.lastCmdStartedCrack) && g.kiro.activeCrack) {
       kiroOut = stepKiroCrack(g, events);
     }
-    const tickOut = kiroOut + (enemiesHeld(g) ? '' : g.rt.world.tick(events));
+    const timedOut = runTimed(g, events);
+    const tickOut = kiroOut + timedOut + (enemiesHeld(g) ? '' : g.rt.world.tick(events));
     syncValidatedCodeBugs(g);
     g.rt.world.sync(events);
     refreshExitGates(g, events);

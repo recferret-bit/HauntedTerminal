@@ -22,9 +22,10 @@ export interface Inventory {
   readonly held: ItemId;
 }
 
-/** He walks in with the lantern and his terminal from his desk; the laptop comes later. */
-export function starterInventory(): Inventory {
-  return { items: ['lantern', 'terminal'], held: 'lantern' };
+/** He walks in with what the chapter's `startItems` name (default: the lantern and his terminal); the lantern is held when he has it. */
+export function starterInventory(items: readonly ItemId[] = ['lantern', 'terminal']): Inventory {
+  const unique = items.filter((id, i) => items.indexOf(id) === i);
+  return { items: unique, held: unique.includes('lantern') ? 'lantern' : (unique[0] ?? 'terminal') };
 }
 
 export function hasItem(inv: Inventory, id: ItemId): boolean {

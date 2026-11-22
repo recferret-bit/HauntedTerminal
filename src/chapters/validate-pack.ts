@@ -1,4 +1,5 @@
 import type { RoomKind } from '../contracts/room-view.js';
+import { ITEM_IDS, isItemId } from '../contracts/inventory.js';
 import { BESTIARY, type EnemyType, type PickupType } from '../game/bestiary.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
 import { isRec } from './record.js';
@@ -16,7 +17,8 @@ export interface PackIssue {
 export const ROOM_KINDS = ['desk', 'attic', 'crypt_entrance', 'crypt_hall', 'chasm', 'cell', 'lab_hall', 'catwalk', 'furnace', 'core', 'outro'] as const satisfies readonly RoomKind[];
 export const MECHANICS = ['hub', 'terminal', 'html-css', 'terminal-code', 'docker-image', 'docker-compose', 'boss'] as const satisfies readonly ChapterMechanic[];
 export const ENEMY_TYPES = ['virus', 'worm', 'trojan', 'bug', 'exploit', 'crack', 'ransomware', 'spyware', 'rootkit', 'zombie', 'forkbomb', 'kernel'] as const satisfies readonly EnemyType[];
-export const PICKUP_TYPES = ['energy', 'ram', 'ssd'] as const satisfies readonly PickupType[];
+export const PICKUP_TYPES = ['energy', 'ram', 'ssd', 'lantern'] as const satisfies readonly PickupType[];
+const SPEAKERS: readonly string[] = ['clod', 'gork', 'codec', 'antigravy', 'kiro'];
 const SIGNALS = ['SIGTERM', 'SIGKILL', 'SIGSTOP', 'SIGCONT'];
 
 /** Compile-time proof that the lists above name every member of the game's unions: a new RoomKind or EnemyType breaks the build here. */
@@ -66,6 +68,9 @@ class LevelCheck {
       case 'enemy_dead':
         this.needEnemy(tab, what, c.enemyId);
         break;
+      case 'has_item':
+        if (!isItemId(c.item)) this.add('error', tab, `${what}: unknown item "${c.item}" (${ITEM_IDS.join(', ')})`);
+        break;
       case 'any':
       case 'all':
         if (c.of.length === 0) this.add('warn', tab, `${what}: empty ${c.kind} condition`);
@@ -84,6 +89,14 @@ class LevelCheck {
       }
       if (s.kind === 'tutorial_step' && (!tut || s.step < 1 || s.step > tut.steps.length)) {
         this.add('error', 'script', `${what}: tutorial_step ${s.step} does not exist`);
+      }
+      if (s.kind === 'dialog_box') {
+        if (!s.text.trim()) this.add('error', 'script', `${what}: dialog_box has no text`);
+        if (s.holdSec !== undefined && !(s.holdSec > 0)) this.add('error', 'script', `${what}: dialog_box holdSec must be above 0`);
+        if (s.speaker !== 'vibecoder' && !SPEAKERS.includes(s.speaker)) this.add('error', 'script', `${what}: dialog_box speaker "${s.speaker}" is not vibecoder or an agent`);
+      }
+      if (s.kind === 'spawn' && s.entrance !== undefined && s.entrance !== 'appear' && s.entrance !== 'glide') {
+        this.add('error', 'script', `${what}: spawn entrance "${String(s.entrance)}" must be appear or glide`);
       }
       if (s.kind === 'taunt' && !s.fallback && !this.pack.dialogs?.levels[this.spec.id]?.agentTaunt) {
         this.add('warn', 'script', `${what}: taunt step has no dialog agentTaunt and no fallback, so it says nothing`);
@@ -137,6 +150,16 @@ function checkScript(c: LevelCheck): void {
   if (!script) return;
   if (script.arrival) c.steps('script.arrival', script.arrival);
   if (script.onBossKill) c.steps('script.onBossKill', script.onBossKill);
+  script.timed?.forEach((t, i) => {
+    if (!(t.afterSec >= 0)) c.add('error', 'script', `script.timed[${i}]: afterSec must be 0 or more`);
+    if (t.steps.length === 0) c.add('warn', 'script', `script.timed[${i}] has no steps`);
+    c.steps(`script.timed[${i}]`, t.steps);
+  });
+  script.locks?.forEach((l, i) => {
+    if (!l.command.trim()) c.add('error', 'script', `script.locks[${i}]: command is empty`);
+    if (!l.message.trim()) c.add('warn', 'script', `script.locks[${i}]: empty message, the player gets no hint`);
+    c.cond('script', `script.locks[${i}].until`, l.until);
+  });
   if (script.holdEnemiesUntil) c.cond('script', 'script.holdEnemiesUntil', script.holdEnemiesUntil);
   const tut = script.tutorial;
   if (tut) {
@@ -252,6 +275,18 @@ export function validatePack(pack: ChapterPack, { winnable = true }: ValidateOpt
   const boss = pack.levels.find((l) => l.mechanic === 'boss');
   if (boss && !pack.manifest.boss.cameoModel) {
     issues.push({ severity: 'warn', where: 'chapter', tab: 'manifest', message: 'boss level without boss.cameoModel: no supervisor on stage' });
+  }
+  const manifestItems: Array<[string, readonly string[] | undefined]> = [
+    ['startItems', pack.manifest.startItems],
+    ...(pack.manifest.grants ?? []).map((g, i): [string, readonly string[] | undefined] => [`grants[${i}].items`, g.items]),
+  ];
+  for (const [where, items] of manifestItems) {
+    for (const item of items ?? []) {
+      if (!isItemId(item)) issues.push({ severity: 'error', where: 'chapter', tab: 'manifest', message: `${where}: unknown item "${item}" (${ITEM_IDS.join(', ')})` });
+    }
+    if (items && new Set(items).size !== items.length) {
+      issues.push({ severity: 'warn', where: 'chapter', tab: 'manifest', message: `${where}: lists an item twice` });
+    }
   }
   return issues;
 }

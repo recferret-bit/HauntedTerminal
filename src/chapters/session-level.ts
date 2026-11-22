@@ -121,6 +121,8 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       tutorialSkipped: false,
       tutorialLastStep: 1,
       hiddenRevealed: false,
+      levelTicks: 0,
+      timedFired: new Set(),
       lab: { absorbed: {}, solved: new Set(), attempts: {}, hits: new Set() },
     };
     g.rt.world = new World(g.host, enemySpawns, pickupSpawns);

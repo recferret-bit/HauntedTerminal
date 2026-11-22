@@ -8,7 +8,7 @@ import { CHAPTER_COMMANDS, emptyStep, globToRegExp, okStep, type ChapterState } 
 import { cmdDocker, cmdEdit, cmdExit, cmdSed, cmdSource } from './session-code.js';
 import { cmdCat, cmdCd, cmdChmod, cmdCp, cmdCut, cmdFind, cmdGrep, cmdHeadTail, cmdLs, cmdMkdir, cmdMv, cmdRm, cmdTouch, cmdWc } from './session-fs.js';
 import { cmdKiro } from './session-kiro.js';
-import { applySkipTutorial, isNodeHidden, tutorialState } from './script.js';
+import { applySkipTutorial, isNodeHidden, lockMessage, tutorialState } from './script.js';
 import { cmdAchievements, cmdBestiary, cmdGrimoire, cmdHank, cmdStatus, cmdWorkshop } from './session-meta.js';
 import { cmdKill, cmdPkill, cmdPs } from './session-proc.js';
 
@@ -101,7 +101,14 @@ export function expand(g: ChapterState, word: Word): string[] {
     return out.length > 0 ? out.sort() : [text];
   }
 
+/** A `script.locks` entry refuses the command before it runs (`ls`, `ls -a`, `ls -la`: the first word decides). */
 export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
+    const locked = lockMessage(g, argv[0] ?? '');
+    if (locked !== undefined) return emptyStep(1, locked.replace(/\n?$/, '\n'));
+    return dispatchCommand(g, argv, stdin);
+  }
+
+function dispatchCommand(g: ChapterState, argv: string[], stdin: string): Step {
     const cmd = argv[0] ?? '';
     const args = argv.slice(1);
     g.currentRedirectTarget = '';

@@ -120,6 +120,10 @@ export interface LevelRuntime {
   tutorialLastStep: number;
   /** The script's hidden enemy has been shown. */
   hiddenRevealed: boolean;
+  /** Seconds (world ticks) since the level started: drives `script.timed`. */
+  levelTicks: number;
+  /** Indexes of `script.timed` entries that already fired. */
+  timedFired: Set<number>;
   /** Lab session state for this level (absorbed damage, solved riddles, latched checks). Empty in the game. */
   lab: LabLevelState;
 }
