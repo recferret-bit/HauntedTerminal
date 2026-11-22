@@ -1,4 +1,5 @@
 import './styles/game.css';
+import './styles/dialog.css';
 import '@xterm/xterm/css/xterm.css';
 import { startPlay } from './play/start.js';
 
