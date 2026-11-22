@@ -202,10 +202,15 @@
       "specPath": "levels/level-11-boss-clod-core/level.spec.json"
     }
   ],
+  "startItems": ["terminal"],
   "grants": [
     {
       "afterLevel": 1,
       "ram": 16
+    },
+    {
+      "afterLevel": 1,
+      "items": ["lantern"]
     },
     {
       "afterLevel": 2,

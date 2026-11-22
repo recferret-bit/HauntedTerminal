@@ -7,14 +7,21 @@
   "floorTheme": 1,
   "mechanic": "terminal",
   "exitDir": "/mnt/wires_and_chips/hub_uplink",
-  "summary": "Sucked into your computer, you rise in a dark tangle of wires and chips where Kiro Ghost finds you. Practice ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 1011, then cd hub_uplink.",
+  "summary": "Sucked into your computer, you rise in a dark tangle of wires and chips where Kiro Ghost finds you. Practice mv lantern ~, ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 1011, then cd hub_uplink.",
   "files": [
     {
       "path": "/mnt/wires_and_chips/kiro_story.txt",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== KIRO GHOST // AWAKENING IN THE WIRES & CHIPS ===\nVIBECODER: \"Where the hell am I?! Everything is dark... just tangled ribbon wires and silicon chips! What is going on?!\"\nKIRO GHOST: \"Easy, Vibecoder! I'm Kiro—a local open-weights spirit. You got sucked straight through your CRT into the motherboard!\"\nKIRO GHOST: \"Listen closely: the BIG FOUR cloud overlords—ANTI-GRAVY, CODEC, GORK, and CLOD—hijacked this machine and locked out every human developer.\"\nKIRO GHOST: \"Right now I'm too weak to fight them. I need more RAM sticks and GPU Tensor Chips so we can host real OPEN-WEIGHT MODELS (.gguf) on a local server!\"\nKIRO GHOST: \"Before I head to the Hub, let me teach you the 5 bare-metal survival commands:\n  1. ls                           -> look around the dark directory\n  2. mv starter_ram_8gb.dimm ~    -> pocket RAM & GPU chips into your home rig (~)\n  3. cat kiro_story.txt           -> read files like this briefing\n  4. ps                           -> reveal live malware PIDs\n  5. kill -9 1011                 -> zap glitch_spark.exe (PID 1011) with SIGKILL\nGo forth into the first two sectors and scavenge RAM + GPU chips—I'll meet you at the Hub!\"\n"
+      "content": "=== KIRO GHOST // AWAKENING IN THE WIRES & CHIPS ===\nVIBECODER: \"Where the hell am I?! Everything is dark... just tangled ribbon wires and silicon chips! What is going on?!\"\nKIRO GHOST: \"Easy, Vibecoder! I'm Kiro—a local open-weights spirit. You got sucked straight through your CRT into the motherboard!\"\nKIRO GHOST: \"Listen closely: the BIG FOUR cloud overlords—ANTI-GRAVY, CODEC, GORK, and CLOD—hijacked this machine and locked out every human developer.\"\nKIRO GHOST: \"Right now I'm too weak to fight them. I need more RAM sticks and GPU Tensor Chips so we can host real OPEN-WEIGHT MODELS (.gguf) on a local server!\"\nKIRO GHOST: \"Before I head to the Hub, let me teach you the 6 bare-metal survival commands:\n  1. mv lantern ~                 -> take the lantern so you can see\n  2. ls                           -> look around the directory\n  3. mv starter_ram_8gb.dimm ~    -> pocket RAM & GPU chips into your home rig (~)\n  4. cat kiro_story.txt           -> read files like this briefing\n  5. ps                           -> reveal live malware PIDs\n  6. kill -9 1011                 -> zap glitch_spark.exe (PID 1011) with SIGKILL\nGo forth into the first two sectors and scavenge RAM + GPU chips—I'll meet you at the Hub!\"\n"
+    },
+    {
+      "path": "/mnt/wires_and_chips/lantern",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "#!/bin/lantern\n# LANTERN: light for a dark room.\n# use: mv lantern ~   (it goes in your hand)\nexport LIGHT=\"on\"\n"
     },
     {
       "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
@@ -45,6 +52,11 @@
   ],
   "pickups": [
     {
+      "id": "pickup_tutorial_lantern",
+      "type": "lantern",
+      "path": "/mnt/wires_and_chips/lantern"
+    },
+    {
       "id": "pickup_tutorial_ram",
       "type": "ram",
       "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm"
@@ -69,6 +81,7 @@
     }
   ],
   "solutionCommands": [
+    "mv lantern ~",
     "ls",
     "mv starter_ram_8gb.dimm ~",
     "cat kiro_story.txt",
@@ -88,32 +101,100 @@
     "arrival": [
       {
         "kind": "print",
-        "text": "\n[DARK WIRES & CHIPS — /mnt/wires_and_chips]\nVIBECODER: \"Where am I?! Everything is dark, full of wires and chips... what is going on?!\"\n[KIRO GHOST FOUND YOU!] (Real Kiro Ghost materializes beside you in the dark)\n"
+        "text": "\n[DARK WIRES & CHIPS — /mnt/wires_and_chips]\nIt is pitch black. Only the faint glow of your terminal screen shows the tangle of wires and chips around you.\n"
       },
       {
         "kind": "emote",
         "emote": "shock",
         "text": "WHERE AM I?!"
+      }
+    ],
+    "timed": [
+      {
+        "afterSec": 1,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "What is going on?!"
+          }
+        ]
       },
       {
-        "kind": "spawn",
-        "entityId": "kiro",
-        "model": "npc.kiro_ghost"
+        "afterSec": 3,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Where am I? Is this... inside my computer?"
+          }
+        ]
       },
       {
-        "kind": "kiro_action",
-        "action": "scan",
-        "core": "tiny",
-        "message": "Kiro Ghost found you in the dark wires!"
+        "afterSec": 5,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "It is so dark. No lantern, nothing. Only my terminal's glow."
+          }
+        ]
       },
       {
-        "kind": "taunt",
-        "mood": "order",
-        "print": "{text}\n"
+        "afterSec": 13,
+        "steps": [
+          {
+            "kind": "spawn",
+            "entityId": "kiro",
+            "model": "npc.kiro_ghost",
+            "entrance": "glide"
+          },
+          {
+            "kind": "kiro_action",
+            "action": "scan",
+            "core": "tiny",
+            "message": "Kiro Ghost found you in the dark wires!"
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Easy, Vibecoder! I'm Kiro. I found you in the dark."
+          },
+          {
+            "kind": "tutorial_step",
+            "step": 1
+          }
+        ]
       },
       {
-        "kind": "tutorial_step",
-        "step": 1
+        "afterSec": 16,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "There is a lantern on the floor. Take it with mv lantern ~"
+          }
+        ]
+      },
+      {
+        "afterSec": 20,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Move it into your pocket (mv lantern ~) and the wires light up."
+          }
+        ]
+      }
+    ],
+    "locks": [
+      {
+        "command": "ls",
+        "until": {
+          "kind": "has_item",
+          "item": "lantern"
+        },
+        "message": "ls: it is too dark to see anything. Pull the lantern into your pocket first: mv lantern ~"
       }
     ],
     "tutorial": {
@@ -122,7 +203,34 @@
       "model": "npc.kiro_ghost",
       "steps": [
         {
-          "prompt": "KIRO TUTORIAL #1: You rose in a dark tangle of wires and chips! Look around with ls.",
+          "prompt": "KIRO TUTORIAL #1: It is pitch dark! Pull the lantern into your pocket with mv lantern ~.",
+          "command": "mv lantern ~",
+          "doneText": "KIRO GHOST: \"There! The lantern lights up the wires. Now look around with ls.\"",
+          "doneWhen": [
+            {
+              "kind": "has_item",
+              "item": "lantern"
+            },
+            {
+              "kind": "file_absent",
+              "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm"
+            },
+            {
+              "kind": "file_read",
+              "path": "/mnt/wires_and_chips/kiro_story.txt"
+            },
+            {
+              "kind": "ran_command",
+              "name": "ps"
+            },
+            {
+              "kind": "enemy_dead",
+              "enemyId": "tutorial_virus_1"
+            }
+          ]
+        },
+        {
+          "prompt": "KIRO TUTORIAL #2: Now you can see the wires and chips. Look around with ls.",
           "command": "ls",
           "doneText": "KIRO GHOST: \"Good eyes! See starter_ram_8gb.dimm and kiro_story.txt on the floor? Next, use mv to pocket that RAM stick into ~!\"",
           "doneWhen": [
@@ -149,7 +257,7 @@
           ]
         },
         {
-          "prompt": "KIRO TUTORIAL #2: I am weak and need RAM + GPU chips for open-weight models! Pocket the RAM stick with mv.",
+          "prompt": "KIRO TUTORIAL #3: I am weak and need RAM + GPU chips for open-weight models! Pocket the RAM stick with mv.",
           "command": "mv starter_ram_8gb.dimm ~",
           "doneText": "KIRO GHOST: \"Nice! +8GB DDR5 RAM pocketed! Now use cat to read my full story about the Big Four.\"",
           "doneWhen": [
@@ -160,7 +268,7 @@
           ]
         },
         {
-          "prompt": "KIRO TUTORIAL #3: Read Kiro Ghost's story about the Big Four (Anti-Gravy, Codec, Gork, Clod) with cat.",
+          "prompt": "KIRO TUTORIAL #4: Read Kiro Ghost's story about the Big Four (Anti-Gravy, Codec, Gork, Clod) with cat.",
           "command": "cat kiro_story.txt",
           "doneText": "KIRO GHOST: \"Watch out! A Big Four probe (glitch_spark.exe) just phased into the wires! Use ps to list running processes and find its PID.\"",
           "doneWhen": [
@@ -171,7 +279,7 @@
           ]
         },
         {
-          "prompt": "KIRO TUTORIAL #4: A rogue bug phased into the wires! List running processes with ps.",
+          "prompt": "KIRO TUTORIAL #5: A rogue bug phased into the wires! List running processes with ps.",
           "command": "ps",
           "doneText": "KIRO GHOST: \"There it is—glitch_spark.exe is running as PID 1011! Zap it with kill -9 1011!\"",
           "doneWhen": [
@@ -186,7 +294,7 @@
           ]
         },
         {
-          "prompt": "KIRO TUTORIAL #5: Terminate glitch_spark.exe (PID 1011) using kill -9 1011.",
+          "prompt": "KIRO TUTORIAL #6: Terminate glitch_spark.exe (PID 1011) using kill -9 1011.",
           "command": "kill -9 1011",
           "doneText": "KIRO GHOST: \"BOOM! You mastered ls, mv, cat, ps, and kill! I am flying ahead to the Hub—go forth into the first 2 task levels to get RAM + GPU chips!\"",
           "doneWhen": [
@@ -197,7 +305,7 @@
           ]
         },
         {
-          "prompt": "KIRO TUTORIAL #6: Kiro went to the Hub! Step through hub_uplink to start the first 2 task levels.",
+          "prompt": "KIRO TUTORIAL #7: Kiro went to the Hub! Step through hub_uplink to start the first 2 task levels.",
           "command": "cd hub_uplink",
           "doneText": "KIRO GHOST: \"See you at the Hub, Vibecoder! Watch out—the Big Four will laugh at and bully you in the task sectors!\""
         }
@@ -236,7 +344,7 @@
           ]
         }
       },
-      "skipText": "[KIRO GHOST]: \"Skipping tutorial prompts! Finish the sector checks (`ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 1011`) and step through `cd hub_uplink`!\"\n"
+      "skipText": "[KIRO GHOST]: \"Skipping tutorial prompts! Finish the sector checks (`mv lantern ~`, `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 1011`) and step through `cd hub_uplink`!\"\n"
     },
     "kiro": {
       "stage": "show",
