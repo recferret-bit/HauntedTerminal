@@ -205,15 +205,18 @@ await withProcgen(async (_p, vite) => {
   const early = createChapterSession({ chapterId: 'chapter-01-kiroween', tacticalMode: false });
   early.arriveLevel();
   assert.ok(early.exec('find .').output.includes('too dark'), 'find is locked in the dark');
-  assert.ok(early.exec('kiro scan').output.includes('cannot scan in the dark'), 'kiro scan is locked in the dark');
+  assert.ok(early.exec('kiro scan').output.includes('in the dark'), 'kiro scan is locked in the dark');
   assert.equal(early.snapshot().room.xray, false, 'kiro scan must not switch the X-ray on in the dark');
+  // Doing later steps blind does not move the card past the lantern step.
+  assert.equal(early.exec('cat kiro_story.txt').snapshot.tutorial?.step, 1, 'Reading the briefing in the dark keeps the card on the lantern step');
   const earlyEvents = [];
-  for (let t = 0; t < 9; t++) earlyEvents.push(...early.tick().events);
+  for (let t = 0; t < 4; t++) earlyEvents.push(...early.tick().events);
   assert.ok(early.exec('mv lantern ~').output.includes('[COLLECTED]'));
-  for (let t = 0; t < 14; t++) earlyEvents.push(...early.tick().events);
+  for (let t = 0; t < 19; t++) earlyEvents.push(...early.tick().events);
   assert.ok(earlyEvents.some((e) => isBox(e, 'kiro')), 'Kiro still arrives when the lantern was taken early');
   assert.equal(earlyEvents.filter((e) => isBox(e, 'kiro')).length, 1, 'Kiro does not repeat the lantern reminders once it is taken');
   assert.equal(earlyEvents.some((e) => e.type === 'TUTORIAL_STEP' && e.step === 1 && !e.done), false, 'No stale step-1 card after the lantern');
+  assert.equal(earlyEvents.some((e) => isBox(e, 'vibecoder') && /No lantern/.test(e.text)), false, 'He does not say he has no lantern after taking it');
   const restarted = early.restartFloor();
   assert.deepEqual(restarted.snapshot.inventory, { items: ['terminal'], held: 'terminal' }, 'A floor restart puts the dark start back');
   assert.equal(restarted.snapshot.room.dark, true);

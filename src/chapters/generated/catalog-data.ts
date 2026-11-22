@@ -508,7 +508,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "speaker": "vibecoder",
                 "text": "It is so dark. No lantern, nothing. Only my terminal's glow."
               }
-            ]
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "lantern"
+            }
           },
           {
             "afterSec": 13,
@@ -597,7 +601,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               "kind": "has_item",
               "item": "lantern"
             },
-            "message": "kiro: Kiro Ghost cannot scan in the dark. Pull the lantern into your pocket first: mv lantern ~"
+            "message": "kiro: Kiro Ghost cannot help you in the dark. Pull the lantern into your pocket first: mv lantern ~"
           }
         ],
         "tutorial": {
@@ -613,22 +617,6 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 {
                   "kind": "has_item",
                   "item": "lantern"
-                },
-                {
-                  "kind": "file_absent",
-                  "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm"
-                },
-                {
-                  "kind": "file_read",
-                  "path": "/mnt/wires_and_chips/kiro_story.txt"
-                },
-                {
-                  "kind": "ran_command",
-                  "name": "ps"
-                },
-                {
-                  "kind": "enemy_dead",
-                  "enemyId": "tutorial_virus_1"
                 }
               ]
             },
