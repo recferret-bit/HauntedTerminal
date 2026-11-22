@@ -166,6 +166,8 @@ export interface ChapterState {
   tacticalMode: boolean;
   /** What he carries and holds; kept across levels. */
   inventory: Inventory;
+  /** What he carried when this level was entered; a floor restart puts it back. */
+  entryInventory: Inventory;
   pendingEditor: EditorOpenPayload | null;
   currentRedirectTarget: string;
   rt: LevelRuntime;

@@ -528,8 +528,17 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "Easy, Vibecoder! I'm Kiro. I found you in the dark."
-              },
+                "text": "Easy, Vibecoder! I'm Kiro. I found you in the wires."
+              }
+            ]
+          },
+          {
+            "afterSec": 13,
+            "unless": {
+              "kind": "has_item",
+              "item": "lantern"
+            },
+            "steps": [
               {
                 "kind": "tutorial_step",
                 "step": 1
@@ -544,7 +553,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "speaker": "kiro",
                 "text": "There is a lantern on the floor. Take it with mv lantern ~"
               }
-            ]
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "lantern"
+            }
           },
           {
             "afterSec": 20,
@@ -554,7 +567,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "speaker": "kiro",
                 "text": "Move it into your pocket (mv lantern ~) and the wires light up."
               }
-            ]
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "lantern"
+            }
           }
         ],
         "locks": [
@@ -565,6 +582,22 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               "item": "lantern"
             },
             "message": "ls: it is too dark to see anything. Pull the lantern into your pocket first: mv lantern ~"
+          },
+          {
+            "command": "find",
+            "until": {
+              "kind": "has_item",
+              "item": "lantern"
+            },
+            "message": "find: it is too dark to see anything. Pull the lantern into your pocket first: mv lantern ~"
+          },
+          {
+            "command": "kiro",
+            "until": {
+              "kind": "has_item",
+              "item": "lantern"
+            },
+            "message": "kiro: Kiro Ghost cannot scan in the dark. Pull the lantern into your pocket first: mv lantern ~"
           }
         ],
         "tutorial": {

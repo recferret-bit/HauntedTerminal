@@ -1047,6 +1047,11 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
   transition: opacity 0.16s ease, transform 0.16s ease;
 }
 
+/* Never on top of the dialog box in the opposite corner: on a narrow stage the box moves down and the toast stays high. */
+@media (max-width: 820px) {
+  .achievement-toast { max-width: calc(100% - 28px); }
+}
+
 .achievement-toast.open {
   opacity: 1;
   transform: translateY(0) scale(1);

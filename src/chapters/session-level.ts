@@ -16,6 +16,7 @@ export function rebootLevel(g: ChapterState, events: KernelEvent[]): string {
   g.ram = g.entryRam;
   g.ssd = g.entrySsd;
   g.hp = maxHpFor(g.ram);
+  g.inventory = g.entryInventory;
   loadLevel(g, g.levelIdx, true, events);
   const arrival = g.rt.arrivalNote || '';
   g.rt.arrivalNote = '';
@@ -59,6 +60,7 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
     const spec = g.levels[idx]!;
     g.entryRam = g.ram;
     g.entrySsd = g.ssd;
+    if (!isRetry) g.entryInventory = g.inventory;
     if (!isRetry && idx === 0) {
       g.hp = maxHpFor(g.ram);
     }

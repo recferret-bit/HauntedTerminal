@@ -200,6 +200,25 @@ await withProcgen(async (_p, vite) => {
     'Once Level 1 tutorial commands are done, Kiro Ghost goes ahead to the Hub',
   );
 
+  // Bypasses closed: find and kiro are locked in the dark too; taking the lantern early skips the stale reminders;
+  // a floor restart puts the dark start back.
+  const early = createChapterSession({ chapterId: 'chapter-01-kiroween', tacticalMode: false });
+  early.arriveLevel();
+  assert.ok(early.exec('find .').output.includes('too dark'), 'find is locked in the dark');
+  assert.ok(early.exec('kiro scan').output.includes('cannot scan in the dark'), 'kiro scan is locked in the dark');
+  assert.equal(early.snapshot().room.xray, false, 'kiro scan must not switch the X-ray on in the dark');
+  const earlyEvents = [];
+  for (let t = 0; t < 9; t++) earlyEvents.push(...early.tick().events);
+  assert.ok(early.exec('mv lantern ~').output.includes('[COLLECTED]'));
+  for (let t = 0; t < 14; t++) earlyEvents.push(...early.tick().events);
+  assert.ok(earlyEvents.some((e) => isBox(e, 'kiro')), 'Kiro still arrives when the lantern was taken early');
+  assert.equal(earlyEvents.filter((e) => isBox(e, 'kiro')).length, 1, 'Kiro does not repeat the lantern reminders once it is taken');
+  assert.equal(earlyEvents.some((e) => e.type === 'TUTORIAL_STEP' && e.step === 1 && !e.done), false, 'No stale step-1 card after the lantern');
+  const restarted = early.restartFloor();
+  assert.deepEqual(restarted.snapshot.inventory, { items: ['terminal'], held: 'terminal' }, 'A floor restart puts the dark start back');
+  assert.equal(restarted.snapshot.room.dark, true);
+  assert.ok(early.exec('ls').output.includes('too dark'), 'ls is locked again after the restart');
+
   const kiroChap = createChapterSession({
     chapterId: 'chapter-01-kiroween',
     tacticalMode: true,

@@ -219,7 +219,7 @@ export const SCRIPT: Field[] = [
     optional: true,
     item: {
       title: (e) => `after ${String(e.afterSec)}s: ${Array.isArray(e.steps) ? e.steps.length : 0} step(s)`,
-      fields: [n('afterSec', 'After seconds'), stepsField('steps', 'Steps')],
+      fields: [n('afterSec', 'After seconds'), { type: 'union', key: 'unless', label: 'Skip when this holds', union: COND_VARIANTS, optional: true }, stepsField('steps', 'Steps')],
     },
   },
   {

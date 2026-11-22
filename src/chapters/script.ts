@@ -172,6 +172,7 @@ export function runTimed(g: ChapterState, events: KernelEvent[]): string {
   (levelScript(g).timed ?? []).forEach((t, i) => {
     if (g.rt.timedFired.has(i) || g.rt.levelTicks < t.afterSec) return;
     g.rt.timedFired.add(i);
+    if (t.unless && evalCond(g, t.unless)) return;
     out += runSteps(g, t.steps, events);
   });
   return out;

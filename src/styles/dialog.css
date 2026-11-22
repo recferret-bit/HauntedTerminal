@@ -51,3 +51,11 @@
 .item-icon { display: block; width: 36px; height: 36px; image-rendering: pixelated; }
 .item-label { font-size: 8px; letter-spacing: 0.06em; text-transform: uppercase; }
 .item-slot.pop { animation: hud-bump 0.45s ease-out; }
+
+/* Narrow stage: the box drops to the bottom so it never covers the title banner or the HP bar, and the trophy toast
+   moves clear of it. */
+@media (max-width: 820px) {
+  .dialog-box { top: auto; bottom: 44px; width: calc(100% - 24px); }
+  .dialog-avatar { flex-basis: 48px; width: 48px; height: 48px; }
+  .dialog-text { font-size: 12px; }
+}

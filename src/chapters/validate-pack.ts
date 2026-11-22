@@ -154,6 +154,7 @@ function checkScript(c: LevelCheck): void {
   script.timed?.forEach((t, i) => {
     if (!(t.afterSec >= 0)) c.add('error', 'script', `script.timed[${i}]: afterSec must be 0 or more`);
     if (t.steps.length === 0) c.add('warn', 'script', `script.timed[${i}] has no steps`);
+    if (t.unless) c.cond('script', `script.timed[${i}].unless`, t.unless);
     c.steps(`script.timed[${i}]`, t.steps);
   });
   script.locks?.forEach((l, i) => {

@@ -13,6 +13,8 @@ export type DialogSpeaker = 'vibecoder' | ScriptAgent;
 /** Steps that run once, `afterSec` seconds (level ticks) after the level starts. */
 export interface ScriptTimed {
   afterSec: number;
+  /** Skipped (it never fires) if this holds when the time comes. */
+  unless?: ScriptCond;
   steps: ScriptStep[];
 }
 
