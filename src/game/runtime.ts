@@ -251,10 +251,11 @@ export function applyPickup(g: Play, type: PickupType, amount: number, entityId:
     g.run.ram += amount;
     const boost = 10 * Math.floor(amount / RAM_PER_STEP);
     g.run.hp = Math.min(maxHp(g), g.run.hp + boost);
-  } else {
+  } else if (type === 'ssd') {
     g.run.ssd += amount;
   }
   push(g, events, { type: 'PICKUP_COLLECTED', entityId, item: type, amount: gained, label: info.label(gained) });
+  if (type === 'lantern') return 'The lantern is already yours.\n';
   if (type === 'energy') return `+${gained} HP. HP ${g.run.hp}/${maxHp(g)}.\n`;
   if (type === 'ram') return `+${amount} GB RAM (${g.run.ram} GB). Max HP ${maxHp(g)}, HP ${g.run.hp}.\n`;
   return `+${amount} GB SSD (${g.run.ssd} GB): ${backups(g)} backup(s). Die now and you restore in place.\n`;

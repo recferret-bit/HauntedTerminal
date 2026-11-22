@@ -8,7 +8,7 @@ import { ACTOR_Z, lockedNames, themeFor } from './stage-const.js';
 import { doorLocked, fade, pendingQueuedSpawn, queuedFor, removeActor, setRest } from './stage-actor.js';
 import { clearBubble, playFx, say } from './stage-fx.js';
 import { applyLantern, drawNeighbors, placeX, syncFlood, syncRoomModel } from './stage-layout.js';
-import { closeDoor, kill, openDoor, playSpawn } from './stage-motion.js';
+import { closeDoor, kill, openDoor, playEntrance } from './stage-motion.js';
 import { anchorPoint, roomSocket } from './stage-resolve.js';
 import type { ComicStage } from './comic-stage.js';
 
@@ -94,7 +94,7 @@ function onActorCreated(stage: ComicStage, a: StageActor): void {
   const pending = stage.pendingSpawn.get(a.id);
   if (pending) {
     stage.pendingSpawn.delete(a.id);
-    playSpawn(stage, a, pending.reason);
+    playEntrance(stage, a, pending.reason, pending.entrance);
   } else if (stage.revealArmed > stage.clockMs && a.rest !== 'hidden') {
     a.animator.setState('revealed');
   }

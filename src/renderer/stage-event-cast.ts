@@ -4,7 +4,7 @@ import type { FxCue } from './event-fx.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
 import { setRest } from './stage-actor.js';
 import { clearBubble, playCues, playFx, say } from './stage-fx.js';
-import { claim, flashActor, heroAction, heroEmote, hopInPlace, owns, playHand, playSpawn, release } from './stage-motion.js';
+import { claim, flashActor, heroAction, heroEmote, hopInPlace, owns, playEntrance, playHand, playSpawn, release } from './stage-motion.js';
 import { anchorPoint, findByKey, firstOfKind } from './stage-resolve.js';
 import { syncOverlays } from './stage-sync.js';
 import { stepped } from './tween.js';
@@ -71,8 +71,8 @@ function onSystemHand(stage: ComicStage, ev: Extract<KernelEvent, { type: 'SYSTE
 function onEntitySpawned(stage: ComicStage, ev: Extract<KernelEvent, { type: 'ENTITY_SPAWNED' }>): void {
   if (ev.reason === 'boss_fork' || ev.reason === 'cron_restore') stage.handClaims.set(ev.reason, stage.clockMs);
   const a = stage.actors.get(ev.entityId);
-  if (a && !a.exiting) playSpawn(stage, a, ev.reason);
-  else stage.pendingSpawn.set(ev.entityId, { reason: ev.reason, at: stage.clockMs });
+  if (a && !a.exiting) playEntrance(stage, a, ev.reason, ev.entrance);
+  else stage.pendingSpawn.set(ev.entityId, { reason: ev.reason, at: stage.clockMs, entrance: ev.entrance });
 }
 
 function onFileCreated(stage: ComicStage, ev: Extract<KernelEvent, { type: 'FILE_CREATED' }>, subject: StageActor | null, cues: FxCue[]): void {

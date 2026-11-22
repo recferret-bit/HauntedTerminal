@@ -393,6 +393,30 @@ export function popOut(stage: ComicStage, a: StageActor): void {
   });
 }
 
+/** Which way an actor enters: `appear` is the classic spawn performance, `glide` slides it in from the panel edge. */
+export type SpawnEntrance = 'appear' | 'glide';
+
+/** Entrance of a script spawn. `glide` tweens the actor from the screen-right panel edge to its slot, stepped at 8 fps. */
+export function playEntrance(stage: ComicStage, a: StageActor, reason: string, entrance: SpawnEntrance | undefined): void {
+  if (entrance !== 'glide') {
+    playSpawn(stage, a, reason);
+    return;
+  }
+  const g = claim(a);
+  const fromX = Math.min(stage.panelRight - 0.45, a.home.x - 1.2);
+  a.awaitingSpawn = false;
+  a.base.x = fromX;
+  a.animator.setState('walk');
+  stage.tweens.add(1400, (t) => {
+    if (owns(a, g)) a.base.x = fromX + (a.home.x - fromX) * stepped(t, 11);
+  }, () => {
+    if (!owns(a, g)) return;
+    a.base.x = a.home.x;
+    release(a, g);
+    setRest(a);
+  });
+}
+
 /** Spawn performance: the System Hand draws it in (fork / cron / split), or it materialises (script / touch). */
 export function playSpawn(stage: ComicStage, a: StageActor, reason: string): void {
   if (reason === 'room_enter') {
