@@ -28,6 +28,7 @@ export const FX_IDS = [
   'fx.door-unlock',
   'fx.coredump',
   'fx.matrix-cast',
+  'fx.matrix-fault',
 ] as const;
 
 export type FxId = (typeof FX_IDS)[number];

@@ -52,7 +52,8 @@ export type FxMoment =
   | 'flood-splash'
   | 'door-unlock'
   | 'coredump'
-  | 'matrix-cast';
+  | 'matrix-cast'
+  | 'matrix-fault';
 
 /** A KernelEvent type, or a moment the kernel does not announce yet. */
 export type FxEventName = KernelEvent['type'] | 'COMMAND' | 'GAME_TICK' | 'INTRO';

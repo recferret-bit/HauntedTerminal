@@ -1,5 +1,7 @@
 import type { KernelEvent } from '../contracts/events.js';
 import type { RoomActor, RoomView } from '../contracts/room-view.js';
+import { ZONES } from '../procgen/index.js';
+import { fxCuesFor } from './event-fx.js';
 import { FX_IDS } from './fx-player.js';
 
 /** The slice of ComicStage the dev hook drives (kept structural so this file has no import cycle). */
@@ -10,6 +12,8 @@ export interface StageLike {
   render(): void;
   readonly errors: string[];
   readonly fxPlayer: { played: Set<string>; counts: Map<string, number> };
+  readonly reducedMotion: { readonly on: boolean; set(on: boolean): void };
+  hero(): { all: { uniforms: Record<string, { value: unknown } | undefined> }[] } | null;
   devNoStorm?: boolean;
   debugState(): {
     actors: { id: string; visible: boolean; exiting: boolean; dead: boolean }[]; queued: number; fx: number; played: string[]; errors: string[];
@@ -70,6 +74,7 @@ export function demoRoom(path = '/selfcheck/furnace', extra: RoomActor[] = []): 
 export function allEvents(): KernelEvent[] {
   return [
     { type: 'VIBECODER_ACTION', action: 'type', command: 'ls' },
+    { type: 'VIBECODER_ACTION', action: 'type', command: 'cat nothing.txt', failed: true },
     { type: 'VIBECODER_ACTION', action: 'cast', command: 'kill -15 667', targetEntityId: 'worm-1' },
     { type: 'ENEMY_HIT', entityId: 'worm-1', model: 'malware.worm', damage: 1, hpRemaining: 1, command: 'kill -15 667' },
     { type: 'ENEMY_ATTACK', entityId: 'zombie-1', model: 'malware.zombie', damage: 10, attack: 'swipe' },
@@ -368,8 +373,47 @@ function runSwapFinale(stage: StageLike, advance: (ms: number) => void, cast: Ca
 }
 
 /**
+ * Command feedback: `fxCuesFor` picks exactly one swirl (red for a failed action, green otherwise), and the
+ * reduced-motion switch swaps it for a hero tint of the same colour while leaving nothing changed when off.
+ */
+function checkCommandFeedback(stage: StageLike, advance: (ms: number) => void): string[] {
+  const out: string[] = [];
+  const ok: KernelEvent = { type: 'VIBECODER_ACTION', action: 'type', command: 'pwd' };
+  const bad: KernelEvent = { type: 'VIBECODER_ACTION', action: 'type', command: 'nope', failed: true };
+  const cases = [{ ev: ok, id: 'fx.matrix-cast', zone: 'matrixBright' }, { ev: bad, id: 'fx.matrix-fault', zone: 'faultBright' }] as const;
+  for (const c of cases) {
+    const cues = fxCuesFor(c.ev);
+    if (cues.length !== 1 || cues[0]?.id !== c.id) out.push(`fxCuesFor(${c.id}) gave ${cues.map((q) => q.id).join(',') || 'nothing'}, want exactly ${c.id}`);
+  }
+  const hero = stage.hero();
+  if (!hero) return [...out, 'command feedback: no hero on the stage'];
+  const tint = () => (hero.all[0]?.uniforms.uColor?.value as { getHex(): number } | undefined)?.getHex();
+  const plays = (id: string) => stage.fxPlayer.counts.get(id) ?? 0;
+  const was = stage.reducedMotion.on;
+  try {
+    for (const reduced of [true, false]) {
+      stage.reducedMotion.set(reduced);
+      for (const c of cases) {
+        advance(2000);
+        const before = plays(c.id);
+        stage.handleEvent(c.ev);
+        advance(100);
+        const color = ZONES[c.zone].color;
+        if (reduced && (plays(c.id) !== before || tint() !== color)) out.push(`reduced motion: ${c.id} must drop its cue (played ${plays(c.id) - before}) and tint the hero ${c.zone}`);
+        if (!reduced && (plays(c.id) !== before + 1 || tint() === color)) out.push(`motion on: ${c.id} must play once (played ${plays(c.id) - before}) and not tint the hero`);
+        advance(500);
+        if (tint() === color) out.push(`${c.id}: the hero tint did not clear`);
+      }
+    }
+  } finally {
+    stage.reducedMotion.set(was);
+  }
+  return out;
+}
+
+/**
  * Feeds the stage every event variant twice, garbage, ids that already left, a room change in the
- * middle of effects, then steps frames and checks: no errors caught anywhere, all 24 presets played,
+ * middle of effects, then steps frames and checks: no errors caught anywhere, every preset played,
  * and the cast matches the last view. Run in the browser: `__stage.selfCheck()`.
  */
 export function runStageSelfCheck(stage: StageLike, restore?: RoomView | null): StageSelfCheckReport {
@@ -396,6 +440,7 @@ export function runStageSelfCheck(stage: StageLike, restore?: RoomView | null): 
   advance(200);
   const count = runEventRounds(stage, allEvents(), advance, cast, checkVisible)
     + runPairPass(stage, advance, cast, checkVisible, pairFailures);
+  pairFailures.push(...checkCommandFeedback(stage, advance));
   const { live, expected } = runSwapFinale(stage, advance, cast);
   // The DOM overlay must not leak: transient lettering, balloons and cards drain back to zero, and
   // there is at most one badge holder per live actor.

@@ -117,7 +117,7 @@ class Game implements LabSession, Host {
       const talk = this.agents.react(events, { hp: this.run.hp, max: maxHp(this) });
       output += progress.text + talk.text;
       events.push(...progress.events, ...talk.events);
-      events.unshift({ type: 'VIBECODER_ACTION', action: this.act.action, command: typed, targetEntityId: this.act.target });
+      events.unshift({ type: 'VIBECODER_ACTION', action: this.act.action, command: typed, targetEntityId: this.act.target, ...(ran.code !== 0 ? { failed: true } : {}) });
       observeLab(this.lab, this.run.lab, { line: typed, output, code: ran.code, eventTypes: events.map((e) => e.type) });
     }
     return { output, stderr: ran.stderr || undefined, code: typed ? ran.code : 0, events, snapshot: this.snapshot(), clear: ran.clear || undefined };

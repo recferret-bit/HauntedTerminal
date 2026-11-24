@@ -4,7 +4,7 @@ import type { FxCue } from './event-fx.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
 import { setRest } from './stage-actor.js';
 import { clearBubble, playCues, playFx, say } from './stage-fx.js';
-import { claim, flashActor, heroAction, heroEmote, hopInPlace, owns, playEntrance, playHand, playSpawn, release } from './stage-motion.js';
+import { claim, flashActor, heroAction, heroEmote, heroFlinch, hopInPlace, owns, playEntrance, playHand, playSpawn, release } from './stage-motion.js';
 import { anchorPoint, findByKey, firstOfKind } from './stage-resolve.js';
 import { syncOverlays } from './stage-sync.js';
 import { stepped } from './tween.js';
@@ -90,6 +90,11 @@ function onDialogue(stage: ComicStage, ev: Extract<KernelEvent, { type: 'OBSTACL
 
 function onVibecoderAction(stage: ComicStage, ev: Extract<KernelEvent, { type: 'VIBECODER_ACTION' }>): void {
   const hero = stage.hero();
+  if (ev.failed) {
+    // A failed command: a flinch (none under reduced motion, which tints instead) and no `ls` ping, since nothing was revealed.
+    if (hero && !stage.reducedMotion.on) heroFlinch(stage, hero);
+    return;
+  }
   if (hero) heroAction(stage, hero, ev.action, ev.targetEntityId);
   // `ls` pings the room with the light; `ls -a` / `ls -la` pings harder and holds longer.
   const words = String(ev.command ?? '').trim().split(/[\s;|&]+/);

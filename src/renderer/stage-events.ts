@@ -1,5 +1,5 @@
 import type { KernelEvent } from '../contracts/events.js';
-import { animReactionsFor, type AnimEventReaction } from '../procgen/index.js';
+import { animReactionsFor, ZONES, type AnimEventReaction } from '../procgen/index.js';
 import { eventLeadMs, fxCuesFor } from './event-fx.js';
 import { setRest } from './stage-actor.js';
 import { reportStage } from './stage-actor.js';
@@ -8,7 +8,7 @@ import { handleCastEvent } from './stage-event-cast.js';
 import { handleCombatEvent } from './stage-event-combat.js';
 import { handleTravelEvent } from './stage-event-travel.js';
 import { playCues, triggerShake } from './stage-fx.js';
-import { strikeFrom } from './stage-motion.js';
+import { flashActor, strikeFrom } from './stage-motion.js';
 import { findByModel, sourceFor, subjectFor } from './stage-resolve.js';
 import type { StageActor } from './stage-cast.js';
 import type { ComicStage } from './comic-stage.js';
@@ -43,7 +43,13 @@ function runStageEventInner(stage: ComicStage, ev: KernelEvent): void {
   const spawnLike = ev.type === 'ENTITY_SPAWNED' || ev.type === 'FILE_CREATED' || ev.type === 'SYSTEM_HAND_SPAWN';
   // The kernel removes an enemy's file right before ENEMY_KILLED; that event owns the death and its fx.
   if (ev.type === 'FILE_REMOVED' && subject && (subject.kind === 'enemy' || subject.kind === 'boss')) return;
-  const cues = fxCuesFor(ev);
+  // Under reduced motion a command's swirl and glitch give way to a 300 ms tint of the hero (green, or red when it failed).
+  const tint = ev.type === 'VIBECODER_ACTION' && stage.reducedMotion.on;
+  const cues = tint ? [] : fxCuesFor(ev);
+  if (tint) {
+    const hero = stage.hero();
+    if (hero) flashActor(stage, hero, ZONES[ev.failed ? 'faultBright' : 'matrixBright'].color, 300, 0);
+  }
   if (!spawnLike) playCues(stage, cues, subject, ev);
   // One shake per event: the preset's, else ANIM_EVENT_MAP's.
   const presetShakes = cues.some((c) => (stage.fxPlayer.preset(c.id)?.shake ?? 0) > 0);

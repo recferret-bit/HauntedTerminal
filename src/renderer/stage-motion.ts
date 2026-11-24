@@ -231,6 +231,36 @@ export function heroAction(stage: ComicStage, hero: StageActor, action: string, 
   });
 }
 
+const FLINCH_MS = 500;
+/** One pose per 12 fps frame (83 ms): [offset.x in world units (58 px each), lean in radians]. Snap back, recoil twice, hold the lean, ease off. */
+const FLINCH_POSES: ReadonlyArray<readonly [number, number]> = [
+  [0.26, 0.2],
+  [0.08, 0.06],
+  [0.26, 0.2],
+  [0.2, 0.18],
+  [0.2, 0.18],
+  [0.1, 0.08],
+];
+
+/**
+ * The hero's answer to a command that failed: two recoil nudges (about 15 px) and a lean (about 11 degrees) held
+ * a beat, 500 ms on the 12 fps beat, additive
+ * on `offset.x` and the body's z rotation. No animator state, no claim, no walk (a failed command never looks like a cast).
+ */
+export function heroFlinch(stage: ComicStage, hero: StageActor): void {
+  const body = hero.body;
+  stage.tweens.add(FLINCH_MS, (t) => {
+    if (hero.disposed) return;
+    const pose = FLINCH_POSES[Math.min(FLINCH_POSES.length - 1, Math.floor(t * FLINCH_POSES.length))];
+    hero.offset.x = pose[0];
+    body.rotation.z = pose[1];
+  }, () => {
+    if (hero.disposed) return;
+    hero.offset.x = 0;
+    body.rotation.z = 0;
+  });
+}
+
 /** Stamp of each actor's live tell: the enemy-turn count it was told on, and a serial for its safety fallback. */
 const tells = new WeakMap<StageActor, { turn: number; serial: number }>();
 const enemyTurns = new WeakMap<ComicStage, number>();
