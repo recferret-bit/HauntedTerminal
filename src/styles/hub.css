@@ -1,4 +1,5 @@
 @import "./fonts.css";
+@import "./scrollbars.css";
 
 :root {
   --ink: #140f12;
@@ -23,6 +24,11 @@
 /* The browser default for code is the system mono (Menlo): use the bundled one. */
 code, kbd, samp, pre { font-family: var(--mono); }
 button, input, select, textarea { font-family: inherit; }
+
+html {
+  /* Reserve the scrollbar's width on every tab so a taller tab does not shift the layout. */
+  scrollbar-gutter: stable;
+}
 
 html, body {
   min-height: 100vh;

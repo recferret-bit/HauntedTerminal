@@ -1,5 +1,6 @@
 /* Storybook page. Tokens copied from src/styles/game.css so the lab reads as a page of the same comic. */
 @import "../styles/fonts.css";
+@import "../styles/scrollbars.css";
 
 :root {
   --ink: #140f12;

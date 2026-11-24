@@ -1,4 +1,5 @@
 @import "./fonts.css";
+@import "./scrollbars.css";
 
 :root {
   --ink: #140f12;

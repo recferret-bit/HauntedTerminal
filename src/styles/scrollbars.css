@@ -1,0 +1,40 @@
+/* One comic scrollbar for every page: ink track, yellow cel thumb with an ink border. */
+:root {
+  --sb-track: #140f12;
+  --sb-thumb: #ffd166;
+  --sb-thumb-hover: #ff8a3d;
+}
+
+* {
+  scrollbar-width: auto;
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
+}
+
+/* WebKit (Safari, Tauri on macOS, older Chrome) styles the parts; engines with scrollbar-color use the line above. */
+@supports selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+
+  ::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+  }
+
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: var(--sb-track);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--sb-thumb);
+    border: 3px solid var(--sb-track);
+    min-height: 32px;
+    min-width: 32px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--sb-thumb-hover);
+  }
+}
