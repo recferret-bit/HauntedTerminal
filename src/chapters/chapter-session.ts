@@ -1,3 +1,4 @@
+import { createBattle, type BattleHold, type BattleState } from '../game/battle.js';
 import type { WorldHost } from '../game/entities.js';
 import { starterInventory } from '../game/inventory.js';
 import { KiroCompanion } from '../game/kiro.js';
@@ -62,7 +63,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   fullRun = true;
   deadNow = false;
   deathText = '';
-  tacticalMode = false;
+  battle: BattleState = createBattle();
   inventory = starterInventory();
   entryInventory = starterInventory();
   pendingEditor: EditorOpenPayload | null = null;
@@ -71,7 +72,6 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
 
   constructor(options: ChapterSessionOptions) {
     this.chapterId = options.chapterId;
-    this.tacticalMode = Boolean(options.tacticalMode);
     this.chaosMode = Boolean(options.chaosMode);
     this.lab = options.lab ?? null;
     const pack = options.pack ?? getChapterPack(options.chapterId);
@@ -120,14 +120,6 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
     return flow.jumpToLevel(this, levelIdOrIndex);
   }
 
-  isTacticalMode(): boolean {
-    return flow.isTacticalMode(this);
-  }
-
-  setTacticalMode(enabled: boolean): void {
-    return flow.setTacticalMode(this, enabled);
-  }
-
   isChaosMode(): boolean {
     return flow.isChaosMode(this);
   }
@@ -158,6 +150,18 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
 
   labTick(): TickResult {
     return lab.labTick(this);
+  }
+
+  skipBattleIntro(): TickResult | null {
+    return flow.skipBattleIntro(this);
+  }
+
+  holdTurnTimer(hold: BattleHold, on: boolean): void {
+    flow.holdTurnTimer(this, hold, on);
+  }
+
+  forceEnemyTurn(): TickResult | null {
+    return flow.forceEnemyTurn(this);
   }
 
   inject(what: LabInjection): TickResult {

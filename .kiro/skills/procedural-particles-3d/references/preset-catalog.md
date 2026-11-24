@@ -1,11 +1,12 @@
 # Shipped FX presets
 
-All 24 live in `src/procgen/fx/presets.ts` and are registered in `FxCatalog` on import.
+All 25 live in `src/procgen/fx/presets.ts` and are registered in `FxCatalog` on import.
 Columns: layers are `name:role:zone x count emission` (`p` primary, `s` secondary, `a` accent).
 Regenerate the picture with `npm run procgen:fx -- --sheet` and open `scripts/harness/out/fx.png`.
 
 | id | family | event | ms | word (style, zone) | shake/flash | layers |
 |---|---|---|---|---|---|---|
+| `fx.fight` | system | BATTLE_TURN (first player turn) | 760 | FIGHT! (jagged, `paper`) | 1.1 / - | blast:p:`powerAmber`x1 burst; frame:s:`ink`x8 ring; rush:a:`paper`x6 ring |
 | `fx.hop` | system | ROOM_TRANSITION | 380 | HOP! (burst, `phosphor`) | | puff:p:`paper`x4 cone; grit:s:`solder`x6 cone; whoosh:a:`phosphor`x3 line |
 | `fx.panel-smash` | system | ROOM_TRANSITION | 720 | PANEL SMASH x3! (jagged, `powerAmber`) | 1.5 / - | gutter:p:`paper`x8 cone; frame:s:`ink`x8 cone; punch:a:`powerAmber`x1 burst |
 | `fx.permission-denied` | system | PERMISSION_DENIED_RATTLE | 420 | PERMISSION DENIED! (jagged, `lockRed`) | 0.8 / - | clash:p:`lockRed`x1 burst; spark:s:`gold`x8 burst; rattle:a:`paper`x4 ring |
@@ -40,6 +41,7 @@ and the amounts) are this catalog's own and may be changed.
 
 | id | The picture | Notes |
 |---|---|---|
+| `fx.fight` | An amber starburst pops oversized, ink frame shards fly out in a ring, paper speed lines rush outward; FIGHT! above | The battle-begins beat (`.kiro/specs/turn-based-battles/`), on the panel center, once per battle after the intro |
 | `fx.hop` | Dust puffs kicked sideways at the feet, grit, three green speed lines going up | Origin at the take-off point. Small on purpose: it plays on every `cd` |
 | `fx.panel-smash` | Amber punch star, then white gutter shards and black frame shards thrown up and out | Origin at the fist. Ink shards carry a paper keyline |
 | `fx.permission-denied` | Red clash star on the padlock, gold sparks, four white rattle marks | Origin on the door's `lock` socket |

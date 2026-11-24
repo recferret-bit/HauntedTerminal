@@ -34,3 +34,7 @@ Capability: the engine plays any chapter from its specs. No code names a chapter
 ## Decisions
 
 Task 10 depends on a second chapter, and Kiroween ships one. **A (user, 2026-11-17):** "close all the open questions" before the Kiroween submission. Applied as: tasks 1-9 and 11 are done; task 10 moves to the backlog in `tasks.md`.
+
+## Later changes
+
+- **2026-11-24, `.kiro/specs/turn-based-battles/` (approved by the user):** Req 6: `safe` and `holdEnemiesUntil` now also keep a battle from starting (no threats while they hold). Req 14: `--verify` plays every solution under enemy turn pressure: each command is one action answered by one enemy turn, and `--ticks N` adds N clock seconds and N-1 forced enemy turns per command. Enemy "ticks" are world steps (a command, or an enemy turn), never real seconds.

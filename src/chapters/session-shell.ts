@@ -126,7 +126,7 @@ function dispatchCommand(g: ChapterState, argv: string[], stdin: string): Step {
         return { stdout: '', stderr: '', code: 0, events: [], clear: true };
       case 'help':
         return okStep(
-          `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack] local .gguf Ghost companion (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 12 local trophies & Steamworks ACH_* payload\n  tactical               toggle turn-based Tactical Mode (${g.tacticalMode ? 'ON' : 'OFF'})\n`,
+          `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack] local .gguf Ghost companion (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 12 local trophies & Steamworks ACH_* payload\n`,
         );
       case 'man': {
         const ally = allyCommand(g);
@@ -144,10 +144,6 @@ function dispatchCommand(g: ChapterState, argv: string[], stdin: string): Step {
         const st = tutorialState(g);
         if (!st) return okStep('No onboarding tutorial running in this sector. Type `hank` or `status` for objectives.\n');
         return okStep(`[${st.agent.toUpperCase()}] ${st.prompt}\n  type: ${st.command}   (step ${st.step}/${st.total}; tutorial skip to skip)\n`);
-      }
-      case 'tactical': {
-        g.tacticalMode = args[0] === 'off' ? false : args[0] === 'on' ? true : !g.tacticalMode;
-        return okStep(`Tactical Mode: ${g.tacticalMode ? 'ENABLED (turn-based clock)' : 'DISABLED (real-time clock)'}\n`);
       }
       case 'hank':
         return cmdHank(g, args);

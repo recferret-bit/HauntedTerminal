@@ -114,6 +114,9 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
       return [cue('fx.matrix-cast', 'vibecoder-body', 0)];
     case 'GAME_ENDED':
       return [cue('fx.lightning-strike', 'panel-floor')];
+    case 'BATTLE_TURN':
+      // The battle begins: the banner plays once, on the player's first turn (BATTLE_STARTED / ENEMY_ACTING / BATTLE_ENDED have none).
+      return ev.first && ev.actor === 'player' ? [cue('fx.fight', 'panel')] : [];
     default:
       return [];
   }
@@ -137,7 +140,7 @@ export function eventLeadMs(ev: KernelEvent, heroWalkMs: number): number {
     case 'VIBECODER_ACTION':
       return ev.targetEntityId ? heroWalkMs + 160 : ev.action === 'type' ? 0 : 120;
     case 'ENEMY_ATTACK':
-      // A tell, one tick ahead of its PLAYER_DAMAGED: holding the batch would only delay unrelated events.
+      // A tell, one enemy turn ahead of its PLAYER_DAMAGED (a player turn lies between): holding the batch would only delay unrelated events.
       return 0;
     default:
       return 0;

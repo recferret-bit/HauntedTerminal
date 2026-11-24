@@ -32,7 +32,7 @@ at the page, so all motion is **in the page plane**; there is no z velocity to a
 src/procgen/fx/
   types.ts  shapes.ts  lettering.ts   FxPreset / FxLayer; the chunk helpers (fxStarburst, fxShard, fxBolt...); the word as geometry
   simulate.ts                         fxSimulate(preset, seed, tMs): pure, closed form, stepped
-  catalog.ts  presets.ts              FxCatalog, FX_MOMENT_WORDS; the 24 shipped presets
+  catalog.ts  presets.ts              FxCatalog, FX_MOMENT_WORDS; the shipped presets (see references/preset-catalog.md)
   validate.ts  preview.ts             validateFxPreset, FX_LIMITS; fxRenderFrame for the filmstrip
   emitter.ts                          createFxEmitter(preset, opts) -> { group, update(dtMs), done, dispose() }
 ```

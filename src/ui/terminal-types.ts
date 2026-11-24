@@ -5,6 +5,8 @@ export interface ShellHooks {
   run(line: string): { output: string; clear?: boolean; stderr?: string };
   complete(lineBeforeCursor: string): { line: string; matches: string[] };
   prompt(): { cwd: string; gold: boolean };
+  /** Enter was pressed. Return true to swallow it: nothing runs and the typed line stays on the prompt (the battle intro). */
+  onEnter?(): boolean;
 }
 
 export interface Shell {

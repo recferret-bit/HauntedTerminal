@@ -46,11 +46,41 @@ function forward(play: Play, ev: KernelEvent): void {
   }
 }
 
-/** The single sink for everything the session returns: stage FX, HUD reactions, flow, then the room. */
-/** `printed`: the text the session already printed with these events (taunts it contains are not repeated). */
+/** Delay between two enemies acting in one enemy turn (turn-based-battles Req 19). */
+const ENEMY_STAGGER_MS = 400;
+let applySeq = 0;
+
+/** Cuts an enemy turn at its ENEMY_ACTING markers: the first slice holds everything up to the second enemy. */
+function enemySlices(events: KernelEvent[]): KernelEvent[][] {
+  const slices: KernelEvent[][] = [[]];
+  let seen = 0;
+  for (const ev of events) {
+    if (ev.type === 'ENEMY_ACTING' && ++seen > 1) slices.push([]);
+    slices[slices.length - 1]!.push(ev);
+  }
+  return slices;
+}
+
+/**
+ * The single sink for everything the session returns: stage FX, HUD reactions, flow, then the room.
+ * An enemy turn with several enemies plays one enemy every ENEMY_STAGGER_MS; the snapshot paints after the last,
+ * unless a newer batch arrived meanwhile.
+ * `printed`: the text the session already printed with these events (taunts it contains are not repeated).
+ */
 function applyEvents(play: Play, events: KernelEvent[], snap: GameSnapshot, printed = ''): void {
   play.eventLog.push(...events);
   if (play.eventLog.length > EVENT_LOG_CAP) play.eventLog.splice(0, play.eventLog.length - EVENT_LOG_CAP);
+  const seq = ++applySeq;
+  const slices = enemySlices(events);
+  const last = slices.length - 1;
+  slices.forEach((slice, i) => {
+    const run = (): void => applySlice(play, slice, snap, printed, i === last && seq === applySeq);
+    if (i === 0) run();
+    else globalThis.setTimeout(run, i * ENEMY_STAGGER_MS);
+  });
+}
+
+function applySlice(play: Play, events: KernelEvent[], snap: GameSnapshot, printed: string, paintNow: boolean): void {
   for (const ev of events) {
     if (ev.type === 'FLOOR_ENTERED' && play.phase === 'intro') {
       play.stashedFloorCard = ev;
@@ -94,11 +124,14 @@ function applyEvents(play: Play, events: KernelEvent[], snap: GameSnapshot, prin
         play.hud?.achievement(ev);
         void forwardSteamAchievement(ev.steamApiName);
         break;
+      case 'BATTLE_STARTED':
+        play.dialogs?.handleEvent(ev);
+        break;
       default:
         break;
     }
   }
-  paint(play, snap);
+  if (paintNow) paint(play, snap);
 }
 
 function applyTick(play: Play, res: TickResult): void {

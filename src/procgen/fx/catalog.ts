@@ -5,6 +5,7 @@ import type { FxMoment, FxPreset } from './types.js';
  * (out_of_credits.md, sections 2 and 4.2). `null`: a word is optional.
  */
 export const FX_MOMENT_WORDS: Record<FxMoment, string | null> = {
+  fight: 'FIGHT!',
   hop: 'HOP!',
   'panel-smash': 'PANEL SMASH x3!',
   'permission-denied': 'PERMISSION DENIED!',

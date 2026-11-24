@@ -2,7 +2,7 @@ import type { KernelEvent } from '../contracts/events.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
 import { setRest } from './stage-actor.js';
 import { playTear, say } from './stage-fx.js';
-import { claim, collect, enemyAttack, flashActor, hopInPlace, kill, knockback, release, suckIntoNull } from './stage-motion.js';
+import { battleTurnChanged, claim, collect, enemyAttack, flashActor, hopInPlace, kill, knockback, release, suckIntoNull } from './stage-motion.js';
 import { anchorPoint, childrenOf } from './stage-resolve.js';
 import { syncHeroFace, syncOverlays } from './stage-sync.js';
 import type { ComicStage } from './comic-stage.js';
@@ -17,6 +17,10 @@ export function handleCombatEvent(stage: ComicStage, ev: KernelEvent, subject: S
       return true;
     case 'ENEMY_ATTACK':
       if (subject) enemyAttack(stage, subject);
+      return true;
+    case 'BATTLE_TURN':
+    case 'BATTLE_ENDED':
+      battleTurnChanged(stage, ev);
       return true;
     case 'ENEMY_HIT':
       onEnemyHit(stage, ev, subject);

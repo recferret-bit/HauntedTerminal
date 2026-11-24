@@ -58,7 +58,7 @@
           location.replace('/play.html' + (pq ? '?' + pq : '') + location.hash);
           return;
         }
-        var play = ['chapter', 'level', 'floor', 'nointro', 'skipIntro', 'tactical', 'chaos', 'play', 'dev'].some(function (k) { return params.has(k); });
+        var play = ['chapter', 'level', 'floor', 'nointro', 'skipIntro', 'chaos', 'play', 'dev'].some(function (k) { return params.has(k); });
         if (!play) return;
         var parts = ['/play'];
         if (params.get('chapter')) parts.push(encodeURIComponent(params.get('chapter')));
@@ -306,7 +306,7 @@
             </div>
             <h3>Level Select, Rig Workshop &amp; Grimoire</h3>
             <p>
-              Replay any sector for an <code>S</code> Rank, toggle Tactical Mode or Chaos Contracts, equip
+              Replay any sector for an <code>S</code> Rank, take on Chaos Contracts, equip
               <code>~/.bashrc</code> perks, and browse the Command Grimoire &amp; Malware Dossier.
             </p>
           </div>

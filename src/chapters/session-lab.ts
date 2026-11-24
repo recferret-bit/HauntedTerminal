@@ -2,7 +2,10 @@ import { maxHpFor } from '../game/bestiary.js';
 import { applyLabInjection, buildLabInspect } from '../game/lab-support.js';
 import type { TickResult } from '../game/types.js';
 import { hiddenEnemyId } from './script.js';
-import { enemiesHeld, internalTick } from './session-flow.js';
+import { skipIntro } from '../game/battle.js';
+import { enemyTurn, freeStep } from './session-battle.js';
+import { clockTick } from './session-flow.js';
+import { enemiesHeld } from './session-world.js';
 import { observe } from './session-lab-checks.js';
 import type { LabInjection, LabInspect } from './session-lab-types.js';
 import { getChecklist, refreshExitGates } from './session-rules.js';
@@ -30,10 +33,16 @@ export function inspect(g: ChapterState): LabInspect {
   });
 }
 
-/** One world tick on request. The manual clock stops `tick()`; this is how a tool advances time, in tactical mode too. */
+/**
+ * One step on request. The manual clock stops `tick()`; this is how a tool advances time: one second of the level
+ * clock, then in a battle the enemy turn (forced, as a timer runout would), outside one a free world step.
+ */
 export function labTick(g: ChapterState): TickResult {
   if (g.paused || g.intro || g.ended) return { output: '', events: [], snapshot: snapshot(g) };
-  return internalTick(g, false);
+  return clockTick(g, (events) => {
+    skipIntro(g.battle, events);
+    return g.battle.phase === 'player' ? enemyTurn(g, events, 'forced') : freeStep(g, events);
+  });
 }
 
 /** Puts an enemy or a pickup into the running level, with the files it needs, and tells the stage. */

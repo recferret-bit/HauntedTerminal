@@ -1,7 +1,7 @@
 /**
  * Live malware and pickups for one floor. Every enemy is a file in the VFS (its inode) and, unless it
  * is a hidden rootkit, a process in the table (`ps`). The session calls the hooks here from its
- * applets (rm, mv, chmod, kill, ls -a, ps) and calls `tick()` once a game second; `sync()` turns
+ * applets (rm, mv, chmod, kill, ls -a, ps) and calls `tick()` once per world step (a command, or an enemy turn of a battle); `sync()` turns
  * whatever changed in the VFS into ENEMY_* events, so every way of deleting or changing a file counts.
  * Enemies only act while the hero stands in their zone; nothing here is random.
  */
@@ -14,6 +14,7 @@ import {
   signal as signalWorld,
   sync as syncWorld,
   cadence as cadenceWorld,
+  threats as threatsWorld,
   tick as tickWorld,
   ticksToTell as ticksToTellWorld,
   vetoChmod as vetoChmodWorld,
@@ -136,6 +137,8 @@ export class World {
   ticks = 0;
   /** Ticks left before anyone may act: a breath after entering a floor or restoring a backup. */
   grace = GRACE_TICKS;
+  /** Set by the session for one world step: hurting enemies hold fire (the step that starts a battle, so the player acts first). */
+  holdFire = false;
   nextPid = 5000;
   nextZombie = 667;
 
@@ -421,6 +424,11 @@ export class World {
   /** Ticks until `e` next tells an attack, or null when it will not (see `ticksToTell`). */
   ticksToTell(e: Enemy): number | null {
     return ticksToTellWorld(this, e);
+  }
+
+  /** Enemies that would fight the hero now (a battle runs while this is not empty). */
+  threats(): Enemy[] {
+    return threatsWorld(this);
   }
 
   tick(events: KernelEvent[]): string {

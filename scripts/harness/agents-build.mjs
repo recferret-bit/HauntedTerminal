@@ -121,7 +121,7 @@ const TEAM = {
   },
   'chapters-designer': {
     description: 'Designs and tunes the Kiroween chapter: its levels, story, dialogs and comic issue (chapters/), the chapter runtime and editor, and the gameplay elements levels place (enemies, pickups, puzzles, inventory, Kiro cores). Uses the chapter LEVEL GEN skills.',
-    writes: ['chapters/**', 'src/chapters/**', 'src/chapter-editor/**', 'src/game/{entities,entities-combat,bestiary,puzzle,inventory,kiro,dialogue,agents}.ts', 'scripts/harness/props/{chapters,gameplay,sessions}.mjs'],
+    writes: ['chapters/**', 'src/chapters/**', 'src/chapter-editor/**', 'src/game/{entities,entities-combat,bestiary,puzzle,inventory,kiro,dialogue,agents,battle}.ts', 'scripts/harness/props/{chapters,gameplay,sessions}.mjs', 'scripts/harness/battle-unit.mjs'],
     resources: [steer('level-gen-rules'), steer('declarative-chapters'), steer('chapter-editor-rules'), steer('skills-map')],
     skills: ['chapter-architect-intake', 'comix-story-drawer', 'chapter-level-generator', 'chapter-implementer', 'chapter-editor'],
     mcp: { 'credits-forge': ['list_assets', ...FORGE_READ, 'write_level'] },

@@ -28,6 +28,7 @@ export type FxRole = 'primary' | 'secondary' | 'accent';
 
 /** Every game moment that has an effect. One preset per moment. */
 export type FxMoment =
+  | 'fight'
   | 'hop'
   | 'panel-smash'
   | 'permission-denied'

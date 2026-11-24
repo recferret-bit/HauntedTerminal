@@ -94,7 +94,6 @@ export async function bootPlay(): Promise<Play> {
           pack,
           preview: isPreview,
           startLevelId: levelParam,
-          tacticalMode: urlParams.get('tactical') === '1',
           chaosMode: urlParams.get('chaos') === '1',
           chaosSeed: urlParams.get('seed') ?? undefined,
           ...(lab ? { lab } : {}),

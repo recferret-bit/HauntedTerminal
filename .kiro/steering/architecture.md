@@ -14,7 +14,7 @@ procgen/runtime       adapters: comic materials, ink shells, animator, FX emitte
 shaders/              GLSL materials and post passes. Imports nothing from procgen
 storybook/            storybook: domain <- subjects <- stage <- ui <- app (entry: storybook/storybook.ts)
 assets/               optional PNG albedo loader (three). No other src imports.
-game/                 world, VFS, shell, session. Three-free. Room view types come from contracts.
+game/                 world, VFS, shell, session, the battle orchestrator (`battle.ts`: the turn-based state machine, pure). Three-free. Room view types come from contracts.
 chapters/             level runtime. Imports game and contracts. generated/ is compiled data.
 renderer/             comic stage. Three, procgen, shaders, assets. Not the game rules.
 cinematic/            generic 3D comix runtime. Three, procgen, shaders. generated/ is compiled data.

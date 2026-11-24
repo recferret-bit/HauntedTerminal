@@ -64,7 +64,6 @@ export function getChapterPack(chapterId: string): ChapterPack | undefined {
 }
 
 export interface PlayUrlOptions {
-  tactical?: boolean;
   chaos?: boolean;
   seed?: string;
   dev?: boolean;
@@ -87,7 +86,6 @@ export function buildPlayUrl(
   }
   const params = new URLSearchParams();
   if (noIntro) params.set('nointro', '1');
-  if (opts?.tactical) params.set('tactical', '1');
   if (opts?.chaos) params.set('chaos', '1');
   if (opts?.seed) params.set('seed', opts.seed);
   if (opts?.dev) params.set('dev', '1');

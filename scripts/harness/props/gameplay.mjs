@@ -282,12 +282,57 @@ export default async function gameplaySuite(ctx) {
           }),
         ),
     },
+    // ---- turn-based battles (.kiro/specs/turn-based-battles/) ------------------------------------------------------
+    {
+      name: 'between calls a battle is idle, in its intro or in the player turn; the enemy turn never outlives its call',
+      build: () =>
+        fc.property(deepPlay, ([levelIdx, steps]) =>
+          watch(levelIdx, steps, (_s, _b, r, step) => {
+            const phase = r.snapshot.battle?.phase ?? 'idle';
+            expect(['idle', 'intro', 'player'].includes(phase), `battle phase ${phase} after ${JSON.stringify(step)}`);
+          }),
+        ),
+    },
+    {
+      name: 'an enemy hurts the hero only inside an enemy turn (no real-time damage)',
+      build: () =>
+        fc.property(deepPlay, ([levelIdx, steps]) =>
+          watch(levelIdx, steps, (_s, _b, r, step) => {
+            let acting = false;
+            let enemyTurn = false;
+            for (const e of r.events) {
+              if (e.type === 'BATTLE_TURN' && e.actor === 'enemy') enemyTurn = true;
+              if (e.type === 'ENEMY_ACTING') acting = true;
+              if (e.type === 'PLAYER_DAMAGED' && acting) expect(enemyTurn, `enemy damage outside an enemy turn after ${JSON.stringify(step)}`);
+            }
+          }),
+        ),
+    },
+    {
+      name: 'the first turn of every battle is the player\'s, and an empty line never changes the battle',
+      build: () =>
+        fc.property(deepPlay, ([levelIdx, steps]) => {
+          let waiting = false;
+          watch(levelIdx, steps, (session, _b, r, step) => {
+            for (const e of r.events) {
+              if (e.type === 'BATTLE_STARTED') waiting = true;
+              else if (e.type === 'BATTLE_ENDED') waiting = false;
+              else if (e.type === 'BATTLE_TURN' && waiting) {
+                expect(e.actor === 'player' && e.first, `first turn ${e.actor} (first=${e.first}) after ${JSON.stringify(step)}`);
+                waiting = false;
+              }
+            }
+            const before = JSON.stringify(session.snapshot().battle);
+            expect(session.exec('').events.length === 0 && JSON.stringify(session.snapshot().battle) === before, 'an empty line changed the battle');
+          });
+        }),
+    },
     {
       // A guard on the generators, not on the game: the properties above only mean something while random play reaches
       // kills, pickups and level changes. If a future solution or level change stops that, this fails first.
-      name: 'random play still reaches the interesting states (kills, pickups, enemy attacks, leaving a level)',
+      name: 'random play still reaches the interesting states (kills, pickups, enemy attacks, battles, leaving a level)',
       check: () => {
-        const seen = { killed: 0, picked: 0, attacks: 0, left: 0, runs: 0 };
+        const seen = { killed: 0, picked: 0, attacks: 0, battles: 0, enemyTurns: 0, left: 0, runs: 0 };
         for (const [levelIdx, steps] of fc.sample(deepPlay, { seed: 20261117, numRuns: 100 })) {
           const session = world.open(levelIdx);
           const start = session.levelIdx;
@@ -296,12 +341,14 @@ export default async function gameplaySuite(ctx) {
               if (e.type === 'ENEMY_KILLED') seen.killed++;
               if (e.type === 'PICKUP_COLLECTED') seen.picked++;
               if (e.type === 'ENEMY_ATTACK') seen.attacks++;
+              if (e.type === 'BATTLE_STARTED') seen.battles++;
+              if (e.type === 'BATTLE_TURN' && e.actor === 'enemy') seen.enemyTurns++;
             }
           });
           if (session.levelIdx > start) seen.left++;
           seen.runs++;
         }
-        const need = { killed: 10, picked: 10, attacks: 5, left: 3 };
+        const need = { killed: 10, picked: 10, attacks: 5, battles: 5, enemyTurns: 10, left: 3 };
         const low = Object.entries(need).filter(([k, n]) => seen[k] < n).map(([k, n]) => `${k}: ${seen[k]} (need ${n})`);
         expect(low.length === 0, `random play over ${seen.runs} runs no longer reaches: ${low.join(', ')}`);
       },

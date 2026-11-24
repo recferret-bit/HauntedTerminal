@@ -21,14 +21,14 @@ export interface SolveReport {
 }
 
 export interface SolveOptions {
-  /** Enemy ticks between commands (the harness uses 2). */
+  /** Pressure between commands (the harness uses 2): that many clock seconds, and one fewer forced enemy turns in a battle. */
   ticks?: number;
   /** Solve only this level, entering it with the chapter's `grants`. Default: the whole chapter in order. */
   levelId?: string;
 }
 
 /**
- * Plays every level's `solutionCommands` headlessly under enemy tick pressure.
+ * Plays every level's `solutionCommands` headlessly under enemy turn pressure (see the loop below).
  * A level passes when the session moves on (or the chapter ends) with 0 deaths.
  * Runs as a preview: progress, scrap and telemetry are never written.
  */
@@ -48,8 +48,14 @@ export function solvePack(pack: ChapterPack, options: SolveOptions = {}): SolveR
     }
     try {
       for (const cmd of spec.solutionCommands) {
+        // Turn-based pressure: `ticks` real seconds pass (script.timed, the battle clock), and in a battle the
+        // turn timer runs out `ticks - 1` times; then the command is one action, answered by one enemy turn.
         for (let t = 0; t < ticks; t++) {
           entry.deaths += session.tick().events.filter((e) => e.type === 'PLAYER_RESPAWNED').length;
+        }
+        for (let t = 1; t < ticks; t++) {
+          const forced = session.forceEnemyTurn();
+          if (forced) entry.deaths += forced.events.filter((e) => e.type === 'PLAYER_RESPAWNED').length;
         }
         const res = session.exec(cmd);
         entry.commands += 1;

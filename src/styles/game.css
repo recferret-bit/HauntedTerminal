@@ -135,6 +135,25 @@ body {
   text-align: center;
 }
 
+/* Battle turn indicator (turn-based-battles Req 20): YOUR TURN 0:27 / ENEMY TURN / FIGHT! */
+.hero-turn {
+  width: 68px;
+  box-sizing: border-box;
+  padding: 2px 3px;
+  border: 2px solid var(--ink);
+  background: var(--teal);
+  color: var(--ink);
+  font: 700 9px/1.1 var(--display);
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.hero-turn[hidden] { display: none; }
+.hero-turn[data-phase="enemy"] { background: var(--fault); color: var(--paper); }
+.hero-turn[data-phase="intro"] { background: var(--yellow); }
+.hero-turn.urgent { background: var(--orange); animation: hero-turn-blink 1s steps(2, end) infinite; }
+@keyframes hero-turn-blink { 50% { background: var(--yellow); } }
+
 .hero-dialog-drawer {
   display: none;
   align-items: stretch;
@@ -922,7 +941,6 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
 .hud-link:hover { background: var(--yellow); }
 .hud-link.hud-steam { background: #1b2838; color: var(--yellow); padding: 8px 12px; font-size: 12px; }
 .hud-link.hud-steam:hover { background: var(--orange); color: #fff; }
-#hud button.tactical-on { background: var(--teal); color: var(--ink); }
 
 /* ---- Split Code Mini-Editor inside #terminal-dock ---- */
 .hidden { display: none !important; }

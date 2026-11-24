@@ -54,10 +54,12 @@ node scripts/harness/generate-chapter.mjs --validate   # references, asset ids, 
 node scripts/harness/generate-chapter.mjs --check      # is src/chapters/generated in sync with chapters/*?
 ```
 
-### Compile + Run Full Headless Playthrough Verification (with Enemy Tick Pressure)
+### Compile + Run Full Headless Playthrough Verification (with Enemy Turn Pressure)
 ```bash
 node scripts/harness/generate-chapter.mjs --verify --ticks 3   # compile, --validate, then every level's solution, 0 deaths
 ```
+
+Combat is turn based (`.kiro/specs/turn-based-battles/`): each solution command is one player action answered by one enemy turn, and `--ticks N` adds N clock seconds (`script.timed`, the battle intro) and N-1 forced enemy turns (turn timer runouts) before every command. The battle intro is skipped by the command itself. Nothing hurts in real time, so a level that fails here fails on its turns, not on typing speed. `safe` and `holdEnemiesUntil` also keep battles from starting.
 
 ### Run Validator + Runtime Edge-Case Self-Tests
 ```bash

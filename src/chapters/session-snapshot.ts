@@ -1,4 +1,5 @@
 import { SSD_PER_BACKUP, maxHpFor } from '../game/bestiary.js';
+import { battleView } from '../game/battle.js';
 import { absPath } from '../game/tree.js';
 import type { GameSnapshot, RoomActor, RoomView } from '../game/types.js';
 import { buildRoom, type SceneFacts, type ViewThing } from '../game/view.js';
@@ -149,7 +150,6 @@ export function snapshot(g: ChapterState): GameSnapshot {
 
     const rank = g.ended ? computeRunRank(g.commands, g.deaths, g.levels.length) : null;
     const shortcuts: string[] = [];
-    if (g.tacticalMode) shortcuts.push('TACTICAL');
     if (g.chaosMode) shortcuts.push('CHAOS');
 
     return {
@@ -175,5 +175,6 @@ export function snapshot(g: ChapterState): GameSnapshot {
       enemiesTotal: effectiveCounts.total,
       tutorial: tutorialState(g),
       inventory: { items: [...g.inventory.items], held: g.inventory.held },
+      battle: battleView(g.battle),
     };
   }

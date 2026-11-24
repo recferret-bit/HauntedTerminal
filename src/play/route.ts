@@ -8,7 +8,7 @@ export interface PlayRoute {
 
 /**
  * Chapter and level come from the path. `/play/chapter-01-kiroween/level-01-tutorial`.
- * A query string still supplies anything the path omits, and the mode flags (`nointro`, `dev`, `chaos`, `tactical`, `seed`, `intro`).
+ * A query string still supplies anything the path omits, and the mode flags (`nointro`, `dev`, `chaos`, `seed`, `intro`).
  */
 export function readPlayRoute(pathname: string, search: string): PlayRoute {
   const params = new URLSearchParams(search);

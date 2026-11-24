@@ -53,7 +53,6 @@ function bootstrapChaptersPage(): void {
   const state: ChaptersViewState = {
     activeChapter,
     activeLevel,
-    launchTactical: params.get('tactical') === '1',
     launchChaos: params.get('chaos') === '1',
     activeBinderTab:
       params.get('tab') === 'bestiary'

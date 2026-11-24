@@ -1,3 +1,4 @@
+import type { BattleHold, BattleState } from '../game/battle.js';
 import type { World, WorldHost } from '../game/entities.js';
 import type { Inventory } from '../game/inventory.js';
 import type { KiroCompanion } from '../game/kiro.js';
@@ -26,8 +27,6 @@ export interface ChapterSession extends Session {
   getCurrentLevel(): LevelSpec;
   getLevels(): readonly LevelSpec[];
   jumpToLevel(levelIdOrIndex: string | number): TickResult;
-  isTacticalMode(): boolean;
-  setTacticalMode(enabled: boolean): void;
   isChaosMode(): boolean;
   readEditableFile(
     nameOrPath: string,
@@ -38,8 +37,17 @@ export interface ChapterSession extends Session {
   arriveLevel(): TickResult;
   /** Read-only view of the whole level for tools (the Terminal Lab). Never changes the game. */
   inspect(): LabInspect;
-  /** One world tick on request, also with the lab's manual clock and in tactical mode. Does nothing while paused, in the intro, or ended. */
+  /**
+   * One world step on request, also with the lab's manual clock: in a battle it forces the enemy turn (as a timer
+   * runout would), outside one it steps the world once. Does nothing while paused, in the intro, or ended.
+   */
   labTick(): TickResult;
+  /** Battle intro -> the player's first turn (Enter on the play page). False when no intro is playing. */
+  skipBattleIntro(): TickResult | null;
+  /** Stop or restart the battle turn timer while the mini-editor or the laptop is open. */
+  holdTurnTimer(hold: BattleHold, on: boolean): void;
+  /** The player's turn ends now and the enemies act (the lab's Tick, the solver's timer runouts). Null outside a battle's player turn. */
+  forceEnemyTurn(): TickResult | null;
   /**
    * Adds an enemy or a pickup (and the files it needs) to the running level. Throws, changing nothing, when the id is taken,
    * the pid is in use, or its file does not exist.
@@ -50,7 +58,6 @@ export interface ChapterSession extends Session {
 export interface ChapterSessionOptions {
   chapterId: string;
   startLevelId?: string;
-  tacticalMode?: boolean;
   chaosMode?: boolean;
   chaosSeed?: string;
   /** Play this pack instead of the compiled catalog (the editor passes unsaved drafts). */
@@ -163,7 +170,8 @@ export interface ChapterState {
   fullRun: boolean;
   deadNow: boolean;
   deathText: string;
-  tacticalMode: boolean;
+  /** The turn-based battle state machine (`src/game/battle.ts`). */
+  battle: BattleState;
   /** What he carries and holds; kept across levels. */
   inventory: Inventory;
   /** What he carried when this level was entered; a floor restart puts it back. */
@@ -180,7 +188,6 @@ export const CHAPTER_COMMANDS = [
   'nano',
   'docker',
   'hank',
-  'tactical',
   'grimoire',
   'bestiary',
   'workshop',

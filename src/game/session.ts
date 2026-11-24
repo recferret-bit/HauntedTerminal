@@ -108,6 +108,8 @@ class Game implements LabSession, Host {
       if (!startedCrack && this.kiro.activeCrack) {
         output += stepKiroCrack(this, events);
       }
+      // Turn-based: the world (quests, enemies) steps once per command, never in real time.
+      if (!this.run.ended) output += this.stepEnemies(events);
       this.agents.cool();
       const tutoring = this.agents.active();
       const progress = this.agents.observe(this.lineArgs, { failed: ran.code !== 0, leftDesk: this.leftDesk() });
@@ -156,19 +158,28 @@ class Game implements LabSession, Host {
     return this.lab !== null && this.run.commands === 0;
   }
 
+  /** One real second: the agents' arrival and commentary only. Nothing hurts in real time (turn-based). */
   tick(): TickResult {
     if (this.run.ended || this.paused || (this.lab !== null && (this.run.intro || this.lab.clock === 'manual'))) {
       return { output: '', events: [], snapshot: this.snapshot() };
     }
-    return this.stepWorld();
+    return this.stepWorld(false);
   }
 
+  /** One world step on request (the lab's Tick, the classic playthrough's idle steps). */
   labTick(): TickResult {
     if (this.run.ended || this.paused || this.run.intro) return { output: '', events: [], snapshot: this.snapshot() };
-    return this.stepWorld();
+    return this.stepWorld(true);
   }
 
-  private stepWorld(): TickResult {
+  /** Quest files grow back and enemies act: one world step. */
+  private stepEnemies(events: KernelEvent[]): string {
+    let output = restoreQuests(this, events);
+    if (!this.enemiesHeld()) output += this.run.world.tick(events);
+    return output;
+  }
+
+  private stepWorld(world: boolean): TickResult {
     this.deadNow = false;
     this.deathText = '';
     const events: KernelEvent[] = [];
@@ -178,13 +189,10 @@ class Game implements LabSession, Host {
       output += arrival.text;
       events.push(...arrival.events);
     }
-    output += restoreQuests(this, events);
-    if (this.kiro.activeCrack) {
+    if (world && this.kiro.activeCrack) {
       output += stepKiroCrack(this, events);
     }
-    if (!this.enemiesHeld()) {
-      output += this.run.world.tick(events);
-    }
+    if (world) output += this.stepEnemies(events);
     this.agents.cool();
     const talk = this.agents.react(events, { hp: this.run.hp, max: maxHp(this) });
     output += talk.text;
@@ -238,6 +246,7 @@ class Game implements LabSession, Host {
       room,
       intro: this.run.intro,
       inventory: { items: [...this.run.inventory.items], held: this.run.inventory.held },
+      battle: null,
       ram: this.run.ram,
       ssd: this.run.ssd,
       backups: backups(this),

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Plays the whole campaign through the real Session API (src/game/session.ts), floor 1 to the ending,
-// with idle game ticks between commands so enemies get time to act at human typing speed.
+// with idle world steps between commands (labTick: enemies act, as they would on turn timer runouts).
 //   node scripts/harness/playthrough.mjs                 (3 ticks between commands)
 //   node scripts/harness/playthrough.mjs --ticks 6 --verbose
 //   node scripts/harness/playthrough.mjs --script my.json   (a JSON array of commands or {"tick": n})
@@ -27,7 +27,9 @@ await withProcgen(async (game) => {
   const count = (evs) => evs.forEach((e) => { eventCounts[e.type] = (eventCounts[e.type] ?? 0) + 1; });
   const tickN = (n) => {
     for (let i = 0; i < n && !snap.ended; i++) {
-      const t = session.tick();
+      // Turn-based: tick() no longer moves enemies; one idle step is one forced world step (labTick), then a real second.
+      const t = session.labTick();
+      session.tick();
       count(t.events);
       if (t.events.some((e) => e.type === 'PLAYER_RESPAWNED' || (e.type === 'PLAYER_DAMAGED' && e.hpRemaining <= 0))) deaths++;
       snap = t.snapshot;

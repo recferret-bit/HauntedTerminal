@@ -128,7 +128,6 @@ const MAN: Record<string, string[]> = {
     '  docker compose config | up -d        validate or start a multi-service stack.',
   ],
   hank: ['hank [status]: ask your greybeard ally for a Socratic hint, or audit the mission checklist.'],
-  tactical: ['tactical [on|off]: toggle turn-based Tactical Mode (enemies move one step per command).'],
   grimoire: ['grimoire [<command>]: inspect unlocked Unix, code and Docker commands.'],
   bestiary: ['bestiary [<id>]: inspect known allies and malware hardware counterplay.'],
   workshop: ['workshop [<perk>]: view Silicon Scrap and toggle ~/.bashrc Rig Perks.'],

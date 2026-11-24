@@ -60,6 +60,9 @@ export function stripSpeakerPrefix(raw: string): string {
   return stripped;
 }
 
+/** How long each battle-intro line holds (the intro is about 4 s in all). */
+const BATTLE_LINE_MS = 1600;
+
 function toAgentDialogLine(ev: Extract<KernelEvent, { type: 'AGENT_TAUNT' }>): DialogLine | null {
   const agent: AgentSpeakerId = ev.agent in AGENT_MODELS ? ev.agent : 'clod';
   const text = stripSpeakerPrefix(ev.text);
@@ -173,6 +176,11 @@ export function mountDialogOrchestrator(
           if (line) enqueue(line);
           break;
         }
+        case 'BATTLE_STARTED':
+          // The battle intro (about 4 s): the agent's taunt, then Kiro's advice, ahead of any chatter.
+          enqueue({ speaker: ev.agent, name: AGENTS[ev.agent]?.name ?? ev.agent.toUpperCase(), model: ev.model, text: ev.taunt, holdMs: BATTLE_LINE_MS, mood: 'laugh', priority: 'script' });
+          enqueue({ speaker: 'kiro', name: AGENTS.kiro?.name ?? 'KIRO', model: AGENT_MODELS.kiro, text: ev.advice, holdMs: BATTLE_LINE_MS, priority: 'script' });
+          break;
         case 'TUTORIAL_STEP':
           opts.tutorial?.step(ev);
           break;

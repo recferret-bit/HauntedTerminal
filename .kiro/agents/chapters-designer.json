@@ -82,8 +82,9 @@
           "chapters/**",
           "src/chapters/**",
           "src/chapter-editor/**",
-          "src/game/{entities,entities-combat,bestiary,puzzle,inventory,kiro,dialogue,agents}.ts",
-          "scripts/harness/props/{chapters,gameplay,sessions}.mjs"
+          "src/game/{entities,entities-combat,bestiary,puzzle,inventory,kiro,dialogue,agents,battle}.ts",
+          "scripts/harness/props/{chapters,gameplay,sessions}.mjs",
+          "scripts/harness/battle-unit.mjs"
         ],
         "effect": "deny"
       },
@@ -93,8 +94,9 @@
           "chapters/**",
           "src/chapters/**",
           "src/chapter-editor/**",
-          "src/game/{entities,entities-combat,bestiary,puzzle,inventory,kiro,dialogue,agents}.ts",
-          "scripts/harness/props/{chapters,gameplay,sessions}.mjs"
+          "src/game/{entities,entities-combat,bestiary,puzzle,inventory,kiro,dialogue,agents,battle}.ts",
+          "scripts/harness/props/{chapters,gameplay,sessions}.mjs",
+          "scripts/harness/battle-unit.mjs"
         ],
         "effect": "allow"
       },

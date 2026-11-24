@@ -8,7 +8,7 @@ You are one of seven agents that tune Out Of Credits. The team (`.kiro/specs/age
 | `terminal-designer` | `src/game/{shell,commands-*,tree*,manual,lab-*}.ts`, `src/ui/`, `src/terminal-lab/`, `scripts/harness/terminal-lab/`, `scripts/harness/props/terminal.mjs` |
 | `laptop-designer` | `src/laptop/`, `scripts/harness/props/laptop.mjs` |
 | `comix-designer` | `comix/`, `src/cinematic/`, `src/comix-editor/`, `scripts/harness/props/comix.mjs` |
-| `chapters-designer` | `chapters/`, `src/chapters/`, `src/chapter-editor/`, `src/game/{entities*,bestiary,puzzle,inventory,kiro,dialogue,agents}.ts`, `scripts/harness/props/{chapters,gameplay,sessions}.mjs` |
+| `chapters-designer` | `chapters/`, `src/chapters/`, `src/chapter-editor/`, `src/game/{entities*,bestiary,puzzle,inventory,kiro,dialogue,agents,battle}.ts`, `scripts/harness/props/{chapters,gameplay,sessions}.mjs`, `scripts/harness/battle-unit.mjs` |
 | `artist` | `src/procgen/`, `src/shaders/`, `src/renderer/`, `src/storybook/`, `src/assets/`, `public/assets/` |
 | `qa` | `docs/qa/*.md`, `docs/qa/media/`, `docs/qa/labs/` (not `docs/qa/baselines/`: a person approves those) |
 

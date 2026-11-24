@@ -406,7 +406,11 @@ try {
   await $(`window.__seq0 = ${W}.__lab.seq(); ${L}.setEnemyFire('live'); ${L}.setClock('live')`);
   await swapped('the swap on the live clock');
   await $(`${L}.submit('ls')`);
-  await browser.waitFor(`${L}.inspect().absorbedTotal > 0`, 30000, 'the live clock moving the world');
+  // Turn-based: `ls` begins a battle; the live clock runs its intro down to the player's turn, and each action is
+  // answered by an enemy turn (absorbed damage). Nothing hurts in real time.
+  await browser.waitFor(`${W}.__game.snapshot().battle?.phase === 'player'`, 10000, 'the live clock running the battle intro down');
+  for (let i = 0; i < 4; i++) await $(`${L}.submit('pwd')`);
+  await browser.waitFor(`${L}.inspect().absorbedTotal > 0`, 15000, 'enemy turns answering actions on the live clock');
   check(true, 'with the live clock the world ticks by itself');
   await $(`${L}.setClock('manual')`);
 

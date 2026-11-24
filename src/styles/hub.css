@@ -588,7 +588,7 @@ a { color: inherit; }
   border: 1px solid var(--fault);
 }
 
-.tactical-toggle-row {
+.launch-toggle-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -599,7 +599,7 @@ a { color: inherit; }
   cursor: pointer;
 }
 
-.tactical-toggle-row input {
+.launch-toggle-row input {
   width: 16px;
   height: 16px;
   accent-color: var(--teal);

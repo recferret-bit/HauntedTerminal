@@ -109,6 +109,7 @@ function insertText(st: LineState, data: string): void {
 export function handleKey(st: LineState, data: string): void {
   switch (data) {
     case '\r': {
+      if (st.hooks.onEnter?.()) return;
       const line = st.buffer;
       commitInputLine(st);
       st.buffer = '';

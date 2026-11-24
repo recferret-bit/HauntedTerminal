@@ -51,3 +51,7 @@ User's words, 2026-11-21: "vibecoder wake on a fully dark place, barely visible 
 - Req 7: `editor-unit-test.mjs` and `editor-smoke.mjs` (the schema forms), `terminal-lab-unit.mjs`, `npm run quality` (declarative gate: no level named in code).
 - Req 8: `generate-chapter.mjs --verify` jumps to level 2 and checks that the lantern is held; the `gameplay` properties.
 - Req 9: `--verify` (0 deaths) and `npm run quality:fingerprint` (byte-identical, no asset changes).
+
+## Later changes
+
+- **2026-11-24, `.kiro/specs/turn-based-battles/` (approved by the user):** combat is now turn based and real-time damage and Tactical Mode are gone. Req 3 still holds: `script.timed` keeps real seconds and is the only real-time clock besides the battle clock; it never makes an enemy act. Level 1 sets `safe`, so it has no battle. The QA findings about Tactical Mode (retest 2, finding 8) no longer apply.

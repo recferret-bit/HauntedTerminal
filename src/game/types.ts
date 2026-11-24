@@ -1,4 +1,4 @@
-import type { KernelEvent } from '../contracts/events.js';
+import type { BattlePhase, KernelEvent } from '../contracts/events.js';
 import type { ItemId } from '../contracts/inventory.js';
 import type {
   ActorKind, ActorState, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomView,
@@ -36,6 +36,19 @@ export interface GameSnapshot {
   tutorial: TutorialState | null;
   /** Items he carries and the one in his hand (drives the HUD items strip). */
   inventory: { items: ItemId[]; held: ItemId };
+  /** The running battle (turn-based combat), or null outside one. Classic floors never have one. */
+  battle: BattleView | null;
+}
+
+/** What the HUD and tools see of a battle (`src/game/battle.ts`). */
+export interface BattleView {
+  phase: Exclude<BattlePhase, 'idle'>;
+  battle: number;
+  /** Seconds left on the player's turn timer; null outside the player's turn. */
+  secondsLeft: number | null;
+  /** True while a hold (editor, laptop) stops the turn timer. */
+  held: boolean;
+  enemyIds: string[];
 }
 
 export interface TutorialState {

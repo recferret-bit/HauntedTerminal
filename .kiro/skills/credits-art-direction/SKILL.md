@@ -168,7 +168,7 @@ Run from the project root. Every script loads the TypeScript directly (Vite SSR)
 | `npm start` then `/storybook.html` | The real thing: models, textures (`?tab=textures`) and effects (`?tab=fx`) under the game's shaders, pixel-art and CRT passes. URL parameters: [storybook-url-params.md](../comic-panel-viewport-auditor/references/storybook-url-params.md). |
 | `node scripts/harness/screenshot-lab.mjs --query "inspect=<id>&scale=game" --name <n>` | Headless-Chrome screenshot of the storybook (real WebGL) to `scripts/harness/out/lab-<n>.png`. Read the PNG. `--page / --query nointro --eval "<js>"` shoots the game itself (drive it with `window.__term.submit(line)`). |
 | `/cinematic.html?play=intro\|outro&t=<s>` | Preview the intro / outro cinematics (`src/cinematic`), frozen at a moment with `t`. |
-| `node scripts/harness/playthrough.mjs --ticks 3` | Plays the whole campaign through the game logic (`playthrough.script.json`), idle ticks between commands. Must pass with 0 deaths. |
+| `node scripts/harness/playthrough.mjs --ticks 3` | Plays the whole campaign through the game logic (`playthrough.script.json`), with idle world steps between commands (`labTick()`: combat is turn based, nothing hurts in real time). Must pass with 0 deaths. |
 | `node scripts/harness/play-browser.mjs` | The same script typed through the real terminal in headless Chrome; fails on any console, page or stage error. Screenshots per floor to `out/play-*.png`. |
 | `node scripts/harness/asset-usage.mjs` | Lists models, textures and FX presets the game never references. Must report all used. |
 | `node .kiro/skills/comic-panel-viewport-auditor/scripts/lab-qa.mjs <id>` | The full visual QA checklist for one model: 18 lab screenshots. |

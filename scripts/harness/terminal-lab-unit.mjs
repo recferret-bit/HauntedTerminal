@@ -83,8 +83,9 @@ await withProcgen(async (_p, vite) => {
     s.exec('ls');
     let hurt = 0;
     let lowest = 100;
+    // Turn-based: labTick() forces the enemy turn of the battle the room started (a timer runout does the same).
     for (let i = 0; i < 30; i++) {
-      const res = s.tick();
+      const res = s.labTick();
       hurt += types(res.events).filter((t) => t === 'PLAYER_DAMAGED').length;
       lowest = Math.min(lowest, res.snapshot.hp);
     }
@@ -115,7 +116,8 @@ await withProcgen(async (_p, vite) => {
     assert.equal(s.inspect().absorbedTotal, 0);
     for (let i = 0; i < 30; i++) s.labTick();
     assert.ok(s.inspect().absorbedTotal > 0);
-    const check = { id: 'atk', description: 'attacked', when: { kind: 'event', type: 'ENEMY_ATTACK' } };
+    // The live clock runs the battle intro down: its end (the player's first turn) is an event of a tick.
+    const check = { id: 'atk', description: 'turn', when: { kind: 'event', type: 'BATTLE_TURN' } };
     const live = raw(labCfg({ clock: 'live', content: { riddles: [], checks: [check], taskIds: [] } }));
     live.exec('ls');
     for (let i = 0; i < 20; i++) live.tick();
@@ -630,9 +632,8 @@ await withProcgen(async (_p, vite) => {
     const crack = () => s.inspect().entities.find((x) => x.id === 'c').attackIn;
     s.exec('ls');
     assert.equal(crack(), null, 'nothing to pick while the port is open');
-    s.exec('chmod 000 port_9');
-    assert.equal(crack(), 1);
-    assert.ok(s.labTick().events.some((ev) => ev.type === 'ENEMY_ATTACK' && ev.entityId === 'c'));
+    // Turn-based: the chmod is the player's action, and the enemy turn that answers it is the crack's tell.
+    assert.ok(s.exec('chmod 000 port_9').events.some((ev) => ev.type === 'ENEMY_ATTACK' && ev.entityId === 'c'));
     assert.equal(crack(), 2, 'told: it strikes next tick and could tell on the one after');
     const strike = s.labTick();
     assert.ok(!strike.events.some((ev) => ev.type === 'ENEMY_ATTACK' && ev.entityId === 'c') && types(strike.events).includes('INODE_MODE_CHANGED'));
@@ -654,15 +655,19 @@ await withProcgen(async (_p, vite) => {
     assert.equal(h.inspect().entities[0].attackIn, null);
   });
 
-  await test('labTick works in tactical mode too', () => {
+  await test('labTick forces the enemy turn of a battle; tactical is gone', () => {
     const script = lab();
     place(script, 'enemy.virus');
     const s = play(script);
-    s.exec('tactical on');
+    assert.match(s.exec('tactical on').output, /command not found|not found|unknown/i);
     s.exec('ls');
+    assert.ok(s.snapshot().battle, 'a live virus in the room starts a battle');
     const before = s.inspect().entities[0].clock;
-    for (let i = 0; i < 4; i++) s.labTick();
+    const turns = [];
+    for (let i = 0; i < 4; i++) turns.push(...s.labTick().events.filter((e) => e.type === 'BATTLE_TURN' && e.actor === 'enemy'));
+    assert.ok(turns.length >= 3 && turns.every((e) => e.reason === 'forced'));
     assert.notEqual(s.inspect().entities[0].clock, before);
+    assert.equal(s.snapshot().battle.phase, 'player');
   });
 
   // ---- commands and context tips ------------------------------------------------------------------------------------
@@ -778,8 +783,8 @@ await withProcgen(async (_p, vite) => {
     assert.equal(wormsAlone.length, 1);
     assert.equal(crackAlone.helps, wormsAlone[0].id);
     const s = play(alone);
-    s.exec('ls');
-    assert.equal(s.labTick().events.some((e) => e.type === 'ENEMY_ATTACK' && e.entityId === crackAlone.id), true);
+    // Turn-based: every command is followed by one world step, so the first `ls` is the crack's tell.
+    assert.equal(s.exec('ls').events.some((e) => e.type === 'ENEMY_ATTACK' && e.entityId === crackAlone.id), true);
     assert.equal(s.labTick().events.some((e) => e.type === 'INODE_MODE_CHANGED'), true, 'crack reopens its worm port');
 
     const withWorm = lab();
@@ -790,9 +795,12 @@ await withProcgen(async (_p, vite) => {
     assert.equal(crackPaired.helps, 'worm-1');
     assert.deepEqual(checkLab(withWorm).filter((i) => i.severity === 'error'), []);
     const sPaired = play(withWorm);
-    sPaired.exec('ls');
-    assert.equal(sPaired.inspect().entities.find((e) => e.id === crackPaired.id).attackIn, 1, 'crack placed after worm starts with a sealed port to pick');
-    assert.equal(sPaired.labTick().events.some((e) => e.type === 'ENEMY_ATTACK' && e.entityId === crackPaired.id), true);
+    assert.equal(sPaired.inspect().entities.find((e) => e.id === crackPaired.id).attackIn, null, 'nothing acts before the first command');
+    assert.equal(
+      sPaired.exec('ls').events.some((e) => e.type === 'ENEMY_ATTACK' && e.entityId === crackPaired.id),
+      true,
+      'crack placed after worm starts with a sealed port to pick: it tells on the first world step',
+    );
   });
 
   await test('classic driver: runs classic floors with absorbed damage (including symlink flood), riddles, checks, props and inject', () => {
@@ -836,10 +844,11 @@ await withProcgen(async (_p, vite) => {
       ],
     };
     const sh = play(holdClassic);
-    sh.exec('ls');
+    // Turn-based classic floors: the world steps once per command, so `ls` is already the crack's tell.
+    assert.equal(sh.exec('ls').events.some((e) => e.type === 'ENEMY_ATTACK' && e.entityId === 'c-hold'), true);
     assert.equal(sh.inspect().entities.find((e) => e.id === 'v-hold').attackIn, null, 'damage-dealing enemy held');
-    assert.equal(sh.inspect().entities.find((e) => e.id === 'c-hold').attackIn, 1, 'indirect crack enemy countdown matches labTick');
-    assert.equal(sh.labTick().events.some((e) => e.type === 'ENEMY_ATTACK' && e.entityId === 'c-hold'), true);
+    assert.equal(sh.inspect().entities.find((e) => e.id === 'c-hold').attackIn, 2, 'indirect crack enemy countdown matches labTick');
+    assert.equal(sh.labTick().events.some((e) => e.type === 'INODE_MODE_CHANGED'), true);
 
     // Floor 3 symlink loop flood is absorbed instead of killing/rebooting the player
     const f3 = {

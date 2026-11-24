@@ -194,7 +194,9 @@ async function pressKey(b, key) {
 /**
  * Run one screen's steps on `clock`: a string is a terminal line (submitted like Enter, a filmstrip when `films` is on,
  * then waited until the input is free); `{ wait }` advances the clock; `{ key }` presses a key; `{ until, max }` waits for
- * a page expression (`"stats"` and `"idle"` are shorthands). Times are game time.
+ * a page expression (`"stats"` and `"idle"` are shorthands); `{ repeat, until, times }` submits the `repeat` line up to
+ * `times` times until the expression holds (combat is turn based: each line is one action answered by an enemy turn).
+ * Times are game time.
  */
 async function runSteps(b, clock, steps, films) {
   const strips = [];
@@ -204,6 +206,12 @@ async function runSteps(b, clock, steps, films) {
       await b.evaluate(`void window.__term.submit(${JSON.stringify(step)}), true`);
       if (films) strips.push({ line: step, ...await filmstrip(b) });
       await until(b, clock, '!!(window.__term && (!window.__term.busy() || window.__term.statsOpen()))', 30000);
+    } else if ('repeat' in step) {
+      for (let i = 0; i < (step.times ?? 20); i++) {
+        if (await b.evaluate(`!!(${step.until})`).catch(() => false)) break;
+        await b.evaluate(`void window.__term.submit(${JSON.stringify(step.repeat)}), true`);
+        await until(b, clock, '!!(window.__term && !window.__term.busy())', 30000);
+      }
     } else if ('wait' in step) await clock.advance(step.wait);
     else if ('key' in step) { await pressKey(b, step.key); await clock.advance(100); }
     else if ('until' in step) {

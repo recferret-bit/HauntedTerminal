@@ -46,35 +46,23 @@
       "op": "run",
       "line": "ls",
       "expect": {
-        "stdout": "keygen.exe"
-      }
+        "stdout": "keygen.exe",
+        "events": [
+          "ENEMY_ATTACK"
+        ]
+      },
+      "note": "Turn-based: every command is followed by one world step. The crack sees its worm's sealed port and winds up its lock-pick."
     },
     {
       "op": "run",
       "line": "ps",
       "expect": {
-        "stdout": "4001"
-      }
-    },
-    {
-      "op": "tick",
-      "n": 1,
-      "expect": {
-        "events": [
-          "ENEMY_ATTACK"
-        ]
-      },
-      "note": "The crack sees its worm's sealed port and winds up its lock-pick."
-    },
-    {
-      "op": "tick",
-      "n": 1,
-      "expect": {
+        "stdout": "4001",
         "events": [
           "INODE_MODE_CHANGED"
         ]
       },
-      "note": "Next tick, the crack reopens port_445."
+      "note": "The next world step: the crack reopens port_445."
     },
     {
       "op": "run",

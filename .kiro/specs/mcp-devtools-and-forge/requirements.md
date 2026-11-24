@@ -58,3 +58,7 @@ Capability: two MCP servers for the agent team. Chrome DevTools MCP lets `qa` lo
 - Req 4-11, 14: `node scripts/harness/forge-unit.mjs` (real server over stdio, every refusal with a byte-identical disk), including a fast-check property: for any mix of edits to any level, `write_level` writes only if `validate_level` and `solve_level` pass, and a refusal changes nothing. (Planned for `props/chapters.mjs`; moved, see the design's "Found while building".)
 - Req 15: `check-agents.mjs` (prompts name their tools) and the probe.
 - Req 16: `node scripts/harness/mcp-probe.mjs`, run by hand; its output goes to `docs/qa/`.
+
+## Later changes
+
+- **2026-11-24, `.kiro/specs/turn-based-battles/` (approved by the user):** Req 8: `solve_level` runs the same solver, so "enemy tick pressure" now means enemy turn pressure (one enemy turn per command plus N-1 forced turn-timer runouts); its answer fields are unchanged.

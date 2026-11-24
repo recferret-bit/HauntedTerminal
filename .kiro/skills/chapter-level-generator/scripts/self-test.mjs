@@ -121,7 +121,6 @@ await withProcgen(async (_p, vite) => {
   // ---- 7. Chapter 01 Kiroween: 11-Level Arc, Scripted Awakening, Kiro Tutorial, Matrix Greybeard Hub & Father Twist ----
   const kiroRealtime = createChapterSession({
     chapterId: 'chapter-01-kiroween',
-    tacticalMode: false,
   });
   // While intro card is active (before arriveLevel), Vibecoder rises alone in dark wires & chips with NO bug and NO Kiro yet
   assert.equal(
@@ -221,7 +220,7 @@ await withProcgen(async (_p, vite) => {
 
   // Bypasses closed: find and kiro are locked in the dark too; taking the lantern early skips the stale reminders;
   // a floor restart puts the dark start back.
-  const early = createChapterSession({ chapterId: 'chapter-01-kiroween', tacticalMode: false });
+  const early = createChapterSession({ chapterId: 'chapter-01-kiroween' });
   early.arriveLevel();
   assert.ok(early.exec('find .').output.includes('too dark'), 'find is locked in the dark');
   assert.ok(early.exec('kiro scan').output.includes('in the dark'), 'kiro scan is locked in the dark');
@@ -243,7 +242,6 @@ await withProcgen(async (_p, vite) => {
 
   const kiroChap = createChapterSession({
     chapterId: 'chapter-01-kiroween',
-    tacticalMode: true,
   });
   kiroChap.skipIntro();
   assert.equal(kiroChap.getLevels().length, 11, 'chapter-01-kiroween must have 11 executable levels');
@@ -394,7 +392,7 @@ await withProcgen(async (_p, vite) => {
 
   // Verify full 11-level 0-death S-rank playthrough unlocks all 10 non-chaos/non-workshop achievements (including full_stack_fixer & zero_panic_run)
   catalog.resetInMemoryStoresForTest();
-  const fullRunSession = createChapterSession({ chapterId: 'chapter-01-kiroween', tacticalMode: true });
+  const fullRunSession = createChapterSession({ chapterId: 'chapter-01-kiroween' });
   fullRunSession.skipIntro();
   for (const lvl of catalog.getChapterLevels('chapter-01-kiroween')) {
     for (const cmd of lvl.solutionCommands) {
@@ -437,7 +435,7 @@ await withProcgen(async (_p, vite) => {
   );
 
   // Preview isolation: a preview session neither emits ACHIEVEMENT_UNLOCKED nor leaks unlocked state
-  const previewSess = createChapterSession({ chapterId: 'chapter-01-kiroween', preview: true, tacticalMode: true });
+  const previewSess = createChapterSession({ chapterId: 'chapter-01-kiroween', preview: true });
   previewSess.skipIntro();
   const prevKill = previewSess.exec('kill -9 1011');
   assert.equal(
@@ -453,7 +451,7 @@ await withProcgen(async (_p, vite) => {
   assert.equal(savedBundle.format, 'out-of-credits-save');
   catalog.resetInMemoryStoresForTest();
   assert.equal(Object.keys(achievements.readAchievements().unlocked).length, 0);
-  const freshSession = createChapterSession({ chapterId: 'chapter-01-kiroween', tacticalMode: true });
+  const freshSession = createChapterSession({ chapterId: 'chapter-01-kiroween' });
   freshSession.skipIntro();
   const emptyDirSweep = freshSession.exec('ls -a');
   assert.equal(

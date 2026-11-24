@@ -107,12 +107,20 @@ export function cmdHank(g: ChapterState, args: string[]): Step {
     );
   }
 
+/** ` | BATTLE: YOUR TURN (27s)` while a battle runs, else nothing. */
+function battleStatus(g: ChapterState): string {
+  const b = g.battle;
+  if (b.phase === 'idle') return '';
+  const who = b.phase === 'player' ? `YOUR TURN (${b.secondsLeft}s)` : b.phase === 'enemy' ? 'ENEMY TURN' : 'STARTING';
+  return ` | BATTLE: ${who}`;
+}
+
 export function cmdStatus(g: ChapterState): Step {
     const meta = readMetagame();
     const checklist = checklistText(getChecklist(g));
     return okStep(
       `ISSUE: ${g.chapterId} | LEVEL ${g.rt.spec.index}/${g.levels.length}: ${g.rt.spec.title}\n` +
-        `HP: ${g.hp}/${maxHpFor(g.ram)} | RAM: ${g.ram}GB | SSD: ${g.ssd}GB | SCRAP: ${meta.scrap} | TACTICAL: ${g.tacticalMode ? 'ON' : 'OFF'}${g.chaosMode ? ' | CHAOS: ON' : ''}\n` +
+        `HP: ${g.hp}/${maxHpFor(g.ram)} | RAM: ${g.ram}GB | SSD: ${g.ssd}GB | SCRAP: ${meta.scrap}${battleStatus(g)}${g.chaosMode ? ' | CHAOS: ON' : ''}\n` +
         `${checklist}\n`,
     );
   }

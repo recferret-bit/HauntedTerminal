@@ -52,3 +52,7 @@ Capability: property-based tests that generate many random inputs and check that
 - Req 3-4: one planted bug per feature (reverted, not committed) makes its property fail and print a counterexample.
 - Req 6: every fixed bug has a regression case in the suite and a line in `tasks.md`.
 - Req 7: `npm run quality:fingerprint` before and after.
+
+## Later changes
+
+- **2026-11-24, `.kiro/specs/turn-based-battles/` (approved by the user):** the gameplay properties now also cover battles (the phase between calls is idle, intro or player; enemy damage only inside an enemy turn; the player has the first turn; an empty line changes nothing), and the generator guard requires battles and enemy turns. `tick()` steps only the clock (`script.timed`, the battle intro and turn timer); enemies move on commands and enemy turns.

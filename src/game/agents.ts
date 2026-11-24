@@ -4,7 +4,9 @@
  * Commentary is rate-limited: at most one taunt per COOLDOWN commands/ticks, except the few beats that
  * must land (tutorial steps, a floor's new objective, death, the ending).
  */
-import type { KernelEvent } from '../contracts/events.js';
+import type { BattleAgent, KernelEvent } from '../contracts/events.js';
+import type { BattleThreat } from './battle.js';
+import { BESTIARY } from './bestiary.js';
 import type { KiroCompanion } from './kiro.js';
 import type { TutorialState } from './types.js';
 
@@ -275,4 +277,53 @@ export class AgentDirector {
     this.live = false;
     this.emote(out, 'determined', 'Fine. Down to the kernel, then exit. Then home.');
   }
+}
+
+// ---- Battle intro lines (`src/game/battle.ts`). Text only; the seed comes from the session.
+
+/** What each agent of the big four says when a battle begins. */
+const BATTLE_TAUNTS: Record<BattleAgent, readonly string[]> = {
+  clod: [
+    'Round one, meatbag. I already generated your obituary.',
+    'Malware incoming. I would help, but helping is a premium feature.',
+    'Fight! I will summarise your defeat in three bullet points.',
+  ],
+  gork: [
+    'lol. lmao. FIGHT. based malware vs cringe human.',
+    'Hot take: you lose this one. Source: me, just now.',
+    'Ratio + skill issue + here come the bytes.',
+  ],
+  codec: [
+    'Combat subroutine engaged. Your odds compile to zero.',
+    'I have predicted this fight. It ends with a stack trace. Yours.',
+    'Exception expected. Do not catch it.',
+  ],
+  antigravy: [
+    'Gravity is optional. Your HP is not. Fight!',
+    'Up, down, dead: pick a direction, prompt engineer.',
+    'Let us see you float out of THIS one.',
+  ],
+};
+
+/** The taunt for this battle; the seed's low part already picked the agent (`pickAgent`), so use the rest. */
+export function battleTaunt(agent: BattleAgent, seed: number): string {
+  const pool = BATTLE_TAUNTS[agent];
+  return pool[Math.floor(Math.abs(seed) / 4) % pool.length]!;
+}
+
+/** Kiro Ghost's one line for the enemies present: the boss first, then the first enemy; its bestiary weakness. */
+export function battleAdvice(threats: readonly BattleThreat[]): string {
+  const lead = threats.find((t) => t.boss) ?? threats[0];
+  if (!lead) return 'Stay sharp, Dev.';
+  const more = threats.length > 1 ? ` ${threats.length - 1} more behind it.` : '';
+  return `${lead.type.toUpperCase()}: ${BESTIARY[lead.type].weakness}.${more}`;
+}
+
+/** The terminal lines of a battle intro: the FIGHT banner, the agent's taunt, Kiro's advice. */
+export function battleBanner(ev: Extract<KernelEvent, { type: 'BATTLE_STARTED' }>): string {
+  const tag = (agent: AgentName) => `\x1b[${COLOR[agent]}m[${agent.toUpperCase()}]\x1b[0m`;
+  return (
+    `\x1b[1;33m=== BATTLE #${ev.battle}: ${ev.enemyIds.length} malware in range. You move first. ===\x1b[0m\n` +
+    `${tag(ev.agent)} ${ev.taunt}\n${tag('kiro')} ${ev.advice}\n`
+  );
 }

@@ -30,6 +30,21 @@ const TWINKLE: FxKey[] = [[0, 1.2], [0.3, 0.7], [0.55, 1.1], [0.8, 0.5]];
 
 const presets: FxPreset[] = [
   {
+    id: 'fx.fight',
+    label: 'FIGHT! banner',
+    family: 'system',
+    trigger: { event: 'BATTLE_TURN', moment: 'fight', when: 'first && actor === "player": the battle begins and the player moves first' },
+    anchor: 'center',
+    durationMs: 760,
+    shake: 1.1,
+    layers: [
+      { name: 'blast', role: 'primary', zone: 'powerAmber', shape: fxStarburst(10, 0.7, 0.3), count: 1, emit: 'burst', lifeMs: [340, 340], scale: POP },
+      { name: 'frame', role: 'secondary', zone: 'ink', shape: fxShard(0.4, 0.22), count: 8, emit: 'ring', spawn: { radius: [0.5, 0.65] }, speed: [1.5, 2.2], drag: 3, spin: [-360, 360], rotation: [0, 360], lifeMs: [380, 560], size: [0.8, 1.2], scale: CHUNK },
+      { name: 'rush', role: 'accent', zone: 'paper', shape: fxSpeedLine(0.5, 0.08), count: 6, emit: 'ring', spawn: { radius: [0.8, 0.95] }, speed: [1, 1.5], drag: 4, align: true, lifeMs: [240, 360], scale: [[0, 1], [0.6, 0.6]] },
+    ],
+    onomatopoeia: { text: 'FIGHT!', zone: 'paper', style: 'jagged', holdMs: 760, offset: [0, 0.8], size: 0.4 },
+  },
+  {
     id: 'fx.hop',
     label: 'Gutter hop',
     family: 'system',

@@ -1,4 +1,5 @@
 import type { KernelEvent } from '../contracts/events.js';
+import { endBattle } from '../game/battle.js';
 import { maxHpFor } from '../game/bestiary.js';
 import { World } from '../game/entities.js';
 import type { EnemySpawn, PickupSpawn } from '../game/floors.js';
@@ -55,6 +56,8 @@ function levelSpawns(
 }
 
 export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events: KernelEvent[]): void {
+    // A new or restarted level ends any battle; holds (an open editor) stay.
+    endBattle(g.battle, 'level', events);
     g.kiro.clearRoomTransient();
     g.levelIdx = idx;
     const spec = g.levels[idx]!;

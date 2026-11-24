@@ -231,10 +231,18 @@ export function heroAction(stage: ComicStage, hero: StageActor, action: string, 
   });
 }
 
+/** Stamp of each actor's live tell: the enemy-turn count it was told on, and a serial for its safety fallback. */
+const tells = new WeakMap<StageActor, { turn: number; serial: number }>();
+const enemyTurns = new WeakMap<ComicStage, number>();
+let tellSerial = 0;
+/** A pose can never stick: a tell relaxes by itself after this long. */
+const TELL_FALLBACK_MS = 35000;
+
 /**
- * ENEMY_ATTACK is the tell (the kernel emits it one tick before the damage): hold `windup`, eye locked
- * on the hero. The strike plays on the PLAYER_DAMAGED that follows (strikeFrom); with no strike within
- * 1.6 s (killed, frozen, out of reach) it relaxes back to its resting state.
+ * ENEMY_ATTACK is the tell, told on one enemy turn; the strike lands on a later enemy turn, with the
+ * player's turn (up to 30 s) between. Hold `windup`, eye locked on the hero, until the strike
+ * (PLAYER_DAMAGED -> strikeFrom), the battle ends or a second enemy turn passes without it
+ * (battleTurnChanged), the enemy is killed, frozen or leaves (the guards), or the 35 s fallback.
  */
 export function enemyAttack(stage: ComicStage, a: StageActor): void {
   if (a.exiting || a.dead || a.rest === 'petrified' || a.rest === 'frozen' || a.rest === 'hidden') return;
@@ -242,16 +250,38 @@ export function enemyAttack(stage: ComicStage, a: StageActor): void {
   const { dir, hero } = faceHero(stage, a);
   a.animator.setState('windup');
   if (hero) a.animator.setLook(dir, 0);
+  const stamp = { turn: enemyTurns.get(stage) ?? 0, serial: ++tellSerial };
+  tells.set(a, stamp);
   const g = a.gen;
-  stage.tweens.delay(1600, () => {
-    if (owns(a, g) && !a.exiting && a.animator.state === 'windup') setRest(a);
+  stage.tweens.delay(TELL_FALLBACK_MS, () => {
+    if (owns(a, g) && !a.exiting && tells.get(a) === stamp && a.animator.state === 'windup') setRest(a);
   });
+}
+
+function relaxTell(a: StageActor): void {
+  tells.delete(a);
+  if (!a.disposed && !a.exiting && !a.dead && a.animator.state === 'windup') setRest(a);
+}
+
+/**
+ * A BATTLE_TURN / BATTLE_ENDED reached the stage. The player's turn keeps every tell; a new enemy turn
+ * relaxes the tells that were not struck on the previous one; the end of the battle relaxes them all.
+ */
+export function battleTurnChanged(stage: ComicStage, ev: { type: 'BATTLE_TURN'; actor: 'player' | 'enemy' } | { type: 'BATTLE_ENDED' }): void {
+  if (ev.type === 'BATTLE_TURN' && ev.actor !== 'enemy') return;
+  const turn = ev.type === 'BATTLE_ENDED' ? 0 : (enemyTurns.get(stage) ?? 0) + 1;
+  enemyTurns.set(stage, turn);
+  for (const a of stage.actors.values()) {
+    const tell = tells.get(a);
+    if (tell && (ev.type === 'BATTLE_ENDED' || tell.turn < turn - 1)) relaxTell(a);
+  }
 }
 
 /** The strike: attack pose and a stepped lunge toward the hero (pulled back, snap out, two holds back). */
 export function strikeFrom(stage: ComicStage, a: StageActor): void {
   if (a.exiting || a.dead || a.rest === 'petrified' || a.rest === 'frozen') return;
   const { dir } = faceHero(stage, a);
+  tells.delete(a);
   a.animator.setState('attack');
   const g = claim(a);
   const lunge = a.kind === 'boss' ? 0.25 : 0.42;

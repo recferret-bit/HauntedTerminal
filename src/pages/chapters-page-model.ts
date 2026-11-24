@@ -3,7 +3,6 @@ import type { ChapterLevelSummary, ChapterManifest } from '../chapters/types.js'
 export interface ChaptersViewState {
   activeChapter: ChapterManifest;
   activeLevel: ChapterLevelSummary;
-  launchTactical: boolean;
   launchChaos: boolean;
   activeBinderTab: 'grimoire' | 'bestiary' | 'achievements';
   workshopBanner: string;
@@ -29,7 +28,6 @@ export function syncChaptersUrl(state: ChaptersViewState): void {
   const q = new URLSearchParams();
   q.set('chapter', state.activeChapter.id);
   q.set('level', state.activeLevel.id);
-  if (state.launchTactical) q.set('tactical', '1');
   if (state.launchChaos) q.set('chaos', '1');
   if (state.activeBinderTab !== 'grimoire') q.set('tab', state.activeBinderTab);
   window.history.replaceState(null, '', `/chapters.html?${q.toString()}`);

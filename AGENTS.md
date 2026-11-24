@@ -4,6 +4,7 @@ Out Of Credits: a web game (Vite 6, TypeScript 5 strict, Three.js 0.180, xterm.j
 
 - **Premise**: lightning pulls a developer inside his own computer; he is human, everything else is the machine.
 - **Kiroween scope**: ships **one chapter of about 11 levels** (default: 1 tutorial, 6 task levels, 3 hubs, 1 boss). Do not start a second chapter. Every level must clear headlessly with **0 deaths**.
+- **Combat is turn based** (no real-time damage, no Tactical Mode): a battle intro (an agent of the big four taunts, Kiro advises, FIGHT!), the player always acts first, every non-empty Enter is one action answered by one enemy turn, and a 30-second turn timer. One orchestrator, `src/game/battle.ts`. Spec: `.kiro/specs/turn-based-battles/`.
 
 ## Kiro Architecture Principles ("Roles Don't Blur")
 
@@ -78,7 +79,8 @@ Read the matching `.kiro/skills/<skill>/SKILL.md` before working in its area; ne
 ## Commands & Verification Gates
 
 - **Stack**: `npm start` (background Vite on `http://localhost:5400`, waits until ready; log at `scripts/harness/out/stack/stack.log`), `npm stop`, `npm restart`, `npm run status`, `STACK_PORT=5174 npm start` (prefer `STACK_PORT=` over `--port`). Never run foreground `npm run dev` from an agent shell.
-- **Chapters & Chapter Editor (`/editor`)**: `node scripts/harness/generate-chapter.mjs` (`--validate`, `--check`, `--verify`), `node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs`, `node scripts/harness/editor-unit-test.mjs`, `node scripts/harness/editor-smoke.mjs`.
+- **Chapters & Chapter Editor (`/editor`)**: `node scripts/harness/generate-chapter.mjs` (`--validate`, `--check`, `--verify`; `--ticks N` = N clock seconds and N-1 forced enemy turns per command), `node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs`, `node scripts/harness/editor-unit-test.mjs`, `node scripts/harness/editor-smoke.mjs`.
+- **Battles (turn-based combat)**: `node scripts/harness/battle-unit.mjs` (the orchestrator and the chapter session's battles), `node scripts/harness/property-tests.mjs --only gameplay` (battle properties), `node scripts/harness/playthrough.mjs --ticks 3` (classic floors). Spec: `.kiro/specs/turn-based-battles/`.
 - **Comix & Comix Editor (`/comix-editor`)**: `node scripts/harness/generate-comix.mjs` (`--validate`, `--check`, `--verify`), `node scripts/harness/validate-comix.mjs`, `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs`, `node scripts/harness/comix-editor-smoke.mjs`.
 - **Terminal Lab (`/terminal-lab`)**: `node scripts/harness/terminal-lab.mjs --all` (`--run <file>`, `--transcript`), `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs`, `node scripts/harness/terminal-lab-smoke.mjs` (also `--width 1280 --height 820`). Spec: `.kiro/specs/inventory/items/terminal/`.
 - **Laptop Lab (`/laptop-lab`)**: `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/laptop-lab-smoke.mjs` (also `--width 1280 --height 820`). Spec: `.kiro/specs/inventory/items/laptop/`.

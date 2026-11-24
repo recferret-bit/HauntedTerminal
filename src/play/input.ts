@@ -12,6 +12,15 @@ import { recordExec } from './lab.js';
 import { statsFrom } from './outro.js';
 import { FLOOR_NAMES, writeSkipPref, type Play } from './state.js';
 
+/** Enter during the battle intro skips it; the typed line stays on the prompt and does not run (Req 12). */
+function skipBattleIntroOnEnter(play: Play): boolean {
+  if (play.phase !== 'play' || !isChapterSession(play.session)) return false;
+  const res = play.session.skipBattleIntro();
+  if (!res) return false;
+  play.applyTick(res);
+  return true;
+}
+
 function runShellLine(play: Play, line: string): { output: string; clear?: boolean; stderr?: string } {
   if (play.phase !== 'play') return { output: '' };
   const session = play.session;
@@ -22,7 +31,11 @@ function runShellLine(play: Play, line: string): { output: string; clear?: boole
     play.apply(res.events, res.snapshot, res.output);
     if (isChapterSession(session) && play.codeEditor) {
       const edReq = session.consumeEditorRequest();
-      if (edReq) play.codeEditor.open(edReq);
+      if (edReq) {
+        // The battle turn timer waits while he writes code (turn-based-battles Req 17).
+        session.holdTurnTimer('editor', true);
+        play.codeEditor.open(edReq);
+      }
     }
   } finally {
     const extra = play.execTaunts ?? [];
@@ -44,6 +57,7 @@ export function mountPlayShell(play: Play): void {
       const snap = play.session.snapshot();
       return { cwd: snap.cwd, gold: snap.promptGold };
     },
+    onEnter: () => skipBattleIntroOnEnter(play),
   });
   play.shell.setBlocked(true);
   const pane = play.dom.editorPaneEl;
@@ -57,6 +71,7 @@ export function mountPlayShell(play: Play): void {
         play.apply(res.events, res.snapshot, res.output);
       },
       onClose: () => {
+        if (isChapterSession(play.session)) play.session.holdTurnTimer('editor', false);
         if (play.phase === 'play') window.setTimeout(() => play.shell.focus(), 0);
       },
       onLayoutChange: () => {
@@ -95,20 +110,7 @@ export function mountPlayHud(play: Play): void {
   play.hud = mountHud(play.dom.hudEl, play.dom.stageWrap, play.dom.statsEl, {
     drawPortrait,
     maxFloors: chapter ? chapter.getLevels().length : 5,
-    initialTactical: chapter ? chapter.isTacticalMode() : false,
     onHintShow: () => play.dialogs?.onHintOpened(),
-    onToggleTactical: chapter
-      ? () => {
-          if (!isChapterSession(play.session)) return false;
-          const next = !play.session.isTacticalMode();
-          play.session.setTacticalMode(next);
-          play.shell.printAbove(
-            colourise(`Tactical Mode: ${next ? 'ENABLED (turn-based clock)' : 'DISABLED (real-time clock)'}\n`),
-          );
-          play.hud?.update(play.session.snapshot());
-          return next;
-        }
-      : undefined,
     onHint: () => {
       if (play.phase === 'play') play.hud?.showHint(play.session.hint());
     },

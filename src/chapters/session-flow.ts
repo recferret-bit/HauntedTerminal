@@ -1,15 +1,15 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { maxHpFor } from '../game/bestiary.js';
 import { giveItem, hasItem, holdItem, starterInventory } from '../game/inventory.js';
+import { setHold, skipIntro as endBattleIntro, type BattleHold } from '../game/battle.js';
 import { runLine, type Host } from '../game/shell.js';
-import { lookup, makeNode } from '../game/tree.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from '../game/types.js';
 import { evaluateBatchEvents, formatAchievementLines } from './achievements.js';
 import { readMetagame, recordTelemetry } from './catalog.js';
 import type { LevelSpec } from './types.js';
-import { applySkipTutorial, bullyingNote, evalCond, levelScript, runTimed, syncTutorial } from './script.js';
-import { ensureDirChain, type ChapterState, type EditorOpenPayload } from './session-state.js';
-import { stepKiroCrack } from './session-kiro.js';
+import { applySkipTutorial, bullyingNote, runTimed, syncTutorial } from './script.js';
+import type { ChapterState, EditorOpenPayload } from './session-state.js';
+import { afterCommand, battleSecond, enemyTurn, maybeBeginBattle } from './session-battle.js';
 import { arriveCurrentLevel, levelBannerText, loadLevel, rebootLevel } from './session-level.js';
 import { cmdHank } from './session-meta.js';
 import { allWinRulesMet, playEventsSfx, refreshExitGates, syncValidatedCodeBugs } from './session-rules.js';
@@ -47,14 +47,6 @@ export function getCurrentLevel(g: ChapterState): LevelSpec {
 
 export function getLevels(g: ChapterState): readonly LevelSpec[] {
     return g.levels;
-  }
-
-export function isTacticalMode(g: ChapterState): boolean {
-    return g.tacticalMode;
-  }
-
-export function setTacticalMode(g: ChapterState, enabled: boolean): void {
-    g.tacticalMode = enabled;
   }
 
 export function isChaosMode(g: ChapterState): boolean {
@@ -121,6 +113,8 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
 
     const prevLevelIdx = g.levelIdx;
     const arrivalEvents: KernelEvent[] = [];
+    // A line sent during the battle intro ends it and is the player's first action (headless drivers; the play page skips on Enter itself).
+    endBattleIntro(g.battle, arrivalEvents);
     const arrivalOut = !g.rt.levelArrived ? arriveCurrentLevel(g, arrivalEvents) : '';
 
     g.commands += 1;
@@ -139,9 +133,6 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     const levelChanged = g.levelIdx !== prevLevelIdx;
 
     if (!g.deadNow && !g.ended && !levelChanged) {
-      if (!g.lastCmdStartedCrack && !g.tacticalMode && g.kiro.activeCrack) {
-        combinedOutput += stepKiroCrack(g, events);
-      }
       syncValidatedCodeBugs(g);
       g.rt.world.sync(events);
       refreshExitGates(g, events);
@@ -150,12 +141,10 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
       combinedOutput += preTutorialNotes;
       combinedOutput += syncTutorial(g, events);
       combinedOutput += bullyingNote(g, allWinRulesMet(g), events);
-      if (g.tacticalMode) {
-        const tickRes = internalTick(g, true);
-        events.push(...tickRes.events);
-        combinedOutput += tickRes.output;
-        if (tickRes.stderr) combinedStderr += tickRes.stderr;
-      }
+      // Turn-based: the command was an action; the world answers with one step (an enemy turn in a battle).
+      combinedOutput += afterCommand(g, events);
+    } else if (!levelChanged) {
+      afterCommand(g, events);
     }
     g.lastCmdStartedCrack = false;
 
@@ -181,68 +170,59 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     };
   }
 
+/** One real second: `script.timed` entries and the battle clock (intro, turn timer). Enemies never act in real time. */
 export function tick(g: ChapterState): TickResult {
-    if (g.paused || g.intro || g.ended || g.tacticalMode || g.lab?.clock === 'manual') {
+    if (g.paused || g.intro || g.ended || g.lab?.clock === 'manual') {
       return { output: '', events: [], snapshot: snapshot(g) };
     }
-    return internalTick(g, false);
+    return clockTick(g, (events) => battleSecond(g, events));
   }
 
-export function internalTick(g: ChapterState, _fromCommand: boolean): TickResult {
+/** One second of the level clock (`script.timed`), then `then` (the battle second, or a lab step), then the bookkeeping. */
+export function clockTick(g: ChapterState, then: (events: KernelEvent[]) => string): TickResult {
+    return settle(g, (events) => {
+      let out = runTimed(g, events);
+      syncValidatedCodeBugs(g);
+      g.rt.world.sync(events);
+      refreshExitGates(g, events);
+      out += g.rt.world.drain();
+      out += then(events);
+      return out + maybeBeginBattle(g, events);
+    });
+  }
+
+/** Runs a step outside a command line and turns it into a TickResult: death text, achievements, sfx, lab checks. */
+export function settle(g: ChapterState, step: (events: KernelEvent[]) => string): TickResult {
     g.deadNow = false;
     g.deathText = '';
     const events: KernelEvent[] = [];
-
-    // Anti-softlock cron_restorer for questCritical files
-    for (const q of g.rt.quests) {
-      const existing = lookup(g.rt.root, q.path);
-      if (!existing) {
-        q.missingTicks += 1;
-        if (q.missingTicks >= 2) {
-          const parent = ensureDirChain(g.rt.root, q.parentPath);
-          const restored = makeNode(parent, q.name, 'file', q.mode);
-          restored.uid = q.uid;
-          restored.questCritical = true;
-          restored.content = q.content;
-          q.missingTicks = 0;
-          events.push({
-            type: 'SYSTEM_HAND_SPAWN',
-            entityKind: 'inode',
-            id: restored.id,
-            name: restored.name,
-            reason: 'cron_restore',
-          });
-          events.push({ type: 'FILE_CREATED', inodeId: restored.id, name: restored.name });
-        }
-      } else {
-        q.missingTicks = 0;
-      }
-    }
-
-    let kiroOut = '';
-    if ((!_fromCommand || !g.lastCmdStartedCrack) && g.kiro.activeCrack) {
-      kiroOut = stepKiroCrack(g, events);
-    }
-    const timedOut = runTimed(g, events);
-    const tickOut = kiroOut + timedOut + (enemiesHeld(g) ? '' : g.rt.world.tick(events));
-    syncValidatedCodeBugs(g);
-    g.rt.world.sync(events);
-    refreshExitGates(g, events);
-    const notes = g.rt.world.drain();
-    const stderr = g.deathText || undefined;
-    const achEvents = _fromCommand ? [] : evaluateBatchEvents(events, { preview: g.preview, lab: g.lab !== null });
+    const body = step(events);
+    const achEvents = evaluateBatchEvents(events, { preview: g.preview, lab: g.lab !== null });
     if (achEvents.length > 0) events.push(...achEvents);
-    const output = tickOut + notes + (g.deathText || '') + formatAchievementLines(achEvents);
+    const output = body + (g.deathText || '') + formatAchievementLines(achEvents);
     playEventsSfx(g, events);
     if (g.lab) observe(g, { output, eventTypes: events.map((e) => e.type) });
-    return { output, stderr, events, snapshot: snapshot(g) };
+    return { output, stderr: g.deathText || undefined, events, snapshot: snapshot(g) };
   }
 
-/** The world does not tick yet: before the level's first command, and while the script's `holdEnemiesUntil` is unmet. */
-export function enemiesHeld(g: ChapterState): boolean {
-  const holdUntil = levelScript(g).holdEnemiesUntil;
-  return g.rt.levelCommands === 0 || (holdUntil !== undefined && !evalCond(g, holdUntil));
-}
+/** Battle intro -> the player's first turn (Enter on the play page). Null when no intro plays. */
+export function skipBattleIntro(g: ChapterState): TickResult | null {
+    if (g.battle.phase !== 'intro') return null;
+    return settle(g, (events) => {
+      endBattleIntro(g.battle, events);
+      return '';
+    });
+  }
+
+/** The player's turn ends now and the enemies act (the solver's timer runouts). Null outside a player turn. */
+export function forceEnemyTurn(g: ChapterState): TickResult | null {
+    if (g.paused || g.ended || g.battle.phase !== 'player') return null;
+    return settle(g, (events) => enemyTurn(g, events, 'forced'));
+  }
+
+export function holdTurnTimer(g: ChapterState, hold: BattleHold, on: boolean): void {
+    setHold(g.battle, hold, on);
+  }
 
 export function hint(g: ChapterState): string {
     const step = cmdHank(g, []);

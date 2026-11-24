@@ -3,6 +3,7 @@ import { createFxEmitter, FxCatalog, type FxEmitter, type FxPreset } from '../pr
 
 /** Every shipped FX preset, as literals (the asset-usage harness counts quoted ids). */
 export const FX_IDS = [
+  'fx.fight',
   'fx.hop',
   'fx.panel-smash',
   'fx.permission-denied',

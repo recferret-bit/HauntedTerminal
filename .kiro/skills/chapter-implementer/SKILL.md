@@ -56,7 +56,7 @@ This verifies:
 1. All chapter JSON specs pass `validate-chapter-specs.mjs`.
 2. `src/chapters/generated/catalog-data.ts` is 100% in sync with `chapters/*` (`--check`).
 3. Rendered Comix PNG pages + `contact-sheet.png` exist in both `chapters/<id>/story/out/` and `public/comix/<id>/`.
-4. Every level in the chapter clears headlessly under `--ticks 3` real enemy tick pressure with **`deaths === 0`** and **`ended === true`**.
+4. Every level in the chapter clears headlessly under `--ticks 3` enemy turn pressure (turn-based: one enemy turn per command plus 2 forced turn-timer runouts; `.kiro/specs/turn-based-battles/`) with **`deaths === 0`** and **`ended === true`**.
 5. All skill self-tests (`chapter-architect-intake`, `comix-story-drawer`, `chapter-level-generator`) pass.
 
 ---

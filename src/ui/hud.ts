@@ -15,10 +15,8 @@ export interface HudHandlers {
   onRestartFloor(): void;
   onPlayAgain(skipIntroNextTime: boolean): void;
   maxFloors?: number;
-  initialTactical?: boolean;
   /** Draws the item icons of the strip (the renderer's `drawPortrait`, passed in by `src/play`: `src/ui` imports no three). Without it the strip is not mounted. */
   drawPortrait?: DrawPortrait;
-  onToggleTactical?: () => boolean;
   onHintShow?: () => void;
 }
 
@@ -75,7 +73,7 @@ function unrefTimer(id: number): number {
   return id;
 }
 
-const HUD_HTML = (maxFloors: number, tactical: string) => `
+const HUD_HTML = (maxFloors: number) => `
     <div class="hud-cell" id="hud-ram-cell" title="RAM collected: every 16 GB adds max HP">
       <span class="hud-k">RAM</span><b id="hud-ram">0</b><span class="hud-u">GB</span>
     </div>
@@ -96,7 +94,6 @@ const HUD_HTML = (maxFloors: number, tactical: string) => `
       <b id="hud-time">0:00</b><span class="hud-pause" id="hud-pause">II</span>
     </div>
     <div class="hud-btns">
-      ${tactical}
       <button type="button" id="hud-hint" title="A nudge for this room">? Hint</button>
       <button type="button" id="hud-mute" title="Toggle sound">Sound</button>
       <button type="button" id="hud-restart" title="Restart this floor">Restart floor</button>
@@ -132,6 +129,8 @@ interface HudView {
   hpCell: HTMLElement;
   hpText: HTMLElement;
   hpBar: HTMLElement;
+  turn: HTMLElement;
+  lastTurn: string;
   ram: HTMLElement;
   ssd: HTMLElement;
   pips: HTMLElement;
@@ -176,7 +175,7 @@ function renderHeroAvatar(view: HudView): void {
 function mountHeroHud(
   stageWrap: HTMLElement,
   drawPortrait?: DrawPortrait,
-): { root: HTMLElement; avatar: HTMLElement; hpCell: HTMLElement; hpText: HTMLElement; hpBar: HTMLElement } {
+): { root: HTMLElement; avatar: HTMLElement; hpCell: HTMLElement; hpText: HTMLElement; hpBar: HTMLElement; turn: HTMLElement } {
   stageWrap.querySelector('#hero-hud')?.remove();
   const avatar = el('div', 'hero-avatar');
   avatar.id = 'hero-avatar';
@@ -204,7 +203,13 @@ function mountHeroHud(
   drawer.setAttribute('aria-live', 'polite');
   drawer.setAttribute('aria-hidden', 'true');
 
-  const root = el('div', 'hero-hud', [el('div', 'hero-status-col', [avatar, hpCell]), drawer]);
+  // The battle turn indicator: YOUR TURN 0:27 / ENEMY TURN (turn-based-battles Req 20). Hidden outside a battle.
+  const turn = el('div', 'hero-turn');
+  turn.id = 'hud-turn';
+  turn.hidden = true;
+  turn.setAttribute('aria-live', 'polite');
+
+  const root = el('div', 'hero-hud', [el('div', 'hero-status-col', [avatar, hpCell, turn]), drawer]);
   root.id = 'hero-hud';
   root.dataset.tier = '0';
   root.dataset.frame = '0';
@@ -212,7 +217,7 @@ function mountHeroHud(
   const host = stageWrap.querySelector<HTMLElement>('#titleblock') ?? stageWrap;
   if (typeof host.prepend === 'function') host.prepend(root);
   else host.appendChild(root);
-  return { root, avatar, hpCell, hpText, hpBar };
+  return { root, avatar, hpCell, hpText, hpBar, turn };
 }
 
 function pop(anchor: HTMLElement, text: string, cls: string): void {
@@ -259,6 +264,24 @@ function updateHud(view: HudView, snap: GameSnapshot): void {
   view.mute.textContent = snap.muted ? 'Muted' : 'Sound';
   view.mute.classList.toggle('off', snap.muted);
   if (snap.inventory) view.items?.update(snap.inventory);
+  updateTurn(view, snap.battle);
+}
+
+/** `YOUR TURN 0:27` / `ENEMY TURN` / `FIGHT!` while a battle runs; hidden outside one. */
+function updateTurn(view: HudView, battle: GameSnapshot['battle']): void {
+  const text = !battle
+    ? ''
+    : battle.phase === 'player'
+      ? `YOUR TURN ${clock(battle.secondsLeft ?? 0)}${battle.held ? ' II' : ''}`
+      : battle.phase === 'enemy'
+        ? 'ENEMY TURN'
+        : 'FIGHT!';
+  if (text === view.lastTurn) return;
+  view.lastTurn = text;
+  view.turn.hidden = text === '';
+  view.turn.textContent = text;
+  view.turn.dataset.phase = battle?.phase ?? 'idle';
+  view.turn.classList.toggle('urgent', battle?.phase === 'player' && (battle.secondsLeft ?? 0) <= 10);
 }
 
 function hudApi(view: HudView): Hud {
@@ -345,14 +368,6 @@ function bindHud(root: HTMLElement, fx: HTMLElement, handlers: HudHandlers): voi
   q<HTMLButtonElement>('#hud-hint', root).onclick = () => handlers.onHint();
   q<HTMLButtonElement>('#hud-mute', root).onclick = () => handlers.onMute();
   q<HTMLButtonElement>('#hud-restart', root).onclick = () => handlers.onRestartFloor();
-  const tacticalBtn = root.querySelector<HTMLButtonElement>('#hud-tactical');
-  if (tacticalBtn && handlers.onToggleTactical) {
-    tacticalBtn.onclick = () => {
-      const on = handlers.onToggleTactical!();
-      tacticalBtn.classList.toggle('tactical-on', on);
-      tacticalBtn.textContent = on ? 'Tactical: ON' : 'Tactical';
-    };
-  }
   q('#fx-hint', fx).onclick = () => q('#fx-hint', fx).classList.remove('open');
 }
 
@@ -379,10 +394,7 @@ function mountFx(stageWrap: HTMLElement): HTMLElement {
 
 export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLElement, handlers: HudHandlers): Hud {
   heroHudCleanup.get(stageWrap)?.();
-  const tactical = handlers.onToggleTactical
-    ? `<button type="button" id="hud-tactical" class="${handlers.initialTactical ? 'tactical-on' : ''}" title="Toggle Turn-Based Tactical Mode">${handlers.initialTactical ? 'Tactical: ON' : 'Tactical'}</button>`
-    : '';
-  root.innerHTML = HUD_HTML(handlers.maxFloors ?? 5, tactical);
+  root.innerHTML = HUD_HTML(handlers.maxFloors ?? 5);
   const hero = mountHeroHud(stageWrap, handlers.drawPortrait);
   const fx = mountFx(stageWrap);
   bindHud(root, fx, handlers);
@@ -408,6 +420,8 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     hpCell: hero.hpCell,
     hpText: hero.hpText,
     hpBar: hero.hpBar,
+    turn: hero.turn,
+    lastTurn: '',
     ram: q('#hud-ram', root),
     ssd: q('#hud-ssd', root),
     pips: q('#hud-pips', root),

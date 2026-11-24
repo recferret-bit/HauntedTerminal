@@ -1,6 +1,10 @@
 export type InodeId = number;
 export type PosixSignal = 'SIGTERM' | 'SIGKILL' | 'SIGSTOP' | 'SIGCONT';
 export type ProcState = 'RUNNING' | 'STOPPED' | 'ZOMBIE' | 'DEAD';
+/** The four AI agents that taunt the vibecoder before a battle. */
+export type BattleAgent = 'clod' | 'gork' | 'codec' | 'antigravy';
+/** Who is acting in a battle: nobody (`idle`), the intro, the player, or the enemies. */
+export type BattlePhase = 'idle' | 'intro' | 'player' | 'enemy';
 
 export type SpriteArchetype =
   | 'room_panel'
@@ -138,6 +142,38 @@ export type KernelEvent =
       damage: number;
       hpRemaining: number;
       command: string;
+    }
+  // ---- Turn-based battles (`src/game/battle.ts`).
+  | {
+      /** A battle began: the intro plays (an agent of the big four taunts, then Kiro advises). Nobody acts yet. */
+      type: 'BATTLE_STARTED';
+      battle: number;
+      agent: BattleAgent;
+      /** procgen model id of the taunting agent, e.g. `agent.gork`. */
+      model: string;
+      taunt: string;
+      /** Kiro Ghost's one-line advice for the enemies present. */
+      advice: string;
+      enemyIds: string[];
+    }
+  | {
+      /** The turn passed to `actor`. `first` marks the first player turn of a battle (the FIGHT! beat). */
+      type: 'BATTLE_TURN';
+      battle: number;
+      actor: 'player' | 'enemy';
+      first: boolean;
+      /** Why: the intro ended (`start`), the player acted, the turn timer ran out, or a tool forced the enemy turn. */
+      reason: 'start' | 'action' | 'timeout' | 'forced';
+    }
+  | {
+      /** Inside an enemy turn: the events up to the next ENEMY_ACTING belong to this enemy (the stage staggers them). */
+      type: 'ENEMY_ACTING';
+      entityId: string;
+    }
+  | {
+      type: 'BATTLE_ENDED';
+      battle: number;
+      reason: 'cleared' | 'left' | 'respawn' | 'level';
     }
   | {
       type: 'ENEMY_KILLED';

@@ -36,7 +36,7 @@ The engine names no chapter and no level. A chapter is only these files, played 
 | :--- | :--- | :--- |
 | `chapter.manifest.json` | identity, ally, boss (+ cameo label), `grants` (hardware and Kiro core owned when a level is entered directly), `outro` (caption, closing actors, `finale` steps) | `src/chapters/types.ts` |
 | `level.spec.json` | the world and how to win | `files`, `enemies`, `pickups`, `patches`, `winRules`, `solutionCommands` |
-| `level.spec.json -> script` | what happens: `arrival` steps, `tutorial` cards with `doneWhen` conditions and a hidden enemy, `bullying` taunts, `kiro` stage/label/weakness/core reactions, `safe`, `holdEnemiesUntil`, `signalAliases`, `onBossKill` | `src/chapters/script-types.ts` |
+| `level.spec.json -> script` | what happens: `arrival` steps, `tutorial` cards with `doneWhen` conditions and a hidden enemy, `bullying` taunts, `kiro` stage/label/weakness/core reactions, `safe`, `holdEnemiesUntil` (both keep battles from starting; combat is turn based, `.kiro/specs/turn-based-battles/`), `signalAliases`, `onBossKill` | `src/chapters/script-types.ts` |
 | `story/dialogs.json` | banner, 3 hints, arrival taunt, completion, speaker colours | `ChapterDialogs` |
 | `story/comix.spec.json` | comic pages | `ComixStorySpec` |
 

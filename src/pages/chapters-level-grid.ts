@@ -85,11 +85,7 @@ function deployControlsHtml(state: ChaptersViewState, playFastUrl: string, playF
           `;
   }
   const toggles = `
-                  <label class="tactical-toggle-row">
-                    <input type="checkbox" id="dossier-tactical" ${state.launchTactical ? 'checked' : ''} />
-                    <span>Launch in <strong>Tactical Mode</strong> (turn-based clock while reading/editing)</span>
-                  </label>
-                  <label class="tactical-toggle-row">
+                  <label class="launch-toggle-row">
                     <input type="checkbox" id="dossier-chaos" ${state.launchChaos ? 'checked' : ''} />
                     <span><strong>Chaos Contract (<code>cron_chaos</code>)</strong> — randomized PIDs &amp; +25 Silicon Scrap</span>
                   </label>
@@ -119,7 +115,7 @@ export function renderLevelDossier(
   const level = state.activeLevel;
   const fullSpec = getChapterLevels(chapter.id).find((s) => s.id === level.id);
   const rec = progress[chapter.id]?.[level.id];
-  const playOpts = { tactical: state.launchTactical, chaos: state.launchChaos };
+  const playOpts = { chaos: state.launchChaos };
   const playFastUrl = buildPlayUrl(chapter.id, level, true, playOpts);
   const playFullIntroUrl = buildPlayUrl(chapter.id, level, false, { ...playOpts, intro: level.index > 1 });
 
@@ -162,13 +158,6 @@ export function renderLevelDossier(
       ${comixStripHtml(chapter)}
     `;
 
-  const tacInput = els.dossierEl.querySelector<HTMLInputElement>('#dossier-tactical');
-  if (tacInput) {
-    tacInput.onchange = () => {
-      state.launchTactical = tacInput.checked;
-      rerender();
-    };
-  }
   const chaosInput = els.dossierEl.querySelector<HTMLInputElement>('#dossier-chaos');
   if (chaosInput) {
     chaosInput.onchange = () => {

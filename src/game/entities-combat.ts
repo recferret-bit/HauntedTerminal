@@ -269,16 +269,28 @@ export function tick(world: World, events: KernelEvent[]): string {
     if (e.dead) continue;
     out += passive(world, e, events);
     if (e.dead || !world.host.alive()) continue;
-    if ((resting || world.host.truce()) && damage(world, e) > 0) {
-      // Grace holds back attacks on the hero only; lock picks and encryption carry on.
+    if ((resting || world.holdFire || world.host.truce()) && damage(world, e) > 0) {
+      // Grace (and the step that starts a battle) holds back attacks on the hero only; lock picks and encryption carry on.
       e.clock = 0;
       e.told = false;
       continue;
     }
+    const mark = events.length;
     out += act(world, e, events);
+    // Mark where this enemy's events start, so the stage can play an enemy turn one enemy after another.
+    if (events.length > mark) events.splice(mark, 0, { type: 'ENEMY_ACTING', entityId: e.id });
   }
   if (world.host.alive()) sync(world, events, 'other');
   return out + world.drain();
+}
+
+/**
+ * Enemies that would fight the hero now: alive, able to act, in his room, hurting him, with no truce on.
+ * A battle runs while this is not empty (`src/game/battle.ts`). Grace does not count: it only delays attacks.
+ */
+export function threats(world: World): Enemy[] {
+  if (world.host.truce()) return [];
+  return world.enemies.filter((e) => active(world, e) && here(world, e) && cadence(world, e) > 0 && damage(world, e) > 0);
 }
 
 /** Things that happen wherever the hero is: a closed port starves its worm, a buffer grows back. */

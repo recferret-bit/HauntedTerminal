@@ -105,3 +105,7 @@ Gaps this closes (from `.kiro/agents/prompts/qa.md` and `scripts/harness/agents-
 - Req 11, 16, 18: `npm run quality:agents`. The agent table asserts the denied `--update`, the excluded `docs/qa/baselines/**`, the new MCP tools, JavaScript evaluation still off, and the script owner.
 - Req 14-17: `npm run quality:agents` checks the prompt text. Then a real `qa` pass (`kiro-cli --agent qa`) whose report lists the checklist per screen and explains every flag.
 - Project-wide: `npm run quality` and `npm run build`.
+
+## Later changes
+
+- **2026-11-24, `.kiro/specs/turn-based-battles/` (approved by the user):** on the stepped game clock, `tick()` no longer moves enemies (combat is turn based): play screens with enemies show the battle intro and the turn indicator on the hero card. A battle-start screen is added by the turn-based-battles QA task; its baseline is approved by a person only.

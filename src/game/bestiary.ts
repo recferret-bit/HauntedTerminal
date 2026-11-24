@@ -19,7 +19,7 @@ export interface EnemyInfo {
   hp: number;
   /** Damage per attack on the hero. 0 = it never hurts the hero by itself. */
   damage: number;
-  /** Ticks between attacks (or between its indirect actions when damage is 0). 0 = never acts. */
+  /** World steps (enemy turns in a battle) between attacks, or between its indirect actions when damage is 0. 0 = never acts. */
   every: number;
   /** Short attack name carried by ENEMY_ATTACK. */
   attack: string;
@@ -59,7 +59,7 @@ export const BESTIARY: Record<EnemyType, EnemyInfo> = {
     weakness: 'it lives in the code: grep BUG <file>, then sed -i \'s/BUG/FIXED/\' <file>',
     man: [
       'BUG(6)  a software bug, the one you shipped on friday',
-      'It lives in a line of source code and nips you every second while you stand next to it.',
+      'It lives in a line of source code and nips you every turn while you stand next to it.',
       'kill only restarts the service (Restart=always). rm is refused: you cannot delete prod.',
       'Find it:   grep BUG prod.py      (or find . -name "*.py")',
       "Fix it:    sed -i 's/BUG/FIXED/' prod.py",
@@ -72,7 +72,7 @@ export const BESTIARY: Record<EnemyType, EnemyInfo> = {
     man: [
       'SPYWARE(6)  a webcam drone that reports you to the agents',
       'It hides as a dotfile, so plain ls never shows it, but its process shows in ps.',
-      'It flashes you every 2 seconds while you share a room.',
+      'It flashes you every 2 turns while you share a room.',
       'Find it:   ls -a   or   ps',
       'Kill it:   rm .spycam   or   kill <PID>',
     ],
@@ -90,12 +90,12 @@ export const BESTIARY: Record<EnemyType, EnemyInfo> = {
   worm: {
     type: 'worm', model: 'malware.worm', kind: 'enemy', hp: 1,
     damage: 6, every: sheetCadence('malware.worm', 3), attack: 'burrow strike',
-    weakness: 'kill its PID, or cut it off: chmod 000 on its port directory (it starves in 3 s)',
+    weakness: 'kill its PID, or cut it off: chmod 000 on its port directory (it starves in 3 turns)',
     man: [
       'WORM(6)  a network worm living in an open port',
-      'It burrows out of its port directory and strikes anyone in the next room every 3 seconds.',
+      'It burrows out of its port directory and strikes anyone in the next room every 3 turns.',
       'Kill it:      ps, then kill <PID>',
-      'Or cut it off: chmod 000 port_445  (a closed port starves it in 3 seconds)',
+      'Or cut it off: chmod 000 port_445  (a closed port starves it in 3 turns)',
       'A crack nearby will pick that lock open again. Deal with the crack first.',
     ],
   },
@@ -105,7 +105,7 @@ export const BESTIARY: Record<EnemyType, EnemyInfo> = {
     weakness: 'its binary is busy: find it with ps and kill the PID',
     man: [
       'CRACK(6)  a keygen that picks locks for other malware',
-      'It never bites. Every 2 seconds it picks a closed port back open.',
+      'It never bites. Every 2 turns it picks a closed port back open.',
       'rm says "Text file busy" while it runs.',
       'Catch it:  ps   then   kill <PID>',
     ],
@@ -116,7 +116,7 @@ export const BESTIARY: Record<EnemyType, EnemyInfo> = {
     weakness: 'chmod -x petrifies it; chmod +w then rm deletes it; kill only relaunches it',
     man: [
       'TROJAN(6)  a gift you installed yourself (stone_gargoyle.bin)',
-      'While its file is executable it relaunches and bites every 3 seconds.',
+      'While its file is executable it relaunches and bites every 3 turns.',
       'Petrify:  chmod -x stone_gargoyle.bin',
       'Destroy:  chmod +w stone_gargoyle.bin && rm stone_gargoyle.bin',
       'kill is pointless: the binary just runs again.',
@@ -140,7 +140,7 @@ export const BESTIARY: Record<EnemyType, EnemyInfo> = {
     weakness: 'it runs as root, so kill fails: make its buffer read-only, chmod -w stack.buf',
     man: [
       'EXPLOIT(6)  a buffer overflow that escalated to root',
-      'It pumps payload into stack.buf and lunges every 4 seconds. Signals: Operation not permitted.',
+      'It pumps payload into stack.buf and lunges every 4 turns. Signals: Operation not permitted.',
       'But the buffer is still yours. A read-only page makes it segfault:',
       '          chmod -w stack.buf      (or chmod 444 stack.buf)',
     ],
@@ -151,7 +151,7 @@ export const BESTIARY: Record<EnemyType, EnemyInfo> = {
     weakness: 'it locks pickups with chmod 000: kill its PID, then chmod 644 the locked files',
     man: [
       'RANSOMWARE(6)  a padlock with a jaw',
-      'It does not bite you. Every 4 seconds it encrypts a pickup in its room (mode 000).',
+      'It does not bite you. Every 4 turns it encrypts a pickup in its room (mode 000).',
       'Kill it:     ps   then   kill <PID>',
       'Decrypt:     chmod 644 energy.cell     then   source energy.cell',
     ],
@@ -162,7 +162,7 @@ export const BESTIARY: Record<EnemyType, EnemyInfo> = {
     weakness: 'killing one is useless, its parent forks more: kill -9 the parent PID',
     man: [
       'ZOMBIE(6)  a defunct child process',
-      'Forked by necromancer_forkd. Each one swipes every 2 seconds.',
+      'Forked by necromancer_forkd. Each one swipes every 2 turns.',
       'kill <PID> drops one, and the parent forks another.',
       'Reap them all:  kill -9 666',
     ],
@@ -173,7 +173,7 @@ export const BESTIARY: Record<EnemyType, EnemyInfo> = {
     weakness: 'kill -9 666 (or freeze it with kill -STOP 666). A polite kill only enrages it',
     man: [
       'NECROMANCER_FORKD(6)  the fork bomb, PID 666',
-      'It forks a zombie_worker every 4 seconds while you are in the furnace hall.',
+      'It forks a zombie_worker every 4 turns while you are in the furnace hall.',
       'kill 666 (SIGTERM) is trapped: it gets angry and hits you.',
       'kill -STOP 666 freezes it.   kill -9 666 ends it and every zombie.',
     ],
