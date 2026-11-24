@@ -1,6 +1,6 @@
 # Netlify deploy power: tasks
 
-- [x] 1. Power manifest and MCP config: `plugin.json`, `mcp.json`. _Req 1, 10_. Gates: JSON parse, `kiro-cli powers install .kiro/powers/haunted-ship`
+- [x] 1. Power manifest and MCP config: `plugin.json`, `mcp.json`. _Req 1, 10_. Gates: JSON parse, `kiro-cli powers install .kiro/powers/credits-ship`
 - [x] 2. Gated deploy script `ship.mjs` (`preview`, `prod`, `--dry-run`, `--selftest`) and `.netlify` in `.gitignore`. _Req 2-9_. Gates: `ship.mjs --selftest`, `ship.mjs --dry-run`, `npm run quality:root`
 - [x] 3. The `ship` skill. _Req 1, 4, 6, 10, 12_. Gates: read-through against the requirements
 - [x] 4. Agents cannot deploy: `.kiro/powers/` as INFRA and the deny probes in `check-agents.mjs`. _Req 11_. Gates: `npm run quality:agents`

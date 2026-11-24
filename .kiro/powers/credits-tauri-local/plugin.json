@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "credits-tauri-local",
+  "version": "1.0.0",
+  "description": "Build the Out Of Credits desktop app (Tauri) on this machine from the working tree and open it. Not versioned, not tagged, not published, not a production build.",
+  "author": {
+    "name": "Out Of Credits",
+    "url": "https://github.com/recferret-bit/OutOfCredits"
+  },
+  "keywords": ["tauri", "desktop", "local build", "native app", "try the app", "build the app locally", "installer"],
+  "homepage": "https://github.com/recferret-bit/OutOfCredits/tree/main/.kiro/powers/credits-tauri-local",
+  "repository": "https://github.com/recferret-bit/OutOfCredits",
+  "license": "MIT"
+}

@@ -7,9 +7,9 @@ description: "[LEVEL GEN] Step 2 of level generation (story layer). Author and r
 
 **Category: LEVEL GEN** (story layer). It draws the comic issue of the single Kiroween chapter with existing models and rooms. If a panel needs an actor or room that does not exist, create it with the ASSET PCG skills first (see `.kiro/steering/skills-map.md`).
 
-Every Haunted Terminal chapter opens and closes as a genuine **1995 *Comix Zone*-inspired comic issue**: warm `#efe6d2` halftone paper gutters, `5px` `#110e1b` ink panel frames, `#ffd166` narration boxes, crisp speech bubbles, and 3D cel-shaded procedural rooms & malware actors rasterized directly from `ModelCatalog`.
+Every Out Of Credits chapter opens and closes as a genuine **1995 *Comix Zone*-inspired comic issue**: warm `#efe6d2` halftone paper gutters, `5px` `#110e1b` ink panel frames, `#ffd166` narration boxes, crisp speech bubbles, and 3D cel-shaded procedural rooms & malware actors rasterized directly from `ModelCatalog`.
 
-Read `haunted-art-direction` first.
+Read `credits-art-direction` first.
 
 ---
 

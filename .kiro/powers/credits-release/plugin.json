@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "credits-release",
+  "version": "1.0.0",
+  "description": "Release Out Of Credits from a git tag: checks a clean main, runs the gates, pushes tag v<version> so GitHub builds the Tauri installers, then makes the Netlify preview. Netlify production stays the user's second yes.",
+  "author": {
+    "name": "Out Of Credits",
+    "url": "https://github.com/recferret-bit/OutOfCredits"
+  },
+  "keywords": ["release", "tag", "push tag", "github release", "tauri release", "version", "ship a version", "production build"],
+  "homepage": "https://github.com/recferret-bit/OutOfCredits/tree/main/.kiro/powers/credits-release",
+  "repository": "https://github.com/recferret-bit/OutOfCredits",
+  "license": "MIT"
+}

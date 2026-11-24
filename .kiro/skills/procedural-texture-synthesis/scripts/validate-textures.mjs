@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Texture validator and contact sheet for Haunted Terminal's procedural comic textures.
+// Texture validator and contact sheet for Out Of Credits's procedural comic textures.
 // Run from the project root:
 //
 //   node .kiro/skills/procedural-texture-synthesis/scripts/validate-textures.mjs --all

@@ -2,7 +2,7 @@
 
 Status: done (requirements, design, tasks approved by the user 2026-11-17)
 
-Capability: Clarify across the in-game Kiro Ghost companion (`kiro disclaimer` / `kiro legal` and `kiro status`), the Bestiary Dossier, and the `/` front door that Haunted Terminal uses no real AI agent brands—all characters (`Clod`, `Gork`, `Codec`, `Anti-Gravy`) and organizations are original fictional parodies and technical terms are educational only—while enforcing brand-free specs and source files through a deterministic `.kiro/` quality gate (`scripts/quality/check-brands.mjs`) and save hook (`.kiro/hooks/check-brands-on-save.json`).
+Capability: Clarify across the in-game Kiro Ghost companion (`kiro disclaimer` / `kiro legal` and `kiro status`), the Bestiary Dossier, and the `/` front door that Out Of Credits uses no real AI agent brands—all characters (`Clod`, `Gork`, `Codec`, `Anti-Gravy`) and organizations are original fictional parodies and technical terms are educational only—while enforcing brand-free specs and source files through a deterministic `.kiro/` quality gate (`scripts/quality/check-brands.mjs`) and save hook (`.kiro/hooks/check-brands-on-save.json`).
 
 ## Requirements
 

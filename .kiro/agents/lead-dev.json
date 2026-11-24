@@ -1,6 +1,6 @@
 {
   "name": "lead-dev",
-  "description": "Lead game developer and orchestrator of the Haunted Terminal team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here; also the member that Kiro Crew runs.",
+  "description": "Lead game developer and orchestrator of the Out Of Credits team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here; also the member that Kiro Crew runs.",
   "prompt": "file://./prompts/lead-dev.md",
   "model": "auto",
   "tools": [
@@ -355,12 +355,12 @@
       {
         "capability": "mcp",
         "match": [
-          "haunted-forge/list_assets",
-          "haunted-forge/list_levels",
-          "haunted-forge/get_level",
-          "haunted-forge/validate_level",
-          "haunted-forge/solve_level",
-          "haunted-forge/write_level",
+          "credits-forge/list_assets",
+          "credits-forge/list_levels",
+          "credits-forge/get_level",
+          "credits-forge/validate_level",
+          "credits-forge/solve_level",
+          "credits-forge/write_level",
           "chrome-devtools/list_pages",
           "chrome-devtools/new_page",
           "chrome-devtools/select_page",
@@ -392,12 +392,12 @@
           "*"
         ],
         "exclude": [
-          "haunted-forge/list_assets",
-          "haunted-forge/list_levels",
-          "haunted-forge/get_level",
-          "haunted-forge/validate_level",
-          "haunted-forge/solve_level",
-          "haunted-forge/write_level",
+          "credits-forge/list_assets",
+          "credits-forge/list_levels",
+          "credits-forge/get_level",
+          "credits-forge/validate_level",
+          "credits-forge/solve_level",
+          "credits-forge/write_level",
           "chrome-devtools/list_pages",
           "chrome-devtools/new_page",
           "chrome-devtools/select_page",

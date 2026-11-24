@@ -8,7 +8,7 @@ import {
   type SteamReleaseMeta,
 } from '../chapters/steam-bridge.js';
 
-export const WAITLIST_STORAGE_KEY = 'haunted-terminal:waitlist:v1';
+export const WAITLIST_STORAGE_KEY = 'out-of-credits:waitlist:v1';
 
 export type TargetPlatform = 'macos' | 'windows' | 'linux-deck';
 
@@ -252,7 +252,7 @@ function wireWaitlistSubmitAndExport(
         }
         return;
       }
-      const savedPath = await downloadJsonBlob('haunted-terminal-steam-waitlist.json', saved);
+      const savedPath = await downloadJsonBlob('out-of-credits-steam-waitlist.json', saved);
       if (statusEl) {
         statusEl.hidden = false;
         statusEl.classList.toggle('err', savedPath === null);

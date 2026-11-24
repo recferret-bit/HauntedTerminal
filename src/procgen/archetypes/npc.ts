@@ -1,7 +1,7 @@
 /**
  * Friendly cast (category `npc`): the Kiro Ghost companion and the old bearded coder at his rig.
  * The builders live in `./npc/`; this file only registers them, in order.
- * Briefs: .kiro/skills/haunted-art-direction/references/world-lexicon.md
+ * Briefs: .kiro/skills/credits-art-direction/references/world-lexicon.md
  */
 import { ModelCatalog } from '../core/catalog.js';
 import { buildGreybeardRig } from './npc/greybeard-rig.js';

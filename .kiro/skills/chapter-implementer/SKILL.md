@@ -7,7 +7,7 @@ description: "[LEVEL GEN] Final step of level generation (pipeline and QA gate).
 
 **Category: LEVEL GEN** (see `.kiro/steering/skills-map.md`). This skill runs the pipeline for the **single Kiroween chapter (about 11 levels)**. It consumes existing assets only; any missing model, room, texture or effect is an ASSET PCG task and must be done first with the skill that owns it.
 
-`chapter-implementer` is the execution counterpart to `chapter-architect-intake`. Once `chapters/<chapter-id>/` specs exist on disk, follow this exact 5-step pipeline to turn those specs into a playable, illustrated, browser-selectable Haunted Terminal issue.
+`chapter-implementer` is the execution counterpart to `chapter-architect-intake`. Once `chapters/<chapter-id>/` specs exist on disk, follow this exact 5-step pipeline to turn those specs into a playable, illustrated, browser-selectable Out Of Credits issue.
 
 ---
 

@@ -189,10 +189,10 @@ try {
   await browser.waitFor(`${L} && ${L}.ready && ${L}.state().phase === 'play'`, 40000, 'malformed ?from= route');
   check(/expected "<chapterId>\/<levelId>"/.test(await text('.ed-status')), 'malformed ?from= reports a clear error in the status line');
   const chapSlug = firstRef.split('/')[0];
-  await $(`localStorage.setItem(${JSON.stringify(`haunted.editor.draft:${chapSlug}`)}, JSON.stringify({ manifest: { id: ${JSON.stringify(chapSlug)} }, levels: [{ id: 'broken' }] }))`);
+  await $(`localStorage.setItem(${JSON.stringify(`credits.editor.draft:${chapSlug}`)}, JSON.stringify({ manifest: { id: ${JSON.stringify(chapSlug)} }, levels: [{ id: 'broken' }] }))`);
   await browser.open(`${base}/terminal-lab?from=${encodeURIComponent(firstRef)}&draft=1`);
   await browser.waitFor(`${L} && ${L}.ready && ${L}.state().phase === 'play'`, 40000, '?from= with malformed draft');
-  await $(`localStorage.removeItem(${JSON.stringify(`haunted.editor.draft:${chapSlug}`)})`);
+  await $(`localStorage.removeItem(${JSON.stringify(`credits.editor.draft:${chapSlug}`)})`);
   check(/opened level/.test(await text('.ed-status')), '?from=<chapter>/<level>&draft=1 survives a malformed draft in localStorage');
 
   // Rapid driver toggle while Run all is mid-wait cancels cleanly and swaps in-page; mute survives swap.

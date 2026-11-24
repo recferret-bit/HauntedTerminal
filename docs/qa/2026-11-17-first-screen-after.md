@@ -22,7 +22,7 @@ Port 5173 is still held by pid 61405 (`/Users/ferretrec/work/reddit/vangame`), a
 | `npm run quality` | 0 | tsc, root, size, layers, declarative, specs (13), dup (0 clones), agents (14 tests), brands, mcp (12 tests), props (32 properties, seed 20261117). |
 | `node scripts/harness/generate-chapter.mjs --verify` | 0 | 11 levels, 0 errors, 0 warnings, 11 cleared, cmds=64, deaths=0. It rewrites `src/chapters/generated/catalog-data.ts` (compiler output); check `git status` before committing. |
 
-Not run: Chrome DevTools MCP (no reachable server of this project, see above), `haunted-forge` `validate_level` / `solve_level` (no level changed), the other suites (out of scope for a CSS change).
+Not run: Chrome DevTools MCP (no reachable server of this project, see above), `credits-forge` `validate_level` / `solve_level` (no level changed), the other suites (out of scope for a CSS change).
 
 Limits: positions are estimates read from the screenshots (about +-3 px). No JavaScript evaluation was possible. Google Fonts is offline, so fallback fonts show.
 
@@ -35,7 +35,7 @@ Limits: positions are estimates read from the screenshots (about +-3 px). No Jav
 
 | Check | 1600x950 | 1280x820 |
 |---|---|---|
-| Header title and subtitle fully readable, not overlapped by the HUD | PASS. `HAUNTED TERMINAL` and `KIROWEEN SPECIAL ISSUE // KIROWEEN: OPEN WEIGHTS & FAMILY TIES` on one line; the HUD starts at x ~877, the header ends at x ~630. | PASS. The subtitle wraps to a second line (`TIES`); the header ends at x ~505, the HUD starts at x ~557. Gap ~50 px. |
+| Header title and subtitle fully readable, not overlapped by the HUD | PASS. `OUT OF CREDITS` and `KIROWEEN SPECIAL ISSUE // KIROWEEN: OPEN WEIGHTS & FAMILY TIES` on one line; the HUD starts at x ~877, the header ends at x ~630. | PASS. The subtitle wraps to a second line (`TIES`); the header ends at x ~505, the HUD starts at x ~557. Gap ~50 px. |
 | Card does not cover the hero | PASS (card x 1340-1575, y 370-520; hero x 460-570) | PASS (card x 1020-1252, y 290-437; hero x 365-450) |
 | Card does not cover the speech bubble | PASS | PASS |
 | Card does not cover the door | PASS (door x 1143-1250) | PASS (door x 890-990; card starts at x 1020) |

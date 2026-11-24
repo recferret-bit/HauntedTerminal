@@ -12,7 +12,7 @@ export interface TopBarHooks {
 function mast(hooks: TopBarHooks): HTMLAnchorElement {
   const link = el('a', 'lab-mast');
   link.href = hooks.href({ inspect: null });
-  link.append(el('b', '', 'HAUNTED '), el('span', '', 'TERMINAL'));
+  link.append(el('b', '', 'OUT OF '), el('span', '', 'CREDITS'));
   link.onclick = (ev) => {
     ev.preventDefault();
     hooks.set('inspect', null);

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Is this Mac ready to run the Haunted Terminal agent team through Kiro Crew (desktop app, dashboard)?
+// Is this Mac ready to run the Out Of Credits agent team through Kiro Crew (desktop app, dashboard)?
 //   npm run crew:check            (node scripts/harness/crew-doctor.mjs)
 // Read-only: it reads files, runs `kiro-cli`, `kirocrew`, `git` and (if installed) `gh`, and changes nothing. It never prints a token.
 // Exit 1 when something blocks the setup, 0 otherwise (warnings are things to look at). Spec: .kiro/specs/agent-team/ (req 17, 24).

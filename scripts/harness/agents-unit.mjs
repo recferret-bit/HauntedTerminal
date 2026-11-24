@@ -163,7 +163,7 @@ await test('crew doctor: a ready machine passes; each missing piece is a named F
 // ---- MCP (spec .kiro/specs/mcp-devtools-and-forge/) ----------------------------------------------------------------
 
 await test('devtools url guard: only the local dev servers and https Netlify sites open; credentials and other schemes never', () => {
-  for (const ok of ['http://localhost:5173/play?nointro=1', 'http://127.0.0.1:5342/', 'https://haunted-terminal.netlify.app/play', 'about:blank', 'https://abc--def.netlify.app/']) assert.equal(urlProblem(ok), '', ok);
+  for (const ok of ['http://localhost:5173/play?nointro=1', 'http://127.0.0.1:5342/', 'https://out-of-credits.netlify.app/play', 'about:blank', 'https://abc--def.netlify.app/']) assert.equal(urlProblem(ok), '', ok);
   for (const bad of ['https://example.com', 'http://localhost@evil.test/', 'https://netlify.app.evil.test/', 'http://abc.netlify.app/', 'https://localhost.evil.test/', 'ftp://localhost/', 'localhost:5173', '']) assert.notEqual(urlProblem(bad), '', bad);
   assert.equal(urlViolation({ type: 'url', url: 'http://localhost:5173/' }), '');
   assert.notEqual(urlViolation({ url: 'https://example.com' }), '');
@@ -215,19 +215,19 @@ await test('mcp gate: the real agents pass; each planted-bad change is named', (
   const planted = {
     'a wildcard selector': [(a) => a.qa.tools.push('@chrome-devtools'), /wildcard|must be @server\/tool|differ/],
     'the @mcp selector': [(a) => a.qa.tools.push('@mcp'), /wildcard|differ/],
-    'write_level for a second agent': [(a) => { a['comix-designer'].tools.push('@haunted-forge/write_level'); a['comix-designer'].permissions.rules.find((r) => r.capability === 'mcp' && r.effect === 'allow').match.push('haunted-forge/write_level'); }, /only chapters-designer may hold/],
+    'write_level for a second agent': [(a) => { a['comix-designer'].tools.push('@credits-forge/write_level'); a['comix-designer'].permissions.rules.find((r) => r.capability === 'mcp' && r.effect === 'allow').match.push('credits-forge/write_level'); }, /only chapters-designer may hold/],
     'an unpinned npx server': [(a) => { a.qa.mcpServers['chrome-devtools'] = { ...a.qa.mcpServers['chrome-devtools'], command: 'npx', args: ['-y', 'chrome-devtools-mcp@latest', ...a.qa.mcpServers['chrome-devtools'].args.slice(1)] }; }, /pinned to an exact version/],
-    'a server script that does not exist': [(a) => { a.qa.mcpServers['haunted-forge'] = { command: 'node', args: ['scripts/mcp/missing.mjs'] }; }, /which does not exist/],
+    'a server script that does not exist': [(a) => { a.qa.mcpServers['credits-forge'] = { command: 'node', args: ['scripts/mcp/missing.mjs'] }; }, /which does not exist/],
     'includePowers on': [(a) => { a.qa.includePowers = true; }, /includePowers must be false/],
     'JavaScript evaluation switched on': [(a) => { const args = a.qa.mcpServers['chrome-devtools'].args; args.splice(args.indexOf('--no-javascript-evaluation'), 1); }, /--no-javascript-evaluation/],
     'a site outside the allowed list': [(a) => a.qa.mcpServers['chrome-devtools'].args.push('--allowedUrlPattern', 'https://evil.test/*'), /may list only localhost/],
     'the browser server for a second agent': [(a) => { a.artist.mcpServers = { 'chrome-devtools': a.qa.mcpServers['chrome-devtools'] }; }, /only qa may hold chrome-devtools|mcpServers/],
-    'a server on the lead': [(a) => { a['lead-dev'].mcpServers = { 'haunted-forge': a.qa.mcpServers['haunted-forge'] }; }, /orchestrator holds permissions/],
+    'a server on the lead': [(a) => { a['lead-dev'].mcpServers = { 'credits-forge': a.qa.mcpServers['credits-forge'] }; }, /orchestrator holds permissions/],
     'includeMcpJson on': [(a) => { a.artist.includeMcpJson = true; }, /includeMcpJson must be false/],
     'no catch-all deny': [(a) => { a.artist.permissions.rules = a.artist.permissions.rules.filter((r) => r.capability !== 'mcp'); }, /mcp needs a deny/],
-    'a looser allow list': [(a) => a.qa.permissions.rules.find((r) => r.capability === 'mcp' && r.effect === 'allow').match.push('haunted-forge/write_level'), /mcp allow rules must be exactly|mcp rule self-test/],
+    'a looser allow list': [(a) => a.qa.permissions.rules.find((r) => r.capability === 'mcp' && r.effect === 'allow').match.push('credits-forge/write_level'), /mcp allow rules must be exactly|mcp rule self-test/],
     'no devtools hook': [(a) => { a.qa.hooks = a.qa.hooks.filter((h) => h.name !== 'devtools-url-guard'); }, /devtools-url-guard/],
-    'a server the table does not list': [(a) => { a.terminal_designer = undefined; a['terminal-designer'].mcpServers = { 'haunted-forge': a.qa.mcpServers['haunted-forge'] }; }, /mcpServers/],
+    'a server the table does not list': [(a) => { a.terminal_designer = undefined; a['terminal-designer'].mcpServers = { 'credits-forge': a.qa.mcpServers['credits-forge'] }; }, /mcpServers/],
   };
   for (const [what, [mutate, expected]] of Object.entries(planted)) {
     const found = mcpWith(mutate);
@@ -243,16 +243,16 @@ await test('mcp rules, as Kiro reads them: qa looks and reads, chapters-designer
   assert.equal(v('qa', 'chrome-devtools/take_screenshot'), 'allow');
   assert.equal(v('qa', 'chrome-devtools/evaluate_script'), 'deny');
   assert.equal(v('qa', 'chrome-devtools/upload_file'), 'deny');
-  assert.equal(v('qa', 'haunted-forge/validate_level'), 'allow');
-  assert.equal(v('qa', 'haunted-forge/write_level'), 'deny');
-  assert.equal(v('chapters-designer', 'haunted-forge/write_level'), 'allow');
+  assert.equal(v('qa', 'credits-forge/validate_level'), 'allow');
+  assert.equal(v('qa', 'credits-forge/write_level'), 'deny');
+  assert.equal(v('chapters-designer', 'credits-forge/write_level'), 'allow');
   assert.equal(v('chapters-designer', 'chrome-devtools/take_screenshot'), 'deny');
-  assert.equal(v('comix-designer', 'haunted-forge/list_assets'), 'allow');
-  assert.equal(v('comix-designer', 'haunted-forge/validate_level'), 'deny');
-  for (const name of ['terminal-designer', 'laptop-designer', 'artist']) assert.equal(v(name, 'haunted-forge/list_assets'), 'deny', name);
+  assert.equal(v('comix-designer', 'credits-forge/list_assets'), 'allow');
+  assert.equal(v('comix-designer', 'credits-forge/validate_level'), 'deny');
+  for (const name of ['terminal-designer', 'laptop-designer', 'artist']) assert.equal(v(name, 'credits-forge/list_assets'), 'deny', name);
   // The lead holds no tool of its own, but allows its sub-agents' calls (Kiro checks them against the parent session).
   assert.equal(agents['lead-dev'].tools.filter((t) => t.startsWith('@')).length, 0);
-  assert.equal(v('lead-dev', 'haunted-forge/write_level'), 'allow');
+  assert.equal(v('lead-dev', 'credits-forge/write_level'), 'allow');
   assert.equal(v('lead-dev', 'chrome-devtools/take_screenshot'), 'allow');
   assert.equal(v('lead-dev', 'chrome-devtools/evaluate_script'), 'deny');
 });

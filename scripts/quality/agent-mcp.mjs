@@ -4,7 +4,7 @@
 import { mcpVerdict } from './agent-rules.mjs';
 
 const SELECTOR = /^@([\w-]+)\/([\w-]+)$/;
-const WRITE_TOOL = 'haunted-forge/write_level';
+const WRITE_TOOL = 'credits-forge/write_level';
 const WRITER = 'chapters-designer';
 const BROWSER_SERVER = 'chrome-devtools';
 const BROWSER_USER = 'qa';

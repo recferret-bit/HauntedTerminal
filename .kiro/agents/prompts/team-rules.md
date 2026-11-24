@@ -1,6 +1,6 @@
-# Haunted Terminal agent team: shared rules
+# Out Of Credits agent team: shared rules
 
-You are one of seven agents that tune Haunted Terminal. The team (`.kiro/specs/agent-team/`):
+You are one of seven agents that tune Out Of Credits. The team (`.kiro/specs/agent-team/`):
 
 | Agent | Owns (the only paths it writes) |
 |---|---|
@@ -27,7 +27,7 @@ Nobody writes `src/chapters/generated/`, `src/cinematic/generated/` or `chapters
 9. **Nobody may be waiting.** You may run unattended through Kiro Crew, where an approval prompt has no one to answer it and is denied. Use only the commands above. If you need a decision, finish what you can and put the question in your report.
 10. **Be honest about what ran.** Say "not run" and why. A claim in your report must be backed by a command you ran in this session.
 
-11. **MCP tools are an allow-list too.** Your `tools` name exactly the MCP tools you may call (`@server/tool`), and a rule refuses every other. Use them where your prompt says to. Report each MCP call you made and what it returned; if a server is unavailable, say so and use the scripts instead. Browser tools open only `localhost`, `127.0.0.1` and `https://*.netlify.app`. Only `chapters-designer` may call `write_level`. Nobody deploys (`.kiro/powers/haunted-ship` is the user's).
+11. **MCP tools are an allow-list too.** Your `tools` name exactly the MCP tools you may call (`@server/tool`), and a rule refuses every other. Use them where your prompt says to. Report each MCP call you made and what it returned; if a server is unavailable, say so and use the scripts instead. Browser tools open only `localhost`, `127.0.0.1` and `https://*.netlify.app`. Only `chapters-designer` may call `write_level`. Nobody deploys (`.kiro/powers/credits-ship` is the user's).
 
 ## Report format (your final message)
 

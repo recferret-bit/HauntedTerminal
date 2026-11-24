@@ -1,8 +1,8 @@
 # Release tags power: tasks
 
-- [x] 1. `haunted-tauri-local` power: `plugin.json`, `scripts/tauri-local.mjs` (host-only build, local label, output under `out/tauri-local/`, open, `--no-open`, `--dry-run`, `--selftest`). _Req 1-4_. Gates: `tauri-local.mjs --selftest`, `--dry-run`, `npm run desktop:test`, `npm run quality:root`
+- [x] 1. `credits-tauri-local` power: `plugin.json`, `scripts/tauri-local.mjs` (host-only build, local label, output under `out/tauri-local/`, open, `--no-open`, `--dry-run`, `--selftest`). _Req 1-4_. Gates: `tauri-local.mjs --selftest`, `--dry-run`, `npm run desktop:test`, `npm run quality:root`
 - [x] 2. `tauri-local` skill. _Req 1-4_. Gates: read-through against the requirements
-- [x] 5. `haunted-release` power: `plugin.json`, `scripts/release.mjs` (plan, checks, gates, tag, push, watch with `gh`, hand off to `ship.mjs`, `--dry-run`, `--selftest`). _Req 5-9_. Gates: `release.mjs --selftest`, `--dry-run` on a clean worktree, refusal cases in the self-test
+- [x] 5. `credits-release` power: `plugin.json`, `scripts/release.mjs` (plan, checks, gates, tag, push, watch with `gh`, hand off to `ship.mjs`, `--dry-run`, `--selftest`). _Req 5-9_. Gates: `release.mjs --selftest`, `--dry-run` on a clean worktree, refusal cases in the self-test
 - [x] 6. `release` skill (plan, ask, `--yes`, second yes for Netlify prod, never push a tag by hand). _Req 5-9_. Gates: read-through against the requirements
 - [x] 7. Agents cannot run either power: deny probes in `check-agents.mjs`. _Req 11_. Gates: `npm run quality:agents`
 - [x] 8. Docs: `structure.md`, `tech.md`, `AGENTS.md`, `CLAUDE.md`, `README.md`. _All_. Gates: `npm run quality`

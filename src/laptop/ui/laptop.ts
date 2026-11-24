@@ -106,7 +106,7 @@ function wireInput(view: LaptopView): () => void {
 export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): LaptopHandle {
   const sound = createLaptopSound();
   sound.muted = !!opts.muted;
-  const saved = store(opts.storageKey === undefined ? 'haunted.laptop.progress' : opts.storageKey);
+  const saved = store(opts.storageKey === undefined ? 'credits.laptop.progress' : opts.storageKey);
   let progress = saved.load();
   const progressFns: ((p: Progress) => void)[] = [];
   const stateFns: ((s: LaptopState, e: LaptopEvent) => void)[] = [];

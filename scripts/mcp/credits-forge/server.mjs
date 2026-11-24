@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// haunted-forge: a stdio MCP server that lets an agent check and save level specs. Spec: .kiro/specs/mcp-devtools-and-forge/.
-// Started by the agents table (scripts/harness/agents-build.mjs) as `node scripts/mcp/haunted-forge/server.mjs` from the repo root.
+// credits-forge: a stdio MCP server that lets an agent check and save level specs. Spec: .kiro/specs/mcp-devtools-and-forge/.
+// Started by the agents table (scripts/harness/agents-build.mjs) as `node scripts/mcp/credits-forge/server.mjs` from the repo root.
 // stdout belongs to the protocol: anything the game's modules print is sent to stderr instead.
 console.log = (...parts) => console.error(...parts);
 
@@ -30,7 +30,7 @@ const ANNOTATIONS = { write_level: { readOnlyHint: false, destructiveHint: false
 const asText = (value, isError = false) => ({ content: [{ type: 'text', text: JSON.stringify(value, null, 2) }], ...(isError ? { isError } : {}) });
 
 export function createServer(ctx = createContext()) {
-  const server = new McpServer({ name: 'haunted-forge', version: '1.0.0' });
+  const server = new McpServer({ name: 'credits-forge', version: '1.0.0' });
   for (const [name, tool] of Object.entries(TOOLS)) {
     server.registerTool(name, { description: tool.description, inputSchema: INPUTS[name], annotations: ANNOTATIONS[name] ?? READ_ONLY }, async (input) => {
       try {

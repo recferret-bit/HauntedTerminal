@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "credits-ship",
+  "version": "1.0.0",
+  "description": "Ship Out Of Credits to Netlify through its gates: quality, the 0-death chapter verify and the build, then a preview deploy that is played to the end in Chrome; production gets exactly that build, only after the user says yes.",
+  "author": {
+    "name": "Out Of Credits",
+    "url": "https://github.com/recferret-bit/OutOfCredits"
+  },
+  "keywords": ["deploy", "netlify", "ship", "publish", "release", "live url", "production", "preview deploy", "hosting", "go live"],
+  "homepage": "https://github.com/recferret-bit/OutOfCredits/tree/main/.kiro/powers/credits-ship",
+  "repository": "https://github.com/recferret-bit/OutOfCredits",
+  "license": "MIT"
+}

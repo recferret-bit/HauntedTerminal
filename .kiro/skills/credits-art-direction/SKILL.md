@@ -1,9 +1,9 @@
 ---
-name: haunted-art-direction
-description: "[ASSET PCG] The art bible and shared contract for every visual in Haunted Terminal: the world (a developer pulled inside his own computer), who is who (malware enemies, hardware rooms, port doors, energy / RAM / SSD pickups), the Comix Zone look (ink outlines, cel bands, halftone, paper gutters), the 3D-drawn-as-2D projection rules, the single palette, and the procgen code layout and harness commands. Read this FIRST before creating or changing any procedural asset (model, texture, shader, animation, particle effect, room, lighting) and before using any other skill. Also the visual reference that level-generation skills must obey when choosing actors, rooms and palette."
+name: credits-art-direction
+description: "[ASSET PCG] The art bible and shared contract for every visual in Out Of Credits: the world (a developer pulled inside his own computer), who is who (malware enemies, hardware rooms, port doors, energy / RAM / SSD pickups), the Comix Zone look (ink outlines, cel bands, halftone, paper gutters), the 3D-drawn-as-2D projection rules, the single palette, and the procgen code layout and harness commands. Read this FIRST before creating or changing any procedural asset (model, texture, shader, animation, particle effect, room, lighting) and before using any other skill. Also the visual reference that level-generation skills must obey when choosing actors, rooms and palette."
 ---
 
-# Haunted Terminal art direction
+# Out Of Credits art direction
 
 **Category: ASSET PCG** (see `.kiro/steering/skills-map.md`). This is the root of the procedural content generation skills: models, textures, shaders, animation, particles, rooms, lighting, external meshes. The LEVEL GEN skills (`chapter-*`, `comix-story-drawer`) read it only to pick existing assets; they never change it.
 

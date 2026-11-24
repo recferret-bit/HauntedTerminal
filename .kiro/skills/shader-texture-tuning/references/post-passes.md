@@ -76,11 +76,11 @@ subtle enough that the terminal text under the scene and 2 px ink lines stay sha
 `mountVisualLab(hooks)` in `src/main.ts` adds a button strip (CRT, PIXEL, INK, STORM, PROJECTION) and
 a slider dialog. It calls `stage.setPixelParams`, `stage.setCrtParams`, `stage.setInk`,
 `stage.setStorm`, `stage.setZoom`. State is read at boot by `readInitialShaderState()` and stored in
-`localStorage` under `haunted.lab.` + `pixel`, `crt`, `ink` (JSON records), `pixelOn`, `crtOn`,
+`localStorage` under `credits.lab.` + `pixel`, `crt`, `ink` (JSON records), `pixelOn`, `crtOn`,
 `stormOn`, `storm`, `zoom`, `inkHold`.
 
 - A value you tuned in the dock lives only in your browser. Ship it by changing the `DEFAULT_*` constant.
-- Stale `haunted.lab.*` keys make the game ignore new defaults. Clear them when a default "does nothing".
+- Stale `credits.lab.*` keys make the game ignore new defaults. Clear them when a default "does nothing".
 - INK tab: OUTLINE 0..2 scales shells, HALFTONE 0..1 is an on/off switch at 0.05 (see quirks in
   comic-material.md). PROJECTION: ZOOM 0.75..1.6.
 - To expose a new parameter: add it to the params interface and defaults in the shader file, to the

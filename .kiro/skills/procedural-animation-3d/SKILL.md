@@ -5,7 +5,7 @@ description: "[ASSET PCG] How generated assets move: AnimTags on model parts (sp
 
 # Procedural animation
 
-Read [haunted-art-direction](../haunted-art-direction/SKILL.md) first. Enemies have their own acting
+Read [credits-art-direction](../credits-art-direction/SKILL.md) first. Enemies have their own acting
 guide on top of this one: [procedural-malware-animation](../procedural-malware-animation/SKILL.md).
 
 ## How motion works in this game

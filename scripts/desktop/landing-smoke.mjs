@@ -136,7 +136,7 @@ async function installTauriMock(evalJs, opts = {}) {
         window.__ipcCalls.push({ cmd, args });
         if (cmd === 'desktop_read_save_bundle') return cfg.readBundle ?? null;
         if (cmd === 'desktop_export_json_file') {
-          return '/Users/dev/Downloads/' + (cfg.renameSave && args?.filename === 'haunted-terminal-save.json' ? 'haunted-terminal-save-2.json' : args?.filename);
+          return '/Users/dev/Downloads/' + (cfg.renameSave && args?.filename === 'out-of-credits-save.json' ? 'out-of-credits-save-2.json' : args?.filename);
         }
         return { synced: args?.apiNames?.length ?? 0, unlocked: true, steamRunning: Boolean(cfg.steamRunning) };
       },
@@ -192,7 +192,7 @@ async function verifyHeroAndWaitlistDialog(cdp, evalJs, base, externalUrls) {
     email.dispatchEvent(new Event('blur', { bubbles: true }));
     const invalidAria = email.getAttribute('aria-invalid');
     const describedInvalid = email.getAttribute('aria-describedby') || '';
-    email.value = 'founder@hauntedterminal.dev';
+    email.value = 'founder@outofcredits.dev';
     email.dispatchEvent(new Event('input', { bubbles: true }));
     document.getElementById('waitlist-platform').value = 'linux-deck';
     form.requestSubmit();
@@ -299,14 +299,14 @@ async function verifyAchievementsPage(cdp, evalJs, base, externalUrls) {
     };
   })()`);
   assert.ok(importCheck.feedback.includes('2/12 achievements unlocked'));
-  assert.ok(importCheck.exportFeedback.includes('Exported haunted-terminal-save-2.json (2/12 ACH_*'));
+  assert.ok(importCheck.exportFeedback.includes('Exported out-of-credits-save-2.json (2/12 ACH_*'));
   assert.equal(importCheck.unlockedShown, 2);
   assert.ok(
-    importCheck.ipcCalls.some((c) => c.cmd === 'desktop_export_json_file' && c.args?.filename === 'haunted-terminal-save.json'),
+    importCheck.ipcCalls.some((c) => c.cmd === 'desktop_export_json_file' && c.args?.filename === 'out-of-credits-save.json'),
     'Export Save (.json) inside Tauri must route through desktop_export_json_file IPC',
   );
   assert.ok(importCheck.ipcCalls.some((c) => c.cmd === 'steam_sync_achievements'), 'Save bundle import must immediately sync ACH_* keys to Tauri DesktopBridge');
-  assert.ok(importCheck.ipcCalls.some((c) => c.cmd === 'desktop_write_save_bundle'), 'Save bundle import must mirror haunted-terminal-save.json to Tauri app_data_dir for Steam Auto-Cloud');
+  assert.ok(importCheck.ipcCalls.some((c) => c.cmd === 'desktop_write_save_bundle'), 'Save bundle import must mirror out-of-credits-save.json to Tauri app_data_dir for Steam Auto-Cloud');
   assert.deepEqual(externalUrls, [], `Expected 0 external runtime requests on /achievements.html, saw: ${externalUrls.join(', ')}`);
 }
 
@@ -323,11 +323,11 @@ async function verifyDesktopPage(cdp, evalJs, base, externalUrls) {
   await installTauriMock(evalJs);
   const calls = await evalJs(`(async () => {
     // An external GitHub Releases anchor inside the simulated Tauri shell -> desktop_open_external_url IPC exactly once
-    document.querySelector('a[href="https://github.com/recferret-bit/HauntedTerminal/releases/latest"]')?.click();
+    document.querySelector('a[href="https://github.com/recferret-bit/OutOfCredits/releases/latest"]')?.click();
     await new Promise((r) => setTimeout(r, 40));
     return window.__ipcCalls;
   })()`);
-  const openUrlCalls = calls.filter((c) => c.cmd === 'desktop_open_external_url' && String(c.args?.url).startsWith('https://github.com/recferret-bit/HauntedTerminal/releases'));
+  const openUrlCalls = calls.filter((c) => c.cmd === 'desktop_open_external_url' && String(c.args?.url).startsWith('https://github.com/recferret-bit/OutOfCredits/releases'));
   assert.equal(openUrlCalls.length, 1, 'External release links clicked inside Tauri must route through desktop_open_external_url IPC exactly once');
   assert.deepEqual(externalUrls, [], `Expected 0 external runtime requests on /desktop.html, saw: ${externalUrls.join(', ')}`);
 }
@@ -372,7 +372,7 @@ async function verifyComixPage(cdp, evalJs, base, externalUrls) {
 /** Home after the import: the resume slot and the live telemetry, then the waitlist pass export through the Tauri mock. */
 async function verifyHomeAfterImport(cdp, evalJs, base) {
   await openPage(cdp, base, '/', `document.querySelector('#hub-header [data-open-waitlist]')`);
-  await checkHeader(evalJs, '/', 'COMIX // TTYHAUNTED TERMINAL', 'button');
+  await checkHeader(evalJs, '/', 'COMIX // TTYOUT OF CREDITS', 'button');
   await installTauriMock(evalJs, { renameSave: true });
   const home = await evalJs(`(async () => {
     document.querySelector('#hub-header [data-open-waitlist]')?.click();
@@ -380,10 +380,10 @@ async function verifyHomeAfterImport(cdp, evalJs, base) {
     document.getElementById('waitlist-close-btn')?.click();
     await new Promise((r) => setTimeout(r, 50));
     // Simulate cross-tab localStorage update ('storage' event) -> telemetry strip must refresh live
-    localStorage.setItem('haunted-terminal:metagame:v1', JSON.stringify({
+    localStorage.setItem('out-of-credits:metagame:v1', JSON.stringify({
       scrap: 250, unlockedPerks: ['perk-overclock-dimm'], activePerks: ['perk-overclock-dimm'], seenMalware: [], usedCommands: [], awardedRanks: {}
     }));
-    window.dispatchEvent(new StorageEvent('storage', { key: 'haunted-terminal:metagame:v1' }));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'out-of-credits:metagame:v1' }));
     return {
       resumeHref: document.querySelector('#hero-resume-slot a')?.getAttribute('href') || '',
       telemetryAfterStorage: document.getElementById('hero-telemetry-strip').textContent,
@@ -393,7 +393,7 @@ async function verifyHomeAfterImport(cdp, evalJs, base) {
   assert.ok(home.resumeHref.includes('/play/chapter-01-kiroween/level-02-task-ram-heist'));
   assert.ok(home.telemetryAfterStorage.includes('250'), 'Cross-tab storage event must live-refresh telemetry strip');
   assert.ok(
-    home.ipcCalls.some((c) => c.cmd === 'desktop_export_json_file' && c.args?.filename === 'haunted-terminal-steam-waitlist.json'),
+    home.ipcCalls.some((c) => c.cmd === 'desktop_export_json_file' && c.args?.filename === 'out-of-credits-steam-waitlist.json'),
     'Export Pass (.json) inside Tauri must route through desktop_export_json_file IPC',
   );
 }
@@ -513,9 +513,9 @@ async function verifySteamStoreCutoverAndAutoCloud(cdp, evalJs, base) {
     const badHref = bridgeMod.resolveSteamWishlistHref({ ...liveMeta, steamStoreUrl: 'https://evil.example/app/480' });
     const allowChecks = {
       okSteam: bridgeMod.isAllowedExternalReleaseUrl('https://store.steampowered.com/app/480/?utm_source=web'),
-      okGh: bridgeMod.isAllowedExternalReleaseUrl('https://github.com/recferret-bit/HauntedTerminal/releases/latest'),
-      badTraversal: bridgeMod.isAllowedExternalReleaseUrl('https://github.com/recferret-bit/HauntedTerminal/../../evil'),
-      badEncoded: bridgeMod.isAllowedExternalReleaseUrl('https://github.com/recferret-bit/HauntedTerminal/%2e%2e/evil'),
+      okGh: bridgeMod.isAllowedExternalReleaseUrl('https://github.com/recferret-bit/OutOfCredits/releases/latest'),
+      badTraversal: bridgeMod.isAllowedExternalReleaseUrl('https://github.com/recferret-bit/OutOfCredits/../../evil'),
+      badEncoded: bridgeMod.isAllowedExternalReleaseUrl('https://github.com/recferret-bit/OutOfCredits/%2e%2e/evil'),
       badLinkFilter: bridgeMod.isAllowedExternalReleaseUrl('https://store.steampowered.com/linkfilter/?u=https://evil.example'),
     };
     localStorage.clear();
@@ -538,7 +538,7 @@ async function verifySteamStoreCutoverAndAutoCloud(cdp, evalJs, base) {
   assert.equal(
     cutover.ipcCalls.some((c) => c.cmd === 'desktop_write_save_bundle'),
     false,
-    'Unmodified Auto-Cloud hydration must not dirty-rewrite haunted-terminal-save.json',
+    'Unmodified Auto-Cloud hydration must not dirty-rewrite out-of-credits-save.json',
   );
 }
 

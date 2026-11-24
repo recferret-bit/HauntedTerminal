@@ -66,7 +66,7 @@ node .kiro/skills/chapter-level-generator/scripts/self-test.mjs
 
 ---
 
-### Through MCP (`haunted-forge`, for agents that have it)
+### Through MCP (`credits-forge`, for agents that have it)
 
 The same checks as tools, on a draft, with no file touched until it passes (spec `.kiro/specs/mcp-devtools-and-forge/`):
 

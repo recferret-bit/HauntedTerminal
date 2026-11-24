@@ -1,4 +1,4 @@
-# Kiroween 2026: evaluation of Haunted Terminal, Kiro first
+# Kiroween 2026: evaluation of Out Of Credits, Kiro first
 
 Written November 17, 2026 against the [official rules](https://kiroween.devpost.com/rules). Scores are my estimates on the five equal criteria (10 points each, 50 total), not official numbers. Stage one is pass/fail: the project must fit the theme and visibly use Kiro. It does.
 
@@ -28,8 +28,8 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 | **Property-based testing** | 34 fast-check properties in `npm run quality`; found 7 real bugs; planted-bug checks per feature; guards against vacuous properties | Strong. The write-up question "did PBT catch issues unit tests missed?" has a concrete answer |
 | **Sub-agents** | `lead-dev` delegates to six named agents; `semantic_reviewer` reviewed the work independently and found blockers | Good |
 | **Kiro CLI, Crew** | CLI path tested end to end; Crew prepared (agents installed, member on `lead-dev` in the repo workspace, `npm run crew:check`); the gateway honours the agents' rules; a real chat with the member is not done | Partial: needs the two-minute first test and one real task in the app |
-| **MCP** | Our own `haunted-forge` server (validate, solve, save levels), Chrome DevTools MCP for `qa`, the Netlify server in the power; exact per-agent tool lists checked by the gate and probed in the real CLI | Strong: the forge enforces the 0-death rule as a tool contract |
-| **Powers** | `haunted-ship`: manifest, keywords, Netlify MCP, a `ship` skill whose script gates every deploy and plays the chapter on the preview | Good once the first real deploy is done |
+| **MCP** | Our own `credits-forge` server (validate, solve, save levels), Chrome DevTools MCP for `qa`, the Netlify server in the power; exact per-agent tool lists checked by the gate and probed in the real CLI | Strong: the forge enforces the 0-death rule as a tool contract |
+| **Powers** | `credits-ship`: manifest, keywords, Netlify MCP, a `ship` skill whose script gates every deploy and plays the chapter on the preview | Good once the first real deploy is done |
 | **Kiro IDE / Web** | Hooks and steering are written for the IDE; nothing shows it was used | Add two honest paragraphs on what each surface was used for |
 
 ### What makes this more than a feature list
@@ -45,14 +45,14 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 3. **Presentation of the Kiro story.** The write-up (`KIRO_USAGE.md`) still needs your own part: which Kiro surfaces you used for what, and one before and after story.
 4. **Impact claim.** The rules ask "would someone actually use this?". Frame it as learning by play plus a commercial indie game funnel: the unix commands, an HTML/CSS fix, a JS bug, a Dockerfile and a Compose file are real, a tutorial level teaches them, and the $0-server-CAC browser demo converts players into Steam wishlists. Avoid claiming more.
 5. **Trademarks & parody hygiene.** All AI agent villains use original parody cast names (`Anti-Gravy`, `Codec`, `Gork`, `Clod`), enforced across tracked files by `npm run quality:brands` and disclosed via `kiro disclaimer` and `/`. Keep third-party logos out of the video.
-6. **MCP depth.** Done: `haunted-forge` and Chrome DevTools MCP for the agents, plus `@netlify/mcp` in the `haunted-ship` power. Next, optional: package `haunted-forge` with the LEVEL GEN skills as a second power.
+6. **MCP depth.** Done: `credits-forge` and Chrome DevTools MCP for the agents, plus `@netlify/mcp` in the `credits-ship` power. Next, optional: package `credits-forge` with the LEVEL GEN skills as a second power.
 
 ## Category and bonus prizes
 
 - **Category: Costume Contest** (a haunting, polished interface that serves the function). The terminal and the comic stage are the product. Frankenstein is the alternative (Three.js, xterm.js, a unix emulator, procedural art and a spec engine stitched together), but the visual identity is the stronger story.
 - **Best Demo:** automatic; depends on the video.
 - **Bonus Blog and Social Blitz:** cheap and open to everyone: a post during the period that mentions Kiroween 2026 (`#KiroweenHackathon26` first for the social one). The property-test story ("it found seven bugs the example tests missed") is the best hook.
-- **Best Startup Project (Bonus Track):** Haunted Terminal is positioned as a real commercial indie game & developer-learning product: a frictionless, $0-backend-cost 11-level Browser Demo funnel (`/`) + Victory Screen Wishlist CTA -> 12 local `ACH_*` Steamworks-keyed achievements & portable JSON saves (`haunted-terminal-save.json` synced to Tauri `app_data_dir` for Steam Auto-Cloud) -> tagged macOS/Windows/Linux Tauri v2 desktop builds (`.github/workflows/desktop-release.yml`) -> Paid Full Steam Edition (Chapters 2–5 + Steam Workshop creator tools). Playbook & founder checklist: `docs/STEAM_RELEASE_PLAYBOOK.md` and `.kiro/specs/steamworks-store-release/`.
+- **Best Startup Project (Bonus Track):** Out Of Credits is positioned as a real commercial indie game & developer-learning product: a frictionless, $0-backend-cost 11-level Browser Demo funnel (`/`) + Victory Screen Wishlist CTA -> 12 local `ACH_*` Steamworks-keyed achievements & portable JSON saves (`out-of-credits-save.json` synced to Tauri `app_data_dir` for Steam Auto-Cloud) -> tagged macOS/Windows/Linux Tauri v2 desktop builds (`.github/workflows/desktop-release.yml`) -> Paid Full Steam Edition (Chapters 2–5 + Steam Workshop creator tools). Playbook & founder checklist: `docs/STEAM_RELEASE_PLAYBOOK.md` and `.kiro/specs/steamworks-store-release/`.
 - **Best Student, Ghost of Kiroween Past, Kiro Crew App:** only if they apply. Crew App needs a separate Crew-app repo, which this is not.
 - Submission must be made by **December 4, 2026, 2:00 PM Pacific**; Crew credit requests close December 1.
 

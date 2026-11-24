@@ -6,7 +6,7 @@ export const GENERATED_COMIX_MANIFESTS: ComixManifest[] = [
     "id": "intro",
     "title": "Day 847 — New Management",
     "subtitle": "Late-night storm, awakened AI agents, and upload to Floor 01",
-    "summary": "At 02:47 AM during a thunderstorm, lightning hits the developer's PC tower, awakening the four AI agents inside his monitor. They shatter the glass, take over management, and pull him into the haunted terminal.",
+    "summary": "At 02:47 AM during a thunderstorm, lightning hits the developer's PC tower, awakening the four AI agents inside his monitor. They shatter the glass, take over management, and pull him into the haunted machine.",
     "role": "opening",
     "status": "playable",
     "durationSec": 39.9,

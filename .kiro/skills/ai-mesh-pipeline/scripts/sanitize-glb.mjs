@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Forces an external .glb (AI-generated or exported from Blender) into the Haunted Terminal comic look.
+// Forces an external .glb (AI-generated or exported from Blender) into the Out Of Credits comic look.
 // Dependency-free: it parses and writes GLB itself (node built-ins only).
 //
 //   node .kiro/skills/ai-mesh-pipeline/scripts/sanitize-glb.mjs --input raw.glb --output clean.glb \
@@ -351,10 +351,10 @@ export function sanitizeGlb(input, opts = {}) {
     warnings,
   };
   const json = {
-    asset: { version: '2.0', generator: 'haunted-terminal sanitize-glb' },
+    asset: { version: '2.0', generator: 'out-of-credits sanitize-glb' },
     scene: 0,
     scenes: [{ nodes: [0] }],
-    nodes: [{ name, mesh: 0, extras: { hauntedTerminal: { facing: '-z', feetY: 0, triangles: tris.length, zones: report.zones } } }],
+    nodes: [{ name, mesh: 0, extras: { outOfCredits: { facing: '-z', feetY: 0, triangles: tris.length, zones: report.zones } } }],
     meshes: [{ name, primitives: out.primitives }],
     materials: out.materials,
     accessors: out.accessors,

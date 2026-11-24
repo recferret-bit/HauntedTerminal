@@ -4,7 +4,7 @@
  * the lantern and laptop), a recessed pcbDark bezel with glowing phosphor `>_` screen, and a solder
  * keypad. Sockets: `grip` at handle top, `screen` at display center, `label` above, `fx` at center.
  * No `light` socket: holding it does not emit an oil-lantern light cone.
- * Briefs: .kiro/skills/haunted-art-direction/references/world-lexicon.md
+ * Briefs: .kiro/skills/credits-art-direction/references/world-lexicon.md
  */
 import type { ModelSpec, PartSpec } from '../../core/types.js';
 import { kitBox, kitPlate, outlineRoundRect, outlineStroke, SCREEN_LEFT } from '../../kit/greebles.js';

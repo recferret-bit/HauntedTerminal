@@ -1,7 +1,7 @@
 /**
  * Pickups: energy cell, RAM stick, SSD. Small (0.3 to 0.5 units), hovering around y = 0.5, one
  * `signal` zone each, always moving: the body bobs as one piece and the light pulses.
- * Briefs: .kiro/skills/haunted-art-direction/references/world-lexicon.md
+ * Briefs: .kiro/skills/credits-art-direction/references/world-lexicon.md
  */
 import { ModelCatalog } from '../core/catalog.js';
 import { makeRng } from '../core/rng.js';

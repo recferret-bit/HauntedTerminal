@@ -1,15 +1,15 @@
-# MCP: Chrome DevTools and haunted-forge: requirements
+# MCP: Chrome DevTools and credits-forge: requirements
 
 Status: done (requirements, design and tasks: every answer delegated by the user, "lets use your recommendations", 2026-11-17; all tasks done 2026-11-17, probe 9/9)
 
-Capability: two MCP servers for the agent team. Chrome DevTools MCP lets `qa` look at the real game in Chrome (screenshots, console, DOM, network) instead of a hand-written CDP client. `haunted-forge`, a server of our own, lets agents list the valid asset ids and validate, solve and write a level through tools, so a level that fails validation or does not clear with 0 deaths cannot reach `chapters/` through the forge. Each agent gets only the tools it needs, `npm run quality` checks the lists, and a probe against the real Kiro CLI proves the agents call them.
+Capability: two MCP servers for the agent team. Chrome DevTools MCP lets `qa` look at the real game in Chrome (screenshots, console, DOM, network) instead of a hand-written CDP client. `credits-forge`, a server of our own, lets agents list the valid asset ids and validate, solve and write a level through tools, so a level that fails validation or does not clear with 0 deaths cannot reach `chapters/` through the forge. Each agent gets only the tools it needs, `npm run quality` checks the lists, and a probe against the real Kiro CLI proves the agents call them.
 
 ## Requirements
 
 1. THE SYSTEM SHALL declare each MCP server in the `mcpServers` of the agents that use it (the agents table in `scripts/harness/agents-build.mjs`), list its tools in that agent's `tools` as exact `@server/tool` selectors (never `@server`, `@mcp` or `*`), set `includeMcpJson` and `includePowers` to `false`, refuse every other MCP tool with a catch-all deny, and keep the workspace `.kiro/settings/mcp.json` empty.
 2. THE SYSTEM SHALL give Chrome DevTools MCP to `qa` only, started from an exact pinned version fast enough to be connected when the agent's first turn starts, headless, with an isolated temporary profile, usage statistics and CrUX lookups off, JavaScript evaluation off, `file:` navigation off, and an allowed-URL list of the local dev servers and `*.netlify.app` (Chrome enforces it, requests and redirects included).
 3. IF a Chrome DevTools tool call carries a URL outside the allowed list (`localhost`, `127.0.0.1`, `*.netlify.app`), THEN THE SYSTEM SHALL block the call in a PreToolUse hook (`@chrome-devtools`) before the server sees it. The hook is a second fence; the server flag is the first.
-4. THE SYSTEM SHALL provide the `haunted-forge` MCP server (stdio) with exactly these tools: `list_assets`, `list_levels`, `get_level`, `validate_level`, `solve_level`, `write_level`.
+4. THE SYSTEM SHALL provide the `credits-forge` MCP server (stdio) with exactly these tools: `list_assets`, `list_levels`, `get_level`, `validate_level`, `solve_level`, `write_level`.
 5. WHEN `list_assets` is called, THE SYSTEM SHALL return the ids a level or comix spec may reference: model ids with their category, room kinds, and FX ids, read from the catalogs the game uses.
 6. WHEN `list_levels` or `get_level` is called, THE SYSTEM SHALL return the levels of a chapter (id, index, title, mechanic) or one level's spec with its current etag, read from disk.
 7. WHEN `validate_level` is called with a level spec, THE SYSTEM SHALL return the same issues as the chapter editor's Check tab (`checkPack`) for the chapter with that level in place, as structured data (`severity`, `where`, `message`), without touching the disk.
@@ -25,7 +25,7 @@ Capability: two MCP servers for the agent team. Chrome DevTools MCP lets `qa` lo
 
 ## Out of scope
 
-- A `haunted-forge` power that packages the server and the LEVEL GEN skills (a later change; needs a decision on the duplicated skills).
+- A `credits-forge` power that packages the server and the LEVEL GEN skills (a later change; needs a decision on the duplicated skills).
 - A `compile_chapter` tool, and creating a level that is not yet in the manifest (a new level is added in `/editor` or by the chapter skills; the forge updates existing levels and checks any draft).
 - Making the forge the only way to change a level spec (the write fence on `chapters/**` stays as it is; humans keep `/editor`).
 - Chrome DevTools MCP for any agent but `qa`; other MCP servers (GitHub, Context7, Playwright).
@@ -41,7 +41,7 @@ Capability: two MCP servers for the agent team. Chrome DevTools MCP lets `qa` lo
 - **Q:** Which forge tools, and who may write?
   **A (user delegated, 2026-11-17):** `list_assets`, `list_levels`, `get_level`, `validate_level`, `solve_level`, `write_level`; `write_level` for `chapters-designer` only. `write_level` recompiles the catalog as the editor's PUT does, so `generate-chapter --check` stays green; that is its one side effect besides the spec file.
 - **Q:** How is the forge built, and where does it live?
-  **A (user delegated, 2026-11-17):** The official SDK, pinned (`@modelcontextprotocol/sdk@1.32.2`, exact, devDependency). `scripts/mcp/haunted-forge/` (tooling, not a `src/` layer): the pure tool logic in `tools.mjs`, the stdio server in `server.mjs`, so a unit test can call the tools without a protocol client.
+  **A (user delegated, 2026-11-17):** The official SDK, pinned (`@modelcontextprotocol/sdk@1.32.2`, exact, devDependency). `scripts/mcp/credits-forge/` (tooling, not a `src/` layer): the pure tool logic in `tools.mjs`, the stdio server in `server.mjs`, so a unit test can call the tools without a protocol client.
 - **Q:** How is "agents use it properly" enforced and proven?
   **A (user delegated, 2026-11-17):** Prompts and skills say when; `check-agents.mjs` checks the exact tool lists and that prompts name their tools; a probe against the real Kiro CLI proves the calls (manual gate). Not the forge-only write path (it would fight `/editor`).
 - **Q:** (while building) The first probe showed Kiro does not wait for a slow MCP server. Change the design?

@@ -3,7 +3,7 @@
 ## Pieces
 
 ```
-.kiro/powers/haunted-ship/
+.kiro/powers/credits-ship/
   plugin.json                     manifest: name, version, description, keywords that activate the power
   mcp.json                        the Netlify MCP server, npx @netlify/mcp@1.22.1 (site and deploy questions)
   skills/ship/SKILL.md            the procedure: preview, report, ask, promote; what never to do
@@ -21,7 +21,7 @@ ship.mjs preview
   npm run quality                  -> fail: exit 1, nothing uploaded
   generate-chapter.mjs --verify    -> fail: exit 1
   npm run build                    -> fail: exit 1
-  netlify deploy --dir dist --no-build --json (--site <id> | --site-name haunted-terminal)
+  netlify deploy --dir dist --no-build --json (--site <id> | --site-name out-of-credits)
   play-browser.mjs --url <deploy_url> --nointro   -> fail: exit 1, no stamp
   write out/ship/last-preview.json {deployId, url, siteId, commit, dirty, distHash, at}
 
@@ -40,7 +40,7 @@ ship.mjs prod                      (run only after the user's yes)
 - **`npx` at exact versions, no dependency.** `netlify-cli` is large and only the deploying user needs it; the rule to pin versions is kept by the exact `@version` in the script and in `mcp.json`.
 - **No `.netlify/` link.** The site id lives in the git-ignored `scripts/harness/out/ship/site.json` (or `NETLIFY_SITE_ID`), so the root gate and the repo stay clean.
 - **Token handling.** The script passes the environment through and never reads, prints or stores `NETLIFY_AUTH_TOKEN`; command lines it logs are redacted.
-- **Agents cannot deploy.** The script path is under `.kiro/powers/`, which no agent shell allow-list includes (`node scripts/*`, `node .kiro/skills/*` only). `check-agents.mjs` probes `node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs preview` and `npx netlify-cli deploy` as `deny` for every agent.
+- **Agents cannot deploy.** The script path is under `.kiro/powers/`, which no agent shell allow-list includes (`node scripts/*`, `node .kiro/skills/*` only). `check-agents.mjs` probes `node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs preview` and `npx netlify-cli deploy` as `deny` for every agent.
 - **The MCP server answers questions; it does not upload.** The skill tells Kiro to use it for site lists and deploy status and to upload only with `ship.mjs`. This is an instruction, not an enforced fence; the enforced part is that no agent can run the script.
 
 ## Layers and gates

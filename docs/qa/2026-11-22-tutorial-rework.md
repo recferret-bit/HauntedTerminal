@@ -18,7 +18,7 @@ FAIL (6 findings: 1 high, 3 medium, 2 low-infra). The level plays end to end and
 | `node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs` | 1 | Steps 1-3 ok (11 levels, 0 errors, **11 levels cleared, deaths=0**, comix artifacts ok). Step 4 fails in `chapter-level-generator/scripts/self-test.mjs:139` (finding 4, known fact). |
 | Chrome DevTools MCP play of level 1 at `http://localhost:5400` | n/a | see "Played by hand". MCP calls: `new_page`, `navigate_page` (reload), `wait_for` x2, `click`, `type_text` x9, `take_screenshot` x7, `list_console_messages` (errors, warnings). Screens in `scripts/harness/out/qa-tutorial-1..7.png`. |
 
-Not run: `play-browser.mjs` (the MCP play covered level 1; levels 2 to 11 are covered by `verify-chapter.mjs` step 2), `haunted-forge` `validate_level` / `solve_level` (not loaded this pass; `--verify` solved all 11 levels), `npm run quality` (not asked), 5173 server (the user's 5400 server was used; `npm run status` reports only 5173, and my shell refused env-prefixed commands, so I could not run `STACK_PORT=5400 npm run status`. The pages at 5400 answered in Chrome).
+Not run: `play-browser.mjs` (the MCP play covered level 1; levels 2 to 11 are covered by `verify-chapter.mjs` step 2), `credits-forge` `validate_level` / `solve_level` (not loaded this pass; `--verify` solved all 11 levels), `npm run quality` (not asked), 5173 server (the user's 5400 server was used; `npm run status` reports only 5173, and my shell refused env-prefixed commands, so I could not run `STACK_PORT=5400 npm run status`. The pages at 5400 answered in Chrome).
 
 ## Visual audit
 

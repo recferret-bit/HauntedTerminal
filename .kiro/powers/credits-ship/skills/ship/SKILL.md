@@ -1,11 +1,11 @@
 ---
 name: ship
-description: "[WORKFLOW] Deploy Haunted Terminal to Netlify through its gates. A preview deploy runs `npm run quality`, the 0-death chapter verify and the build, uploads `dist/` as a draft and plays the whole chapter on the preview URL in Chrome; production gets exactly that build, only after the user says yes. Use whenever someone wants to deploy, publish, ship, go live, get a live or preview URL, or asks about the Netlify site or its deploys."
+description: "[WORKFLOW] Deploy Out Of Credits to Netlify through its gates. A preview deploy runs `npm run quality`, the 0-death chapter verify and the build, uploads `dist/` as a draft and plays the whole chapter on the preview URL in Chrome; production gets exactly that build, only after the user says yes. Use whenever someone wants to deploy, publish, ship, go live, get a live or preview URL, or asks about the Netlify site or its deploys."
 ---
 
 # Ship to Netlify (`ship`)
 
-Power `haunted-ship`. Spec: `.kiro/specs/netlify-deploy-power/`. Script: `node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs`.
+Power `credits-ship`. Spec: `.kiro/specs/netlify-deploy-power/`. Script: `node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs`.
 
 ## Rules
 
@@ -18,7 +18,7 @@ Power `haunted-ship`. Spec: `.kiro/specs/netlify-deploy-power/`. Script: `node .
 
 1. **Setup check (once).** `npx -y netlify-cli@27.20.0 status --json`. If `loggedIn` is false, ask the user to run `npx netlify-cli@27.20.0 login` in their terminal (it opens a browser for OAuth). Do not run it for them. Continue when they say it is done.
 2. **Dry run (optional, no login needed).** `ship.mjs --dry-run` runs the gates and the build and prints what would be uploaded.
-3. **Preview.** `ship.mjs preview`. The first time it creates the site `haunted-terminal` (or `--site-name <name>` if that name is taken) and keeps its id in the git-ignored `scripts/harness/out/ship/site.json`. It takes a few minutes: the gates, the upload, then about 90 s of real play.
+3. **Preview.** `ship.mjs preview`. The first time it creates the site `out-of-credits` (or `--site-name <name>` if that name is taken) and keeps its id in the git-ignored `scripts/harness/out/ship/site.json`. It takes a few minutes: the gates, the upload, then about 90 s of real play.
    - Exit 0: show the preview URL. If the output says the preview was made from uncommitted changes, say production needs a commit and a new preview.
    - Exit 1: report the failing gate or step from the output and stop. Do not retry a deploy to get around a failing gate; fix the cause through the owning skill or agent.
    - Exit 2: setup is missing (step 1).
@@ -28,7 +28,7 @@ Power `haunted-ship`. Spec: `.kiro/specs/netlify-deploy-power/`. Script: `node .
 
 ## Troubleshooting
 
-- `--site-name` taken: Netlify site names are global. Pass another, for example `--site-name haunted-terminal-<handle>`.
+- `--site-name` taken: Netlify site names are global. Pass another, for example `--site-name out-of-credits-<handle>`.
 - Deep links 404 on the live site: `public/_redirects` must map `/play` and `/play/*` to `/play.html`; it is copied into `dist/` by the build.
 - `play-browser` cannot find Chrome: set `CHROME_BIN`.
 - A deploy to the wrong site: `NETLIFY_SITE_ID` in the environment wins over `site.json`. Check both before you deploy.

@@ -1,3 +1,4 @@
+import '../contracts/migrate-storage.js';
 import '../styles/hub.css';
 import '../styles/comix-reader.css';
 import { buildPlayUrl, CHAPTER_MANIFESTS, getChapterComix, getChapterManifest } from '../chapters/catalog.js';

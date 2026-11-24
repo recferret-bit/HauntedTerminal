@@ -32,7 +32,7 @@ src/chapters/
                                         `steam_status`, `desktop_read_save_bundle`, `desktop_write_save_bundle`,
                                         `desktop_export_json_file`, `desktop_open_external_url`,
                                         `steam_show_floating_keyboard`) + store/release URLs
-  portable-save.ts                      monotonic JSON save bundle export/import + automatic Tauri `haunted-terminal-save.json` sync
+  portable-save.ts                      monotonic JSON save bundle export/import + automatic Tauri `out-of-credits-save.json` sync
   catalog.ts                            + `achievements` Grimoire entry; `resetInMemoryStoresForTest` also resets achievements;
                                         `purchaseOrTogglePerk` notifies `achievements.ts` on perk unlock
   session-state.ts                      + `achievements`, `ach`, `trophies` in CHAPTER_COMMANDS

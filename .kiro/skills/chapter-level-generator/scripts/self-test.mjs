@@ -450,7 +450,7 @@ await withProcgen(async (_p, vite) => {
 
   // Secret masking before unlock + portable save export/import validation & merge
   const savedBundle = portableSave.exportPortableSaveBundle();
-  assert.equal(savedBundle.format, 'haunted-terminal-save');
+  assert.equal(savedBundle.format, 'out-of-credits-save');
   catalog.resetInMemoryStoresForTest();
   assert.equal(Object.keys(achievements.readAchievements().unlocked).length, 0);
   const freshSession = createChapterSession({ chapterId: 'chapter-01-kiroween', tacticalMode: true });
@@ -484,7 +484,7 @@ await withProcgen(async (_p, vite) => {
   assert.equal(achievements.readAchievements().unlocked.fake_injected, undefined, 'Unknown achievement IDs must be stripped');
   assert.ok(achievements.readAchievements().unlocked.campaign_clear, 'Valid achievements must be restored on import');
 
-  // Auto-Cloud hydration must NOT dirty-rewrite haunted-terminal-save.json on read-only boots when local state adds nothing new
+  // Auto-Cloud hydration must NOT dirty-rewrite out-of-credits-save.json on read-only boots when local state adds nothing new
   const diskJson = JSON.stringify(portableSave.exportPortableSaveBundle());
   const fakeStorage = new Map();
   const prevStorage = globalThis.localStorage;
@@ -510,7 +510,7 @@ await withProcgen(async (_p, vite) => {
     assert.equal(
       tauriCalls.includes('desktop_write_save_bundle'),
       false,
-      'Read-only Tauri boot hydration must NOT dirty-rewrite haunted-terminal-save.json on disk',
+      'Read-only Tauri boot hydration must NOT dirty-rewrite out-of-credits-save.json on disk',
     );
     // Second boot when localStorage already matches diskJson -> changedLocal is false, still 0 disk writes
     const secondHydrate = await portableSave.hydrateFromDesktopSaveBundle();

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Deterministic unit & integration test suite for Haunted Terminal's Tauri v2 + Steamworks desktop generator,
+// Deterministic unit & integration test suite for Out Of Credits's Tauri v2 + Steamworks desktop generator,
 // icon synthesizer, offline bundle verifier, CSP safety, Auto-Cloud save bridge, and 1:1 `ACH_*` achievement sync.
 import assert from 'node:assert/strict';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -186,38 +186,38 @@ try {
   mkdirSync(join(fakeTarget, 'universal-apple-darwin/release/bundle/dmg'), { recursive: true });
   mkdirSync(join(fakeTarget, 'release/bundle/nsis'), { recursive: true });
   writeFileSync(join(fakeTarget, 'release/build/serde-123/build-script-build.exe'), 'nope');
-  writeFileSync(join(fakeTarget, 'release/haunted-terminal-desktop.exe'), 'nope');
-  writeFileSync(join(fakeTarget, 'debug/bundle/dmg/Haunted Terminal_0.1.0_aarch64.dmg'), 'nope');
+  writeFileSync(join(fakeTarget, 'release/out-of-credits-desktop.exe'), 'nope');
+  writeFileSync(join(fakeTarget, 'debug/bundle/dmg/Out Of Credits_0.1.0_aarch64.dmg'), 'nope');
   writeFileSync(join(fakeTarget, 'universal-apple-darwin/release/bundle/dmg/bundle_dmg.sh'), 'nope');
-  writeFileSync(join(fakeTarget, 'universal-apple-darwin/release/bundle/dmg/Haunted Terminal_0.0.9_universal.dmg'), 'stale-dmg');
-  writeFileSync(join(fakeTarget, 'universal-apple-darwin/release/bundle/dmg/Haunted Terminal_0.1.0_universal.dmg'), 'dmg-ok');
-  writeFileSync(join(fakeTarget, 'release/bundle/nsis/Haunted Terminal_0.1.0_x64-setup.exe'), 'exe-ok');
+  writeFileSync(join(fakeTarget, 'universal-apple-darwin/release/bundle/dmg/Out Of Credits_0.0.9_universal.dmg'), 'stale-dmg');
+  writeFileSync(join(fakeTarget, 'universal-apple-darwin/release/bundle/dmg/Out Of Credits_0.1.0_universal.dmg'), 'dmg-ok');
+  writeFileSync(join(fakeTarget, 'release/bundle/nsis/Out Of Credits_0.1.0_x64-setup.exe'), 'exe-ok');
 
   const collected = collectBundleArtifacts(fakeTarget, { version: '0.1.0' }).map((p) => sanitizeReleaseArtifactName(p));
   assert.deepEqual(collected, [
-    'Haunted-Terminal_0.1.0_x64-setup.exe',
-    'Haunted-Terminal_0.1.0_universal.dmg',
+    'Out-Of-Credits_0.1.0_x64-setup.exe',
+    'Out-Of-Credits_0.1.0_universal.dmg',
   ]);
   const targetScoped = collectBundleArtifacts(fakeTarget, {
     target: 'universal-apple-darwin',
     version: '0.1.0',
   }).map((p) => sanitizeReleaseArtifactName(p));
-  assert.deepEqual(targetScoped, ['Haunted-Terminal_0.1.0_universal.dmg']);
+  assert.deepEqual(targetScoped, ['Out-Of-Credits_0.1.0_universal.dmg']);
   mkdirSync(join(fakeTarget, 'release/bundle/msi'), { recursive: true });
-  writeFileSync(join(fakeTarget, 'release/bundle/nsis/Haunted Terminal_0.1.0-rc.2_x64-setup.exe'), 'rc-exe');
-  writeFileSync(join(fakeTarget, 'release/bundle/msi/Haunted Terminal_0.1.0.2_x64_en-US.msi'), 'rc-msi');
-  writeFileSync(join(fakeTarget, 'release/bundle/msi/Haunted Terminal_0.0.9_x64_en-US.msi'), 'stale-msi');
+  writeFileSync(join(fakeTarget, 'release/bundle/nsis/Out Of Credits_0.1.0-rc.2_x64-setup.exe'), 'rc-exe');
+  writeFileSync(join(fakeTarget, 'release/bundle/msi/Out Of Credits_0.1.0.2_x64_en-US.msi'), 'rc-msi');
+  writeFileSync(join(fakeTarget, 'release/bundle/msi/Out Of Credits_0.0.9_x64_en-US.msi'), 'stale-msi');
   const rcCollected = collectBundleArtifacts(fakeTarget, { version: '0.1.0-rc.2' }).map((p) => sanitizeReleaseArtifactName(p));
   assert.deepEqual(rcCollected, [
-    'Haunted-Terminal_0.1.0.2_x64_en-US.msi',
-    'Haunted-Terminal_0.1.0-rc.2_x64-setup.exe',
+    'Out-Of-Credits_0.1.0.2_x64_en-US.msi',
+    'Out-Of-Credits_0.1.0-rc.2_x64-setup.exe',
   ]);
   console.log('  ok  collectBundleArtifacts & sanitizeReleaseArtifactName: filters release bundles cleanly and normalizes spaces');
 
   // 6. Cross-OS Steamworks redistributable bundler config, staging & Windows-safe offline tar.gz packaging.
   assert.equal(quoteWinArg(''), '""');
   assert.equal(quoteWinArg('--features'), '--features');
-  assert.equal(quoteWinArg('C:\\Program Files\\Haunted Terminal\\'), '"C:\\Program Files\\Haunted Terminal\\\\"');
+  assert.equal(quoteWinArg('C:\\Program Files\\Out Of Credits\\'), '"C:\\Program Files\\Out Of Credits\\\\"');
   assert.equal(quoteWinArg('arg "quoted"'), '"arg \\"quoted\\""');
 
   const macTarget = resolveTargetPlatform('universal-apple-darwin');
@@ -269,8 +269,8 @@ try {
     bundle: {
       resources: { 'steam-redist/libsteam_api.so': 'libsteam_api.so' },
       linux: {
-        deb: { files: { '/usr/lib/haunted-terminal-desktop/libsteam_api.so': 'steam-redist/libsteam_api.so' } },
-        appimage: { files: { '/usr/lib/haunted-terminal-desktop/libsteam_api.so': 'steam-redist/libsteam_api.so' } },
+        deb: { files: { '/usr/lib/out-of-credits-desktop/libsteam_api.so': 'steam-redist/libsteam_api.so' } },
+        appimage: { files: { '/usr/lib/out-of-credits-desktop/libsteam_api.so': 'steam-redist/libsteam_api.so' } },
       },
     },
   });

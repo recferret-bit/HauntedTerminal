@@ -1,3 +1,4 @@
+import '../contracts/migrate-storage.js';
 import '../styles/editor-workstation.css';
 import '../styles/comix-editor.css';
 import { startComixEditor } from './app.js';

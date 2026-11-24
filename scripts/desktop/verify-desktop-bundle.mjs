@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Offline & Steamworks bundle verifier for Haunted Terminal's web `dist/` and generated `src-tauri/` shell.
+// Offline & Steamworks bundle verifier for Out Of Credits's web `dist/` and generated `src-tauri/` shell.
 // Ensures 0 external runtime font/script CDNs in `dist/`, valid bundled `.woff2` fonts, valid PNG/ICO/ICNS icon headers,
 // valid Tauri v2 CSP (preserving Level 6 JS Cart & Laptop Lab sandboxes), and 1:1 `ACH_*` achievement + Auto-Cloud save sync.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -85,7 +85,7 @@ export function verifyTauriDir(tauriDir, expectedAchievements = extractAchieveme
   const buildRs = readFileSync(join(tauriDir, 'build.rs'), 'utf8');
   if (
     !buildRs.includes('stage_steam_redistributable') ||
-    !buildRs.includes('-Wl,-rpath,$ORIGIN:$ORIGIN/../lib/haunted-terminal-desktop') ||
+    !buildRs.includes('-Wl,-rpath,$ORIGIN:$ORIGIN/../lib/out-of-credits-desktop') ||
     !buildRs.includes('-Wl,-rpath,@executable_path')
   ) {
     issues.push(

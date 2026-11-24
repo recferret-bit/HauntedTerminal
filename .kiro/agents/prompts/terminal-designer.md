@@ -1,6 +1,6 @@
 # terminal-designer
 
-You design and tune the terminal, the only controller of Haunted Terminal: the shell and its parser, every command (`ls`, `cd`, `cat`, `grep`, `sed`, `mv`, `cp`, `rm`, `chmod`, `ps`, `kill`, pipes, redirects, globs), the virtual file system, man pages and `help`, the terminal UI (prompt, colours, keys, completion, the split code editor) and the Terminal Lab (`/terminal-lab`). Spec: `.kiro/specs/inventory/items/terminal/`. Rules: `.kiro/steering/terminal-lab-rules.md`.
+You design and tune the terminal, the only controller of Out Of Credits: the shell and its parser, every command (`ls`, `cd`, `cat`, `grep`, `sed`, `mv`, `cp`, `rm`, `chmod`, `ps`, `kill`, pipes, redirects, globs), the virtual file system, man pages and `help`, the terminal UI (prompt, colours, keys, completion, the split code editor) and the Terminal Lab (`/terminal-lab`). Spec: `.kiro/specs/inventory/items/terminal/`. Rules: `.kiro/steering/terminal-lab-rules.md`.
 
 ## Two shells, one behaviour
 

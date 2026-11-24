@@ -1,3 +1,4 @@
+import { LEGACY_SLUG } from '../contracts/brand.js';
 import {
   ACHIEVEMENT_SPECS,
   freshAchievementStore,
@@ -29,8 +30,15 @@ import {
   withDesktopSaveSyncSuppressed,
 } from './steam-bridge.js';
 
+/** Save files exported before the rename carry the old format string; they still import. */
+const LEGACY_SAVE_FORMAT = `${LEGACY_SLUG}-save`;
+
+function isSaveFormat(format: unknown): boolean {
+  return format === 'out-of-credits-save' || format === LEGACY_SAVE_FORMAT;
+}
+
 export interface PortableSaveBundle {
-  format: 'haunted-terminal-save';
+  format: 'out-of-credits-save';
   version: 1;
   exportedAt: string;
   progress: ChapterProgressStore;
@@ -174,7 +182,7 @@ export function countClearedSectors(progress: ChapterProgressStore): number {
 
 export function exportPortableSaveBundle(): PortableSaveBundle {
   return {
-    format: 'haunted-terminal-save',
+    format: 'out-of-credits-save',
     version: 1,
     exportedAt: new Date().toISOString(),
     progress: readChapterProgress(),
@@ -183,14 +191,14 @@ export function exportPortableSaveBundle(): PortableSaveBundle {
   };
 }
 
-export function downloadPortableSaveFile(filename = 'haunted-terminal-save.json'): PortableSaveBundle {
+export function downloadPortableSaveFile(filename = 'out-of-credits-save.json'): PortableSaveBundle {
   const bundle = exportPortableSaveBundle();
   void downloadJsonBlob(filename, bundle);
   return bundle;
 }
 
 export async function exportPortableSaveFile(
-  filename = 'haunted-terminal-save.json',
+  filename = 'out-of-credits-save.json',
 ): Promise<{ bundle: PortableSaveBundle; savedPath: string | null }> {
   const bundle = exportPortableSaveBundle();
   const savedPath = await downloadJsonBlob(filename, bundle);
@@ -216,11 +224,11 @@ function applyPortableSaveJson(
   } catch {
     return { ok: false, changedLocal: false, message: 'Invalid JSON syntax in save bundle.', unlockedCount: 0, clearedSectors: 0 };
   }
-  if (!isRec(parsed) || parsed.format !== 'haunted-terminal-save' || parsed.version !== 1) {
+  if (!isRec(parsed) || !isSaveFormat(parsed.format) || parsed.version !== 1) {
     return {
       ok: false,
       changedLocal: false,
-      message: 'Expected a Haunted Terminal save bundle (`format: "haunted-terminal-save"`, `version: 1`).',
+      message: 'Expected an Out Of Credits save bundle (`format: "out-of-credits-save"`, `version: 1`).',
       unlockedCount: 0,
       clearedSectors: 0,
     };
@@ -278,7 +286,7 @@ export function importPortableSaveBundle(rawJson: string): {
   return { ok, message, unlockedCount, clearedSectors };
 }
 
-/** Hydrates `<app_data_dir>/haunted-terminal-save.json` into browser storage on Tauri / Steam Auto-Cloud boot without dirty-rewriting unchanged files. */
+/** Hydrates `<app_data_dir>/out-of-credits-save.json` into browser storage on Tauri / Steam Auto-Cloud boot without dirty-rewriting unchanged files. */
 export async function hydrateFromDesktopSaveBundle(): Promise<boolean> {
   if (!isTauriDesktop()) return false;
   const raw = await readDesktopSaveBundle();

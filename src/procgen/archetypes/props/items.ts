@@ -1,7 +1,7 @@
 /**
  * Items and graveyard props: a document, a tar crate, a fuse, a log tombstone.
  * Props do not glow: light is reserved for things the player should look at.
- * Briefs: .kiro/skills/haunted-art-direction/references/world-lexicon.md
+ * Briefs: .kiro/skills/credits-art-direction/references/world-lexicon.md
  */
 import { makeRng } from '../../core/rng.js';
 import type { ModelSpec, PartSpec, Vec2 } from '../../core/types.js';

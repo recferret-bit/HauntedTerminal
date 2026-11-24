@@ -11,7 +11,7 @@ This skill turns a high-level chapter idea into a complete, schema-validated `ch
 
 **Kiroween scope:** the hackathon build ships exactly **one chapter of about 11 levels**. Do not scaffold additional chapters; if the user asks for one, confirm it is post-hackathon work. Default structure: `1` tutorial + `6` task levels + `3` hub levels + `1` boss (the shape of `chapter-01-kiroween`), adjustable by the user within 10 to 12 levels.
 
-Read `haunted-art-direction` first so every chosen `ModelCatalog` actor, `RoomKind`, and palette choice honours the Comix Zone art bible.
+Read `credits-art-direction` first so every chosen `ModelCatalog` actor, `RoomKind`, and palette choice honours the Comix Zone art bible.
 
 ---
 

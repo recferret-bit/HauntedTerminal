@@ -1,4 +1,4 @@
-# MCP: Chrome DevTools and haunted-forge: tasks
+# MCP: Chrome DevTools and credits-forge: tasks
 
 - [x] 1. Add the SDK (`npm install -D --save-exact @modelcontextprotocol/sdk@1.32.2`) and write `tools.mjs` with its units in `forge-unit.mjs`. _Req 4-11_. Gates: `forge-unit.mjs`, `npm run quality:root`
 - [x] 2. Write `server.mjs` (stdio, zod schemas, stdout reserved) and the protocol half of `forge-unit.mjs`. _Req 4, 11, 14_. Gates: `forge-unit.mjs`

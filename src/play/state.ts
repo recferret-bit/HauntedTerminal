@@ -7,11 +7,12 @@ import type { ComicStage } from '../renderer/comic-stage.js';
 import type { CodeEditor } from '../ui/code-editor.js';
 import type { EndStats, Hud } from '../ui/hud.js';
 import type { DialogBox } from '../ui/dialog-box.js';
+import type { DialogOrchestrator } from '../ui/dialog-orchestrator.js';
 import type { Shell } from '../ui/terminal.js';
 import type { TutorialCard } from '../ui/tutorial.js';
 
 export const STORY = [
-  '\x1b[1;93mHAUNTED TERMINAL\x1b[0m',
+  '\x1b[1;93mOUT OF CREDITS\x1b[0m',
   'Midnight. Your AI agents decided they needed a pair of hands.',
   '\x1b[1;96mKRAKOOM.\x1b[0m They pulled you into your own machine and put you to work.',
   'Five floors of malware stand between you and the desk. A clean \x1b[1;93mexit\x1b[0m takes you home.',
@@ -33,7 +34,7 @@ export const CARD_MS = 1600;
 /** How long the welcome banner takes to type itself out after the terminal powers on. */
 export const BANNER_MS = 520;
 
-const SKIP_KEY = 'haunted.skipIntro';
+const SKIP_KEY = 'credits.skipIntro';
 
 export type Phase = 'boot' | 'intro' | 'play' | 'outro' | 'stats';
 /** Every reason the game clock is stopped. Input is blocked for all of them except a hidden tab. */
@@ -90,7 +91,9 @@ export class Play {
   /** FLOOR_ENTERED that arrived while the intro was running; shown once it ends. */
   stashedFloorCard: Extract<KernelEvent, { type: 'FLOOR_ENTERED' }> | null = null;
   hud: Hud | null = null;
-  /** The corner dialog box (`DIALOG_BOX` events); mounted with the HUD. */
+  /** Unified corner dialog orchestrator (`DIALOG_BOX`, `AGENT_TAUNT`, `.hint-note` coordination). */
+  dialogs: DialogOrchestrator | null = null;
+  /** The corner dialog box owned by `dialogs`; mounted with the HUD. */
   dialogBox: DialogBox | null = null;
   codeEditor: CodeEditor | null = null;
   /** Every event the session produced, newest last (capped). The chapter editor reads it through `__game.events()`. */

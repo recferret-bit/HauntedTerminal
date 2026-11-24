@@ -380,8 +380,8 @@ export interface MetagameStore {
   awardedRanks: Record<string, RankGrade>;
 }
 
-const PROGRESS_KEY = 'haunted-terminal:progress:v1';
-const METAGAME_KEY = 'haunted-terminal:metagame:v1';
+const PROGRESS_KEY = 'out-of-credits:progress:v1';
+const METAGAME_KEY = 'out-of-credits:metagame:v1';
 const RANK_WEIGHT: Record<RankGrade, number> = { C: 1, B: 2, A: 3, S: 4 };
 const SCRAP_BY_RANK: Record<RankGrade, number> = { C: 25, B: 45, A: 70, S: 100 };
 

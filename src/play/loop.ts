@@ -68,19 +68,24 @@ function applyEvents(play: Play, events: KernelEvent[], snap: GameSnapshot, prin
         if (ev.from === 'ssd_backup') play.hud?.backupUsed(ev.hp);
         break;
       case 'DIALOG_BOX':
-        play.dialogBox?.show(ev);
+      case 'OBSTACLE_DIALOGUE_RENDERED':
+      case 'PUZZLE_DOOR_RESOLVED':
+      case 'ROOM_TRANSITION':
+        play.dialogs?.handleEvent(ev);
         break;
       case 'FLOOR_ENTERED':
-        play.dialogBox?.clear();
+        play.dialogs?.handleEvent(ev);
         if (play.phase === 'play') holdForCard(play);
         break;
       case 'AGENT_TAUNT':
+        play.dialogs?.handleEvent(ev);
         if (printed.includes(ev.text)) break;
         if (play.execTaunts) play.execTaunts.push(taunt(ev));
         else play.shell.printAbove(taunt(ev));
         break;
       case 'TUTORIAL_STEP':
-        play.tutorial.step(ev);
+        if (play.dialogs) play.dialogs.handleEvent(ev);
+        else play.tutorial.step(ev);
         break;
       case 'GAME_ENDED':
         play.beginEnding({ rank: ev.rank, timeSec: ev.timeSec, commands: ev.commands, shortcuts: snap.shortcuts });

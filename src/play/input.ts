@@ -2,7 +2,7 @@ import { isChapterSession } from '../chapters/chapter-session.js';
 import { findComixByRole, playComix, type ComixRole } from '../cinematic/index.js';
 import { mountDevInspector } from '../sandbox/dev-inspector.js';
 import { mountCodeEditor } from '../ui/code-editor.js';
-import { mountDialogBox } from '../ui/dialog-box.js';
+import { mountDialogOrchestrator } from '../ui/dialog-orchestrator.js';
 import { drawPortrait } from '../renderer/portrait.js';
 import { mountHud } from '../ui/hud.js';
 import { powerOff, powerOn } from '../ui/screen.js';
@@ -86,11 +86,17 @@ function playAgain(play: Play, skip: boolean): void {
 
 export function mountPlayHud(play: Play): void {
   const chapter = isChapterSession(play.session) ? play.session : null;
-  play.dialogBox = mountDialogBox(play.dom.stageWrap, drawPortrait);
+  play.dialogs = mountDialogOrchestrator(play.dom.stageWrap, drawPortrait, {
+    tutorial: play.tutorial,
+    onRightDialogOpen: () => play.hud?.hideHint(),
+    onClear: () => play.hud?.hideHint(),
+  });
+  play.dialogBox = play.dialogs.box;
   play.hud = mountHud(play.dom.hudEl, play.dom.stageWrap, play.dom.statsEl, {
     drawPortrait,
     maxFloors: chapter ? chapter.getLevels().length : 5,
     initialTactical: chapter ? chapter.isTacticalMode() : false,
+    onHintShow: () => play.dialogs?.onHintOpened(),
     onToggleTactical: chapter
       ? () => {
           if (!isChapterSession(play.session)) return false;

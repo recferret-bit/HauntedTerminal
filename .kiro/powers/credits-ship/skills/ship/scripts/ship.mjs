@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// Gated Netlify deploy for Haunted Terminal (power `haunted-ship`, spec .kiro/specs/netlify-deploy-power/).
+// Gated Netlify deploy for Out Of Credits (power `credits-ship`, spec .kiro/specs/netlify-deploy-power/).
 //
-//   node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs preview [--site-name <name>]
-//   node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs prod        (only after the user's explicit yes)
-//   node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs --dry-run   (gates + build, no login, no upload)
-//   node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs --selftest  (pure checks, no network)
+//   node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs preview [--site-name <name>]
+//   node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs prod        (only after the user's explicit yes)
+//   node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs --dry-run   (gates + build, no login, no upload)
+//   node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs --selftest  (pure checks, no network)
 //
 // preview: login check -> npm run quality -> generate-chapter --verify -> npm run build -> draft deploy of dist/
 //          -> the whole chapter played on the preview URL -> stamp in scripts/harness/out/ship/last-preview.json.
@@ -24,7 +24,7 @@ const NETLIFY = ['-y', 'netlify-cli@27.20.0'];
 const outDir = join(root, 'scripts/harness/out/ship');
 const stampPath = join(outDir, 'last-preview.json');
 const sitePath = join(outDir, 'site.json');
-const DEFAULT_SITE_NAME = 'haunted-terminal';
+const DEFAULT_SITE_NAME = 'out-of-credits';
 const GATES = [
   ['npm', ['run', 'quality']],
   ['node', ['scripts/harness/generate-chapter.mjs', '--verify']],
@@ -157,7 +157,7 @@ function siteTarget(opts) {
 }
 
 function deploy(target, { prod }) {
-  const message = `haunted-ship ${prod ? 'production' : 'preview'} ${short(git(['rev-parse', 'HEAD']))}`;
+  const message = `credits-ship ${prod ? 'production' : 'preview'} ${short(git(['rev-parse', 'HEAD']))}`;
   const args = [...NETLIFY, 'deploy', '--dir', 'dist', '--no-build', '--json', '--message', message, ...target];
   if (prod) args.push('--prod');
   const res = run('npx', args, { capture: true });

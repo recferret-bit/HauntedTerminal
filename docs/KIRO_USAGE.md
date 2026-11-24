@@ -1,6 +1,6 @@
 # How Kiro was used
 
-Haunted Terminal is built around one idea: **Kiro works best when knowledge, procedures and enforcement live in separate, machine-checked places.** Everything is in [`.kiro/`](../.kiro) and in the scripts it calls. Design rationale: [`kiro-best-practice.md`](kiro-best-practice.md).
+Out Of Credits is built around one idea: **Kiro works best when knowledge, procedures and enforcement live in separate, machine-checked places.** Everything is in [`.kiro/`](../.kiro) and in the scripts it calls. Design rationale: [`kiro-best-practice.md`](kiro-best-practice.md).
 
 | Role | Place | Count |
 |---|---|---|
@@ -98,8 +98,8 @@ Steering holds only short, non-overlapping facts and one exact vocabulary (`glos
 |---|---|---|
 | Custom agents | done: 7 agents in `.kiro/agents/` | TODO (you): note one real task you ran through `lead-dev` |
 | Property-based testing | done: 34 properties, 7 bugs found | none |
-| MCP | `haunted-forge` (ours: validate, solve and save levels through tools; a level that fails or dies is never written), Chrome DevTools MCP for `qa` (it looks at the real game), the Netlify MCP server in the `haunted-ship` power. Per-agent exact tool lists; `.kiro/settings/mcp.json` stays empty | Probed in the real CLI (`mcp-probe.mjs`, 9/9). What MCP made possible: an agent cannot save a level that does not clear with 0 deaths, and QA claims about the screen come from screenshots the agent took. |
-| Powers | `haunted-ship` (`.kiro/powers/haunted-ship/`): plugin manifest, keywords, Netlify MCP, `ship` skill with a gated deploy script | TODO (you): note the first real preview and production deploy |
+| MCP | `credits-forge` (ours: validate, solve and save levels through tools; a level that fails or dies is never written), Chrome DevTools MCP for `qa` (it looks at the real game), the Netlify MCP server in the `credits-ship` power. Per-agent exact tool lists; `.kiro/settings/mcp.json` stays empty | Probed in the real CLI (`mcp-probe.mjs`, 9/9). What MCP made possible: an agent cannot save a level that does not clear with 0 deaths, and QA claims about the screen come from screenshots the agent took. |
+| Powers | `credits-ship` (`.kiro/powers/credits-ship/`): plugin manifest, keywords, Netlify MCP, `ship` skill with a gated deploy script | TODO (you): note the first real preview and production deploy |
 
 TODO (you): add the parts only you know.
 - Which Kiro surfaces you used (IDE, CLI, Web, Crew), what each was good and bad at, and which one wrote what.

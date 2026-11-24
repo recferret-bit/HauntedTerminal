@@ -7,14 +7,14 @@
     "read",
     "write",
     "shell",
-    "@haunted-forge/list_assets"
+    "@credits-forge/list_assets"
   ],
   "allowedTools": [],
   "mcpServers": {
-    "haunted-forge": {
+    "credits-forge": {
       "command": "node",
       "args": [
-        "scripts/mcp/haunted-forge/server.mjs"
+        "scripts/mcp/credits-forge/server.mjs"
       ]
     }
   },
@@ -245,7 +245,7 @@
       {
         "capability": "mcp",
         "match": [
-          "haunted-forge/list_assets"
+          "credits-forge/list_assets"
         ],
         "effect": "allow"
       },
@@ -255,7 +255,7 @@
           "*"
         ],
         "exclude": [
-          "haunted-forge/list_assets"
+          "credits-forge/list_assets"
         ],
         "effect": "deny"
       }

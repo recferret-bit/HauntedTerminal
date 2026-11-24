@@ -1,6 +1,6 @@
 ---
 name: ai-mesh-pipeline
-description: "[ASSET PCG] Optional external-asset path for game assets: PNG albedo maps dropped into `public/assets/sprites/` and listed in `public/assets/manifest.json`, and AI-generated or Blender `.glb` meshes forced into the comic look (palette zones, cel material, ink shells, front-facing relief). Use whenever someone wants to add, replace, generate or debug a PNG sprite, texture or `.glb` mesh for an actor, edits the manifest, asks for image-generation or image-to-3D prompts in the game's style, or asks why a dropped-in asset does not show or looks wrong. Read `haunted-art-direction` first."
+description: "[ASSET PCG] Optional external-asset path for game assets: PNG albedo maps dropped into `public/assets/sprites/` and listed in `public/assets/manifest.json`, and AI-generated or Blender `.glb` meshes forced into the comic look (palette zones, cel material, ink shells, front-facing relief). Use whenever someone wants to add, replace, generate or debug a PNG sprite, texture or `.glb` mesh for an actor, edits the manifest, asks for image-generation or image-to-3D prompts in the game's style, or asks why a dropped-in asset does not show or looks wrong. Read `credits-art-direction` first."
 ---
 
 # External assets: PNG maps and GLB meshes
@@ -12,7 +12,7 @@ description: "[ASSET PCG] Optional external-asset path for game assets: PNG albe
 for when a hand-painted or generated image says something geometry cannot. There are two kinds, and
 both have to end up looking like the rest of the page: ink outlines, flat cel colour, the one palette.
 
-Read [haunted-art-direction](../haunted-art-direction/SKILL.md) first for the look and the palette.
+Read [credits-art-direction](../credits-art-direction/SKILL.md) first for the look and the palette.
 
 | You have | Path | Status in the game |
 |---|---|---|

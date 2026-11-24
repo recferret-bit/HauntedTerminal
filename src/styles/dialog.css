@@ -38,9 +38,11 @@
 .dialog-avatar canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
 .dialog-box.entering .dialog-avatar { animation: dialog-avatar-enter 0.22s steps(3, end) both; }
 .dialog-box.exiting .dialog-avatar { animation: dialog-avatar-exit 0.18s steps(3, end) forwards; }
-.dialog-avatar[data-frame="1"] canvas { transform: translateY(-2px) rotate(-2deg); }
-.dialog-avatar[data-frame="2"] canvas { transform: translateY(1px) rotate(2deg); }
-.dialog-avatar[data-frame="3"] canvas { transform: translateY(-1px) scale(1.04); }
+
+.dialog-box.mood-laugh { box-shadow: 5px 5px 0 #ff6a13; }
+.dialog-box.mood-order { box-shadow: 5px 5px 0 #4cc9f0; }
+.dialog-box.mood-smug { box-shadow: 5px 5px 0 #06d6a0; }
+.dialog-box.mood-annoyed { box-shadow: 5px 5px 0 #ef476f; }
 
 .dialog-body { min-width: 0; flex: 1; }
 .dialog-name { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #8e1f4a; }

@@ -1,6 +1,6 @@
 ---
 name: procedural-texture-synthesis
-description: "[ASSET PCG] Draw, register and validate procedural comic textures: flat, hard-edged, palette-locked pixel buffers (PCB traces, chip labels, heatsink fins, glyph rain, hex dumps, corruption, ice, stone, floor backdrops, decals) made in TypeScript with the `tex*` toolkit in `src/procgen/textures`. Use whenever you add or change a texture, put `texture:` on a model part, need a backdrop or decal, see a seam, gradient or off-palette colour, or when `npm run procgen:textures` fails. Read `haunted-art-direction` first."
+description: "[ASSET PCG] Draw, register and validate procedural comic textures: flat, hard-edged, palette-locked pixel buffers (PCB traces, chip labels, heatsink fins, glyph rain, hex dumps, corruption, ice, stone, floor backdrops, decals) made in TypeScript with the `tex*` toolkit in `src/procgen/textures`. Use whenever you add or change a texture, put `texture:` on a model part, need a backdrop or decal, see a seam, gradient or off-palette colour, or when `npm run procgen:textures` fails. Read `credits-art-direction` first."
 ---
 
 # Procedural texture synthesis
@@ -8,7 +8,7 @@ description: "[ASSET PCG] Draw, register and validate procedural comic textures:
 Textures in this game are **ink drawings of hardware**, not materials. They are generated in code as
 `PixelBuffer`s (RGBA8, row 0 on top), with no image files and no canvas, so the same generator runs in
 the browser and in the node harness. Art rules come from
-[haunted-art-direction](../haunted-art-direction/SKILL.md); this skill is how to draw inside them.
+[credits-art-direction](../credits-art-direction/SKILL.md); this skill is how to draw inside them.
 
 ## Why textures look the way they do
 

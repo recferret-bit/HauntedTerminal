@@ -13,7 +13,6 @@ export interface StageLike {
   devNoStorm?: boolean;
   debugState(): {
     actors: { id: string; visible: boolean; exiting: boolean; dead: boolean }[]; queued: number; fx: number; played: string[]; errors: string[];
-    cameos?: { visible: number; pending: number; maxConcurrent: number; shown: number };
     overlay?: { transient: number; cards: number; badges: number; links: number; column: number };
   };
 }
@@ -398,19 +397,6 @@ export function runStageSelfCheck(stage: StageLike, restore?: RoomView | null): 
   const count = runEventRounds(stage, allEvents(), advance, cast, checkVisible)
     + runPairPass(stage, advance, cast, checkVisible, pairFailures);
   const { live, expected } = runSwapFinale(stage, advance, cast);
-  // A storm of commentary: never more than one cameo on the page, and the queue drains.
-  for (let i = 0; i < 8; i++) {
-    stage.handleEvent({ type: 'AGENT_TAUNT', agent: (['clod', 'gork', 'codec', 'antigravy'] as const)[i % 4]!, model: '', text: `taunt number ${i}`, mood: i % 2 ? 'laugh' : 'order' });
-  }
-  advance(4 * 4200);
-  const cam = stage.debugState().cameos;
-  const cameoFailures: string[] = [];
-  if (cam) {
-    if (cam.maxConcurrent > 1) cameoFailures.push(`cameos overlapped (${cam.maxConcurrent} at once)`);
-    if (cam.shown < 5) cameoFailures.push(`only ${cam.shown} cameos shown`);
-    if (cam.pending > 0 || cam.visible > 0) cameoFailures.push(`cameo queue did not drain (${cam.pending} pending, ${cam.visible} visible)`);
-  }
-  pairFailures.push(...cameoFailures);
   // The DOM overlay must not leak: transient lettering, balloons and cards drain back to zero, and
   // there is at most one badge holder per live actor.
   const ov = stage.debugState().overlay;

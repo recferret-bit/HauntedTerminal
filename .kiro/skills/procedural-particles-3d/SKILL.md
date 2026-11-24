@@ -5,7 +5,7 @@ description: "[ASSET PCG] Author comic hit effects as plain-data `FxPreset`s in 
 
 # Comic effects (`src/procgen/fx`)
 
-Read [haunted-art-direction](../haunted-art-direction/SKILL.md) first. This skill is about one thing:
+Read [credits-art-direction](../credits-art-direction/SKILL.md) first. This skill is about one thing:
 what happens on the page in the half second after the player presses Enter.
 
 ## What an effect is here

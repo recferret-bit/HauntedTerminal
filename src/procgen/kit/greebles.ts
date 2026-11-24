@@ -1,5 +1,5 @@
 /**
- * Greebles: the hardware vocabulary of Haunted Terminal as reusable part groups.
+ * Greebles: the hardware vocabulary of Out Of Credits as reusable part groups.
  * Every greeble is a pure function `(options) => PartSpec[]`. Spread the result into a model's parts.
  *
  * Conventions shared by all of them:

@@ -18,7 +18,7 @@ Capability: `item.laptop` is the developer's old clamshell laptop carried like a
 10. THE SYSTEM SHALL run JS Pad code in a Worker (timeout 2.5 s) and Web Weaver pages in an iframe with `sandbox="allow-scripts"` (opaque origin), capturing console lines, formatted values, and uncaught errors safely (handling restricted getters without throwing from `fmt()`).
 11. IF page code contains infinite loops, THEN THE SYSTEM SHALL stop them with a readable line-numbered error before freezing the browser tab via `guardLoops` and `guardHtmlScripts`.
 12. WHEN a page run is initiated while a previous run on the same `PreviewSlot` is pending or settling, THE SYSTEM SHALL cancel the previous run's timeout and discard its completion token, so an abandoned run NEVER replaces the new page with `STOPPED_PAGE` or falsely flags `hung = true`.
-13. THE SYSTEM SHALL offer seven coding tasks (3 JS Pad, 4 Web Weaver) judged by deterministic checks (`log`, `logs`, `noError`, `value`, `element`, `style`, `source`); each task's starter fails and reference solution passes; progress and drafts are saved in `localStorage` (`haunted.laptop.progress`) with a reset option.
+13. THE SYSTEM SHALL offer seven coding tasks (3 JS Pad, 4 Web Weaver) judged by deterministic checks (`log`, `logs`, `noError`, `value`, `element`, `style`, `source`); each task's starter fails and reference solution passes; progress and drafts are saved in `localStorage` (`credits.laptop.progress`) with a reset option.
 
 ## Out of scope
 

@@ -1,3 +1,4 @@
+import '../contracts/migrate-storage.js';
 import '../styles/editor-workstation.css';
 import '../styles/laptop.css';
 import '../styles/laptop-lab.css';

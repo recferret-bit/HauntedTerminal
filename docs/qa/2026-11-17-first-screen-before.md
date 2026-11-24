@@ -15,7 +15,7 @@ FAIL (8 findings)
 | `node scripts/harness/play-browser.mjs --script docs/qa/labs/first-screen.script.json --query chapter=chapter-01-kiroween --width 1600 --height 950` | 1 | Expected: the script has no solution lines, so it waits 60 s for a stats screen that never comes. The first screenshot (`play-1.png`, after the floor 1 title card) is what I used. Page and console errors: none reported. |
 | same, `--width 1280 --height 820 --line-timeout 5000` | 1 | Same expected exit. No page or console errors. |
 
-Not run: the Chrome DevTools MCP tools (no server of this project could be reached: 5173 is another app and a second port was refused; `play-browser.mjs` starts its own Vite on 5342 and stops it when it ends). `npm run quality` and the other gates (out of scope for a screenshot pass). `haunted-forge` `validate_level` / `solve_level` (no level was changed).
+Not run: the Chrome DevTools MCP tools (no server of this project could be reached: 5173 is another app and a second port was refused; `play-browser.mjs` starts its own Vite on 5342 and stops it when it ends). `npm run quality` and the other gates (out of scope for a screenshot pass). `credits-forge` `validate_level` / `solve_level` (no level was changed).
 
 Limits of this pass:
 - **Bounding boxes are estimates read from the screenshots** (px from the page's top-left corner, +-3 px). No script can evaluate JavaScript in the page, so no `getBoundingClientRect()` was taken. Selectors come from `pages/play.html`, `src/styles/game.css` and `src/ui/tutorial.ts`.

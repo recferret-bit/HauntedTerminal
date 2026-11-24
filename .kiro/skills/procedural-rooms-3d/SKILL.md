@@ -1,6 +1,6 @@
 ---
 name: procedural-rooms-3d
-description: "[ASSET PCG] Build room sets: the `room.<kind>` models in `src/procgen/archetypes/rooms` (back wall, floor, set dressing, door and actor sockets) that sit behind the actors of each comic panel. Use whenever you add a room or room variant, touch a wall, floor, backdrop, pillar, arch, grille or set dressing, move a door or actor socket, restyle a floor of the machine, or a room is too busy, too bright or hides the vibecoder. Level-generation skills pick a `roomKind` from this set; adding a new kind starts here. Read `haunted-art-direction` first."
+description: "[ASSET PCG] Build room sets: the `room.<kind>` models in `src/procgen/archetypes/rooms` (back wall, floor, set dressing, door and actor sockets) that sit behind the actors of each comic panel. Use whenever you add a room or room variant, touch a wall, floor, backdrop, pillar, arch, grille or set dressing, move a door or actor socket, restyle a floor of the machine, or a room is too busy, too bright or hides the vibecoder. Level-generation skills pick a `roomKind` from this set; adding a new kind starts here. Read `credits-art-direction` first."
 ---
 
 # Procedural rooms
@@ -9,7 +9,7 @@ A room is a `ModelSpec` like any other model, but its job is the opposite of an 
 The player reads the vibecoder, the malware, the door and the pickup; the room only says *where in the
 machine we are* and *what mood it is*. Every rule below follows from that.
 
-Read [haunted-art-direction](../haunted-art-direction/SKILL.md) first: the palette, the camera and the
+Read [credits-art-direction](../credits-art-direction/SKILL.md) first: the palette, the camera and the
 harness commands are defined there and not repeated here.
 
 ## Where things are

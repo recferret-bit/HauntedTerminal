@@ -1,6 +1,6 @@
 {
   "name": "qa",
-  "description": "Plays Haunted Terminal and tests every part of it: the chapter in real Chrome, the terminal, laptop, comixes, editors, labs and assets, through the harness suites and screenshots. Writes a report to docs/qa/ and changes no game file.",
+  "description": "Plays Out Of Credits and tests every part of it: the chapter in real Chrome, the terminal, laptop, comixes, editors, labs and assets, through the harness suites and screenshots. Writes a report to docs/qa/ and changes no game file.",
   "prompt": "file://./prompts/qa.md",
   "model": "auto",
   "tools": [
@@ -29,11 +29,11 @@
     "@chrome-devtools/performance_start_trace",
     "@chrome-devtools/performance_stop_trace",
     "@chrome-devtools/performance_analyze_insight",
-    "@haunted-forge/list_assets",
-    "@haunted-forge/list_levels",
-    "@haunted-forge/get_level",
-    "@haunted-forge/validate_level",
-    "@haunted-forge/solve_level"
+    "@credits-forge/list_assets",
+    "@credits-forge/list_levels",
+    "@credits-forge/get_level",
+    "@credits-forge/validate_level",
+    "@credits-forge/solve_level"
   ],
   "allowedTools": [],
   "mcpServers": {
@@ -64,10 +64,10 @@
       },
       "timeout": 120000
     },
-    "haunted-forge": {
+    "credits-forge": {
       "command": "node",
       "args": [
-        "scripts/mcp/haunted-forge/server.mjs"
+        "scripts/mcp/credits-forge/server.mjs"
       ]
     }
   },
@@ -333,11 +333,11 @@
           "chrome-devtools/performance_start_trace",
           "chrome-devtools/performance_stop_trace",
           "chrome-devtools/performance_analyze_insight",
-          "haunted-forge/list_assets",
-          "haunted-forge/list_levels",
-          "haunted-forge/get_level",
-          "haunted-forge/validate_level",
-          "haunted-forge/solve_level"
+          "credits-forge/list_assets",
+          "credits-forge/list_levels",
+          "credits-forge/get_level",
+          "credits-forge/validate_level",
+          "credits-forge/solve_level"
         ],
         "effect": "allow"
       },
@@ -369,11 +369,11 @@
           "chrome-devtools/performance_start_trace",
           "chrome-devtools/performance_stop_trace",
           "chrome-devtools/performance_analyze_insight",
-          "haunted-forge/list_assets",
-          "haunted-forge/list_levels",
-          "haunted-forge/get_level",
-          "haunted-forge/validate_level",
-          "haunted-forge/solve_level"
+          "credits-forge/list_assets",
+          "credits-forge/list_levels",
+          "credits-forge/get_level",
+          "credits-forge/validate_level",
+          "credits-forge/solve_level"
         ],
         "effect": "deny"
       }

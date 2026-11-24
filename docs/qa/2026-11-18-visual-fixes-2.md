@@ -21,7 +21,7 @@ Every 1024x768 problem from the last pass is gone from the audit: no `overlap` f
 
 Chrome DevTools MCP calls: `new_page` (`http://localhost:5174/play/chapter-01-kiroween?nointro=1`), `wait_for` (`TUTORIAL`, `AGENT PROMPT`: found), `resize_page` (1280x820, 1024x768), `navigate_page` reload, `type_text` `ls` + Enter (twice), `take_screenshot` (twice, to `scripts/harness/out/qa-visual-fixes-2-1280.png` and `-1024.png`), `list_console_messages` (error, warn): only the Vite websocket errors (`ws://localhost:5174`, expected under the fence). No font or request errors.
 
-Not run: `haunted-forge` `validate_level` / `solve_level` (no level spec changed; `--verify` covers all 11), throttled trace (no stutter: 0 long frames), `--update` (forbidden).
+Not run: `credits-forge` `validate_level` / `solve_level` (no level spec changed; `--verify` covers all 11), throttled trace (no stutter: 0 long frames), `--update` (forbidden).
 
 ## Re-check after the `game.css` change (`.tut-cmd` wraps, `#titleblock` max-width 28% under 1100 px)
 
@@ -32,7 +32,7 @@ Own server `STACK_PORT=5174 npm start` (5173 is another project), stopped at the
 - 1280x820: command box inside the card, wrapped to three lines (`mv` / `starter_ram_8gb.dimm` / `~`). The card (y 278 to 440) sits just under the big `LOCKED` sign (sign fully visible), covers the right cable of the door and the `hub_uplink` label. Toggles clear.
 - Verdict: finding 1 fixed (no clipped command, no covered toggle). Remaining: the card hides the `hub_uplink` label while step 2 shows. It is a transient tutorial card; I judge it acceptable and not a new finding. Say so if you want it moved.
 
-**(b) Stats card @1024x768.** `node scripts/harness/visual-audit.mjs --screens stats --sizes 1024x768` worked (exit 0, 62 s; flags: `diff`, stats motion `jump` as before). In the still the masthead (`HAUNTED TERMINAL`, x 28 to 224) and the caption (`ISSUE CLEAR // Kiroween: Open / Weights & Family Ties`, two full lines, ends x 292) are clear of the results card (starts x 297). The HUD row (y 25 to 48) is above the card (y 52). The card covers `TACTICAL`, which is a modal and expected. Diff image opened: red is the masthead, caption and HUD cells, plus the card text from a one-pixel text shift; nothing broken. Finding 2 fixed.
+**(b) Stats card @1024x768.** `node scripts/harness/visual-audit.mjs --screens stats --sizes 1024x768` worked (exit 0, 62 s; flags: `diff`, stats motion `jump` as before). In the still the masthead (`OUT OF CREDITS`, x 28 to 224) and the caption (`ISSUE CLEAR // Kiroween: Open / Weights & Family Ties`, two full lines, ends x 292) are clear of the results card (starts x 297). The HUD row (y 25 to 48) is above the card (y 52). The card covers `TACTICAL`, which is a modal and expected. Diff image opened: red is the masthead, caption and HUD cells, plus the card text from a one-pixel text shift; nothing broken. Finding 2 fixed.
 
 **(c) `OK DONE` stamp: still not captured.** I typed `ls` + Enter and took the screenshot as the very next call (`media/2026-11-18-visual-fixes-2-4.png`). It already shows step 2/6 and no stamp: the type-then-screenshot round trip is longer than the 1100 ms stamp. Impossible with this toolset. A person must press `ls` on level 01 and look, or `tutorial.ts` (`terminal-designer`) needs a debug hold.
 

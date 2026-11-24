@@ -15,7 +15,6 @@ import type { StageActor } from './stage-cast.js';
 import type { PanelBounds } from './stage-cards.js';
 import { StageOverlay } from './stage-overlay.js';
 import { installStageDevHook } from './stage-selfcheck.js';
-import { CameoDirector } from './stage-cameos.js';
 import { ACTOR_Z, CAM_HOME, DESIGN_LEFT, DESIGN_RIGHT, FEET_Y, LOOK_HOME } from './stage-const.js';
 import { reportStage } from './stage-actor.js';
 import { enqueueStageEvent } from './stage-events.js';
@@ -69,9 +68,7 @@ export class ComicStage {
   /** Page cards and tears, over everything. */
   readonly pageLayer = new THREE.Group();
   readonly fxPlayer: FxPlayer;
-  /** The AI agents' video-call cameos (AGENT_TAUNT, TUTORIAL_STEP). */
-  readonly cameos: CameoDirector;
-  /** Comic materials of models outside the cast (cameo agents), fed uTime / uFlash. */
+  /** Comic materials of models outside the cast, fed uTime / uFlash. */
   readonly extraComics = new Set<THREE.ShaderMaterial>();
 
   flood!: THREE.Mesh;
@@ -172,14 +169,6 @@ export class ComicStage {
       },
     });
     this.tweens.onError = (err) => reportStage(this, 'tween', err);
-    this.cameos = new CameoDirector(this.overlay);
-    window.setTimeout(() => {
-      try {
-        this.cameos.warm();
-      } catch (err) {
-        reportStage(this, 'cameo warm-up', err);
-      }
-    }, 300);
     this.resize();
     window.addEventListener('resize', () => this.resize());
     this.renderer.setAnimationLoop((now) => this.frame(now));
@@ -348,14 +337,13 @@ export class ComicStage {
   }
 
   /** Dev: the live cast and queue, for the self-check and the console. */
-  debugState(): { actors: { id: string; model: string; kind: string; state: string; visible: boolean; x: number; exiting: boolean; dead: boolean }[]; queued: number; fx: number; played: string[]; errors: string[]; cameos: { visible: number; pending: number; maxConcurrent: number; shown: number }; overlay: ReturnType<StageOverlay['counts']> } {
+  debugState(): { actors: { id: string; model: string; kind: string; state: string; visible: boolean; x: number; exiting: boolean; dead: boolean }[]; queued: number; fx: number; played: string[]; errors: string[]; overlay: ReturnType<StageOverlay['counts']> } {
     return {
       actors: [...this.actors.values()].map((a) => ({
         id: a.id, model: a.modelId, kind: a.kind, state: a.animator.state, visible: a.group.visible, x: +a.group.position.x.toFixed(2), exiting: a.exiting, dead: a.dead,
       })),
       queued: this.queue.length,
       overlay: this.overlay.counts(),
-      cameos: { visible: this.cameos.visible, pending: this.cameos.pending, maxConcurrent: this.cameos.maxConcurrent, shown: this.cameos.shown },
       fx: this.fxPlayer.count,
       played: [...this.fxPlayer.played].sort(),
       errors: [...this.errors],

@@ -24,21 +24,20 @@ const HEAD_ASPECT = 1.2;
 const HEAD_SHARE = 0.36;
 const MARGIN_PX = 1;
 const HEAD_PART_RX = /(?:^|\.)(head|hood|face|hair|eye|glasses|lens|beard|mustache|cig|mouth|eyelid)/i;
+const LOOK_PART_RX = /(?:^|\.)(eye|pupil|iris|glasses|lens|shades|prompt|cursorEye)/i;
 
-interface HeadPose {
+interface IdleHeadPose {
   t: number;
   yaw: number;
   pitch: number;
-  roll: number;
-  dy: number;
-  talkScaleY: number;
+  lookX: number;
 }
 
-const HEAD_POSES: readonly HeadPose[] = [
-  { t: 0, yaw: 0, pitch: 0, roll: 0, dy: 0, talkScaleY: 1 },
-  { t: 0.22, yaw: -0.18, pitch: 0.08, roll: 0.07, dy: 0.018, talkScaleY: 1.04 },
-  { t: 0.45, yaw: 0.16, pitch: -0.05, roll: -0.08, dy: -0.01, talkScaleY: 0.96 },
-  { t: 0.68, yaw: -0.09, pitch: 0.1, roll: 0.04, dy: 0.022, talkScaleY: 1.05 },
+const IDLE_POSES: readonly IdleHeadPose[] = [
+  { t: 0, yaw: 0, pitch: 0, lookX: 0 },
+  { t: 0.28, yaw: -0.09, pitch: 0.02, lookX: -0.012 },
+  { t: 0.56, yaw: 0.04, pitch: -0.025, lookX: 0.005 },
+  { t: 0.84, yaw: 0.09, pitch: 0.015, lookX: 0.012 },
 ];
 
 interface PortraitMeta {
@@ -81,10 +80,17 @@ function cropNearest(src: PixelBuffer, sx: number, sy: number, side: number, siz
 
 function selectHeadTarget(spec: ModelSpec, headCrop: boolean): { mask: boolean[]; pivot: Vec3 } {
   const baked = bakeModel(spec);
-  const full = modelBounds(baked);
-  const spanY = full.size[1];
-  const cutoffY = full.min[1] + spanY * 0.68;
-  let mask = spec.parts.map((p) => !headCrop || HEAD_PART_RX.test(p.name) || p.pos[1] >= cutoffY);
+  let mask: boolean[];
+  if (headCrop) {
+    mask = spec.parts.map((p) => HEAD_PART_RX.test(p.name));
+    if (!mask.some(Boolean)) {
+      const full = modelBounds(baked);
+      const cutoffY = full.min[1] + full.size[1] * 0.68;
+      mask = spec.parts.map((p) => p.pos[1] >= cutoffY);
+    }
+  } else {
+    mask = spec.parts.map(() => true);
+  }
   if (!mask.some(Boolean)) mask = spec.parts.map(() => true);
   const targetBaked = baked.filter((_, i) => mask[i]);
   const b = modelBounds(targetBaked.length ? targetBaked : baked);
@@ -96,27 +102,29 @@ function selectHeadTarget(spec: ModelSpec, headCrop: boolean): { mask: boolean[]
   return { mask, pivot };
 }
 
-function posePart(part: PartSpec, pose: HeadPose, pivot: Vec3, applyHead: boolean): PartSpec {
+function posePart(part: PartSpec, pose: IdleHeadPose, pivot: Vec3, applyHead: boolean): PartSpec {
   const base: AnimBase = {
     pos: [part.pos[0], part.pos[1], part.pos[2]],
     rot: part.rot ? [part.rot[0], part.rot[1], part.rot[2]] : [0, 0, 0],
     scale: part.scale ? [part.scale[0], part.scale[1], part.scale[2]] : [1, 1, 1],
   };
-  const cur = animPoseAt(part.anim, base, pose.t, { fps: 0, name: part.name });
+  // Suppress vertical body/head bob so characters never jump in the portrait crop,
+  // while keeping floating sub-parts (droplets/orbiters), breathing, blinking, and damped jitter.
+  const suppressVerticalBob =
+    part.anim?.type === 'bob' && (part.anim.axis ?? 'y') === 'y' && !/drop|bit/i.test(part.name);
+  const anim = suppressVerticalBob ? undefined : part.anim;
+  const cur = animPoseAt(anim, base, pose.t, { fps: 0, jitterMul: 0.35, name: part.name });
   if (applyHead) {
     animRotateAboutPivot(cur, [0, 1, 0], pose.yaw, pivot, cur);
     animRotateAboutPivot(cur, [1, 0, 0], pose.pitch, pivot, cur);
-    animRotateAboutPivot(cur, [0, 0, 1], pose.roll, pivot, cur);
-    cur.pos[1] += pose.dy;
-    cur.pos[1] = pivot[1] + (cur.pos[1] - pivot[1]) * pose.talkScaleY;
-    cur.scale[1] *= pose.talkScaleY;
+    if (LOOK_PART_RX.test(part.name)) cur.pos[0] += pose.lookX;
   }
   return { ...part, pos: cur.pos, rot: cur.rot, scale: cur.scale };
 }
 
 function poseSpec(spec: ModelSpec, frame: number, headCrop: boolean, wholeModel: boolean): ModelSpec {
   if (frame === 0 || wholeModel) return spec;
-  const pose = HEAD_POSES[frame]!;
+  const pose = IDLE_POSES[frame]!;
   const { mask, pivot } = selectHeadTarget(spec, headCrop);
   return {
     ...spec,

@@ -7,19 +7,19 @@
     "read",
     "write",
     "shell",
-    "@haunted-forge/list_assets",
-    "@haunted-forge/list_levels",
-    "@haunted-forge/get_level",
-    "@haunted-forge/validate_level",
-    "@haunted-forge/solve_level",
-    "@haunted-forge/write_level"
+    "@credits-forge/list_assets",
+    "@credits-forge/list_levels",
+    "@credits-forge/get_level",
+    "@credits-forge/validate_level",
+    "@credits-forge/solve_level",
+    "@credits-forge/write_level"
   ],
   "allowedTools": [],
   "mcpServers": {
-    "haunted-forge": {
+    "credits-forge": {
       "command": "node",
       "args": [
-        "scripts/mcp/haunted-forge/server.mjs"
+        "scripts/mcp/credits-forge/server.mjs"
       ]
     }
   },
@@ -254,12 +254,12 @@
       {
         "capability": "mcp",
         "match": [
-          "haunted-forge/list_assets",
-          "haunted-forge/list_levels",
-          "haunted-forge/get_level",
-          "haunted-forge/validate_level",
-          "haunted-forge/solve_level",
-          "haunted-forge/write_level"
+          "credits-forge/list_assets",
+          "credits-forge/list_levels",
+          "credits-forge/get_level",
+          "credits-forge/validate_level",
+          "credits-forge/solve_level",
+          "credits-forge/write_level"
         ],
         "effect": "allow"
       },
@@ -269,12 +269,12 @@
           "*"
         ],
         "exclude": [
-          "haunted-forge/list_assets",
-          "haunted-forge/list_levels",
-          "haunted-forge/get_level",
-          "haunted-forge/validate_level",
-          "haunted-forge/solve_level",
-          "haunted-forge/write_level"
+          "credits-forge/list_assets",
+          "credits-forge/list_levels",
+          "credits-forge/get_level",
+          "credits-forge/validate_level",
+          "credits-forge/solve_level",
+          "credits-forge/write_level"
         ],
         "effect": "deny"
       }

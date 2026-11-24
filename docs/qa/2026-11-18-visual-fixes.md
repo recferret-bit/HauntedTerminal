@@ -16,7 +16,7 @@ Finding 1 (fallback fonts) is closed on every game screen: level-01, stats and t
 | npm run quality | 0 | ends with `property-tests PASS: 35 properties, seed 20261117` |
 | node scripts/harness/generate-chapter.mjs --verify | 0 | `checked [chapter-01-kiroween]: 11 levels, 0 error(s), 0 warning(s)`; `verified: 11 levels cleared, cmds=64, deaths=0` |
 
-Not run: Chrome DevTools MCP (port 5173 belongs to another project, `/Users/ferretrec/work/reddit/vangame`; I did not start a 5174 server this pass, the audit starts its own page server), `haunted-forge` `validate_level` / `solve_level` (no level spec changed; `--verify` covers all 11), throttled trace (0 of 120 long frames on every probe, worst 16.8 ms), `--update` (forbidden).
+Not run: Chrome DevTools MCP (port 5173 belongs to another project, `/Users/ferretrec/work/reddit/vangame`; I did not start a 5174 server this pass, the audit starts its own page server), `credits-forge` `validate_level` / `solve_level` (no level spec changed; `--verify` covers all 11), throttled trace (0 of 120 long frames on every probe, worst 16.8 ms), `--update` (forbidden).
 
 ## Visual audit
 

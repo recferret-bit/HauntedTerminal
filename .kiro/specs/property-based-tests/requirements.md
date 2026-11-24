@@ -2,7 +2,7 @@
 
 Status: done (requirements, design and tasks approved by the user 2026-11-17; all tasks done and gates run 2026-11-17)
 
-Capability: property-based tests that generate many random inputs and check that invariants hold for each major feature of Haunted Terminal: the terminal, the laptop, comix, chapters and gameplay elements.
+Capability: property-based tests that generate many random inputs and check that invariants hold for each major feature of Out Of Credits: the terminal, the laptop, comix, chapters and gameplay elements.
 
 ## Requirements
 

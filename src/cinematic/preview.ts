@@ -1,3 +1,4 @@
+import '../contracts/migrate-storage.js';
 /**
  * `/cinematic.html`: standalone preview & freeze-frame studio for any comix in `comix/<slug>/`.
  *   ?play=<slug>             start that comix immediately (otherwise show a dynamic catalog menu)
