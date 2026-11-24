@@ -4,7 +4,7 @@ import { setRest } from './stage-actor.js';
 import { playTear, say } from './stage-fx.js';
 import { claim, collect, enemyAttack, flashActor, hopInPlace, kill, knockback, release, suckIntoNull } from './stage-motion.js';
 import { anchorPoint, childrenOf } from './stage-resolve.js';
-import { syncOverlays } from './stage-sync.js';
+import { syncHeroFace, syncOverlays } from './stage-sync.js';
 import type { ComicStage } from './comic-stage.js';
 
 export function handleCombatEvent(stage: ComicStage, ev: KernelEvent, subject: StageActor | null): boolean {
@@ -58,6 +58,12 @@ function onProcSignaled(stage: ComicStage, ev: Extract<KernelEvent, { type: 'PRO
 function onPlayerDamaged(stage: ComicStage, ev: Extract<KernelEvent, { type: 'PLAYER_DAMAGED' }>): void {
   const hero = stage.hero();
   if (!hero) return;
+  hero.hp = ev.hpRemaining;
+  stage.heroOuchUntil = stage.clockMs + 600;
+  syncHeroFace(stage, hero);
+  stage.tweens.delay(610, () => {
+    if (!hero.disposed) syncHeroFace(stage, hero);
+  });
   flashActor(stage, hero, 0xef476f, 240, 250);
   if (ev.hpRemaining <= 0) stage.tweens.delay(450, () => playTear(stage, 'SEGFAULT'));
 }

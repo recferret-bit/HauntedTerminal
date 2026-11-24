@@ -65,50 +65,135 @@ body {
   gap: 8px;
   flex: 0 0 auto;
   min-width: 0;
-  max-width: 36%;
+  max-width: min(400px, 42%);
 }
 
-#masthead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 3px 10px;
-  background: var(--yellow);
+/* ---- Top-left permanent Vibecoder HUD card + horizontal dialog drawer ---- */
+.hero-hud {
+  display: inline-flex;
+  align-items: stretch;
+  background: var(--paper);
   color: var(--ink);
   border: 3px solid var(--ink);
-  box-shadow: 3px 3px 0 var(--ink);
-  padding: 5px 8px 4px;
-  min-width: 0;
+  box-shadow: 4px 4px 0 var(--ink);
+  pointer-events: none;
+  max-width: 100%;
 }
 
-#masthead h1 {
-  font-family: var(--display);
-  font-size: 15px;
-  letter-spacing: 0.14em;
-  font-weight: 700;
-  line-height: 1;
+.hero-status-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  flex: 0 0 auto;
 }
 
-#masthead h1 span { color: var(--orange); }
+.hero-avatar {
+  width: 68px;
+  height: 68px;
+  box-sizing: border-box;
+  background: var(--ink);
+  border: 2px solid var(--ink);
+  image-rendering: pixelated;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
 
-#masthead h1 { white-space: nowrap; }
+.hero-avatar canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
 
-#masthead p {
+.hero-hud[data-tier="2"] .hero-avatar { border-color: #9b5de5; }
+.hero-hud[data-tier="3"] .hero-avatar { background: #2c1024; border-color: #ef233c; }
+.hero-hud[data-tier="4"] .hero-avatar { background: #3b0818; border-color: #ef233c; box-shadow: 0 0 0 1px #ef233c; }
+.hero-hud.ouch { box-shadow: 4px 4px 0 var(--fault); }
+.hero-hud.ouch .hero-avatar { background: #5a0a18; border-color: var(--fault); animation: hero-ouch 0.16s steps(2, end) 2; }
+
+.hero-status-col .hud-hp {
+  width: 68px;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  padding: 3px 4px;
+  border: 2px solid var(--ink);
+  box-shadow: none;
+}
+
+.hero-status-col .hud-hp .hp-bar {
+  width: 100%;
+  height: 8px;
+}
+
+.hero-status-col .hud-hp b {
   font-size: 11px;
-  line-height: 1.25;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #5c5348;
+  line-height: 1;
+  text-align: center;
 }
 
-#masthead a {
-  pointer-events: auto;
-  color: var(--ink);
+.hero-dialog-drawer {
+  display: none;
+  align-items: stretch;
+  overflow: hidden;
+  border-left: 3px solid var(--ink);
+}
+
+.hero-hud.talking.open .hero-dialog-drawer {
+  display: flex;
+}
+
+.hero-dialog-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  text-align: left;
+  gap: 4px;
+  width: clamp(180px, 24vw, 270px);
+  padding: 6px 10px;
+  box-sizing: border-box;
+}
+
+.hero-dialog-inner .dialog-name {
+  color: #8e1f4a;
+  font-family: var(--display);
   font-weight: 700;
-  text-decoration: underline;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-#masthead a:hover { color: var(--orange); }
+.hero-dialog-inner .dialog-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.hero-hud.talking.open.entering .hero-dialog-drawer { animation: hero-drawer-enter 0.22s steps(4, end) both; }
+.hero-hud.talking.open.exiting .hero-dialog-drawer { animation: hero-drawer-exit 0.18s steps(3, end) forwards; }
+
+.hero-hud.mood-laugh { box-shadow: 4px 4px 0 #ff6a13; }
+.hero-hud.mood-order { box-shadow: 4px 4px 0 #4cc9f0; }
+.hero-hud.mood-smug { box-shadow: 4px 4px 0 #06d6a0; }
+.hero-hud.mood-annoyed { box-shadow: 4px 4px 0 #ef476f; }
+
+@keyframes hero-drawer-enter {
+  0% { max-width: 0; opacity: 0; transform: translateX(-16px); }
+  100% { max-width: 280px; opacity: 1; transform: none; }
+}
+
+@keyframes hero-drawer-exit {
+  0% { max-width: 280px; opacity: 1; transform: none; }
+  100% { max-width: 0; opacity: 0; transform: translateX(-16px); }
+}
+
+@keyframes hero-ouch {
+  50% { filter: brightness(1.35) saturate(1.4); }
+}
 
 #stage-wrapper {
   position: relative;
@@ -541,7 +626,8 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
   #tutorial-card .tut-text { font-size: 10.5px; line-height: 1.25; padding: 3px 8px 3px; }
   #tutorial-card .tut-cmd { flex-wrap: wrap; gap: 2px 6px; padding: 0 8px; }
   #tutorial-card .tut-cmd code { font-size: 11px; padding: 1px 6px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
-  #titleblock { max-width: 28%; }
+  #titleblock { max-width: min(320px, 46%); }
+  .hero-dialog-inner { width: clamp(140px, 22vw, 210px); }
   #tutorial-card header { gap: 5px; padding: 2px 6px; }
   .tut-kind { display: none; }
   .tut-agent { flex: 1; }
@@ -608,12 +694,9 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
 }
 
 @media (max-width: 1180px) {
-  #masthead p { display: none; }
   /* narrow stage: tighter HUD cells so the strip wraps into fewer rows */
   #hud { gap: 4px; }
   .hud-cell { padding: 3px 6px; gap: 4px; }
-  .hp-bar { width: 72px; }
-  .hp-bar { width: 64px; }
 }
 
 #sandbox-toggle-btn {
@@ -622,20 +705,6 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
   bottom: 12px;
   z-index: 6;
 }
-
-#shader-dock {
-  position: absolute;
-  /* bottom centre: the room cards fill the right edge of the stage and the F2 button sits at the left */
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 12px;
-  z-index: 6;
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-}
-
-#shader-dock > * { pointer-events: auto; }
 
 #terminal-dock {
   height: 38vh;
@@ -1020,10 +1089,6 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
   #terminal-dock.editor-open #terminal-bezel {
     width: 100%;
     height: 44%;
-  }
-
-  #masthead h1 {
-    font-size: 12px;
   }
 }
 

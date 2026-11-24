@@ -27,7 +27,7 @@ interface Lab {
   dead: boolean;
   armed: boolean;
   light: LightMode;
-  strip: HTMLElement;
+  strip: HTMLElement | null;
   dlg: HTMLElement;
 }
 
@@ -119,11 +119,12 @@ function sync(lab: Lab): void {
   };
   for (const id of TABS) {
     for (const root of [lab.strip, lab.dlg]) {
+      if (!root) continue;
       root.querySelectorAll<HTMLElement>(`[data-dot="${id}"]`).forEach((dot) => {
         dot.classList.toggle('live', flags[id]);
       });
     }
-    lab.strip.querySelector<HTMLButtonElement>(`[data-fx="${id}"]`)?.setAttribute('aria-pressed', String(flags[id]));
+    lab.strip?.querySelector<HTMLButtonElement>(`[data-fx="${id}"]`)?.setAttribute('aria-pressed', String(flags[id]));
   }
   lab.dlg.querySelectorAll<HTMLElement>('.pd-tab').forEach((button) => {
     const selected = button.dataset.tab === lab.tab;
@@ -329,22 +330,21 @@ function enableDragging(box: HTMLElement, handle: HTMLElement): void {
   handle.addEventListener('pointercancel', stop);
 }
 
-function buildLabChrome(): { strip: HTMLElement; dlg: HTMLElement } {
+function buildLabChrome(): { strip: HTMLElement | null; dlg: HTMLElement } {
   document.getElementById('shader-strip')?.remove();
   document.getElementById('pixel-dlg')?.remove();
-  const strip = document.createElement('div');
-  strip.id = 'shader-strip';
-  strip.innerHTML = [
-    switchButton('crt', 'CRT'),
-    switchButton('pixel', 'PIXEL'),
-    switchButton('ink', 'INK'),
-    switchButton('storm', 'STORM'),
-  ].join('');
   const dock = document.getElementById('shader-dock');
-  if (dock) dock.appendChild(strip);
-  else {
-    strip.classList.add('hl-float');
-    document.body.appendChild(strip);
+  let strip: HTMLElement | null = null;
+  if (dock) {
+    strip = document.createElement('div');
+    strip.id = 'shader-strip';
+    strip.innerHTML = [
+      switchButton('crt', 'CRT'),
+      switchButton('pixel', 'PIXEL'),
+      switchButton('ink', 'INK'),
+      switchButton('storm', 'STORM'),
+    ].join('');
+    dock.appendChild(strip);
   }
   const dlg = document.createElement('div');
   dlg.id = 'pixel-dlg';
@@ -396,7 +396,7 @@ function bindLight(lab: Lab): void {
 function bindLabUi(lab: Lab): void {
   const dragHandle = lab.dlg.querySelector<HTMLElement>('#pd-drag');
   if (dragHandle) enableDragging(lab.dlg, dragHandle);
-  lab.strip.addEventListener('click', (event) => {
+  lab.strip?.addEventListener('click', (event) => {
     if (lab.dead || !(event.target instanceof Element)) return;
     const button = event.target.closest<HTMLElement>('[data-fx]');
     const fx = button?.dataset.fx;
@@ -436,7 +436,7 @@ function bindLabUi(lab: Lab): void {
 function destroyLab(lab: Lab): void {
   if (lab.dead) return;
   lab.dead = true;
-  lab.strip.remove();
+  lab.strip?.remove();
   lab.dlg.remove();
   if (!document.getElementById('pixel-dlg') && !document.getElementById('shader-strip')) {
     document.getElementById('haunted-lab-css')?.remove();

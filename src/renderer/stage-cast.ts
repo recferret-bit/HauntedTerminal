@@ -6,6 +6,7 @@ import {
   type AnimState, type AnimTint, type BuiltModel, type ModelAnimator, type ZoneId,
 } from '../procgen/index.js';
 import { createVortexMaterial, type ComicMaterial } from '../shaders/comic-material.js';
+import { applyHeroFaceTier, heroFaceTierForHp, type HeroFaceTier } from './portrait.js';
 import { LEGACY_CAST, stampMaterialBases, type HauntedCast } from './procgen-cast.js';
 
 /**
@@ -20,6 +21,8 @@ export interface StageActor {
   key: string;
   kind: ActorKind;
   modelId: string;
+  seed: number;
+  faceTier: HeroFaceTier;
   /** Outer group: placed by the stage. */
   group: THREE.Group;
   /** Holds the model (legacy scale lives here). Overlays (pips, plates) hang off `group`, not this. */
@@ -165,21 +168,80 @@ function stateTintHook(model: BuiltModel): ((tint: AnimTint | null) => void) & {
   return Object.assign(apply, { again: () => apply(last) });
 }
 
-export function buildStageActor(ra: RoomActor, seed: number): StageActor {
-  const modelId = modelIdFor(ra);
-  const legacy = ra.key !== 'entity' ? LEGACY_CAST[ra.key as keyof HauntedCast] : undefined;
-  const kind: ActorKind = ra.kind ?? (legacy && (!ra.model || ra.model === legacy.model) ? legacy.kind : kindForModel(modelId));
-  const model = buildModel(ModelCatalog.build(modelId, seed), { seed });
+function buildActorModel(
+  modelId: string,
+  assetKey: string,
+  seed: number,
+  faceTier: HeroFaceTier,
+  onBeat: (state: AnimState, beat: string) => void,
+): { model: BuiltModel; animator: ModelAnimator; tint: ReturnType<typeof stateTintHook> } {
+  const spec = applyHeroFaceTier(ModelCatalog.build(modelId, seed), faceTier);
+  const model = buildModel(spec, { seed });
   stampMaterialBases(model.allMaterials);
   const tint = stateTintHook(model);
   // Prime the colour lerp now: it captures base colours on its first call, which must not be mid-flash.
   tint(null);
-  const actorRef: { a: StageActor | null } = { a: null };
   const animator = createAnimator(model, {
     ...animActingOptions(modelId),
     onTint: (t) => tint(t),
-    onBeat: (state, beat) => actorRef.a?.onBeat?.(state, beat),
+    onBeat,
   });
+  model.group.userData.assetKey = assetKey;
+  return { model, animator, tint };
+}
+
+/** Hot-swaps the 3D `vibecoder` actor mesh to match an HP or `'ouch'` face tier without losing animation phase. */
+export function setHeroFaceTier(
+  actor: StageActor,
+  tier: HeroFaceTier,
+  onSwap?: (group: THREE.Group) => void,
+): void {
+  if (actor.disposed || actor.exiting || actor.kind !== 'vibecoder' || actor.faceTier === tier) return;
+  const prevState = actor.animator.state;
+  const prevTime = actor.animator.time;
+  const prevLoco = actor.animator.locomotion;
+  actor.body.remove(actor.model.group);
+  try {
+    actor.animator.dispose();
+  } catch {
+    /* already gone */
+  }
+  disposeModel(actor.model);
+
+  const built = buildActorModel(
+    actor.modelId,
+    actor.key,
+    actor.seed,
+    tier,
+    (state, beat) => actor.onBeat?.(state, beat),
+  );
+  built.animator.time = prevTime;
+  built.animator.setLocomotion(prevLoco);
+  if (prevState !== 'idle') built.animator.setState(prevState);
+  actor.body.add(built.model.group);
+  actor.model = built.model;
+  actor.animator = built.animator;
+  actor.all = [...built.model.allMaterials];
+  actor.glow = built.model.materials.get('lantern');
+  actor.retint = () => built.tint.again();
+  actor.faceTier = tier;
+  onSwap?.(actor.group);
+}
+
+export function buildStageActor(ra: RoomActor, seed: number): StageActor {
+  const modelId = modelIdFor(ra);
+  const legacy = ra.key !== 'entity' ? LEGACY_CAST[ra.key as keyof HauntedCast] : undefined;
+  const kind: ActorKind = ra.kind ?? (legacy && (!ra.model || ra.model === legacy.model) ? legacy.kind : kindForModel(modelId));
+  const faceTier: HeroFaceTier =
+    kind === 'vibecoder' && ra.hp !== undefined && ra.maxHp !== undefined ? heroFaceTierForHp(ra.hp, ra.maxHp) : 0;
+  const actorRef: { a: StageActor | null } = { a: null };
+  const { model, animator, tint } = buildActorModel(
+    modelId,
+    ra.key,
+    seed,
+    faceTier,
+    (state, beat) => actorRef.a?.onBeat?.(state, beat),
+  );
   const group = new THREE.Group();
   const id = actorId(ra);
   group.name = `actor:${id}`;
@@ -189,7 +251,6 @@ export function buildStageActor(ra: RoomActor, seed: number): StageActor {
   group.add(body);
   const scale = legacy && modelId === legacy.model && legacy.scale ? legacy.scale : 1;
   body.scale.setScalar(scale);
-  model.group.userData.assetKey = ra.key;
 
   let vortex: THREE.ShaderMaterial | undefined;
   let vortexMesh: THREE.Mesh | undefined;
@@ -213,6 +274,8 @@ export function buildStageActor(ra: RoomActor, seed: number): StageActor {
     key: ra.key,
     kind,
     modelId,
+    seed,
+    faceTier,
     group,
     body,
     model,

@@ -58,7 +58,9 @@ await withProcgen(async (_p, vite) => {
   const { createSession } = await load('/src/game/session.ts');
   const disk = await load('/src/terminal-lab/disk.ts');
   const { ConflictError } = await load('/src/editor-core/http.ts');
-  const { PORTRAIT_FRAMES, rasterPortraitFrame } = await load('/src/renderer/portrait.ts');
+  const { applyHeroFaceTier, heroFaceTierForHp, PORTRAIT_FRAMES, rasterPortraitFrame } = await load('/src/renderer/portrait.ts');
+  const { ModelCatalog } = await load('/src/procgen/index.ts');
+  const { heroFaceTierForHp: uiHeroFaceTierForHp } = await load('/src/ui/dom-lite.ts');
   const { ENTER_MS, EXIT_MS, HEAD_FRAME_MS, mountDialogBox } = await load('/src/ui/dialog-box.ts');
   const { mountDialogOrchestrator, stripSpeakerPrefix } = await load('/src/ui/dialog-orchestrator.ts');
 
@@ -1027,6 +1029,63 @@ await withProcgen(async (_p, vite) => {
     for (const f of itemFrames.slice(1)) assert.equal(sameBytes(itemFrames[0], f), true, 'item.lantern icon stays static');
   });
 
+  await test('portrait filter & Doom/Quake HP face tiers: macro-pixels + distinct tier expressions', () => {
+    const tiers = [0, 1, 2, 3, 4, 'ouch'];
+    for (const [hp, maxHp, expected] of [
+      [100, 100, 0], [80, 100, 0], [79, 100, 1], [60, 100, 1],
+      [59, 100, 2], [40, 100, 2], [39, 100, 3], [20, 100, 3],
+      [19, 100, 4], [0, 100, 4],
+    ]) {
+      assert.equal(heroFaceTierForHp(hp, maxHp), expected);
+      assert.equal(uiHeroFaceTierForHp(hp, maxHp), expected);
+    }
+
+    const buffers = tiers.map((t) => rasterPortraitFrame('vibecoder.dev_terminal', 64, 0, t));
+    for (const [idx, buf] of buffers.entries()) {
+      assert.ok(buf && buf.width === 64 && buf.height === 64, `tier ${tiers[idx]} invalid`);
+      // Verify 2x2 macro-pixel block coherence from the software pixel-art filter at >= 48px
+      for (let y = 0; y < 64; y += 2) {
+        for (let x = 0; x < 64; x += 2) {
+          const i0 = (y * 64 + x) * 4;
+          for (const [ox, oy] of [[1, 0], [0, 1], [1, 1]]) {
+            const j = ((y + oy) * 64 + (x + ox)) * 4;
+            assert.equal(buf.data[i0], buf.data[j]);
+            assert.equal(buf.data[i0 + 1], buf.data[j + 1]);
+            assert.equal(buf.data[i0 + 2], buf.data[j + 2]);
+            assert.equal(buf.data[i0 + 3], buf.data[j + 3]);
+          }
+        }
+      }
+    }
+    const differs = (a, b) => a.data.some((v, i) => v !== b.data[i]);
+    for (let i = 0; i < buffers.length; i++) {
+      for (let j = i + 1; j < buffers.length; j++) {
+        assert.equal(differs(buffers[i], buffers[j]), true, `tier ${tiers[i]} and ${tiers[j]} must look distinct`);
+      }
+    }
+
+    // 3D stage ModelSpec cloning preserves unique part names & adds face parts per tier without mutating catalog
+    const baseSpec = ModelCatalog.build('vibecoder.dev_terminal', 1);
+    const basePartCount = baseSpec.parts.length;
+    const partSig = (spec) => spec.parts.map((p) => p.name).join(',');
+    const tierSigs = tiers.map((t) => {
+      const s = applyHeroFaceTier(baseSpec, t);
+      const names = s.parts.map((p) => p.name);
+      assert.equal(new Set(names).size, names.length, `tier ${t} must have unique 3D part names`);
+      return partSig(s);
+    });
+    assert.equal(baseSpec.parts.length, basePartCount, 'applyHeroFaceTier must not mutate catalog spec');
+    assert.equal(new Set(tierSigs).size >= 5, true, '3D model specs must vary across face tiers and ouch');
+
+    // Session snapshot forwards hp/maxHp on the 3D stage vibecoder actor and debugDamage updates it
+    const s = raw();
+    const initialHero = s.snapshot().room.actors.find((a) => a.kind === 'vibecoder');
+    assert.ok(initialHero && typeof initialHero.hp === 'number' && typeof initialHero.maxHp === 'number');
+    const hurt = s.debugDamage(25);
+    const damagedHero = hurt.snapshot.room.actors.find((a) => a.kind === 'vibecoder');
+    assert.equal(damagedHero?.hp, initialHero.hp - 25);
+  });
+
   const withFakeDom = async (fn) => {
     const makeEl = (tag) => {
       const classes = new Set();
@@ -1224,6 +1283,60 @@ await withProcgen(async (_p, vite) => {
       assert.equal(orch.box.pending(), 0);
       assert.equal(orch.stats().maxConcurrent, 1);
       assert.equal(orch.stats().maxRightConcurrent, 1);
+    });
+  });
+
+  await test('hero HUD & horizontal dialog drawer: left vibecoder extends #hero-hud alongside HP bar while masthead/shader-dock stay absent from play.html', async () => {
+    const playHtml = readFileSync(new URL('../../pages/play.html', import.meta.url), 'utf8');
+    assert.equal(playHtml.includes('id="masthead"'), false, 'play.html must not contain #masthead');
+    assert.equal(playHtml.includes('id="shader-dock"'), false, 'play.html must not contain #shader-dock');
+
+    await withFakeDom(async (makeEl) => {
+      const parent = makeEl('div');
+      const heroHud = makeEl('div');
+      heroHud.setAttribute('id', 'hero-hud');
+      heroHud.className = 'hero-hud';
+      const statusCol = makeEl('div');
+      statusCol.className = 'hero-status-col';
+      const hpCell = makeEl('div');
+      hpCell.setAttribute('id', 'hud-hp-cell');
+      statusCol.appendChild(hpCell);
+      const drawer = makeEl('div');
+      drawer.setAttribute('id', 'hero-dialog-drawer');
+      drawer.setAttribute('aria-hidden', 'true');
+      const dName = makeEl('b');
+      dName.setAttribute('id', 'hero-dialog-name');
+      const dText = makeEl('p');
+      dText.setAttribute('id', 'hero-dialog-text');
+      drawer.append(dName, dText);
+      heroHud.append(statusCol, drawer);
+      parent.appendChild(heroHud);
+
+      const box = mountDialogBox(parent, stubDrawPortrait());
+      const cornerRoot = parent.querySelector('.dialog-box');
+      assert.ok(cornerRoot && heroHud.querySelector('#hud-hp-cell') === hpCell);
+
+      box.show({ speaker: 'vibecoder', name: 'DEV', model: 'vibecoder.dev_terminal', text: 'Expanding horizontally!', holdMs: 140 });
+      box.show({ speaker: 'kiro', name: 'KIRO', model: 'npc.kiro_ghost', text: 'Right corner!', holdMs: 120 });
+
+      assert.equal(heroHud.classList.contains('talking'), true);
+      assert.equal(heroHud.classList.contains('open'), true);
+      assert.equal(heroHud.classList.contains('entering'), true);
+      assert.equal(drawer.getAttribute('aria-hidden'), 'false');
+      assert.equal(dName.textContent, 'VIBECODER');
+      assert.equal(dText.textContent, 'Expanding horizontally!');
+      assert.equal(cornerRoot.classList.contains('open'), false, 'floating corner box stays hidden while #hero-hud speaks');
+
+      await wait(140 + 20);
+      assert.equal(heroHud.classList.contains('exiting'), true, '#hero-hud drawer plays exiting animation before advancing');
+
+      await wait(EXIT_MS + 35);
+      assert.equal(heroHud.classList.contains('talking'), false, '#hero-hud collapses when switching to right speaker');
+      assert.equal(drawer.getAttribute('aria-hidden'), 'true');
+      assert.equal(cornerRoot.classList.contains('open'), true);
+      assert.equal(cornerRoot.classList.contains('side-right'), true);
+
+      box.clear();
     });
   });
 });

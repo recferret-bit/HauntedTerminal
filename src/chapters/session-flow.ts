@@ -286,6 +286,15 @@ export function debugHeal(g: ChapterState): GameSnapshot {
     return snapshot(g);
   }
 
+export function debugDamage(g: ChapterState, amount = 10): TickResult {
+    const dmg = Math.max(1, Math.round(amount));
+    g.hp = Math.max(0, g.hp - dmg);
+    const events: KernelEvent[] = [
+      { type: 'PLAYER_DAMAGED', amount: dmg, hpRemaining: g.hp, sourceName: 'dev_panel' },
+    ];
+    return { output: '', events, snapshot: snapshot(g) };
+  }
+
 export function skipTutorial(g: ChapterState): TickResult {
     const events: KernelEvent[] = [];
     const output = applySkipTutorial(g, events);

@@ -150,6 +150,8 @@ export function facts(g: Play): SceneFacts {
     ended: g.run.ended,
     lantern: g.run.lantern,
     held: g.run.inventory.held,
+    hp: g.run.hp,
+    maxHp: maxHp(g),
     xray: g.run.xray,
     flood: g.run.flood,
     things,

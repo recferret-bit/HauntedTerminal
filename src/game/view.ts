@@ -87,7 +87,7 @@ export function buildRoom(facts: SceneFacts): RoomView {
       title: 'DAWN // BACK AT THE DESK',
       caption: 'The lightning throws you back. The agents lose their worker.',
       neighbors: [],
-      actors: [{ key: 'vibecoder', id: 'vibecoder', model: heroModel(facts.held), kind: 'vibecoder', state: 'idle', x: 0.4, hidden: false, label: 'dev' }],
+      actors: [{ key: 'vibecoder', id: 'vibecoder', model: heroModel(facts.held), kind: 'vibecoder', state: 'idle', hp: facts.hp, maxHp: facts.maxHp, x: 0.4, hidden: false, label: 'dev' }],
     };
   }
 
@@ -103,7 +103,7 @@ export function buildRoom(facts: SceneFacts): RoomView {
   const actors: RoomActor[] = [];
   const AUTO = Number.NaN;
   const heroX = place.take(layout.hero ?? 2.4);
-  actors.push({ key: 'vibecoder', id: 'vibecoder', model: heroModel(facts.held), kind: 'vibecoder', state: 'idle', x: heroX, hidden: false, label: 'dev' });
+  actors.push({ key: 'vibecoder', id: 'vibecoder', model: heroModel(facts.held), kind: 'vibecoder', state: 'idle', hp: facts.hp, maxHp: facts.maxHp, x: heroX, hidden: false, label: 'dev' });
   if (facts.kiro) {
     const slotX = facts.kiro.target ? slots[facts.kiro.target]?.x : undefined;
     actors.push({

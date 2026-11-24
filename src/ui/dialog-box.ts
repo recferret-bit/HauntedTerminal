@@ -79,7 +79,32 @@ interface DialogView {
   holdDeadline: number;
   current: DialogLine | null;
   currentSide: 'left' | 'right' | null;
+  usingHeroDrawer: boolean;
   phase: 'idle' | 'entering' | 'hold' | 'exiting';
+}
+
+interface HeroDrawerEls {
+  hud: HTMLElement;
+  drawer: HTMLElement;
+  name: HTMLElement;
+  text: HTMLElement;
+}
+
+const MOOD_CLASSES = ['mood-laugh', 'mood-order', 'mood-smug', 'mood-annoyed'] as const;
+
+function findHeroDrawer(parent: HTMLElement): HeroDrawerEls | null {
+  const hud = parent.querySelector<HTMLElement>('#hero-hud');
+  const drawer = hud?.querySelector<HTMLElement>('#hero-dialog-drawer');
+  const name = hud?.querySelector<HTMLElement>('#hero-dialog-name');
+  const text = hud?.querySelector<HTMLElement>('#hero-dialog-text');
+  return hud && drawer && name && text ? { hud, drawer, name, text } : null;
+}
+
+function closeHeroDrawer(parent: HTMLElement): void {
+  const hero = findHeroDrawer(parent);
+  if (!hero) return;
+  hero.hud.classList.remove('talking', 'open', 'entering', 'exiting', ...MOOD_CLASSES);
+  hero.drawer.setAttribute('aria-hidden', 'true');
 }
 
 function placeRightTop(root: HTMLElement, parent: HTMLElement, side: 'left' | 'right'): void {
@@ -113,10 +138,12 @@ function closeView(v: DialogView): void {
   const wasOpen = v.current !== null;
   v.current = null;
   v.currentSide = null;
+  v.usingHeroDrawer = false;
   v.phase = 'idle';
   v.root.classList.remove('open', 'entering', 'exiting');
   v.root.setAttribute('aria-hidden', 'true');
   v.root.style.top = '';
+  closeHeroDrawer(v.parent);
   if (wasOpen) v.opts.onClose?.();
 }
 
@@ -128,12 +155,55 @@ function beginExit(v: DialogView): void {
   v.holdDeadline = 0;
   if (!v.current || v.phase === 'exiting') return;
   v.phase = 'exiting';
-  v.root.classList.remove('entering');
-  v.root.classList.add('exiting');
+  const target = v.usingHeroDrawer ? findHeroDrawer(v.parent)?.hud ?? v.root : v.root;
+  target.classList.remove('entering');
+  target.classList.add('exiting');
   v.exitTimer = globalThis.setTimeout(() => {
     v.exitTimer = 0;
     advanceQueue(v);
   }, EXIT_MS);
+}
+
+function speakerDisplayName(line: DialogLine): string {
+  return cleanSpeakerId(line.speaker) === 'vibecoder' && (!line.name || line.name.toUpperCase() === 'DEV')
+    ? 'VIBECODER'
+    : line.name;
+}
+
+function showInHeroDrawer(v: DialogView, hero: HeroDrawerEls, line: DialogLine): void {
+  v.root.classList.remove('open', 'entering', 'exiting');
+  v.root.setAttribute('aria-hidden', 'true');
+  v.root.style.top = '';
+  hero.name.textContent = speakerDisplayName(line);
+  hero.text.textContent = line.text;
+  hero.hud.classList.remove('exiting', 'entering', ...MOOD_CLASSES);
+  if (line.mood) hero.hud.classList.add(`mood-${line.mood}`);
+  replayClass(hero.drawer, 'drawer-step');
+  hero.hud.classList.add('talking', 'open', 'entering');
+  hero.drawer.setAttribute('aria-hidden', 'false');
+}
+
+function showInCornerBox(v: DialogView, line: DialogLine, side: 'left' | 'right'): void {
+  closeHeroDrawer(v.parent);
+  const cleanSpeaker = cleanSpeakerId(line.speaker);
+  v.avatar.dataset.frame = '0';
+  v.avatar.replaceChildren(v.drawPortrait(line.model, AVATAR_PX, 0));
+  v.name.textContent = speakerDisplayName(line);
+  v.text.textContent = line.text;
+  const moodClass = line.mood ? ` mood-${line.mood}` : '';
+  v.root.className = `dialog-box side-${side} speaker-${cleanSpeaker}${moodClass}`;
+  v.root.dataset.side = side;
+  v.root.dataset.speaker = cleanSpeaker;
+  v.root.dataset.mood = line.mood ?? '';
+  placeRightTop(v.root, v.parent, side);
+  replayClass(v.root, 'open');
+  v.root.classList.add('entering');
+  v.root.setAttribute('aria-hidden', 'false');
+  v.headTimer = globalThis.setInterval(() => {
+    v.headFrame = (v.headFrame + 1) % PORTRAIT_FRAMES;
+    v.avatar.dataset.frame = String(v.headFrame);
+    v.avatar.replaceChildren(v.drawPortrait(line.model, AVATAR_PX, v.headFrame));
+  }, HEAD_FRAME_MS);
 }
 
 function advanceQueue(v: DialogView): void {
@@ -147,39 +217,23 @@ function advanceQueue(v: DialogView): void {
   }
   const line = v.queue.splice(idx, 1)[0]!;
   const side = sideForSpeaker(line.speaker);
-  const cleanSpeaker = cleanSpeakerId(line.speaker);
+  const hero = side === 'left' ? findHeroDrawer(v.parent) : null;
   v.current = line;
   v.currentSide = side;
+  v.usingHeroDrawer = hero !== null;
   v.phase = 'entering';
   v.headFrame = 0;
 
-  v.avatar.dataset.frame = '0';
-  v.avatar.replaceChildren(v.drawPortrait(line.model, AVATAR_PX, 0));
-  v.name.textContent = line.name;
-  v.text.textContent = line.text;
-
-  const moodClass = line.mood ? ` mood-${line.mood}` : '';
-  v.root.className = `dialog-box side-${side} speaker-${cleanSpeaker}${moodClass}`;
-  v.root.dataset.side = side;
-  v.root.dataset.speaker = cleanSpeaker;
-  v.root.dataset.mood = line.mood ?? '';
-  placeRightTop(v.root, v.parent, side);
-  replayClass(v.root, 'open');
-  v.root.classList.add('entering');
-  v.root.setAttribute('aria-hidden', 'false');
+  if (hero) showInHeroDrawer(v, hero, line);
+  else showInCornerBox(v, line, side);
   v.opts.onOpen?.(line, side);
 
   v.enterTimer = globalThis.setTimeout(() => {
     v.enterTimer = 0;
     if (v.phase === 'entering') v.phase = 'hold';
     v.root.classList.remove('entering');
+    findHeroDrawer(v.parent)?.hud.classList.remove('entering');
   }, ENTER_MS);
-
-  v.headTimer = globalThis.setInterval(() => {
-    v.headFrame = (v.headFrame + 1) % PORTRAIT_FRAMES;
-    v.avatar.dataset.frame = String(v.headFrame);
-    v.avatar.replaceChildren(v.drawPortrait(line.model, AVATAR_PX, v.headFrame));
-  }, HEAD_FRAME_MS);
 
   const holdMs = Math.max(0, line.holdMs);
   v.holdDeadline = Date.now() + holdMs;
@@ -223,6 +277,7 @@ export function mountDialogBox(
     holdDeadline: 0,
     current: null,
     currentSide: null,
+    usingHeroDrawer: false,
     phase: 'idle',
   };
 

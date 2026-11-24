@@ -1,6 +1,6 @@
 /**
  * Keep-out for the stage lettering: a caption slides the smallest distance that clears the page chrome
- * (title block, HUD, tutorial card, shader dock), the agent cameo and the captions already placed this
+ * (title block, HUD, tutorial card), the agent cameo and the captions already placed this
  * frame, while staying inside the panel. Pure box math; stage-overlay.ts feeds it pixel boxes.
  */
 
@@ -12,7 +12,7 @@ export interface Box {
 }
 
 /** DOM elements of the page that paint over the stage. */
-export const CHROME_IDS = ['titleblock', 'hud', 'tutorial-card', 'shader-dock'];
+export const CHROME_IDS = ['titleblock', 'hud', 'tutorial-card'];
 
 /** Bottom edge (px, in `base` space) of the stat strip and buttons that paint over the stage top; 0 when absent. */
 export function hudBottom(base: { left: number; top: number }): number {

@@ -4,6 +4,7 @@ import type { ComicStage } from '../renderer/comic-stage.js';
 export interface InspectorActions {
   onTeleport(floor: number): void;
   onHeal(): void;
+  onDamage?(amount?: number): void;
   onDialogue(): void;
   onTerminalLog(msg: string): void;
   onPlayIntro(): void;
@@ -28,6 +29,7 @@ function inspectorMarkup(stage: ComicStage, give: InspectorActions['onGive']): s
           <button class="insp-btn" data-floor="4">4: Boiler</button>
           <button class="insp-btn" data-floor="5">5: Kernel</button>
           <button class="insp-btn" id="btn-heal">Heal HP</button>
+          <button class="insp-btn" id="btn-damage">+10 DMG</button>
           <button class="insp-btn" id="btn-lightning">Intro flash</button>
           <button class="insp-btn" id="btn-hitboxes">Hitboxes: ${stage.config.showHitboxes ? 'ON' : 'OFF'}</button>
           <button class="insp-btn" id="btn-hot-reload-top">Hot-Reload Assets</button>
@@ -143,6 +145,12 @@ function wireInspector(
   });
   const heal = container.querySelector<HTMLButtonElement>('#btn-heal');
   if (heal) heal.onclick = () => actions.onHeal();
+  const damage = container.querySelector<HTMLButtonElement>('#btn-damage');
+  if (damage) {
+    damage.onclick = () => (actions.onDamage
+      ? actions.onDamage(10)
+      : fire({ type: 'PLAYER_DAMAGED', amount: 10, hpRemaining: 90, sourceName: 'dev_panel' }));
+  }
   container.querySelectorAll<HTMLButtonElement>('[data-give]').forEach((btn) => {
     btn.onclick = () => give?.(btn.dataset.give as 'energy' | 'ram' | 'ssd');
   });

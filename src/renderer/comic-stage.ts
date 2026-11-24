@@ -116,6 +116,7 @@ export class ComicStage {
   elapsed = 0;
   shakeLeft = 0;
   shakeAmp = 0;
+  heroOuchUntil = 0;
   private running = false;
   built = false;
   private pixelParams: PixelArtParams | null = null;

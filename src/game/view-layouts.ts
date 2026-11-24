@@ -20,6 +20,8 @@ export interface SceneFacts {
   dark?: boolean;
   /** The item in his hand: picks the hero model. Default: the lantern. */
   held?: ItemId;
+  hp?: number;
+  maxHp?: number;
   xray: boolean;
   flood: number;
   /** Children of the cwd. */

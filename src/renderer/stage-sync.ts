@@ -3,7 +3,10 @@ import { ModelCatalog } from '../procgen/index.js';
 import { isComic } from '../shaders/comic-material.js';
 import { eventEntityIds } from './event-fx.js';
 import type { RoomActor, RoomView } from './room-view.js';
-import { actorId, actorSocket, buildStageActor, pipState, restStateFor, type StageActor } from './stage-cast.js';
+import { heroFaceTierForHp, type HeroFaceTier } from './portrait.js';
+import {
+  actorId, actorSocket, buildStageActor, pipState, restStateFor, setHeroFaceTier, type StageActor,
+} from './stage-cast.js';
 import { ACTOR_Z, lockedNames, themeFor } from './stage-const.js';
 import { doorLocked, fade, pendingQueuedSpawn, queuedFor, removeActor, setRest } from './stage-actor.js';
 import { clearBubble, playFx, say } from './stage-fx.js';
@@ -100,6 +103,18 @@ function onActorCreated(stage: ComicStage, a: StageActor): void {
   }
 }
 
+/** Keeps the 3D `vibecoder` actor model synced to the active Doom/Quake HP or `'ouch'` face tier. */
+export function syncHeroFace(stage: ComicStage, a: StageActor): void {
+  if (a.kind !== 'vibecoder' || a.disposed || a.exiting) return;
+  const tier: HeroFaceTier = stage.heroOuchUntil > stage.clockMs
+    ? 'ouch'
+    : heroFaceTierForHp(a.hp ?? 100, a.maxHp ?? 100);
+  setHeroFaceTier(a, tier, (g) => {
+    stage.applyInk(g);
+    if (stage.view?.lantern) applyLantern(stage, 1);
+  });
+}
+
 /** Place, state, hp: idempotent, so main.ts may call it every frame. */
 export function applyActor(stage: ComicStage, a: StageActor, ra: RoomActor, index: number, snap: boolean): void {
   if (a.exiting) return;
@@ -112,9 +127,11 @@ export function applyActor(stage: ComicStage, a: StageActor, ra: RoomActor, inde
   if (ra.pid !== undefined) a.pid = ra.pid;
   if (ra.maxHp !== undefined) a.maxHp = ra.maxHp;
   if (ra.hp !== undefined && ra.hp !== a.hp) {
+    if (a.kind === 'vibecoder' && a.hp !== undefined && ra.hp > a.hp) stage.heroOuchUntil = 0;
     a.hp = ra.hp;
     if (!stage.queue.some((q) => eventEntityIds(q.ev).includes(a.id))) a.displayHp = ra.hp;
   }
+  if (a.kind === 'vibecoder') syncHeroFace(stage, a);
   const y = Number.isFinite(ra.y) ? (ra.y as number) : 0;
   if (ra.x !== a.viewX || y !== a.viewY || snap) {
     a.viewX = ra.x;

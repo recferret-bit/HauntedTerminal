@@ -215,6 +215,11 @@ export function mountPlayDev(play: Play): void {
       play.paint(play.session.debugHeal());
       play.shell.printAbove('\x1b[32mHP restored.\x1b[0m');
     },
+    onDamage: (amount = 10) => {
+      const res = play.session.debugDamage(amount);
+      play.apply(res.events, res.snapshot);
+      play.shell.printAbove(`\x1b[31m-${amount} HP (dev panel).\x1b[0m`);
+    },
     onGive: (item) => {
       if (!play.debugGive) return;
       const r = play.debugGive(item);

@@ -204,6 +204,10 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
     return flow.debugHeal(this);
   }
 
+  debugDamage(amount = 10): TickResult {
+    return flow.debugDamage(this, amount);
+  }
+
   skipTutorial(): TickResult {
     return flow.skipTutorial(this);
   }

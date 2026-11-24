@@ -102,6 +102,7 @@ export function buildStageScene(stage: ComicStage): void {
   stage.fxPlayer.clear();
   stage.cardKill = null;
   stage.bubble = null;
+  stage.heroOuchUntil = 0;
   for (const a of [...stage.actors.values()]) removeActor(stage, a);
   stage.queue = [];
   stage.pendingSpawn.clear();

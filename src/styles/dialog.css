@@ -97,10 +97,14 @@
 .item-label { font-size: 8px; letter-spacing: 0.06em; text-transform: uppercase; }
 .item-slot.pop { animation: hud-bump 0.45s ease-out; }
 
-/* Narrow stage: drop to bottom while preserving left (vibecoder) vs right (NPC/agent) docking. */
+/* Narrow stage: keep left (vibecoder #hero-hud or .dialog-box) vs right (NPC/agent .dialog-box) separated cleanly. */
 @media (max-width: 820px) {
   .dialog-box.side-left { top: auto; bottom: 44px; left: 10px; right: auto; width: min(320px, calc(100% - 24px)); }
   .dialog-box.side-right { top: auto !important; bottom: 44px; right: 10px; left: auto; width: min(320px, calc(100% - 24px)); }
   .dialog-avatar { flex-basis: 48px; width: 48px; height: 48px; }
   .dialog-text { font-size: 12px; }
+  .hero-avatar { width: 56px; height: 56px; }
+  .hero-status-col .hud-hp { width: 56px; }
+  .hero-dialog-inner { width: min(210px, calc(100vw - 120px)); padding: 5px 8px; }
+  .hero-dialog-inner .dialog-text { font-size: 12px; }
 }

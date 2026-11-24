@@ -1,9 +1,12 @@
 import { ACHIEVEMENT_SPECS, readAchievements } from '../chapters/achievements.js';
 import { downloadPortableSaveFile } from '../chapters/portable-save.js';
 import { wireExternalLinksForDesktop, wireSteamWishlistLink } from '../chapters/steam-bridge.js';
+import { heroModel } from '../game/inventory.js';
 import type { GameSnapshot } from '../game/types.js';
 import { escHtml as esc } from '../renderer/html-escape.js';
-import type { DrawPortrait } from './dom-lite.js';
+import {
+  el, heroFaceTierForHp, PORTRAIT_FRAMES, type DrawPortrait, type HeroFaceTier,
+} from './dom-lite.js';
 import { mountItemsStrip, type ItemsStrip } from './items-strip.js';
 
 export interface HudHandlers {
@@ -60,12 +63,19 @@ function q<T extends HTMLElement>(sel: string, from: ParentNode): T {
   return from.querySelector<T>(sel)!;
 }
 
+const HERO_AVATAR_PX = 64;
+const HERO_IDLE_MS = 180;
+const HERO_OUCH_MS = 600;
+const DEFAULT_HERO_MODEL = 'vibecoder.dev';
+const heroHudCleanup = new WeakMap<HTMLElement, () => void>();
+
+function unrefTimer(id: number): number {
+  const handle = id as unknown as { unref?: () => void };
+  handle.unref?.();
+  return id;
+}
+
 const HUD_HTML = (maxFloors: number, tactical: string) => `
-    <div class="hud-cell hud-hp" id="hud-hp-cell" title="Health">
-      <span class="hud-k">HP</span>
-      <span class="hp-bar" aria-hidden="true"><i id="hud-hp-bar"></i></span>
-      <b id="hud-hp">100/100</b>
-    </div>
     <div class="hud-cell" id="hud-ram-cell" title="RAM collected: every 16 GB adds max HP">
       <span class="hud-k">RAM</span><b id="hud-ram">0</b><span class="hud-u">GB</span>
     </div>
@@ -117,6 +127,8 @@ const STATS_HTML = `
 interface HudView {
   root: HTMLElement;
   stats: HTMLElement;
+  heroRoot: HTMLElement;
+  heroAvatar: HTMLElement;
   hpCell: HTMLElement;
   hpText: HTMLElement;
   hpBar: HTMLElement;
@@ -137,10 +149,70 @@ interface HudView {
   achTimer: number;
   skipBox: HTMLInputElement;
   items: ItemsStrip | null;
+  drawPortrait?: DrawPortrait;
+  heroModelId: string;
+  heroFrame: number;
+  heroFaceTier: 0 | 1 | 2 | 3 | 4;
+  ouchUntil: number;
+  heroTimer: number;
+  ouchTimer: number;
   lastHp: number;
   lastPips: string;
   hintTimer: number;
   onHintShow?: () => void;
+}
+
+function renderHeroAvatar(view: HudView): void {
+  const tier: HeroFaceTier = view.ouchUntil > Date.now() ? 'ouch' : view.heroFaceTier;
+  view.heroRoot.dataset.tier = String(tier);
+  view.heroRoot.dataset.frame = String(view.heroFrame);
+  view.heroAvatar.dataset.tier = String(tier);
+  view.heroAvatar.dataset.frame = String(view.heroFrame);
+  if (!view.drawPortrait) return;
+  const canvas = view.drawPortrait(view.heroModelId, HERO_AVATAR_PX, view.heroFrame, tier);
+  if (view.heroAvatar.firstChild !== canvas) view.heroAvatar.replaceChildren(canvas);
+}
+
+function mountHeroHud(
+  stageWrap: HTMLElement,
+  drawPortrait?: DrawPortrait,
+): { root: HTMLElement; avatar: HTMLElement; hpCell: HTMLElement; hpText: HTMLElement; hpBar: HTMLElement } {
+  stageWrap.querySelector('#hero-hud')?.remove();
+  const avatar = el('div', 'hero-avatar');
+  avatar.id = 'hero-avatar';
+  avatar.dataset.tier = '0';
+  avatar.dataset.frame = '0';
+  if (drawPortrait) avatar.appendChild(drawPortrait(DEFAULT_HERO_MODEL, HERO_AVATAR_PX, 0, 0));
+
+  const hpBar = document.createElement('i');
+  hpBar.id = 'hud-hp-bar';
+  const barWrap = el('span', 'hp-bar', [hpBar]);
+  barWrap.setAttribute('aria-hidden', 'true');
+  const hpText = document.createElement('b');
+  hpText.id = 'hud-hp';
+  hpText.textContent = '100/100';
+  const hpCell = el('div', 'hud-cell hud-hp', [barWrap, hpText]);
+  hpCell.id = 'hud-hp-cell';
+  hpCell.setAttribute('title', 'Health');
+
+  const dName = el('b', 'dialog-name');
+  dName.id = 'hero-dialog-name';
+  const dText = el('p', 'dialog-text');
+  dText.id = 'hero-dialog-text';
+  const drawer = el('div', 'hero-dialog-drawer', [el('div', 'hero-dialog-inner', [dName, dText])]);
+  drawer.id = 'hero-dialog-drawer';
+  drawer.setAttribute('aria-live', 'polite');
+  drawer.setAttribute('aria-hidden', 'true');
+
+  const root = el('div', 'hero-hud', [el('div', 'hero-status-col', [avatar, hpCell]), drawer]);
+  root.id = 'hero-hud';
+  root.dataset.tier = '0';
+  root.dataset.frame = '0';
+
+  const host = stageWrap.querySelector<HTMLElement>('#titleblock') ?? stageWrap;
+  if (typeof host.prepend === 'function') host.prepend(root);
+  else host.appendChild(root);
+  return { root, avatar, hpCell, hpText, hpBar };
 }
 
 function pop(anchor: HTMLElement, text: string, cls: string): void {
@@ -148,7 +220,7 @@ function pop(anchor: HTMLElement, text: string, cls: string): void {
   el.className = `hud-pop ${cls}`;
   el.textContent = text;
   anchor.appendChild(el);
-  window.setTimeout(() => el.remove(), 1400);
+  globalThis.setTimeout(() => el.remove(), 1400);
 }
 
 function updateHud(view: HudView, snap: GameSnapshot): void {
@@ -159,6 +231,13 @@ function updateHud(view: HudView, snap: GameSnapshot): void {
   }
   view.hpBar.style.width = `${Math.max(0, Math.min(100, (snap.hp / maxHp) * 100))}%`;
   view.hpCell.classList.toggle('low', snap.hp / maxHp <= 0.3);
+  const nextModel = heroModel(snap.inventory?.held);
+  const nextTier = heroFaceTierForHp(snap.hp, maxHp);
+  if (nextModel !== view.heroModelId || nextTier !== view.heroFaceTier) {
+    view.heroModelId = nextModel;
+    view.heroFaceTier = nextTier;
+    renderHeroAvatar(view);
+  }
   view.ram.textContent = String(snap.ram ?? 0);
   view.ssd.textContent = String(snap.ssd ?? 0);
   const backups = Math.max(0, snap.backups ?? 0);
@@ -190,6 +269,16 @@ function hudApi(view: HudView): Hud {
       replay(view.hpCell, 'shake');
       pop(view.hpCell, `-${amount}`, 'pop-dmg');
       view.flash.title = source;
+      view.ouchUntil = Date.now() + HERO_OUCH_MS;
+      view.heroRoot.classList.add('ouch');
+      renderHeroAvatar(view);
+      globalThis.clearTimeout(view.ouchTimer);
+      view.ouchTimer = unrefTimer(globalThis.setTimeout(() => {
+        view.ouchTimer = 0;
+        view.ouchUntil = 0;
+        view.heroRoot.classList.remove('ouch');
+        renderHeroAvatar(view);
+      }, HERO_OUCH_MS + 10) as unknown as number);
     },
     pickup(item, label) {
       if (item === 'lantern') {
@@ -219,7 +308,7 @@ function hudApi(view: HudView): Hud {
         q('.ach-key', view.achToast).textContent = next.steamApiName;
         q('.ach-desc', view.achToast).textContent = next.description;
         replay(view.achToast, 'open');
-        view.achTimer = window.setTimeout(showNext, 3400);
+        view.achTimer = globalThis.setTimeout(showNext, 3400) as unknown as number;
       };
       showNext();
     },
@@ -227,11 +316,11 @@ function hudApi(view: HudView): Hud {
       view.onHintShow?.();
       q('p', view.hint).innerHTML = esc(text).replace(/\n/g, '<br>');
       replay(view.hint, 'open');
-      window.clearTimeout(view.hintTimer);
-      view.hintTimer = window.setTimeout(() => view.hint.classList.remove('open'), 9000);
+      globalThis.clearTimeout(view.hintTimer);
+      view.hintTimer = globalThis.setTimeout(() => view.hint.classList.remove('open'), 9000) as unknown as number;
     },
     hideHint() {
-      window.clearTimeout(view.hintTimer);
+      globalThis.clearTimeout(view.hintTimer);
       view.hintTimer = 0;
       view.hint.classList.remove('open');
     },
@@ -289,10 +378,12 @@ function mountFx(stageWrap: HTMLElement): HTMLElement {
 }
 
 export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLElement, handlers: HudHandlers): Hud {
+  heroHudCleanup.get(stageWrap)?.();
   const tactical = handlers.onToggleTactical
     ? `<button type="button" id="hud-tactical" class="${handlers.initialTactical ? 'tactical-on' : ''}" title="Toggle Turn-Based Tactical Mode">${handlers.initialTactical ? 'Tactical: ON' : 'Tactical'}</button>`
     : '';
   root.innerHTML = HUD_HTML(handlers.maxFloors ?? 5, tactical);
+  const hero = mountHeroHud(stageWrap, handlers.drawPortrait);
   const fx = mountFx(stageWrap);
   bindHud(root, fx, handlers);
   stats.innerHTML = STATS_HTML;
@@ -304,17 +395,19 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
   exportBtn.onclick = () => {
     downloadPortableSaveFile();
     exportBtn.textContent = 'Save Exported';
-    window.setTimeout(() => {
+    globalThis.setTimeout(() => {
       exportBtn.textContent = 'Export Save (.json)';
     }, 2400);
   };
   const hint = q('#fx-hint', fx);
-  return hudApi({
+  const view: HudView = {
     root,
     stats,
-    hpCell: q('#hud-hp-cell', root),
-    hpText: q('#hud-hp', root),
-    hpBar: q('#hud-hp-bar', root),
+    heroRoot: hero.root,
+    heroAvatar: hero.avatar,
+    hpCell: hero.hpCell,
+    hpText: hero.hpText,
+    hpBar: hero.hpBar,
     ram: q('#hud-ram', root),
     ssd: q('#hud-ssd', root),
     pips: q('#hud-pips', root),
@@ -332,9 +425,29 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     achTimer: 0,
     skipBox,
     items: handlers.drawPortrait ? mountItemsStrip(root, handlers.drawPortrait) : null,
+    drawPortrait: handlers.drawPortrait,
+    heroModelId: DEFAULT_HERO_MODEL,
+    heroFrame: 0,
+    heroFaceTier: 0,
+    ouchUntil: 0,
+    heroTimer: 0,
+    ouchTimer: 0,
     lastHp: -1,
     lastPips: '',
     hintTimer: 0,
     onHintShow: handlers.onHintShow,
+  };
+  if (handlers.drawPortrait) {
+    view.heroTimer = unrefTimer(globalThis.setInterval(() => {
+      view.heroFrame = (view.heroFrame + 1) % PORTRAIT_FRAMES;
+      renderHeroAvatar(view);
+    }, HERO_IDLE_MS) as unknown as number);
+  }
+  heroHudCleanup.set(stageWrap, () => {
+    globalThis.clearInterval(view.heroTimer);
+    globalThis.clearTimeout(view.ouchTimer);
+    view.heroTimer = 0;
+    view.ouchTimer = 0;
   });
+  return hudApi(view);
 }

@@ -121,6 +121,8 @@ export function snapshot(g: ChapterState): GameSnapshot {
       lantern: g.rt.lantern,
       dark: !g.inventory.items.includes('lantern'),
       held: g.inventory.held,
+      hp: g.hp,
+      maxHp,
       xray: g.rt.xray,
       flood: 0,
       things,

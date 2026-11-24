@@ -5,7 +5,7 @@
   "fonts": ["Chakra Petch", "IBM Plex Mono"],
   "pages": {
     "play": {
-      "selectors": ["#masthead", "#hud", "#tutorial-card", "#shader-dock", ".st-ncard", "#stage-caption", "#terminal-dock", "#pixel-dlg", ".st-card", ".st-say", ".st-lock", ".st-plate", ".st-badges", ".st-pips"],
+      "selectors": ["#hero-hud", "#hud", "#tutorial-card", ".st-ncard", "#stage-caption", "#terminal-dock", "#pixel-dlg", ".st-card", ".st-say", ".st-lock", ".st-plate", ".st-badges", ".st-pips"],
       "ignoreOverflow": [".xterm", "#dev-inspector"],
       "allowOverlap": []
     },

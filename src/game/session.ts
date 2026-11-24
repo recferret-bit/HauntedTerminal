@@ -35,6 +35,7 @@ export interface Session {
   restartFloor(): TickResult;
   debugTeleport(floor: FloorId): TickResult;
   debugHeal(): GameSnapshot;
+  debugDamage(amount?: number): TickResult;
   // The concrete session also has `debugGive(item, amount?)` (dev panel); main.ts probes for it.
   /** End the floor-1 tutorial now (the HUD button; the shell has `tutorial skip`). */
   skipTutorial(): TickResult;
@@ -313,6 +314,15 @@ class Game implements LabSession, Host {
   debugHeal(): GameSnapshot {
     this.run.hp = maxHp(this);
     return this.snapshot();
+  }
+
+  debugDamage(amount = 10): TickResult {
+    const dmg = Math.max(1, Math.round(amount));
+    this.run.hp = Math.max(0, this.run.hp - dmg);
+    const events: KernelEvent[] = [
+      { type: 'PLAYER_DAMAGED', amount: dmg, hpRemaining: this.run.hp, sourceName: 'dev_panel' },
+    ];
+    return { output: '', events, snapshot: this.snapshot() };
   }
 
   debugGive(item: PickupType, amount?: number): TickResult {

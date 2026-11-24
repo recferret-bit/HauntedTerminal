@@ -108,7 +108,7 @@ export function stepOutput(s: ScriptStep, env: StepEnv): { events: KernelEvent[]
         print: '',
       };
     case 'dialog_box': {
-      const name = s.speaker === 'vibecoder' ? 'DEV' : s.speaker.toUpperCase();
+      const name = s.speaker.toUpperCase();
       const model = s.speaker === 'vibecoder' ? (env.heroModel ?? 'vibecoder.dev_terminal') : agentModel(s.speaker);
       return {
         events: [{ type: 'DIALOG_BOX', speaker: s.speaker, name, model, text: s.text, holdMs: Math.round((s.holdSec ?? 4) * 1000) }],
