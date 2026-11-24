@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-// Tag-driven release for Haunted Terminal (power `haunted-release`, spec .kiro/specs/release-tags-power/).
+// Tag-driven release for Out Of Credits (power `credits-release`, spec .kiro/specs/release-tags-power/).
 //
-//   node .kiro/powers/haunted-release/skills/release/scripts/release.mjs release <version>          print the plan, change nothing
+//   node .kiro/powers/credits-release/skills/release/scripts/release.mjs release <version>          print the plan, change nothing
 //   node .../release.mjs release <version> --dry-run                                                checks and gates, no tag
 //   node .../release.mjs release <version> --yes                                                    checks, gates, tag, push, watch, Netlify preview
 //   node .../release.mjs release <version> --yes --no-netlify                                       same, without the Netlify preview
 //   node .../release.mjs --selftest                                                                 pure checks, no git, no network
 //
 // The pushed tag `v<version>` starts desktop-release.yml (Tauri installers on a GitHub Release). Netlify production is never promoted here: after the preview
-// the user says yes and runs `ship.mjs prod` (the haunted-ship rule: prod gets exactly the played preview).
+// the user says yes and runs `ship.mjs prod` (the credits-ship rule: prod gets exactly the played preview).
 // Credentials: `gh auth login` and `netlify login`; this script never reads or prints a token.
 // Exit codes: 0 ok, 1 a check, gate or push failed (or a refusal), 2 setup needed.
 import { spawnSync } from 'node:child_process';
@@ -17,7 +17,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../../..');
-const SHIP = '.kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs';
+const SHIP = '.kiro/powers/credits-ship/skills/ship/scripts/ship.mjs';
 const SEMVER = /^\d+\.\d+\.\d+$/;
 const GATES = [
   ['npm', ['run', 'quality']],
@@ -126,9 +126,9 @@ function release(o) {
     console.log(`\ndry run OK: v${o.version} would be tagged at ${sha}. No tag created.`);
     return 0;
   }
-  if (!step(`tag v${o.version}`, 'git', ['tag', '-a', `v${o.version}`, '-m', `Haunted Terminal v${o.version}`])) return 1;
+  if (!step(`tag v${o.version}`, 'git', ['tag', '-a', `v${o.version}`, '-m', `Out Of Credits v${o.version}`])) return 1;
   if (!step(`push v${o.version}`, 'git', ['push', 'origin', `v${o.version}`])) return 1;
-  console.log('\nTag pushed. Workflows: https://github.com/recferret-bit/HauntedTerminal/actions');
+  console.log('\nTag pushed. Workflows: https://github.com/recferret-bit/OutOfCredits/actions');
   if (sh('gh', ['--version']).status === 0) {
     if (!watchTagRun(o.version)) {
       console.error(`\nThe desktop build for v${o.version} did not succeed. The tag stays pushed; see the Actions URL above. Netlify preview skipped.`);

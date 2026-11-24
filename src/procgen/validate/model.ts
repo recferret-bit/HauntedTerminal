@@ -1,6 +1,6 @@
 /**
  * Model validator: checks a plain ModelSpec against the art bible
- * (.kiro/skills/haunted-art-direction/SKILL.md) without WebGL.
+ * (.kiro/skills/credits-art-direction/SKILL.md) without WebGL.
  * Checks, thresholds and fixes: .kiro/skills/model-geometry-validator.
  *
  *   validateModelSpec(spec)   any ModelSpec

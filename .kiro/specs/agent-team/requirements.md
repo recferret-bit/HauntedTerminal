@@ -2,7 +2,7 @@
 
 Status: approved (requirements, design and tasks approved by the user 2026-11-17)
 
-Capability: a team of committed Kiro custom agents that tune each major part of Haunted Terminal. Four gameplay designers own one feature each (terminal, laptop, comix, chapters). A lead game developer orchestrates them. An artist creates and updates assets through the ASSET PCG skills. A QA agent plays the game and touches every part of it. The user runs them from Kiro CLI and from the Kiro Crew app.
+Capability: a team of committed Kiro custom agents that tune each major part of Out Of Credits. Four gameplay designers own one feature each (terminal, laptop, comix, chapters). A lead game developer orchestrates them. An artist creates and updates assets through the ASSET PCG skills. A QA agent plays the game and touches every part of it. The user runs them from Kiro CLI and from the Kiro Crew app.
 
 ## Requirements
 
@@ -33,7 +33,7 @@ Agents: `lead-dev`, `terminal-designer`, `laptop-designer`, `comix-designer`, `c
 
 9. WHEN `lead-dev` receives a request, THE SYSTEM SHALL route each part to the owning agent, and only to the six agents named here (`subagent/<name>` tools, no generic sub-agent tool).
 10. WHEN a delegated change finishes, `lead-dev` SHALL call `qa` on the affected features before reporting the change as done.
-11. WHEN `artist` receives an asset request, THE SYSTEM SHALL read `haunted-art-direction` first, use the matching ASSET PCG skill, and run its validator and the visual QA pass (`comic-panel-viewport-auditor`).
+11. WHEN `artist` receives an asset request, THE SYSTEM SHALL read `credits-art-direction` first, use the matching ASSET PCG skill, and run its validator and the visual QA pass (`comic-panel-viewport-auditor`).
 12. WHEN a designer finishes a change, THE SYSTEM SHALL run the gates of its feature (listed per agent in the design) and report the ones it actually ran.
 
 ### QA

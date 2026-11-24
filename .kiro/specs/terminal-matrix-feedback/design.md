@@ -21,7 +21,7 @@ artist              src/procgen/core/palette.ts          adds pure Matrix green 
                     src/renderer/stage-motion.ts         heroAction untargeted branch plays hopInPlace(stage, hero, 0.16, 220)
                     src/renderer/stage-selfcheck.ts      doc comment updated for 24 presets
                     .kiro/skills/procedural-particles-3d/references/preset-catalog.md  documents fx.matrix-cast
-                    .kiro/skills/haunted-art-direction/SKILL.md  documents Matrix palette zones
+                    .kiro/skills/credits-art-direction/SKILL.md  documents Matrix palette zones
                     .kiro/skills/particle-effect-validator/scripts/self-test.mjs  adds 'orbit without a radius' test case
 chapters-designer   src/chapters/session-flow.ts         exec() emits a fallback VIBECODER_ACTION { action: 'type', command: typed } when a non-empty command did not already emit one
                     scripts/harness/props/gameplay.mjs   property: every non-empty command in a chapter session emits at least one VIBECODER_ACTION

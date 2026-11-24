@@ -1,9 +1,9 @@
-# MCP: Chrome DevTools and haunted-forge: design
+# MCP: Chrome DevTools and credits-forge: design
 
 ## Pieces
 
 ```
-scripts/mcp/haunted-forge/
+scripts/mcp/credits-forge/
   tools.mjs          pure tool logic: list_assets, list_levels, get_level, validate_level, solve_level, write_level.
                      Takes a `ctx` ({ root, vite }) so tests can point it at a temporary copy of chapters/.
   server.mjs         stdio MCP server (SDK): registers the six tools with zod input schemas, loads the game's TS through
@@ -27,7 +27,7 @@ chrome-devtools: command node, args node_modules/chrome-devtools-mcp/out/Default
                  --no-usage-statistics --no-performance-crux --no-javascript-evaluation --no-file-navigations
                  --allowedUrlPattern http://localhost:*/* http://127.0.0.1:*/* https://*.netlify.app/*
                  env CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS=1, NODE_COMPILE_CACHE=scripts/harness/out/.node-compile-cache
-haunted-forge:   command node, args scripts/mcp/haunted-forge/server.mjs
+credits-forge:   command node, args scripts/mcp/credits-forge/server.mjs
 ```
 
 `qa` selectors: `@chrome-devtools/{list_pages,new_page,select_page,navigate_page,close_page,resize_page,wait_for,take_screenshot,take_snapshot,list_console_messages,get_console_message,list_network_requests,get_network_request,click,hover,fill,type_text,press_key}`, read from the server's `tools/list` (31 tools in 1.13.0). Not listed: `evaluate_script` (disabled anyway), `upload_file`, `emulate`, `drag`, `fill_form`, `handle_dialog`, traces, heap snapshots, screencasts, Lighthouse, `get_css_styles`.
@@ -48,7 +48,7 @@ haunted-forge:   command node, args scripts/mcp/haunted-forge/server.mjs
 ## Found while building (Kiro CLI 3.4.0, Chrome 157, probed with `mcp-probe.mjs`)
 
 - **Kiro fixes an agent's tools when its first turn starts and does not wait for MCP servers.** Tool selection came ~450 ms after the prompt in every run; a server that finished `tools/list` later was missing for that turn, and the agent said so. `npx -y chrome-devtools-mcp@...` connected after ~1.3 s and `node node_modules/...` after ~520 ms, both too late. Fix: `chrome-devtools-mcp` is a pinned devDependency run with `node`, with Node's compile cache in the git-ignored `scripts/harness/out/.node-compile-cache` (~410 ms; connected 57-119 ms before selection in every probed run). Neither `mcp.initTimeout`, `mcp.noInteractiveTimeout` nor `toolSearch.enabled` changed the timing (each was set for one probe and deleted again). The probe's warm-up and qa cases fail if this regresses.
-- **`includePowers: false` does not keep an installed power's MCP server out.** The `haunted-ship` power's Netlify server still started in every agent session. Its tools never reach an agent: the catch-all `mcp` deny refuses them, and the probe checks one (`qa-no-power-tools`). The field stays (documented as the way to exclude powers) and `check-agents` requires it.
+- **`includePowers: false` does not keep an installed power's MCP server out.** The `credits-ship` power's Netlify server still started in every agent session. Its tools never reach an agent: the catch-all `mcp` deny refuses them, and the probe checks one (`qa-no-power-tools`). The field stays (documented as the way to exclude powers) and `check-agents` requires it.
 - **MCP permission rules match `server/tool`.** Allow `server/tool` plus a catch-all `deny *` whose `exclude` is the allow list; the agent then lists exactly its own tools (asked in a probe turn: the 18 browser and 5 forge tools of `qa`, nothing else). A sub-agent's call is also checked against the lead's session, so the lead allows its sub-agents' tools and holds none itself.
 - **`--no-interactive` denies every call without `--trust-all-tools`**, as found for the agent team. The probe runs trust-all (Kiro Crew's Automatic mode), where the agent's own rules and hooks are the only fence; that is what it tests.
 - **A call the URL guard hook blocks prints no `Running:` line.** The hook therefore appends each block to the git-ignored `scripts/harness/out/devtools-url-guard.log`, and the probe checks that log instead of the agent's own account.

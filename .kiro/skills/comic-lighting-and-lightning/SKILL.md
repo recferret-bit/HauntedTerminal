@@ -5,7 +5,7 @@ description: "[ASSET PCG] Lighting of generated assets and rooms: the single fix
 
 # Comic lighting and lightning
 
-Read [haunted-art-direction](../haunted-art-direction/SKILL.md) first.
+Read [credits-art-direction](../credits-art-direction/SKILL.md) first.
 
 ## The model in one paragraph
 

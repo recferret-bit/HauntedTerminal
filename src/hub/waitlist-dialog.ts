@@ -1,6 +1,6 @@
 import { el } from './dom.js';
 
-const RELEASES_URL = 'https://github.com/recferret-bit/HauntedTerminal/releases';
+const RELEASES_URL = 'https://github.com/recferret-bit/OutOfCredits/releases';
 
 function field(...children: Array<Node | string>): HTMLElement {
   return el('div', { class: 'waitlist-field' }, ...children);
@@ -45,7 +45,7 @@ function waitlistForm(): HTMLFormElement {
       check('waitlist-chk-tags', 'notify_tags', 'New ', el('code', {}, 'v*'), ' tagged Tauri desktop builds on GitHub')),
     el('p', { class: 'waitlist-note' },
       el('strong', {}, 'Privacy-first local mode:'),
-      ' Haunted Terminal ships zero third-party analytics or ad scripts. Saving stores your Launch Pass in browser storage (exportable as JSON) while you follow live ',
+      ' Out Of Credits ships zero third-party analytics or ad scripts. Saving stores your Launch Pass in browser storage (exportable as JSON) while you follow live ',
       el('code', {}, 'v*'), ' releases on GitHub.'),
     el('div', { id: 'waitlist-dialog-status', class: 'save-feedback', role: 'status', 'aria-live': 'polite', hidden: true }),
     el('div', { class: 'dialog-actions' },

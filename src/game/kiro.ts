@@ -322,7 +322,7 @@ export class KiroCompanion {
     const stdout =
       `${CYAN}* KIRO.D — PARODY & NON-AFFILIATION NOTICE${RESET} ${DIM}(localhost // zero real brands)${RESET}\n` +
       `  ${GREEN}+ Parody Cast:${RESET} The "Big Four" (${GOLD}Anti-Gravy${RESET}, ${GOLD}Codec${RESET}, ${GOLD}Gork${RESET}, ${GOLD}Clod${RESET}) are original fictional characters poking fun at AI coding agents in general.\n` +
-      `  ${GREEN}+ No Brand Affiliation:${RESET} Haunted Terminal is not affiliated with, endorsed by, or sponsored by any AI or hardware company.\n` +
+      `  ${GREEN}+ No Brand Affiliation:${RESET} Out Of Credits is not affiliated with, endorsed by, or sponsored by any AI or hardware company.\n` +
       `  ${GREEN}+ Educational Terms:${RESET} Open-weight core tags (${GOLD}qwen${RESET}, ${GOLD}mistral${RESET}, ${GOLD}deepseek${RESET}, ${GOLD}llama${RESET}), POSIX commands, and hardware terms are used strictly for educational gameplay.\n`;
     const events: KernelEvent[] = [
       {

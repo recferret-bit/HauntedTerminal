@@ -28,7 +28,7 @@ const LAYERS = [
   { area: 'storybook/ui/', may: ['storybook/domain/', 'storybook/subjects/', 'storybook/stage/'], three: false },
   { area: 'storybook/app/', may: ['storybook/', 'procgen/', 'shaders/'], three: true },
   { area: 'storybook/fixtures.ts', may: ['procgen/core/'], three: false },
-  { area: 'storybook/storybook.ts', may: ['storybook/app/', 'storybook/domain/'], three: false },
+  { area: 'storybook/storybook.ts', may: ['contracts/', 'storybook/app/', 'storybook/domain/'], three: false },
   // Gameplay. Dependencies point inward: contracts and procgen stay free of the game.
   // The play entry (main.ts) is the only file that wires every outer layer together.
   { area: 'assets/', may: [], three: true },
@@ -51,11 +51,11 @@ const LAYERS = [
   { area: 'laptop/domain/', may: [], three: false },
   { area: 'laptop/runtime/', may: ['laptop/domain/'], three: false },
   { area: 'laptop/ui/', may: ['laptop/domain/', 'laptop/runtime/', 'editor-core/', 'procgen/core/'], three: false },
-  { area: 'laptop/', may: ['laptop/', 'editor-core/'], three: false },
+  { area: 'laptop/', may: ['contracts/', 'laptop/', 'editor-core/'], three: false },
   { area: 'hub/', may: ['contracts/', 'chapters/', 'cinematic/catalog'], three: false },
   // Play page composition. main.ts only starts it. Helpers live in play/ so the entry stays small.
   { area: 'play/', may: ['assets/', 'chapters/', 'cinematic/', 'contracts/', 'game/', 'renderer/', 'sandbox/', 'ui/'], three: true },
-  { area: 'main.ts', may: ['play/'], three: false },
+  { area: 'main.ts', may: ['contracts/', 'play/'], three: false },
 ];
 
 function* walk(dir) {

@@ -12,7 +12,7 @@ export const COMMANDS = [
 
 export function helpText(hint: string): string {
   return [
-    '\x1b[1;93mHAUNTED TERMINAL\x1b[0m: every command is a step or a swing.',
+    '\x1b[1;93mOUT OF CREDITS\x1b[0m: every command is a step or a swing.',
     '  look   pwd  ls [-a -l]  cat  readlink  find [-name -type]  ps [aux]  top  status',
     '  move   cd <dir>  cd ..  cd ../../..  cd -',
     '  files  touch  rm [-r -f]  mv  cp  chmod  ln -s  echo',

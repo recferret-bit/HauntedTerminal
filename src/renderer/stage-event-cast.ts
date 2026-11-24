@@ -8,7 +8,6 @@ import { claim, flashActor, heroAction, heroEmote, hopInPlace, owns, playEntranc
 import { anchorPoint, findByKey, firstOfKind } from './stage-resolve.js';
 import { syncOverlays } from './stage-sync.js';
 import { stepped } from './tween.js';
-import type { CameoMood } from './stage-cameos.js';
 import type { ComicStage } from './comic-stage.js';
 
 export function handleCastEvent(stage: ComicStage, ev: KernelEvent, subject: StageActor | null, cues: FxCue[]): boolean {
@@ -36,9 +35,6 @@ export function handleCastEvent(stage: ComicStage, ev: KernelEvent, subject: Sta
       return true;
     case 'VIBECODER_ACTION':
       onVibecoderAction(stage, ev);
-      return true;
-    case 'AGENT_TAUNT':
-      onAgentTaunt(stage, ev);
       return true;
     case 'KIRO_ACTION':
       onKiroAction(stage, ev);
@@ -105,11 +101,6 @@ function onVibecoderAction(stage: ComicStage, ev: Extract<KernelEvent, { type: '
   }
 }
 
-function onAgentTaunt(stage: ComicStage, ev: Extract<KernelEvent, { type: 'AGENT_TAUNT' }>): void {
-  const mood: CameoMood = ['laugh', 'order', 'smug', 'annoyed'].includes(ev.mood) ? ev.mood : 'smug';
-  stage.cameos.enqueue({ agent: String(ev.agent), model: ev.model, text: String(ev.text ?? ''), mood });
-}
-
 function onKiroAction(stage: ComicStage, ev: Extract<KernelEvent, { type: 'KIRO_ACTION' }>): void {
   const kiro = stage.actors.get('kiro');
   if (ev.action === 'scan') kiroScan(stage, ev, kiro);
@@ -173,15 +164,9 @@ function kiroCrackDone(stage: ComicStage, ev: Extract<KernelEvent, { type: 'KIRO
 
 function onTutorial(stage: ComicStage, ev: Extract<KernelEvent, { type: 'TUTORIAL_STEP' }>): void {
   if (ev.done) {
-    // The DOM prompt card stamps DONE and the game follows with an AGENT_TAUNT (that is the
-    // cameo for this beat), so the canvas only gives the hero a small hop of triumph.
+    // The DOM prompt card stamps DONE; the canvas only gives the hero a small hop of triumph.
     const h = stage.hero();
     if (h) hopInPlace(stage, h, 0.18, 260);
-  } else {
-    stage.cameos.enqueue({
-      agent: String(ev.agent), text: String(ev.prompt ?? ''), mood: 'order', command: ev.command ? String(ev.command) : undefined,
-      tag: Number.isFinite(ev.step) && Number.isFinite(ev.total) ? `PROMPT ${ev.step}/${ev.total}` : undefined,
-    });
   }
 }
 

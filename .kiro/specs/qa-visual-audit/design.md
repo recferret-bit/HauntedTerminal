@@ -27,7 +27,7 @@ Every file stays within 600 lines, and every function within 130.
 1. `visual-audit.mjs` starts its own Vite through `startPageServer()` on a free port, so it never fights the user's 5173. It launches headless Chrome through `scripts/harness/lib/browser.mjs`, the existing CDP helper with no npm dependency.
 2. For each screen and size, it opens a fresh page and then does the following:
    - Sets the viewport (`Emulation.setDeviceMetricsOverride`).
-   - Injects a preamble with `Page.addScriptToEvaluateOnNewDocument` before navigation. The preamble replaces `Math.random` with mulberry32 seeded from `--seed` (default `1995`). It sets `localStorage['haunted.lab.stormOn'] = '0'`, which is the key the shader dock already reads. It installs the page-side detector functions.
+   - Injects a preamble with `Page.addScriptToEvaluateOnNewDocument` before navigation. The preamble replaces `Math.random` with mulberry32 seeded from `--seed` (default `1995`). It sets `localStorage['credits.lab.stormOn'] = '0'`, which is the key the shader dock already reads. It installs the page-side detector functions.
    - Sets virtual time with `Emulation.setVirtualTimePolicy({ policy: 'pauseIfNetworkFetchesPending' })` and navigates.
    - Types the screen's `lines` with real `Input.dispatchKeyEvent`, the way `play-browser.mjs` does. After each line it builds a filmstrip by advancing virtual time 12 times by 83 ms (`policy: 'advance', budget: 83`) and calling `Page.captureScreenshot` after each step.
    - Advances virtual time by the screen's `settle` ms and takes the still capture.
@@ -99,7 +99,7 @@ Every flag in `summary.json` carries its numbers, the selector or region, and th
 - **Virtual time for both stills and filmstrips.** It makes filmstrips exact (12 frames at 83 ms) and reproducible, so they can be diffed. Taking screenshots in real time can't reach 12 fps at 1920x1080. This follows Q1 and Q12. The risk is that WebGL `requestAnimationFrame` under virtual time stalls in some Chrome builds. Fallback: if virtual time does not advance within 5 s, the run marks the screen `capture-unstable` (a flag, never a silent pass) and captures in real time.
 - **Frame timing in real time, apart from the captures.** Virtual time hides real cost, so dropped frames need real time and CPU throttling (Q15).
 - **The laptop screen is `/laptop-lab?state=desktop&speed=0&mute=1`.** The chapter does not give the laptop yet (`tech.md`), so the lab is the only place the player-facing laptop is drawn. Q7 excludes the labs as tools; this captures the laptop itself, not the lab's controls. Confirmed by the user (Q16, 2026-11-18).
-- **Off-palette is a measured number, not a hard rule.** The post passes create in-between colours by design (`haunted-art-direction`), so a strict palette check would flag every frame. The flag fires on a rise above each screen's approved value.
+- **Off-palette is a measured number, not a hard rule.** The post passes create in-between colours by design (`credits-art-direction`), so a strict palette check would flag every frame. The flag fires on a rise above each screen's approved value.
 - **The level list comes from the catalog, not from `screens.json`.** No chapter or level name is written in tooling code, which keeps it in line with `quality:declarative`.
 - **Baselines have no agent owner.** This follows Q13: only a person changes them, and `check-agents.mjs` enforces it.
 

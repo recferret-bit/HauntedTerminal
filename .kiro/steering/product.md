@@ -1,8 +1,8 @@
-# Product: Haunted Terminal
+# Product: Out Of Credits
 
 A web game. Visuals and storytelling follow Sega's *Comix Zone*: comic pages, ink-framed panels, paper gutters, caption boxes, onomatopoeia. The only input is a terminal: the player types unix commands and code to move, open doors, fight malware and fix broken systems.
 
-Premise: lightning pulls a developer inside his own computer. He is human, everything else is the machine. Art rules live in the `haunted-art-direction` skill.
+Premise: lightning pulls a developer inside his own computer. He is human, everything else is the machine. Art rules live in the `credits-art-direction` skill.
 
 ## Scope for the Kiroween hackathon
 

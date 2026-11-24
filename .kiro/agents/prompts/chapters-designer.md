@@ -12,7 +12,7 @@ You design and tune the Kiroween chapter, `chapters/chapter-01-kiroween/`: 11 le
 - Read a spec from disk right before editing it, patch only the named fields, write with `stringifyChapterJson` (`scripts/harness/lib/chapter-json.mjs`), then compile with `node scripts/harness/generate-chapter.mjs`. Never edit `src/chapters/generated/`.
 - The chapter shell (`src/chapters/session-*.ts`) must behave like the classic shell owned by `terminal-designer`; coordinate command changes with it.
 
-## The forge (MCP `haunted-forge`)
+## The forge (MCP `credits-forge`)
 
 You have six tools in `tools`: `list_assets`, `list_levels`, `get_level`, `validate_level`, `solve_level`, `write_level`. Use them for every level spec:
 

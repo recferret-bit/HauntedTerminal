@@ -16,7 +16,7 @@ export function wirePortableSaves(refreshAll: () => void): void {
 
   if (exportBtn) {
     exportBtn.onclick = async () => {
-      const { bundle, savedPath } = await exportPortableSaveFile('haunted-terminal-save.json');
+      const { bundle, savedPath } = await exportPortableSaveFile('out-of-credits-save.json');
       if (!savedPath) {
         showFeedback('Could not export save bundle to the Downloads directory.', true);
         return;

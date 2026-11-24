@@ -83,8 +83,8 @@ export const TASKS: readonly LaptopTask[] = [
     app: 'weaver',
     brief: 'Style the heading: color #ff6a13 (hoodie orange), and give the page body a #140f12 background.',
     hint: 'h1 { color: ...; }  body { background: ...; }',
-    starter: page('<h1>Haunted Terminal</h1>\n', '/* Your styles */\n'),
-    solution: page('<h1>Haunted Terminal</h1>\n', 'body { background: #140f12; }\nh1 { color: #ff6a13; }\n'),
+    starter: page('<h1>Out Of Credits</h1>\n', '/* Your styles */\n'),
+    solution: page('<h1>Out Of Credits</h1>\n', 'body { background: #140f12; }\nh1 { color: #ff6a13; }\n'),
     checks: [
       { kind: 'element', selector: 'h1', label: 'The page has an <h1>' },
       { kind: 'style', selector: 'h1', prop: 'color', equals: 'rgb(255, 106, 19)', label: 'The heading is #ff6a13' },

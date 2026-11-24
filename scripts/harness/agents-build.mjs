@@ -71,7 +71,7 @@ export const MCP_SERVERS = {
     env: { CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS: '1', NODE_COMPILE_CACHE: 'scripts/harness/out/.node-compile-cache' },
     timeout: 120000,
   },
-  'haunted-forge': { command: 'node', args: ['scripts/mcp/haunted-forge/server.mjs'] },
+  'credits-forge': { command: 'node', args: ['scripts/mcp/credits-forge/server.mjs'] },
 };
 /**
  * What qa may use of Chrome DevTools MCP: look, read the console and network, drive the page's own inputs, throttle the CPU
@@ -88,7 +88,7 @@ const FORGE_READ = ['list_levels', 'get_level', 'validate_level', 'solve_level']
 
 const TEAM = {
   'lead-dev': {
-    description: 'Lead game developer and orchestrator of the Haunted Terminal team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here; also the member that Kiro Crew runs.',
+    description: 'Lead game developer and orchestrator of the Out Of Credits team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here; also the member that Kiro Crew runs.',
     writes: ['.kiro/specs/**', '.kiro/steering/**', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'docs/*.md', 'docs/media/**', 'docs/reviews/**', 'scripts/harness/property-tests.mjs', 'scripts/harness/props/{kit,arbitraries}.mjs', 'src/contracts/**', 'src/editor-core/**', 'src/play/**', 'src/pages/**', 'src/hub/**', 'src/styles/**', 'src/sandbox/**', 'src/main.ts', 'src/style.css', 'src/game/{session,play,runtime,types,floors,sfx,selfcheck,view,view-layouts}.ts', ...VISUAL_AUDIT],
     resources: [steer('skills-map'), 'file://.kiro/specs/agent-team/requirements.md', 'file://.kiro/specs/agent-team/design.md'],
     skills: ['feature-spec-grill'],
@@ -115,8 +115,8 @@ const TEAM = {
     writes: ['comix/**', 'src/cinematic/**', 'src/comix-editor/**', 'scripts/harness/props/comix.mjs'],
     resources: [steer('declarative-comix'), steer('comix-editor-rules'), steer('skills-map')],
     skills: ['comix-architect-intake', 'comix-sequence-generator', 'comix-implementer', 'comix-editor'],
-    mcp: { 'haunted-forge': ['list_assets'] },
-    mcpNames: ['haunted-forge', 'list_assets'],
+    mcp: { 'credits-forge': ['list_assets'] },
+    mcpNames: ['credits-forge', 'list_assets'],
     welcome: 'comix-designer: which comix, page or beat should change?',
   },
   'chapters-designer': {
@@ -124,8 +124,8 @@ const TEAM = {
     writes: ['chapters/**', 'src/chapters/**', 'src/chapter-editor/**', 'src/game/{entities,entities-combat,bestiary,puzzle,inventory,kiro,dialogue,agents}.ts', 'scripts/harness/props/{chapters,gameplay,sessions}.mjs'],
     resources: [steer('level-gen-rules'), steer('declarative-chapters'), steer('chapter-editor-rules'), steer('skills-map')],
     skills: ['chapter-architect-intake', 'comix-story-drawer', 'chapter-level-generator', 'chapter-implementer', 'chapter-editor'],
-    mcp: { 'haunted-forge': ['list_assets', ...FORGE_READ, 'write_level'] },
-    mcpNames: ['haunted-forge', 'list_assets', 'validate_level', 'solve_level', 'write_level'],
+    mcp: { 'credits-forge': ['list_assets', ...FORGE_READ, 'write_level'] },
+    mcpNames: ['credits-forge', 'list_assets', 'validate_level', 'solve_level', 'write_level'],
     welcome: 'chapters-designer: which level, enemy, pickup, puzzle or line of dialogue should change?',
   },
   artist: {
@@ -133,21 +133,21 @@ const TEAM = {
     writes: ['src/procgen/**', 'src/shaders/**', 'src/renderer/**', 'src/storybook/**', 'src/assets/**', 'public/assets/**'],
     resources: [steer('asset-pcg-rules'), steer('skills-map')],
     skills: [
-      'haunted-art-direction', 'procedural-kitbash-3d', 'procedural-malware-3d', 'procedural-rooms-3d', 'procedural-texture-synthesis', 'shader-texture-tuning',
+      'credits-art-direction', 'procedural-kitbash-3d', 'procedural-malware-3d', 'procedural-rooms-3d', 'procedural-texture-synthesis', 'shader-texture-tuning',
       'comic-lighting-and-lightning', 'procedural-animation-3d', 'procedural-malware-animation', 'procedural-particles-3d', 'ai-mesh-pipeline',
       'model-geometry-validator', 'particle-effect-validator', 'comic-panel-viewport-auditor',
     ],
     welcome: 'artist: which model, room, texture, effect or animation should I make or change?',
   },
   qa: {
-    description: 'Plays Haunted Terminal and tests every part of it: the chapter in real Chrome, the terminal, laptop, comixes, editors, labs and assets, through the harness suites and screenshots. Writes a report to docs/qa/ and changes no game file.',
+    description: 'Plays Out Of Credits and tests every part of it: the chapter in real Chrome, the terminal, laptop, comixes, editors, labs and assets, through the harness suites and screenshots. Writes a report to docs/qa/ and changes no game file.',
     // Not docs/qa/baselines/: a person approves baselines (spec .kiro/specs/qa-visual-audit/, Q13).
     writes: ['docs/qa/*.md', 'docs/qa/media/**', 'docs/qa/labs/**'],
     shellExtra: ['mkdir -p docs/qa/media', 'cp scripts/harness/out/* docs/qa/media/*'],
     resources: [steer('skills-map'), steer('declarative-chapters'), steer('declarative-comix'), steer('terminal-lab-rules')],
     skills: ['comic-panel-viewport-auditor', 'chapter-implementer', 'comix-implementer', 'model-geometry-validator', 'particle-effect-validator'],
-    mcp: { 'chrome-devtools': DEVTOOLS_LOOK, 'haunted-forge': ['list_assets', ...FORGE_READ] },
-    mcpNames: ['chrome-devtools', 'take_screenshot', 'list_console_messages', 'haunted-forge', 'validate_level'],
+    mcp: { 'chrome-devtools': DEVTOOLS_LOOK, 'credits-forge': ['list_assets', ...FORGE_READ] },
+    mcpNames: ['chrome-devtools', 'take_screenshot', 'list_console_messages', 'credits-forge', 'validate_level'],
     welcome: 'qa: which features should I play and test? (default: a full pass)',
   },
 };
@@ -212,7 +212,7 @@ export function agentFile(name, a) {
     allowedTools: [],
     ...(servers.length ? { mcpServers: Object.fromEntries(servers.map((s) => [s, MCP_SERVERS[s]])) } : {}),
     includeMcpJson: false,
-    // Installed powers bring their own MCP servers (haunted-ship's Netlify server loaded into every agent in the probe).
+    // Installed powers bring their own MCP servers (credits-ship's Netlify server loaded into every agent in the probe).
     includePowers: false,
     resources: [...BASE, ...a.resources, ...a.skills.map(skill)],
     hooks: [

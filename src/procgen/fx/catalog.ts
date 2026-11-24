@@ -2,7 +2,7 @@ import type { FxMoment, FxPreset } from './types.js';
 
 /**
  * Every game moment that must have an effect, and the word the design doc gives it
- * (haunted_terminal.md, sections 2 and 4.2). `null`: a word is optional.
+ * (out_of_credits.md, sections 2 and 4.2). `null`: a word is optional.
  */
 export const FX_MOMENT_WORDS: Record<FxMoment, string | null> = {
   hop: 'HOP!',

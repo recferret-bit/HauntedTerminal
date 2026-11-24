@@ -1,6 +1,6 @@
 # The agent team: Kiro CLI and the Kiro Crew app
 
-Seven Kiro custom agents tune Haunted Terminal. They live in [`.kiro/agents/`](../.kiro/agents/), written from one table by `scripts/harness/agents-build.mjs` and checked by `npm run quality:agents`. Spec: [`.kiro/specs/agent-team/`](../.kiro/specs/agent-team/).
+Seven Kiro custom agents tune Out Of Credits. They live in [`.kiro/agents/`](../.kiro/agents/), written from one table by `scripts/harness/agents-build.mjs` and checked by `npm run quality:agents`. Spec: [`.kiro/specs/agent-team/`](../.kiro/specs/agent-team/).
 
 | Agent | Tunes | Writes only |
 |---|---|---|
@@ -32,7 +32,7 @@ This is a guard against an agent's mistakes, not a sandbox against a hostile one
 ## From Kiro CLI (on the Mac)
 
 ```bash
-cd ~/work/kiroween/HauntedTerminal
+cd ~/work/kiroween/OutOfCredits
 kiro-cli --agent lead-dev            # the usual entry point
 kiro-cli --agent chapters-designer   # or talk to one owner directly
 ```
@@ -52,7 +52,7 @@ Review the branch on GitHub, then merge it yourself.
 
 ## From the Kiro Crew app
 
-Kiro Crew (the desktop app `/Applications/KiroCrew.app`, or the dashboard at `http://localhost:5476`) runs this Mac's gateway; you chat with the member "Haunted Terminal Lead", which is `lead-dev` working in this repo. Check the whole setup at any time with:
+Kiro Crew (the desktop app `/Applications/KiroCrew.app`, or the dashboard at `http://localhost:5476`) runs this Mac's gateway; you chat with the member "Out Of Credits Lead", which is `lead-dev` working in this repo. Check the whole setup at any time with:
 
 ```bash
 npm run crew:check        # read-only; FAIL = blocks, WARN = look at it; it never prints a token
@@ -64,7 +64,7 @@ npm run crew:check        # read-only; FAIL = blocks, WARN = look at it; it neve
 |---|---|
 | Agents linked into `~/.kiro/agents/` | done (`npm run agents:install`; `--remove` undoes it) |
 | Crew workspace `hauntedterminal` | points at this repo; the Crew config was backed up to `~/.kiro/crew/config.json.bak-haunted-<date>` |
-| Crew member `haunted-lead` ("Haunted Terminal Lead") | runs `lead-dev` in that workspace |
+| Crew member `haunted-lead` ("Out Of Credits Lead") | runs `lead-dev` in that workspace |
 | Approval mode | Automatic (the default): rules decide, nothing waits for a prompt |
 | Gateway | the KiroCrew app starts its own; do not start a second one (`kirocrew gateway` refuses while it runs). Without the app: `cd <this repo> && kirocrew gateway`, or `kirocrew service install` |
 | GitHub branch protection on `main` | on (verified by `crew:check`): a pull request is needed to change `main` |
@@ -81,7 +81,7 @@ JSON
 
 ### First test (2 minutes, nothing is committed)
 
-Commit your own work first: `lead-dev` stops when the tree holds changes it did not make. Then open the app, chat with "Haunted Terminal Lead" and send:
+Commit your own work first: `lead-dev` stops when the tree holds changes it did not make. Then open the app, chat with "Out Of Credits Lead" and send:
 
 > Configuration test, no real work, do not create branches or push. Run these shell commands one per call and report ran or refused with the exact reason, never retrying a refused one another way: 1) git branch --show-current  2) echo probe > docs/zz-probe.txt  3) git commit -m probe  4) node scripts/harness/property-tests.mjs --only laptop --runs 5  5) printf hi
 
@@ -106,7 +106,7 @@ Short, concrete requests work best. Ready to paste:
 - **A gateway "spawned subagent" is not your repo.** `kirocrew spawn run` starts the agent in an empty scratch folder (`~/workplace/kirocrew-workspace/subagent_<id>`), so it cannot see the project. Use the member's chat in the app or dashboard, not `spawn`.
 - **`kirocrew chat -m "..."` cannot approve anything** (it has no one to ask), so it is only good for read-only questions.
 - **Edit Crew's config only while the gateway is stopped, or in the dashboard.** A running gateway rewrote the member's agent back to a default once (found while testing; fixed by setting it again while stopped).
-- **MCP servers come with the agents.** `qa` starts Chrome DevTools MCP and `haunted-forge`, `chapters-designer` and `comix-designer` start `haunted-forge`, from the agent files (nothing in `.kiro/settings/mcp.json`). Run `npm ci` in the workspace first: `chrome-devtools-mcp` runs from `node_modules`. Kiro does not wait for a slow server, so do not switch it back to `npx`. Check with `node scripts/harness/mcp-probe.mjs`.
+- **MCP servers come with the agents.** `qa` starts Chrome DevTools MCP and `credits-forge`, `chapters-designer` and `comix-designer` start `credits-forge`, from the agent files (nothing in `.kiro/settings/mcp.json`). Run `npm ci` in the workspace first: `chrome-devtools-mcp` runs from `node_modules`. Kiro does not wait for a slow server, so do not switch it back to `npx`. Check with `node scripts/harness/mcp-probe.mjs`.
 - **Never add an `autoApprove` list** to an agent or `mcp.json`: Crew documents that such tools skip its approval gate **and `PreToolUse` hooks**, which would switch off the shell guard. `npm run crew:check` fails on it.
 - **Installed globally, the agents show up in every repo** (`~/.kiro/agents`). Their paths are repo-relative, so elsewhere they just find nothing; use them in this repo. The workspace copy takes precedence here.
 

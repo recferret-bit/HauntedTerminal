@@ -23,7 +23,7 @@ export function renderHubNav(current: HubTabId, host: HTMLElement | null = docum
         'a',
         { class: 'hub-brand', href: HOME_HREF, 'aria-current': current === 'home' ? 'page' : undefined },
         el('span', { class: 'hub-logo-badge' }, 'COMIX // TTY'),
-        el('strong', {}, 'HAUNTED ', el('span', {}, 'TERMINAL')),
+        el('strong', {}, 'OUT OF ', el('span', {}, 'CREDITS')),
       ),
       el('div', { class: 'hub-nav-links' }, ...hubItems().map((item) => renderItem(item, current))),
     ),

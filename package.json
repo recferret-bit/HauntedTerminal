@@ -1,11 +1,11 @@
 {
-  "name": "haunted-terminal",
+  "name": "out-of-credits",
   "private": true,
   "version": "0.1.0",
   "description": "A 90s comic-book game where the only controller is a unix terminal. Kiroween 2026.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/recferret-bit/HauntedTerminal.git"
+    "url": "git+https://github.com/recferret-bit/OutOfCredits.git"
   },
   "keywords": [
     "game",
@@ -32,9 +32,10 @@
     "quality:declarative": "node scripts/quality/check-declarative.mjs",
     "quality:dup": "jscpd src scripts/desktop --min-lines 4 --min-tokens 35 --threshold 0 --reporters console --format typescript,javascript --ignore \"**/chapters/generated/**,**/cinematic/generated/**\"",
     "quality:fingerprint": "node scripts/quality/fingerprint.mjs",
-    "quality": "tsc --noEmit && npm run quality:root && npm run quality:size && npm run quality:layers && npm run quality:declarative && npm run quality:specs && npm run quality:dup && npm run quality:agents && npm run quality:brands && npm run quality:mcp && npm run quality:props",
+    "quality": "tsc --noEmit && npm run quality:root && npm run quality:size && npm run quality:layers && npm run quality:declarative && npm run quality:specs && npm run quality:dup && npm run quality:agents && npm run quality:legacy-name && npm run quality:brands && npm run quality:mcp && npm run quality:props",
     "quality:root": "node scripts/quality/check-root.mjs",
     "quality:specs": "node scripts/quality/check-specs.mjs",
+    "quality:legacy-name": "node scripts/quality/check-legacy-name.mjs",
     "quality:brands": "node scripts/quality/check-brands.mjs",
     "quality:props": "node scripts/harness/property-tests.mjs",
     "quality:mcp": "node scripts/harness/forge-unit.mjs",

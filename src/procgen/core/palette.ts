@@ -1,6 +1,6 @@
 /**
- * The one palette of Haunted Terminal. Models and textures use these zones and nothing else.
- * Art direction: .kiro/skills/haunted-art-direction/SKILL.md
+ * The one palette of Out Of Credits. Models and textures use these zones and nothing else.
+ * Art direction: .kiro/skills/credits-art-direction/SKILL.md
  *
  * Families carry meaning, so the validators can check them:
  *   human    warm and organic. Only the vibecoder (and the System Hand) may use it.

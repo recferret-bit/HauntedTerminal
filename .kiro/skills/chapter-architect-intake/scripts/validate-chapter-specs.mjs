@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Validates all chapters/* manifests, story/comix.spec.json, story/dialogs.json, and levels/*/level.spec.json
-// against ModelCatalog, BESTIARY, RoomKind, and Haunted Terminal's art-bible & solvability rules.
+// against ModelCatalog, BESTIARY, RoomKind, and Out Of Credits's art-bible & solvability rules.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs, projectRoot, withProcgen } from '../../../../scripts/harness/lib/load.mjs';

@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Instructions for Claude Code working in **Haunted Terminal** (Vite 6, TypeScript 5 strict, Three.js 0.180, xterm.js 5). `.kiro/` is the single source of truth; follow `.kiro` principles, steering, specs, skills, and deterministic gates without duplicating or drifting from them.
+Instructions for Claude Code working in **Out Of Credits** (Vite 6, TypeScript 5 strict, Three.js 0.180, xterm.js 5). `.kiro/` is the single source of truth; follow `.kiro` principles, steering, specs, skills, and deterministic gates without duplicating or drifting from them.
 
 ## Always-On `.kiro` Steering
 
@@ -42,7 +42,7 @@ Do **not** preload conditional steering or skill files at startup; `Read` them o
 | `src/terminal-lab/**`, `src/game/lab-*.ts`, `src/chapters/session-lab*.ts`, `scripts/harness/terminal-lab*`, `pages/terminal-lab.html` | `.kiro/steering/terminal-lab-rules.md` |
 
 Before starting any task in a skill's domain, `Read` `.kiro/skills/<skill>/SKILL.md` first — never improvise rules a skill already defines:
-- **Assets (`[ASSET PCG]`)**: always `Read` `.kiro/skills/haunted-art-direction/SKILL.md` first, then the area skill (`procedural-kitbash-3d`, `procedural-malware-3d`, `procedural-rooms-3d`, `procedural-texture-synthesis`, `shader-texture-tuning`, `comic-lighting-and-lightning`, `procedural-animation-3d`, `procedural-malware-animation`, `procedural-particles-3d`, `ai-mesh-pipeline`), plus its validator (`model-geometry-validator`, `particle-effect-validator`) and `comic-panel-viewport-auditor`. Only `vibecoder.*` and `item.*` use human palette zones.
+- **Assets (`[ASSET PCG]`)**: always `Read` `.kiro/skills/credits-art-direction/SKILL.md` first, then the area skill (`procedural-kitbash-3d`, `procedural-malware-3d`, `procedural-rooms-3d`, `procedural-texture-synthesis`, `shader-texture-tuning`, `comic-lighting-and-lightning`, `procedural-animation-3d`, `procedural-malware-animation`, `procedural-particles-3d`, `ai-mesh-pipeline`), plus its validator (`model-geometry-validator`, `particle-effect-validator`) and `comic-panel-viewport-auditor`. Only `vibecoder.*` and `item.*` use human palette zones.
 - **Chapters (`[LEVEL GEN]`)**: `chapter-architect-intake` -> `comix-story-drawer` -> `chapter-level-generator` -> `chapter-implementer` -> `chapter-editor`.
 - **Animated 3D Comix (`[LEVEL GEN]`)**: `comix-architect-intake` -> `comix-sequence-generator` -> `comix-implementer` -> `comix-editor`.
 - **Strict asset boundary**: LEVEL GEN references existing `ModelCatalog`, `RoomKind`, and `FxCatalog` IDs only; create missing assets via `[ASSET PCG]` first. Terminal Lab (`/terminal-lab`) and Laptop Lab (`/laptop-lab`) never write `chapters/` or `comix/`.
@@ -89,8 +89,8 @@ Always run before declaring work done (plus targeted suites for areas touched):
   - Landing tabs: `node scripts/harness/hub-unit.mjs` and `node scripts/desktop/landing-smoke.mjs` (Home, Desktop Builds, Achievements, Comix pages). Spec: `.kiro/specs/landing-tabs/`
   - Visual audit (qa): `node scripts/harness/visual-audit.mjs` (`--screens`, `--sizes`, `--selftest`; report only, exit 1 = flags to explain); baselines in `docs/qa/baselines/` are approved by a person only (`--update`). Spec: `.kiro/specs/qa-visual-audit/`
   - MCP: `node scripts/harness/forge-unit.mjs` (`npm run quality:mcp`); `node scripts/harness/mcp-probe.mjs` (manual, real Kiro CLI)
-  - Deploy (power `haunted-ship`): `node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs preview`, then `prod` only after the user's explicit yes; follow `.kiro/powers/haunted-ship/skills/ship/SKILL.md`
-  - Release (powers `haunted-release`, `haunted-tauri-local`): `node .kiro/powers/haunted-release/skills/release/scripts/release.mjs release <version>` prints a plan, `--yes` runs the gates and pushes tag `v<version>`; `node .kiro/powers/haunted-tauri-local/skills/tauri-local/scripts/tauri-local.mjs` builds a local, unversioned Tauri app. The user's command only; follow each `SKILL.md`
+  - Deploy (power `credits-ship`): `node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs preview`, then `prod` only after the user's explicit yes; follow `.kiro/powers/credits-ship/skills/ship/SKILL.md`
+  - Release (powers `credits-release`, `credits-tauri-local`): `node .kiro/powers/credits-release/skills/release/scripts/release.mjs release <version>` prints a plan, `--yes` runs the gates and pushes tag `v<version>`; `node .kiro/powers/credits-tauri-local/skills/tauri-local/scripts/tauri-local.mjs` builds a local, unversioned Tauri app. The user's command only; follow each `SKILL.md`
   - Assets/storybook: `npm run quality:fingerprint` (byte-identical on refactors; diff and explain intended changes) and `node scripts/harness/screenshot-lab.mjs --selftest`
 
 ## Shell, Code & Co-Editing Rules

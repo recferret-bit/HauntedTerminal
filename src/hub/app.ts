@@ -1,3 +1,4 @@
+import '../contracts/migrate-storage.js';
 import { bootHubPage } from './boot.js';
 import { startHubRouter } from './router.js';
 import { tabOfPath } from './tabs.js';

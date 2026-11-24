@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Scaffolds a complete, schema-valid Haunted Terminal chapter folder under chapters/<id>/
+// Scaffolds a complete, schema-valid Out Of Credits chapter folder under chapters/<id>/
 // from CLI flags or --config <json>.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';

@@ -1,9 +1,9 @@
 # Prompt templates and provider notes
 
-Prompts for generating concept images (and, from them, meshes) in the Haunted Terminal look. Every
+Prompts for generating concept images (and, from them, meshes) in the Out Of Credits look. Every
 prompt is three blocks glued together: **STYLE** + **SUBJECT** + **OUTPUT**. Keep STYLE and OUTPUT
 verbatim; only the subject changes. Subjects below follow
-[world-lexicon.md](../../haunted-art-direction/references/world-lexicon.md); if the lexicon changes,
+[world-lexicon.md](../../credits-art-direction/references/world-lexicon.md); if the lexicon changes,
 it wins.
 
 The hexes are `ZONES` in `src/procgen/core/palette.ts`. If you change a colour there, change it here.

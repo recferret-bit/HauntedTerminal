@@ -47,9 +47,9 @@ export function runNodeCliTool(tool, args, options = {}) {
 export function readPackageMeta(root = REPO_ROOT) {
   const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
   return {
-    name: String(pkg.name ?? 'haunted-terminal'),
+    name: String(pkg.name ?? 'out-of-credits'),
     version: String(pkg.version ?? '0.1.0'),
-    description: String(pkg.description ?? 'Haunted Terminal desktop edition'),
+    description: String(pkg.description ?? 'Out Of Credits desktop edition'),
   };
 }
 
@@ -102,8 +102,8 @@ export function parseDesktopFlags(argv = process.argv.slice(2)) {
     outDir: resolve(REPO_ROOT, val('--out', 'src-tauri')),
     distDir: resolve(REPO_ROOT, val('--dist', 'dist')),
     releaseOutDir: resolve(REPO_ROOT, val('--release-out', 'dist-desktop')),
-    productName: val('--product-name', 'Haunted Terminal'),
-    identifier: val('--identifier', process.env.TAURI_IDENTIFIER ?? 'dev.hauntedterminal.app'),
+    productName: val('--product-name', 'Out Of Credits'),
+    identifier: val('--identifier', process.env.TAURI_IDENTIFIER ?? 'dev.outofcredits.app'),
     version: rawVersion,
     description: pkg.description,
     steamAppId: parsedAppId,

@@ -69,7 +69,7 @@ try {
   await $(`(() => { const i = document.querySelector('.ed-pane input[type=text]'); i.value += ${JSON.stringify(marker)}; i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
   check(await $("[...document.querySelectorAll('.ed-top .btn')].some((b) => b.textContent.startsWith('Save file') && !b.disabled)"), 'editing a field enables Save');
   await new Promise((r) => setTimeout(r, 500));
-  check(await $(`(localStorage.getItem('haunted.editor.draft:${chapter.manifest.id}') || '').includes(${JSON.stringify(marker)})`), 'the unsaved draft is handed to the game through localStorage');
+  check(await $(`(localStorage.getItem('credits.editor.draft:${chapter.manifest.id}') || '').includes(${JSON.stringify(marker)})`), 'the unsaved draft is handed to the game through localStorage');
   check(await $("document.querySelector('.ed-item.on .dot') !== null"), 'sidebar marks the level as unsaved');
 
   // 5. headless solve from the Check tab

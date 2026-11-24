@@ -2,7 +2,7 @@
  * Doors: ports and interfaces stood upright. Every door has a metal or plastic shell, visible
  * contacts, a status LED part named `led` and a `lock` socket. Width 0.7 to 1.1, height 1.4 to 1.9.
  * The game recolours the `led` zone at runtime: lockRed locked, powerAmber busy, phosphor open.
- * Briefs: .kiro/skills/haunted-art-direction/references/world-lexicon.md
+ * Briefs: .kiro/skills/credits-art-direction/references/world-lexicon.md
  */
 import { ModelCatalog } from '../core/catalog.js';
 import { makeRng } from '../core/rng.js';

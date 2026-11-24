@@ -100,7 +100,6 @@ export function drawNeighbors(stage: ComicStage, view: RoomView): void {
 export function buildStageScene(stage: ComicStage): void {
   stage.tweens.clear();
   stage.fxPlayer.clear();
-  stage.cameos.clear();
   stage.cardKill = null;
   stage.bubble = null;
   for (const a of [...stage.actors.values()]) removeActor(stage, a);

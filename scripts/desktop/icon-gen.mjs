@@ -1,5 +1,5 @@
 // Deterministic zero-dependency icon synthesizer for Tauri v2 bundles (RGBA PNG, Windows ICO, Apple ICNS).
-// Draws Haunted Terminal's Comix Zone ink-framed CRT emblem in the official palette (#140f12, #ffd166, #ff6a13, #06d6a0).
+// Draws Out Of Credits's Comix Zone ink-framed CRT emblem in the official palette (#140f12, #ffd166, #ff6a13, #06d6a0).
 import { deflateSync } from 'node:zlib';
 
 const CRC_TABLE = (() => {

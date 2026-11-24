@@ -1,3 +1,4 @@
+import '../contracts/migrate-storage.js';
 import '../styles/hub.css';
 import { CHAPTER_MANIFESTS, readChapterProgress } from '../chapters/catalog.js';
 import { hydrateFromDesktopSaveBundle } from '../chapters/portable-save.js';

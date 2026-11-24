@@ -195,17 +195,17 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: Haunted Terminal ${{ github.ref_name }} — Desktop & Offline Demo Builds
+          name: Out Of Credits ${{ github.ref_name }} — Desktop & Offline Demo Builds
           prerelease: ${{ contains(github.ref_name, '-') }}
           generate_release_notes: true
           body: |
-            ## Haunted Terminal ${{ github.ref_name }} — Dedicated Downloadable Builds
+            ## Out Of Credits ${{ github.ref_name }} — Dedicated Downloadable Builds
 
-            - **macOS (Universal Intel + Apple Silicon):** `Haunted-Terminal_*_universal.dmg`
-            - **Windows 10/11 (x64):** `Haunted-Terminal_*_x64-setup.exe` / `.msi`
-            - **Linux / Steam Deck (x86_64):** `Haunted-Terminal_*_amd64.AppImage` / `.deb`
-            - **Portable Offline Web Bundle:** `haunted-terminal-*-offline-web.tar.gz`
+            - **macOS (Universal Intel + Apple Silicon):** `Out-Of-Credits_*_universal.dmg`
+            - **Windows 10/11 (x64):** `Out-Of-Credits_*_x64-setup.exe` / `.msi`
+            - **Linux / Steam Deck (x86_64):** `Out-Of-Credits_*_amd64.AppImage` / `.deb`
+            - **Portable Offline Web Bundle:** `out-of-credits-*-offline-web.tar.gz`
             - **Integrity:** Verify downloads against `SHA256SUMS.txt`.
 
-            Browser saves, Silicon Scrap perks, and all 12 `ACH_*` Steamworks-ready local achievements import directly via the **Import Save Bundle (.json)** button on `/` or `/chapters.html` and persist in `<app_data_dir>/haunted-terminal-save.json` for cross-OS Steam Auto-Cloud sync.
+            Browser saves, Silicon Scrap perks, and all 12 `ACH_*` Steamworks-ready local achievements import directly via the **Import Save Bundle (.json)** button on `/` or `/chapters.html` and persist in `<app_data_dir>/out-of-credits-save.json` for cross-OS Steam Auto-Cloud sync.
           files: release-Input/*

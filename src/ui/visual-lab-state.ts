@@ -32,7 +32,7 @@ export interface ShaderBoot {
 export const DEFAULT_INK: InkParams = { outline: 1, halftone: 0.85 };
 export const DEFAULT_STORM = 0.65;
 export const DEFAULT_ZOOM = 1;
-const PREFIX = 'haunted.lab.';
+const PREFIX = 'credits.lab.';
 
 export const TABS = ['crt', 'pixel', 'ink', 'storm', 'projection'] as const;
 export type TabId = (typeof TABS)[number];

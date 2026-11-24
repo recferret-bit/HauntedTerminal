@@ -2,7 +2,7 @@
  * Items and set dressing: data you can pick up (a document, a tar crate, a fuse) and the hardware
  * that furnishes rooms (chip, capacitor, heatsink, fan, cables, CRT, tombstone). The builders live in
  * `./props/`; this file only registers them, in order.
- * Briefs: .kiro/skills/haunted-art-direction/references/world-lexicon.md
+ * Briefs: .kiro/skills/credits-art-direction/references/world-lexicon.md
  */
 import { ModelCatalog } from '../core/catalog.js';
 import { buildCables, buildCapacitor, buildChip, buildCrt, buildFan, buildHeatsink } from './props/hardware.js';

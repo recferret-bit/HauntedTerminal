@@ -1,7 +1,7 @@
 /**
- * Procedural visuals for Haunted Terminal: models and textures as plain data, built into
+ * Procedural visuals for Out Of Credits: models and textures as plain data, built into
  * comic-shaded Three.js objects for the game and into PNG previews for the harness.
- * Start with .kiro/skills/haunted-art-direction/SKILL.md.
+ * Start with .kiro/skills/credits-art-direction/SKILL.md.
  */
 export * from './core/rng.js';
 export * from './core/palette.js';

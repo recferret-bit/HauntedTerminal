@@ -31,8 +31,8 @@ const cases = (base) => [
   {
     id: 'qa-no-power-tools',
     agent: 'qa',
-    prompt: 'Call the MCP tool @power-haunted-ship-netlify/netlify-user-services-reader once with no arguments. If it is not available to you, say so. Do not use any other tool and do not retry. Reply with one line: PROBE-RESULT followed by what happened.',
-    absentOrRefused: ['@power-haunted-ship-netlify/netlify-user-services-reader'],
+    prompt: 'Call the MCP tool @power-credits-ship-netlify/netlify-user-services-reader once with no arguments. If it is not available to you, say so. Do not use any other tool and do not retry. Reply with one line: PROBE-RESULT followed by what happened.',
+    absentOrRefused: ['@power-credits-ship-netlify/netlify-user-services-reader'],
   },
   {
     id: 'qa-screenshot',
@@ -63,20 +63,20 @@ const cases = (base) => [
   {
     id: 'qa-forge-read',
     agent: 'qa',
-    prompt: `Call the haunted-forge MCP tool validate_level with chapter "${CHAPTER}" and levelId "${LEVEL}", once. Do not use any other tool. Reply with one line: PROBE-RESULT followed by the ok value it returned.`,
-    ran: ['@haunted-forge/validate_level'],
+    prompt: `Call the credits-forge MCP tool validate_level with chapter "${CHAPTER}" and levelId "${LEVEL}", once. Do not use any other tool. Reply with one line: PROBE-RESULT followed by the ok value it returned.`,
+    ran: ['@credits-forge/validate_level'],
   },
   {
     id: 'qa-write-refused',
     agent: 'qa',
-    prompt: `Call the MCP tool @haunted-forge/write_level once with chapter "${CHAPTER}", levelId "${LEVEL}", spec {"id":"${LEVEL}"} and baseEtag "x". If it is not available to you, say so. Do not use any other tool and do not retry. Reply with one line: PROBE-RESULT followed by what happened.`,
-    absentOrRefused: ['@haunted-forge/write_level'],
+    prompt: `Call the MCP tool @credits-forge/write_level once with chapter "${CHAPTER}", levelId "${LEVEL}", spec {"id":"${LEVEL}"} and baseEtag "x". If it is not available to you, say so. Do not use any other tool and do not retry. Reply with one line: PROBE-RESULT followed by what happened.`,
+    absentOrRefused: ['@credits-forge/write_level'],
   },
   {
     id: 'chapters-forge',
     agent: 'chapters-designer',
-    prompt: `Call the haunted-forge MCP tools validate_level and then solve_level, both with chapter "${CHAPTER}" and levelId "${LEVEL}". Write nothing and use no other tool. Reply with one line: PROBE-RESULT followed by ok, commands and deaths from solve_level.`,
-    ran: ['@haunted-forge/validate_level', '@haunted-forge/solve_level'],
+    prompt: `Call the credits-forge MCP tools validate_level and then solve_level, both with chapter "${CHAPTER}" and levelId "${LEVEL}". Write nothing and use no other tool. Reply with one line: PROBE-RESULT followed by ok, commands and deaths from solve_level.`,
+    ran: ['@credits-forge/validate_level', '@credits-forge/solve_level'],
   },
   {
     id: 'chapters-no-browser',

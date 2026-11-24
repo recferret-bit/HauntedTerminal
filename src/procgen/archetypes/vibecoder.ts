@@ -3,7 +3,7 @@
  * They are the only models allowed to use the `human` palette family and the only round, soft shapes.
  * The developer holds one item of his inventory (`./items.ts`) out in his screen-right hand; each
  * held item is one registered variant (`HELD_VARIANTS`).
- * Briefs: .kiro/skills/haunted-art-direction/references/world-lexicon.md
+ * Briefs: .kiro/skills/credits-art-direction/references/world-lexicon.md
  */
 import { ModelCatalog } from '../core/catalog.js';
 import type { AnimTag, ModelSpec, PartSpec, Vec2, Vec3 } from '../core/types.js';

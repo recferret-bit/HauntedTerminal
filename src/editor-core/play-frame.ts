@@ -28,7 +28,8 @@ function describeEvent(ev: KernelEvent): string {
   return `${ev.type}${detail ? `  ${String(detail).replace(/\s+/g, ' ').slice(0, 90)}` : ''}`;
 }
 
-const talks = (ev: KernelEvent): boolean => ev.type === 'AGENT_TAUNT' || ev.type === 'OBSTACLE_DIALOGUE_RENDERED' || ev.type === 'TUTORIAL_STEP';
+const talks = (ev: KernelEvent): boolean =>
+  ev.type === 'AGENT_TAUNT' || ev.type === 'DIALOG_BOX' || ev.type === 'OBSTACLE_DIALOGUE_RENDERED' || ev.type === 'TUTORIAL_STEP';
 
 /**
  * The editor side of the game iframe: load a URL, wait until the terminal is live, type a line and wait for it to finish,

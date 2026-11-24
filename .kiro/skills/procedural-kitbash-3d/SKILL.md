@@ -5,7 +5,7 @@ description: "[ASSET PCG] Build procedural 3D models as comic reliefs from the g
 
 # Procedural kitbash 3D
 
-Read [haunted-art-direction](../haunted-art-direction/SKILL.md) first. It defines the world, the
+Read [credits-art-direction](../credits-art-direction/SKILL.md) first. It defines the world, the
 palette and the projection; this skill is how to build a model that obeys it.
 
 Enemies are built with [procedural-malware-3d](../procedural-malware-3d/SKILL.md) and rooms with
@@ -47,7 +47,7 @@ triangle costs). Worked example: [examples/prop-floppy.ts](./examples/prop-flopp
 ## Workflow
 
 1. **Find the brief.** Ids, game keys and the one visual idea per model are in
-   [world-lexicon.md](../haunted-art-direction/references/world-lexicon.md). A new model needs a row
+   [world-lexicon.md](../credits-art-direction/references/world-lexicon.md). A new model needs a row
    there first. Say in one sentence what it is in the computer and what shape sells it.
 2. **Silhouette on XY.** Decide the outline that is recognisable as a black shape at 96 px:
    a USB port is a tall rounded rectangle with a half-filled mouth, a floppy is a square with one cut

@@ -3,11 +3,11 @@
 ## Pieces
 
 ```
-.kiro/powers/haunted-tauri-local/
+.kiro/powers/credits-tauri-local/
   plugin.json                          manifest and activation keywords
   skills/tauri-local/SKILL.md          the procedure: build, open, what it never does
   skills/tauri-local/scripts/tauri-local.mjs
-.kiro/powers/haunted-release/
+.kiro/powers/credits-release/
   plugin.json
   skills/release/SKILL.md              plan, ask, run with --yes; what never to do
   skills/release/scripts/release.mjs   checks, gates, tag, push, watch, promote Netlify, selftest
@@ -18,7 +18,7 @@ docs and steering                      tech.md, structure.md, AGENTS.md, CLAUDE.
 
 No `src/` change, no page, no route, no vocabulary or fingerprint change.
 
-## haunted-tauri-local flow
+## credits-tauri-local flow
 
 ```
 tauri-local.mjs
@@ -31,7 +31,7 @@ tauri-local.mjs
 
 It never runs git write commands, never reads credentials, never calls the network except what Cargo and npm do.
 
-## haunted-release flow
+## credits-release flow
 
 ```
 release.mjs release <version>            prints the plan only

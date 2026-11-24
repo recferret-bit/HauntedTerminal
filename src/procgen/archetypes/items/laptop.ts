@@ -4,7 +4,7 @@
  * things share one leather brown, which keeps him under the zone budget while he holds it), a `>_`
  * sticker and one amber sleep light that says the machine inside is still running. The `grip` socket is
  * the top of the handle.
- * Briefs: .kiro/skills/haunted-art-direction/references/world-lexicon.md
+ * Briefs: .kiro/skills/credits-art-direction/references/world-lexicon.md
  */
 import type { ModelSpec, PartSpec } from '../../core/types.js';
 import { kitBox, kitDisc, kitPlate, outlineRoundRect, outlineStroke, SCREEN_LEFT, SCREEN_RIGHT } from '../../kit/greebles.js';

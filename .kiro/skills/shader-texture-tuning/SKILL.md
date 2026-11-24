@@ -1,6 +1,6 @@
 ---
 name: shader-texture-tuning
-description: "[ASSET PCG] Tune and extend the real shaders: the comic cel material (bands, uMap mix, halftone, stripes, ink rim, ghost, emissive, lightning flash), ink shells, vortex and flood materials, the pixel-art pass (pixel size, levels, Bayer dither, edge, palette modes), the CRT pass, composer order and the visual lab dock. Use whenever a material or the whole frame looks wrong (muddy, too dark, speckled, thin or thick outlines, unreadable textures), when you change any shader constant or uniform, or add a material variant or post effect (malware glitch, SIGSTOP ice, chmod -x stone). Read `haunted-art-direction` first."
+description: "[ASSET PCG] Tune and extend the real shaders: the comic cel material (bands, uMap mix, halftone, stripes, ink rim, ghost, emissive, lightning flash), ink shells, vortex and flood materials, the pixel-art pass (pixel size, levels, Bayer dither, edge, palette modes), the CRT pass, composer order and the visual lab dock. Use whenever a material or the whole frame looks wrong (muddy, too dark, speckled, thin or thick outlines, unreadable textures), when you change any shader constant or uniform, or add a material variant or post effect (malware glitch, SIGSTOP ice, chmod -x stone). Read `credits-art-direction` first."
 ---
 
 # Shader and texture tuning
@@ -21,7 +21,7 @@ ink shell (back faces, #110e1b) ─┘
 | Pixel-art pass | `src/shaders/pixel-art.ts` | Pixel size, colour levels, dither, edge darkening, **the final palette** |
 | CRT pass | `src/shaders/crt-pass.ts` | Scanlines, roll, grain, flicker, vignette, barrel |
 | Composer, wiring | `src/renderer/comic-stage.ts` | Pass order, per-frame uniforms, `setInk` / `setPixelParams` / `setCrtParams` |
-| Visual lab dock | `src/ui/visual-lab.ts` | Live sliders in the running game, saved in `localStorage` (`haunted.lab.*`) |
+| Visual lab dock | `src/ui/visual-lab.ts` | Live sliders in the running game, saved in `localStorage` (`credits.lab.*`) |
 | Software preview | `src/procgen/geometry/raster-shade.ts` | A copy of the comic fragment maths for the harness sheets |
 
 Details: [comic-material.md](./references/comic-material.md) (every uniform and constant, ink shells,
@@ -85,7 +85,7 @@ implement stripes, the flash, the pixel-art pass or the CRT pass.
 3. **Make it the default in code.** Pass defaults live in `DEFAULT_PIXEL_PARAMS` (`pixel-art.ts`),
    `DEFAULT_CRT_PARAMS` (`crt-pass.ts`), `DEFAULT_INK` (`visual-lab.ts`). Material constants live in
    `COMIC_FRAG`. Per-zone flags (`emissive`, `halftone`, `stripes`, `ghost`, `opacity`) live in
-   `ZONES`: fix a zone there, not in a shader. Clear `localStorage` keys `haunted.lab.*` to see defaults.
+   `ZONES`: fix a zone there, not in a shader. Clear `localStorage` keys `credits.lab.*` to see defaults.
 4. **Keep parity** (table above) and run:
    ```
    node .kiro/skills/shader-texture-tuning/scripts/check-examples.mjs

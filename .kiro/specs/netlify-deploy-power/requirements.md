@@ -2,11 +2,11 @@
 
 Status: done (requirements, design and tasks: every answer delegated by the user, "use your recommendations across all the questions, then go", 2026-11-17; first production deploy 2026-11-17)
 
-Capability: a project Kiro power, `haunted-ship`, that puts Haunted Terminal on a public Netlify URL only after the project's gates pass and the whole chapter has been played on the deployed preview. Production gets exactly the build that was played, and only after the user says yes. It gives the Kiroween submission its working-app URL and is the project's use of Kiro powers and MCP.
+Capability: a project Kiro power, `credits-ship`, that puts Out Of Credits on a public Netlify URL only after the project's gates pass and the whole chapter has been played on the deployed preview. Production gets exactly the build that was played, and only after the user says yes. It gives the Kiroween submission its working-app URL and is the project's use of Kiro powers and MCP.
 
 ## Requirements
 
-1. WHEN the developer asks Kiro to deploy, publish, ship or put the game online, THE SYSTEM SHALL activate the `haunted-ship` power through its keywords and follow its `ship` skill.
+1. WHEN the developer asks Kiro to deploy, publish, ship or put the game online, THE SYSTEM SHALL activate the `credits-ship` power through its keywords and follow its `ship` skill.
 2. WHEN a preview deploy starts, THE SYSTEM SHALL run `npm run quality`, `node scripts/harness/generate-chapter.mjs --verify` and `npm run build`, in that order, and IF one fails, THEN THE SYSTEM SHALL stop without uploading anything.
 3. WHEN the gates pass, THE SYSTEM SHALL upload `dist/` as a Netlify draft deploy (a preview URL) without a Netlify-side build, and SHALL never publish to production in the same run.
 4. WHEN the preview is live, THE SYSTEM SHALL play the whole chapter on the preview URL (`scripts/harness/play-browser.mjs --url <preview> --nointro`), and IF that run fails, THEN THE SYSTEM SHALL report the preview as failed and SHALL NOT offer it for production.
@@ -23,16 +23,16 @@ Capability: a project Kiro power, `haunted-ship`, that puts Haunted Terminal on 
 
 - Git-connected continuous deploys (Netlify building on every push): they would skip the gates.
 - Netlify Functions, any backend, environment variables, custom domains.
-- The infinite-mode level generator and the `haunted-forge` MCP server (separate specs).
+- The infinite-mode level generator and the `credits-forge` MCP server (separate specs).
 - CI pipelines.
 - Installing the official Netlify power next to this one (see Decisions).
 
 ## Decisions
 
 - **Q:** What is the power?
-  **A (user delegated, 2026-11-17):** Our own project power `haunted-ship` that bundles the Netlify MCP server with a gated-deploy skill. The official Netlify power is not installed next to it, because both would start a second copy of the same Netlify MCP server; ours pins the version the official one leaves floating.
+  **A (user delegated, 2026-11-17):** Our own project power `credits-ship` that bundles the Netlify MCP server with a gated-deploy skill. The official Netlify power is not installed next to it, because both would start a second copy of the same Netlify MCP server; ours pins the version the official one leaves floating.
 - **Q:** Where does our power live?
-  **A (user delegated, 2026-11-17):** `.kiro/powers/haunted-ship/` in this repo, so judges find it in `/.kiro`.
+  **A (user delegated, 2026-11-17):** `.kiro/powers/credits-ship/` in this repo, so judges find it in `/.kiro`.
 - **Q:** Which gates must pass before a deploy, and is the live URL played after the deploy?
   **A (user delegated, 2026-11-17):** `npm run quality`, `generate-chapter.mjs --verify`, `npm run build`; then `play-browser.mjs` against the deployed URL.
 - **Q:** Preview first, or straight to production?
@@ -54,8 +54,8 @@ Capability: a project Kiro power, `haunted-ship`, that puts Haunted Terminal on 
 
 ## Verification
 
-- Req 1, 10: `plugin.json` and `mcp.json` parse and carry the fields of the Agent Plugins schema; `kiro-cli powers install .kiro/powers/haunted-ship` succeeds.
-- Req 2, 3, 5, 6, 8, 9: `node .kiro/powers/haunted-ship/skills/ship/scripts/ship.mjs --selftest` (stamp checks, refusal cases, token never echoed) and `--dry-run` (the gates and the build, no upload).
+- Req 1, 10: `plugin.json` and `mcp.json` parse and carry the fields of the Agent Plugins schema; `kiro-cli powers install .kiro/powers/credits-ship` succeeds.
+- Req 2, 3, 5, 6, 8, 9: `node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs --selftest` (stamp checks, refusal cases, token never echoed) and `--dry-run` (the gates and the build, no upload).
 - Req 4, 7: `play-browser.mjs --url` on the first real preview and production deploy (needs the user's Netlify login; done by hand).
 - Req 11: `npm run quality:agents` (the deny probe for the deploy script in every agent).
 - Req 12: read in the skill; checked by hand after the first production deploy.

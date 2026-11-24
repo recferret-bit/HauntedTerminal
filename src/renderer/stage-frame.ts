@@ -49,7 +49,6 @@ export function stepStage(stage: ComicStage, dt: number): void {
   updateXrayLinks(stage);
   updateBadges(stage);
   stage.overlay.update(dtMs);
-  stage.cameos.update(dt);
   stage.world.updateMatrixWorld(true);
   updateHitboxes(stage);
 }

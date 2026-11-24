@@ -19,7 +19,7 @@ function isValidDraftLevel(v: unknown): boolean {
  * Unsaved chapter edits travel from the chapter editor to the game through localStorage.
  * The game reads them only when the URL says `?draft=1`, so a stale draft never shadows the compiled chapter.
  */
-const KEY = 'haunted.editor.draft:';
+const KEY = 'credits.editor.draft:';
 
 export function writeDraftPack(pack: ChapterPack): void {
   try {

@@ -81,8 +81,6 @@ export class StageOverlay {
   private readonly badgeLayer: HTMLDivElement;
   private readonly svg: SVGSVGElement;
   private readonly transient: HTMLDivElement;
-  /** Cameos live here (managed by CameoDirector). */
-  readonly cameoLayer: HTMLDivElement;
   private readonly cardLayer: HTMLDivElement;
   private readonly items: Item[] = [];
   private readonly badges = new Map<string, BadgeDom>();
@@ -92,7 +90,7 @@ export class StageOverlay {
   private h = 1;
   private u = 58;
   private panelRect: PxRect = { x: 0, y: 0, w: 1, h: 1 };
-  /** The socket dialogue balloon on screen, if any. Cameos yield to it (see stage-cameos.ts). */
+  /** The socket dialogue balloon on screen, if any. */
   private dialogue: Item | null = null;
 
   get dialogueOpen(): boolean {
@@ -120,7 +118,6 @@ export class StageOverlay {
     this.root.appendChild(this.svg);
     this.badgeLayer = layer('badges');
     this.transient = layer('transient');
-    this.cameoLayer = layer('cameos');
     this.cardLayer = layer('cards');
     host.appendChild(this.root);
   }
@@ -256,7 +253,7 @@ export class StageOverlay {
       boxes.push({ l: b.left - base.left - m, t: b.top - base.top - m, r: b.right - base.left + m, b: b.bottom - base.top + m });
     };
     for (const id of CHROME_IDS) push(document.getElementById(id));
-    this.cameoLayer.querySelectorAll('.win, .balloon').forEach((e) => push(e));
+    push(document.querySelector('.dialog-box.open'));
     this.badgeLayer.querySelectorAll('.st-lock').forEach((e) => push(e)); // padlock badges: lettering stays off them
     // The death card flickers (visibility toggles) but its box stays: keep words off it the whole time.
     this.cardLayer.querySelectorAll('.st-tear').forEach((e) => push(e, true));

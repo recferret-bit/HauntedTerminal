@@ -5,7 +5,7 @@ description: "[ASSET PCG] Validate procedural 3D models (`ModelSpec` in `src/pro
 
 # Model geometry validator
 
-Read [haunted-art-direction](../haunted-art-direction/SKILL.md) first: this skill enforces that document.
+Read [credits-art-direction](../credits-art-direction/SKILL.md) first: this skill enforces that document.
 
 A model in this game is plain data (`ModelSpec`: named parts, each a shape, a palette zone, a
 transform and an optional anim tag). Nothing in the engine knows that a claw is meant to hang from an

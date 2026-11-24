@@ -5,7 +5,7 @@ description: "[ASSET PCG] Camera, page contract and visual QA for generated asse
 
 # Comic panel viewport auditor
 
-Read [haunted-art-direction](../haunted-art-direction/SKILL.md) first: it holds the nine look rules this
+Read [credits-art-direction](../credits-art-direction/SKILL.md) first: it holds the nine look rules this
 checklist enforces. This skill is about **seeing** the art the way the player does and judging it.
 
 ## 1. The camera and page contract

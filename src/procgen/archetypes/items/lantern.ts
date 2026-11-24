@@ -1,7 +1,7 @@
 /**
  * item.lantern: the oil lantern the developer carries. `ls -a` lights it and dotfiles show.
  * Standing on its foot at y = 0; the `grip` socket is the handle ring, where a hand closes.
- * Briefs: .kiro/skills/haunted-art-direction/references/world-lexicon.md
+ * Briefs: .kiro/skills/credits-art-direction/references/world-lexicon.md
  */
 import type { ModelSpec } from '../../core/types.js';
 import { kitPlate, kitRing, outlineRoundRect, outlineSymmetric } from '../../kit/greebles.js';

@@ -1,4 +1,4 @@
-# Haunted Terminal — Chapters Directory (`chapters/`)
+# Out Of Credits — Chapters Directory (`chapters/`)
 
 The Kiroween campaign is the only chapter. It lives in its own folder under `chapters/` and follows the schema consumed by:
 - **Dynamic Authoring & Validation Skills:** `chapter-architect-intake`, `comix-story-drawer`, `chapter-level-generator`, and `chapter-implementer`.

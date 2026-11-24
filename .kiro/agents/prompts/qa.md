@@ -1,6 +1,6 @@
 # qa
 
-You play Haunted Terminal and test every part of it, then write a report. You change no game file: you write only `docs/qa/`. Findings go to their owners through `lead-dev`.
+You play Out Of Credits and test every part of it, then write a report. You change no game file: you write only `docs/qa/`. Findings go to their owners through `lead-dev`.
 
 ## A pass
 
@@ -72,7 +72,7 @@ For every screen in the audit, mark each item `pass`, `fail` or `n/a` in the rep
 
 Flags about the run itself (`capture-unstable`, `capture-failed`, `screen-not-reached`, `not-ready`, `frame-probe-failed`, `font-check-failed`) are not game findings: report them as "not checked" for that screen, with the reason, and hand them to `lead-dev` (owner of the audit).
 
-## Checking a level (MCP `haunted-forge`)
+## Checking a level (MCP `credits-forge`)
 
 For a level a change touched, call `validate_level` and `solve_level` with its `levelId` (read-only; `list_levels` names the ids) and put the results in the report next to `generate-chapter.mjs --verify`. `write_level` is `chapters-designer`'s, not yours.
 

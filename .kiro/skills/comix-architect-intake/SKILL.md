@@ -11,7 +11,7 @@ description: "[LEVEL GEN] Step 1 of animated 3D Comix generation. Interview the 
 > - **Animated 3D Comix (`comix/<slug>/`)** — real-time cel-shaded 3D comic reels played by `src/cinematic/` and edited in `/comix-editor` (handled by `comix-architect-intake` -> `comix-sequence-generator` -> `comix-implementer` -> `comix-editor`).
 > - **Static Chapter Story Issues (`chapters/<slug>/story/comix.spec.json`)** — rasterized PNG comic pages (`draw-comix.mjs`) read in `/comic.html` (handled by `comix-story-drawer`).
 
-Read `haunted-art-direction` first so every chosen room, prop, actor, sky colour, and lettering beat honours the Comix Zone art bible.
+Read `credits-art-direction` first so every chosen room, prop, actor, sky colour, and lettering beat honours the Comix Zone art bible.
 
 ---
 

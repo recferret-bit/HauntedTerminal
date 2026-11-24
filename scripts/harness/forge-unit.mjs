@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Tests for the haunted-forge MCP server (part of `npm run quality` as `quality:mcp`).
+// Tests for the credits-forge MCP server (part of `npm run quality` as `quality:mcp`).
 //   node scripts/harness/forge-unit.mjs
 // Part 1 calls the tools on a temporary copy of chapters/ (writes happen only there). Part 2 starts the real server over
 // stdio with the SDK client and only reads or is refused: the repository's own files must be byte-identical afterwards.
@@ -12,7 +12,7 @@ import { join, resolve } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import fc from 'fast-check';
-import { createContext, ForgeError, TOOLS } from '../mcp/haunted-forge/tools.mjs';
+import { createContext, ForgeError, TOOLS } from '../mcp/credits-forge/tools.mjs';
 import { etagOf } from './lib/chapter-compile.mjs';
 import { projectRoot } from './lib/load.mjs';
 import { testRunner } from './lib/test-kit.mjs';
@@ -183,7 +183,7 @@ await test('part 1 never touched the repository: chapters/ is byte-identical', (
 // ---- part 2: the real server over stdio ---------------------------------------------------------------------------
 
 const client = new Client({ name: 'forge-unit', version: '1.0.0' });
-const transport = new StdioClientTransport({ command: process.execPath, args: [resolve(projectRoot, 'scripts/mcp/haunted-forge/server.mjs')], cwd: projectRoot, stderr: 'ignore' });
+const transport = new StdioClientTransport({ command: process.execPath, args: [resolve(projectRoot, 'scripts/mcp/credits-forge/server.mjs')], cwd: projectRoot, stderr: 'ignore' });
 const call = async (name, args) => {
   const res = await client.callTool({ name, arguments: args });
   return { isError: res.isError === true, body: JSON.parse(res.content[0].text) };

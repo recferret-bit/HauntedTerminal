@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// End-to-end desktop builder for Haunted Terminal (Tauri v2 + optional Steamworks SDK).
+// End-to-end desktop builder for Out Of Credits (Tauri v2 + optional Steamworks SDK).
 //   node scripts/desktop/build-tauri-steam.mjs --dry-run          gates + web build + Tauri gen + offline verify + Cargo check
 //   node scripts/desktop/build-tauri-steam.mjs --portable-only    packages offline web tar.gz + SHA256SUMS.txt in dist-desktop/
 //   node scripts/desktop/build-tauri-steam.mjs                    full native Tauri v2 installer build (requires Rust / Cargo)
@@ -149,7 +149,7 @@ export function buildTauriOverrideConfig(cfg, targetInfo, env = process.env) {
   } else if (targetInfo.os === 'windows') {
     override.bundle = { resources: { [relLib]: targetInfo.libFileName } };
   } else {
-    const linuxLibDest = `/usr/lib/haunted-terminal-desktop/${targetInfo.libFileName}`;
+    const linuxLibDest = `/usr/lib/out-of-credits-desktop/${targetInfo.libFileName}`;
     override.bundle = {
       resources: { [relLib]: targetInfo.libFileName },
       linux: {
@@ -173,7 +173,7 @@ function writeChecksums(outDir) {
 
 export function packageOfflineWebArchive(cfg) {
   mkdirSync(cfg.releaseOutDir, { recursive: true });
-  const archiveName = `haunted-terminal-v${cfg.version}-offline-web.tar.gz`;
+  const archiveName = `out-of-credits-v${cfg.version}-offline-web.tar.gz`;
   const archivePath = join(cfg.releaseOutDir, archiveName);
   // Stream uncompressed tar from `cwd: cfg.distDir` and gzip in Node so Windows `D:\...` drive-letter colons never reach GNU tar.
   const rawTar = execFileSync('tar', ['-cf', '-', '.'], {

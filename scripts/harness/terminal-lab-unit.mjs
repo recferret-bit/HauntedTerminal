@@ -60,6 +60,7 @@ await withProcgen(async (_p, vite) => {
   const { ConflictError } = await load('/src/editor-core/http.ts');
   const { PORTRAIT_FRAMES, rasterPortraitFrame } = await load('/src/renderer/portrait.ts');
   const { ENTER_MS, EXIT_MS, HEAD_FRAME_MS, mountDialogBox } = await load('/src/ui/dialog-box.ts');
+  const { mountDialogOrchestrator, stripSpeakerPrefix } = await load('/src/ui/dialog-orchestrator.ts');
 
   const raw = (lab, script) => {
     const s = createChapterSession({ chapterId: 'lab-unit', pack: rawPack(script), preview: true, startLevelId: 'lab-1', ...(lab ? { lab } : {}) });
@@ -878,7 +879,7 @@ await withProcgen(async (_p, vite) => {
     assert.ok(importChapterLevelRef(`${slug}/no-such-level`, []).problem);
 
     // Malformed localStorage drafts fall back cleanly to the compiled chapter without throwing
-    const draftKey = `haunted.editor.draft:${slug}`;
+    const draftKey = `credits.editor.draft:${slug}`;
     for (const bad of ['{broken', JSON.stringify({ manifest: { id: slug }, levels: [null] }), JSON.stringify({ manifest: { id: slug }, levels: [{ id: levels[0].levelId, files: 'nope' }] }), JSON.stringify({ manifest: { id: slug }, levels: [{ id: levels[0].levelId, cwd: '/x', roomKind: 'bogus', floorTheme: 1, mechanic: 'terminal', title: 'T', summary: 'S', files: [], enemies: [], pickups: [], patches: [], winRules: [], solutionCommands: [] }] })]) {
       globalThis.localStorage.setItem(draftKey, bad);
       const res = importChapterLevelRef(levels[0].ref, [], true);
@@ -1026,10 +1027,19 @@ await withProcgen(async (_p, vite) => {
     for (const f of itemFrames.slice(1)) assert.equal(sameBytes(itemFrames[0], f), true, 'item.lantern icon stays static');
   });
 
-  await test('dialog box: docks vibecoder left and NPCs/agents right, cycles head frames, and animates enter/exit', async () => {
+  const withFakeDom = async (fn) => {
     const makeEl = (tag) => {
       const classes = new Set();
       const attrs = new Map();
+      const matchSel = (c, sel) => {
+        if (!sel) return false;
+        if (sel.startsWith('#')) return c.attrs?.get('id') === sel.slice(1);
+        if (sel.startsWith('.')) {
+          const parts = sel.slice(1).split('.').filter(Boolean);
+          return parts.every((p) => c.classList?.contains(p));
+        }
+        return false;
+      };
       const node = {
         tagName: tag.toUpperCase(),
         children: [],
@@ -1061,30 +1071,46 @@ await withProcgen(async (_p, vite) => {
           node.parentNode = null;
         },
         querySelector: (sel) => {
-          const cls = sel.startsWith('.') ? sel.slice(1) : null;
-          const id = sel.startsWith('#') ? sel.slice(1) : null;
           for (const c of node.children) {
-            if ((cls && c.classList?.contains(cls)) || (id && c.attrs?.get('id') === id)) return c;
+            if (matchSel(c, sel)) return c;
             const hit = c.querySelector?.(sel);
             if (hit) return hit;
           }
           return null;
+        },
+        querySelectorAll: (sel) => {
+          const out = [];
+          for (const c of node.children) {
+            if (matchSel(c, sel)) out.push(c);
+            if (c.querySelectorAll) out.push(...c.querySelectorAll(sel));
+          }
+          return out;
         },
       };
       return node;
     };
     const prevDoc = globalThis.document;
     globalThis.document = { createElement: makeEl };
-    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     try {
+      await fn(makeEl);
+    } finally {
+      if (prevDoc === undefined) delete globalThis.document;
+      else globalThis.document = prevDoc;
+    }
+  };
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const stubDrawPortrait = (seenFrames) => (modelId, px, frame = 0) => {
+    const buf = rasterPortraitFrame(modelId, px, frame);
+    assert.ok(buf);
+    if (seenFrames) seenFrames.push(frame);
+    return { tagName: 'CANVAS', modelId, px, frame };
+  };
+
+  await test('dialog box: docks vibecoder left and NPCs/agents right, cycles head frames, and animates enter/exit', async () => {
+    await withFakeDom(async (makeEl) => {
       const parent = makeEl('div');
       const seenFrames = [];
-      const box = mountDialogBox(parent, (modelId, px, frame = 0) => {
-        const buf = rasterPortraitFrame(modelId, px, frame);
-        assert.ok(buf);
-        seenFrames.push(frame);
-        return { tagName: 'CANVAS', modelId, px, frame };
-      });
+      const box = mountDialogBox(parent, stubDrawPortrait(seenFrames));
       const root = parent.querySelector('.dialog-box');
       const avatar = root.querySelector('.dialog-avatar');
       assert.ok(root && avatar);
@@ -1129,10 +1155,76 @@ await withProcgen(async (_p, vite) => {
       assert.equal(root.classList.contains('entering'), false);
       assert.equal(root.classList.contains('exiting'), false);
       assert.equal(box.pending(), 0);
-    } finally {
-      if (prevDoc === undefined) delete globalThis.document;
-      else globalThis.document = prevDoc;
-    }
+    });
+  });
+
+  await test('dialog orchestrator: unifies DIALOG_BOX + AGENT_TAUNT, enforces 1 right dialog, preempts chatter, and coordinates hints & sockets', async () => {
+    assert.equal(stripSpeakerPrefix('KIRO GHOST: "Easy, Vibecoder!"'), 'Easy, Vibecoder!');
+    assert.equal(stripSpeakerPrefix('CLOD: Hello'), 'Hello');
+    await withFakeDom(async (makeEl) => {
+      const parent = makeEl('div');
+      let hintClosed = 0;
+      const tutorialSteps = [];
+      const orch = mountDialogOrchestrator(parent, stubDrawPortrait(), {
+        tutorial: {
+          sync() {},
+          step(ev) { tutorialSteps.push(ev); },
+          hide() {},
+        },
+        onRightDialogOpen() { hintClosed += 1; },
+      });
+
+      // 1. Duplicate suppression & unified AGENT_TAUNT -> .dialog-box
+      orch.handleEvent({ type: 'AGENT_TAUNT', agent: 'kiro', model: 'npc.kiro_ghost', text: 'KIRO GHOST: "Take the lantern!"', mood: 'order' });
+      orch.handleEvent({ type: 'AGENT_TAUNT', agent: 'kiro', model: 'npc.kiro_ghost', text: 'Take the lantern!', mood: 'order' });
+      assert.equal(orch.box.pending(), 1, 'consecutive identical line must be deduplicated');
+      assert.equal(orch.box.activeSide(), 'right');
+      assert.equal(orch.box.activeLine()?.text, 'Take the lantern!');
+      assert.equal(hintClosed, 1, 'opening right-side dialog closes open hint note');
+      assert.equal(orch.stats().maxConcurrent, 1);
+      assert.equal(orch.stats().maxRightConcurrent, 1);
+
+      // 2. TUTORIAL_STEP updates silent bottom-right tutorial card without queueing a top-right dialog
+      orch.handleEvent({ type: 'TUTORIAL_STEP', step: 1, total: 5, prompt: 'Look around', command: 'ls', agent: 'kiro', done: false });
+      assert.equal(tutorialSteps.length, 1);
+      assert.equal(orch.box.pending(), 1, 'TUTORIAL_STEP must not spawn a second right-side dialog');
+
+      // 3. onHintOpened dismisses active/queued right-side dialogs cleanly
+      orch.handleEvent({ type: 'AGENT_TAUNT', agent: 'clod', model: 'agent.clod', text: 'Haha!', mood: 'laugh' });
+      assert.equal(orch.box.pending(), 2);
+      orch.onHintOpened();
+      assert.equal(orch.box.activeSide(), null);
+      assert.equal(orch.box.pending(), 0, 'opening hint dismisses right-side dialogs');
+
+      // 4. Chatter queue cap (<= 3 queued) & priority preemption by DIALOG_BOX
+      for (let i = 0; i < 6; i++) {
+        orch.handleEvent({ type: 'AGENT_TAUNT', agent: 'gork', model: 'agent.gork', text: `Chatter ${i}`, mood: 'laugh' });
+      }
+      assert.equal(orch.box.queuedLines().length, 3, 'chatter queue must stay capped at 3');
+      orch.handleEvent({ type: 'DIALOG_BOX', speaker: 'vibecoder', name: 'DEV', model: 'vibecoder.dev_terminal', text: 'Quiet!', holdMs: 120 });
+      assert.deepEqual(orch.box.queuedLines().map((l) => l.text), ['Quiet!'], 'script line must drop stale queued chatter');
+      await wait(320 + EXIT_MS + 40);
+      assert.equal(orch.box.activeSide(), 'left');
+      assert.equal(orch.box.activeLine()?.text, 'Quiet!');
+      await wait(120 + EXIT_MS + 40);
+      assert.equal(orch.box.pending(), 0);
+
+      // 5. Socket dialogue yields chatter until PUZZLE_DOOR_RESOLVED
+      orch.handleEvent({
+        type: 'OBSTACLE_DIALOGUE_RENDERED',
+        payload: { obstacleId: 'sock', speakerName: 'DAD', portraitSprite: 'socket_guardian', mood: 'hinting', bubbleStyle: 'COMIX_CLASSIC', anchorInodeId: 1, pages: [{ text: 'hi', highlightedUnixTokens: [] }], ansiTerminalBanner: '' },
+      });
+      orch.handleEvent({ type: 'AGENT_TAUNT', agent: 'codec', model: 'agent.codec', text: 'Held chatter', mood: 'smug' });
+      assert.equal(orch.box.activeLine(), null, 'chatter waits while socket balloon is open');
+      assert.equal(orch.box.queuedLines().length, 1);
+      orch.handleEvent({ type: 'PUZZLE_DOOR_RESOLVED', socketInodeId: 1, unlockedInodeId: 2, solvedViaInput: 'ok' });
+      assert.equal(orch.box.activeLine()?.text, 'Held chatter', 'held chatter wakes after socket resolves');
+
+      orch.clear();
+      assert.equal(orch.box.pending(), 0);
+      assert.equal(orch.stats().maxConcurrent, 1);
+      assert.equal(orch.stats().maxRightConcurrent, 1);
+    });
   });
 });
 

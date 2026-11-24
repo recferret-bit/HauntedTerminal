@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Deterministic generator for Haunted Terminal's Tauri v2 + Steamworks Rust desktop wrapper.
+// Deterministic generator for Out Of Credits's Tauri v2 + Steamworks Rust desktop wrapper.
 //   node scripts/desktop/generate-tauri-steam.mjs                     writes src-tauri/ (standalone + optional `steam` Cargo feature)
 //   node scripts/desktop/generate-tauri-steam.mjs --steam-dev         sets Spacewar dev App ID 480 + writes steam_appid.txt
 //   node scripts/desktop/generate-tauri-steam.mjs --app-id <id>       sets production Steam App ID

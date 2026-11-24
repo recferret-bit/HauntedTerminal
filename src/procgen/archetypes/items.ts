@@ -2,7 +2,7 @@
  * The developer's inventory: things he carries and holds out in his screen-right hand. Each item
  * stands on the floor in its own frame and names a `grip` socket; `vibecoder.ts` puts that socket in
  * his hand. The builders live in `./items/`; this file registers them from the items contract.
- * Briefs: .kiro/skills/haunted-art-direction/references/world-lexicon.md
+ * Briefs: .kiro/skills/credits-art-direction/references/world-lexicon.md
  */
 import { ITEMS, type ItemId } from '../../contracts/inventory.js';
 import { ModelCatalog } from '../core/catalog.js';

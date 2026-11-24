@@ -8,7 +8,7 @@ Skills live in `.kiro/skills/`. Every skill description starts with its category
 
 ## Category 1: ASSET PCG (procedural content generation of game assets)
 
-Root contract: `haunted-art-direction`. Read it first, before any other asset skill.
+Root contract: `credits-art-direction`. Read it first, before any other asset skill.
 
 | Area | Skills |
 |---|---|
@@ -57,5 +57,5 @@ The team agents in `.kiro/agents/` split these skills by owner: `artist` uses ev
 
 - Needs a new model, room, texture, effect or animation: ASSET PCG, then return to the level.
 - Needs a new puzzle, win rule, dialogue, comic panel or level order: LEVEL GEN.
-- Level-gen skills may read `haunted-art-direction`; asset skills never depend on level skills.
+- Level-gen skills may read `credits-art-direction`; asset skills never depend on level skills.
 - The **Terminal Lab** (`/terminal-lab`) and **Laptop Lab** (`/laptop-lab`) are test benches / emulators, not content categories: they place or emulate tools and never write chapters or comixes. Needs a new asset: ASSET PCG first.

@@ -56,7 +56,7 @@ feet to y = 0 and centre x and z; optionally squash z; snap each triangle to the
 (comparing against each zone's three cel bands, so baked shading lands on the right zone); keep the
 largest zones; weld vertices and write one primitive per zone with `POSITION`, `NORMAL` and indices,
 a material `zone:<id>` (flat base colour, metallic 0, roughness 1, `extras.zone`), and a node
-`extras.hauntedTerminal` block with the triangle count and zone shares.
+`extras.outOfCredits` block with the triangle count and zone shares.
 
 What it drops: textures, images, samplers, UVs, tangents, every PBR value, emissive, animations, skins,
 cameras, lights, node hierarchy.

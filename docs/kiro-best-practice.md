@@ -1,4 +1,4 @@
-# Kiro Best Practices for Haunted Terminal
+# Kiro Best Practices for Out Of Credits
 
 Short version: put **facts** in steering, **procedures** in skills, **truth** in JSON schemas, **enforcement** in hooks, and **capabilities** in specs. A complex game gets messy when those roles blur.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Local, unversioned Tauri build for Haunted Terminal (power `haunted-tauri-local`, spec .kiro/specs/release-tags-power/).
+// Local, unversioned Tauri build for Out Of Credits (power `credits-tauri-local`, spec .kiro/specs/release-tags-power/).
 //
-//   node .kiro/powers/haunted-tauri-local/skills/tauri-local/scripts/tauri-local.mjs            build for this machine, then open it
+//   node .kiro/powers/credits-tauri-local/skills/tauri-local/scripts/tauri-local.mjs            build for this machine, then open it
 //   node .../tauri-local.mjs --no-open                                                          build only
 //   node .../tauri-local.mjs --dry-run                                                          gates + web build + Tauri generation, no native build
 //   node .../tauri-local.mjs --selftest                                                         pure checks, no build

@@ -22,7 +22,7 @@ Fixes 2 (floor restart) and 3 (early `mv lantern ~`) work as described. Fix 1 wo
 
 I did not check port 5400: `curl` is not on my shell allow-list, so I started 5174 instead.
 
-Not run: `npm run quality`, `visual-audit.mjs` (by request), `editor-smoke.mjs`, `haunted-forge` `validate_level` / `solve_level` (the `--verify` solve covers all 11 levels).
+Not run: `npm run quality`, `visual-audit.mjs` (by request), `editor-smoke.mjs`, `credits-forge` `validate_level` / `solve_level` (the `--verify` solve covers all 11 levels).
 
 ## MCP calls (chrome-devtools, `localhost:5174` only)
 
@@ -90,7 +90,7 @@ The typed `restart` command does not exist: "bash: restart: command not found (t
 - The level label wraps mid-word ("/mnt/wires_an / d_chips"), and the door card reads "LOCKE" (cut by the stage edge). Both are low; the second was there before.
 - Toast (`kill -9 1011` unlocks ACH_SIGKILL_HUNTER): it sits at the top of the stage, over the level label and the TACTICAL row, not over the box. The box was not showing at that moment, so I did not see both on screen together.
 - In the same screenshot, Kiro's speech bubble runs off the left edge of the viewport: "#3: I am weak / + GPU chips for / odels! Pocket the / n mv." and "_ram_8gb.dimm ~" are cut. The bubble also overlaps Kiro's portrait and the tutorial card (finding 2, `-5.png`).
-- At 1280x800 the dialog box still covers the HAUNTED TERMINAL banner whenever it shows: only a yellow stub stays visible beside it (`-8.png`, `qa-r2-7.png`). The fix only applies at 820 px and below (finding 6).
+- At 1280x800 the dialog box still covers the OUT OF CREDITS banner whenever it shows: only a yellow stub stays visible beside it (`-8.png`, `qa-r2-7.png`). The fix only applies at 820 px and below (finding 6).
 
 ### 5. Not tested before
 

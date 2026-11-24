@@ -45,7 +45,7 @@ export function preamble(seed, { stepped = false } = {}) {
   return `(() => {
   let a = ${Number(seed) >>> 0};
   Math.random = () => { a |= 0; a = a + 0x6d2b79f5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-  try { localStorage.setItem('haunted.lab.stormOn', '0'); } catch {}
+  try { localStorage.setItem('credits.lab.stormOn', '0'); } catch {}
 })();
 ${stepped ? STEPPED_RAF : ''}
 ${PAGE_DETECTORS}`;

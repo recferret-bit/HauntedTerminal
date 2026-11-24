@@ -10,7 +10,7 @@ import { ENEMY_TYPES, PICKUP_TYPES } from './validate-pack.js';
  * The game reads it only with `?lab=1`. Anything in storage is untrusted: `normaliseLabConfig` keeps only well-formed parts,
  * so a stale entry from an older lab can never take the session down.
  */
-const KEY = 'haunted.lab.config:';
+const KEY = 'credits.lab.config:';
 const COND_KINDS = new Set(['ran', 'output', 'code', 'event', 'file', 'riddle']);
 const FILE_KINDS = new Set(['file', 'dir', 'socket']);
 

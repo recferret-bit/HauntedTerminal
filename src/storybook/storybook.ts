@@ -1,3 +1,4 @@
+import '../contracts/migrate-storage.js';
 import './storybook.css';
 import { LabApp } from './app/lab-app.js';
 import { installLabApi } from './app/lab-api.js';

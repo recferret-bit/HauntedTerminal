@@ -1,4 +1,4 @@
-// The tools of the haunted-forge MCP server, as plain functions. Spec: .kiro/specs/mcp-devtools-and-forge/.
+// The tools of the credits-forge MCP server, as plain functions. Spec: .kiro/specs/mcp-devtools-and-forge/.
 //
 //   list_assets    the model, room and FX ids a level or comix spec may reference
 //   list_levels    the chapters and their levels (id, index, title, mechanic)

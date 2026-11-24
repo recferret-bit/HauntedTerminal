@@ -16,6 +16,7 @@ export interface HudHandlers {
   /** Draws the item icons of the strip (the renderer's `drawPortrait`, passed in by `src/play`: `src/ui` imports no three). Without it the strip is not mounted. */
   drawPortrait?: DrawPortrait;
   onToggleTactical?: () => boolean;
+  onHintShow?: () => void;
 }
 
 export interface EndStats {
@@ -37,6 +38,7 @@ export interface Hud {
   achievement(item: { icon: string; title: string; steamApiName: string; description: string }): void;
   /** Paper note under the Hint button. */
   showHint(text: string): void;
+  hideHint(): void;
   showStats(stats: EndStats, skipIntro: boolean): void;
   hideStats(): void;
 }
@@ -138,6 +140,7 @@ interface HudView {
   lastHp: number;
   lastPips: string;
   hintTimer: number;
+  onHintShow?: () => void;
 }
 
 function pop(anchor: HTMLElement, text: string, cls: string): void {
@@ -221,10 +224,16 @@ function hudApi(view: HudView): Hud {
       showNext();
     },
     showHint(text) {
+      view.onHintShow?.();
       q('p', view.hint).innerHTML = esc(text).replace(/\n/g, '<br>');
       replay(view.hint, 'open');
       window.clearTimeout(view.hintTimer);
       view.hintTimer = window.setTimeout(() => view.hint.classList.remove('open'), 9000);
+    },
+    hideHint() {
+      window.clearTimeout(view.hintTimer);
+      view.hintTimer = 0;
+      view.hint.classList.remove('open');
     },
     showStats(s, skipIntro) {
       q('#outro-rank', view.stats).textContent = s.rank;
@@ -326,5 +335,6 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     lastHp: -1,
     lastPips: '',
     hintTimer: 0,
+    onHintShow: handlers.onHintShow,
   });
 }

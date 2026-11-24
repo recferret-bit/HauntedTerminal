@@ -5,12 +5,12 @@
  * Once a real Steam App ID is issued (see `.kiro/specs/steamworks-store-release/`), set
  * `steamAppId` and `steamStoreUrl` below to switch every Wishlist CTA to the live store page.
  */
-export const GITHUB_REPO_URL = 'https://github.com/recferret-bit/HauntedTerminal';
+export const GITHUB_REPO_URL = 'https://github.com/recferret-bit/OutOfCredits';
 export const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases`;
 export const GITHUB_LATEST_RELEASE_URL = `${GITHUB_RELEASES_URL}/latest`;
 
 const STEAM_STORE_APP_RX = /^https:\/\/store\.steampowered\.com\/app\/\d+(?:[/?#]|$)/;
-const GITHUB_REPO_RX = /^https:\/\/github\.com\/recferret-bit\/HauntedTerminal(?:[/?#]|$)/;
+const GITHUB_REPO_RX = /^https:\/\/github\.com\/recferret-bit\/(?:OutOfCredits|HauntedTerminal)(?:[/?#]|$)/;
 
 export interface SteamReleaseMeta {
   readonly status: 'coming-soon' | 'live';
@@ -168,13 +168,13 @@ export async function syncSteamAchievements(
   };
 }
 
-/** Reads `<app_data_dir>/haunted-terminal-save.json` (used for cross-OS Steam Auto-Cloud & Tauri persistence). */
+/** Reads `<app_data_dir>/out-of-credits-save.json` (used for cross-OS Steam Auto-Cloud & Tauri persistence). */
 export async function readDesktopSaveBundle(): Promise<string | null> {
   const raw = await invokeTauriCommand<string | null>('desktop_read_save_bundle');
   return typeof raw === 'string' && raw.length > 0 ? raw : null;
 }
 
-/** Atomically writes `<app_data_dir>/haunted-terminal-save.json` inside the Tauri desktop shell. */
+/** Atomically writes `<app_data_dir>/out-of-credits-save.json` inside the Tauri desktop shell. */
 export async function writeDesktopSaveBundle(bundleJson: string): Promise<boolean> {
   if (!bundleJson) return false;
   const ok = await invokeTauriCommand<boolean>('desktop_write_save_bundle', { bundleJson });
@@ -198,7 +198,7 @@ export function withDesktopSaveSyncSuppressed<T>(fn: () => T): T {
   }
 }
 
-/** Coalesces localStorage progress/perk/achievement writes into `<app_data_dir>/haunted-terminal-save.json` on Tauri. */
+/** Coalesces localStorage progress/perk/achievement writes into `<app_data_dir>/out-of-credits-save.json` on Tauri. */
 export function scheduleDesktopSaveSync(): void {
   if (suppressSaveSyncDepth > 0 || saveSyncQueued || !desktopSaveProvider || !isTauriDesktop()) return;
   saveSyncQueued = true;

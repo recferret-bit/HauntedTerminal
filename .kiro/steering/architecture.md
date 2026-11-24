@@ -5,7 +5,7 @@ Code follows clean architecture: dependencies point inward, and the rules are en
 ## Layers (inner to outer)
 
 ```
-contracts/            pure types shared by game and tools (events, room view)
+contracts/            pure types shared by game and tools (events, room view), the project name (`brand.ts`) and the saved-key migration (`legacy-keys.ts`; every page entry imports `migrate-storage.ts` first)
 procgen/core          domain: palette, rng, types, catalogs, pixel buffers. No three.
 procgen/geometry      shape -> geometry, software raster (three math only)
 procgen/kit, textures, archetypes, fx, anim, validate

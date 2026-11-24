@@ -1,4 +1,4 @@
-# Haunted Terminal — Animated Comix Directory (`comix/`)
+# Out Of Credits — Animated Comix Directory (`comix/`)
 
 Every animated 3D comic sequence (cinematic cutscenes, openings, endings, interludes, or standalone comic reels) lives in its own connected directory under `comix/` and follows the declarative schema consumed by:
 - **Dynamic Authoring & Validation Skills:** `comix-architect-intake`, `comix-sequence-generator`, `comix-implementer`, and `comix-editor`.

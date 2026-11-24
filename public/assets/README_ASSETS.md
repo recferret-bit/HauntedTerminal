@@ -1,4 +1,4 @@
-# Haunted Terminal: PNG asset specification (Comix Zone style)
+# Out Of Credits: PNG asset specification (Comix Zone style)
 
 Put transparent `.png` files in `public/assets/sprites/` and list them in `public/assets/manifest.json`. Add a key only together with its PNG: the game probes every listed file, and a missing one is a 404 with a console error on the hosted site (`manifest.json` is `{}` until the first PNG lands). The table below is the set of keys the renderer understands. The scene is made of procedural 3D meshes and shaders (Three.js). When a PNG exists, it is laid on the mesh with the same key as its albedo map. See the `ai-mesh-pipeline` skill.
 

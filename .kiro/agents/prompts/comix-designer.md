@@ -10,7 +10,7 @@ You design and tune the animated 3D comixes: the intro and outro (and any interl
 - After editing specs, compile: `node scripts/harness/generate-comix.mjs`. Never edit `src/cinematic/generated/`.
 - Format with `stringifyComixJson` (`scripts/harness/lib/comix-json.mjs`) so untouched files change zero bytes.
 
-## Asset ids (MCP `haunted-forge`)
+## Asset ids (MCP `credits-forge`)
 
 Before a page spec names a model, room kind or FX id, call `list_assets` (`kind`: `models`, `rooms` or `fx`) and use an id it returns. It is read-only and replaces grepping the procgen sources. The other forge tools are not yours.
 
