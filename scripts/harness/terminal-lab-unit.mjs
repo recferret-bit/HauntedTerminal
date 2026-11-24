@@ -1034,6 +1034,29 @@ await withProcgen(async (_p, vite) => {
         `${modelId} head portrait frames must animate across poses`,
       );
     }
+    const countPixels = (buf, pred) => {
+      let n = 0;
+      for (let i = 0; i < buf.data.length; i += 4) if (buf.data[i + 3] > 0 && pred(buf.data[i], buf.data[i + 1], buf.data[i + 2])) n++;
+      return n;
+    };
+    const codecFrames = Array.from({ length: PORTRAIT_FRAMES }, (_, f) => rasterPortraitFrame('agent.codec', 64, f));
+    for (let f = 0; f < PORTRAIT_FRAMES; f++) {
+      const greenPx = countPixels(codecFrames[f], (r, g, b) => g > r + 40 && g > b + 20);
+      assert.equal(greenPx, 0, `agent.codec frame ${f} must have no CRT syntax-bar lines on its monitor`);
+      const promptPx = countPixels(codecFrames[f], (r, g, b) => r > 200 && g > 200 && b > 180);
+      assert.ok(promptPx >= 12, `agent.codec frame ${f} must retain visible >_ prompt glyph pixels`);
+    }
+    const gorkFrames = Array.from({ length: PORTRAIT_FRAMES }, (_, f) => rasterPortraitFrame('agent.gork', 64, f));
+    for (let f = 0; f < PORTRAIT_FRAMES; f++) {
+      const faceBrightPx = countPixels(gorkFrames[f], (r, g, b) => r > 200 && g > 200 && b > 180);
+      assert.ok(faceBrightPx >= 40, `agent.gork frame ${f} must retain recognizable bright goggles and smile`);
+    }
+    for (const blinkModel of ['agent.codec', 'agent.clod']) {
+      const brightCounts = Array.from({ length: PORTRAIT_FRAMES }, (_, f) =>
+        countPixels(rasterPortraitFrame(blinkModel, 64, f), (r, g, b) => r > 200 && g > 200 && b > 180),
+      );
+      assert.ok(Math.max(...brightCounts) - Math.min(...brightCounts) >= 20, `${blinkModel} 64px portrait must blink its focal eye/cursor across frames`);
+    }
     const itemFrames = Array.from({ length: PORTRAIT_FRAMES }, (_, f) => rasterPortraitFrame('item.lantern', 36, f));
     for (const f of itemFrames.slice(1)) assert.equal(sameBytes(itemFrames[0], f), true, 'item.lantern icon stays static');
   });

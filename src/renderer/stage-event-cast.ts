@@ -42,6 +42,9 @@ export function handleCastEvent(stage: ComicStage, ev: KernelEvent, subject: Sta
     case 'TUTORIAL_STEP':
       onTutorial(stage, ev);
       return true;
+    case 'AGENT_TAUNT':
+      onAgentTaunt(subject, ev);
+      return true;
     case 'VIBECODER_EMOTE':
       onEmote(stage, ev);
       return true;
@@ -168,6 +171,13 @@ function onTutorial(stage: ComicStage, ev: Extract<KernelEvent, { type: 'TUTORIA
     const h = stage.hero();
     if (h) hopInPlace(stage, h, 0.18, 260);
   }
+}
+
+function onAgentTaunt(subject: StageActor | null, ev: Extract<KernelEvent, { type: 'AGENT_TAUNT' }>): void {
+  if (!subject || subject.disposed || subject.exiting || subject.dead) return;
+  if (!subject.modelId.startsWith('agent.') || typeof ev.text !== 'string' || !ev.text.trim()) return;
+  if (subject.rest === 'frozen' || subject.rest === 'petrified') return;
+  subject.animator.setState('attack');
 }
 
 function onEmote(stage: ComicStage, ev: Extract<KernelEvent, { type: 'VIBECODER_EMOTE' }>): void {

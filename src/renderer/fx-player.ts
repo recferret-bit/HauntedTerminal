@@ -19,7 +19,7 @@ export const FX_IDS = [
   'fx.pickup-energy',
   'fx.pickup-ram',
   'fx.pickup-ssd',
-  'fx.hit-hero',
+  'fx.hit-vibecoder',
   'fx.malware-hit',
   'fx.malware-death',
   'fx.devnull-suck',
@@ -28,6 +28,10 @@ export const FX_IDS = [
   'fx.door-unlock',
   'fx.coredump',
   'fx.matrix-cast',
+  'fx.agent-clod',
+  'fx.agent-coffee',
+  'fx.agent-gork',
+  'fx.agent-codec',
 ] as const;
 
 export type FxId = (typeof FX_IDS)[number];

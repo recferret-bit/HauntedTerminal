@@ -7,6 +7,7 @@ import { queuedFor, removeActor, setRest } from './stage-actor.js';
 import { ACTOR_Z, CAM_HOME, LOOK_HOME, themeFor } from './stage-const.js';
 import { runStageEvent } from './stage-events.js';
 import { playFx } from './stage-fx.js';
+import type { FxId } from './fx-player.js';
 import { popOut } from './stage-motion.js';
 import { applyActor } from './stage-sync.js';
 import type { ComicStage } from './comic-stage.js';
@@ -30,6 +31,7 @@ export function stepStage(stage: ComicStage, dt: number): void {
   for (const [id, p] of stage.pendingSpawn) if (stage.clockMs - p.at > 4000) stage.pendingSpawn.delete(id);
   stage.tweens.update(dtMs);
   stepActors(stage, dt);
+  stepAgentAmbientFx(stage, dt);
   heroFidget(stage, dt);
   lightFrame(stage, dt);
   applyShake(stage);
@@ -146,6 +148,29 @@ function stepActors(stage: ComicStage, dt: number): void {
     a.group.visible = !a.awaitingSpawn && !a.dead && (!viewHidden || a.lock !== 0 || a.exiting);
     a.animator.update(dt);
     if (a.pips) a.pips.visible = a.pips.visible && a.group.visible;
+  }
+}
+
+const AGENT_AMBIENT_FX: Record<string, FxId> = {
+  'agent.clod': 'fx.agent-clod',
+  'agent.antigravy': 'fx.agent-coffee',
+  'agent.gork': 'fx.agent-gork',
+  'agent.codec': 'fx.agent-codec',
+};
+
+/** Gentle stepped ambient bursts (steam, crack sparks, accretion shards, syntax blocks) on live agent actors. */
+function stepAgentAmbientFx(stage: ComicStage, dt: number): void {
+  if (!stage.stormOn || stage.devNoStorm) return;
+  for (const a of stage.actors.values()) {
+    const fxId = AGENT_AMBIENT_FX[a.modelId];
+    if (!fxId || a.disposed || a.exiting || a.dead || !a.group.visible) continue;
+    if (a.rest === 'frozen' || a.rest === 'petrified') continue;
+    const slot = a as StageActor & { agentFxIn?: number };
+    slot.agentFxIn = (slot.agentFxIn ?? (1.6 + (a.id.length % 4) * 0.45)) - dt;
+    if (slot.agentFxIn <= 0) {
+      slot.agentFxIn = a.modelId === 'agent.antigravy' ? 2.2 : 3.0;
+      playFx(stage, fxId, actorSocket(a, 'fx'), { text: ' ', noShake: true, scale: 0.68 });
+    }
   }
 }
 

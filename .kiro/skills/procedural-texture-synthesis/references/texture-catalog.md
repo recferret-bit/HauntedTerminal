@@ -35,6 +35,10 @@ Source: `src/procgen/textures/surfaces.ts`.
 | `tex.stone` | 128x128 | surface, tiles | `heatsink` `solder` | Petrified executable: grey blocks, ink cracks, hatched shadow faces, pits. The gargoyle after chmod -x, tombstones. |
 | `tex.grille` | 64x64 | surface, tiles | `heatsink` `solder` | Punched metal mesh: staggered ink holes with a lit lower-left rim, a few clogged. Speaker faces, firewall grilles, vents. |
 | `tex.deck-plate` | 64x64 | surface, tiles | `silicon` `rubber` `pcbDark` | Dark, low-contrast ground: bolted silicon deck plates with faint buried traces. Squarish dark faces beside actors (plinths, floor tiles, wall blocks); stretched on a long apron box it smears. |
+| `tex.clay_cracks` | 64x64 | surface, tiles | `clayOrange` `copper` `corruptMagenta` `malwareEye` | Cracked terracotta golem skin with glowing magenta/yellow fissure seams (`src/procgen/textures/decals.ts`). CPU/albedo base for `agent.clod` (`clay_cracks` shader). |
+| `tex.coffee_brew` | 64x64 | surface, tiles | `gravyBrown` `copper` | Dark-roast coffee well ringed by golden crema and paper steam glints (`src/procgen/textures/decals.ts`). CPU/albedo base for `agent.antigravy` (`coffee_heat` shader). |
+| `tex.accretion_halo` | 64x64 | surface, tiles | `corruptMagenta` `corruptViolet` `voidPurple` `malwareEye` | Concentric relativistic planetary ring bands around an event-horizon core (`src/procgen/textures/decals.ts`). CPU/albedo base for `agent.gork` (`accretion_halo` shader). |
+| `tex.crt_code` | 64x64 | surface, tiles | `codecNavy` `codecSteel` | Clean dark recessed CRT monitor glass framing the `>_` prompt symbols without code lines (`src/procgen/textures/decals.ts`). CPU/albedo base for `agent.codec` (`crt_code` shader). |
 
 Notes:
 

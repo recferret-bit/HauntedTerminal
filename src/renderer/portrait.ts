@@ -41,8 +41,8 @@ const HEAD_ASPECT = 1.2;
 const HEAD_SHARE = 0.36;
 const MARGIN_PX = 1;
 const HEAD_PART_RX =
-  /(?:^|\.)(head|hood|face|hair|eye|glasses|lens|shades|beard|mustache|cig|mouth|smirk|eyelid|brow|bruise|bandage|scar|torso|mugBody|coreHead|crtShell|screen|halo|claw|steam|brace)/i;
-const LOOK_PART_RX = /(?:^|\.)(eye|pupil|iris|glasses|lens|shades|prompt|cursorEye|screen|halo|claw|brace|steam)/i;
+  /(?:^|\.)(head|hood|face|hair|eye|glasses|lens|shades|goggle|beard|mustache|cig|mouth|smirk|smile|eyelid|brow|bruise|bandage|scar|torso|mugBody|coreHead|crtShell|screen|halo|claw|steam|brace)/i;
+const LOOK_PART_RX = /(?:^|\.)(eye|pupil|iris|glasses|lens|shades|goggle|prompt|cursorEye)/i;
 
 interface IdleHeadPose {
   t: number;
@@ -137,7 +137,11 @@ function posePart(part: PartSpec, pose: IdleHeadPose, pivot: Vec3, applyHead: bo
     animRotateAboutPivot(cur, [1, 0, 0], pose.pitch, pivot, cur);
     if (LOOK_PART_RX.test(part.name)) cur.pos[0] += pose.lookX;
   }
-  return { ...part, pos: cur.pos, rot: cur.rot, scale: cur.scale };
+  const blinkedZone: ZoneId =
+    cur.emissiveMul < 0.5 && part.zone === 'malwareEye'
+      ? (part.name === 'cursorEye' ? 'ink' : 'voidPurple')
+      : part.zone;
+  return { ...part, zone: blinkedZone, pos: cur.pos, rot: cur.rot, scale: cur.scale };
 }
 
 function faceBox(name: string, size: Vec3, zone: ZoneId, pos: Vec3, anim: AnimTag | undefined, rot?: Vec3): PartSpec {

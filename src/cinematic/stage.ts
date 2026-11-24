@@ -4,7 +4,7 @@ import { setCrtSize, setCrtTime } from '../shaders/crt-pass.js';
 import { LightningStrikeSystem } from '../shaders/lightning.js';
 import { DEFAULT_PIXEL_PARAMS, setPixelArtParams, setPixelArtSize } from '../shaders/pixel-art.js';
 import {
-  buildModel, createAnimator, createFxEmitter, disposeModel, FxCatalog, ModelCatalog,
+  animActingOptions, buildModel, createAnimator, createFxEmitter, disposeModel, FxCatalog, ModelCatalog,
   type AnimatorOptions, type BuiltModel, type FxEmitter, type FxEmitterOptions, type ModelAnimator,
 } from '../procgen/index.js';
 
@@ -122,7 +122,7 @@ export class CinematicStage {
   /** Build a catalog model with comic materials and an animator, add it to the scene. */
   addModel(id: string, seed = 1, opts: AnimatorOptions = {}): Actor {
     const model = buildModel(ModelCatalog.build(id, seed));
-    const animator = createAnimator(model, opts);
+    const animator = createAnimator(model, { ...animActingOptions(id), ...opts });
     this.scene.add(model.group);
     const actor = { model, animator };
     this.actors.push(actor);

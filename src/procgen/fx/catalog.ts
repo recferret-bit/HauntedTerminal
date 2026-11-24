@@ -30,6 +30,10 @@ export const FX_MOMENT_WORDS: Record<FxMoment, string | null> = {
   'door-unlock': null,
   coredump: null,
   'matrix-cast': null,
+  'agent-clod': null,
+  'agent-coffee': null,
+  'agent-gork': null,
+  'agent-codec': null,
 };
 
 export const FX_MOMENTS = Object.keys(FX_MOMENT_WORDS) as FxMoment[];

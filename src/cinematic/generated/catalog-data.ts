@@ -214,23 +214,23 @@ export const GENERATED_COMIX_MANIFESTS: ComixManifest[] = [
           "z": 0.18
         },
         "fling0": {
-          "x": 3.7,
-          "y": 2.4,
+          "x": 3.42,
+          "y": 1.92,
           "z": -0.3
         },
         "fling1": {
-          "x": 2.3,
-          "y": 2.9,
+          "x": 1.48,
+          "y": 2.22,
           "z": -0.3
         },
         "fling2": {
-          "x": 3.1,
-          "y": 3.35,
+          "x": 0.52,
+          "y": 2.04,
           "z": -0.35
         },
         "fling3": {
-          "x": 1.6,
-          "y": 3.2,
+          "x": 2.45,
+          "y": 2.02,
           "z": -0.3
         }
       },
@@ -1565,6 +1565,58 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
               "y": -0.5
             },
             {
+              "kind": "fx",
+              "at": "MOCK",
+              "preset": "fx.agent-clod",
+              "point": {
+                "x": 3.45,
+                "y": 2.25,
+                "z": -0.32
+              },
+              "seed": 11,
+              "scale": 0.72,
+              "text": " "
+            },
+            {
+              "kind": "fx",
+              "at": "MOCK+0.9",
+              "preset": "fx.agent-gork",
+              "point": {
+                "x": 1.2,
+                "y": 2.35,
+                "z": -0.32
+              },
+              "seed": 12,
+              "scale": 0.72,
+              "text": " "
+            },
+            {
+              "kind": "fx",
+              "at": "MOCK+1.8",
+              "preset": "fx.agent-coffee",
+              "point": {
+                "x": 2.3,
+                "y": 2.52,
+                "z": -0.36
+              },
+              "seed": 13,
+              "scale": 0.62,
+              "text": " "
+            },
+            {
+              "kind": "fx",
+              "at": "MOCK+2.7",
+              "preset": "fx.agent-codec",
+              "point": {
+                "x": 0.05,
+                "y": 2.42,
+                "z": -0.32
+              },
+              "seed": 14,
+              "scale": 0.75,
+              "text": " "
+            },
+            {
               "kind": "state",
               "at": "SHOUT",
               "actors": [
@@ -2321,54 +2373,58 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
             {
               "kind": "fx",
               "at": "SHATTER",
-              "preset": "fx.malware-death",
+              "preset": "fx.agent-clod",
               "point": "fling0",
               "offset": {
                 "x": 0,
-                "y": 0.45,
+                "y": 0.4,
                 "z": -0.2
               },
-              "seed": 20,
-              "scale": 0.8
+              "seed": 24,
+              "scale": 0.72,
+              "text": " "
             },
             {
               "kind": "fx",
               "at": "SHATTER",
-              "preset": "fx.malware-hit",
+              "preset": "fx.agent-gork",
               "point": "fling1",
               "offset": {
                 "x": 0,
-                "y": 0.45,
+                "y": 0.5,
                 "z": -0.2
               },
               "seed": 21,
-              "scale": 0.8
+              "scale": 0.72,
+              "text": " "
             },
             {
               "kind": "fx",
               "at": "SHATTER",
-              "preset": "fx.malware-hit",
+              "preset": "fx.agent-codec",
               "point": "fling2",
               "offset": {
                 "x": 0,
-                "y": 0.45,
+                "y": 0.5,
                 "z": -0.15
               },
               "seed": 22,
-              "scale": 0.8
+              "scale": 0.72,
+              "text": " "
             },
             {
               "kind": "fx",
               "at": "SHATTER",
-              "preset": "fx.malware-hit",
+              "preset": "fx.agent-coffee",
               "point": "fling3",
               "offset": {
                 "x": 0,
-                "y": 0.45,
+                "y": 0.52,
                 "z": -0.2
               },
               "seed": 23,
-              "scale": 0.8
+              "scale": 0.72,
+              "text": " "
             },
             {
               "kind": "audio",
@@ -2456,7 +2512,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
               },
               "toPos": "fling0",
               "scaleFrom": 0.1,
-              "scaleTo": 0.62,
+              "scaleTo": 0.56,
               "ease": "outBack",
               "steps": 6,
               "hideWhenDead": true
@@ -2485,7 +2541,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
               },
               "toPos": "fling1",
               "scaleFrom": 0.1,
-              "scaleTo": 0.62,
+              "scaleTo": 0.56,
               "ease": "outBack",
               "steps": 6,
               "hideWhenDead": true
@@ -2514,7 +2570,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
               },
               "toPos": "fling2",
               "scaleFrom": 0.1,
-              "scaleTo": 0.62,
+              "scaleTo": 0.56,
               "ease": "outBack",
               "steps": 6,
               "hideWhenDead": true
@@ -2543,7 +2599,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
               },
               "toPos": "fling3",
               "scaleFrom": 0.1,
-              "scaleTo": 0.62,
+              "scaleTo": 0.56,
               "ease": "outBack",
               "steps": 6,
               "hideWhenDead": true

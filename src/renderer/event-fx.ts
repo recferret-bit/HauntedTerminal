@@ -9,12 +9,13 @@ import type { FxId } from './fx-player.js';
  *   devnull               the `door.devnull` vortex (or the room's `devnull` socket)
  *   flood                 the flood water line, centred on the room's `flood` socket
  *   hand                  where the System Hand's stylus touches down (the spawned actor)
+ *   agent                 the taunting agent actor's `fx` socket if on stage, else the top-right panel corner
  *   panel                 the middle of the main panel (full-panel effects)
  *   panel-floor           the floor line in the middle of the main panel
  */
 export type FxAnchor =
   | 'vibecoder' | 'vibecoder-body' | 'hero-feet' | 'subject' | 'subject-feet' | 'subject-lock'
-  | 'devnull' | 'flood' | 'hand' | 'panel' | 'panel-floor';
+  | 'devnull' | 'flood' | 'hand' | 'agent' | 'panel' | 'panel-floor';
 
 export interface FxCue {
   id: FxId;
@@ -28,8 +29,23 @@ export interface FxCue {
 
 const cue = (id: FxId, anchor: FxAnchor, delayMs = 0, text?: string, scale?: number): FxCue => ({ id, anchor, delayMs, text, scale });
 
+function agentTauntFx(agent: unknown): FxId | null {
+  switch (agent) {
+    case 'clod':
+      return 'fx.agent-clod';
+    case 'antigravy':
+      return 'fx.agent-coffee';
+    case 'gork':
+      return 'fx.agent-gork';
+    case 'codec':
+      return 'fx.agent-codec';
+    default:
+      return null;
+  }
+}
+
 /**
- * The event -> FX table. Every KernelEvent variant that has an effect, and every one of the 24 presets.
+ * The event -> FX table. Every KernelEvent variant that has an effect, and every one of the 28 presets.
  * Beats follow ANIM_EVENT_MAP (src/procgen/anim/events.ts) and the death beats of the malware sheets
  * (`collapse` at 250 ms). Storm strikes and the intro play `fx.lightning-strike` from the stage clock.
  */
@@ -72,8 +88,8 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
       return [cue('fx.door-unlock', 'subject-lock')];
     case 'PLAYER_DAMAGED':
       return ev.hpRemaining <= 0
-        ? [cue('fx.hit-hero', 'vibecoder', 250, `-${ev.amount}HP`), cue('fx.coredump', 'panel', 450)]
-        : [cue('fx.hit-hero', 'vibecoder', 250, `-${ev.amount}HP`)];
+        ? [cue('fx.hit-vibecoder', 'vibecoder', 250, `-${ev.amount}HP`), cue('fx.coredump', 'panel', 450)]
+        : [cue('fx.hit-vibecoder', 'vibecoder', 250, `-${ev.amount}HP`)];
     case 'FLOOR_CLEARED':
       return [];
     case 'ENEMY_ATTACK':
@@ -112,11 +128,16 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
       return [];
     case 'VIBECODER_ACTION':
       return [cue('fx.matrix-cast', 'vibecoder-body', 0)];
-    case 'GAME_ENDED':
-      return [cue('fx.lightning-strike', 'panel-floor')];
+    case 'AGENT_TAUNT': {
+      if (typeof ev.text !== 'string' || !ev.text.trim()) return [];
+      const id = agentTauntFx(ev.agent);
+      return id ? [cue(id, 'agent', 0, ' ', 0.85)] : [];
+    }
     case 'BATTLE_TURN':
       // The battle begins: the banner plays once, on the player's first turn (BATTLE_STARTED / ENEMY_ACTING / BATTLE_ENDED have none).
       return ev.first && ev.actor === 'player' ? [cue('fx.fight', 'panel')] : [];
+    case 'GAME_ENDED':
+      return [cue('fx.lightning-strike', 'panel-floor')];
     default:
       return [];
   }

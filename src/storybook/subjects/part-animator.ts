@@ -1,3 +1,4 @@
+import { animActingOptions } from '../../procgen/anim/acting.js';
 import type { AnimState } from '../../procgen/anim/states.js';
 import type { BuiltModel } from '../../procgen/runtime/build.js';
 import { createAnimator, createAnimMaterialTint, type ModelAnimator } from '../../procgen/runtime/index.js';
@@ -34,7 +35,7 @@ class ClockedAnimator implements PartAnimator {
   private last: number | null = null;
 
   constructor(model: BuiltModel) {
-    this.anim = createAnimator(model, { onTint: createAnimMaterialTint(model) });
+    this.anim = createAnimator(model, { ...animActingOptions(model.spec.id), onTint: createAnimMaterialTint(model) });
   }
 
   apply(time: number, state: StateId, mode: ClockMode): void {

@@ -1,4 +1,5 @@
 import { FxCatalog } from './catalog.js';
+import { AGENT_FX_PRESETS } from './presets-agents.js';
 import {
   fxBlock, fxBolt, fxCrystal, fxDisc, fxDrop, fxGlyph, fxMatrixGlyph, fxMatrixGlyphSet, fxPuff, fxRing, fxShard, fxSpark,
   fxSparkle, fxSpeedLine, fxSplat, fxStarburst, fxTornStrip, FX_MATRIX_GLYPHS,
@@ -419,4 +420,4 @@ const presets: FxPreset[] = [
 ];
 
 // Guarded so a hot reload of this module does not throw on re-registration.
-for (const preset of presets) if (!FxCatalog.has(preset.id)) FxCatalog.register(preset);
+for (const preset of [...presets, ...AGENT_FX_PRESETS]) if (!FxCatalog.has(preset.id)) FxCatalog.register(preset);

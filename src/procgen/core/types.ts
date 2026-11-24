@@ -55,6 +55,8 @@ export interface AnimTag {
   sway?: number;
 }
 
+export type ComicSurfaceShader = 'clay_cracks' | 'coffee_heat' | 'accretion_halo' | 'crt_code';
+
 export interface PartSpec {
   /** Unique within the model. Role words in the name (eye, leg, pin, led, lock, blade) drive validator checks. */
   name: string;
@@ -68,6 +70,8 @@ export interface PartSpec {
   outline?: boolean;
   /** TextureCatalog id used as an albedo map on this part. */
   texture?: string;
+  /** Optional stepped 12 fps comic surface shader variant applied in WebGL by buildModel(). */
+  shader?: ComicSurfaceShader;
   anim?: AnimTag;
 }
 

@@ -74,6 +74,14 @@ export function subjectFor(stage: ComicStage, ev: KernelEvent): StageActor | nul
       return findByName(stage, ev.name, true);
     case 'LANTERN_REVEAL':
       return findByKey(stage, 'ghost');
+    case 'AGENT_TAUNT': {
+      const modelId = typeof ev.model === 'string' && ev.model
+        ? ev.model
+        : typeof ev.agent === 'string' && ev.agent
+          ? `agent.${ev.agent}`
+          : '';
+      return modelId ? findByModel(stage, modelId) : null;
+    }
     default:
       return null;
   }
@@ -144,6 +152,10 @@ export function anchorPoint(stage: ComicStage, anchor: FxAnchor, subject: StageA
     }
     case 'panel':
       return panel;
+    case 'agent':
+      return subject
+        ? actorSocket(subject, 'fx')
+        : new THREE.Vector3(stage.panelRight + (stage.panelLeft - stage.panelRight) * 0.18, stage.viewTop - 0.85, ACTOR_Z);
     case 'panel-floor':
       return panel.setY(stage.feetY);
     default:

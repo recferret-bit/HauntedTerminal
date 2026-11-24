@@ -673,6 +673,58 @@
           "y": -0.5
         },
         {
+          "kind": "fx",
+          "at": "MOCK",
+          "preset": "fx.agent-clod",
+          "point": {
+            "x": 3.45,
+            "y": 2.25,
+            "z": -0.32
+          },
+          "seed": 11,
+          "scale": 0.72,
+          "text": " "
+        },
+        {
+          "kind": "fx",
+          "at": "MOCK+0.9",
+          "preset": "fx.agent-gork",
+          "point": {
+            "x": 1.2,
+            "y": 2.35,
+            "z": -0.32
+          },
+          "seed": 12,
+          "scale": 0.72,
+          "text": " "
+        },
+        {
+          "kind": "fx",
+          "at": "MOCK+1.8",
+          "preset": "fx.agent-coffee",
+          "point": {
+            "x": 2.3,
+            "y": 2.52,
+            "z": -0.36
+          },
+          "seed": 13,
+          "scale": 0.62,
+          "text": " "
+        },
+        {
+          "kind": "fx",
+          "at": "MOCK+2.7",
+          "preset": "fx.agent-codec",
+          "point": {
+            "x": 0.05,
+            "y": 2.42,
+            "z": -0.32
+          },
+          "seed": 14,
+          "scale": 0.75,
+          "text": " "
+        },
+        {
           "kind": "state",
           "at": "SHOUT",
           "actors": [

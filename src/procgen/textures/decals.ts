@@ -1,7 +1,9 @@
 import { INK, PAPER } from '../core/palette.js';
 import { makeRng } from '../core/rng.js';
 import { texText } from './font.js';
-import { texColor as C, texDisc, texInkOutline, texNewDecal, texPolygon, texRect, texRing, type TexEntry } from './toolkit.js';
+import {
+  texCellNoise, texColor as C, texDisc, texInkOutline, texNew, texNewDecal, texPolygon, texRect, texRing, type TexEntry,
+} from './toolkit.js';
 
 /**
  * Decals: cut-out stickers with hard alpha (0 or 255) and a 2 px ink outline. Not tileable.
@@ -67,4 +69,85 @@ const bolt: TexEntry = {
   },
 };
 
-export const DECAL_TEXTURES: readonly TexEntry[] = [pidTag, rwxLock, bolt];
+const clayCracks: TexEntry = {
+  id: 'tex.clay_cracks', label: 'Molten clay cracks', usage: 'surface', tileable: true,
+  zones: ['clayOrange', 'copper', 'corruptMagenta', 'malwareEye'],
+  purpose: 'Cracked terracotta golem skin with stepped diagonal magenta/yellow fissure seams. CPU/albedo base for agent.clod.',
+  build: (seed) => {
+    const buf = texNew(64, 64, C('clayOrange'));
+    const rng = makeRng(seed);
+    texCellNoise(buf, {
+      points: 5, seed,
+      colors: [C('clayOrange'), C('clayOrange'), C('copper')],
+      weights: [6, 3, 2],
+      edge: INK, edgeWidth: 3,
+    });
+    const shift = 4 * rng.int(0, 3);
+    for (let s = 0; s < 4; s++) {
+      const lx = (8 + s * 4 + shift) % 64;
+      const ly = (8 + s * 6) % 64;
+      texRect(buf, lx, ly, 4, 8, C('corruptMagenta'));
+      if (s === 1) texRect(buf, lx, ly + 2, 4, 4, C('malwareEye'));
+      const rx = (48 - s * 4 + shift + 64) % 64;
+      const ry = (34 + s * 6) % 64;
+      texRect(buf, rx, ry, 4, 8, C('corruptMagenta'));
+      if (s === 2) texRect(buf, rx, ry + 2, 4, 4, C('malwareEye'));
+    }
+    return buf;
+  },
+};
+
+const coffeeBrew: TexEntry = {
+  id: 'tex.coffee_brew', label: 'Dark-roast coffee & crema', usage: 'surface', tileable: true,
+  zones: ['gravyBrown', 'copper'],
+  purpose: 'Dark-roast espresso well ringed by golden crema and paper steam highlights. CPU/albedo base for agent.antigravy.',
+  build: (seed) => {
+    const buf = texNew(64, 64, C('gravyBrown', 2));
+    const rng = makeRng(seed);
+    const a0 = rng.range(0.4, 1.8);
+    for (const [cx, cy, r] of [[0, 0, 20], [32, 32, 20]] as const) {
+      texDisc(buf, cx, cy, r + 2, INK);
+      texDisc(buf, cx, cy, r, C('copper'));
+      texDisc(buf, cx, cy, r - 6, C('gravyBrown', 2));
+      texRing(buf, cx, cy, r - 2, PAPER, 4, a0, a0 + 1.4);
+      texDisc(buf, cx, cy, 5, INK);
+    }
+    return buf;
+  },
+};
+
+const accretionHalo: TexEntry = {
+  id: 'tex.accretion_halo', label: 'Accretion vortex halo', usage: 'surface', tileable: true,
+  zones: ['corruptMagenta', 'corruptViolet', 'voidPurple', 'malwareEye'],
+  purpose: 'Concentric relativistic planetary ring bands around an event-horizon core. CPU/albedo base for agent.gork.',
+  build: (seed) => {
+    const buf = texNew(64, 64, C('corruptMagenta'));
+    const rng = makeRng(seed);
+    const a0 = rng.range(0.2, 2.2);
+    for (const [cx, cy] of [[0, 0], [32, 32]] as const) {
+      texRing(buf, cx, cy, 24, C('corruptViolet'), 6);
+      texRing(buf, cx, cy, 19, C('voidPurple'), 4);
+      texRing(buf, cx, cy, 14, C('corruptMagenta'), 6);
+      texRing(buf, cx, cy, 10, PAPER, 4);
+      texRing(buf, cx, cy, 15, C('malwareEye'), 4, a0, a0 + 1.4);
+      texDisc(buf, cx, cy, 6, INK);
+    }
+    return buf;
+  },
+};
+
+const crtCode: TexEntry = {
+  id: 'tex.crt_code', label: 'CRT dark screen', usage: 'surface', tileable: true, staticLayout: true,
+  zones: ['codecNavy', 'codecSteel'],
+  purpose: 'Clean dark recessed CRT monitor glass framing the >_ prompt symbols without code lines. CPU/albedo base for agent.codec.',
+  build: () => {
+    const buf = texNew(64, 64, C('codecNavy', 1));
+    texRect(buf, 4, 4, 56, 56, C('codecNavy', 2));
+    texRect(buf, 8, 8, 48, 48, INK);
+    return buf;
+  },
+};
+
+export const DECAL_TEXTURES: readonly TexEntry[] = [
+  pidTag, rwxLock, bolt, clayCracks, coffeeBrew, accretionHalo, crtCode,
+];

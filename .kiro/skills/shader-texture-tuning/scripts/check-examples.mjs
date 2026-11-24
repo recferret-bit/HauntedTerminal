@@ -22,11 +22,23 @@ const check = (ok, name, detail = '') => {
 
 await withProcgen(async (_p, vite) => {
   const comic = await vite.ssrLoadModule('/src/shaders/comic-material.ts');
+  const shippedVariants = await vite.ssrLoadModule('/src/shaders/comic-variants.ts');
   const variants = await vite.ssrLoadModule('/.kiro/skills/shader-texture-tuning/examples/comic-variants.ts');
   const glitchPass = await vite.ssrLoadModule('/.kiro/skills/shader-texture-tuning/examples/glitch-pass.ts');
 
+  const samplePalette = { accentA: 0xef476f, accentB: 0x9b5de5, hot: 0xf4f1ea, deep: 0x110e1b };
+  const variantCases = [
+    ['glitchVariant', variants.glitchVariant],
+    ['frozenVariant', variants.frozenVariant],
+    ['petrifiedVariant', variants.petrifiedVariant],
+    ...['clay_cracks', 'coffee_heat', 'accretion_halo', 'crt_code'].map((kind) => [
+      `shipped:${kind}`,
+      (b) => shippedVariants.createSurfaceVariant(b, kind, samplePalette),
+    ]),
+  ];
+
   const base = comic.createComicMaterial(0x1f7a5c, { halftone: true });
-  for (const [name, make] of [['glitchVariant', variants.glitchVariant], ['frozenVariant', variants.frozenVariant], ['petrifiedVariant', variants.petrifiedVariant]]) {
+  for (const [name, make] of variantCases) {
     let mat = null, error = '';
     try { mat = make(base); } catch (e) { error = String(e.message ?? e); }
     check(mat !== null, `${name} builds`, error);
@@ -41,6 +53,9 @@ await withProcgen(async (_p, vite) => {
     check(depth === 0, `${name} GLSL braces balance`);
     const kept = ['float band = shade > 0.66 ? 1.0 : shade > 0.4 ? 0.68 : 0.4;', 'smoothstep(0.55, 0.92, fres) * 0.55', 'col += vec3(0.55, 0.86, 1.0) * att;', 'albedo * band, 0.86'];
     check(kept.every((line) => frag.includes(line)), `${name} keeps bands, map mix, ink rim and flash`);
+    if (name.startsWith('shipped:')) {
+      check(frag.includes('floor(uTime * 12.0)'), `${name} uses stepped 12 fps timing`);
+    }
   }
 
   const pass = glitchPass.createGlitchPass(800, 450, 2);

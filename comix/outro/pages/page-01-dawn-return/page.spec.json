@@ -142,54 +142,58 @@
         {
           "kind": "fx",
           "at": "SHATTER",
-          "preset": "fx.malware-death",
+          "preset": "fx.agent-clod",
           "point": "fling0",
           "offset": {
             "x": 0,
-            "y": 0.45,
+            "y": 0.4,
             "z": -0.2
           },
-          "seed": 20,
-          "scale": 0.8
+          "seed": 24,
+          "scale": 0.72,
+          "text": " "
         },
         {
           "kind": "fx",
           "at": "SHATTER",
-          "preset": "fx.malware-hit",
+          "preset": "fx.agent-gork",
           "point": "fling1",
           "offset": {
             "x": 0,
-            "y": 0.45,
+            "y": 0.5,
             "z": -0.2
           },
           "seed": 21,
-          "scale": 0.8
+          "scale": 0.72,
+          "text": " "
         },
         {
           "kind": "fx",
           "at": "SHATTER",
-          "preset": "fx.malware-hit",
+          "preset": "fx.agent-codec",
           "point": "fling2",
           "offset": {
             "x": 0,
-            "y": 0.45,
+            "y": 0.5,
             "z": -0.15
           },
           "seed": 22,
-          "scale": 0.8
+          "scale": 0.72,
+          "text": " "
         },
         {
           "kind": "fx",
           "at": "SHATTER",
-          "preset": "fx.malware-hit",
+          "preset": "fx.agent-coffee",
           "point": "fling3",
           "offset": {
             "x": 0,
-            "y": 0.45,
+            "y": 0.52,
             "z": -0.2
           },
           "seed": 23,
-          "scale": 0.8
+          "scale": 0.72,
+          "text": " "
         },
         {
           "kind": "audio",
@@ -277,7 +281,7 @@
           },
           "toPos": "fling0",
           "scaleFrom": 0.1,
-          "scaleTo": 0.62,
+          "scaleTo": 0.56,
           "ease": "outBack",
           "steps": 6,
           "hideWhenDead": true
@@ -306,7 +310,7 @@
           },
           "toPos": "fling1",
           "scaleFrom": 0.1,
-          "scaleTo": 0.62,
+          "scaleTo": 0.56,
           "ease": "outBack",
           "steps": 6,
           "hideWhenDead": true
@@ -335,7 +339,7 @@
           },
           "toPos": "fling2",
           "scaleFrom": 0.1,
-          "scaleTo": 0.62,
+          "scaleTo": 0.56,
           "ease": "outBack",
           "steps": 6,
           "hideWhenDead": true
@@ -364,7 +368,7 @@
           },
           "toPos": "fling3",
           "scaleFrom": 0.1,
-          "scaleTo": 0.62,
+          "scaleTo": 0.56,
           "ease": "outBack",
           "steps": 6,
           "hideWhenDead": true

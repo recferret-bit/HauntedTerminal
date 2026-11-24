@@ -215,7 +215,7 @@ function pairCases(): PairCase[] {
       { type: 'PROC_SIGNALED', pid: 670, signal: 'SIGSTOP', outcome: 'FROZEN' },
       { type: 'ENEMY_STATE', entityId: 'bug-1', model: 'malware.bug', state: 'frozen' },
     ] },
-    { name: 'tell then strike', expect: { 'fx.hit-hero': [1, 1] }, events: [
+    { name: 'tell then strike', expect: { 'fx.hit-vibecoder': [1, 1] }, events: [
       { type: 'ENEMY_ATTACK', entityId: 'zombie-1', model: 'malware.zombie', damage: 6, attack: 'swipe' },
       { type: 'PLAYER_DAMAGED', amount: 6, hpRemaining: 60, sourceName: 'zombie_worker' },
     ] },

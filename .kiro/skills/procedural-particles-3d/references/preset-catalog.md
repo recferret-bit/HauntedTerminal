@@ -1,6 +1,6 @@
 # Shipped FX presets
 
-All 25 live in `src/procgen/fx/presets.ts` and are registered in `FxCatalog` on import.
+All 29 live in `src/procgen/fx/presets.ts` and `src/procgen/fx/presets-agents.ts` and are registered in `FxCatalog` on import.
 Columns: layers are `name:role:zone x count emission` (`p` primary, `s` secondary, `a` accent).
 Regenerate the picture with `npm run procgen:fx -- --sheet` and open `scripts/harness/out/fx.png`.
 
@@ -31,6 +31,10 @@ Regenerate the picture with `npm run procgen:fx -- --sheet` and open `scripts/ha
 | `fx.door-unlock` | system | PUZZLE_DOOR_RESOLVED | 560 | UNLOCKED! (burst, `phosphor`) | | ok:p:`phosphor`x1 burst; echo:p:`phosphor`x1 burst; contact:s:`gold`x7 burst; glint:a:`paper`x3 ring |
 | `fx.coredump` | system | GAME_TICK | 1100 | COREDUMP! (glitch, `lockRed`) | 2 / 3, full panel | page-left:p:`paper`x3 line; page-right:p:`paper`x3 line; tear:s:`ink`x1 burst; glitch:a:`lockRed`x10 line |
 | `fx.matrix-cast` | system | VIBECODER_ACTION | 680 | | | stream:p:`matrixBright`x12 orbit; trail:s:`matrixDark`x12 orbit; head:a:`matrixGlow`x3 orbit |
+| `fx.agent-clod` | malware | AGENT_TAUNT | 560 | CLACK! (burst, `clayOrange`) | | splat:p:`clayOrange`x2 burst; kiln:s:`gravyBrown`x6 cone; fissure:a:`malwareEye`x4 ring |
+| `fx.agent-coffee` | malware | AGENT_TAUNT | 720 | HISS! (whisper, `paper`) | | steam:p:`paper`x5 line; roast:s:`gravyBrown`x7 cone; crema:a:`malwareEye`x4 ring |
+| `fx.agent-gork` | malware | AGENT_TAUNT | 620 | WARP! (jagged, `corruptMagenta`) | | vortex:p:`corruptMagenta`x2 burst; debris:s:`solder`x7 ring; corona:a:`paper`x5 implode |
+| `fx.agent-codec` | malware | AGENT_TAUNT | 580 | PARSE! (glitch, `toxicGreen`) | | syntax:p:`codecSteel`x7 burst; macroblock:s:`corruptViolet`x6 line; cursor:a:`toxicGreen`x4 cone |
 
 Moment words required by the game design and enforced by
 `FX_MOMENT_WORDS`: HOP!, PANEL SMASH x3!, PERMISSION DENIED!, CLANK!, REVEAL!, SIGKILL!,
@@ -65,3 +69,7 @@ and the amounts) are this catalog's own and may be changed.
 | `fx.flood-splash` | Cyan drops arcing up and falling, pale foam on the water line, white flecks | Origin on the water line |
 | `fx.coredump` | A black tear with a paper keyline down the panel, six torn page strips sliding apart, red glitch bars | Full panel; the last effect the player sees before a restart |
 | `fx.matrix-cast` | 3 intertwined 3D Matrix Katakana streams (`matrixGlow` heads, `matrixBright` neon green bodies, `matrixDark` emerald trails) orbiting behind & in front of the vibecoder with 3D yaw and stepped glyph flicker | Random swirl direction, tilt, phase, and glyphs on every command; wraps actor in 3D, no word or shake |
+| `fx.agent-clod` | Terracotta `clayOrange` splats, dark kiln-baked clay shards arching out, and `malwareEye` fissure sparks | Fired on Clod taunts, Boss-room ambient ticks, and Intro/Outro beats |
+| `fx.agent-coffee` | Rising `paper` comic steam puffs over hot `gravyBrown` dark-roast droplets and `malwareEye` crema sparkles | Anchored at top of `agent.antigravy`'s mug lip; stepped 12 fps upward drift |
+| `fx.agent-gork` | `corruptMagenta` quasar starburst, outward `solder` asteroid shards, and inward-pulling `paper` accretion speed-lines | Fired on Gork taunts and Intro/Outro vortex beats |
+| `fx.agent-codec` | Swapping `codecSteel` `[` and `>` glyphs fanning out over `corruptViolet` CRT macroblocks and `toxicGreen` cursor ticks | Fired on Codec taunts and Intro/Outro syntax beats |

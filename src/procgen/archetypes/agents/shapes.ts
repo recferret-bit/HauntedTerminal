@@ -1,73 +1,124 @@
 /**
- * Outline makers for the parody agents (cast.ts): a lumpy clay mound, a puffy cartoon cloud, a disk
- * seen at an angle, and a half-plane clip for cel bands. Pure functions, model space (y up, world +x is
- * screen-left), outlines centred on their own origin unless stated.
+ * Shared 2D relief outline builders and mirroring helpers for the four parody AI agents
+ * (`src/procgen/archetypes/agents/{clod,antigravy,gork,codec}.ts`).
+ * Pure functions in model space (y up, world +x is screen-left).
  */
-import type { Vec2 } from '../../core/types.js';
+import type { PartSpec, Vec2 } from '../../core/types.js';
 import type { Rng } from '../../core/rng.js';
+import { mirror, stroke, turn, type MalwareDef } from '../malware/parts.js';
 
 const TAU = Math.PI * 2;
 
-/**
- * A lumpy blob: an ellipse (rx, ry) whose radius wobbles in a few seeded bumps, cut flat at
- * y = `floor` so it can sit on the ground. Hand-squashed clay, not a geometric shape.
- */
-export function lumpy(rng: Rng, rx: number, ry: number, floor: number, n = 36): Vec2[] {
-  const waves = [2, 3, 5].map((k) => ({ k, amp: rng.range(0.03, 0.07), ph: rng.range(0, TAU) }));
+export type AgentBuild = ReturnType<MalwareDef['build']>;
+
+export const pickSide = (rng: Rng): 1 | -1 => (rng.chance(0.5) ? 1 : -1);
+
+export function facing(
+  parts: PartSpec[],
+  side: 1 | -1,
+  tags: string[],
+  sockets: AgentBuild['sockets'],
+): AgentBuild {
+  return { parts: side < 0 ? mirror(parts) : parts, tags, sockets };
+}
+
+/** Sculpted crab-golem clay carapace: broad shouldered, faceted, flat-bottomed. */
+export function crabCarapace(rng: Rng, halfW: number, halfH: number): Vec2[] {
+  const j = () => rng.range(-0.025, 0.025);
+  return [
+    [-halfW * 0.68, -halfH],
+    [halfW * 0.68, -halfH],
+    [halfW * (0.94 + j()), -halfH * 0.25],
+    [halfW * (1.02 + j()), halfH * 0.36],
+    [halfW * 0.72, halfH * (0.88 + j())],
+    [halfW * 0.24, halfH],
+    [-halfW * 0.24, halfH],
+    [-halfW * 0.72, halfH * (0.88 + j())],
+    [-halfW * (1.02 + j()), halfH * 0.36],
+    [-halfW * (0.94 + j()), -halfH * 0.25],
+  ];
+}
+
+/** Heavy asymmetric crab pincer opening at `angle` (radians) with a serrated jaw notch. */
+export function pincerClaw(r: number, angle: number): Vec2[] {
+  const raw: Vec2[] = [
+    [-r * 0.55, -r * 0.72],
+    [r * 0.48, -r * 0.85],
+    [r * 0.98, -r * 0.28],
+    [r * 0.88, r * 0.14],
+    [r * 0.28, -r * 0.04],
+    [r * 0.08, r * 0.18],
+    [r * 0.82, r * 0.42],
+    [r * 0.72, r * 0.86],
+    [-r * 0.18, r * 0.94],
+    [-r * 0.86, r * 0.44],
+    [-r * 0.92, -r * 0.22],
+  ];
+  return turn(raw, angle);
+}
+
+/** Slightly tapered ceramic coffee mug body centred at `(0, 0)`. */
+export function mugCupOutline(topHalfW: number, botHalfW: number, halfH: number): Vec2[] {
+  return [
+    [-botHalfW, -halfH],
+    [-botHalfW * 0.88, -halfH * 1.06],
+    [botHalfW * 0.88, -halfH * 1.06],
+    [botHalfW, -halfH],
+    [topHalfW * 0.97, -halfH * 0.2],
+    [topHalfW, halfH],
+    [-topHalfW, halfH],
+    [-topHalfW * 0.97, -halfH * 0.2],
+  ];
+}
+
+/** Elliptical disk centered at `(0, 0)` (used for the tilted hot coffee brew surface). */
+export function ellipseOutline(rx: number, ry: number, steps = 18): Vec2[] {
   const pts: Vec2[] = [];
-  for (let i = 0; i < n; i++) {
-    const a = (i / n) * TAU;
-    const r = 1 + waves.reduce((s, w) => s + w.amp * Math.sin(w.k * a + w.ph), 0);
-    const y = Math.max(floor, ry * r * Math.sin(a));
-    const p: Vec2 = [rx * r * Math.cos(a), y];
-    const last = pts[pts.length - 1];
-    if (!last || Math.hypot(p[0] - last[0], p[1] - last[1]) > 1e-4) pts.push(p);
+  for (let i = 0; i < steps; i++) {
+    const a = (i / steps) * TAU;
+    pts.push([Math.cos(a) * rx, Math.sin(a) * ry]);
   }
   return pts;
 }
 
-/**
- * A cartoon cloud: the union of `puffs` (centre and radius) traced from the origin, with a flat
- * bottom at y = `floor`. The origin must lie inside the union so every ray meets the outline once.
- */
-export function puffCloud(puffs: { at: Vec2; r: number }[], floor: number, n = 56): Vec2[] {
-  const pts: Vec2[] = [];
-  for (let i = 0; i < n; i++) {
-    const a = (i / n) * TAU;
-    const d: Vec2 = [Math.cos(a), Math.sin(a)];
-    let far = 0;
-    for (const { at, r } of puffs) {
-      // Farthest t where |t*d - at| = r.
-      const b = d[0] * at[0] + d[1] * at[1];
-      const disc = b * b - (at[0] * at[0] + at[1] * at[1] - r * r);
-      if (disc >= 0) far = Math.max(far, b + Math.sqrt(disc));
-    }
-    let p: Vec2 = [d[0] * far, d[1] * far];
-    if (p[1] < floor) p = [d[1] < 0 ? (d[0] * floor) / d[1] : p[0], floor];
-    pts.push(p);
-  }
-  return pts;
+/** S-curved rising steam ribbon, `height` tall, centred around `(0, 0)`. */
+export function steamCurl(height: number, sway: number, width = 0.065): Vec2[] {
+  const h = height / 2;
+  return stroke(
+    [
+      [0, -h],
+      [sway, -h * 0.35],
+      [-sway * 0.9, h * 0.35],
+      [sway * 0.45, h],
+    ],
+    width,
+    0.72,
+  );
 }
 
-/** Keep the part of a closed outline above (or below) the line y = k: Sutherland-Hodgman, one half-plane. */
-export function clipHalf(o: Vec2[], k: number, keep: 'above' | 'below'): Vec2[] {
-  const inside = (p: Vec2): boolean => (keep === 'above' ? p[1] >= k : p[1] <= k);
-  const out: Vec2[] = [];
-  for (let i = 0; i < o.length; i++) {
-    const a = o[i]!;
-    const b = o[(i + 1) % o.length]!;
-    if (inside(a)) out.push(a);
-    if (inside(a) !== inside(b)) out.push([a[0] + ((b[0] - a[0]) * (k - a[1])) / (b[1] - a[1]), k]);
-  }
-  return out;
+/** Teardrop coffee droplet pointing upward (+y). */
+export function coffeeDrop(r: number): Vec2[] {
+  return [
+    [0, r * 1.45],
+    [-r * 0.72, r * 0.25],
+    [-r * 0.95, -r * 0.35],
+    [-r * 0.52, -r * 0.95],
+    [0, -r * 1.05],
+    [r * 0.52, -r * 0.95],
+    [r * 0.95, -r * 0.35],
+    [r * 0.72, r * 0.25],
+  ];
 }
 
-/**
- * Half of a disk seen at an angle, as a flat band: the ellipse ring between `inner` and `outer`
- * ([major, minor] radii) from angle a0 to a1 in the disk's own frame, its major axis rolled by `tilt`.
- * a0..a1 = 0..π is the far half (upper side), π..2π the near half.
- */
-export function diskHalf(inner: Vec2, outer: Vec2, a0: number, a1: number, tilt: number, steps = 14): Vec2[] {
+/** Half of a tilted elliptical ring (`a0..a1` = `0..pi` far half, `pi..2pi` near half). */
+export function diskHalf(
+  inner: Vec2,
+  outer: Vec2,
+  a0: number,
+  a1: number,
+  tilt: number,
+  steps = 16,
+): Vec2[] {
   const ct = Math.cos(tilt);
   const st = Math.sin(tilt);
   const at = (r: Vec2, a: number): Vec2 => {
@@ -81,9 +132,49 @@ export function diskHalf(inner: Vec2, outer: Vec2, a0: number, a1: number, tilt:
   return pts;
 }
 
-/** A point on a disk-orbit ellipse ([major, minor] radii, rolled by `tilt`) at angle `t`, around `c`. */
+/** Point on a tilted orbit ellipse around `c`. */
 export function diskPoint(c: Vec2, radii: Vec2, tilt: number, t: number): Vec2 {
   const u = radii[0] * Math.cos(t);
   const v = radii[1] * Math.sin(t);
-  return [c[0] + u * Math.cos(tilt) - v * Math.sin(tilt), c[1] + u * Math.sin(tilt) + v * Math.cos(tilt)];
+  return [
+    c[0] + u * Math.cos(tilt) - v * Math.sin(tilt),
+    c[1] + u * Math.sin(tilt) + v * Math.cos(tilt),
+  ];
+}
+
+/** Bold upturned comic smile with thick blunt corners so the full curve survives 3.5px pixel-art cells. */
+export function comicSmile(halfW: number, rise: number, width: number): Vec2[] {
+  return stroke(
+    [
+      [-halfW, rise],
+      [-halfW * 0.58, -rise * 0.42],
+      [0, -rise * 0.78],
+      [halfW * 0.58, -rise * 0.42],
+      [halfW, rise],
+    ],
+    width,
+    0.92,
+  );
+}
+
+/**
+ * Curly-brace `{` or `}` mechanical claw outline, `height` tall, centred at `(0, 0)`.
+ * World `+x` is screen-left: `side = 'left'` draws `{` (cusp pointing screen-left `+x`),
+ * `side = 'right'` draws `}` (cusp pointing screen-right `-x`).
+ */
+export function curlyBrace(height: number, side: 'left' | 'right', thickness = 0.075): Vec2[] {
+  const h = height / 2;
+  const s = side === 'left' ? 1 : -1;
+  return stroke(
+    [
+      [-s * 0.11, h],
+      [s * 0.02, h * 0.92],
+      [s * 0.04, h * 0.26],
+      [s * 0.16, 0],
+      [s * 0.04, -h * 0.26],
+      [s * 0.02, -h * 0.92],
+      [-s * 0.11, -h],
+    ],
+    thickness,
+  );
 }

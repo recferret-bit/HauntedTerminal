@@ -570,7 +570,8 @@ await withProcgen(async (anim, vite) => {
   });
 
   const BESTIARY = ['malware.virus', 'malware.worm', 'malware.trojan', 'malware.bug', 'malware.exploit', 'malware.crack',
-    'malware.ransomware', 'malware.spyware', 'malware.rootkit', 'malware.zombie', 'boss.forkbomb', 'boss.kernel'];
+    'malware.ransomware', 'malware.spyware', 'malware.rootkit', 'malware.zombie', 'boss.forkbomb', 'boss.kernel',
+    'agent.clod', 'agent.antigravy', 'agent.gork', 'agent.codec'];
   check('ANIM_MALWARE_ACTING: a sheet for every enemy, attacks fit inside one tick, beats in order, deaths end gone', () => {
     const { ANIM_MALWARE_ACTING, ANIM_TICK_MS } = anim;
     for (const id of BESTIARY) {

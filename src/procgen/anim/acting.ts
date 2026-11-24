@@ -339,6 +339,95 @@ export const ANIM_MALWARE_ACTING: Record<string, AnimActingSheet> = {
       { name: 'panic', state: 'enraged', attackEveryTicks: 1, note: 'Cracked. Enraged for the rest of the fight, a 0.4 shake on every tick.' },
     ],
   }),
+  'agent.clod': sheet({
+    id: 'agent.clod',
+    signature: 'Heavy clay crab-golem breathing on tens while its two oversized pincers snap in counter-phase.',
+    travel: 'anchor', fps: 10, stepUnits: 0, stepEveryMs: 0,
+    attackEveryTicks: 0, telegraphMs: 600, telegraph: 'carapace fissures flare and both pincer arms rear wide',
+    attack: 'Compliance snap: pulls its clay carapace tall, then slams forward with a wide double-pincer clamp.',
+    death: 'Kiln shatter: crack seams flash bright, holds two poses, then clay plates crumble outward.',
+    states: {
+      attack: { duration: 0.72, keys: [
+        { at: 0, beat: 'anticipation', forward: -0.14, up: 0.06, scaleX: 0.92, scaleY: 1.09 },
+        { at: 0.32, beat: 'strike', forward: 0.28, lean: 0.24, scaleX: 1.18, scaleY: 0.9, emissiveAdd: 0.65 },
+        { at: 0.5, beat: 'recover', forward: 0.12, lean: 0.08, scaleX: 1.04, scaleY: 0.98 },
+        { at: 0.72, ease: 'ease' },
+      ] },
+      death: { duration: 0.84, jitterMul: 2.5, keys: [
+        { at: 0, beat: 'impact', scaleX: 1.12, scaleY: 0.92, emissiveAdd: 1.1 },
+        { at: 0.14, beat: 'hold', scaleX: 1.06, scaleY: 0.96, emissiveAdd: 0.4 },
+        { at: 0.32, beat: 'collapse', scaleX: 1.24, scaleY: 0.68, scatter: 0.35 },
+        { at: 0.68, ease: 'ease', scaleX: 1.42, scaleY: 0.24, scatter: 0.65, opacity: 0.55 },
+        { at: 0.84, beat: 'gone', ease: 'ease', scaleX: 1.5, scaleY: 0.1, scatter: 0.85, opacity: 0 },
+      ] },
+    },
+  }),
+  'agent.antigravy': sheet({
+    id: 'agent.antigravy',
+    signature: 'Hovering ceramic coffee mug whose steam curls bob and subagent roast droplets orbit overhead.',
+    travel: 'hover', fps: 12, stepUnits: 0, stepEveryMs: 0,
+    attackEveryTicks: 0, telegraphMs: 500, telegraph: 'mug tips back to boil a fresh batch of subagent drops',
+    attack: 'Espresso surge: tips back, then splashes forward with a scalding crema burst.',
+    death: 'Porcelain crack: boils over in one bright flash, then mug shards and droplets scatter.',
+    states: {
+      attack: { duration: 0.66, keys: [
+        { at: 0, beat: 'anticipation', lean: -0.26, up: 0.08, scaleX: 0.95, scaleY: 1.06 },
+        { at: 0.28, beat: 'strike', forward: 0.22, lean: 0.3, scaleX: 1.14, scaleY: 0.92, emissiveAdd: 0.55 },
+        { at: 0.46, beat: 'recover', forward: 0.08, lean: 0.1 },
+        { at: 0.66, ease: 'ease' },
+      ] },
+      death: { duration: 0.78, keys: [
+        { at: 0, beat: 'impact', up: 0.1, scaleX: 1.16, scaleY: 1.1, emissiveAdd: 1 },
+        { at: 0.16, beat: 'collapse', lean: -0.35, scatter: 0.3, emissiveAdd: 0.35 },
+        { at: 0.58, ease: 'ease', lean: -0.75, scatter: 0.72, opacity: 0.5 },
+        { at: 0.78, beat: 'gone', ease: 'ease', lean: -0.95, scatter: 0.95, opacity: 0 },
+      ] },
+    },
+  }),
+  'agent.gork': sheet({
+    id: 'agent.gork',
+    signature: 'Separated tilted accretion rings and asteroid shards orbiting a goggle-wearing grinning event horizon.',
+    travel: 'hover', fps: 12, stepUnits: 0, stepEveryMs: 0,
+    attackEveryTicks: 0, telegraphMs: 500, telegraph: 'contracts inward toward its event horizon before flaring',
+    attack: 'Quasar roast: implodes tight, then flares wide with a bright goggle glint.',
+    death: 'Hawking evaporation: pinches inward, flashes white-hot, then flings its ring shards away.',
+    states: {
+      attack: { duration: 0.64, keys: [
+        { at: 0, beat: 'anticipation', scaleX: 0.84, scaleY: 0.84, lean: -0.12 },
+        { at: 0.26, beat: 'strike', scaleX: 1.24, scaleY: 1.18, forward: 0.16, emissiveAdd: 0.85 },
+        { at: 0.44, beat: 'recover', scaleX: 1.06, scaleY: 1.04, emissiveAdd: 0.25 },
+        { at: 0.64, ease: 'ease' },
+      ] },
+      death: { duration: 0.8, keys: [
+        { at: 0, beat: 'impact', scaleX: 0.72, scaleY: 0.72, emissiveAdd: 1.3 },
+        { at: 0.18, beat: 'collapse', scaleX: 1.3, scaleY: 1.22, scatter: 0.4, emissiveAdd: 0.5 },
+        { at: 0.6, ease: 'ease', scaleX: 0.35, scaleY: 0.35, scatter: 0.82, opacity: 0.45 },
+        { at: 0.8, beat: 'gone', ease: 'ease', scaleX: 0.12, scaleY: 0.12, scatter: 1.05, opacity: 0 },
+      ] },
+    },
+  }),
+  'agent.codec': sheet({
+    id: 'agent.codec',
+    signature: 'Chunky CRT monitor bot blinking its >_ cursor while { and } curly-brace claws swing in step.',
+    travel: 'hover', fps: 12, stepUnits: 0, stepEveryMs: 0,
+    attackEveryTicks: 0, telegraphMs: 500, telegraph: 'curly-brace claws spread wide as the CRT screen flashes',
+    attack: 'Syntax clamp: pulls back, then snaps { and } claws shut with a cursor flash.',
+    death: 'Degauss pop: CRT stretches wide then collapses to a horizontal scanline and shatters.',
+    states: {
+      attack: { duration: 0.62, keys: [
+        { at: 0, beat: 'anticipation', forward: -0.12, scaleX: 1.14, scaleY: 0.92 },
+        { at: 0.25, beat: 'strike', forward: 0.24, scaleX: 0.88, scaleY: 1.12, emissiveAdd: 0.7 },
+        { at: 0.42, beat: 'recover', forward: 0.09, scaleX: 1.02, scaleY: 0.99 },
+        { at: 0.62, ease: 'ease' },
+      ] },
+      death: { duration: 0.76, jitterMul: 3, keys: [
+        { at: 0, beat: 'impact', scaleX: 1.28, scaleY: 0.82, emissiveAdd: 1.2 },
+        { at: 0.16, beat: 'collapse', scaleX: 1.45, scaleY: 0.28, scatter: 0.32 },
+        { at: 0.56, ease: 'ease', scaleX: 1.6, scaleY: 0.12, scatter: 0.7, opacity: 0.45 },
+        { at: 0.76, beat: 'gone', ease: 'ease', scaleX: 1.7, scaleY: 0.05, scatter: 0.9, opacity: 0 },
+      ] },
+    },
+  }),
 };
 
 /** Animator options for an enemy: its frame rate and its state overrides. `{}` for ids without a sheet. */

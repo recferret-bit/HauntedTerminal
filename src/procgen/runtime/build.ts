@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { createComicMaterial, type ComicMaterial } from '../../shaders/comic-material.js';
+import { createSurfaceVariant, type VariantPalette } from '../../shaders/comic-variants.js';
 import { TextureCatalog } from '../core/catalog.js';
 import { inkShellGeometry, shapeToGeometry } from '../geometry/geometry.js';
-import { INK, zone, type ZoneId } from '../core/palette.js';
+import { INK, PAPER, ZONES, zone, type ZoneId } from '../core/palette.js';
 import { toDataTexture } from './data-texture.js';
-import type { ModelSpec, PartSpec, Vec3 } from '../core/types.js';
+import type { ComicSurfaceShader, ModelSpec, PartSpec, Vec3 } from '../core/types.js';
 
 export const DEFAULT_INK_WEIGHT = 0.028;
 
@@ -53,6 +54,37 @@ function zoneMaterial(id: ZoneId): ComicMaterial {
   });
 }
 
+const VARIANT_PALETTES: Record<ComicSurfaceShader, VariantPalette> = {
+  clay_cracks: {
+    accentA: ZONES.corruptMagenta.color,
+    accentB: ZONES.copper.color,
+    hot: ZONES.malwareEye.color,
+    deep: ZONES.voidPurple.color,
+    uvScale: [0.48, 0.48],
+  },
+  coffee_heat: {
+    accentA: ZONES.copper.color,
+    accentB: ZONES.gravyBrown.color,
+    hot: PAPER,
+    deep: INK,
+    uvScale: [0.34, 0.13],
+  },
+  accretion_halo: {
+    accentA: ZONES.corruptMagenta.color,
+    accentB: ZONES.corruptViolet.color,
+    hot: PAPER,
+    deep: ZONES.voidPurple.color,
+    uvScale: [0.82, 0.44],
+  },
+  crt_code: {
+    accentA: ZONES.toxicGreen.color,
+    accentB: ZONES.corruptViolet.color,
+    hot: PAPER,
+    deep: INK,
+    uvScale: [1, 1],
+  },
+};
+
 /**
  * Turn a ModelSpec into scene objects: comic cel materials plus an ink shell on every outlined part.
  * Each part stays its own Mesh so `userData.anim` can drive it (see src/procgen/anim).
@@ -68,6 +100,17 @@ export function buildModel(spec: ModelSpec, opts: BuildOptions = {}): BuiltModel
 
   const materialFor = (part: PartSpec): ComicMaterial => {
     const tex = part.texture && opts.textures !== false ? albedo(part.texture, opts.seed ?? 1) : null;
+    if (part.shader) {
+      const base = zoneMaterial(part.zone);
+      if (tex) {
+        base.uniforms.uMap!.value = tex;
+        base.uniforms.uHasMap!.value = 1;
+      }
+      const mat = createSurfaceVariant(base, part.shader, VARIANT_PALETTES[part.shader]);
+      base.dispose();
+      allMaterials.push(mat);
+      return mat;
+    }
     if (tex) {
       const mat = zoneMaterial(part.zone);
       mat.uniforms.uMap!.value = tex;
