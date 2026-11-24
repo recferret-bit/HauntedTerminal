@@ -64,6 +64,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   deathText = '';
   tacticalMode = false;
   inventory = starterInventory();
+  entryInventory = starterInventory();
   pendingEditor: EditorOpenPayload | null = null;
   currentRedirectTarget = '';
   rt!: LevelRuntime;

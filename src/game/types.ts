@@ -1,4 +1,5 @@
 import type { KernelEvent } from '../contracts/events.js';
+import type { ItemId } from '../contracts/inventory.js';
 import type {
   ActorKind, ActorState, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomView,
 } from '../contracts/room-view.js';
@@ -33,6 +34,8 @@ export interface GameSnapshot {
   enemiesTotal: number;
   /** The current tutorial prompt (floor 1 arrival), or null once it is finished or skipped. */
   tutorial: TutorialState | null;
+  /** Items he carries and the one in his hand (drives the HUD items strip). */
+  inventory: { items: ItemId[]; held: ItemId };
 }
 
 export interface TutorialState {

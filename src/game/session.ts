@@ -236,6 +236,7 @@ class Game implements LabSession, Host {
       shortcuts: [...this.run.shortcuts],
       room,
       intro: this.run.intro,
+      inventory: { items: [...this.run.inventory.items], held: this.run.inventory.held },
       ram: this.run.ram,
       ssd: this.run.ssd,
       backups: backups(this),

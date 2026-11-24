@@ -42,7 +42,7 @@ await withProcgen(async (_p, vite) => {
   const { normaliseLabConfig } = await load('/src/chapters/lab-config.ts');
   const { matchesPattern, answerMatches, patternError } = await load('/src/chapters/session-lab-checks.ts');
   const { validatePack } = await load('/src/chapters/validate-pack.ts');
-  const { BESTIARY } = await load('/src/game/bestiary.ts');
+  const { BESTIARY, PICKUP_INFO } = await load('/src/game/bestiary.ts');
   const { buildLabPack, newLabScript, labPackId } = await load('/src/terminal-lab/lab-pack.ts');
   const { paletteGroups, expectedPaletteIds } = await load('/src/terminal-lab/catalog.ts');
   const { checkLab } = await load('/src/terminal-lab/lab-check.ts');
@@ -58,6 +58,8 @@ await withProcgen(async (_p, vite) => {
   const { createSession } = await load('/src/game/session.ts');
   const disk = await load('/src/terminal-lab/disk.ts');
   const { ConflictError } = await load('/src/editor-core/http.ts');
+  const { PORTRAIT_FRAMES, rasterPortraitFrame } = await load('/src/renderer/portrait.ts');
+  const { ENTER_MS, EXIT_MS, HEAD_FRAME_MS, mountDialogBox } = await load('/src/ui/dialog-box.ts');
 
   const raw = (lab, script) => {
     const s = createChapterSession({ chapterId: 'lab-unit', pack: rawPack(script), preview: true, startLevelId: 'lab-1', ...(lab ? { lab } : {}) });
@@ -226,7 +228,7 @@ await withProcgen(async (_p, vite) => {
     const script = lab();
     for (const e of entries().filter((x) => x.group === 'Enemies' || x.group === 'Pickups')) script.setup.push(...e.make(script));
     assert.deepEqual(checkLab(script).filter((i) => i.severity === 'error'), []);
-    assert.equal(play(script).inspect().entities.length, Object.keys(BESTIARY).length + 3);
+    assert.equal(play(script).inspect().entities.length, Object.keys(BESTIARY).length + Object.keys(PICKUP_INFO).length);
   });
 
   await test('buildLabPack: implied files (worm port, exploit buffer, pickup), user files win, and the config carries clock and props', () => {
@@ -1005,6 +1007,132 @@ await withProcgen(async (_p, vite) => {
     const ids = files.map(({ f }) => f.replace('.lab.json', ''));
     const want = [...Object.keys(BESTIARY).map((t) => `enemy-${t}`), 'classic-floor', 'pickup-energy', 'pickup-ram', 'pickup-ssd', 'riddle-socket', 'task-html-css', 'task-docker', 'npc-dialogue', 'inject-midrun', 'no-damage-soak', 'settings'];
     assert.deepEqual(want.filter((id) => !ids.includes(id)), []);
+  });
+
+  // ---- dialog box sides, animated head portraits, and enter/exit lifecycle -----------------------------------------
+  await test('portrait frames: characters animate across 4 3D head poses while items stay static', () => {
+    assert.equal(PORTRAIT_FRAMES, 4);
+    const sameBytes = (a, b) => a.data.length === b.data.length && a.data.every((v, idx) => v === b.data[idx]);
+    for (const modelId of ['vibecoder.dev_terminal', 'npc.kiro_ghost', 'agent.antigravy', 'agent.codec', 'agent.gork', 'agent.clod']) {
+      const frames = Array.from({ length: PORTRAIT_FRAMES }, (_, f) => rasterPortraitFrame(modelId, 64, f));
+      for (const f of frames) assert.ok(f && f.width === 64 && f.height === 64, `${modelId} produced invalid portrait buffer`);
+      assert.equal(
+        frames.slice(1).some((f) => !sameBytes(frames[0], f)),
+        true,
+        `${modelId} head portrait frames must animate across poses`,
+      );
+    }
+    const itemFrames = Array.from({ length: PORTRAIT_FRAMES }, (_, f) => rasterPortraitFrame('item.lantern', 36, f));
+    for (const f of itemFrames.slice(1)) assert.equal(sameBytes(itemFrames[0], f), true, 'item.lantern icon stays static');
+  });
+
+  await test('dialog box: docks vibecoder left and NPCs/agents right, cycles head frames, and animates enter/exit', async () => {
+    const makeEl = (tag) => {
+      const classes = new Set();
+      const attrs = new Map();
+      const node = {
+        tagName: tag.toUpperCase(),
+        children: [],
+        parentNode: null,
+        attrs,
+        dataset: {},
+        style: {},
+        textContent: '',
+        get offsetWidth() { return 100; },
+        get className() { return [...classes].join(' '); },
+        set className(v) { classes.clear(); for (const c of String(v).split(/\s+/).filter(Boolean)) classes.add(c); },
+        classList: {
+          add: (...xs) => xs.forEach((x) => classes.add(x)),
+          remove: (...xs) => xs.forEach((x) => classes.delete(x)),
+          contains: (x) => classes.has(x),
+        },
+        setAttribute: (k, v) => void attrs.set(k, String(v)),
+        getAttribute: (k) => attrs.get(k) ?? null,
+        append: (...xs) => {
+          for (const x of xs) if (x && typeof x === 'object') { x.parentNode = node; node.children.push(x); }
+        },
+        appendChild: (x) => {
+          if (x && typeof x === 'object') { x.parentNode = node; node.children.push(x); }
+          return x;
+        },
+        replaceChildren: (...xs) => { node.children = []; node.append(...xs); },
+        remove: () => {
+          if (node.parentNode) node.parentNode.children = node.parentNode.children.filter((c) => c !== node);
+          node.parentNode = null;
+        },
+        querySelector: (sel) => {
+          const cls = sel.startsWith('.') ? sel.slice(1) : null;
+          const id = sel.startsWith('#') ? sel.slice(1) : null;
+          for (const c of node.children) {
+            if ((cls && c.classList?.contains(cls)) || (id && c.attrs?.get('id') === id)) return c;
+            const hit = c.querySelector?.(sel);
+            if (hit) return hit;
+          }
+          return null;
+        },
+      };
+      return node;
+    };
+    const prevDoc = globalThis.document;
+    globalThis.document = { createElement: makeEl };
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    try {
+      const parent = makeEl('div');
+      const seenFrames = [];
+      const box = mountDialogBox(parent, (modelId, px, frame = 0) => {
+        const buf = rasterPortraitFrame(modelId, px, frame);
+        assert.ok(buf);
+        seenFrames.push(frame);
+        return { tagName: 'CANVAS', modelId, px, frame };
+      });
+      const root = parent.querySelector('.dialog-box');
+      const avatar = root.querySelector('.dialog-avatar');
+      assert.ok(root && avatar);
+
+      // Line 1: vibecoder -> side-left, enters with frame 0, then settles, cycles head frames, and exits before line 2
+      box.show({ speaker: 'vibecoder', name: 'DEV', model: 'vibecoder.dev_terminal', text: 'What is going on?!', holdMs: 280 });
+      box.show({ speaker: 'kiro', name: 'KIRO', model: 'npc.kiro_ghost', text: 'Easy, Vibecoder!', holdMs: 240 });
+      assert.equal(root.classList.contains('side-left'), true);
+      assert.equal(root.classList.contains('open'), true);
+      assert.equal(root.classList.contains('entering'), true);
+      assert.equal(root.dataset.side, 'left');
+      assert.equal(avatar.dataset.frame, '0');
+
+      await wait(ENTER_MS + 35);
+      assert.equal(root.classList.contains('entering'), false);
+      assert.equal(root.classList.contains('exiting'), false);
+      assert.ok(seenFrames.some((f) => f > 0), `head frames should cycle (saw ${JSON.stringify(seenFrames)})`);
+
+      await wait(70);
+      assert.equal(root.classList.contains('exiting'), true, 'line 1 must play exiting animation before advancing');
+      assert.equal(root.dataset.speaker, 'vibecoder');
+
+      await wait(EXIT_MS + 40);
+      assert.equal(root.classList.contains('side-right'), true, 'NPC/agent must dock on side-right');
+      assert.equal(root.dataset.side, 'right');
+      assert.equal(root.dataset.speaker, 'kiro');
+      assert.equal(root.classList.contains('entering'), true, 'line 2 enters with animation');
+
+      // wait through kiro's hold + exit
+      await wait(240 + EXIT_MS + 60);
+      assert.equal(root.classList.contains('open'), false);
+      assert.equal(root.getAttribute('aria-hidden'), 'true');
+      assert.equal(box.pending(), 0);
+      assert.ok(HEAD_FRAME_MS > 0);
+
+      // clear() resets immediately during active display
+      box.show({ speaker: 'antigravy', name: 'ANTIGRAVY', model: 'agent.antigravy', text: 'BWAHAHA!', holdMs: 500 });
+      assert.equal(root.classList.contains('side-right'), true);
+      assert.equal(root.classList.contains('open'), true);
+      box.clear();
+      assert.equal(root.classList.contains('open'), false);
+      assert.equal(root.classList.contains('entering'), false);
+      assert.equal(root.classList.contains('exiting'), false);
+      assert.equal(box.pending(), 0);
+    } finally {
+      if (prevDoc === undefined) delete globalThis.document;
+      else globalThis.document = prevDoc;
+    }
   });
 });
 

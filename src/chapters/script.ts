@@ -1,5 +1,6 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { dialogueEvent } from '../game/dialogue.js';
+import { heroModel } from '../game/inventory.js';
 import { lookup, type VNode } from '../game/tree.js';
 import type { TutorialState } from '../game/types.js';
 import { resolveTauntAgent, type ChapterState } from './session-state.js';
@@ -40,6 +41,8 @@ export function evalCond(g: ChapterState, c: ScriptCond): boolean {
       return g.rt.world.enemies.some((e) => e.dead);
     case 'core_loaded':
       return g.rt.loadedCores.has(c.core);
+    case 'has_item':
+      return g.inventory.items.includes(c.item);
     case 'tutorial_skipped':
       return g.rt.tutorialSkipped;
     case 'any':
@@ -57,6 +60,8 @@ export interface StepEnv {
   anchorOf: (socket: string) => number;
   tutorial?: ScriptTutorial;
   vars?: Record<string, string>;
+  /** Avatar of the vibecoder in a `dialog_box` (the hero model for what he holds). */
+  heroModel?: string;
 }
 
 /** The events and terminal text of one step. Pure: no game state, so the editor can play a single step. */
@@ -68,7 +73,7 @@ export function stepOutput(s: ScriptStep, env: StepEnv): { events: KernelEvent[]
     case 'emote':
       return { events: [{ type: 'VIBECODER_EMOTE', emote: s.emote, text: s.text }], print: '' };
     case 'spawn':
-      return { events: [{ type: 'ENTITY_SPAWNED', entityId: s.entityId, model: s.model, reason: 'script' }], print: '' };
+      return { events: [{ type: 'ENTITY_SPAWNED', entityId: s.entityId, model: s.model, reason: 'script', entrance: s.entrance ?? 'appear' }], print: '' };
     case 'kiro_action':
       return { events: [{ type: 'KIRO_ACTION', action: s.action, core: s.core, message: s.message }], print: '' };
     case 'say':
@@ -102,6 +107,14 @@ export function stepOutput(s: ScriptStep, env: StepEnv): { events: KernelEvent[]
         ],
         print: '',
       };
+    case 'dialog_box': {
+      const name = s.speaker === 'vibecoder' ? 'DEV' : s.speaker.toUpperCase();
+      const model = s.speaker === 'vibecoder' ? (env.heroModel ?? 'vibecoder.dev_terminal') : agentModel(s.speaker);
+      return {
+        events: [{ type: 'DIALOG_BOX', speaker: s.speaker, name, model, text: s.text, holdMs: Math.round((s.holdSec ?? 4) * 1000) }],
+        print: `[${name}] ${fill(s.text, vars)}\n`,
+      };
+    }
     case 'tutorial_step':
       return tutorialCard(env.tutorial, s.step, false);
   }
@@ -132,10 +145,12 @@ export function runSteps(g: ChapterState, steps: ScriptStep[], events: KernelEve
     anchorOf: (socket) => g.rt.cwd.children.get(socket)?.id ?? g.rt.cwd.id,
     tutorial: levelScript(g).tutorial,
     vars,
+    heroModel: heroModel(g.inventory.held),
   };
   let out = '';
   for (const s of steps) {
     const r = stepOutput(s, env);
+    if (s.kind === 'spawn') g.rt.spawned.add(s.entityId);
     events.push(...r.events);
     out += r.print;
   }
@@ -146,6 +161,27 @@ export function runSteps(g: ChapterState, steps: ScriptStep[], events: KernelEve
 export function arrivalScript(g: ChapterState, events: KernelEvent[]): string {
   const steps = levelScript(g).arrival ?? [{ kind: 'taunt', mood: 'smug' } satisfies ScriptStep];
   return runSteps(g, steps, events);
+}
+
+// ---- timed entries and command locks -------------------------------------------------------------------------
+
+/** One level tick (a second): fires every `script.timed` entry whose `afterSec` is reached. Returns the terminal text. */
+export function runTimed(g: ChapterState, events: KernelEvent[]): string {
+  g.rt.levelTicks += 1;
+  let out = '';
+  (levelScript(g).timed ?? []).forEach((t, i) => {
+    if (g.rt.timedFired.has(i) || g.rt.levelTicks < t.afterSec) return;
+    g.rt.timedFired.add(i);
+    if (t.unless && evalCond(g, t.unless)) return;
+    out += runSteps(g, t.steps, events);
+  });
+  return out;
+}
+
+/** The refusal text when a `script.locks` entry blocks this command word, else undefined. */
+export function lockMessage(g: ChapterState, command: string): string | undefined {
+  const lock = levelScript(g).locks?.find((l) => l.command === command && !evalCond(g, l.until));
+  return lock?.message;
 }
 
 // ---- tutorial ----------------------------------------------------------------------------------------------
@@ -256,6 +292,9 @@ export function kiroIsWeak(g: ChapterState): boolean {
   return !(k.weakUntilCore && g.rt.loadedCores.has(k.weakUntilCore));
 }
 
+/** The stage id of the companion (what a `spawn` step names to bring him in). */
+const KIRO_ENTITY = 'kiro';
+
 /** Where Kiro stands in the room: `undefined` = not on stage. */
 export function kiroStage<T extends object>(g: ChapterState, base: T, cwdPath: string, exitOpen: boolean): T | undefined {
   const k = levelScript(g).kiro;
@@ -264,6 +303,7 @@ export function kiroStage<T extends object>(g: ChapterState, base: T, cwdPath: s
   if (stage === 'hidden') return undefined;
   if (stage === 'crack_only') return g.kiro.activeCrack?.dirPath === cwdPath ? base : undefined;
   if ((k.hideWhen?.includes('intro') && g.intro) || (k.hideWhen?.includes('exit_open') && exitOpen)) return undefined;
+  if (k.hideWhen?.includes('before_spawn') && !g.rt.spawned.has(KIRO_ENTITY)) return undefined;
   const loaded = k.labelLoaded?.cores.some((c) => g.rt.loadedCores.has(c));
   const label = loaded && k.labelLoaded ? k.labelLoaded.label : k.label;
   return label ? { ...base, label } : base;

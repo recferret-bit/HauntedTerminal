@@ -140,14 +140,18 @@ export class CameoDirector {
     const u = this.overlay.unit;
     // Top-right corner of the panel, under the HUD strip: the top-left belongs to the DOM prompt card.
     const right = r.x + r.w - 12;
-    // Below whatever page chrome covers the top-right (HUD strip + its button row), measured live.
+    // Below whatever page chrome covers the top-right (HUD strip, its button row, or an open right-side dialog box), measured live.
     let chromeBottom = 0;
     const base = this.overlay.root.getBoundingClientRect();
-    for (const id of ['hud', 'topbar']) {
-      const el = document.getElementById(id);
+    const blockers: Array<Element | null> = [
+      document.getElementById('hud'),
+      document.getElementById('topbar'),
+      document.querySelector('.dialog-box.side-right.open'),
+    ];
+    for (const el of blockers) {
       if (!el) continue;
       const b = el.getBoundingClientRect();
-      if (b.width > 0 && b.right > base.left + r.x + r.w * 0.5) chromeBottom = Math.max(chromeBottom, b.bottom - base.top);
+      if (b.width > 0 && b.height > 0 && b.right > base.left + r.x + r.w * 0.5) chromeBottom = Math.max(chromeBottom, b.bottom - base.top);
     }
     const top = Math.max(r.y + Math.max(64, u * 1.05), chromeBottom + 10);
     const h = a.el.offsetHeight || u * 1.6;

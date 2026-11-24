@@ -1,4 +1,5 @@
 import type { PosixSignal } from '../contracts/events.js';
+import type { ItemId } from '../contracts/inventory.js';
 
 /**
  * Declarative level behaviour. Everything a level says, shows or reacts to is data in `level.spec.json`
@@ -7,6 +8,22 @@ import type { PosixSignal } from '../contracts/events.js';
  */
 export type ScriptAgent = 'clod' | 'gork' | 'codec' | 'antigravy' | 'kiro';
 export type ScriptMood = 'laugh' | 'order' | 'smug' | 'annoyed';
+export type DialogSpeaker = 'vibecoder' | ScriptAgent;
+
+/** Steps that run once, `afterSec` seconds (level ticks) after the level starts. */
+export interface ScriptTimed {
+  afterSec: number;
+  /** Skipped (it never fires) if this holds when the time comes. */
+  unless?: ScriptCond;
+  steps: ScriptStep[];
+}
+
+/** A command that refuses (printing `message`, exit 1) until `until` holds. Matches the first word, so `ls -a` is covered too. */
+export interface ScriptLock {
+  command: string;
+  until: ScriptCond;
+  message: string;
+}
 
 /** A condition over live level state. `any` / `all` nest. */
 export type ScriptCond =
@@ -16,6 +33,7 @@ export type ScriptCond =
   | { kind: 'enemy_dead'; enemyId: string }
   | { kind: 'any_enemy_dead' }
   | { kind: 'core_loaded'; core: string }
+  | { kind: 'has_item'; item: ItemId }
   | { kind: 'tutorial_skipped' }
   | { kind: 'any'; of: ScriptCond[] }
   | { kind: 'all'; of: ScriptCond[] };
@@ -24,7 +42,7 @@ export type ScriptCond =
 export type ScriptStep =
   | { kind: 'print'; text: string }
   | { kind: 'emote'; emote: 'shock' | 'confused' | 'determined' | 'relief' | 'panic'; text?: string }
-  | { kind: 'spawn'; entityId: string; model: string }
+  | { kind: 'spawn'; entityId: string; model: string; /** How the stage brings it in (default `appear`). */ entrance?: 'appear' | 'glide' }
   | { kind: 'kiro_action'; action: 'scan' | 'load' | 'crack_start' | 'crack_step' | 'crack_done'; core: string; message: string }
   | { kind: 'say'; agent: ScriptAgent; model: string; text: string; mood: ScriptMood; print?: string }
   /** The level's `agentTaunt` from dialogs.json (agent resolved from its prefix); `fallback` if the dialog has none. */
@@ -40,6 +58,8 @@ export type ScriptStep =
       highlight: string[];
       banner: string;
     }
+  /** One line in the dialog box in the screen corner, with the speaker's avatar. `speaker` is `vibecoder` or a `ScriptAgent`; it also prints to the terminal. */
+  | { kind: 'dialog_box'; speaker: DialogSpeaker; text: string; holdSec?: number }
   /** Show tutorial card `step` (1-based) of `script.tutorial`. */
   | { kind: 'tutorial_step'; step: number };
 
@@ -85,8 +105,8 @@ export interface ScriptCoreReaction {
 export interface ScriptKiro {
   /** `crack_only`: Kiro stands in the room only while cracking a lock here. */
   stage?: 'show' | 'crack_only' | 'hidden';
-  /** With `show`: also hide Kiro while the intro runs or once the exit is open. */
-  hideWhen?: Array<'intro' | 'exit_open'>;
+  /** With `show`: also hide Kiro while the intro runs, once the exit is open, or until a `spawn` step names him (`before_spawn`). */
+  hideWhen?: Array<'intro' | 'exit_open' | 'before_spawn'>;
   label?: string;
   /** Replaces `label` once any of `cores` is loaded. */
   labelLoaded?: { cores: string[]; label: string };
@@ -109,6 +129,10 @@ export interface ScriptKiro {
 export interface LevelScript {
   /** Runs once when the player arrives. Omit it and the dialog `agentTaunt` plays as a smug cameo. */
   arrival?: ScriptStep[];
+  /** Steps fired once by the level tick counter (`tick()`), each at its `afterSec`. */
+  timed?: ScriptTimed[];
+  /** Commands refused until a condition holds. */
+  locks?: ScriptLock[];
   /** Name used by `hank` / `dad` here (default: the ally id). */
   allySpeaker?: string;
   /** No damage here and enemies hold fire (a tutorial). */
@@ -132,6 +156,8 @@ export interface ChapterGrant {
   ssd?: number;
   /** Open-weight core loaded into Kiro. The last matching grant wins. */
   core?: string;
+  /** Items he owns from this point on (the lantern for a player who skips the level that gives it). */
+  items?: ItemId[];
 }
 
 export interface ChapterOutro {

@@ -40,6 +40,13 @@ const MODES: Record<LightMode, ModeDef> = {
   storm: { color: 0xa9d4ff, dark: 0.66, power: 0.3, radius: 9, halo: 0, source: 'above' },
 };
 
+/**
+ * facts.dark: the developer holds only the terminal. The only light is its screen glow: phosphor green,
+ * a tight pool, near-black room, no halo and no rays. Same stepped banding as every other source.
+ * `dark` above 1 pushes the cool darkening past its usual end point (the shader extrapolates; 1.5 would clip to black).
+ */
+const DARK_DEF: ModeDef = { color: 0x58ff9a, dark: 1.4, power: 0.55, radius: 1.15, halo: 0, source: 'lantern' };
+
 const HALO_FRAG = /* glsl */ `
 uniform vec3 uColor;
 uniform vec3 uColor2;
@@ -81,6 +88,10 @@ export interface LightFrame {
   panelLeft: number;
   panelRight: number;
   panelTop: number;
+  /** RoomView.dark: the room is almost black and only the terminal screen lights the hero. */
+  dark?: boolean;
+  /** World position of the hero's chest (the terminal screen), used while `dark`. */
+  heroGlow?: THREE.Vector3 | null;
   /** Lightning flash strength this frame (0..1+), for the storm source. */
   flash: number;
 }
@@ -147,7 +158,8 @@ export class StageLight {
   update(dt: number, f: LightFrame): void {
     this.time += dt;
     const t = stepTime(this.time);
-    const def = MODES[this.modeId];
+    const dark = !!f.dark;
+    const def = dark ? DARK_DEF : MODES[this.modeId];
 
     // Boost envelope: snaps up in two steps, holds, then steps back down over ~1.6 s.
     if (this.boostHold > 0) {
@@ -157,12 +169,16 @@ export class StageLight {
       this.boost = Math.max(0, this.boost - dt * (this.boostLevel === 2 ? 1.1 : 0.7));
       if (this.boost === 0) this.boostLevel = 0;
     }
-    const k = Math.round(this.boost * 4) / 4;
+    // In the dark nothing lifts the darkness: `ls` is locked until the lantern is held.
+    const k = dark ? 0 : Math.round(this.boost * 4) / 4;
 
     // Where the light comes from.
     const lantern = f.lantern;
     const midX = (f.panelLeft + f.panelRight) / 2;
-    if (def.source === 'below') this.pos.set(lantern ? lantern.x : midX, f.feetY - 1.3, 0);
+    if (dark) {
+      if (f.heroGlow) this.pos.copy(f.heroGlow);
+      else this.pos.set(midX, f.feetY + 0.8, 0);
+    } else if (def.source === 'below') this.pos.set(lantern ? lantern.x : midX, f.feetY - 1.3, 0);
     else if (def.source === 'above') this.pos.set(midX + Math.sin(t * 0.4) * 1.5, f.panelTop + 0.6, 0);
     else if (lantern) this.pos.copy(lantern);
     else this.pos.set(midX, f.feetY + 0.8, 0);
@@ -170,10 +186,10 @@ export class StageLight {
     // A boosted FLAT mode still lights up: ls must always do something.
     const basePower = def.power > 0 ? def.power : 0.75 * Math.min(1, k);
     const baseDark = def.dark > 0 ? def.dark : 0.3 * Math.min(1, k);
-    const flicker = 1 + (hash(Math.floor(this.time * 12)) - 0.5) * (this.modeId === 'lantern' || this.modeId === 'blacklight' ? 0.14 : 0.05);
+    const flicker = 1 + (hash(Math.floor(this.time * 12)) - 0.5) * (dark ? 0.1 : this.modeId === 'lantern' || this.modeId === 'blacklight' ? 0.14 : 0.05);
     let power = basePower * flicker * (1 + 0.85 * k);
     let radius = def.radius * (1 + 0.5 * k);
-    if (this.modeId === 'storm') {
+    if (this.modeId === 'storm' && !dark) {
       // The sky stutters: mostly dim, with stepped surges, and it follows real strikes.
       const surge = hash(Math.floor(this.time * 3)) > 0.8 ? 1 : 0;
       power = (0.28 + 0.9 * surge * hash(Math.floor(this.time * 12) + 9) + 1.6 * Math.min(1, f.flash * 3)) * (1 + 0.6 * k);
@@ -220,7 +236,7 @@ export class StageLight {
 
     // Halo and rays around a lantern source.
     const hu = this.haloMat.uniforms;
-    const showHalo = def.source === 'lantern' && !!lantern && (def.halo > 0 || k > 0);
+    const showHalo = !dark && def.source === 'lantern' && !!lantern && (def.halo > 0 || k > 0);
     this.halo.visible = showHalo;
     if (showHalo) {
       const size = (1.5 + 1.9 * k) * (def.halo > 0 ? 1 : 0.8);

@@ -11,6 +11,7 @@ export default async function gameplaySuite(ctx) {
   const world = await chapterWorld(ctx);
   const { allWinRulesMet, evalWinRule } = await ctx.load('/src/chapters/session-rules.ts');
   const inv = await ctx.load('/src/game/inventory.ts');
+  const { validatePack } = await ctx.load('/src/chapters/validate-pack.ts');
   const { openLabSession } = await ctx.load('/src/terminal-lab/node-driver.ts');
   const { newLabScript } = await ctx.load('/src/terminal-lab/lab-pack.ts');
   const EXT = { energy: 'cell', ram: 'dimm', ssd: 'img' };
@@ -19,6 +20,13 @@ export default async function gameplaySuite(ctx) {
   const hubs = world.levels
     .map((l, index) => ({ index, rule: l.winRules.find((r) => r.kind === 'kiro_loaded'), aliases: l.script?.kiro?.coreAliases ?? {} }))
     .filter((h) => h.rule);
+
+  /** Levels with a lantern pickup, and the file name that `mv <name> ~` takes. */
+  const lanternLevels = world.levels
+    .map((l, index) => ({ index, pickup: (l.pickups ?? []).find((p) => p.type === 'lantern') }))
+    .filter((l) => l.pickup)
+    .map((l) => ({ index: l.index, name: l.pickup.path.split('/').pop() }));
+  const itemId = fc.constantFrom(...inv.ITEM_IDS);
 
   /** A lab room with these pickups and the player at full HP: every heal lands on the cap. */
   const pickupRoom = (kinds, ram) => {
@@ -189,6 +197,90 @@ export default async function gameplaySuite(ctx) {
             expect(!evalWinRule(session, rule), `level ${index}: the kiro_loaded rule is met by ${core} (wants ${accepted.join(' or ')})`);
           }
         }),
+    },
+    {
+      name: 'the lantern pickup is idempotent: collecting it again (any way, any number of times) changes nothing',
+      build: () =>
+        fc.property(fc.constantFrom(...lanternLevels.keys()), fc.array(fc.constantFrom('mv', 'source', 'hold', 'tick'), { minLength: 1, maxLength: 6 }), (l, again) => {
+          const { index, name } = lanternLevels[l];
+          const session = world.open(index);
+          const first = session.exec(`mv ${name} ~`);
+          expect(first.events.filter((e) => e.type === 'PICKUP_COLLECTED' && e.item === 'lantern').length === 1, `\`mv ${name} ~\` did not collect the lantern exactly once`);
+          const kept = JSON.stringify(session.snapshot().inventory);
+          expect(session.snapshot().inventory.held === 'lantern' && kept.includes('"lantern"'), `the lantern is not held after collecting it: ${kept}`);
+          for (const how of again) {
+            const r = how === 'tick' ? session.tick() : session.exec(how === 'hold' ? 'hold lantern' : `${how} ${name}${how === 'mv' ? ' ~' : ''}`);
+            expect(!r.events.some((e) => e.type === 'PICKUP_COLLECTED' && e.item === 'lantern'), `the lantern was collected again by ${how}`);
+            expect(JSON.stringify(session.snapshot().inventory) === kept, `inventory changed from ${kept} to ${JSON.stringify(session.snapshot().inventory)} after ${how}`);
+          }
+        }),
+    },
+    {
+      name: 'the inventory functions are idempotent: giving an owned item, or holding the held item, changes nothing',
+      build: () =>
+        fc.property(fc.array(fc.constantFrom(...inv.ITEM_IDS), { maxLength: 6 }), fc.constantFrom(...inv.ITEM_IDS), (start, id) => {
+          const once = inv.giveItem(inv.starterInventory(start), id);
+          expect(JSON.stringify(inv.giveItem(once, id)) === JSON.stringify(once), `giving ${id} twice changed ${JSON.stringify(once)}`);
+          const held = inv.holdItem(once, id);
+          expect(JSON.stringify(inv.holdItem(held, id)) === JSON.stringify(held), `holding ${id} twice changed ${JSON.stringify(held)}`);
+        }),
+    },
+    {
+      // The shipped chapter lists the terminal as a start item and the lantern as a grant; random lists put the same item in `startItems`
+      // and in several grants, which is what a human can do in the editor.
+      name: '`startItems` and `grants` never put an item in the inventory twice, and give exactly the union that applies',
+      build: () =>
+        fc.property(
+          // `startItems: []` is left out on purpose: validatePack rejects it as an error (src/chapters/validate-pack.ts), so no
+          // valid pack reaches the game with it. The next property pins that check.
+          fc.option(fc.array(itemId, { minLength: 1, maxLength: 6 }), { nil: undefined }),
+          fc.array(fc.record({ afterLevel: fc.integer({ min: 0, max: 4 }), items: fc.option(fc.array(itemId, { maxLength: 4 }), { nil: undefined }) }), { maxLength: 5 }),
+          fc.nat(world.levels.length - 1),
+          (startItems, grants, levelIdx) => {
+            const session = world.openWith(levelIdx, (p) => {
+              p.manifest.startItems = startItems;
+              p.manifest.grants = grants;
+            });
+            const { items, held } = session.snapshot().inventory;
+            expect(new Set(items).size === items.length, `an item is in the inventory twice: ${JSON.stringify(items)} (startItems ${JSON.stringify(startItems)}, grants ${JSON.stringify(grants)})`);
+            expect(items.includes(held), `holds ${held}, owns ${JSON.stringify(items)}`);
+            for (const id of startItems ?? []) expect(items.includes(id), `startItems ${id} is missing from ${JSON.stringify(items)}`);
+            const allowed = new Set([...(startItems ?? ['lantern', 'terminal']), ...grants.flatMap((g) => g.items ?? [])]);
+            expect(items.every((i) => allowed.has(i)), `an item nobody named appeared: ${JSON.stringify(items)}`);
+          },
+        ),
+    },
+    {
+      // An empty `startItems` would leave `held: 'terminal'` with nothing owned, so the pack check refuses it.
+      name: '`validatePack` rejects an empty `startItems` and accepts any non-empty list of known items',
+      examples: [[[]]],
+      build: () =>
+        fc.property(fc.array(itemId, { maxLength: 6 }), (startItems) => {
+          const pack = structuredClone(world.pack);
+          pack.manifest.startItems = startItems;
+          const hit = validatePack(pack, { winnable: false }).some((i) => i.severity === 'error' && i.message.startsWith('startItems:'));
+          expect(hit === (startItems.length === 0), `startItems ${JSON.stringify(startItems)}: error reported = ${hit}`);
+        }),
+    },
+    {
+      name: 'starting at level 2 or later (a jump) the hero already holds the lantern the tutorial gives',
+      examples: [[1], [world.levels.length - 1]],
+      build: () =>
+        fc.property(fc.integer({ min: 1, max: world.levels.length - 1 }), (levelIdx) => {
+          const { items, held } = world.open(levelIdx).snapshot().inventory;
+          expect(items.includes('lantern') && held === 'lantern', `a jump to level ${levelIdx + 1} holds ${held} and owns ${JSON.stringify(items)}`);
+          expect(items.filter((i) => i === 'lantern').length === 1, `the lantern is in the inventory ${items.filter((i) => i === 'lantern').length} times`);
+        }),
+    },
+    {
+      name: 'every non-empty terminal command in play emits a VIBECODER_ACTION event',
+      build: () =>
+        fc.property(deepPlay, ([levelIdx, steps]) =>
+          watch(levelIdx, steps, (_s, before, r, step) => {
+            if (typeof step !== 'string' || !step.trim() || before.ended) return;
+            expect(r.events.some((e) => e.type === 'VIBECODER_ACTION'), `no VIBECODER_ACTION emitted for ${JSON.stringify(step)}`);
+          }),
+        ),
     },
     {
       // A guard on the generators, not on the game: the properties above only mean something while random play reaches

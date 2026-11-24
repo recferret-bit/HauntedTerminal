@@ -13,7 +13,7 @@ import type { FxId } from './fx-player.js';
  *   panel-floor           the floor line in the middle of the main panel
  */
 export type FxAnchor =
-  | 'vibecoder' | 'hero-feet' | 'subject' | 'subject-feet' | 'subject-lock'
+  | 'vibecoder' | 'vibecoder-body' | 'hero-feet' | 'subject' | 'subject-feet' | 'subject-lock'
   | 'devnull' | 'flood' | 'hand' | 'panel' | 'panel-floor';
 
 export interface FxCue {
@@ -29,7 +29,7 @@ export interface FxCue {
 const cue = (id: FxId, anchor: FxAnchor, delayMs = 0, text?: string, scale?: number): FxCue => ({ id, anchor, delayMs, text, scale });
 
 /**
- * The event -> FX table. Every KernelEvent variant that has an effect, and every one of the 23 presets.
+ * The event -> FX table. Every KernelEvent variant that has an effect, and every one of the 24 presets.
  * Beats follow ANIM_EVENT_MAP (src/procgen/anim/events.ts) and the death beats of the malware sheets
  * (`collapse` at 250 ms). Storm strikes and the intro play `fx.lightning-strike` from the stage clock.
  */
@@ -59,7 +59,7 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
       return [cue('fx.fork-spawn', 'hand', ev.reason === 'boss_fork' ? 530 : 280)];
     case 'ENTITY_SPAWNED':
       if (ev.reason === 'room_enter') return [];
-      if (ev.reason === 'script') return [cue('fx.touch-materialize', 'subject', 80)];
+      if (ev.reason === 'script') return ev.entrance === 'glide' ? [] : [cue('fx.touch-materialize', 'subject', 80)];
       return [cue('fx.fork-spawn', 'hand', ev.reason === 'cron_restore' ? 280 : 530)];
     case 'PROC_SIGNALED':
       if (ev.outcome === 'FROZEN') return [cue('fx.sigstop-ice', 'subject')];
@@ -97,6 +97,8 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
       if (ev.state === 'revealed') return [cue('fx.reveal', 'subject', 80, ' ')];
       return [];
     case 'PICKUP_COLLECTED': {
+      // The lantern: the energy burst, then the reveal starburst once it is lit (existing presets only).
+      if (ev.item === 'lantern') return [cue('fx.pickup-energy', 'subject', 0, ev.label || undefined), cue('fx.reveal', 'vibecoder', 220, ' ')];
       const id: FxId = ev.item === 'ram' ? 'fx.pickup-ram' : ev.item === 'ssd' ? 'fx.pickup-ssd' : 'fx.pickup-energy';
       return [cue(id, 'subject', 0, ev.label || undefined)];
     }
@@ -109,7 +111,7 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
     case 'FLOOR_ENTERED':
       return [];
     case 'VIBECODER_ACTION':
-      return [];
+      return [cue('fx.matrix-cast', 'vibecoder-body', 0)];
     case 'GAME_ENDED':
       return [cue('fx.lightning-strike', 'panel-floor')];
     default:

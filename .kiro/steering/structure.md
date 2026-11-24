@@ -38,7 +38,7 @@ src/
   cinematic/      # generic 3D comix player & viewport selector; generated/ is compiled from comix/
   editor-core/    # shared workstation UI primitives: dom, schema, form/form-state, schema-check, http, file-tracker, dock-state/layout, workspace, view-resizer, viewport-stage, play-frame, game-preview, console-dock, chrome
   comix-editor/   # /comix-editor: schema forms, bidirectional element selection, layout map, preview & 60fps verifier
-  ui/             # terminal, HUD, editor
+  ui/             # terminal, HUD (items strip), dialog box, editor
   sandbox/        # dev inspector
   pages/          # chapter select and comic reader
   chapter-editor/ # /editor: workstation studio, schema-driven chapter forms, centered game preview, checks (schema.ts is the field table)

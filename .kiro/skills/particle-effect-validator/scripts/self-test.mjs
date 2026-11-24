@@ -54,6 +54,7 @@ await withProcgen(async (p) => {
     ['chunk deeper than it is wide', 'FX_IN_PLANE', (x) => { layer(x, 'chunk').shape = { kind: 'box', size: [0.2, 0.2, 0.6] }; }],
     ['cone without a direction', 'FX_EMIT', (x) => { layer(x, 'chunk').emit = 'cone'; }],
     ['implode without a start radius', 'FX_EMIT', (x) => { layer(x, 'chunk').emit = 'implode'; }],
+    ['orbit without a radius', 'FX_EMIT', (x) => { layer(x, 'chunk').emit = 'orbit'; delete layer(x, 'chunk').spawn; }],
     ['design-doc word missing', 'FX_WORD_REQUIRED', (x) => { x.trigger.moment = 'sigkill'; delete x.onomatopoeia; }],
     ['design-doc word changed', 'FX_WORD_REQUIRED', (x) => { x.trigger.moment = 'sigkill'; x.onomatopoeia.text = 'BOOM!'; }],
     ['lower-case word', 'FX_WORD_TEXT', (x) => { x.onomatopoeia.text = 'Zap!'; }],

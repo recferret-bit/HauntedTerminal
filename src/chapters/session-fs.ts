@@ -1,7 +1,7 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { PICKUP_INFO, maxHpFor } from '../game/bestiary.js';
 import type { Pickup } from '../game/entities.js';
-import { holdItem } from '../game/inventory.js';
+import { giveItem, holdItem } from '../game/inventory.js';
 import type { Step } from '../game/shell.js';
 import { absPath, lookup, makeNode, modeString, resolve, walk, type VNode } from '../game/tree.js';
 import { evaluateLevelClearAchievements, formatAchievementLines } from './achievements.js';
@@ -438,6 +438,9 @@ export function collectPickupNode(g: ChapterState, pickup: Pickup, node: VNode, 
       g.hp = Math.min(maxHpFor(g.ram), g.hp + 10);
     } else if (pickup.type === 'ssd') {
       g.ssd += pickup.amount;
+    } else {
+      // The lantern: he gets it and holds it; taking it again changes nothing.
+      g.inventory = holdItem(giveItem(g.inventory, 'lantern'), 'lantern');
     }
     const isGpuPart = /gpu|vram|tensor/i.test(node.name) || /gpu|vram|tensor/i.test(pickup.id);
     const label = isGpuPart ? `${info.label(pickup.amount)} + Local GPU Tensor Chip` : info.label(pickup.amount);

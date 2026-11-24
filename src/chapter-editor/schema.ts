@@ -1,5 +1,6 @@
 import type { ScriptCond, ScriptStep, WinRule } from '../chapters/types.js';
 import { ENEMY_TYPES, MECHANICS, PICKUP_TYPES, ROOM_KINDS } from '../chapters/validate-pack.js';
+import { ITEM_IDS } from '../contracts/inventory.js';
 import {
   b,
   n,
@@ -37,13 +38,14 @@ export const COND_VARIANTS = (): Variants<ScriptCond['kind']> => ({
   enemy_dead: [t('enemyId', 'Enemy id', { suggest: 'enemies' })],
   any_enemy_dead: [],
   core_loaded: [t('core', 'Core', { suggest: 'cores' })],
+  has_item: [sel('item', 'Item', ITEM_IDS)],
   tutorial_skipped: [],
   any: [{ type: 'array', key: 'of', label: 'Any of', item: { union: COND_VARIANTS, title: condTitle } }],
   all: [{ type: 'array', key: 'of', label: 'All of', item: { union: COND_VARIANTS, title: condTitle } }],
 });
 
 function condTitle(c: Record<string, unknown>): string {
-  const detail = c.name ?? c.path ?? c.enemyId ?? c.core ?? (Array.isArray(c.of) ? `${c.of.length} conditions` : '');
+  const detail = c.name ?? c.path ?? c.enemyId ?? c.core ?? c.item ?? (Array.isArray(c.of) ? `${c.of.length} conditions` : '');
   return `${String(c.kind)}${detail ? `: ${String(detail)}` : ''}`;
 }
 
@@ -51,7 +53,7 @@ const TEXT_ROWS = 3;
 export const STEP_VARIANTS = (): Variants<ScriptStep['kind']> => ({
   print: [t('text', 'Terminal text', { rows: 5, mono: true })],
   emote: [sel('emote', 'Emote', EMOTES), opt(t('text', 'Bubble text'))],
-  spawn: [t('entityId', 'Entity id'), t('model', 'Model', { suggest: 'models' })],
+  spawn: [t('entityId', 'Entity id'), t('model', 'Model', { suggest: 'models' }), opt(sel('entrance', 'Entrance', ['appear', 'glide']))],
   kiro_action: [sel('action', 'Action', KIRO_ACTIONS), t('core', 'Core'), t('message', 'Message', { rows: 2 })],
   say: [
     sel('agent', 'Agent', AGENTS),
@@ -76,6 +78,11 @@ export const STEP_VARIANTS = (): Variants<ScriptStep['kind']> => ({
     t('banner', 'Terminal banner'),
   ],
   tutorial_step: [n('step', 'Tutorial step (1-based)')],
+  dialog_box: [
+    sel('speaker', 'Speaker', ['vibecoder', ...AGENTS]),
+    t('text', 'Line', { rows: TEXT_ROWS }),
+    opt(n('holdSec', 'Hold seconds after the text (default 4)', { step: 0.5 })),
+  ],
 });
 
 function stepTitle(s: Record<string, unknown>): string {
@@ -205,6 +212,30 @@ const KIRO_REACTION: Field[] = [
 
 export const SCRIPT: Field[] = [
   stepsField('arrival', 'Arrival (runs once on entering)', { optional: true }),
+  {
+    type: 'array',
+    key: 'timed',
+    label: 'Timed (fires once, N seconds after the level starts)',
+    optional: true,
+    item: {
+      title: (e) => `after ${String(e.afterSec)}s: ${Array.isArray(e.steps) ? e.steps.length : 0} step(s)`,
+      fields: [n('afterSec', 'After seconds'), { type: 'union', key: 'unless', label: 'Skip when this holds', union: COND_VARIANTS, optional: true }, stepsField('steps', 'Steps')],
+    },
+  },
+  {
+    type: 'array',
+    key: 'locks',
+    label: 'Locked commands (refused until a condition holds)',
+    optional: true,
+    item: {
+      title: (l) => `${String(l.command)}: ${String(l.message).slice(0, 60)}`,
+      fields: [
+        t('command', 'Command (first word)', { mono: true }),
+        { type: 'union', key: 'until', label: 'Unlocked when', union: COND_VARIANTS },
+        t('message', 'Refusal text', { rows: 2 }),
+      ],
+    },
+  },
   opt(t('allySpeaker', 'Ally name in hints (hank / dad)')),
   opt(b('safe', 'Safe room (no damage, enemies hold fire)')),
   opt({ type: 'union', key: 'holdEnemiesUntil', label: 'Freeze enemy ticks until', union: COND_VARIANTS }),
@@ -272,7 +303,7 @@ export const SCRIPT: Field[] = [
     optional: true,
     fields: [
       opt(sel('stage', 'On stage', ['show', 'crack_only', 'hidden'])),
-      opt({ type: 'strings', key: 'hideWhen', label: 'Hide while (intro / exit_open, one per line)' }),
+      opt({ type: 'strings', key: 'hideWhen', label: 'Hide while (intro / exit_open / before_spawn, one per line)' }),
       opt(t('label', 'Stage label')),
       opt({ type: 'object', key: 'labelLoaded', label: 'Label once a core is loaded', fields: [{ type: 'strings', key: 'cores', label: 'Cores (one per line)' }, t('label', 'Label')] }),
       opt(b('weak', 'Weak: runs the tiny core (ps and kiro status show it)')),
@@ -325,9 +356,10 @@ export const MANIFEST: Field[] = [
     optional: true,
     item: {
       title: (g) => `after level ${String(g.afterLevel)}: ${[g.ram ? `+${String(g.ram)}GB RAM` : '', g.ssd ? `+${String(g.ssd)}GB SSD` : '', g.core ? `core ${String(g.core)}` : ''].filter(Boolean).join(', ')}`,
-      fields: [n('afterLevel', 'After level'), opt(n('ram', 'RAM GB')), opt(n('ssd', 'SSD GB')), opt(t('core', 'Kiro core', { suggest: 'cores' }))],
+      fields: [n('afterLevel', 'After level'), opt(n('ram', 'RAM GB')), opt(n('ssd', 'SSD GB')), opt(t('core', 'Kiro core', { suggest: 'cores' })), opt({ type: 'strings', key: 'items', label: 'Items (lantern, terminal, laptop; one per line)' })],
     },
   },
+  opt({ type: 'strings', key: 'startItems', label: 'Items he carries at the start (default lantern, terminal; one per line)' }),
   {
     type: 'array',
     key: 'dossier',

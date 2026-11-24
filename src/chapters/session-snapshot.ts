@@ -119,6 +119,7 @@ export function snapshot(g: ChapterState): GameSnapshot {
       cwd: cwdPath,
       ended: g.ended,
       lantern: g.rt.lantern,
+      dark: !g.inventory.items.includes('lantern'),
       held: g.inventory.held,
       xray: g.rt.xray,
       flood: 0,
@@ -171,5 +172,6 @@ export function snapshot(g: ChapterState): GameSnapshot {
       enemiesLeft: effectiveCounts.left,
       enemiesTotal: effectiveCounts.total,
       tutorial: tutorialState(g),
+      inventory: { items: [...g.inventory.items], held: g.inventory.held },
     };
   }

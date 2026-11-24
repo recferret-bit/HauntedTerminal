@@ -14,9 +14,9 @@
     "level-01-tutorial-awakening": {
       "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro Ghost finds you! Learn ls, mv, cat, ps, and kill.",
       "hankRungs": [
-        "Kiro Ghost: \"You're inside your own computer, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) drained my VRAM. Start by running `ls` and `mv starter_ram_8gb.dimm ~`!\"",
+        "Kiro Ghost: \"You're inside your own computer, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) drained my VRAM. Start by running `mv lantern ~` to take the lantern, then `ls` and `mv starter_ram_8gb.dimm ~`!\"",
         "Kiro Ghost: \"I need RAM and GPU chips to host open-weight models! Read my full story with `cat kiro_story.txt`, then check running processes with `ps`.\"",
-        "Kiro Ghost: \"Run `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 1011` to zap `glitch_spark.exe`, then step through `cd hub_uplink`!\""
+        "Kiro Ghost: \"Run `mv lantern ~`, `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 1011` to zap `glitch_spark.exe`, then step through `cd hub_uplink`!\""
       ],
       "agentTaunt": "KIRO GHOST: \"I found you, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) sucked you in! I'm weak—I need RAM & GPU chips for open-weight models. Go forth! First, let's learn ls, mv, cat, ps, and kill!\"",
       "completion": "Kiro Ghost: \"Awesome! You mastered ls, mv, cat, ps, and kill! I'm heading to the Hub—go forth into the first two levels to solve simple tasks and get RAM + GPU chips!\""

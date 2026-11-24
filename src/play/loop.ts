@@ -67,7 +67,11 @@ function applyEvents(play: Play, events: KernelEvent[], snap: GameSnapshot, prin
       case 'PLAYER_RESPAWNED':
         if (ev.from === 'ssd_backup') play.hud?.backupUsed(ev.hp);
         break;
+      case 'DIALOG_BOX':
+        play.dialogBox?.show(ev);
+        break;
       case 'FLOOR_ENTERED':
+        play.dialogBox?.clear();
         if (play.phase === 'play') holdForCard(play);
         break;
       case 'AGENT_TAUNT':

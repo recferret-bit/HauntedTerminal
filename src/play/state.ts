@@ -6,6 +6,7 @@ import type { GameSnapshot, TickResult } from '../game/types.js';
 import type { ComicStage } from '../renderer/comic-stage.js';
 import type { CodeEditor } from '../ui/code-editor.js';
 import type { EndStats, Hud } from '../ui/hud.js';
+import type { DialogBox } from '../ui/dialog-box.js';
 import type { Shell } from '../ui/terminal.js';
 import type { TutorialCard } from '../ui/tutorial.js';
 
@@ -89,6 +90,8 @@ export class Play {
   /** FLOOR_ENTERED that arrived while the intro was running; shown once it ends. */
   stashedFloorCard: Extract<KernelEvent, { type: 'FLOOR_ENTERED' }> | null = null;
   hud: Hud | null = null;
+  /** The corner dialog box (`DIALOG_BOX` events); mounted with the HUD. */
+  dialogBox: DialogBox | null = null;
   codeEditor: CodeEditor | null = null;
   /** Every event the session produced, newest last (capped). The chapter editor reads it through `__game.events()`. */
   eventLog: KernelEvent[] = [];

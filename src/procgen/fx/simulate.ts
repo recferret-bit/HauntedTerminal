@@ -26,6 +26,17 @@ export interface FxSpawn {
   spin: number;
   size: number;
   z: number;
+  orbit?: { rx: number; rz: number; sweep: number; rise: number; tilt: number };
+  shapeIndex0?: number;
+  shapeStride?: number;
+}
+
+interface OrbitPattern {
+  dir: 1 | -1;
+  basePhase: number;
+  tilt: number;
+  radiusMul: number;
+  yShift: number;
 }
 
 function lerp(range: readonly [number, number] | undefined, t: number, fallback: number): number {
@@ -102,9 +113,86 @@ function spawnLayer(preset: FxPreset, layer: FxLayer, li: number, seed: number):
   return out;
 }
 
+function rollOrbitPattern(preset: FxPreset, seed: number): OrbitPattern | null {
+  if (!preset.layers.some((l) => l.emit === 'orbit')) return null;
+  const rng = makeRng(hashSeed(`${fxSeedKey(preset)}/orbit`, seed));
+  const maxTilt = Math.max(...preset.layers.map((l) => l.orbitTilt ?? 0), 0);
+  return {
+    dir: rng.next() < 0.5 ? 1 : -1,
+    basePhase: rng.next() * Math.PI * 2,
+    tilt: (rng.next() * 2 - 1) * maxTilt * DEG,
+    radiusMul: 0.92 + rng.next() * 0.18,
+    yShift: (rng.next() - 0.5) * 0.16,
+  };
+}
+
+function spawnOrbitLayer(preset: FxPreset, layer: FxLayer, li: number, seed: number, pat: OrbitPattern): FxSpawn[] {
+  const rng = makeRng(hashSeed(`${fxSeedKey(preset)}/${li}/${layer.name}`, seed));
+  const streams = Math.max(1, layer.orbitStreams ?? 3);
+  const shapeCount = layer.shapes?.length ?? 0;
+  return Array.from({ length: layer.count }, (_, i): FxSpawn => {
+    const jitterAngle = (rng.next() - 0.5) * 18;
+    const sweep = pat.dir * lerp(layer.orbitSweep, rng.next(), 270) * DEG;
+    const rx = lerp(layer.spawn?.radius, rng.next(), 0.7) * pat.radiusMul;
+    const rise = lerp(layer.orbitRise, rng.next(), 1.0);
+    const jitterY = (rng.next() - 0.5) * 0.1;
+    const lifeMs = lerp(layer.lifeMs, rng.next(), 0);
+    const delayMs = lerp(layer.delayMs, rng.next(), 0);
+    const size = lerp(layer.size, rng.next(), 1);
+    const shapeIndex0 = shapeCount > 0 ? Math.floor(rng.next() * shapeCount) : undefined;
+    const shapeStride = shapeCount > 1 ? 1 + Math.floor(rng.next() * (shapeCount - 1)) : 1;
+    const sIdx = i % streams;
+    const rank = Math.floor(i / streams);
+    const theta0 = pat.basePhase + (sIdx / streams) * Math.PI * 2 - pat.dir * ((layer.orbitLag ?? 0) + rank * 28 + jitterAngle) * DEG;
+    const y0 = (layer.origin?.[1] ?? 0) + pat.yShift + ((sIdx + 0.5) / streams - 0.5) * (layer.spawn?.height ?? 0.3) + (layer.orbitTrailY ?? 0) - rank * 0.09 + jitterY;
+    const rz = (layer.orbitDepth ?? rx * 0.6) * pat.radiusMul;
+    return {
+      layer: li,
+      index: i,
+      x0: layer.origin?.[0] ?? 0,
+      y0,
+      angle: theta0,
+      vx: 0,
+      vy: 0,
+      delayMs,
+      lifeMs,
+      rot0: 0,
+      spin: 0,
+      size,
+      z: li * FX_LAYER_Z,
+      orbit: { rx, rz, sweep, rise, tilt: pat.tilt },
+      ...(shapeIndex0 !== undefined ? { shapeIndex0, shapeStride } : {}),
+    };
+  });
+}
+
+function evalOrbit(layer: FxLayer, s: FxSpawn, u: number, age: number, step: number, baseScale: number, alpha: number): FxParticleState {
+  const o = s.orbit!;
+  const ease = 1 - (1 - u) * (1 - u);
+  const theta = s.angle + o.sweep * (0.35 * u + 0.65 * ease);
+  const cx = Math.cos(theta) * o.rx;
+  const sinTh = Math.sin(theta);
+  const cz = sinTh * o.rz;
+  const cy = s.y0 + o.rise * u;
+  const cosT = Math.cos(o.tilt), sinT = Math.sin(o.tilt);
+  const x = s.x0 + cx * cosT - cy * sinT * 0.25;
+  const y = cy + cx * sinT;
+  const scale = baseScale * (1 + 0.24 * sinTh);
+  const rotY = -Math.cos(theta) * 0.85;
+  const rotX = -sinTh * 0.14;
+  const state: FxParticleState = { layer: s.layer, index: s.index, x, y, z: cz + s.z, rot: 0, rotX, rotY, scale, alpha, life: u };
+  if (s.shapeIndex0 !== undefined && layer.shapes?.length) {
+    const stepIdx = Math.floor(age / step + 1e-6);
+    const swap = layer.glyphSwapSteps ? Math.floor(stepIdx / layer.glyphSwapSteps) : 0;
+    state.shapeIndex = (s.shapeIndex0 + swap * (s.shapeStride ?? 1)) % layer.shapes.length;
+  }
+  return state;
+}
+
 /** Roll every particle of the preset once. Pure: same preset and seed, same spawns. */
 export function fxSpawn(preset: FxPreset, seed = 1): FxSpawn[] {
-  return preset.layers.flatMap((layer, li) => spawnLayer(preset, layer, li, seed));
+  const orbitPat = rollOrbitPattern(preset, seed);
+  return preset.layers.flatMap((layer, li) => (layer.emit === 'orbit' && orbitPat ? spawnOrbitLayer(preset, layer, li, seed, orbitPat) : spawnLayer(preset, layer, li, seed)));
 }
 
 /**
@@ -127,6 +215,10 @@ export function fxEvaluate(preset: FxPreset, spawns: readonly FxSpawn[], tMs: nu
     const scale = fxKeyValue(layer.scale, u, 1) * s.size;
     const alpha = fxKeyValue(layer.alpha, u, 1);
     if (scale <= 0 || alpha <= 0) continue;
+    if (s.orbit) {
+      out.push(evalOrbit(layer, s, u, age, step, scale, alpha));
+      continue;
+    }
     const sec = age / 1000;
     let x: number, y: number, dirX: number, dirY: number;
     if (layer.emit === 'implode') {

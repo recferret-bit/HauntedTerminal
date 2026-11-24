@@ -107,6 +107,79 @@ function portableSaveAndPreviewProps(deps) {
   ];
 }
 
+/** Properties of the script vocabulary the tutorial uses: `script.locks` and `script.timed` (spec .kiro/specs/tutorial-rework/). */
+function lockAndTimedProps(world) {
+  const text = (r) => `${r.output ?? ''}\n${r.stderr ?? ''}`;
+  const word = (line) => line.trim().split(/\s+/)[0];
+  const lockedLevels = world.levels
+    .map((level, index) => ({
+      index,
+      lock: (level.script?.locks ?? []).find((l) => l.until.kind === 'has_item' && l.until.item === 'lantern'),
+      pickup: (level.pickups ?? []).find((p) => p.type === 'lantern'),
+    }))
+    .filter((l) => l.lock && l.pickup);
+  const timedLevels = world.levels
+    .map((level, index) => ({ index, timed: level.script?.timed ?? [] }))
+    .filter((l) => l.timed.some((t) => t.steps.some((s) => s.kind === 'dialog_box')));
+  // Commands that cannot take the lantern, delete its file or move the hero away from it.
+  const idle = fc.oneof(
+    { weight: 3, arbitrary: fc.constantFrom('ls', 'ls -a', 'ls -la', 'ls -l') },
+    { weight: 3, arbitrary: fc.constantFrom('pwd', 'ps', 'help', 'hint', 'inventory', 'inv', 'hold lantern', 'hold terminal', 'cat *', 'kiro', 'kiro scan') },
+    { weight: 1, arbitrary: fc.integer({ min: 1, max: 3 }).map((tick) => ({ tick })) },
+  );
+  const kept = (lock) => (s) => typeof s !== 'string' || !/lantern/.test(s.replace('hold lantern', '')) || word(s) === lock.command;
+
+  return [
+    {
+      name: 'a `script.locks` command (also with flags) is refused until the lantern is held, and works after `mv lantern ~`',
+      build: () =>
+        fc.property(fc.constantFrom(...lockedLevels.keys()), fc.array(idle, { maxLength: 12 }), fc.constantFrom('', ' -a', ' -la', ' -l'), (l, steps, flags) => {
+          const { index, lock, pickup } = lockedLevels[l];
+          const session = world.open(index);
+          const isLocked = (s) => typeof s === 'string' && word(s) === lock.command;
+          const refused = (r) => (r.code ?? 0) !== 0 && text(r).includes(lock.message);
+          for (const s of [...steps.filter(kept(lock)), `${lock.command}${flags}`]) {
+            if (typeof s !== 'string') {
+              for (let i = 0; i < s.tick; i++) session.tick();
+            } else {
+              const r = session.exec(s);
+              if (isLocked(s)) expect(refused(r), `\`${s}\` before the lantern was not refused (code ${r.code}): ${JSON.stringify(text(r)).slice(0, 160)}`);
+            }
+            expect(!session.snapshot().inventory.items.includes('lantern'), `the lantern appeared in the inventory after ${JSON.stringify(s)}`);
+          }
+          const name = pickup.path.split('/').pop();
+          session.exec(`mv ${name} ~`);
+          expect(session.snapshot().inventory.items.includes('lantern'), `\`mv ${name} ~\` did not give the lantern`);
+          for (const s of [`${lock.command}${flags}`, lock.command]) {
+            const r = session.exec(s);
+            expect(!refused(r) && !text(r).includes(lock.message), `\`${s}\` is still refused with the lantern held: ${JSON.stringify(text(r)).slice(0, 160)}`);
+          }
+        }),
+    },
+    {
+      name: 'timed `dialog_box` entries fire once each, at the tick of their afterSec, in order',
+      build: () =>
+        fc.property(fc.constantFrom(...timedLevels.keys()), fc.integer({ min: 0, max: 40 }), (l, ticks) => {
+          const { index, timed } = timedLevels[l];
+          const session = world.open(index);
+          const got = [];
+          for (let t = 1; t <= ticks; t++) {
+            const r = session.tick();
+            if (r.events.some((e) => e.type === 'PLAYER_RESPAWNED')) return; // a death restarts the level clock
+            for (const e of r.events) if (e.type === 'DIALOG_BOX') got.push([t, e.text]);
+          }
+          // An entry fires on the first tick t with t >= afterSec (the clock starts at tick 1); entries share a tick in spec order.
+          const want = timed
+            .flatMap((entry, i) => entry.steps.filter((s) => s.kind === 'dialog_box').map((s, j) => ({ at: Math.max(1, entry.afterSec), i, j, text: s.text })))
+            .filter((w) => w.at <= ticks)
+            .sort((a, b) => a.at - b.at || a.i - b.i || a.j - b.j)
+            .map((w) => [w.at, w.text]);
+          expect(JSON.stringify(got) === JSON.stringify(want), `after ${ticks} ticks the dialog boxes were ${JSON.stringify(got)}, the spec says ${JSON.stringify(want)}`);
+        }),
+    },
+  ];
+}
+
 export default async function chaptersSuite(ctx) {
   const { checkPack } = await ctx.load('/src/chapter-editor/check.ts');
   const { readAchievements, unlockAchievement } = await ctx.load('/src/chapters/achievements.ts');
@@ -221,6 +294,7 @@ export default async function chaptersSuite(ctx) {
           expect(Array.isArray(issues), 'checkPack did not return a list');
         }),
     },
+    ...lockAndTimedProps(world),
     ...portableSaveAndPreviewProps({
       world,
       readAchievements,

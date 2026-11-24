@@ -9,7 +9,7 @@ export type EnemyType =
   | 'virus' | 'worm' | 'trojan' | 'bug' | 'exploit' | 'crack' | 'ransomware'
   | 'spyware' | 'rootkit' | 'zombie' | 'forkbomb' | 'kernel';
 
-export type PickupType = 'energy' | 'ram' | 'ssd';
+export type PickupType = 'energy' | 'ram' | 'ssd' | 'lantern';
 
 export interface EnemyInfo {
   type: EnemyType;
@@ -217,6 +217,11 @@ export const PICKUP_INFO: Record<PickupType, PickupInfo> = {
     type: 'ssd', model: 'pickup.ssd', amount: 256,
     label: (n) => `+${n}GB SSD`,
     blurb: '#!/bin/ssd\n# SSD IMAGE: 256 GB = one backup. Die with a backup and you restore in place at half HP.\n# use: source <file>\nexport SWAP="$SWAP+256G"\n',
+  },
+  lantern: {
+    type: 'lantern', model: 'item.lantern', amount: 1,
+    label: () => 'LANTERN',
+    blurb: '#!/bin/lantern\n# LANTERN: light for a dark room.\n# use: mv <file> ~   (it goes in your hand)\nexport LIGHT="on"\n',
   },
 };
 

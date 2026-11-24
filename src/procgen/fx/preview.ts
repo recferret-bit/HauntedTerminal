@@ -42,6 +42,7 @@ interface Stamp {
   px: number;
   py: number;
   rot: number;
+  rotY?: number;
   /** Pixels per chunk unit. */
   scale: number;
   color: number;
@@ -68,22 +69,28 @@ interface Bounds {
 /** Rotate, scale and place the chunk's front faces on the page, with their cel band; also returns the pixel extent. */
 function stampTriangles(s: Stamp): { tris: StampTri[]; bounds: Bounds } {
   const cos = Math.cos(s.rot), sin = Math.sin(s.rot);
+  const cosY = s.rotY ? Math.cos(s.rotY) : 1;
+  const sinY = s.rotY ? Math.sin(s.rotY) : 0;
   const tris: StampTri[] = [];
   const bounds: Bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
   for (let t = 0; t < s.soup.triCount; t++) {
-    const nz = s.soup.nrm[t * 3 + 2]!;
+    const rawNx = s.soup.nrm[t * 3]!, rawNy = s.soup.nrm[t * 3 + 1]!, rawNz = s.soup.nrm[t * 3 + 2]!;
+    const yNx = rawNx * cosY + rawNz * sinY;
+    const nz = -rawNx * sinY + rawNz * cosY;
     if (nz >= -1e-4) continue; // back faces and edge-on walls
-    const nx = s.soup.nrm[t * 3]! * cos - s.soup.nrm[t * 3 + 1]! * sin;
-    const ny = s.soup.nrm[t * 3]! * sin + s.soup.nrm[t * 3 + 1]! * cos;
+    const nx = yNx * cos - rawNy * sin;
+    const ny = yNx * sin + rawNy * cos;
     const xy: number[] = [];
     let z = 0;
     for (let v = 0; v < 3; v++) {
       const o = t * 9 + v * 3;
-      const lx = s.soup.pos[o]!, ly = s.soup.pos[o + 1]!;
+      const lx0 = s.soup.pos[o]!, ly = s.soup.pos[o + 1]!, lz0 = s.soup.pos[o + 2]!;
+      const lx = lx0 * cosY + lz0 * sinY;
+      const lz = -lx0 * sinY + lz0 * cosY;
       const x = s.px + (lx * cos - ly * sin) * s.scale;
       const y = s.py - (lx * sin + ly * cos) * s.scale;
       xy.push(x, y);
-      z += s.soup.pos[o + 2]! / 3;
+      z += lz / 3;
       if (x < bounds.minX) bounds.minX = x; if (x > bounds.maxX) bounds.maxX = x;
       if (y < bounds.minY) bounds.minY = y; if (y > bounds.maxY) bounds.maxY = y;
     }
@@ -152,31 +159,44 @@ export function fxRenderFrame(preset: FxPreset, tMs: number, opts: FxFrameOption
   const [ox, oy] = opts.origin ?? [Math.round(width / 2), Math.round(height * originY)];
   const outlinePx = opts.outlinePx ?? Math.max(1, Math.round(0.028 * ppu));
 
-  if (opts.reference !== false && bg !== null) {
+  const drawGhost = (): void => {
+    if (opts.reference === false || bg === null) return;
     // A vibecoder-sized ghost (0.7 x 1.6 units) and the floor line: scale, not art.
     const [r, g, b] = hexToRgb(bg);
     const feet = oy + Math.round((preset.anchor === 'feet' ? 0 : preset.anchor === 'top' ? 1.6 : 0.8) * ppu);
     const hw = Math.round(0.35 * ppu), hh = Math.round(1.6 * ppu);
     for (let y = feet - hh; y < feet; y++) for (let x = ox - hw; x < ox + hw; x++) blendPixel(buf, x, y, r + 22, g + 20, b + 26, 1);
     for (let x = 0; x < width; x++) blendPixel(buf, x, feet, r + 40, g + 36, b + 46, 1);
-  }
+  };
 
   const states = fxSimulate(preset, opts.seed ?? 1, tMs).sort((a, b) => a.z - b.z || a.layer - b.layer || a.index - b.index);
-  for (const p of states) {
-    const layer = preset.layers[p.layer]!;
-    const zone = ZONES[layer.zone] as { color: number; emissive?: number; opacity?: number };
-    stamp(buf, {
-      soup: fxShapeSoup(layer.shape),
-      px: ox + p.x * ppu,
-      py: oy - p.y * ppu,
-      rot: p.rot,
-      scale: p.scale * ppu,
-      color: zone.color,
-      emissive: zone.emissive ?? 0,
-      alpha: p.alpha * (zone.opacity ?? 1),
-      outline: fxKeylineColor(layer.zone, layer.outline !== false),
-      outlinePx,
-    });
+  const drawParticles = (list: typeof states): void => {
+    for (const p of list) {
+      const layer = preset.layers[p.layer]!;
+      const zone = ZONES[layer.zone] as { color: number; emissive?: number; opacity?: number };
+      const shape = (p.shapeIndex !== undefined ? layer.shapes?.[p.shapeIndex] : undefined) ?? layer.shape;
+      stamp(buf, {
+        soup: fxShapeSoup(shape),
+        px: ox + p.x * ppu,
+        py: oy - p.y * ppu,
+        rot: p.rot,
+        rotY: p.rotY,
+        scale: p.scale * ppu,
+        color: zone.color,
+        emissive: zone.emissive ?? 0,
+        alpha: p.alpha * (zone.opacity ?? 1),
+        outline: fxKeylineColor(layer.zone, layer.outline !== false),
+        outlinePx,
+      });
+    }
+  };
+  if (preset.wrapActor) {
+    drawParticles(states.filter((p) => p.z < 0));
+    drawGhost();
+    drawParticles(states.filter((p) => p.z >= 0));
+  } else {
+    drawGhost();
+    drawParticles(states);
   }
 
   const word = fxWordState(preset, tMs, opts.text);

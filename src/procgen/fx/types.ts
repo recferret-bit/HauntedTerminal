@@ -50,7 +50,8 @@ export type FxMoment =
   | 'lightning-strike'
   | 'flood-splash'
   | 'door-unlock'
-  | 'coredump';
+  | 'coredump'
+  | 'matrix-cast';
 
 /** A KernelEvent type, or a moment the kernel does not announce yet. */
 export type FxEventName = KernelEvent['type'] | 'COMMAND' | 'GAME_TICK' | 'INTRO';
@@ -74,7 +75,9 @@ export type FxEmissionKind =
   /** Spawned across `spawn.width` at `spawn.height` above the origin, moving along `angle` (default straight down). */
   | 'rain'
   /** Spawned on a circle of `spawn.radius` and pulled into the origin over each particle's life. `speed` is ignored. */
-  | 'implode';
+  | 'implode'
+  /** Spawned on a 3D cylinder around the actor (`spawn.radius`, `spawn.height`) and orbits in 3D `(x, y, z)` around the vertical axis. */
+  | 'orbit';
 
 /** A stepped key: from life fraction `t` (0..1) on, the value is `v`, until the next key. No interpolation. */
 export type FxKey = [t: number, v: number];
@@ -85,6 +88,8 @@ export interface FxLayer {
   role: FxRole;
   /** One low-poly chunk. Use the helpers in `fx/shapes.ts`; outlines are drawn in page space. */
   shape: ShapeSpec;
+  /** Optional pool of alternative shapes for this layer; each particle picks one by seed and may cycle on `glyphSwapSteps`. */
+  shapes?: ShapeSpec[];
   zone: ZoneId;
   count: number;
   emit: FxEmissionKind;
@@ -112,6 +117,22 @@ export interface FxLayer {
   align?: boolean;
   /** For `implode`: extra degrees swept around the origin on the way in. */
   swirl?: number;
+  /** For `orbit`: degrees swept around the Y axis over each particle's life `[min, max]`. */
+  orbitSweep?: Vec2;
+  /** For `orbit`: z-axis depth radius of the 3D ellipse (world units). */
+  orbitDepth?: number;
+  /** For `orbit`: vertical rise over each particle's life `[min, max]`. */
+  orbitRise?: Vec2;
+  /** For `orbit`: max tilt of the orbital plane in degrees (varied per seed within `[-tilt, +tilt]`). */
+  orbitTilt?: number;
+  /** For `orbit`: number of helical streams around the actor (default 3). */
+  orbitStreams?: number;
+  /** For `orbit`: azimuth lag in degrees behind the stream head. */
+  orbitLag?: number;
+  /** For `orbit`: vertical offset in world units behind the stream head. */
+  orbitTrailY?: number;
+  /** If `shapes` is set, cycle the particle's glyph every N stepped frames. */
+  glyphSwapSteps?: number;
   /** [min, max] start delay in ms. */
   delayMs?: Vec2;
   /** [min, max] lifetime in ms. */
@@ -176,6 +197,8 @@ export interface FxPreset {
   fullPanel?: boolean;
   /** Ambient effect: time wraps at `durationMs`. */
   loop?: boolean;
+  /** True when the effect wraps around an actor in 3D (front passes in front, back occluded behind). */
+  wrapActor?: boolean;
 }
 
 export interface FxParticleState {
@@ -190,6 +213,11 @@ export interface FxParticleState {
   z: number;
   /** Radians, counter-clockwise on the page. */
   rot: number;
+  /** Optional 3D pitch / yaw rotations in radians (`orbit` layers). */
+  rotX?: number;
+  rotY?: number;
+  /** Optional shape pool index when `layer.shapes` is defined. */
+  shapeIndex?: number;
   scale: number;
   alpha: number;
   /** 0..1 fraction of the particle's life. */

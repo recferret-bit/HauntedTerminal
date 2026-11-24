@@ -120,6 +120,12 @@ export interface LevelRuntime {
   tutorialLastStep: number;
   /** The script's hidden enemy has been shown. */
   hiddenRevealed: boolean;
+  /** Entity ids a `spawn` step has brought in on this level (Kiro stays off stage until his is, with `hideWhen: before_spawn`). */
+  spawned: Set<string>;
+  /** Seconds (world ticks) since the level started: drives `script.timed`. */
+  levelTicks: number;
+  /** Indexes of `script.timed` entries that already fired. */
+  timedFired: Set<number>;
   /** Lab session state for this level (absorbed damage, solved riddles, latched checks). Empty in the game. */
   lab: LabLevelState;
 }
@@ -160,6 +166,8 @@ export interface ChapterState {
   tacticalMode: boolean;
   /** What he carries and holds; kept across levels. */
   inventory: Inventory;
+  /** What he carried when this level was entered; a floor restart puts it back. */
+  entryInventory: Inventory;
   pendingEditor: EditorOpenPayload | null;
   currentRedirectTarget: string;
   rt: LevelRuntime;

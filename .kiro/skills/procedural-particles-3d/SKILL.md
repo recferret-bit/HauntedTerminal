@@ -32,7 +32,7 @@ at the page, so all motion is **in the page plane**; there is no z velocity to a
 src/procgen/fx/
   types.ts  shapes.ts  lettering.ts   FxPreset / FxLayer; the chunk helpers (fxStarburst, fxShard, fxBolt...); the word as geometry
   simulate.ts                         fxSimulate(preset, seed, tMs): pure, closed form, stepped
-  catalog.ts  presets.ts              FxCatalog, FX_MOMENT_WORDS; the 23 shipped presets
+  catalog.ts  presets.ts              FxCatalog, FX_MOMENT_WORDS; the 24 shipped presets
   validate.ts  preview.ts             validateFxPreset, FX_LIMITS; fxRenderFrame for the filmstrip
   emitter.ts                          createFxEmitter(preset, opts) -> { group, update(dtMs), done, dispose() }
 ```
@@ -119,6 +119,7 @@ DOM overlay, so it is validated and drawn with everything else.
 | Enemy hit / removed | `fx.malware-hit`, `fx.malware-death` | SEGFAULT! |
 | Lightning (intro, storm, kill bolt) | `fx.lightning-strike` | KRAKOOM! |
 | Kernel breaks, vibecoder dies | `fx.coredump` | COREDUMP! |
+| Terminal command typed (`VIBECODER_ACTION`) | `fx.matrix-cast` | |
 
 Look a preset up by moment with `FxCatalog.forMoment('sigkill')`. The game's `ComicStage.handleEvent`
 (`src/renderer/comic-stage.ts`) plays them through `src/renderer/fx-player.ts`; the event → preset

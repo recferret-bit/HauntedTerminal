@@ -3,6 +3,8 @@ import { downloadPortableSaveFile } from '../chapters/portable-save.js';
 import { wireExternalLinksForDesktop, wireSteamWishlistLink } from '../chapters/steam-bridge.js';
 import type { GameSnapshot } from '../game/types.js';
 import { escHtml as esc } from '../renderer/html-escape.js';
+import type { DrawPortrait } from './dom-lite.js';
+import { mountItemsStrip, type ItemsStrip } from './items-strip.js';
 
 export interface HudHandlers {
   onHint(): void;
@@ -11,6 +13,8 @@ export interface HudHandlers {
   onPlayAgain(skipIntroNextTime: boolean): void;
   maxFloors?: number;
   initialTactical?: boolean;
+  /** Draws the item icons of the strip (the renderer's `drawPortrait`, passed in by `src/play`: `src/ui` imports no three). Without it the strip is not mounted. */
+  drawPortrait?: DrawPortrait;
   onToggleTactical?: () => boolean;
 }
 
@@ -26,7 +30,7 @@ export interface Hud {
   /** Red flash over the stage and a floating damage number on the HP bar. */
   damage(amount: number, source: string): void;
   /** A comic pop next to the field the pickup raised. */
-  pickup(item: 'energy' | 'ram' | 'ssd', label: string): void;
+  pickup(item: 'energy' | 'ram' | 'ssd' | 'lantern', label: string): void;
   /** Big banner: an SSD backup saved the run. */
   backupUsed(hp: number): void;
   /** Non-blocking comic stamp when a local achievement unlocks. */
@@ -130,6 +134,7 @@ interface HudView {
   achQueue: Array<{ icon: string; title: string; steamApiName: string; description: string }>;
   achTimer: number;
   skipBox: HTMLInputElement;
+  items: ItemsStrip | null;
   lastHp: number;
   lastPips: string;
   hintTimer: number;
@@ -171,6 +176,7 @@ function updateHud(view: HudView, snap: GameSnapshot): void {
   view.pause.classList.toggle('on', !!snap.paused);
   view.mute.textContent = snap.muted ? 'Muted' : 'Sound';
   view.mute.classList.toggle('off', snap.muted);
+  if (snap.inventory) view.items?.update(snap.inventory);
 }
 
 function hudApi(view: HudView): Hud {
@@ -183,6 +189,10 @@ function hudApi(view: HudView): Hud {
       view.flash.title = source;
     },
     pickup(item, label) {
+      if (item === 'lantern') {
+        view.items?.pop('lantern');
+        return;
+      }
       const anchor = item === 'ram' ? q('#hud-ram-cell', view.root) : item === 'ssd' ? q('#hud-ssd-cell', view.root) : view.hpCell;
       replay(anchor, 'bump');
       pop(anchor, label, `pop-${item}`);
@@ -312,6 +322,7 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     achQueue: [],
     achTimer: 0,
     skipBox,
+    items: handlers.drawPortrait ? mountItemsStrip(root, handlers.drawPortrait) : null,
     lastHp: -1,
     lastPips: '',
     hintTimer: 0,

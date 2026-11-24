@@ -1,0 +1,54 @@
+{
+  "id": "pickup-lantern",
+  "title": "Pickup: lantern",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 1,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Pickup: lantern",
+    "summary": "mv lantern ~ puts the lantern in his hand. Taking it again changes nothing."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "pickup",
+      "id": "lantern-1",
+      "type": "lantern",
+      "path": "/lab/lantern"
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "stdout": "lantern"
+      }
+    },
+    {
+      "op": "run",
+      "line": "mv lantern ~",
+      "expect": {
+        "code": 0,
+        "events": [
+          "PICKUP_COLLECTED"
+        ]
+      }
+    },
+    {
+      "op": "run",
+      "line": "ls",
+      "expect": {
+        "code": 0
+      },
+      "note": "the pickup file is gone once it is in his hand"
+    }
+  ]
+}

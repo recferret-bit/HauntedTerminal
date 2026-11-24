@@ -7,8 +7,13 @@ Use these words exactly; do not invent synonyms.
 - **Level**: one `level.spec.json`: files, enemies, pickups, patches, win rules, solution, `script`.
 - **Spec**: any of the chapter JSON files. Specs are the single source of truth; `src/chapters/generated/` is compiled output.
 - **Pack** (`ChapterPack`): manifest + levels + dialogs + comic, as the game consumes them. The compiled pack is `getChapterPack`; a **draft** is an unsaved pack from the editor.
-- **Script** (`level.spec.json -> script`): the declarative behaviour of a level. Made of **steps** (`print`, `say`, `dialogue`, `taunt`, `emote`, `spawn`, `kiro_action`, `tutorial_step`) and **conditions** (`ran_command`, `file_absent`, `file_read`, `enemy_dead`, `any`, `all`, ...).
+- **Script** (`level.spec.json -> script`): the declarative behaviour of a level. Made of **steps** (`print`, `say`, `dialogue`, `dialog_box`, `taunt`, `emote`, `spawn`, `kiro_action`, `tutorial_step`) and **conditions** (`ran_command`, `file_absent`, `file_read`, `enemy_dead`, `has_item`, `any`, `all`, ...).
 - **Vocabulary**: the set of step, condition and field kinds the engine understands (`script-types.ts`, `types.ts`).
+- **Dialog box**: the comic box on the play screen (`src/ui/dialog-box.ts`) with an animated 3D-head avatar (`drawPortrait` in `src/renderer/portrait.ts`, 4 stepped poses), speaker name, and one line, animating in on appear and out on disappear. `vibecoder` lines dock on the left (`side-left`, avatar on left); NPC and AI-agent lines dock on the right (`side-right`, avatar on right, stacked above any stage cameo). A level script raises it with the `dialog_box` step; it is not the `dialogue` step (a speech bubble on an obstacle) and not the `<dialog>` of the Steam waitlist.
+- **Timed entry** (`script.timed`): `{ afterSec, steps }`, run when the level's tick counter reaches `afterSec` (game ticks, one a second, paused with the game). Headless solves tick the same way.
+- **Lock** (`script.locks`): `{ command, until, message }`; the command is refused with `message` until the condition `until` holds. Level 1 locks `ls` until `has_item lantern`.
+- **Items strip**: the HUD row with one slot per inventory item (`src/ui/items-strip.ts`): dim = not carried, highlighted = held. `GameSnapshot.inventory` feeds it.
+- **Dark** (`RoomView.dark`): true while the developer does not carry the lantern; the stage then lights him only with his terminal's glow.
 - **Interpreter**: `src/chapters/script.ts`, the only code that acts on a script.
 - **Win rule**: a condition on the world that must hold for the exit gate to open. Not a script condition.
 - **Grant**: hardware or a Kiro core a player already owns when entering a late level directly (`manifest.grants`).

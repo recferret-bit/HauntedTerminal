@@ -1,4 +1,5 @@
 import type { EnemyType, PickupType } from '../game/bestiary.js';
+import type { ItemId } from '../contracts/inventory.js';
 import type { EnemySpawn } from '../game/floors.js';
 import type { ClassicLabFile } from '../game/lab-types.js';
 import type { FloorId, RoomKind } from '../game/types.js';
@@ -80,6 +81,8 @@ export interface ChapterManifest {
   mechanicsSummary: string[];
   /** Hardware and cores owned when a level is entered directly (see `ChapterGrant`). */
   grants?: ChapterGrant[];
+  /** Items he carries when a run starts (default `['lantern', 'terminal']`). */
+  startItems?: ItemId[];
   /** Closing card shown after the last level. */
   outro?: ChapterOutro;
   /** Codex cards this chapter adds to the `bestiary` command and the binder. */
