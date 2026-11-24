@@ -103,7 +103,44 @@ function renderTile(tile: ComixTile): HTMLElement {
   );
 }
 
-/** Fills `host` with one tile per entry. Locked tiles contain no link or button, so they cannot take focus. */
-export function renderComixTiles(host: HTMLElement, tiles: readonly ComixTile[]): void {
-  host.replaceChildren(...tiles.map(renderTile));
+/** A row of tiles under an optional sub header. */
+export interface ComixSection {
+  heading?: string;
+  tiles: ComixTile[];
+}
+
+/**
+ * The page layout: one section per playable chapter, headed `CHAPTER n`, holding the intro, the issue and the outro
+ * (the intro only before the first chapter, the outro only after the last); then one section without a header for the
+ * locked tiles (other chapters and the roadmap). Pure.
+ */
+export function buildComixSections(
+  sequences: readonly SequenceView[],
+  manifests: readonly ManifestView[],
+  progress: ChapterProgressStore,
+  roadmap: readonly number[] = ROADMAP_CHAPTER_NUMBERS,
+): ComixSection[] {
+  const seq = buildSequenceTiles(sequences);
+  const all = buildComixTiles(manifests, progress, roadmap);
+  const open = all.filter((t) => t.kind === 'open');
+  const sections = open.map<ComixSection>((tile, i) => ({
+    heading: roadmapLabel(i + 1),
+    tiles: [...(i === 0 ? seq.filter((t) => t.badge === 'INTRO') : []), tile, ...(i === open.length - 1 ? seq.filter((t) => t.badge === 'OUTRO') : [])],
+  }));
+  const locked = all.filter((t) => t.kind === 'locked');
+  return locked.length ? [...sections, { tiles: locked }] : sections;
+}
+
+/** Fills `host` with the sections. Locked tiles contain no link or button, so they cannot take focus. */
+export function renderComixTiles(host: HTMLElement, sections: readonly ComixSection[]): void {
+  host.replaceChildren(
+    ...sections.map((sec) =>
+      el(
+        'section',
+        { class: 'comix-section' },
+        sec.heading ? el('h2', { class: 'comix-section-head' }, sec.heading) : null,
+        el('div', { class: 'comix-tile-grid' }, ...sec.tiles.map(renderTile)),
+      ),
+    ),
+  );
 }

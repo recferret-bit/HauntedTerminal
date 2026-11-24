@@ -1,13 +1,11 @@
 import { el } from './dom.js';
-import { HOME_HREF, hubItems, type HubItem, type HubTabId } from './tabs.js';
+import { HOME_HREF, hubItems, tabOfPath, type HubItem, type HubTabId } from './tabs.js';
 
 function renderItem(item: HubItem, current: HubTabId): HTMLElement {
   const cls = `comic-btn ${item.tone}`;
   if (item.kind === 'steam') {
-    // On Home the waitlist code finds this button; on every other tab it is a link to Home's dialog.
-    return current === 'home'
-      ? el('button', { type: 'button', class: cls, 'data-open-waitlist': '1' }, item.label)
-      : el('a', { class: cls, href: item.href }, item.label);
+    // The waitlist dialog exists on every hub page (boot.ts); the button opens it in place.
+    return el('button', { type: 'button', class: cls, 'data-open-waitlist': '1' }, item.label);
   }
   const isCurrent = item.kind === 'tab' && item.tab === current;
   return el('a', { class: isCurrent ? `${cls} active` : cls, href: item.href, 'aria-current': isCurrent ? 'page' : undefined }, item.label);
@@ -30,4 +28,14 @@ export function renderHubNav(current: HubTabId, host: HTMLElement | null = docum
       el('div', { class: 'hub-nav-links' }, ...hubItems().map((item) => renderItem(item, current))),
     ),
   );
+}
+
+/** Move the current-tab mark in the header already on the page, without drawing it again (the header never moves). */
+export function markCurrentTab(current: HubTabId, host: HTMLElement | null = document.getElementById('hub-header')): void {
+  host?.querySelectorAll<HTMLAnchorElement>('.hub-brand, .hub-nav-links a').forEach((a) => {
+    const isCurrent = tabOfPath(a.getAttribute('href') ?? '') === current;
+    if (a.classList.contains('comic-btn')) a.classList.toggle('active', isCurrent);
+    if (isCurrent) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+  });
 }

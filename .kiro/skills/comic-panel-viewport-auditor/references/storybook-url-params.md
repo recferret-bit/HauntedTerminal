@@ -1,7 +1,7 @@
 # Storybook: URL parameters and automation
 
 Page: `storybook.html` at the project root, served by `npm start` at
-`http://localhost:5173/storybook.html`. Code: `src/storybook/` (entry `storybook.ts`, parameters in
+`http://localhost:5400/storybook.html`. Code: `src/storybook/` (entry `storybook.ts`, parameters in
 `options.ts`). Every control writes its state back into the URL, so the address bar is always a
 link to what is on screen. Only values that differ from the default are written. Unknown
 parameters are ignored with a `console.warn`.
@@ -67,5 +67,5 @@ Examples:
 starts Vite, opens the page in the installed Chrome (headless, real WebGL), waits for `ready`,
 writes `scripts/harness/out/lab-<stem>.png`, prints the stats, and exits 1 on a page error or a
 blank WebGL frame. `--eval "<js>"` runs in the page before the shot (it may `await`), for example
-`--eval "await __storybook.setOption('state','attack')"`. `--url http://localhost:5173` reuses a
+`--eval "await __storybook.setOption('state','attack')"`. `--url http://localhost:5400` reuses a
 running dev server. `--selftest` shoots the lab fixture and proves Chrome plus WebGL work here.

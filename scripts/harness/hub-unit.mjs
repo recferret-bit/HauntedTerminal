@@ -11,13 +11,21 @@ const rec = (cleared) => ({ cleared, bestRank: 'S', bestCommands: 1, bestTimeSec
 const manifest = (id, status, levels = 3) => ({ id, title: `T ${id}`, subtitle: `S ${id}`, badge: `B ${id}`, status, levels: Array.from({ length: levels }, (_, i) => ({ id: `l${i}` })) });
 
 await withProcgen(async (tiles) => {
-  const { buildComixTiles, buildSequenceTiles } = tiles;
+  const { buildComixTiles, buildSequenceTiles, buildComixSections } = tiles;
 
   await test('intro and outro become Watch tiles by role, with the player href, and ignore other sequences', () => {
     const seq = (id, role, status = 'playable') => ({ id, title: `T ${id}`, subtitle: `S ${id}`, role, status });
     const out = buildSequenceTiles([seq('a b', 'opening'), seq('z', 'ending'), seq('m', 'interlude'), seq('d', 'opening', 'draft')]);
     assert.deepEqual(out.map((t) => [t.key, t.badge, t.kind]), [['a b', 'INTRO', 'sequence'], ['z', 'OUTRO', 'sequence']]);
     assert.equal(out[0].watchHref, '/cinematic.html?play=a%20b');
+  });
+
+  await test('sections: CHAPTER 1 holds intro, issue, outro; chapters 2 to 5 follow without a header', () => {
+    const seq = (id, role) => ({ id, title: id, subtitle: '', role, status: 'playable' });
+    const out = buildComixSections([seq('i', 'opening'), seq('o', 'ending')], [manifest('c1', 'playable')], {});
+    assert.deepEqual(out.map((s) => s.heading), ['CHAPTER 1', undefined]);
+    assert.deepEqual(out[0].tiles.map((t) => t.key), ['i', 'c1', 'o']);
+    assert.deepEqual(out[1].tiles.map((t) => t.title), ['CHAPTER 2', 'CHAPTER 3', 'CHAPTER 4', 'CHAPTER 5']);
   });
 
   await test('a playable chapter is an open tile with progress from cleared levels only', () => {

@@ -37,12 +37,25 @@ export default defineConfig({
       configureServer: (server) => { server.middlewares.use(playPaths()); },
       configurePreviewServer: (server) => { server.middlewares.use(playPaths()); },
     },
+    {
+      // The landing pages draw their header and tiles from a module script. Block the first paint on it (and on the
+      // CSS it pulls in), so a tab switch shows the finished page, never an empty header or unstyled content.
+      name: 'hub-render-blocking',
+      transformIndexHtml: {
+        order: 'post',
+        handler: (html, ctx) =>
+          /^\/(index|desktop|achievements|comix)\.html$/.test(ctx.path)
+            ? html.replace(/<script type="module"/g, '<script type="module" blocking="render"')
+            : html,
+      },
+    },
     // Dev server only: the chapter editor reads and writes chapters/ through /api/chapters, the terminal lab its labs through /api/terminal-lab.
     chapterApi(),
     comixApi(),
     terminalLabApi(),
   ],
-  server: { port: 5173 },
+  // Always 5400: a busy port is an error, never a silent move to the next one (the harness and the docs name this port).
+  server: { port: 5400, strictPort: true },
   build: {
     outDir: project('dist'),
     emptyOutDir: true,

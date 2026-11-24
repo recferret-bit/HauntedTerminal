@@ -44,7 +44,7 @@ src/
   chapter-editor/ # /editor: workstation studio, schema-driven chapter forms, centered game preview, checks (schema.ts is the field table)
   terminal-lab/   # /terminal-lab: test bench for the terminal (lab model, palette, runner, Node and browser drivers, panels); reuses editor-core and the chapter editor's field tables
   laptop/         # /laptop-lab: the developer's laptop emulator. domain (state machine, window reducer, tasks, checks) <- runtime (sandboxed runner, loop guard, sound) <- ui (CSS 3D laptop, desktop, apps) <- lab
-  hub/            # the landing: hub.ts (Home), page-{desktop,achievements,comix}.ts, nav.ts + tabs.ts (shared header), boot.ts, comix-tiles.ts, roadmap.ts, trophy-rack.ts, portable-saves.ts, waitlist.ts
+  hub/            # the landing: app.ts (the one entry) + router.ts (in-page tab switching), hub.ts (Home) and page-{desktop,achievements,comix}.ts (each exports `mount()`), nav.ts + tabs.ts (shared header), waitlist-dialog.ts, boot.ts, comix-tiles.ts, roadmap.ts, trophy-rack.ts, portable-saves.ts, waitlist.ts
   play/           # play page composition (bootstrap). main.ts only starts it
   styles/         # game.css, hub.css, editor-workstation.css, chapter-editor.css, comix-editor.css, terminal-lab.css, laptop.css, laptop-lab.css
   main.ts         # play page (/)

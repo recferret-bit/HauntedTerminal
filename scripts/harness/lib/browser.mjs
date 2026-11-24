@@ -1,6 +1,6 @@
 // Headless Chrome over the DevTools protocol, no npm dependency. Used by editor-smoke.mjs.
 //   const b = await launchBrowser({ width: 1600, height: 900 });
-//   await b.open('http://127.0.0.1:5173/editor'); await b.evaluate('document.title'); await b.shoot('x.png'); await b.close();
+//   await b.open('http://127.0.0.1:5400/editor'); await b.evaluate('document.title'); await b.shoot('x.png'); await b.close();
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

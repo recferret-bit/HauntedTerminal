@@ -2,7 +2,7 @@
 // Drives the Terminal Lab (/terminal-lab) in headless Chrome. Exit 0 = every check passed.
 //   node scripts/harness/terminal-lab-smoke.mjs                         own Vite on 5345, labs API on a temporary copy
 //   node scripts/harness/terminal-lab-smoke.mjs --width 1280 --height 820
-//   node scripts/harness/terminal-lab-smoke.mjs --url http://localhost:5173   a running server (repo writes are skipped)
+//   node scripts/harness/terminal-lab-smoke.mjs --url http://localhost:5400   a running server (repo writes are skipped)
 // Screenshots: scripts/harness/out/terminal-lab-*.png.
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

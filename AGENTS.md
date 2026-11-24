@@ -77,7 +77,7 @@ Read the matching `.kiro/skills/<skill>/SKILL.md` before working in its area; ne
 
 ## Commands & Verification Gates
 
-- **Stack**: `npm start` (background Vite on `http://localhost:5173`, waits until ready; log at `scripts/harness/out/stack/stack.log`), `npm stop`, `npm restart`, `npm run status`, `STACK_PORT=5174 npm start` (prefer `STACK_PORT=` over `--port`). Never run foreground `npm run dev` from an agent shell.
+- **Stack**: `npm start` (background Vite on `http://localhost:5400`, waits until ready; log at `scripts/harness/out/stack/stack.log`), `npm stop`, `npm restart`, `npm run status`, `STACK_PORT=5174 npm start` (prefer `STACK_PORT=` over `--port`). Never run foreground `npm run dev` from an agent shell.
 - **Chapters & Chapter Editor (`/editor`)**: `node scripts/harness/generate-chapter.mjs` (`--validate`, `--check`, `--verify`), `node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs`, `node scripts/harness/editor-unit-test.mjs`, `node scripts/harness/editor-smoke.mjs`.
 - **Comix & Comix Editor (`/comix-editor`)**: `node scripts/harness/generate-comix.mjs` (`--validate`, `--check`, `--verify`), `node scripts/harness/validate-comix.mjs`, `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs`, `node scripts/harness/comix-editor-smoke.mjs`.
 - **Terminal Lab (`/terminal-lab`)**: `node scripts/harness/terminal-lab.mjs --all` (`--run <file>`, `--transcript`), `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs`, `node scripts/harness/terminal-lab-smoke.mjs` (also `--width 1280 --height 820`). Spec: `.kiro/specs/inventory/items/terminal/`.

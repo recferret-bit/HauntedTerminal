@@ -278,11 +278,11 @@ export function wireSteamWaitlist(onSaved: (entry: WaitlistEntry) => void): void
   const closeBtn = document.getElementById('waitlist-close-btn') as HTMLButtonElement | null;
 
   syncSteamCtaLabels(document, STEAM_RELEASE_META);
-  document.querySelectorAll<HTMLElement>('[data-open-waitlist]').forEach((btn) => {
-    btn.addEventListener('click', (ev) => {
-      ev.preventDefault();
-      openWaitlistModal(dialog);
-    });
+  // Delegated: the Home hero button arrives with the page content, after this runs.
+  document.addEventListener('click', (ev) => {
+    if (!(ev.target instanceof Element) || !ev.target.closest('[data-open-waitlist]')) return;
+    ev.preventDefault();
+    openWaitlistModal(dialog);
   });
 
   if (!dialog || !form || !emailInput || !platformSelect) return;

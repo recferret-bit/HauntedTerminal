@@ -235,6 +235,9 @@ a { color: inherit; }
   gap: 8px;
 }
 
+/* Each section starts after a wider gap than the 22px between its own heading and content. */
+.hub-shell > .section-head:not(:first-child) { margin-top: 38px; }
+
 .section-head h2 {
   font-family: var(--display);
   font-size: 18px;
