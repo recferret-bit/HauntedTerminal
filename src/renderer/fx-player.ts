@@ -26,6 +26,7 @@ export const FX_IDS = [
   'fx.flood-splash',
   'fx.door-unlock',
   'fx.coredump',
+  'fx.matrix-cast',
 ] as const;
 
 export type FxId = (typeof FX_IDS)[number];
@@ -53,6 +54,10 @@ export interface FxPlayOptions {
   scale?: number;
   /** Multiplies the preset's flash (storm strikes are dimmer than the intro). 0 = no flash. */
   flashMul?: number;
+  /** Optional 3D object whose position this emission follows while alive (e.g. hero during a hop/walk). */
+  follow?: THREE.Object3D;
+  /** Vertical offset above `follow.position.y`. */
+  followY?: number;
 }
 
 const GLYPHS = new Set('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?+-/.x()>_#% '.split(''));
@@ -72,9 +77,16 @@ export function fxText(text: string): string {
   return out.replace(/\s+/g, ' ').trim().slice(0, 18);
 }
 
+interface LiveFx {
+  fx: FxEmitter;
+  follow?: THREE.Object3D;
+  followY: number;
+  zOffset: number;
+}
+
 /** A pool of live `createFxEmitter` emissions, stepped and lit by the stage. */
 export class FxPlayer {
-  private readonly live: FxEmitter[] = [];
+  private readonly live: LiveFx[] = [];
   private plays = 0;
   /** Every preset id played since construction (the dev self-check counts it). */
   readonly played = new Set<string>();
@@ -109,13 +121,15 @@ export class FxPlayer {
       if (text !== ' ') this.host.word(preset, at, text, { mirror: opts.mirror, scale: opts.scale });
       text = ' ';
     }
-    const fx = createFxEmitter(preset, { seed: ++this.plays, text });
-    fx.group.position.set(at.x, at.y, at.z - 0.5);
+    const seed = ((Math.floor(Math.random() * 0x7fffffff) ^ (++this.plays * 2654435761)) >>> 0) || 1;
+    const fx = createFxEmitter(preset, { seed, text });
+    const zOffset = preset.wrapActor ? 0 : -0.5;
+    fx.group.position.set(at.x, at.y, at.z + zOffset);
     const s = opts.scale ?? 1;
     fx.group.scale.set(opts.mirror ? -s : s, s, s);
     fx.group.renderOrder = 4;
     this.host.layer.add(fx.group);
-    this.live.push(fx);
+    this.live.push({ fx, follow: opts.follow, followY: opts.followY ?? 0, zOffset });
     this.played.add(id);
     this.counts.set(id, (this.counts.get(id) ?? 0) + 1);
     if (preset.shake && !opts.noShake) this.host.shake(preset.shake);
@@ -131,7 +145,9 @@ export class FxPlayer {
   update(dtMs: number, flashStrength: number, flashPos: THREE.Vector3): void {
     this.clock += dtMs;
     for (let i = this.live.length - 1; i >= 0; i--) {
-      const fx = this.live[i]!;
+      const entry = this.live[i]!;
+      const { fx, follow, followY, zOffset } = entry;
+      if (follow?.parent) fx.group.position.set(follow.position.x, follow.position.y + followY, follow.position.z + zOffset);
       fx.update(dtMs);
       for (const mat of fx.materials) {
         if (mat.uniforms.uFlash) mat.uniforms.uFlash.value = flashStrength;
@@ -146,7 +162,7 @@ export class FxPlayer {
   }
 
   clear(): void {
-    this.live.forEach((fx) => fx.dispose());
+    this.live.forEach(({ fx }) => fx.dispose());
     this.live.length = 0;
   }
 }

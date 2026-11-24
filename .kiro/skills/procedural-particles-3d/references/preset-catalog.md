@@ -1,6 +1,6 @@
 # Shipped FX presets
 
-All 23 live in `src/procgen/fx/presets.ts` and are registered in `FxCatalog` on import.
+All 24 live in `src/procgen/fx/presets.ts` and are registered in `FxCatalog` on import.
 Columns: layers are `name:role:zone x count emission` (`p` primary, `s` secondary, `a` accent).
 Regenerate the picture with `npm run procgen:fx -- --sheet` and open `scripts/harness/out/fx.png`.
 
@@ -29,6 +29,7 @@ Regenerate the picture with `npm run procgen:fx -- --sheet` and open `scripts/ha
 | `fx.flood-splash` | system | ROOM_TRANSITION | 620 | SPLASH! (burst, `dataCyan`) | | drop:p:`dataCyan`x9 cone; foam:s:`glass`x4 line; fleck:a:`paper`x7 cone |
 | `fx.door-unlock` | system | PUZZLE_DOOR_RESOLVED | 560 | UNLOCKED! (burst, `phosphor`) | | ok:p:`phosphor`x1 burst; echo:p:`phosphor`x1 burst; contact:s:`gold`x7 burst; glint:a:`paper`x3 ring |
 | `fx.coredump` | system | GAME_TICK | 1100 | COREDUMP! (glitch, `lockRed`) | 2 / 3, full panel | page-left:p:`paper`x3 line; page-right:p:`paper`x3 line; tear:s:`ink`x1 burst; glitch:a:`lockRed`x10 line |
+| `fx.matrix-cast` | system | VIBECODER_ACTION | 680 | | | stream:p:`matrixBright`x12 orbit; trail:s:`matrixDark`x12 orbit; head:a:`matrixGlow`x3 orbit |
 
 Moment words required by the game design and enforced by
 `FX_MOMENT_WORDS`: HOP!, PANEL SMASH x3!, PERMISSION DENIED!, CLANK!, REVEAL!, SIGKILL!,
@@ -61,3 +62,4 @@ and the amounts) are this catalog's own and may be changed.
 | `fx.lightning-strike` | A 4-unit cyan bolt with a white core held for 3 frames, ground star, amber sparks | See [comic-lighting-and-lightning](../../comic-lighting-and-lightning/SKILL.md) |
 | `fx.flood-splash` | Cyan drops arcing up and falling, pale foam on the water line, white flecks | Origin on the water line |
 | `fx.coredump` | A black tear with a paper keyline down the panel, six torn page strips sliding apart, red glitch bars | Full panel; the last effect the player sees before a restart |
+| `fx.matrix-cast` | 3 intertwined 3D Matrix Katakana streams (`matrixGlow` heads, `matrixBright` neon green bodies, `matrixDark` emerald trails) orbiting behind & in front of the vibecoder with 3D yaw and stepped glyph flicker | Random swirl direction, tilt, phase, and glyphs on every command; wraps actor in 3D, no word or shake |

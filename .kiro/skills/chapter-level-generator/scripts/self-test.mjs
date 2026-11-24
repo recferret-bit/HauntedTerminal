@@ -152,10 +152,29 @@ await withProcgen(async (_p, vite) => {
     timeline.push(...r.events);
     kiroSeen.push(r.snapshot.room.actors.some((a) => a.id === 'kiro' && a.model === 'npc.kiro_ghost'));
   }
-  assert.ok(timeline.filter((e) => isBox(e, 'vibecoder')).length >= 3, 'The vibecoder talks to himself in dialog boxes');
-  assert.ok(timeline.some((e) => isBox(e, 'kiro')), 'Kiro Ghost speaks in a dialog box');
+  const boxes = timeline.filter((e) => e.type === 'DIALOG_BOX').map((e) => e.speaker);
+  for (const villain of ['antigravy', 'codec', 'gork', 'clod']) {
+    assert.ok(timeline.some((e) => isBox(e, villain)), `Big Four speaker ${villain} laughs at Vibecoder in a dialog box`);
+  }
+  const lastMonologueIdx = boxes.indexOf('vibecoder', 2);
+  const firstVillainIdx = boxes.indexOf('antigravy');
+  const lastVillainIdx = boxes.indexOf('clod');
+  const shockBoxIdx = boxes.lastIndexOf('vibecoder');
+  const firstKiroIdx = boxes.indexOf('kiro');
+  assert.ok(
+    lastMonologueIdx >= 2 && firstVillainIdx > lastMonologueIdx && lastVillainIdx >= firstVillainIdx + 3,
+    'Big Four small talk follows Vibecoder initial monologue',
+  );
+  assert.ok(shockBoxIdx > lastVillainIdx && firstKiroIdx > shockBoxIdx, 'Vibecoder reacts in shock after Big Four before Kiro introduces himself');
+  assert.ok(
+    timeline.some((e) => e.type === 'VIBECODER_EMOTE' && e.emote === 'shock'),
+    'Vibecoder shows shock emote after Big Four small talk',
+  );
+  assert.ok(timeline.filter((e) => isBox(e, 'vibecoder')).length >= 4, 'Vibecoder talks to himself and reacts in shock in dialog boxes');
+  assert.ok(timeline.some((e) => isBox(e, 'kiro')), 'Kiro Ghost introduces himself in a dialog box');
   assert.ok(timeline.some((e) => e.type === 'ENTITY_SPAWNED' && e.entityId === 'kiro' && e.entrance === 'glide'), 'Kiro glides in');
   assert.equal(kiroSeen[5], false, 'Kiro is not on stage before his entrance');
+  assert.equal(kiroSeen[15], false, 'Kiro is not on stage yet during Vibecoder shock');
   assert.equal(kiroSeen[23], true, 'After the entrance, Kiro Ghost (npc.kiro_ghost) is on stage');
   // Even after 24 real-time ticks in Level 1 Tutorial, player takes 0 damage (tutorial truce)
   const startHp = kiroRealtime.snapshot().hp;

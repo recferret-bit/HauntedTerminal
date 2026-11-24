@@ -23,7 +23,7 @@ export function clearBubble(stage: ComicStage): void {
   stage.bubble = null;
 }
 
-export function playFx(stage: ComicStage, id: FxId, at: THREE.Vector3, opts: { text?: string; scale?: number; noShake?: boolean; mirror?: boolean; flashMul?: number } = {}, key?: string): void {
+export function playFx(stage: ComicStage, id: FxId, at: THREE.Vector3, opts: { text?: string; scale?: number; noShake?: boolean; mirror?: boolean; flashMul?: number; follow?: THREE.Object3D; followY?: number } = {}, key?: string): void {
   try {
     // Lettering must stay on the page: pull worded effects in from the panel edges.
     const preset = stage.fxPlayer.preset(id);
@@ -58,7 +58,10 @@ export function playCues(stage: ComicStage, cues: FxCue[], subject: StageActor |
       const pos = at && (anchor === 'hand' || anchor.startsWith('subject')) && !who ? at.clone() : anchorPoint(stage, anchor, who);
       const mirror = c.id === 'fx.mv-dust' && who ? ((who as StageActor & { moveDir?: number }).moveDir ?? -1) > 0 : false;
       const key = who?.id ?? (ev ? ev.type : 'stage');
-      playFx(stage, c.id, pos, { text: c.text, scale: c.scale, noShake: repeat, mirror }, key);
+      const hero = anchor === 'vibecoder-body' ? stage.hero() : null;
+      const follow = hero && !hero.disposed ? hero.group : undefined;
+      const followY = hero ? hero.height * 0.52 : undefined;
+      playFx(stage, c.id, pos, { text: c.text, scale: c.scale, noShake: repeat, mirror, follow, followY }, key);
     });
   }
 }

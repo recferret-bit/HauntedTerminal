@@ -13,7 +13,7 @@ import type { FxId } from './fx-player.js';
  *   panel-floor           the floor line in the middle of the main panel
  */
 export type FxAnchor =
-  | 'vibecoder' | 'hero-feet' | 'subject' | 'subject-feet' | 'subject-lock'
+  | 'vibecoder' | 'vibecoder-body' | 'hero-feet' | 'subject' | 'subject-feet' | 'subject-lock'
   | 'devnull' | 'flood' | 'hand' | 'panel' | 'panel-floor';
 
 export interface FxCue {
@@ -29,7 +29,7 @@ export interface FxCue {
 const cue = (id: FxId, anchor: FxAnchor, delayMs = 0, text?: string, scale?: number): FxCue => ({ id, anchor, delayMs, text, scale });
 
 /**
- * The event -> FX table. Every KernelEvent variant that has an effect, and every one of the 23 presets.
+ * The event -> FX table. Every KernelEvent variant that has an effect, and every one of the 24 presets.
  * Beats follow ANIM_EVENT_MAP (src/procgen/anim/events.ts) and the death beats of the malware sheets
  * (`collapse` at 250 ms). Storm strikes and the intro play `fx.lightning-strike` from the stage clock.
  */
@@ -111,7 +111,7 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
     case 'FLOOR_ENTERED':
       return [];
     case 'VIBECODER_ACTION':
-      return [];
+      return [cue('fx.matrix-cast', 'vibecoder-body', 0)];
     case 'GAME_ENDED':
       return [cue('fx.lightning-strike', 'panel-floor')];
     default:

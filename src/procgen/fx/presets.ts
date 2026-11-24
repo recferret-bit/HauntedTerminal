@@ -1,7 +1,7 @@
 import { FxCatalog } from './catalog.js';
 import {
-  fxBlock, fxBolt, fxCrystal, fxDisc, fxDrop, fxGlyph, fxPuff, fxRing, fxShard, fxSpark, fxSparkle, fxSpeedLine,
-  fxSplat, fxStarburst, fxTornStrip,
+  fxBlock, fxBolt, fxCrystal, fxDisc, fxDrop, fxGlyph, fxMatrixGlyph, fxMatrixGlyphSet, fxPuff, fxRing, fxShard, fxSpark,
+  fxSparkle, fxSpeedLine, fxSplat, fxStarburst, fxTornStrip, FX_MATRIX_GLYPHS,
 } from './shapes.js';
 import type { FxKey, FxPreset } from './types.js';
 
@@ -370,6 +370,36 @@ const presets: FxPreset[] = [
       { name: 'glitch', role: 'accent', zone: 'lockRed', shape: fxBlock(0.3, 0.09), count: 10, emit: 'line', spawn: { width: 2.6, height: 3 }, angle: [0, 0], speed: [0.5, 2], drag: 6, delayMs: [0, 600], lifeMs: [170, 330], size: [0.7, 1.4], scale: [[0, 1], [0.5, 0.6]] },
     ],
     onomatopoeia: { text: 'COREDUMP!', zone: 'lockRed', style: 'glitch', holdMs: 1000, offset: [-1.45, 2.3], size: 0.4 },
+  },
+  {
+    id: 'fx.matrix-cast',
+    label: 'Terminal Matrix 3D swirl',
+    family: 'system',
+    trigger: { event: 'VIBECODER_ACTION', moment: 'matrix-cast', when: 'always: the player runs a command in the terminal and 3D Matrix streams swirl around the vibecoder' },
+    anchor: 'center',
+    wrapActor: true,
+    durationMs: 680,
+    stepFps: 15,
+    layers: [
+      {
+        name: 'stream', role: 'primary', zone: 'matrixBright', shape: fxMatrixGlyph('fu', 0.25), shapes: fxMatrixGlyphSet(FX_MATRIX_GLYPHS, 0.25),
+        count: 12, emit: 'orbit', origin: [0, -0.14], spawn: { radius: [0.72, 0.92], height: 0.34 }, orbitDepth: 0.5, orbitSweep: [250, 320],
+        orbitRise: [0.72, 1.05], orbitTilt: 20, orbitStreams: 3, orbitLag: 26, orbitTrailY: -0.06, glyphSwapSteps: 2,
+        delayMs: [0, 70], lifeMs: [440, 580], size: [0.88, 1.12], scale: [[0, 1.15], [0.4, 1], [0.75, 0.75], [0.9, 0.45]],
+      },
+      {
+        name: 'trail', role: 'secondary', zone: 'matrixDark', shape: fxMatrixGlyph('ko', 0.21), shapes: fxMatrixGlyphSet(FX_MATRIX_GLYPHS, 0.21),
+        count: 12, emit: 'orbit', origin: [0, -0.22], spawn: { radius: [0.8, 0.98], height: 0.36 }, orbitDepth: 0.54, orbitSweep: [230, 300],
+        orbitRise: [0.65, 0.98], orbitTilt: 20, orbitStreams: 3, orbitLag: 78, orbitTrailY: -0.16, glyphSwapSteps: 3,
+        delayMs: [40, 130], lifeMs: [380, 520], size: [0.85, 1.1], scale: [[0, 1], [0.5, 0.8], [0.8, 0.5]],
+      },
+      {
+        name: 'head', role: 'accent', zone: 'matrixGlow', shape: fxMatrixGlyph('yo', 0.22), shapes: fxMatrixGlyphSet(['fu', 'te', 'hi', 'yo', 're', 'one'], 0.22),
+        count: 3, emit: 'orbit', origin: [0, -0.04], spawn: { radius: [0.7, 0.86], height: 0.24 }, orbitDepth: 0.5, orbitSweep: [270, 330],
+        orbitRise: [0.8, 1.12], orbitTilt: 20, orbitStreams: 3, orbitLag: 0, orbitTrailY: 0.04, glyphSwapSteps: 2,
+        delayMs: [0, 30], lifeMs: [360, 480], size: [0.95, 1.1], scale: [[0, 1.25], [0.35, 1], [0.75, 0.65]],
+      },
+    ],
   },
 ];
 

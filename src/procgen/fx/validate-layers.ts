@@ -45,6 +45,8 @@ function emitProblems(layer: FxLayer): string | null {
       return moving || (layer.gravity ?? 0) > 0 ? null : '`rain` needs `speed` or `gravity`';
     case 'burst':
       return null;
+    case 'orbit':
+      return radius && radius[1] > 0 ? null : '`orbit` needs `spawn.radius`';
   }
 }
 
@@ -133,25 +135,28 @@ export function checkLayers(preset: FxPreset, add: FxAdd): LayerStats {
     lastParticleMs: 0,
   };
   for (const layer of preset.layers ?? []) {
-    const soup = fxShapeSoup(layer.shape);
+    const soups = (layer.shapes?.length ? layer.shapes : [layer.shape]).map((sp) => fxShapeSoup(sp));
     const scaleBad = checkKeysAndEmit(layer, add);
     const peakScale = peak(layer.scale);
     const sizeMin = layer.size?.[0] ?? 1, sizeMax = layer.size?.[1] ?? 1;
-    const across = Math.max(soup.size[0], soup.size[1]);
     const count = Math.max(0, layer.count | 0);
+    const avgArea = soups.reduce((acc, sp) => acc + sp.frontArea, 0) / soups.length;
+    const maxTris = Math.max(...soups.map((sp) => sp.triCount));
+    const minAcross = Math.min(...soups.map((sp) => Math.max(sp.size[0], sp.size[1])));
+    const maxAcross = Math.max(...soups.map((sp) => Math.max(sp.size[0], sp.size[1])));
     stats.instances += count;
-    stats.triangles += count * soup.triCount;
-    if (layer.role in stats.area) stats.area[layer.role] += count * soup.frontArea * Math.pow(peakScale * (sizeMin + sizeMax) / 2, 2);
-    const smallPx = across * peakScale * sizeMin * L.pxPerUnit;
+    stats.triangles += count * maxTris;
+    if (layer.role in stats.area) stats.area[layer.role] += count * avgArea * Math.pow(peakScale * (sizeMin + sizeMax) / 2, 2);
+    const smallPx = minAcross * peakScale * sizeMin * L.pxPerUnit;
     stats.minParticlePx = Math.min(stats.minParticlePx, smallPx);
-    stats.vibecoderShapePx = Math.max(stats.vibecoderShapePx, across * peakScale * sizeMax * L.pxPerUnit);
+    stats.vibecoderShapePx = Math.max(stats.vibecoderShapePx, maxAcross * peakScale * sizeMax * L.pxPerUnit);
     if (smallPx < L.minParticlePx) {
       add('error', 'FX_SIZE', `chunks are ${smallPx.toFixed(1)} px at their peak (min ${L.minParticlePx}): the pixel-art pass will eat them`, layer.name);
     }
     if (!scaleBad && layer.scale[0]![1] < peakScale * 0.55) {
       add('warning', 'FX_POP', `starts at ${layer.scale[0]![1]} and grows to ${peakScale}: comic effects pop on near full size; they do not grow in`, layer.name);
     }
-    checkDepth(layer, soup.size, across, add);
+    for (const sp of soups) checkDepth(layer, sp.size, Math.max(sp.size[0], sp.size[1]), add);
     stats.lastParticleMs = Math.max(stats.lastParticleMs, (layer.delayMs?.[1] ?? 0) + (layer.lifeMs?.[1] ?? 0));
   }
   return stats;

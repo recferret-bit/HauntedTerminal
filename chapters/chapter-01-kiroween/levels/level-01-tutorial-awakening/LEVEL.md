@@ -9,8 +9,10 @@ He starts in the dark with only his terminal in hand (`manifest.startItems: ["te
 | Level tick | What happens |
 |---|---|
 | 1, 3, 5 | Dialog box, VIBECODER monologue: "What is going on?!", "Where am I?", dark and no lantern. |
-| 13 | Kiro Ghost glides in (`spawn.entrance: glide`), scans, speaks, tutorial card 1 appears. |
-| 16, 20 | Kiro tells him to take the lantern: `mv lantern ~`. |
+| 7, 9, 11, 13 | Big Four small talk (Anti-Gravy, Codec, Gork, Clod): each laughs at Vibecoder and warns he must type all commands manually and even write code manually. |
+| 15 | Vibecoder shock emote (`WRITE CODE MANUALLY?!`) and shocked dialog box line. |
+| 17 | Kiro Ghost glides in (`spawn.entrance: glide`), scans, introduces himself in dialog box, tutorial card 1 appears. |
+| 20, 23 | Kiro tells him to take the lantern: `mv lantern ~`. |
 
 Timed entries fire on world ticks (`script.timed`), not on commands. Input is never blocked: he may type `mv lantern ~` at any time.
 

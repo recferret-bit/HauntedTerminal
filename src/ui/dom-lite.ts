@@ -17,5 +17,8 @@ export function replayClass(node: HTMLElement, cls: string): void {
   node.classList.add(cls);
 }
 
-/** Draws a model's portrait: the renderer's `drawPortrait`, injected by `src/play` because `src/ui` imports no three. */
-export type DrawPortrait = (modelId: string, px: number) => HTMLCanvasElement;
+/** Number of stepped head animation frames per character portrait. */
+export const PORTRAIT_FRAMES = 4;
+
+/** Draws a model's portrait (with optional animation frame `0..PORTRAIT_FRAMES - 1`): injected by `src/play` because `src/ui` imports no three. */
+export type DrawPortrait = (modelId: string, px: number, frame?: number) => HTMLCanvasElement;

@@ -273,6 +273,16 @@ export default async function gameplaySuite(ctx) {
         }),
     },
     {
+      name: 'every non-empty terminal command in play emits a VIBECODER_ACTION event',
+      build: () =>
+        fc.property(deepPlay, ([levelIdx, steps]) =>
+          watch(levelIdx, steps, (_s, before, r, step) => {
+            if (typeof step !== 'string' || !step.trim() || before.ended) return;
+            expect(r.events.some((e) => e.type === 'VIBECODER_ACTION'), `no VIBECODER_ACTION emitted for ${JSON.stringify(step)}`);
+          }),
+        ),
+    },
+    {
       // A guard on the generators, not on the game: the properties above only mean something while random play reaches
       // kills, pickups and level changes. If a future solution or level change stops that, this fails first.
       name: 'random play still reaches the interesting states (kills, pickups, enemy attacks, leaving a level)',

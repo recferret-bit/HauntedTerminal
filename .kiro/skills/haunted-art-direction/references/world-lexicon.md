@@ -87,7 +87,7 @@ Every door has a metal or plastic shell, visible contacts, a status LED part nam
 | `prop.cables` |  | Ribbon-cable cobweb / hanging cable bundle |
 | `prop.crt` |  | Dead CRT monitor with a `glass` screen. Floor 1 |
 | `prop.tombstone` |  | A log tombstone: a chip package stood on end with `FATAL` ink lines. Floor 2 |
-| `npc.kiro_ghost` |  | `kiro.d`: self-hosted Ghost companion (`localhost` `.gguf` daemon). Articulated 8-petal `paper` and `gold` polyhedral shell orbiting a `dataCyan` diamond optic |
+| `npc.kiro_ghost` |  | `kiro.d`: self-hosted Ghost companion (`localhost` `.gguf` daemon). Swooshing `paper`-white Kiro sheet ghost with a trailing screen-left tail, two rounded bottom hem lobes, and two sleek vertical `ink` oval eyes looking screen-right |
 
 ## Rooms
 

@@ -157,6 +157,48 @@ export function fxGlyph(name: FxGlyphName, size: number): ShapeSpec {
   }
 }
 
+export type FxMatrixGlyphName = 'fu' | 'ko' | 'hi' | 'te' | 're' | 'se' | 'yo' | 'one';
+
+export const FX_MATRIX_GLYPHS: readonly FxMatrixGlyphName[] = ['fu', 'ko', 'hi', 'te', 're', 'se', 'yo', 'one'];
+
+/**
+ * Slender Katakana / digital-rain 3D relief glyphs for the Matrix swirl (width ~0.64x height).
+ * Thick enough (0.06 depth) that turning in 3D reveals faceted cel-shaded side edges.
+ */
+export function fxMatrixGlyph(name: FxMatrixGlyphName, size: number): ShapeSpec {
+  const h = size / 2, w = size * 0.32, s = size * 0.16;
+  const d = 0.06;
+  switch (name) {
+    case 'fu':
+      return extrude([[-w, h], [-w, h - s], [w - 1.3 * s, h - s], [-0.45 * w, -h], [-0.45 * w + 1.25 * s, -h], [w, h - s], [w, h]], d, 0);
+    case 'ko':
+      return extrude([[-w, h], [-w, h - s], [w - s, h - s], [w - s, -h + s], [-w, -h + s], [-w, -h], [w, -h], [w, h]], d, 0);
+    case 'hi':
+      return extrude([[-w, h], [-w, -h], [w, -h], [w, -h + s], [-w + s, -h + s], [-w + s, 0.1 * h], [0.9 * w, 0.32 * h], [0.9 * w, 0.32 * h + s], [-w + s, 0.1 * h + s], [-w + s, h]], d, 0);
+    case 'te':
+      return extrude([[-w, h], [-w, h - s], [-0.5 * s, h - s], [-0.5 * s, -0.05 * h], [-0.85 * w, -h], [-0.85 * w + 1.2 * s, -h], [0.5 * s, -0.05 * h], [0.5 * s, h - s], [w, h - s], [w, h]], d, 0);
+    case 're':
+      return extrude([[-w, h], [-w, -h], [-w + 1.2 * s, -h], [w, 0.15 * h], [w, 0.15 * h + s], [-w + s, -h + 1.45 * s], [-w + s, h]], d, 0);
+    case 'se':
+      return extrude([
+        [-w, 0.38 * h], [-w, 0.38 * h - s], [-0.48 * w, 0.38 * h - s], [-0.48 * w, -h], [w, -h], [w, -h + s],
+        [-0.48 * w + s, -h + s], [-0.48 * w + s, 0.38 * h - s], [w - s, 0.38 * h - s], [w - s, -0.22 * h],
+        [w, -0.22 * h], [w, 0.38 * h], [-0.48 * w + s, 0.38 * h], [-0.48 * w + s, h], [-0.48 * w, h], [-0.48 * w, 0.38 * h],
+      ], d, 0);
+    case 'yo':
+      return extrude([[-w, h], [-w, h - s], [w - s, h - s], [w - s, 0.5 * s], [-0.85 * w, 0.5 * s], [-0.85 * w, -0.5 * s], [w - s, -0.5 * s], [w - s, -h + s], [-w, -h + s], [-w, -h], [w, -h], [w, h]], d, 0);
+    case 'one':
+      return extrude([
+        [-0.3 * w, h], [-w, h - 1.3 * s], [-w + 0.75 * s, h - 1.9 * s], [-0.5 * s, h - 1.05 * s], [-0.5 * s, -h + s],
+        [-0.85 * w, -h + s], [-0.85 * w, -h], [0.85 * w, -h], [0.85 * w, -h + s], [0.5 * s, -h + s], [0.5 * s, h],
+      ], d, 0);
+  }
+}
+
+export function fxMatrixGlyphSet(names: readonly FxMatrixGlyphName[], size: number): ShapeSpec[] {
+  return names.map((n) => fxMatrixGlyph(n, size));
+}
+
 /** Triangle soup of one chunk in page space. The validator, the node preview and nothing else read this. */
 export interface FxSoup {
   /** 9 floats per triangle. */

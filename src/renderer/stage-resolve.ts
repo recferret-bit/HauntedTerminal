@@ -121,6 +121,8 @@ export function anchorPoint(stage: ComicStage, anchor: FxAnchor, subject: StageA
   switch (anchor) {
     case 'vibecoder':
       return hero ? actorSocket(hero, 'fx') : panel;
+    case 'vibecoder-body':
+      return hero ? new THREE.Vector3(hero.group.position.x, hero.group.position.y + hero.height * 0.52, hero.group.position.z) : panel;
     case 'hero-feet':
       return hero ? hero.group.position.clone() : panel.setY(stage.feetY);
     case 'subject':

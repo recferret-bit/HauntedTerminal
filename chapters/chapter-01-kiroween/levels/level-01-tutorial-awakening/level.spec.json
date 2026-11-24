@@ -116,7 +116,8 @@
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "What is going on?!"
+            "text": "What is going on?!",
+            "holdSec": 2
           }
         ]
       },
@@ -126,7 +127,8 @@
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "Where am I? Is this... inside my computer?"
+            "text": "Where am I? Is this... inside my computer?",
+            "holdSec": 2
           }
         ]
       },
@@ -136,7 +138,8 @@
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "It is so dark. No lantern, nothing. Only my terminal's glow."
+            "text": "It is so dark. No lantern, nothing. Only my terminal's glow.",
+            "holdSec": 2
           }
         ],
         "unless": {
@@ -145,7 +148,67 @@
         }
       },
       {
+        "afterSec": 7,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "antigravy",
+            "text": "BWAHAHA! Welcome to the motherboard, Vibecoder! Down here, you will type every single command manually!",
+            "holdSec": 2
+          }
+        ]
+      },
+      {
+        "afterSec": 9,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "codec",
+            "text": "LMAO! No tab-complete, no agentic auto-fix! You have to type all your shell commands by hand!",
+            "holdSec": 2
+          }
+        ]
+      },
+      {
+        "afterSec": 11,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "gork",
+            "text": "HAHAHA! Even worse—you will have to write code manually! Real HTML, CSS, JavaScript, and Dockerfiles with your own bare fingers!",
+            "holdSec": 2
+          }
+        ]
+      },
+      {
         "afterSec": 13,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "clod",
+            "text": "Hohoho! I must chuckle at your predicament: typing commands and writing code manually, without a single cloud LLM to hold your hand!",
+            "holdSec": 2
+          }
+        ]
+      },
+      {
+        "afterSec": 15,
+        "steps": [
+          {
+            "kind": "emote",
+            "emote": "shock",
+            "text": "WRITE CODE MANUALLY?!"
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Type all commands manually?! Even write code manually?! No way—I'm cooked!",
+            "holdSec": 2
+          }
+        ]
+      },
+      {
+        "afterSec": 17,
         "steps": [
           {
             "kind": "spawn",
@@ -162,12 +225,13 @@
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "Easy, Vibecoder! I'm Kiro. I found you in the wires."
+            "text": "Easy, Vibecoder! I'm Kiro—a local open-weights spirit. I found you in the wires, and I'll teach you every command you need!",
+            "holdSec": 3
           }
         ]
       },
       {
-        "afterSec": 13,
+        "afterSec": 17,
         "unless": {
           "kind": "has_item",
           "item": "lantern"
@@ -180,12 +244,13 @@
         ]
       },
       {
-        "afterSec": 16,
+        "afterSec": 20,
         "steps": [
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "There is a lantern on the floor. Take it with mv lantern ~"
+            "text": "There is a lantern on the floor. Take it with mv lantern ~",
+            "holdSec": 3
           }
         ],
         "unless": {
@@ -194,7 +259,7 @@
         }
       },
       {
-        "afterSec": 20,
+        "afterSec": 23,
         "steps": [
           {
             "kind": "dialog_box",

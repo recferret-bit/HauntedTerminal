@@ -370,7 +370,7 @@ function runSwapFinale(stage: StageLike, advance: (ms: number) => void, cast: Ca
 
 /**
  * Feeds the stage every event variant twice, garbage, ids that already left, a room change in the
- * middle of effects, then steps frames and checks: no errors caught anywhere, all 23 presets played,
+ * middle of effects, then steps frames and checks: no errors caught anywhere, all 24 presets played,
  * and the cast matches the last view. Run in the browser: `__stage.selfCheck()`.
  */
 export function runStageSelfCheck(stage: StageLike, restore?: RoomView | null): StageSelfCheckReport {

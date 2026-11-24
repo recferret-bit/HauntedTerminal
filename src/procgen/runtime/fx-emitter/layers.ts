@@ -6,12 +6,18 @@ import { fxKeylineColor } from '../../fx/preview.js';
 import type { FxLayer, FxParticleState } from '../../fx/types.js';
 import { keylineMaterial, zoneMaterial, type EmitterParts } from './parts.js';
 
+export interface ShapeVariant {
+  geo: THREE.BufferGeometry;
+  shellGeo: THREE.BufferGeometry | null;
+}
+
 export interface LayerPool {
   meshes: THREE.Mesh[];
   shells: (THREE.Mesh | null)[];
   /** One material per distinct alpha step, so stepped opacity needs no per-particle material. */
   byAlpha: Map<number, ComicMaterial>;
   zone: ZoneDef;
+  variants?: ShapeVariant[];
 }
 
 function alphaMaterials(layer: FxLayer, zone: ZoneDef, parts: EmitterParts): Map<number, ComicMaterial> {
@@ -41,25 +47,30 @@ function inkShell(geo: THREE.BufferGeometry, lineColor: number, parts: EmitterPa
   return shell;
 }
 
-/** A hidden mesh pool for one layer, all meshes sharing one geometry, one shell geometry and the alpha materials. */
+/** A hidden mesh pool for one layer, all meshes sharing one geometry (or a shape variant pool), one ink shell geometry and the alpha materials. */
 function buildPool(layer: FxLayer, inkWeight: number, page: THREE.Group, parts: EmitterParts): LayerPool {
   const zone: ZoneDef = ZONES[layer.zone];
-  const geo = shapeToGeometry(layer.shape);
-  parts.geometries.push(geo);
   const lineColor = inkWeight > 0 ? fxKeylineColor(layer.zone, layer.outline !== false) : null;
-  const shellGeo = lineColor === null ? null : inkShellGeometry(geo, inkWeight);
-  if (shellGeo) parts.geometries.push(shellGeo);
+  const makeVariant = (shape: FxLayer['shape']): ShapeVariant => {
+    const geo = shapeToGeometry(shape);
+    parts.geometries.push(geo);
+    const shellGeo = lineColor === null ? null : inkShellGeometry(geo, inkWeight);
+    if (shellGeo) parts.geometries.push(shellGeo);
+    return { geo, shellGeo };
+  };
+  const variants = layer.shapes?.length ? layer.shapes.map(makeVariant) : undefined;
+  const base = variants ? variants[0]! : makeVariant(layer.shape);
   const byAlpha = alphaMaterials(layer, zone, parts);
   const meshes: THREE.Mesh[] = [];
   const shells: (THREE.Mesh | null)[] = [];
   for (let i = 0; i < layer.count; i++) {
-    const shell = shellGeo && lineColor !== null ? inkShell(shellGeo, lineColor, parts) : null;
-    const mesh = particleMesh(layer, i, geo, byAlpha.get(1), shell);
+    const shell = base.shellGeo && lineColor !== null ? inkShell(base.shellGeo, lineColor, parts) : null;
+    const mesh = particleMesh(layer, i, base.geo, byAlpha.get(1), shell);
     page.add(mesh);
     meshes.push(mesh);
     shells.push(shell);
   }
-  return { meshes, shells, byAlpha, zone };
+  return { meshes, shells, byAlpha, zone, variants };
 }
 
 export function buildPools(layers: readonly FxLayer[], inkWeight: number, page: THREE.Group, parts: EmitterParts): LayerPool[] {
@@ -74,13 +85,20 @@ export function hideAll(pools: readonly LayerPool[]): void {
 export function poseParticle(pools: readonly LayerPool[], p: FxParticleState): void {
   const pool = pools[p.layer]!;
   const mesh = pool.meshes[p.index]!;
+  const shell = pool.shells[p.index];
+  if (pool.variants && p.shapeIndex !== undefined) {
+    const v = pool.variants[p.shapeIndex];
+    if (v) {
+      if (mesh.geometry !== v.geo) mesh.geometry = v.geo;
+      if (shell && v.shellGeo && shell.geometry !== v.shellGeo) shell.geometry = v.shellGeo;
+    }
+  }
   mesh.visible = true;
   // Page z is "toward the camera"; the camera sits on world -z.
   mesh.position.set(p.x, p.y, -p.z);
-  mesh.rotation.z = p.rot;
+  mesh.rotation.set(p.rotX ?? 0, p.rotY ?? 0, p.rot);
   mesh.scale.setScalar(p.scale);
   const mat = pool.byAlpha.get(p.alpha);
   if (mat) mesh.material = mat;
-  const shell = pool.shells[p.index];
   if (shell) shell.visible = p.alpha * (pool.zone.opacity ?? 1) >= 0.9;
 }

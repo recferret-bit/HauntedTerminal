@@ -189,12 +189,7 @@ export function heroAction(stage: ComicStage, hero: StageActor, action: string, 
     stage.tweens.add(stage.config.transitionMs, (t) => applyLantern(stage, Math.max(stage.view?.lantern ? 1 : 0, t)));
   }
   if (!target || target.disposed || target === hero) {
-    // A typing nod: y −0.02 for 80 ms, two poses.
-    stage.tweens.add(160, (t) => {
-      if (!hero.disposed) hero.offset.y = t < 0.5 ? -0.02 : 0;
-    }, () => {
-      if (!hero.disposed) hero.offset.y = 0;
-    });
+    hopInPlace(stage, hero, 0.16, 220);
     if (action === 'cast' || action === 'write') stage.tweens.delay(60, () => !hero.disposed && hero.animator.setState('attack'));
     return;
   }

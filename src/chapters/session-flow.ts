@@ -130,7 +130,10 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     g.lastCmdStartedCrack = /(?:^|[;&|]\s*)kiro\s+(?:crack|decrypt|hack)\b/i.test(typed);
 
     const step = runLine(typed, host);
-    const events = [...arrivalEvents, ...step.events];
+    const actionEvents: KernelEvent[] = step.events.some((e) => e.type === 'VIBECODER_ACTION')
+      ? step.events
+      : [{ type: 'VIBECODER_ACTION', action: 'type', command: typed }, ...step.events];
+    const events = [...arrivalEvents, ...actionEvents];
     let combinedOutput = arrivalOut + step.output;
     let combinedStderr = step.stderr;
     const levelChanged = g.levelIdx !== prevLevelIdx;

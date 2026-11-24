@@ -68,7 +68,8 @@ export function checkTime(preset: FxPreset, lastParticleMs: number, add: FxAdd):
 /** Grow `bounds` by every particle of one simulated frame. */
 function growBounds(bounds: Bounds, preset: FxPreset, t: number, spawns: ReturnType<typeof fxSpawn>): void {
   for (const p of fxEvaluate(preset, spawns, t)) {
-    const soup = fxShapeSoup(preset.layers[p.layer]!.shape);
+    const layer = preset.layers[p.layer]!;
+    const soup = fxShapeSoup((p.shapeIndex !== undefined ? layer.shapes?.[p.shapeIndex] : undefined) ?? layer.shape);
     const r = (Math.hypot(soup.size[0], soup.size[1]) / 2) * p.scale;
     bounds[0] = Math.min(bounds[0], p.x - r); bounds[1] = Math.min(bounds[1], p.y - r);
     bounds[2] = Math.max(bounds[2], p.x + r); bounds[3] = Math.max(bounds[3], p.y + r);
