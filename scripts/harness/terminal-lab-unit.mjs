@@ -1047,9 +1047,34 @@ await withProcgen(async (_p, vite) => {
       assert.ok(promptPx >= 12, `agent.codec frame ${f} must retain visible >_ prompt glyph pixels`);
     }
     const gorkFrames = Array.from({ length: PORTRAIT_FRAMES }, (_, f) => rasterPortraitFrame('agent.gork', 64, f));
+    const hasBodyToRingGap = (buf, dx, dy) => {
+      let phase = 0; // 0: inside body (alpha>0), 1: open gap (alpha===0), 2: ring (alpha>0)
+      for (let step = 2; step < 31; step++) {
+        const a = buf.data[((32 + dy * step) * 64 + (32 + dx * step)) * 4 + 3];
+        if (phase === 0 && a === 0) phase = 1;
+        else if (phase === 1 && a > 0) return true;
+      }
+      return false;
+    };
     for (let f = 0; f < PORTRAIT_FRAMES; f++) {
-      const faceBrightPx = countPixels(gorkFrames[f], (r, g, b) => r > 200 && g > 200 && b > 180);
+      const gf = gorkFrames[f];
+      const faceBrightPx = countPixels(gf, (r, g, b) => r > 200 && g > 200 && b > 180);
       assert.ok(faceBrightPx >= 40, `agent.gork frame ${f} must retain recognizable bright goggles and smile`);
+      for (const [dx, dy, dir] of [[-1, 0, 'left'], [1, 0, 'right'], [0, -1, 'top'], [0, 1, 'bottom']]) {
+        assert.equal(hasBodyToRingGap(gf, dx, dy), true, `agent.gork frame ${f} must keep an open gap on ${dir} between body and ring`);
+      }
+      // Verify O-O goggle lens dark wells (bright -> dark -> bright -> dark -> bright on the goggle lens midline)
+      let maxTransitions = 0;
+      for (let y = 22; y <= 34; y++) {
+        let transitions = 0, wasBright = false;
+        for (let x = 18; x <= 46; x++) {
+          const i = (y * 64 + x) * 4;
+          const isBright = gf.data[i + 3] > 0 && gf.data[i] > 180 && gf.data[i + 1] > 180;
+          if (isBright !== wasBright) { transitions++; wasBright = isBright; }
+        }
+        if (transitions > maxTransitions) maxTransitions = transitions;
+      }
+      assert.ok(maxTransitions >= 6, `agent.gork frame ${f} goggles must resolve two dark lens wells inside bright frames (got ${maxTransitions} transitions)`);
     }
     for (const blinkModel of ['agent.codec', 'agent.clod']) {
       const brightCounts = Array.from({ length: PORTRAIT_FRAMES }, (_, f) =>

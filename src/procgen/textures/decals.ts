@@ -121,16 +121,18 @@ const accretionHalo: TexEntry = {
   zones: ['corruptMagenta', 'corruptViolet', 'voidPurple', 'malwareEye'],
   purpose: 'Concentric relativistic planetary ring bands around an event-horizon core. CPU/albedo base for agent.gork.',
   build: (seed) => {
-    const buf = texNew(64, 64, C('corruptMagenta'));
+    const buf = texNew(64, 64, C('corruptViolet'));
     const rng = makeRng(seed);
-    const a0 = rng.range(0.2, 2.2);
-    for (const [cx, cy] of [[0, 0], [32, 32]] as const) {
-      texRing(buf, cx, cy, 24, C('corruptViolet'), 6);
-      texRing(buf, cx, cy, 19, C('voidPurple'), 4);
-      texRing(buf, cx, cy, 14, C('corruptMagenta'), 6);
-      texRing(buf, cx, cy, 10, PAPER, 4);
-      texRing(buf, cx, cy, 15, C('malwareEye'), 4, a0, a0 + 1.4);
-      texDisc(buf, cx, cy, 6, INK);
+    const shift = 4 * rng.int(0, 7);
+    texRect(buf, 0, 14, 64, 36, C('voidPurple'));
+    texRect(buf, 0, 18, 64, 28, C('corruptMagenta'));
+    texRect(buf, 0, 24, 64, 16, PAPER);
+    for (let i = 0; i < 2; i++) {
+      const x = (shift + i * 32) % 64;
+      const w = 16;
+      const span = Math.min(w, 64 - x);
+      texRect(buf, x, 26, span, 12, C('malwareEye'));
+      if (span < w) texRect(buf, 0, 26, w - span, 12, C('malwareEye'));
     }
     return buf;
   },

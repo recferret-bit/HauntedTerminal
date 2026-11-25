@@ -53,15 +53,17 @@ defineMalware({
     // Bold centered `>_` prompt symbols alone on the dark CRT screen (world +x is screen-left: `>` on left, `_` on right).
     const screenFront = front - 0.065;
     parts.push(
-      plate('prompt', 'paper', stroke([[0.19, 0.105], [0.05, 0.005], [0.19, -0.095]], 0.068), {
+      plate('prompt', 'paper', stroke([[0.19, 0.105], [0.045, 0.005], [0.19, -0.095]], 0.076), {
         at: head,
         onto: screenFront,
         depth: 0.035,
+        ink: false,
       }),
-      plate('cursorEye', 'malwareEye', rect(0.17, 0.068), {
-        at: [head[0] - 0.12, head[1] - 0.065],
+      plate('cursorEye', 'malwareEye', rect(0.175, 0.082), {
+        at: [head[0] - 0.12, head[1] - 0.058],
         onto: screenFront,
         depth: 0.035,
+        ink: false,
         anim: { type: 'blink', speed: 1.35, amp: 0.26 },
       }),
       plate('powerBadge', 'solder', rect(0.12, 0.045), { at: [head[0] - 0.22, head[1] - 0.23], onto: front - 0.02, depth: 0.025 }),
