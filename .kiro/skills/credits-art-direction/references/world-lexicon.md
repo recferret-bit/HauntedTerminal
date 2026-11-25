@@ -58,8 +58,9 @@ All hover around `y = 0.5`, are 0.3 to 0.5 units, carry one `signal` zone and an
 | id | What | Idea |
 |---|---|---|
 | `pickup.energy` | Heals the vibecoder ("power") | A battery cell with a lightning-bolt cut-out, `powerAmber` core, gold caps |
-| `pickup.ram` | + GB of memory | A RAM stick: `pcb` board, a row of `silicon` chips, `gold` contact teeth, `dataCyan` notch light |
+| `pickup.ram` | + GB of memory | A RAM stick on colored textolite (`pcb`/`pcbAmber`/`pcbBlue`/`pcbRed`/`pcbBlack`), `silicon` chips, `gold` contact teeth, `dataCyan` notch light |
 | `pickup.ssd` | + GB of storage | A 2.5" SSD slab: `silicon` shell, `plastic` label, `gold` SATA edge, `phosphor` activity LED |
+| `pickup.gpu` | Salvaged GPU tensor module | A compact GPU/tensor card on colored textolite (`pcbBlack` + `pcb*` variants), `heatsink` shroud, `copper` heatpipe, `gold` PCIe edge fingers, pulsing `phosphor`/`dataCyan` core |
 
 ## Doors: ports and interfaces
 
@@ -91,6 +92,18 @@ Every door has a metal or plastic shell, visible contacts, a status LED part nam
 | `prop.cables` |  | Ribbon-cable cobweb / hanging cable bundle |
 | `prop.crt` |  | Dead CRT monitor with a `glass` screen. Floor 1 |
 | `prop.tombstone` |  | A log tombstone: a chip package stood on end with `FATAL` ink lines. Floor 2 |
+| `prop.wire_loom` |  | Bundled braided cables, colored sleeves, ribbon strap, and swinging loose plugs |
+| `prop.gpu_card` |  | Multi-fan discrete GPU on colored textolite (`pcbBlue` + variants), `spin` fans, `copper` heatpipe, `gold` PCIe edge |
+| `prop.gpu_server` |  | Enterprise SXM tensor sled on `pcbBlack` with `copper` coldplate, vapor-chamber fins, `gold` bus bars, status LED |
+| `prop.ram_bank` |  | Three vertical DIMM modules across colored textolite boards (`pcbRed`, `pcbAmber`, `pcb`) and armored heatspreader |
+| `prop.transistor` |  | TO-220 power MOSFET with metal heatsink tab + pair of TO-92 transistor cans and copper choke on `pcbAmber` |
+| `prop.indicator` |  | Diagnostic stand with blinking 7-segment POST code, 4-bar LED load stack, and swinging VU gauge needle |
+| `prop.cooler_tower` |  | Copper-heatpipe tower air cooler with finned `heatsink` stack and spinning blower fan |
+| `prop.cooler_aio` |  | All-in-one liquid radiator with dual `spin` fans, hoses, and glowing coldplate pump block |
+| `prop.water_pipe` |  | Flanged `copper` coolant standpipe, translucent `glass` reservoir with bobbing `dataCyan` liquid, and shutoff valve wheel |
+| `prop.cobweb` |  | Radial silver `solder` and `heatsink` cobweb spanning an upper corner (`hover`, `wall`; zero malware zones) |
+| `prop.spider` |  | 8-pin `silicon` IC + `pcbAmber` capacitor spider dangling on a wire thread with swinging legs (`hover`, `wall`) |
+| `prop.bat` |  | Folded `pcbBlack` circuit-board bat with `copper` chest coil and flapping wings (`hover`, `wall`) |
 | `npc.kiro_ghost` |  | `kiro.d`: self-hosted Ghost companion (`localhost` `.gguf` daemon). Swooshing `paper`-white Kiro sheet ghost with a trailing screen-left tail, two rounded bottom hem lobes, and two sleek vertical `ink` oval eyes looking screen-right |
 
 ## Rooms

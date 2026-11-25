@@ -1,5 +1,5 @@
 import { MECHANICS, ROOM_KINDS } from '../chapters/validate-pack.js';
-import { AGENTS, ENEMY_FIELDS, FILE_FIELDS, MOODS, PATCH_FIELDS, PICKUP_FIELDS, RULE_VARIANTS, STEP_VARIANTS as SCRIPT_STEP_VARIANTS } from '../chapter-editor/schema.js';
+import { AGENTS, ENEMY_FIELDS, FILE_FIELDS, MOODS, PATCH_FIELDS, PICKUP_FIELDS, PROP_FIELDS, RULE_VARIANTS, STEP_VARIANTS as SCRIPT_STEP_VARIANTS } from '../chapter-editor/schema.js';
 import { b, n, opt, sel, t, type Field } from '../editor-core/schema.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
 import { LAB_FLOORS, type LabCond, type LabSetupKind, type LabStepKind } from './lab-types.js';
@@ -32,13 +32,7 @@ export const SETUP_VARIANTS = (): Record<LabSetupKind, Field[]> => ({
   enemy: ENEMY_FIELDS,
   pickup: PICKUP_FIELDS,
   patch: PATCH_FIELDS,
-  prop: [
-    t('id', 'Id'),
-    t('model', 'Model', { suggest: 'models' }),
-    n('x', 'Stage x (room spans about -1 to 5)', { step: 0.1 }),
-    opt(n('y', 'Height above the floor', { step: 0.1 })),
-    opt(t('label', 'Label')),
-  ],
+  prop: PROP_FIELDS,
   npc: SAY_FIELDS,
   taunt: TAUNT_FIELDS,
   dialogue: SCRIPT_STEP_VARIANTS().dialogue,

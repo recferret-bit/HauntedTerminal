@@ -23,7 +23,7 @@ export function syncRoomInner(stage: ComicStage, view: RoomView): void {
   const color = stage.backdrop?.material;
   if (color && !Array.isArray(color) && isComic(color)) color.uniforms.uColor.value.setHex(theme.bg);
   stage.scene.background = new THREE.Color(theme.bg);
-  syncRoomModel(stage, view.kind);
+  syncRoomModel(stage, view.kind, view.roomSeed ?? 1);
 
   const roomChanged = view.path !== stage.lastPath;
   const layoutKey = `${stage.panelLeft.toFixed(3)}|${stage.panelRight.toFixed(3)}|${stage.feetY.toFixed(3)}`;

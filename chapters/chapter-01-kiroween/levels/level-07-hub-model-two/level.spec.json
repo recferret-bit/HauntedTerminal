@@ -5,6 +5,7 @@
   "cwd": "/home/dev",
   "roomKind": "desk",
   "floorTheme": 1,
+  "roomSeed": 7,
   "mechanic": "hub",
   "exitDir": "/home/dev/sector_docker_forge",
   "summary": "Return to the Hub! The Old Bearded Coder takes your new RAM + GPU chips, upgrades the Matrix server (`cat open_weights_node2.conf`, `cat dad.tty.sock`), and reboots Kiro with Open-Weight Model #2 (`kiro load deepseek`) to disable Codec!",
@@ -30,6 +31,44 @@
   "enemies": [],
   "pickups": [],
   "patches": [],
+  "props": [
+    {
+      "id": "hub2_rack",
+      "model": "prop.gpu_server",
+      "x": 0.1,
+      "label": "node #2 open-weights rack"
+    },
+    {
+      "id": "hub2_ram",
+      "model": "prop.ram_bank",
+      "x": 3.13,
+      "label": "dual DDR5 bank"
+    },
+    {
+      "id": "hub2_aio",
+      "model": "prop.cooler_aio",
+      "x": -0.38,
+      "label": "liquid loop"
+    },
+    {
+      "id": "hub2_pipe",
+      "model": "prop.water_pipe",
+      "x": 1.1,
+      "label": "coolant feed"
+    },
+    {
+      "id": "hub2_ind",
+      "model": "prop.indicator",
+      "x": 2.07,
+      "label": "bus telemetry"
+    },
+    {
+      "id": "hub2_spider",
+      "model": "prop.spider",
+      "x": 4.85,
+      "y": 2.35
+    }
+  ],
   "winRules": [
     {
       "kind": "read_file",

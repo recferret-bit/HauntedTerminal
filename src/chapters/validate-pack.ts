@@ -222,6 +222,9 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack, winnable: boolean): Pack
   if (!ROOM_KINDS.some((k) => k === spec.roomKind)) c.add('error', 'overview', `unknown roomKind "${spec.roomKind}"`);
   if (![1, 2, 3, 4, 5].includes(spec.floorTheme)) c.add('error', 'overview', `floorTheme ${spec.floorTheme} must be 1..5`);
   if (!(MECHANICS as readonly string[]).includes(spec.mechanic)) c.add('error', 'overview', `unknown mechanic "${spec.mechanic}"`);
+  if (spec.roomSeed !== undefined && (!Number.isFinite(spec.roomSeed) || spec.roomSeed < 1)) {
+    c.add('error', 'overview', 'roomSeed must be a finite number >= 1');
+  }
   if (winnable && !spec.exitDir && !spec.exitCommand) c.add('error', 'overview', 'set exitDir (a gate to cd into) or exitCommand (e.g. exit)');
   if (spec.exitDir) c.needPath('overview', 'exitDir', spec.exitDir, 'dir');
 
@@ -241,6 +244,15 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack, winnable: boolean): Pack
   for (const p of spec.patches) {
     if (![...c.paths.keys()].some((f) => baseName(f) === p.file)) c.add('error', 'entities', `patch "${p.label}": file "${p.file}" is not in files[]`);
   }
+  const propIds = new Set<string>();
+  (spec.props ?? []).forEach((p, idx) => {
+    if (!p.id?.trim()) c.add('error', 'entities', `props[${idx}]: missing prop id`);
+    else if (propIds.has(p.id)) c.add('error', 'entities', `duplicate prop id "${p.id}"`);
+    else propIds.add(p.id);
+    if (!p.model?.trim()) c.add('error', 'entities', `prop "${p.id || idx}": missing model id`);
+    if (!Number.isFinite(p.x)) c.add('error', 'entities', `prop "${p.id || idx}": x must be finite`);
+    if (p.y !== undefined && !Number.isFinite(p.y)) c.add('error', 'entities', `prop "${p.id || idx}": y must be finite`);
+  });
 
   if (winnable && spec.winRules.length === 0) c.add('error', 'rules', 'a level needs at least one win rule');
   spec.winRules.forEach((r, i) => checkRule(c, r, i));
@@ -346,6 +358,8 @@ export function assetIssues(pack: ChapterPack, hasModel: (id: string) => boolean
   walkModels(pack.manifest, 'chapter', 'manifest', hasModel, out, false);
   for (const level of pack.levels) {
     walkModels(level.script, level.id, 'script', hasModel, out, false);
+    walkModels(level.props, level.id, 'entities', hasModel, out, false);
+    walkModels(level.pickups, level.id, 'entities', hasModel, out, false);
     for (const e of level.enemies) {
       const model = BESTIARY[e.type]?.model;
       if (!model || !hasModel(model)) out.push({ severity: 'error', where: level.id, tab: 'entities', message: `enemy "${e.id}": no model for type "${e.type}"` });

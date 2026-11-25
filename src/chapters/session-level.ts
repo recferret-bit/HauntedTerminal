@@ -51,6 +51,7 @@ function levelSpawns(
     type: p.type,
     path: p.path,
     locked: p.locked,
+    ...(p.model ? { model: p.model } : {}),
   }));
   return { enemySpawns, pickupSpawns };
 }

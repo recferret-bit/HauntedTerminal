@@ -44,7 +44,7 @@ function tabOf(message: string): string {
   const key = /^level\.(\w+)/.exec(message)?.[1] ?? '';
   if (key === 'script') return 'script';
   if (key === 'files') return 'files';
-  if (['enemies', 'pickups', 'patches'].includes(key)) return 'entities';
+  if (['enemies', 'pickups', 'patches', 'props'].includes(key)) return 'entities';
   if (['winRules', 'solutionCommands'].includes(key)) return 'rules';
   return 'overview';
 }

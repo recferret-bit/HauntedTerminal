@@ -100,6 +100,16 @@ export interface LevelPickupSpec {
   type: PickupType;
   path: string;
   locked?: boolean;
+  /** Optional ModelCatalog override (e.g. `pickup.gpu` on GPU salvage items). */
+  model?: string;
+}
+
+export interface LevelPropSpec {
+  id: string;
+  model: string;
+  x: number;
+  y?: number;
+  label?: string;
 }
 
 export interface LevelPatchChip {
@@ -140,6 +150,8 @@ export interface LevelSpec {
   cwd: string;
   roomKind: RoomKind;
   floorTheme: FloorId;
+  /** Optional deterministic seed for background room variations (`>= 1`). */
+  roomSeed?: number;
   mechanic: ChapterMechanic;
   exitDir?: string;
   exitCommand?: string;
@@ -148,6 +160,8 @@ export interface LevelSpec {
   enemies: LevelEnemySpec[];
   pickups: LevelPickupSpec[];
   patches: LevelPatchChip[];
+  /** Optional declarative visual stage props (`ModelCatalog` ids). */
+  props?: LevelPropSpec[];
   winRules: WinRule[];
   solutionCommands: string[];
   /** Arrival beats, tutorial, taunts, Kiro behaviour: see `script-types.ts`. */

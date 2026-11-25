@@ -5,6 +5,7 @@
   "cwd": "/srv/kiroween/compose_furnace",
   "roomKind": "furnace",
   "floorTheme": 4,
+  "roomSeed": 99,
   "mechanic": "docker-compose",
   "exitDir": "/srv/kiroween/compose_furnace/server_hub_3",
   "summary": "GORK and CLOD hurl a buffer-overflow syringe at the furnace! Make `proxy.buf` read-only (`chmod -w proxy.buf`), fix `PAYMENT_URL` in `docker-compose.yml` to `http://payment:4002`, run `docker compose up -d`, and collect `ram_16gb.dimm` + `gpu_h100_core_03.img`.",
@@ -73,6 +74,38 @@
       "label": "Point PAYMENT_URL to http://payment:4002",
       "find": "PAYMENT_URL=http://localhost:9999",
       "replace": "PAYMENT_URL=http://payment:4002"
+    }
+  ],
+  "props": [
+    {
+      "id": "l9_aio",
+      "model": "prop.cooler_aio",
+      "x": 3.08,
+      "label": "furnace AIO loop"
+    },
+    {
+      "id": "l9_pipe",
+      "model": "prop.water_pipe",
+      "x": 4.38,
+      "label": "primary manifold"
+    },
+    {
+      "id": "l9_rack",
+      "model": "prop.gpu_server",
+      "x": 0.15,
+      "label": "cluster node rack"
+    },
+    {
+      "id": "l9_ind",
+      "model": "prop.indicator",
+      "x": -0.45,
+      "label": "compose health"
+    },
+    {
+      "id": "l9_spider",
+      "model": "prop.spider",
+      "x": 4.92,
+      "y": 2.35
     }
   ],
   "winRules": [

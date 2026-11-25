@@ -377,6 +377,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "cwd": "/mnt/wires_and_chips",
       "roomKind": "attic",
       "floorTheme": 1,
+      "roomSeed": 11,
       "mechanic": "terminal",
       "exitDir": "/mnt/wires_and_chips/hub_uplink",
       "summary": "Sucked into your computer, you rise in a dark tangle of wires and chips where Kiro Ghost finds you. Practice mv lantern ~, ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 1011, then cd hub_uplink.",
@@ -435,6 +436,32 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         }
       ],
       "patches": [],
+      "props": [
+        {
+          "id": "l1_wire_loom",
+          "model": "prop.wire_loom",
+          "x": 3.13,
+          "label": "torn patch loom"
+        },
+        {
+          "id": "l1_fet",
+          "model": "prop.transistor",
+          "x": 4.15,
+          "label": "power FET"
+        },
+        {
+          "id": "l1_web",
+          "model": "prop.cobweb",
+          "x": 4.92,
+          "y": 3.05
+        },
+        {
+          "id": "l1_spider",
+          "model": "prop.spider",
+          "x": 2.02,
+          "y": 2.35
+        }
+      ],
       "winRules": [
         {
           "kind": "file_absent",
@@ -873,6 +900,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "cwd": "/srv/kiroween/cache_vault",
       "roomKind": "crypt_entrance",
       "floorTheme": 2,
+      "roomSeed": 22,
       "mechanic": "terminal",
       "exitDir": "/srv/kiroween/cache_vault/gpu_alley",
       "summary": "Anti-Gravy and the Big Four laugh at your vibe-coding habits! Reveal and remove .gravy_spycam, patch ollama_bus.conf from port 0000 to 11434, and collect both ram_16gb.dimm and gpu_tensor_chip_01.img.",
@@ -932,7 +960,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "id": "pickup_l2_gpu",
           "type": "ssd",
-          "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img"
+          "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img",
+          "model": "pickup.gpu"
         }
       ],
       "patches": [
@@ -941,6 +970,38 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "label": "Fix LOCAL_MODEL_PORT=11434",
           "find": "LOCAL_MODEL_PORT=0000",
           "replace": "LOCAL_MODEL_PORT=11434"
+        }
+      ],
+      "props": [
+        {
+          "id": "l2_ram_bank",
+          "model": "prop.ram_bank",
+          "x": 3.18,
+          "label": "cache DIMM bank"
+        },
+        {
+          "id": "l2_indicator",
+          "model": "prop.indicator",
+          "x": 2.07,
+          "label": "vault telemetry"
+        },
+        {
+          "id": "l2_wire_loom",
+          "model": "prop.wire_loom",
+          "x": 4.92,
+          "label": "vault bus loom"
+        },
+        {
+          "id": "l2_bat",
+          "model": "prop.bat",
+          "x": 4.2,
+          "y": 2.95
+        },
+        {
+          "id": "l2_web",
+          "model": "prop.cobweb",
+          "x": -0.6,
+          "y": 3.05
         }
       ],
       "winRules": [
@@ -1022,6 +1083,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "cwd": "/srv/kiroween/gpu_alley",
       "roomKind": "crypt_hall",
       "floorTheme": 2,
+      "roomSeed": 33,
       "mechanic": "terminal",
       "exitDir": "/srv/kiroween/gpu_alley/server_hub_1",
       "summary": "Codec mocks your lack of a prompt box! Unlock vram_crate (chmod 755), kill keygen.exe (PID 2104), remove port_445/worm.bin, and collect ram_16gb.dimm + gpu_shader_core_01.img before heading to the Hub.",
@@ -1102,6 +1164,38 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         }
       ],
       "patches": [],
+      "props": [
+        {
+          "id": "l3_gpu_card",
+          "model": "prop.gpu_card",
+          "x": 4.15,
+          "label": "salvage tensor card"
+        },
+        {
+          "id": "l3_fet",
+          "model": "prop.transistor",
+          "x": 2.82,
+          "label": "VRM MOSFET"
+        },
+        {
+          "id": "l3_cooler",
+          "model": "prop.cooler_tower",
+          "x": -0.32,
+          "label": "heatsink stack"
+        },
+        {
+          "id": "l3_spider",
+          "model": "prop.spider",
+          "x": 4.92,
+          "y": 2.3
+        },
+        {
+          "id": "l3_bat",
+          "model": "prop.bat",
+          "x": -0.95,
+          "y": 2.9
+        }
+      ],
       "winRules": [
         {
           "kind": "dir_accessible",
@@ -1186,6 +1280,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "cwd": "/home/dev",
       "roomKind": "desk",
       "floorTheme": 1,
+      "roomSeed": 4,
       "mechanic": "hub",
       "exitDir": "/home/dev/sector_ui_grid",
       "summary": "At the Hub, you meet an old bearded guy smoking a cigarette and coding at godlike speed on a Matrix-like CRT display! Talk to him (`cat dad.tty.sock`), read `server_rack.conf`, and reboot Kiro with the first open-weight model (`kiro load qwen`) to disable Anti-Gravy!",
@@ -1211,6 +1306,38 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "enemies": [],
       "pickups": [],
       "patches": [],
+      "props": [
+        {
+          "id": "hub1_ram",
+          "model": "prop.ram_bank",
+          "x": 3.13,
+          "label": "starter DDR5 bank"
+        },
+        {
+          "id": "hub1_gpu",
+          "model": "prop.gpu_card",
+          "x": 1.1,
+          "label": "node #1 tensor card"
+        },
+        {
+          "id": "hub1_wire",
+          "model": "prop.wire_loom",
+          "x": 2.07,
+          "label": "server patch loom"
+        },
+        {
+          "id": "hub1_cooler",
+          "model": "prop.cooler_tower",
+          "x": -0.14,
+          "label": "tower sink"
+        },
+        {
+          "id": "hub1_web",
+          "model": "prop.cobweb",
+          "x": 4.85,
+          "y": 2.95
+        }
+      ],
       "winRules": [
         {
           "kind": "read_file",
@@ -1294,6 +1421,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "cwd": "/srv/kiroween/ui_dashboard",
       "roomKind": "lab_hall",
       "floorTheme": 3,
+      "roomSeed": 55,
       "mechanic": "html-css",
       "exitDir": "/srv/kiroween/ui_dashboard/logic_cell",
       "summary": "Anti-Gravy is down, but Codec, Gork, and Clod still laugh at you! Fix the broken HTML/CSS hardware telemetry dashboard (`index.html` + `storefront.css`) and scavenge `ram_16gb.dimm` + `gpu_tensor_chip_02.img`.",
@@ -1363,6 +1491,37 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "replace": "<button id=\"checkout-btn\" type=\"button\">Mount to Server</button>"
         }
       ],
+      "props": [
+        {
+          "id": "l5_gpu_card",
+          "model": "prop.gpu_card",
+          "x": 4.2,
+          "label": "display render card"
+        },
+        {
+          "id": "l5_indicator",
+          "model": "prop.indicator",
+          "x": 2.07,
+          "label": "grid telemetry"
+        },
+        {
+          "id": "l5_ram_bank",
+          "model": "prop.ram_bank",
+          "x": -0.3,
+          "label": "frame buffer DIMMs"
+        },
+        {
+          "id": "l5_wire_loom",
+          "model": "prop.wire_loom",
+          "x": 4.92
+        },
+        {
+          "id": "l5_spider",
+          "model": "prop.spider",
+          "x": -0.96,
+          "y": 2.4
+        }
+      ],
       "winRules": [
         {
           "kind": "html_css_valid",
@@ -1428,6 +1587,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "cwd": "/srv/kiroween/logic_cell",
       "roomKind": "cell",
       "floorTheme": 3,
+      "roomSeed": 66,
       "mechanic": "terminal-code",
       "exitDir": "/srv/kiroween/logic_cell/server_hub_2",
       "summary": "Gork and Codec cackle as a trojan skims your VRAM! Petrify `token_skimmer.bin` (`chmod -x`), fix string-concatenation in `cart.js` (`Number(...)`), and collect `ram_16gb.dimm` + `gpu_shader_core_02.img`.",
@@ -1501,6 +1661,38 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "replace": "// FIXED:"
         }
       ],
+      "props": [
+        {
+          "id": "l6_fet",
+          "model": "prop.transistor",
+          "x": 3.15,
+          "label": "bus switch FET"
+        },
+        {
+          "id": "l6_pipe",
+          "model": "prop.water_pipe",
+          "x": 4.12,
+          "label": "chilled bus pipe"
+        },
+        {
+          "id": "l6_indicator",
+          "model": "prop.indicator",
+          "x": -0.6,
+          "label": "logic monitor"
+        },
+        {
+          "id": "l6_web",
+          "model": "prop.cobweb",
+          "x": 4.92,
+          "y": 3
+        },
+        {
+          "id": "l6_bat",
+          "model": "prop.bat",
+          "x": 3.05,
+          "y": 2.95
+        }
+      ],
       "winRules": [
         {
           "kind": "enemy_neutralized",
@@ -1571,6 +1763,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "cwd": "/home/dev",
       "roomKind": "desk",
       "floorTheme": 1,
+      "roomSeed": 7,
       "mechanic": "hub",
       "exitDir": "/home/dev/sector_docker_forge",
       "summary": "Return to the Hub! The Old Bearded Coder takes your new RAM + GPU chips, upgrades the Matrix server (`cat open_weights_node2.conf`, `cat dad.tty.sock`), and reboots Kiro with Open-Weight Model #2 (`kiro load deepseek`) to disable Codec!",
@@ -1596,6 +1789,44 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "enemies": [],
       "pickups": [],
       "patches": [],
+      "props": [
+        {
+          "id": "hub2_rack",
+          "model": "prop.gpu_server",
+          "x": 0.1,
+          "label": "node #2 open-weights rack"
+        },
+        {
+          "id": "hub2_ram",
+          "model": "prop.ram_bank",
+          "x": 3.13,
+          "label": "dual DDR5 bank"
+        },
+        {
+          "id": "hub2_aio",
+          "model": "prop.cooler_aio",
+          "x": -0.38,
+          "label": "liquid loop"
+        },
+        {
+          "id": "hub2_pipe",
+          "model": "prop.water_pipe",
+          "x": 1.1,
+          "label": "coolant feed"
+        },
+        {
+          "id": "hub2_ind",
+          "model": "prop.indicator",
+          "x": 2.07,
+          "label": "bus telemetry"
+        },
+        {
+          "id": "hub2_spider",
+          "model": "prop.spider",
+          "x": 4.85,
+          "y": 2.35
+        }
+      ],
       "winRules": [
         {
           "kind": "read_file",
@@ -1671,6 +1902,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "cwd": "/srv/kiroween/docker_forge",
       "roomKind": "catwalk",
       "floorTheme": 4,
+      "roomSeed": 88,
       "mechanic": "docker-image",
       "exitDir": "/srv/kiroween/docker_forge/compose_furnace",
       "summary": "Only GORK and CLOD remain—and they're bullying you with padlock ransomware! Kill `ransom.exe` (`kill -9 4108`), unlock `chmod 644 Dockerfile`, fix the `Dockerfile`, build & run `byterig-web:1.0` on port 3000, and collect `ram_16gb.dimm` + `gpu_tensor_chip_03.img`.",
@@ -1740,6 +1972,38 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "label": "Use node:20-alpine, EXPOSE 3000, and CMD [\"node\", \"server.js\"]",
           "find": "FROM node:99-vibe-turbo\nWORKDIR /app\nCOPY . .\nEXPOSE 9999\nCMD [\"node\", \"broken_server.js\"]",
           "replace": "FROM node:20-alpine\nWORKDIR /app\nCOPY . .\nEXPOSE 3000\nCMD [\"node\", \"server.js\"]"
+        }
+      ],
+      "props": [
+        {
+          "id": "l8_cooler",
+          "model": "prop.cooler_tower",
+          "x": -0.35,
+          "label": "forge fin tower"
+        },
+        {
+          "id": "l8_pipe",
+          "model": "prop.water_pipe",
+          "x": 4.2,
+          "label": "coolant feed line"
+        },
+        {
+          "id": "l8_fet",
+          "model": "prop.transistor",
+          "x": 4.92,
+          "label": "power stage"
+        },
+        {
+          "id": "l8_bat",
+          "model": "prop.bat",
+          "x": 4.62,
+          "y": 2.9
+        },
+        {
+          "id": "l8_web",
+          "model": "prop.cobweb",
+          "x": -1.02,
+          "y": 3.05
         }
       ],
       "winRules": [
@@ -1814,6 +2078,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "cwd": "/srv/kiroween/compose_furnace",
       "roomKind": "furnace",
       "floorTheme": 4,
+      "roomSeed": 99,
       "mechanic": "docker-compose",
       "exitDir": "/srv/kiroween/compose_furnace/server_hub_3",
       "summary": "GORK and CLOD hurl a buffer-overflow syringe at the furnace! Make `proxy.buf` read-only (`chmod -w proxy.buf`), fix `PAYMENT_URL` in `docker-compose.yml` to `http://payment:4002`, run `docker compose up -d`, and collect `ram_16gb.dimm` + `gpu_h100_core_03.img`.",
@@ -1882,6 +2147,38 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "label": "Point PAYMENT_URL to http://payment:4002",
           "find": "PAYMENT_URL=http://localhost:9999",
           "replace": "PAYMENT_URL=http://payment:4002"
+        }
+      ],
+      "props": [
+        {
+          "id": "l9_aio",
+          "model": "prop.cooler_aio",
+          "x": 3.08,
+          "label": "furnace AIO loop"
+        },
+        {
+          "id": "l9_pipe",
+          "model": "prop.water_pipe",
+          "x": 4.38,
+          "label": "primary manifold"
+        },
+        {
+          "id": "l9_rack",
+          "model": "prop.gpu_server",
+          "x": 0.15,
+          "label": "cluster node rack"
+        },
+        {
+          "id": "l9_ind",
+          "model": "prop.indicator",
+          "x": -0.45,
+          "label": "compose health"
+        },
+        {
+          "id": "l9_spider",
+          "model": "prop.spider",
+          "x": 4.92,
+          "y": 2.35
         }
       ],
       "winRules": [
@@ -1954,6 +2251,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "cwd": "/home/dev",
       "roomKind": "desk",
       "floorTheme": 1,
+      "roomSeed": 10,
       "mechanic": "hub",
       "exitDir": "/home/dev/clod_kernel_core",
       "summary": "Return to the Hub! The Old Bearded Coder slots your final RAM + GPU chips into the Matrix server (`cat open_weights_cluster.conf`, `cat dad.tty.sock`) and reboots Kiro with Open-Weight Model #3 (`kiro load llama`) to disable GORK—leaving CLOD as the last surviving model of the Big Four!",
@@ -1979,6 +2277,56 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "enemies": [],
       "pickups": [],
       "patches": [],
+      "props": [
+        {
+          "id": "hub3_rack",
+          "model": "prop.gpu_server",
+          "x": 0.1,
+          "label": "3-model open-weights cluster"
+        },
+        {
+          "id": "hub3_gpu",
+          "model": "prop.gpu_card",
+          "x": 4.1,
+          "label": "H100 auxiliary blade"
+        },
+        {
+          "id": "hub3_ram",
+          "model": "prop.ram_bank",
+          "x": 3.13,
+          "label": "full ECC bank"
+        },
+        {
+          "id": "hub3_aio",
+          "model": "prop.cooler_aio",
+          "x": -0.38,
+          "label": "dual-fan radiator"
+        },
+        {
+          "id": "hub3_pipe",
+          "model": "prop.water_pipe",
+          "x": 1.1,
+          "label": "chilled bus loop"
+        },
+        {
+          "id": "hub3_ind",
+          "model": "prop.indicator",
+          "x": 2.07,
+          "label": "ensemble online"
+        },
+        {
+          "id": "hub3_fet",
+          "model": "prop.transistor",
+          "x": 4.85,
+          "label": "VRM stage"
+        },
+        {
+          "id": "hub3_bat",
+          "model": "prop.bat",
+          "x": 4.65,
+          "y": 2.85
+        }
+      ],
       "winRules": [
         {
           "kind": "read_file",
@@ -2060,6 +2408,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "cwd": "/sys/clod_overlord_core",
       "roomKind": "core",
       "floorTheme": 5,
+      "roomSeed": 111,
       "mechanic": "boss",
       "exitCommand": "exit",
       "summary": "CLOD—the last surviving model of the Big Four—manages the Final Boss (`clod_overlord.ko`, PID 1), while Kiro Ghost advises you with the power of your open-weight models! Drain `clod_prompt_flood.stream` into `/dev/null`, pipe `OPEN_WEIGHT_SIG` from `open_weights_advisor.log` into `kiro_override.sock`, flip `clod_supervisor_lock=false` in `core_anchor.conf`, `kill -9 1`, and run `exit` to teleport back to the real world!",
@@ -2130,6 +2479,26 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "label": "Flip clod_supervisor_lock=false",
           "find": "clod_supervisor_lock=true",
           "replace": "clod_supervisor_lock=false"
+        }
+      ],
+      "props": [
+        {
+          "id": "l11_rack",
+          "model": "prop.gpu_server",
+          "x": 3.83,
+          "label": "overlord compute cage"
+        },
+        {
+          "id": "l11_pipe",
+          "model": "prop.water_pipe",
+          "x": 4.68,
+          "label": "core coolant line"
+        },
+        {
+          "id": "l11_aio",
+          "model": "prop.cooler_aio",
+          "x": 2.86,
+          "label": "die chiller"
         }
       ],
       "winRules": [

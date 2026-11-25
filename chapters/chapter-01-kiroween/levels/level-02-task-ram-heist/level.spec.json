@@ -5,6 +5,7 @@
   "cwd": "/srv/kiroween/cache_vault",
   "roomKind": "crypt_entrance",
   "floorTheme": 2,
+  "roomSeed": 22,
   "mechanic": "terminal",
   "exitDir": "/srv/kiroween/cache_vault/gpu_alley",
   "summary": "Anti-Gravy and the Big Four laugh at your vibe-coding habits! Reveal and remove .gravy_spycam, patch ollama_bus.conf from port 0000 to 11434, and collect both ram_16gb.dimm and gpu_tensor_chip_01.img.",
@@ -64,7 +65,8 @@
     {
       "id": "pickup_l2_gpu",
       "type": "ssd",
-      "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img"
+      "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img",
+      "model": "pickup.gpu"
     }
   ],
   "patches": [
@@ -73,6 +75,38 @@
       "label": "Fix LOCAL_MODEL_PORT=11434",
       "find": "LOCAL_MODEL_PORT=0000",
       "replace": "LOCAL_MODEL_PORT=11434"
+    }
+  ],
+  "props": [
+    {
+      "id": "l2_ram_bank",
+      "model": "prop.ram_bank",
+      "x": 3.18,
+      "label": "cache DIMM bank"
+    },
+    {
+      "id": "l2_indicator",
+      "model": "prop.indicator",
+      "x": 2.07,
+      "label": "vault telemetry"
+    },
+    {
+      "id": "l2_wire_loom",
+      "model": "prop.wire_loom",
+      "x": 4.92,
+      "label": "vault bus loom"
+    },
+    {
+      "id": "l2_bat",
+      "model": "prop.bat",
+      "x": 4.2,
+      "y": 2.95
+    },
+    {
+      "id": "l2_web",
+      "model": "prop.cobweb",
+      "x": -0.6,
+      "y": 3.05
     }
   ],
   "winRules": [

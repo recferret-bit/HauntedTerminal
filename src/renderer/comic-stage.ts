@@ -100,7 +100,7 @@ export class ComicStage {
 
   currentFloor = 1;
   view: RoomView | null = null;
-  room: { kind: RoomKind; model: BuiltModel; animator: ModelAnimator } | null = null;
+  room: { kind: RoomKind; seed: number; model: BuiltModel; animator: ModelAnimator } | null = null;
   zoom = 1;
   backdrop: THREE.Mesh | null = null;
   frameMesh: THREE.Mesh | null = null;

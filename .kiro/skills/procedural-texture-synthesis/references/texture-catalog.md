@@ -20,6 +20,10 @@ Source: `src/procgen/textures/surfaces.ts`.
 | id | size | usage | zones | what it is, where it goes |
 |---|---|---|---|---|
 | `tex.pcb-traces` | 128x128 | surface, tiles | `pcb` `pcbDark` `gold` `solder` | Circuit board: routed trace bundles, vias, solder pads, silk-screen refs. Floors, walls, RAM sticks, any `pcb` part. |
+| `tex.pcb-amber` | 128x128 | surface, tiles | `pcbAmber` `copper` `solder` | Vintage amber phenolic textolite: copper-sheen traces, vias, solder pads, transistor refs. |
+| `tex.pcb-blue` | 128x128 | surface, tiles | `pcbBlue` `gold` `solder` | Sapphire blue GPU/workstation PCB: routed trace bundles, gold vias, pads, GPU silkscreen. |
+| `tex.pcb-red` | 128x128 | surface, tiles | `pcbRed` `gold` `solder` | Oxide crimson high-clock PCB: trace bundles, gold vias, pads, DIMM/VRM silkscreen. |
+| `tex.pcb-black` | 128x128 | surface, tiles | `pcbBlack` `heatsink` `gold` `solder` | Matte black enterprise server PCB: recessed grey traces, gold vias, pads, tensor silkscreen. |
 | `tex.heatsink-fins` | 64x64 | surface, tiles | `heatsink` `solder` | Vertical cooling fins: ink gap, shaded left face, lit right edge, cut by cross slots. Heatsinks, radiators, organ pipes. |
 | `tex.chip-label` | 128x128 | surface, tiles | `silicon` `rubber` `heatsink` | Black silicon package with laser-etched part number, lot code, pin-1 dot and a bar code. Chips, the SSD, the CPU die. |
 | `tex.caution-stripes` | 64x64 | surface, tiles | `powerAmber` | Amber and ink hazard diagonals. Edges of gaps, the furnace, anything that hurts but is not malware. |

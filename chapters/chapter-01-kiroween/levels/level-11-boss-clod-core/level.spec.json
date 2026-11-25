@@ -5,6 +5,7 @@
   "cwd": "/sys/clod_overlord_core",
   "roomKind": "core",
   "floorTheme": 5,
+  "roomSeed": 111,
   "mechanic": "boss",
   "exitCommand": "exit",
   "summary": "CLOD—the last surviving model of the Big Four—manages the Final Boss (`clod_overlord.ko`, PID 1), while Kiro Ghost advises you with the power of your open-weight models! Drain `clod_prompt_flood.stream` into `/dev/null`, pipe `OPEN_WEIGHT_SIG` from `open_weights_advisor.log` into `kiro_override.sock`, flip `clod_supervisor_lock=false` in `core_anchor.conf`, `kill -9 1`, and run `exit` to teleport back to the real world!",
@@ -75,6 +76,26 @@
       "label": "Flip clod_supervisor_lock=false",
       "find": "clod_supervisor_lock=true",
       "replace": "clod_supervisor_lock=false"
+    }
+  ],
+  "props": [
+    {
+      "id": "l11_rack",
+      "model": "prop.gpu_server",
+      "x": 3.83,
+      "label": "overlord compute cage"
+    },
+    {
+      "id": "l11_pipe",
+      "model": "prop.water_pipe",
+      "x": 4.68,
+      "label": "core coolant line"
+    },
+    {
+      "id": "l11_aio",
+      "model": "prop.cooler_aio",
+      "x": 2.86,
+      "label": "die chiller"
     }
   ],
   "winRules": [

@@ -43,6 +43,10 @@ export const ZONES = {
   // hardware: what the world is made of
   pcb: { color: 0x1f7a5c, family: 'hardware', halftone: true },
   pcbDark: { color: 0x12473b, family: 'hardware', halftone: true },
+  pcbAmber: { color: 0x8a5a28, family: 'hardware', halftone: true },
+  pcbBlue: { color: 0x1d4e89, family: 'hardware', halftone: true },
+  pcbRed: { color: 0x7d1d2c, family: 'hardware', halftone: true },
+  pcbBlack: { color: 0x1d222b, family: 'hardware', halftone: true },
   matrixDark: { color: 0x006b1b, family: 'hardware', emissive: 0.08 },
   faultDark: { color: 0x7a0018, family: 'hardware', emissive: 0.08 },
   solder: { color: 0xadb5bd, family: 'hardware' },
@@ -88,6 +92,30 @@ export const ZONES = {
 export type ZoneId = keyof typeof ZONES;
 
 export const ZONE_IDS = Object.keys(ZONES) as ZoneId[];
+
+/** Colored textolite PCB substrates (FR-4 green, vintage phenolic amber, sapphire blue, oxide red, matte black). */
+export const PCB_SUBSTRATES = ['pcb', 'pcbAmber', 'pcbBlue', 'pcbRed', 'pcbBlack'] as const satisfies readonly ZoneId[];
+
+/** Paired zone + tileable PCB surface texture per colored textolite board. */
+export const PCB_BOARD_THEMES: readonly { zone: (typeof PCB_SUBSTRATES)[number]; texture: string }[] = [
+  { zone: 'pcb', texture: 'tex.pcb-traces' },
+  { zone: 'pcbAmber', texture: 'tex.pcb-amber' },
+  { zone: 'pcbBlue', texture: 'tex.pcb-blue' },
+  { zone: 'pcbRed', texture: 'tex.pcb-red' },
+  { zone: 'pcbBlack', texture: 'tex.pcb-black' },
+];
+
+/** Picks one of the 5 colored-textolite board themes, pinning `fixedAtSeed1` at `seed === 1`. */
+export function pickBoardTheme(
+  seed: number,
+  rng: { pick<T>(arr: readonly T[]): T },
+  fixedAtSeed1?: ZoneId,
+): (typeof PCB_BOARD_THEMES)[number] {
+  if (seed === 1 && fixedAtSeed1) {
+    return PCB_BOARD_THEMES.find((t) => t.zone === fixedAtSeed1) ?? PCB_BOARD_THEMES[0]!;
+  }
+  return rng.pick(PCB_BOARD_THEMES);
+}
 
 export function zone(id: ZoneId): ZoneDef {
   return ZONES[id];

@@ -5,6 +5,7 @@
   "cwd": "/mnt/wires_and_chips",
   "roomKind": "attic",
   "floorTheme": 1,
+  "roomSeed": 11,
   "mechanic": "terminal",
   "exitDir": "/mnt/wires_and_chips/hub_uplink",
   "summary": "Sucked into your computer, you rise in a dark tangle of wires and chips where Kiro Ghost finds you. Practice mv lantern ~, ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 1011, then cd hub_uplink.",
@@ -63,6 +64,32 @@
     }
   ],
   "patches": [],
+  "props": [
+    {
+      "id": "l1_wire_loom",
+      "model": "prop.wire_loom",
+      "x": 3.13,
+      "label": "torn patch loom"
+    },
+    {
+      "id": "l1_fet",
+      "model": "prop.transistor",
+      "x": 4.15,
+      "label": "power FET"
+    },
+    {
+      "id": "l1_web",
+      "model": "prop.cobweb",
+      "x": 4.92,
+      "y": 3.05
+    },
+    {
+      "id": "l1_spider",
+      "model": "prop.spider",
+      "x": 2.02,
+      "y": 2.35
+    }
+  ],
   "winRules": [
     {
       "kind": "file_absent",

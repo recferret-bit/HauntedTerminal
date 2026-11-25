@@ -93,6 +93,9 @@ export const LAYOUTS: Record<string, Layout> = {
     props: [
       { id: 'prop:crt', model: 'prop.crt', x: 4.35, label: 'your monitor' },
       { id: 'prop:cables', model: 'prop.cables', x: -0.85, label: 'ribbon cobweb' },
+      { id: 'prop:ram_bank', model: 'prop.ram_bank', x: 3.65, label: 'DDR5 DIMM bank' },
+      { id: 'prop:indicator', model: 'prop.indicator', x: -0.35, label: 'status tower' },
+      { id: 'prop:cobweb', model: 'prop.cobweb', x: 4.7, y: 3.0 },
     ],
     slots: {
       'todo.note': { x: 1.55, key: 'scroll' },
@@ -105,6 +108,9 @@ export const LAYOUTS: Record<string, Layout> = {
     hero: 2.5,
     props: [
       { id: 'prop:cables', model: 'prop.cables', x: 4.75, label: 'ribbon cobweb' },
+      { id: 'prop:wire_loom', model: 'prop.wire_loom', x: 4.4, label: 'patch loom' },
+      { id: 'prop:transistor', model: 'prop.transistor', x: 3.0, label: 'TO-220FET' },
+      { id: 'prop:spider', model: 'prop.spider', x: 3.15, y: 2.35 },
       { id: 'prop:fuse', model: 'prop.fuse', x: -0.62, y: 1.0, label: '.power_on', when: (f) => f.powerOn },
     ],
     slots: {
@@ -136,6 +142,8 @@ export const LAYOUTS: Record<string, Layout> = {
     props: [
       { id: 'prop:tomb1', model: 'prop.tombstone', x: 4.7, label: 'FATAL' },
       { id: 'prop:tomb2', model: 'prop.tombstone', x: 4.15, label: 'FATAL' },
+      { id: 'prop:bat', model: 'prop.bat', x: 4.45, y: 2.95 },
+      { id: 'prop:cobweb', model: 'prop.cobweb', x: -0.98, y: 3.05 },
     ],
     slots: {
       chronicles: { x: 3.35, model: 'door.usb' },
@@ -193,7 +201,11 @@ export const LAYOUTS: Record<string, Layout> = {
   },
   [F3]: {
     hero: 2.2,
-    props: [{ id: 'prop:capacitor', model: 'prop.capacitor', x: 4.75 }],
+    props: [
+      { id: 'prop:capacitor', model: 'prop.capacitor', x: 4.75 },
+      { id: 'prop:gpu_card', model: 'prop.gpu_card', x: 3.75, label: 'bus accelerator' },
+      { id: 'prop:spider', model: 'prop.spider', x: -0.95, y: 2.35 },
+    ],
     slots: {
       wing_a: { x: 4.15, model: 'door.loopback' },
       ram_slots: { x: 3.35, model: 'door.usb' },
@@ -234,6 +246,8 @@ export const LAYOUTS: Record<string, Layout> = {
     props: [
       { id: 'prop:fan', model: 'prop.fan', x: 4.7 },
       { id: 'prop:heatsink', model: 'prop.heatsink', x: 4.1 },
+      { id: 'prop:water_pipe', model: 'prop.water_pipe', x: 4.4, label: 'coolant line' },
+      { id: 'prop:cooler_tower', model: 'prop.cooler_tower', x: 3.05, label: 'fin tower' },
       { id: 'door:furnace_hall', model: 'door.hdmi', x: -0.95, kind: 'door', target: 'furnace_hall', label: 'furnace_hall (sealed)', when: (f) => !f.valveOpen },
     ],
     slots: {
@@ -251,6 +265,8 @@ export const LAYOUTS: Record<string, Layout> = {
     props: [
       { id: 'prop:heatsink', model: 'prop.heatsink', x: 4.7 },
       { id: 'prop:fan', model: 'prop.fan', x: 4.15 },
+      { id: 'prop:water_pipe', model: 'prop.water_pipe', x: 4.45, label: 'feed manifold' },
+      { id: 'prop:cooler_aio', model: 'prop.cooler_aio', x: -0.35, label: 'AIO block' },
     ],
     slots: {
       'energy.cell': { x: 3.6 },
@@ -263,6 +279,8 @@ export const LAYOUTS: Record<string, Layout> = {
   [F5]: {
     hero: 2.4,
     props: [
+      { id: 'prop:gpu_server', model: 'prop.gpu_server', x: -0.82, label: 'compute node' },
+      { id: 'prop:bat', model: 'prop.bat', x: 4.65, y: 2.95 },
       { id: 'hole', key: 'hole', model: 'door.devnull', x: -1.05, label: '/dev/null', when: (f) => f.phase1 },
       { id: 'door:portal', model: 'door.ethernet', x: 0.2, kind: 'door', target: 'exit', label: 'exit', when: (f) => f.portal },
     ],

@@ -60,6 +60,8 @@ export interface PickupSpawn {
   path: string;
   /** Starts encrypted (mode 000) by ransomware. */
   locked?: boolean;
+  /** Optional ModelCatalog override (e.g. `pickup.gpu`). */
+  model?: string;
 }
 
 export interface FloorTree {

@@ -1,9 +1,9 @@
 import { INK, PAPER } from '../core/palette.js';
-import { makeRng, type Rng } from '../core/rng.js';
 import type { PixelBuffer } from '../core/types.js';
 import { texHexByte, texKana, texText, texTextWidth } from './font.js';
+import { drawPcb, PCB_SURFACE_TEXTURES, surface } from './surfaces-pcb.js';
 import {
-  texCellNoise, texColor as C, texCrosshatch, texDisc, texFrame, texGet, texHalftone, texLine, texNew, texNoiseField,
+  texCellNoise, texColor as C, texCrosshatch, texDisc, texFrame, texGet, texHalftone, texNew, texNoiseField,
   texPolygon, texRect, texRing, texStripes, type TexEntry,
 } from './toolkit.js';
 
@@ -12,60 +12,6 @@ import {
  * They are albedo maps for `PartSpec.texture`; the comic material multiplies them by the cel band,
  * so they carry drawing (lines, pads, glyphs), never lighting.
  */
-
-function surface(id: string, label: string, zones: TexEntry['zones'], purpose: string, build: (rng: Rng, seed: number) => PixelBuffer): TexEntry {
-  return { id, label, usage: 'surface', tileable: true, zones, purpose, build: (seed) => build(makeRng(seed), seed) };
-}
-
-/** A trace bundle crossing the whole tile with two 45 degree jogs that cancel out, so it wraps. */
-function busBundle(buf: PixelBuffer, rng: Rng, y: number, count: number, pitch: number, jog: number, hex: number, t: number): void {
-  const w = buf.width;
-  const dir = rng.chance(0.5) ? 1 : -1;
-  const x1 = 8 * rng.int(1, Math.floor(w / 32));
-  const x2 = x1 + jog + 8 * rng.int(2, Math.floor(w / 24));
-  const base = dir < 0 ? y + jog : y;
-  for (let i = 0; i < count; i++) {
-    const y0 = base + i * pitch, y1 = y0 + dir * jog;
-    const lead = Math.round(dir * 0.414 * pitch * i);
-    texLine(buf, 0, y0, x1 - lead, y0, hex, t);
-    texLine(buf, x1 - lead, y0, x1 - lead + jog, y1, hex, t);
-    texLine(buf, x1 - lead + jog, y1, x2 + lead, y1, hex, t);
-    texLine(buf, x2 + lead, y1, x2 + lead + jog, y0, hex, t);
-    texLine(buf, x2 + lead + jog, y0, w, y0, hex, t);
-  }
-}
-
-function via(buf: PixelBuffer, x: number, y: number): void {
-  texDisc(buf, x, y, 5, INK);
-  texDisc(buf, x, y, 4, C('gold'));
-  texDisc(buf, x, y, 1.5, INK);
-}
-
-/** The board both `tex.pcb-traces` and `tex.corruption` start from. 128 px. */
-function drawPcb(rng: Rng): PixelBuffer {
-  const buf = texNew(128, 128, C('pcb'));
-  const refs = ['R12', 'C3', 'U7', 'Q2', 'D5', 'L1', 'J4', 'C40'];
-  for (let lane = 0; lane < 2; lane++) {
-    const top = lane * 64;
-    busBundle(buf, rng, top + 5, rng.int(3, 4), 8, 16, C('pcbDark'), 3);
-    // The free strip under each bundle (top + 50 .. top + 69) carries pads, vias and silk-screen.
-    const start = 4 + 8 * rng.int(0, 15);
-    if (lane === rng.int(0, 1)) {
-      const pads = rng.int(4, 6);
-      for (let i = 0; i < pads; i++) {
-        texRect(buf, start + i * 12 - 1, top + 53, 8, 12, INK);
-        texRect(buf, start + i * 12, top + 54, 6, 10, C('solder'));
-        texRect(buf, start + i * 12, top + 61, 6, 3, C('solder', 1));
-      }
-      texText(buf, rng.pick(refs), start + pads * 12 + 6, top + 54, PAPER, 2);
-    } else {
-      const n = rng.int(3, 4);
-      for (let i = 0; i < n; i++) via(buf, start + i * 16 + 6, top + 59);
-      texText(buf, rng.pick(refs), start + n * 16 + 6, top + 54, PAPER, 2);
-    }
-  }
-  return buf;
-}
 
 const pcbTraces = surface('tex.pcb-traces', 'PCB traces', ['pcb', 'pcbDark', 'gold', 'solder'],
   'Circuit board: routed trace bundles, vias, solder pads, silk-screen refs. Floors, walls, RAM sticks, any `pcb` part.',
@@ -317,6 +263,6 @@ const deckPlate = surface('tex.deck-plate', 'Dark deck plate', ['silicon', 'rubb
   });
 
 export const SURFACE_TEXTURES: readonly TexEntry[] = [
-  pcbTraces, heatsinkFins, chipLabel, cautionStripes, paperLines, crosshatch, halftone, glyphRain,
+  pcbTraces, ...PCB_SURFACE_TEXTURES, heatsinkFins, chipLabel, cautionStripes, paperLines, crosshatch, halftone, glyphRain,
   hexDump, ribbonCable, platter, corruption, ice, stone, grille, deckPlate,
 ];

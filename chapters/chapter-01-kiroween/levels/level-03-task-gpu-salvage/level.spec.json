@@ -5,6 +5,7 @@
   "cwd": "/srv/kiroween/gpu_alley",
   "roomKind": "crypt_hall",
   "floorTheme": 2,
+  "roomSeed": 33,
   "mechanic": "terminal",
   "exitDir": "/srv/kiroween/gpu_alley/server_hub_1",
   "summary": "Codec mocks your lack of a prompt box! Unlock vram_crate (chmod 755), kill keygen.exe (PID 2104), remove port_445/worm.bin, and collect ram_16gb.dimm + gpu_shader_core_01.img before heading to the Hub.",
@@ -85,6 +86,38 @@
     }
   ],
   "patches": [],
+  "props": [
+    {
+      "id": "l3_gpu_card",
+      "model": "prop.gpu_card",
+      "x": 4.15,
+      "label": "salvage tensor card"
+    },
+    {
+      "id": "l3_fet",
+      "model": "prop.transistor",
+      "x": 2.82,
+      "label": "VRM MOSFET"
+    },
+    {
+      "id": "l3_cooler",
+      "model": "prop.cooler_tower",
+      "x": -0.32,
+      "label": "heatsink stack"
+    },
+    {
+      "id": "l3_spider",
+      "model": "prop.spider",
+      "x": 4.92,
+      "y": 2.3
+    },
+    {
+      "id": "l3_bat",
+      "model": "prop.bat",
+      "x": -0.95,
+      "y": 2.9
+    }
+  ],
   "winRules": [
     {
       "kind": "dir_accessible",

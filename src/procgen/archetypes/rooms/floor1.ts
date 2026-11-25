@@ -2,6 +2,7 @@ import type { ModelSpec } from '../../core/types.js';
 import { makeRng } from '../../core/rng.js';
 import { designToRoomX, RoomBuilder, ROOM } from './frame.js';
 import { cobweb, hangingCable, led, platter, seams, shell } from './kit.js';
+import { danglingSpider, indicatorPanel, perchedBat, radialCobweb, roomBoardTheme, textoliteBoardPlaque } from './kit-kiroween.js';
 
 /**
  * Floor 1, the storage attic: drive bays, dusty platters, ribbon-cable cobwebs, a dead CRT.
@@ -72,7 +73,13 @@ export function buildDesk(seed: number): ModelSpec {
   platter(b, -1.6, 2.96, 0.3, 'heatsink', 'silicon', 0.1);
 
   cobweb(b, 1, 1.25, 'heatsink');
+  radialCobweb(b, -3.3, 4.15, 0.46, 'solder');
   hangingCable(b, rng.range(-1.2, -0.6), 0.95, 'rubber', rng.next());
+  const board = roomBoardTheme(seed, rng, 'pcbAmber');
+  textoliteBoardPlaque(b, 2.75, 2.95, 1.15, 0.62, board);
+  indicatorPanel(b, -0.5, 4.15, ['phosphor', 'powerAmber', 'phosphor']);
+  if (seed % 2 === 0) perchedBat(b, rng.range(-1.4, -0.5), 3.72, 0.44, 'pcbBlack', rng.next());
+  else danglingSpider(b, rng.range(1.9, 2.4), rng.range(0.65, 1.05), 'silicon', rng.next());
 
   b.standardSockets(2.4)
     .socket('note', [designToRoomX(0.2), 0.5, ROOM.zActor])
@@ -108,8 +115,13 @@ export function buildAttic(seed: number): ModelSpec {
 
   cobweb(b, 1, 1.1, 'heatsink');
   cobweb(b, -1, 1.45, 'heatsink');
+  radialCobweb(b, 0.15, 3.45, 0.44, 'solder');
   hangingCable(b, rng.range(0.9, 1.5), 0.8, 'rubber', rng.next());
   hangingCable(b, rng.range(-2.3, -1.7), 0.55, 'rubber', rng.next());
+  const board = roomBoardTheme(seed, rng, 'pcbBlue');
+  textoliteBoardPlaque(b, -2.05, 3.1, 1.1, 0.58, board);
+  danglingSpider(b, rng.range(2.05, 2.55), rng.range(0.65, 1.0), 'silicon', rng.next());
+  perchedBat(b, rng.range(-1.5, -0.6), 4.05, 0.44, 'pcbBlack', rng.next());
 
   b.standardSockets(2.5)
     .socket('readme', [designToRoomX(1.3), 0.5, ROOM.zActor])

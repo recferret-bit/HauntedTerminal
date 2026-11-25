@@ -5,6 +5,7 @@
   "cwd": "/srv/kiroween/logic_cell",
   "roomKind": "cell",
   "floorTheme": 3,
+  "roomSeed": 66,
   "mechanic": "terminal-code",
   "exitDir": "/srv/kiroween/logic_cell/server_hub_2",
   "summary": "Gork and Codec cackle as a trojan skims your VRAM! Petrify `token_skimmer.bin` (`chmod -x`), fix string-concatenation in `cart.js` (`Number(...)`), and collect `ram_16gb.dimm` + `gpu_shader_core_02.img`.",
@@ -76,6 +77,38 @@
       "label": "Mark BUG -> FIXED",
       "find": "// BUG:",
       "replace": "// FIXED:"
+    }
+  ],
+  "props": [
+    {
+      "id": "l6_fet",
+      "model": "prop.transistor",
+      "x": 3.15,
+      "label": "bus switch FET"
+    },
+    {
+      "id": "l6_pipe",
+      "model": "prop.water_pipe",
+      "x": 4.12,
+      "label": "chilled bus pipe"
+    },
+    {
+      "id": "l6_indicator",
+      "model": "prop.indicator",
+      "x": -0.6,
+      "label": "logic monitor"
+    },
+    {
+      "id": "l6_web",
+      "model": "prop.cobweb",
+      "x": 4.92,
+      "y": 3
+    },
+    {
+      "id": "l6_bat",
+      "model": "prop.bat",
+      "x": 3.05,
+      "y": 2.95
     }
   ],
   "winRules": [

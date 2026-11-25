@@ -59,9 +59,9 @@ export function applyLantern(stage: ComicStage, t: number): void {
   if (glow) glow.uniforms.uEmissive.value = ((glow.userData.baseEmissive as number | undefined) ?? 0.35) + 1.25 * k;
 }
 
-/** Builds (or swaps) the procgen room set for `kind` and lays it over the main panel. */
-export function syncRoomModel(stage: ComicStage, kind: RoomKind): void {
-  if (stage.room?.kind === kind) return;
+/** Builds (or swaps) the procgen room set for `kind` + `seed` and lays it over the main panel. */
+export function syncRoomModel(stage: ComicStage, kind: RoomKind, seed = 1): void {
+  if (stage.room?.kind === kind && stage.room.seed === seed) return;
   if (stage.room) {
     stage.world.remove(stage.room.model.group);
     stage.room.animator.dispose();
@@ -72,14 +72,14 @@ export function syncRoomModel(stage: ComicStage, kind: RoomKind): void {
   }
   const id = roomIdForKind(kind);
   if (!ModelCatalog.has(id)) return;
-  const model = buildModel(ModelCatalog.build(id, 1));
+  const model = buildModel(ModelCatalog.build(id, seed));
   const animator = createAnimator(model);
   for (const mat of model.allMaterials) {
     mat.userData.baseOpacity = mat.uniforms.uOpacity!.value;
     stage.comics.push(mat);
   }
   stage.world.add(model.group);
-  stage.room = { kind, model, animator };
+  stage.room = { kind, seed, model, animator };
   fitRoom(stage);
   stage.applyInk(model.group);
 }

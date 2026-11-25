@@ -2,6 +2,7 @@ import type { ModelSpec, Vec2 } from '../../core/types.js';
 import { makeRng } from '../../core/rng.js';
 import { designToRoomX, onWall, RoomBuilder, ROOM } from './frame.js';
 import { arch, led, mirroredTrace, ramPillar, seams, shell } from './kit.js';
+import { danglingSpider, indicatorPanel, perchedBat, radialCobweb, roomBoardTheme, textoliteBoardPlaque, waterPipeRun } from './kit-kiroween.js';
 
 /**
  * Floor 3, the bus maze: mirrored traces, loopback frames, RAM-slot corridors. A hall of mirrors,
@@ -46,6 +47,9 @@ export function buildCell(seed: number): ModelSpec {
   ramPillar(b, 2.75, 1.5, 0.52);
   b.box('slot-latch', [0.3, 1.0, 0.3], 'rubber', [-3.95, 0.5, 0.6]);
   b.box('slot-latch-tab', [0.42, 0.14, 0.34], 'pcbDark', [-3.9, 1.06, 0.6]);
+  radialCobweb(b, 3.55, 4.25, 0.42, 'heatsink');
+  waterPipeRun(b, [4.1, 4.45], [1.4, 4.45], 'copper', onWall(0.18), true);
+  danglingSpider(b, rng.range(1.9, 2.35), rng.range(0.6, 1.0), 'silicon', rng.next());
 
   b.standardSockets(1.8)
     .socket('mirrors', [designToRoomX(-0.2), 0, ROOM.zActor])
@@ -82,6 +86,9 @@ export function buildLabHall(seed: number): ModelSpec {
   ramPillar(b, 3.6, 2.9, 0.62);
   ramPillar(b, 2.6, 2.9, 0.62);
   ramPillar(b, -3.95, 2.9, 0.7);
+  textoliteBoardPlaque(b, -2.55, 3.25, 1.05, 0.56, roomBoardTheme(seed, rng, 'pcbBlue'));
+  indicatorPanel(b, 2.25, 3.55, ['dataCyan', 'phosphor', 'dataCyan']);
+  perchedBat(b, rng.range(1.3, 1.9), 4.1, 0.42, 'pcbBlack', rng.next());
 
   // The pedestal niche, dark on dark, behind where the runes go.
   const pedestalX = designToRoomX(-0.3);

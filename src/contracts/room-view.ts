@@ -46,6 +46,8 @@ export interface RoomView {
   path: string;
   title: string;
   kind: RoomKind;
+  /** Deterministic seed for `room.<kind>` set-dressing variation. Defaults to 1. */
+  roomSeed?: number;
   flood: number;
   lantern: boolean;
   /** True while the developer does not hold the lantern: the room is almost black and only a faint self-glow lights him. */

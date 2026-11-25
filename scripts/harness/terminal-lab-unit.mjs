@@ -53,7 +53,7 @@ await withProcgen(async (_p, vite) => {
   const cmds = await load('/src/terminal-lab/commands.ts');
   const { contextCommands } = await load('/src/terminal-lab/context.ts');
   const { LabModel } = await load('/src/terminal-lab/lab-model.ts');
-  const { importChapterLevelRef, listImportableLevels } = await load('/src/terminal-lab/level-import.ts');
+  const { importChapterLevelRef, levelToLabScript, listImportableLevels } = await load('/src/terminal-lab/level-import.ts');
   const { RunControl } = await load('/src/terminal-lab/run-control.ts');
   const { createSession } = await load('/src/game/session.ts');
   const disk = await load('/src/terminal-lab/disk.ts');
@@ -885,6 +885,27 @@ await withProcgen(async (_p, vite) => {
       assert.ok(results.every((r) => r.ok), `${item.ref} failed: ${results.filter((r) => !r.ok).map((r) => `${r.index}:${r.reasons.join(';')}`).join(', ')}`);
     }
     assert.equal(readFileSync(`chapters/${slug}/chapter.manifest.json`, 'utf8'), manifestBefore);
+    const customPack = rawPack();
+    customPack.levels[0].roomSeed = 77;
+    customPack.levels[0].props = [
+      { id: 'gpu_stage', model: 'prop.gpu_card', x: 3.6, label: 'Tensor blade' },
+      { id: 'wire_stage', model: 'prop.wire_loom', x: 4.3 },
+    ];
+    customPack.levels[0].files.push({ path: '/lab/gpu_tensor_core_01.img', kind: 'file', content: 'GPU\n' });
+    customPack.levels[0].pickups.push({ id: 'gpu_p', type: 'ssd', path: '/lab/gpu_tensor_core_01.img' });
+    const imported = levelToLabScript(customPack, customPack.levels[0], []);
+    assert.deepEqual(
+      imported.setup.filter((op) => op.op === 'prop').map((op) => [op.id, op.model, op.x]),
+      [['gpu_stage', 'prop.gpu_card', 3.6], ['wire_stage', 'prop.wire_loom', 4.3]],
+    );
+    const sProps = createChapterSession({ chapterId: 'lab-unit', pack: customPack, preview: true, startLevelId: 'lab-1' });
+    sProps.skipIntro();
+    const snapBefore = sProps.snapshot();
+    assert.equal(snapBefore.room.roomSeed, 77);
+    assert.ok(snapBefore.room.actors.some((a) => a.id === 'prop:gpu_stage' && a.model === 'prop.gpu_card'));
+    assert.ok(snapBefore.room.actors.some((a) => a.id === 'gpu_p' && a.model === 'pickup.gpu'));
+    sProps.exec('mv gpu_tensor_core_01.img ~');
+    assert.deepEqual([sProps.snapshot().ssd, sProps.snapshot().backups], [256, 1]);
     assert.ok(importChapterLevelRef('bad-ref', []).problem);
     assert.ok(importChapterLevelRef('no-such-chapter/level-1', []).problem);
     assert.ok(importChapterLevelRef(`${slug}/no-such-level`, []).problem);
@@ -1656,6 +1677,32 @@ await withProcgen(async (_p, vite) => {
     assert.equal(COMIC_FX_LIGHTS.uFxPos0.value.w, 0);
     base.dispose();
     variant.dispose();
+  });
+
+  await test('consumable pickups fly and pulse with distinct speeds and tacts across types and seeds', async () => {
+    const { resolveHover } = await load('/src/procgen/runtime/animator/hover.ts');
+    const ids = ['pickup.energy', 'pickup.ram', 'pickup.ssd', 'pickup.gpu'];
+    const signatures = (seed) => ids.map((id) => {
+      const spec = ModelCatalog.build(id, seed);
+      const bob = spec.parts.find((p) => p.anim?.type === 'bob')?.anim;
+      const pulse = spec.parts.find((p) => p.anim?.type === 'pulse')?.anim;
+      const built = _p.buildModel(spec, { textures: false });
+      const hover = resolveHover(built, {});
+      _p.disposeModel(built);
+      assert.ok(bob && pulse && hover.on && hover.bodyBob, `${id} (seed ${seed}) must resolve a rigid bodyBob`);
+      assert.equal(hover.bodyBob.speed, bob.speed);
+      return { id, bobSpeed: bob.speed, bobAmp: bob.amp, bobPhase: bob.phase, pulseSpeed: pulse.speed, pulsePhase: pulse.phase };
+    });
+
+    const s1 = signatures(1);
+    const s2 = signatures(2);
+    assert.equal(new Set(s1.map((x) => x.bobSpeed)).size, ids.length, 'consumables must have distinct bob speeds');
+    assert.equal(new Set(s1.map((x) => x.bobPhase)).size, ids.length, 'consumables must have distinct bob phases (tacts)');
+    assert.equal(new Set(s1.map((x) => x.pulseSpeed)).size, ids.length, 'consumables must have distinct pulse speeds');
+    for (let i = 0; i < ids.length; i++) {
+      assert.notEqual(s1[i].bobSpeed, s2[i].bobSpeed, `${ids[i]} bob speed must vary by seed`);
+      assert.notEqual(s1[i].bobPhase, s2[i].bobPhase, `${ids[i]} bob tact/phase must vary by seed`);
+    }
   });
 });
 

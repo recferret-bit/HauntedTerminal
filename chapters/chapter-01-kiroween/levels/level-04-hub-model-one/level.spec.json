@@ -5,6 +5,7 @@
   "cwd": "/home/dev",
   "roomKind": "desk",
   "floorTheme": 1,
+  "roomSeed": 4,
   "mechanic": "hub",
   "exitDir": "/home/dev/sector_ui_grid",
   "summary": "At the Hub, you meet an old bearded guy smoking a cigarette and coding at godlike speed on a Matrix-like CRT display! Talk to him (`cat dad.tty.sock`), read `server_rack.conf`, and reboot Kiro with the first open-weight model (`kiro load qwen`) to disable Anti-Gravy!",
@@ -30,6 +31,38 @@
   "enemies": [],
   "pickups": [],
   "patches": [],
+  "props": [
+    {
+      "id": "hub1_ram",
+      "model": "prop.ram_bank",
+      "x": 3.13,
+      "label": "starter DDR5 bank"
+    },
+    {
+      "id": "hub1_gpu",
+      "model": "prop.gpu_card",
+      "x": 1.1,
+      "label": "node #1 tensor card"
+    },
+    {
+      "id": "hub1_wire",
+      "model": "prop.wire_loom",
+      "x": 2.07,
+      "label": "server patch loom"
+    },
+    {
+      "id": "hub1_cooler",
+      "model": "prop.cooler_tower",
+      "x": -0.14,
+      "label": "tower sink"
+    },
+    {
+      "id": "hub1_web",
+      "model": "prop.cobweb",
+      "x": 4.85,
+      "y": 2.95
+    }
+  ],
   "winRules": [
     {
       "kind": "read_file",

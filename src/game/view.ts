@@ -5,10 +5,16 @@
  * to -1.15 (screen-right); the hero stands near 2.4.
  */
 import type { ActorKind, FloorId, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomView } from './types.js';
+import { hashSeed } from '../procgen/core/rng.js';
 import { heroModel } from './inventory.js';
 import { F3, LAYOUTS, type Layout, type SceneFacts, type ViewThing } from './view-layouts.js';
 
 export type { SceneFacts, ViewThing };
+
+/** Deterministic positive room seed derived from a VFS path and floor/level salt. */
+export function roomSeedForPath(cwd: string, salt = 1): number {
+  return (hashSeed(cwd, salt) % 99999) + 1;
+}
 
 /** Legacy cast keys for enemies that replaced an actor of the first stage (one per room). */
 const LEGACY_BY_MODEL: Record<string, LegacyActorKey> = {
@@ -76,6 +82,7 @@ export function buildRoom(facts: SceneFacts): RoomView {
     path: facts.cwd,
     title: `FLOOR ${String(floor).padStart(2, '0')} // ${facts.cwd}`,
     kind,
+    roomSeed: roomSeedForPath(facts.cwd, floor),
     flood: kind === 'cell' ? facts.flood : 0,
     lantern: facts.lantern,
     dark: facts.dark ?? false,

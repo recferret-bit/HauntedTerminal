@@ -5,6 +5,7 @@
   "cwd": "/srv/kiroween/ui_dashboard",
   "roomKind": "lab_hall",
   "floorTheme": 3,
+  "roomSeed": 55,
   "mechanic": "html-css",
   "exitDir": "/srv/kiroween/ui_dashboard/logic_cell",
   "summary": "Anti-Gravy is down, but Codec, Gork, and Clod still laugh at you! Fix the broken HTML/CSS hardware telemetry dashboard (`index.html` + `storefront.css`) and scavenge `ram_16gb.dimm` + `gpu_tensor_chip_02.img`.",
@@ -72,6 +73,37 @@
       "label": "Remove disabled attribute from #checkout-btn",
       "find": "<button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>",
       "replace": "<button id=\"checkout-btn\" type=\"button\">Mount to Server</button>"
+    }
+  ],
+  "props": [
+    {
+      "id": "l5_gpu_card",
+      "model": "prop.gpu_card",
+      "x": 4.2,
+      "label": "display render card"
+    },
+    {
+      "id": "l5_indicator",
+      "model": "prop.indicator",
+      "x": 2.07,
+      "label": "grid telemetry"
+    },
+    {
+      "id": "l5_ram_bank",
+      "model": "prop.ram_bank",
+      "x": -0.3,
+      "label": "frame buffer DIMMs"
+    },
+    {
+      "id": "l5_wire_loom",
+      "model": "prop.wire_loom",
+      "x": 4.92
+    },
+    {
+      "id": "l5_spider",
+      "model": "prop.spider",
+      "x": -0.96,
+      "y": 2.4
     }
   ],
   "winRules": [

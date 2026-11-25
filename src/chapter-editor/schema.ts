@@ -108,6 +108,7 @@ export const OVERVIEW: Field[] = [
   t('cwd', 'Start directory', { mono: true }),
   sel('roomKind', 'Room', ROOM_KINDS),
   sel('floorTheme', 'Floor theme', [1, 2, 3, 4, 5]),
+  opt(n('roomSeed', 'Room seed (varies background hardware & Kiroween details)', { step: 1 })),
   sel('mechanic', 'Mechanic', MECHANICS),
   opt(t('exitDir', 'Exit gate (cd into it to advance)', { suggest: 'paths', mono: true })),
   opt(t('exitCommand', 'Exit command (final level)', { mono: true })),
@@ -135,7 +136,21 @@ export const ENEMY_FIELDS: Field[] = [
   opt(t('helps', 'Helps enemy (crack)', { suggest: 'enemies' })),
 ];
 
-export const PICKUP_FIELDS: Field[] = [t('id', 'Id'), sel('type', 'Type', PICKUP_TYPES), t('path', 'File', { suggest: 'paths', mono: true }), opt(b('locked', 'Starts encrypted'))];
+export const PICKUP_FIELDS: Field[] = [
+  t('id', 'Id'),
+  sel('type', 'Type', PICKUP_TYPES),
+  t('path', 'File', { suggest: 'paths', mono: true }),
+  opt(b('locked', 'Starts encrypted')),
+  opt(t('model', 'Override pickup model', { suggest: 'models' })),
+];
+
+export const PROP_FIELDS: Field[] = [
+  t('id', 'Id'),
+  t('model', 'Model', { suggest: 'models' }),
+  n('x', 'Stage x (room spans about -1 to 5)', { step: 0.1 }),
+  opt(n('y', 'Height above the floor', { step: 0.1 })),
+  opt(t('label', 'Label')),
+];
 
 export const PATCH_FIELDS: Field[] = [t('file', 'File name'), t('label', 'Label'), t('find', 'Find', { rows: 2, mono: true }), t('replace', 'Replace', { rows: 2, mono: true })];
 
@@ -167,6 +182,12 @@ export const ENTITIES: Field[] = [
     label: 'Patch chips (one-click fixes in the code editor)',
     item: { title: (p) => `${String(p.label)} → ${String(p.file)}`, fields: PATCH_FIELDS },
   },
+  opt({
+    type: 'array',
+    key: 'props',
+    label: 'Stage props (hardware & Kiroween dressing)',
+    item: { title: (p) => `${String(p.id)} (${String(p.model)})`, fields: PROP_FIELDS },
+  }),
 ];
 
 const DESC = t('description', 'Checklist line shown to the player', { rows: 2 });

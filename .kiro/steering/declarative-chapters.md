@@ -12,7 +12,7 @@ The game is an engine. A chapter is data. **No code may name a chapter, a level 
 | What | File | Played by |
 |---|---|---|
 | Identity, ally, boss, `grants`, `outro`/`finale`, `dossier` | `chapter.manifest.json` | `src/chapters/session-*.ts` via `g.pack.manifest` |
-| The world and how to win | `levels/*/level.spec.json` | `session-level.ts`, `session-rules.ts` |
+| The world, stage dressing (`roomSeed`, `props`, `pickups[].model`) and how to win | `levels/*/level.spec.json` | `session-level.ts`, `session-rules.ts`, `session-snapshot.ts` |
 | What happens: `script` | `level.spec.json -> script` | `src/chapters/script.ts` (the one interpreter) |
 | Banner, 3 hints, taunt, completion, speakers | `story/dialogs.json` | `script.ts`, `session-meta.ts` |
 | Comic pages | `story/comix.spec.json` | `scripts/harness/draw-comix.mjs`, comic reader |

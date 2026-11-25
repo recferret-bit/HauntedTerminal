@@ -186,8 +186,15 @@ await withProcgen(async (_procgen, vite) => {
 
     const brokenCh = chModel.pack();
     brokenCh.levels[0].enemies.push({ id: 'ghost-bad', type: 'nonexistent_enemy_kind', path: '/missing/dir' });
+    brokenCh.levels[0].roomSeed = 0;
+    brokenCh.levels[0].props = [{ id: 'dup', model: 'prop.missing_xyz', x: 3.5 }, { id: 'dup', model: 'prop.wire_loom', x: 4.1 }];
+    brokenCh.levels[0].pickups.push({ id: 'gpu-bad', type: 'ssd', path: brokenCh.levels[0].files[0].path, model: 'pickup.missing_xyz' });
     const brokenChIssues = chapterCheckMod.checkPack(brokenCh);
     assert.ok(brokenChIssues.some((i) => i.severity === 'error'));
+    assert.ok(brokenChIssues.some((i) => i.tab === 'overview' && i.message.includes('roomSeed')));
+    assert.ok(brokenChIssues.some((i) => i.tab === 'entities' && i.message.includes('duplicate prop id "dup"')));
+    assert.ok(brokenChIssues.some((i) => i.tab === 'entities' && i.message.includes('prop.missing_xyz')));
+    assert.ok(brokenChIssues.some((i) => i.tab === 'entities' && i.message.includes('pickup.missing_xyz')));
 
     for (const cxSlug of listComixIds()) {
       const cxModel = new comixModelMod.ComixModel(readComix(cxSlug));

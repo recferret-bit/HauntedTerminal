@@ -206,7 +206,8 @@ export class World {
     if (!node) return null;
     const info = PICKUP_INFO[spec.type];
     if (spec.locked) node.mode = 0;
-    const p: Pickup = { id: spec.id, type: spec.type, model: info.model, inode: node.id, name: node.name, amount: info.amount, collected: false };
+    const model = spec.model ?? (spec.type === 'ssd' && /gpu/i.test(node.name) ? 'pickup.gpu' : info.model);
+    const p: Pickup = { id: spec.id, type: spec.type, model, inode: node.id, name: node.name, amount: info.amount, collected: false };
     this.pickups.push(p);
     return p;
   }

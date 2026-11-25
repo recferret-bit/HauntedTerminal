@@ -5,6 +5,7 @@
   "cwd": "/home/dev",
   "roomKind": "desk",
   "floorTheme": 1,
+  "roomSeed": 10,
   "mechanic": "hub",
   "exitDir": "/home/dev/clod_kernel_core",
   "summary": "Return to the Hub! The Old Bearded Coder slots your final RAM + GPU chips into the Matrix server (`cat open_weights_cluster.conf`, `cat dad.tty.sock`) and reboots Kiro with Open-Weight Model #3 (`kiro load llama`) to disable GORK—leaving CLOD as the last surviving model of the Big Four!",
@@ -30,6 +31,56 @@
   "enemies": [],
   "pickups": [],
   "patches": [],
+  "props": [
+    {
+      "id": "hub3_rack",
+      "model": "prop.gpu_server",
+      "x": 0.1,
+      "label": "3-model open-weights cluster"
+    },
+    {
+      "id": "hub3_gpu",
+      "model": "prop.gpu_card",
+      "x": 4.1,
+      "label": "H100 auxiliary blade"
+    },
+    {
+      "id": "hub3_ram",
+      "model": "prop.ram_bank",
+      "x": 3.13,
+      "label": "full ECC bank"
+    },
+    {
+      "id": "hub3_aio",
+      "model": "prop.cooler_aio",
+      "x": -0.38,
+      "label": "dual-fan radiator"
+    },
+    {
+      "id": "hub3_pipe",
+      "model": "prop.water_pipe",
+      "x": 1.1,
+      "label": "chilled bus loop"
+    },
+    {
+      "id": "hub3_ind",
+      "model": "prop.indicator",
+      "x": 2.07,
+      "label": "ensemble online"
+    },
+    {
+      "id": "hub3_fet",
+      "model": "prop.transistor",
+      "x": 4.85,
+      "label": "VRM stage"
+    },
+    {
+      "id": "hub3_bat",
+      "model": "prop.bat",
+      "x": 4.65,
+      "y": 2.85
+    }
+  ],
   "winRules": [
     {
       "kind": "read_file",

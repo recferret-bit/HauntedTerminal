@@ -2,7 +2,7 @@ import { SSD_PER_BACKUP, maxHpFor } from '../game/bestiary.js';
 import { battleView } from '../game/battle.js';
 import { absPath } from '../game/tree.js';
 import type { GameSnapshot, LevelInfo, RoomActor, RoomView } from '../game/types.js';
-import { buildRoom, type SceneFacts, type ViewThing } from '../game/view.js';
+import { buildRoom, roomSeedForPath, type SceneFacts, type ViewThing } from '../game/view.js';
 import { computeRunRank, splitParentAndName, type ChapterState } from './session-state.js';
 import { hiddenEnemyId, isNodeHidden, kiroStage, tutorialState } from './script.js';
 import { chapterHintGoals } from './session-hints.js';
@@ -34,6 +34,10 @@ function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, 
     room.floor = g.rt.spec.index;
     if (!g.ended) {
       room.kind = g.rt.spec.roomKind;
+      room.roomSeed =
+        cwdPath === g.rt.spec.cwd && g.rt.spec.roomSeed !== undefined
+          ? g.rt.spec.roomSeed
+          : roomSeedForPath(cwdPath, g.rt.spec.index);
       const modeBadges = [
         ...(g.chaosMode ? ['CHAOS'] : []),
       ];
@@ -43,6 +47,22 @@ function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, 
       room.caption = exitOpen
         ? `SECTOR CLEAR — ${exitBase ? `cd ${exitBase}` : `run ${g.rt.spec.exitCommand ?? 'exit'}`} to advance!`
         : lockedCaption ?? dEntry?.banner ?? g.rt.spec.summary;
+
+      if (cwdPath === g.rt.spec.cwd) {
+        for (const prop of g.rt.spec.props ?? []) {
+          room.actors.push({
+            key: 'entity',
+            id: `prop:${prop.id}`,
+            model: prop.model,
+            kind: prop.model.startsWith('door.') ? 'door' : 'prop',
+            state: 'idle',
+            x: prop.x,
+            y: prop.y,
+            hidden: false,
+            label: prop.label,
+          });
+        }
+      }
 
       // Materialize running Docker containers as physical 3D crates on the stage without overlapping existing ground actors!
       const containerNames =

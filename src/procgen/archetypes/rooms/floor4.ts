@@ -2,6 +2,7 @@ import type { ModelSpec } from '../../core/types.js';
 import { makeRng } from '../../core/rng.js';
 import { designToRoomX, onWall, RoomBuilder, ROOM } from './frame.js';
 import { combOutline, fan, led, pipe, seams, shell } from './kit.js';
+import { danglingSpider, indicatorPanel, perchedBat, radialCobweb, roomBoardTheme, textoliteBoardPlaque, waterPipeRun } from './kit-kiroween.js';
 
 /**
  * Floor 4, the CPU cooling furnace: heatsink fins, heat pipes, fans, the glowing die.
@@ -49,6 +50,10 @@ export function buildCatwalk(seed: number): ModelSpec {
 
   // Left wing: an intake fan between the pipes and the edge.
   fan(b, 2.05, 3.0, 1.0, 0.74, 'silicon', 'heatsink', 0.5);
+  waterPipeRun(b, [-1.5, 4.45], [2.4, 4.45], 'copper', onWall(0.18), true);
+  indicatorPanel(b, -1.3, 3.15, ['phosphor', 'powerAmber', 'lockRed']);
+  radialCobweb(b, 3.5, 4.2, 0.42, 'heatsink');
+  perchedBat(b, rng.range(-0.45, 0.25), 3.12, 0.4, 'pcbBlack', rng.next());
 
   b.standardSockets(2.2)
     .socket('valve', [valveX, 0, ROOM.zActor])
@@ -86,6 +91,9 @@ export function buildFurnace(seed: number): ModelSpec {
   fan(b, 3.05, 3.3, 1.4, 0.56, 'rubber', 'heatsink', 0.9);
   fan(b, 3.05, 1.2, 1.4, 0.56, 'rubber', 'heatsink', 0.75);
   led(b, 'lockRed', [3.75, 2.25, 0.55], 1.5, rng.next());
+  waterPipeRun(b, [-4.0, 4.45], [-1.0, 4.45], 'copper', onWall(0.18), true);
+  textoliteBoardPlaque(b, -2.15, 2.75, 1.0, 0.5, roomBoardTheme(seed, rng, 'pcbRed'));
+  danglingSpider(b, rng.range(1.85, 2.25), rng.range(0.6, 0.95), 'silicon', rng.next());
 
   // Ember slits in the floor apron.
   for (const x of [1.4, -0.5, -2.6]) {
