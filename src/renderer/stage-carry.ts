@@ -86,7 +86,7 @@ export function itemCarried(stage: ComicStage, ev: Extract<KernelEvent, { type: 
   }, () => {
     if (!c.alive) return;
     item.scale.setScalar(1);
-    flyTo(stage, a, waitingSpot(stage, a), 1100, undefined, undefined, true);
+    flyTo(stage, a, waitingSpot(stage, a), 2200, undefined, undefined, true);
   });
 }
 
@@ -132,6 +132,6 @@ export function itemGiven(stage: ComicStage, ev: Extract<KernelEvent, { type: 'I
     pop();
     dropCarried(stage, c);
     if (carrier.disposed) return;
-    flyTo(stage, carrier, carrier.home.clone(), 1000, () => setRest(carrier));
+    flyTo(stage, carrier, carrier.home.clone(), 2400, () => setRest(carrier));
   });
 }

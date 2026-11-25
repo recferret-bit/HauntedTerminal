@@ -4,6 +4,7 @@ import type { FxCue } from './event-fx.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
 import { buildSystemHand } from './procgen-cast.js';
 import { easeOutBack, stepped } from './tween.js';
+import { flightPath, smootherstep } from './stage-flight-path.js';
 import { fade, removeActor, setRest } from './stage-actor.js';
 import { ACTOR_Z, HERO_STEPS, HERO_WALK_MS } from './stage-const.js';
 import { playCues, playFx, say } from './stage-fx.js';
@@ -355,10 +356,10 @@ export function popOut(stage: ComicStage, a: StageActor): void {
   });
 }
 
-/** Which way an actor enters: `appear` is the classic spawn performance, `glide` slides it in from the panel edge. */
+/** Which way an actor enters: `appear` is the classic spawn performance, `glide` flies it in from the panel edge. */
 export type SpawnEntrance = 'appear' | 'glide';
 
-/** Entrance of a script spawn. `glide` tweens the actor from the screen-right panel edge to its slot, stepped at 8 fps. */
+/** Entrance of a script spawn. `glide` flies the actor from the screen-right panel edge to its slot along a smooth winding path (`flyTo`). */
 export function playEntrance(stage: ComicStage, a: StageActor, reason: string, entrance: SpawnEntrance | undefined): void {
   if (entrance !== 'glide') {
     playSpawn(stage, a, reason);
@@ -369,7 +370,7 @@ export function playEntrance(stage: ComicStage, a: StageActor, reason: string, e
   a.awaitingSpawn = false;
   a.base.set(fromX, a.home.y + 0.9, a.home.z);
   a.animator.setState('walk');
-  flyTo(stage, a, a.home.clone(), 1500, () => setRest(a), g);
+  flyTo(stage, a, a.home.clone(), 3200, () => setRest(a), g);
 }
 
 /** Natural facing of every model: screen-right (-x). A negative `scale.x` on the body mirrors it to face screen-left (+x). */
@@ -383,47 +384,49 @@ export function faceHeroNow(stage: ComicStage, a: StageActor): void {
   if (hero && hero !== a) faceDir(a, Math.sign(hero.base.x - a.base.x));
 }
 
-const FLY_FPS = 8;
+/** How fast the bank angle follows the flight's horizontal speed (per second; higher is snappier). */
+const FLY_LEAN_RATE = 7;
 
 /**
- * Flight: a quadratic Bezier arc from where `a` is to `to` (the control point sits above the midpoint and
- * pulled back, so the path swoops and settles), eased in and out, sampled at 8 fps through `stepped` like
- * every comic motion. A small bob rides on top, the body leans into the flight and mirrors to face the way
- * it travels (models face screen-right at rest), then turns to the hero on arrival. It takes the actor's
- * motion (`claim`), or continues claim `gen` when the caller already holds it, and lets go on arrival
- * unless `hold` (a hovering carrier keeps the claim). A newer motion on the actor cancels it quietly.
+ * Flight: a continuous, smooth path (`flightPath`: an S-winding spline, never a straight slide) walked with a
+ * quintic ease so it lifts off, cruises and lands softly. It is the one motion that is not stepped: it moves
+ * every frame, because a stepped glide reads as teleporting. A small sway and bob ride on top and fade at both
+ * ends, the body banks into the way it is moving (the bank is low-passed, so it never snaps), and a slight
+ * stretch follows the speed. The body mirrors once to face the way it travels (models face screen-right at
+ * rest) and turns to the hero on arrival. It takes the actor's motion (`claim`), or continues claim `gen` when
+ * the caller already holds it, and lets go on arrival unless `hold` (a hovering carrier keeps the claim). A
+ * newer motion on the actor cancels it quietly.
  */
 export function flyTo(stage: ComicStage, a: StageActor, to: THREE.Vector3, ms: number, then?: () => void, gen?: number, hold = false): void {
   if (a.disposed) return;
   const g = gen ?? claim(a);
   const from = a.base.clone();
-  const dx = to.x - from.x;
-  const dir = Math.sign(dx);
+  const dir = Math.sign(to.x - from.x);
   faceDir(a, dir);
-  const run = Math.hypot(dx, to.y - from.y);
-  const lift = Math.min(1.5, 0.5 + run * 0.28);
-  const ctrl = new THREE.Vector3((from.x + to.x) / 2 - dir * Math.min(0.5, run * 0.18), Math.max(from.y, to.y) + lift, (from.z + to.z) / 2);
-  const frames = Math.max(2, Math.round((ms / 1000) * FLY_FPS));
+  const path = flightPath(from, to);
   const baseScale = Math.abs(a.body.scale.x);
+  const seconds = ms / 1000;
+  let lastT = 0;
+  let lean = 0;
   stage.tweens.add(ms, (t) => {
     if (!owns(a, g)) return;
-    const s = stepped(t, frames);
-    const k = s * s * (3 - 2 * s);
-    const u = 1 - k;
-    a.base.set(
-      u * u * from.x + 2 * u * k * ctrl.x + k * k * to.x,
-      u * u * from.y + 2 * u * k * ctrl.y + k * k * to.y,
-      u * u * from.z + 2 * u * k * ctrl.z + k * k * to.z,
-    );
-    const frame = Math.floor(t * frames);
-    const mid = Math.sin(s * Math.PI);
-    a.offset.y = s >= 1 ? 0 : (frame % 2 ? 0.045 : -0.02) * (0.4 + mid);
-    a.body.rotation.z = -dir * 0.16 * mid;
-    a.body.scale.y = baseScale * (1 + 0.04 * mid);
+    const k = smootherstep(t);
+    const before = a.base.x;
+    a.base.copy(path.getPointAt(k));
+    const dt = Math.max(1e-4, (t - lastT) * seconds);
+    lastT = t;
+    const vx = (a.base.x - before) / dt;
+    lean += (Math.max(-0.3, Math.min(0.3, -vx * 0.09)) - lean) * (1 - Math.exp(-dt * FLY_LEAN_RATE));
+    const env = Math.sin(Math.PI * k);
+    const clock = t * seconds;
+    a.offset.x = Math.sin(clock * 5.6 + 1.3) * 0.05 * env;
+    a.offset.y = Math.sin(clock * 8.2) * 0.06 * env;
+    a.body.rotation.z = lean;
+    a.body.scale.y = baseScale * (1 + 0.05 * env);
   }, () => {
     if (!owns(a, g)) return;
     a.base.copy(to);
-    a.offset.y = 0;
+    a.offset.set(0, 0, 0);
     a.body.rotation.z = 0;
     a.body.scale.y = baseScale;
     faceHeroNow(stage, a);
