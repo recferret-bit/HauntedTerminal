@@ -1,3 +1,4 @@
+import { installFullscreenKey, isFullscreen, onFullscreenChange, toggleFullscreen } from '../chapters/fullscreen.js';
 import { mountEscMenu } from '../ui/esc-menu.js';
 import { readSoundPref, writeSoundPref } from '../ui/sound-pref.js';
 import { colourise } from '../ui/terminal.js';
@@ -48,9 +49,14 @@ export function mountPlayMenu(play: Play): void {
     },
     onRestartLevel: () => restartLevel(play),
     onLeave: () => window.location.assign(MAIN_MENU_URL),
+    onFullscreen: () => void toggleFullscreen(),
+    isFullscreen,
   });
   play.menu = menu;
   applySavedSound(play);
+  // F11 and the menu toggle share one helper; the label follows every change (F11, browser Esc, the OS).
+  installFullscreenKey();
+  onFullscreenChange(() => menu.update(play.session.snapshot()));
 
   window.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || e.repeat) return;

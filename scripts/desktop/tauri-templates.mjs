@@ -124,7 +124,8 @@ export function renderTauriConf(cfg) {
           minWidth: 1100,
           minHeight: 720,
           resizable: true,
-          fullscreen: false,
+          // Every launch starts full screen (spec .kiro/specs/fullscreen-mode/ Req 5); F11 and the Esc menu toggle it.
+          fullscreen: true,
         },
       ],
       security: {
@@ -162,7 +163,8 @@ export function renderCapabilityJson() {
       identifier: 'default',
       description: 'Least-privilege capabilities for the main Out Of Credits desktop window.',
       windows: ['main'],
-      permissions: ['core:default'],
+      // F11 / the Esc menu toggle the window (src/chapters/fullscreen.ts): only these two window calls on top of core:default.
+      permissions: ['core:default', 'core:window:allow-set-fullscreen', 'core:window:allow-is-fullscreen'],
     },
     null,
     2,

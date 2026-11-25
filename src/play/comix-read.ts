@@ -1,4 +1,5 @@
 import '../contracts/migrate-storage.js';
+import { installFullscreenKey } from '../chapters/fullscreen.js';
 import '../styles/hub.css';
 import '../styles/comix-reader.css';
 import { buildPlayUrl, CHAPTER_MANIFESTS, getChapterComix, getChapterManifest } from '../chapters/catalog.js';
@@ -170,3 +171,6 @@ function boot(): void {
 }
 
 boot();
+
+// F11 toggles full screen on this page (spec .kiro/specs/fullscreen-mode/).
+installFullscreenKey();

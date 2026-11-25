@@ -1,4 +1,5 @@
 import '../contracts/migrate-storage.js';
+import { installFullscreenKey } from '../chapters/fullscreen.js';
 import '../styles/hub.css';
 import { CHAPTER_MANIFESTS, readChapterProgress } from '../chapters/catalog.js';
 import { hydrateFromDesktopSaveBundle } from '../chapters/portable-save.js';
@@ -99,3 +100,6 @@ function bootstrapChaptersPage(): void {
 }
 
 bootstrapChaptersPage();
+
+// F11 toggles full screen on this page (spec .kiro/specs/fullscreen-mode/).
+installFullscreenKey();

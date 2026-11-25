@@ -155,6 +155,16 @@ try {
 
   const confPath = join(standaloneDir, 'tauri.conf.json');
   const origConf = readFileSync(confPath, 'utf8');
+  // Full screen (spec .kiro/specs/fullscreen-mode/ Req 5, 7): the main window starts full screen, and the capability adds
+  // exactly the two window calls F11 and the Esc menu toggle need.
+  const mainWindow = JSON.parse(origConf).app.windows.find((w) => w.label === 'main');
+  assert.equal(mainWindow?.fullscreen, true, 'The Tauri main window must start full screen');
+  const capability = JSON.parse(readFileSync(join(standaloneDir, 'capabilities/default.json'), 'utf8'));
+  assert.deepEqual(
+    capability.permissions,
+    ['core:default', 'core:window:allow-set-fullscreen', 'core:window:allow-is-fullscreen'],
+    'The main window capability is core:default plus set/is fullscreen only',
+  );
   writeFileSync(confPath, origConf.replace("'unsafe-eval' ", '').replace('"Game"', '"DeveloperTool"'));
   const cspIssues = verifyTauriDir(standaloneDir, achievements);
   assert.ok(cspIssues.some((msg) => msg.includes('unsafe-eval')), 'Verifier must catch missing unsafe-eval CSP (breaks Level 6 & Laptop Lab)');

@@ -78,4 +78,107 @@ await withProcgen(async (tabs) => {
   });
 }, '/src/hub/tabs.ts');
 
+// Full screen (spec .kiro/specs/fullscreen-mode/): each scenario loads the helper fresh, with its own fake page.
+function fakePage({ refuse = false, tauri = null } = {}) {
+  const on = { doc: {}, win: {} };
+  const add = (bag) => (type, fn) => { (bag[type] ||= []).push(fn); };
+  const fire = (bag, type, ev = {}) => (bag[type] || []).forEach((fn) => fn(ev));
+  const docEl = {
+    requestFullscreen: async () => {
+      if (refuse) throw new Error('refused');
+      doc.fullscreenElement = docEl;
+      fire(on.doc, 'fullscreenchange');
+    },
+  };
+  const doc = {
+    fullscreenElement: null,
+    documentElement: docEl,
+    exitFullscreen: async () => { doc.fullscreenElement = null; fire(on.doc, 'fullscreenchange'); },
+    addEventListener: add(on.doc),
+  };
+  const win = { addEventListener: add(on.win) };
+  if (tauri) win.__TAURI_INTERNALS__ = { invoke: tauri };
+  globalThis.window = win;
+  globalThis.document = doc;
+  const key = (k, extra = {}) => {
+    const ev = { key: k, repeat: false, prevented: false, preventDefault() { this.prevented = true; }, stopPropagation() {}, ...extra };
+    fire(on.win, 'keydown', ev);
+    return ev;
+  };
+  return { doc, win, key, fire: (type) => fire(on.win, type) };
+}
+const settle = () => new Promise((r) => setTimeout(r, 0));
+function dropFakePage() {
+  delete globalThis.window;
+  delete globalThis.document;
+}
+
+await withProcgen(async (fs) => {
+  await test('fullscreen (web): F11 toggles the page, the change callback and isFullscreen follow, one listener per page', async () => {
+    const page = fakePage();
+    try {
+      const seen = [];
+      fs.onFullscreenChange((v) => seen.push(v));
+      fs.installFullscreenKey();
+      fs.installFullscreenKey();
+      assert.equal(fs.isFullscreen(), false);
+      const ev = page.key('F11');
+      assert.equal(ev.prevented, true, 'the browser F11 is replaced');
+      await settle();
+      assert.equal(fs.isFullscreen(), true);
+      page.key('F11', { repeat: true });
+      await settle();
+      assert.equal(fs.isFullscreen(), true, 'a held F11 does not toggle again');
+      assert.equal(await fs.toggleFullscreen(), false);
+      assert.deepEqual(seen, [true, false], 'one listener, so each toggle notifies once');
+      assert.equal(page.key('a').prevented, false, 'other keys pass through');
+    } finally {
+      dropFakePage();
+    }
+  });
+}, '/src/chapters/fullscreen.ts');
+
+await withProcgen(async (fs) => {
+  await test('fullscreen (web): a refused request throws nothing and leaves it off', async () => {
+    fakePage({ refuse: true });
+    try {
+      assert.equal(await fs.toggleFullscreen(), false);
+      assert.equal(fs.isFullscreen(), false);
+    } finally {
+      dropFakePage();
+    }
+  });
+}, '/src/chapters/fullscreen.ts');
+
+await withProcgen(async (fs) => {
+  await test('fullscreen (Tauri): toggles the main window through the window plugin and reads the state back', async () => {
+    const calls = [];
+    let winOn = true;
+    const page = fakePage({
+      tauri: async (cmd, args) => {
+        calls.push([cmd, args]);
+        if (cmd === 'plugin:window|is_fullscreen') return winOn;
+        if (cmd === 'plugin:window|set_fullscreen') { winOn = args.value; return null; }
+        throw new Error(`unexpected ${cmd}`);
+      },
+    });
+    try {
+      const seen = [];
+      fs.onFullscreenChange((v) => seen.push(v));
+      await settle();
+      assert.equal(fs.isFullscreen(), true, 'the window starts full screen (tauri.conf.json)');
+      assert.equal(await fs.toggleFullscreen(), false);
+      assert.ok(calls.some(([c, a]) => c === 'plugin:window|set_fullscreen' && a.label === 'main' && a.value === false));
+      assert.equal(page.doc.fullscreenElement, null, 'Tauri never uses the page Fullscreen API');
+      winOn = true;
+      page.fire('resize');
+      await settle();
+      assert.equal(fs.isFullscreen(), true, 'a change made by the OS is picked up on resize');
+      assert.deepEqual(seen, [true, false, true]);
+    } finally {
+      dropFakePage();
+    }
+  });
+}, '/src/chapters/fullscreen.ts');
+
 console.log(`\nhub unit: ${count()} tests passed`);

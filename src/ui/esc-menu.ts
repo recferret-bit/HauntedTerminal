@@ -17,6 +17,9 @@
  *   onRestartLevel(): void   the same session call `restart-level --yes` makes (`session.restartFloor()`); runs once, after
  *                            the second step's `Confirm restart`; it never types into the terminal.
  *   onLeave(): void          go to /chapters.html; runs once, after the confirm line's `Leave`.
+ *   onFullscreen(): void     toggle full screen (`toggleFullscreen()`, spec .kiro/specs/fullscreen-mode/); the button
+ *                            label follows `isFullscreen()` on the next `update`.
+ *   isFullscreen(): boolean  the current full-screen state, read on every render while open.
  * Return: `{ open(snap: GameSnapshot): void; close(): void; isOpen(): boolean; update(snap: GameSnapshot): void }`.
  * `update` is cheap and does nothing while closed; call it with every snapshot.
  */
@@ -29,6 +32,8 @@ export interface EscMenuHandlers {
   onVolume(volume: number): void;
   onRestartLevel(): void;
   onLeave(): void;
+  onFullscreen(): void;
+  isFullscreen(): boolean;
 }
 
 export interface EscMenu {
@@ -76,6 +81,7 @@ interface Parts {
   mute: HTMLButtonElement;
   volume: HTMLInputElement;
   volumeValue: HTMLElement;
+  fullscreen: HTMLButtonElement;
   close: HTMLButtonElement;
   restart: HTMLButtonElement;
   restartConfirm: HTMLElement;
@@ -124,6 +130,9 @@ function buildSoundSection(): Pick<Parts, 'mute' | 'volume' | 'volumeValue'> & {
 function build(): Parts {
   const level = buildLevelSection();
   const sound = buildSoundSection();
+  const fullscreen = button('esc-fullscreen', 'Fullscreen: off (F11)');
+  fullscreen.setAttribute('aria-pressed', 'false');
+  const display = el('section', 'esc-menu-section esc-menu-display', [fullscreen]);
   const title = el('h2', 'esc-menu-title', ['MENU']);
   title.id = 'esc-menu-title';
   const close = button('esc-close', 'Back to game (Esc)');
@@ -139,7 +148,7 @@ function build(): Parts {
   const leaveConfirm = el('div', 'esc-confirm esc-leave-confirm', [leaveNote, leaveYes, leaveNo]);
   leaveConfirm.id = 'esc-leave-confirm';
   const actions = el('section', 'esc-menu-section esc-menu-actions', [restart, restartConfirm, leave, leaveConfirm]);
-  const card = el('div', 'esc-menu-card', [title, level.section, sound.section, actions, close]);
+  const card = el('div', 'esc-menu-card', [title, level.section, sound.section, display, actions, close]);
   card.id = 'esc-menu-card';
   card.setAttribute('role', 'dialog');
   card.setAttribute('aria-modal', 'true');
@@ -150,8 +159,8 @@ function build(): Parts {
   backdrop.setAttribute('aria-hidden', 'true');
   restartConfirm.hidden = true;
   leaveConfirm.hidden = true;
-  const controls = [sound.mute, sound.volume, restart, restartYes, restartNo, leave, leaveYes, leaveNo, close];
-  return { backdrop, card, ...level, ...sound, close, restart, restartConfirm, restartYes, restartNo, leave, leaveConfirm, leaveYes, leaveNo, controls };
+  const controls = [sound.mute, sound.volume, fullscreen, restart, restartYes, restartNo, leave, leaveYes, leaveNo, close];
+  return { backdrop, card, ...level, ...sound, fullscreen, close, restart, restartConfirm, restartYes, restartNo, leave, leaveConfirm, leaveYes, leaveNo, controls };
 }
 
 /** A description may carry its own `[ ] ` / `[x] ` marker; the CSS `::before` of `.esc-check` draws the only one. */
@@ -181,6 +190,11 @@ function showLeaveStep(p: Parts, on: boolean): void {
   p.leaveConfirm.hidden = !on;
 }
 
+function renderFullscreen(p: Parts, on: boolean): void {
+  setText(p.fullscreen, on ? 'Fullscreen: on (F11)' : 'Fullscreen: off (F11)');
+  p.fullscreen.setAttribute('aria-pressed', on ? 'true' : 'false');
+}
+
 function renderSnapshot(p: Parts, snap: GameSnapshot): void {
   const level = snap.level;
   setText(p.name, level?.title ?? snap.room?.title ?? '');
@@ -204,6 +218,7 @@ function renderSnapshot(p: Parts, snap: GameSnapshot): void {
 /** Button clicks of the two-step Restart level, the leave confirm, the sound controls and the close button. */
 function wireControls(p: Parts, handlers: EscMenuHandlers, close: () => void): void {
   p.close.onclick = close;
+  p.fullscreen.onclick = () => handlers.onFullscreen();
   p.mute.onclick = () => {
     const nowMuted = p.mute.getAttribute('aria-pressed') !== 'true';
     setText(p.mute, nowMuted ? 'Sound: muted' : 'Sound: on');
@@ -258,7 +273,9 @@ export function mountEscMenu(host: HTMLElement, handlers: EscMenuHandlers): EscM
   };
 
   const update = (snap: GameSnapshot): void => {
-    if (open) renderSnapshot(p, snap);
+    if (!open) return;
+    renderSnapshot(p, snap);
+    renderFullscreen(p, handlers.isFullscreen());
   };
   const strayFocus = (ev: Event): void => {
     if (!open || inside(p.card, ev.target as Node | null)) return;

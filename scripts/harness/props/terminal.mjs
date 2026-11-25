@@ -92,7 +92,7 @@ function fakeDom() {
 }
 
 const MENU_ACTIONS = fc.oneof(
-  fc.constantFrom('open', 'close', 'typeOutside', 'escapeOutside', 'tab', 'shiftTab', 'mute', 'restartStart', 'restartNo', 'restartYes', 'leaveStart', 'leaveNo', 'leaveYes', 'focusTerm', 'update'),
+  fc.constantFrom('open', 'close', 'typeOutside', 'escapeOutside', 'tab', 'shiftTab', 'mute', 'restartStart', 'restartNo', 'restartYes', 'leaveStart', 'leaveNo', 'leaveYes', 'focusTerm', 'update', 'fullscreen'),
   fc.integer({ min: 0, max: 100 }),
 );
 
@@ -112,8 +112,11 @@ function playMenu(actions, { mountEscMenu, LEAVE_CONFIRM_TEXT, onRestart }) {
     const typed = [];
     term.addEventListener('keydown', (e) => typed.push(e.key));
     term.focus();
-    const calls = { mute: 0, restart: 0, leave: 0, volume: [] };
+    const calls = { mute: 0, restart: 0, leave: 0, volume: [], fullscreen: 0 };
+    let fullOn = false;
     const menu = mountEscMenu(host, {
+      onFullscreen: () => { calls.fullscreen += 1; fullOn = !fullOn; },
+      isFullscreen: () => fullOn,
       onMute: () => { calls.mute += 1; },
       onVolume: (v) => { calls.volume.push(v); },
       onRestartLevel: () => { calls.restart += 1; onRestart?.(); },
@@ -155,6 +158,14 @@ function playMenu(actions, { mountEscMenu, LEAVE_CONFIRM_TEXT, onRestart }) {
         expect(e.defaultPrevented && inCard(dom.doc.activeElement) && dom.doc.activeElement !== before, 'Tab did not move focus inside the menu');
       } else if (a === 'mute') {
         if (m.open) { click('esc-mute'); m.mute += 1; }
+      } else if (a === 'fullscreen') {
+        if (m.open) {
+          click('esc-fullscreen');
+          m.fullscreen = (m.fullscreen ?? 0) + 1;
+          menu.update(menuSnap(3));
+          const b = dom.find('esc-fullscreen');
+          expect(b.getAttribute('aria-pressed') === String(fullOn) && b.textContent.includes(fullOn ? 'on' : 'off'), 'the Fullscreen toggle does not show the state');
+        }
       } else if (a === 'restartStart') {
         if (m.open && !m.restart) { click('esc-restart'); m.restart = true; m.leave = false; expect(dom.doc.activeElement === dom.find('esc-restart-no'), 'restart step 2 did not focus Cancel'); }
       } else if (a === 'restartNo') {
@@ -192,6 +203,7 @@ function playMenu(actions, { mountEscMenu, LEAVE_CONFIRM_TEXT, onRestart }) {
       }
     }
     expect(typed.length === m.typed, `terminal got ${typed.length} keys, want ${m.typed}`);
+    expect(calls.fullscreen === (m.fullscreen ?? 0), 'Fullscreen toggle clicks and handler calls differ');
     expect(calls.mute === m.mute && calls.restart === m.restartCalls && calls.leave === m.leaveCalls, 'handler call counts differ from the confirmed actions');
     return calls.restart;
   } finally {

@@ -1,4 +1,5 @@
 import '../contracts/migrate-storage.js';
+import { installFullscreenKey } from '../chapters/fullscreen.js';
 import { bootHubPage } from './boot.js';
 import { startHubRouter } from './router.js';
 import { tabOfPath } from './tabs.js';
@@ -8,3 +9,6 @@ import { tabOfPath } from './tabs.js';
 const first = tabOfPath(location.pathname) ?? 'home';
 bootHubPage(first);
 if (document.getElementById('hub-header')) startHubRouter(first);
+
+// F11 toggles full screen on this page (spec .kiro/specs/fullscreen-mode/).
+installFullscreenKey();

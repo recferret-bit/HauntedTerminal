@@ -1,4 +1,5 @@
 import '../contracts/migrate-storage.js';
+import { installFullscreenKey } from '../chapters/fullscreen.js';
 import '../styles/hub.css';
 import '../styles/manual-book.css';
 
@@ -39,3 +40,6 @@ if (mount) {
     onPageChange: syncUrl,
   });
 }
+
+// F11 toggles full screen on this page (spec .kiro/specs/fullscreen-mode/).
+installFullscreenKey();
