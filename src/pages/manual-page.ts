@@ -1,3 +1,4 @@
+import { startPageAudio } from '../audio/page.js';
 import '../contracts/migrate-storage.js';
 import { installFullscreenKey } from '../chapters/fullscreen.js';
 import '../styles/hub.css';
@@ -33,11 +34,16 @@ if (mount) {
       ? pageParam - 1
       : 0;
 
+  const pageAudio = startPageAudio('manual');
   mountManualBook(mount, {
     modal: false,
     initialQuery,
     initialPage,
-    onPageChange: syncUrl,
+    onPageChange: (page, turned, animated) => {
+      syncUrl(page);
+      if (animated) pageAudio.bus.emit(turned ? { kind: 'page' } : { kind: 'menu', action: 'move' });
+    },
+    onSearchDismiss: () => pageAudio.bus.emit({ kind: 'menu', action: 'move' }),
   });
 }
 

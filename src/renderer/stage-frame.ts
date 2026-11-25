@@ -34,12 +34,13 @@ export function stepStage(stage: ComicStage, dt: number): void {
   stepActors(stage, dt);
   stepAgentAmbientFx(stage, dt);
   heroFidget(stage, dt);
-  if (stage.stormOn && !stage.devNoStorm) {
+  if (stage.stormOn && !stage.devNoStorm && !stage.stormPaused) {
     stage.stormIn -= dt;
     if (stage.stormIn <= 0) {
       stage.stormIn = 7 / Math.max(0.35, stage.stormIntensity);
       const x = stage.panelRight + Math.random() * (stage.panelLeft - stage.panelRight);
       playFx(stage, 'fx.lightning-strike', new THREE.Vector3(x, stage.feetY, ACTOR_Z + 0.4), { text: ' ', noShake: true, flashMul: 0.18 * stage.stormIntensity, lightMul: 0.55 * stage.stormIntensity, scale: 0.85 });
+      stage.audioBus?.emit({ kind: 'cine', cue: 'thunder-far' });
     }
   }
   stage.lightning.update(dt);
@@ -163,7 +164,7 @@ const AGENT_AMBIENT_FX: Record<string, FxId> = {
 
 /** Gentle stepped ambient bursts (steam, crack sparks, accretion shards, syntax blocks) on live agent actors. */
 function stepAgentAmbientFx(stage: ComicStage, dt: number): void {
-  if (!stage.stormOn || stage.devNoStorm) return;
+  if (!stage.stormOn || stage.devNoStorm || stage.stormPaused) return;
   for (const a of stage.actors.values()) {
     const fxId = AGENT_AMBIENT_FX[a.modelId];
     if (!fxId || a.disposed || a.exiting || a.dead || !a.group.visible) continue;

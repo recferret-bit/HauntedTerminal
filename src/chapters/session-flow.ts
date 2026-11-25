@@ -12,7 +12,7 @@ import type { ChapterState, EditorOpenPayload } from './session-state.js';
 import { afterCommand, battleSecond, enemyTurn, maybeBeginBattle } from './session-battle.js';
 import { arriveCurrentLevel, levelBannerText, loadLevel, rebootLevel } from './session-level.js';
 import { cmdHank } from './session-meta.js';
-import { allWinRulesMet, playEventsSfx, refreshExitGates, syncValidatedCodeBugs } from './session-rules.js';
+import { allWinRulesMet, refreshExitGates, syncValidatedCodeBugs } from './session-rules.js';
 import { observe } from './session-lab-checks.js';
 import { snapshot } from './session-snapshot.js';
 
@@ -89,7 +89,6 @@ export function arriveLevel(g: ChapterState): TickResult {
     g.intro = false;
     const events: KernelEvent[] = [];
     const output = arriveCurrentLevel(g, events);
-    playEventsSfx(g, events);
     return { output, events, snapshot: snapshot(g) };
   }
 
@@ -104,6 +103,7 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     g.reloadedNow = false;
     g.deathText = '';
     const typed = line.trim();
+    g.commandCue = null;
     if (g.intro) g.intro = false;
 
     if (!typed) {
@@ -173,7 +173,11 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
       events.push(...achEvents);
       combinedOutput += formatAchievementLines(achEvents);
     }
-    playEventsSfx(g, events);
+    if (typed) {
+      const result = g.commandCue ?? (step.code ? 'fail' : 'ok');
+      g.commandCue = null;
+      g.bus.emit({ kind: 'command', result });
+    }
     if (g.lab) observe(g, { line: typed, output: combinedOutput, code: step.code, eventTypes: events.map((e) => e.type) });
 
     return {
@@ -216,7 +220,6 @@ export function settle(g: ChapterState, step: (events: KernelEvent[]) => string)
     const achEvents = evaluateBatchEvents(events, { preview: g.preview, lab: g.lab !== null });
     if (achEvents.length > 0) events.push(...achEvents);
     const output = body + (g.deathText || '') + formatAchievementLines(achEvents);
-    playEventsSfx(g, events);
     if (g.lab) observe(g, { output, eventTypes: events.map((e) => e.type) });
     return { output, stderr: g.deathText || undefined, events, snapshot: snapshot(g) };
   }
@@ -256,7 +259,7 @@ export function setVolume(g: ChapterState, volume: number): void {
     g.sfx.setVolume(g.volume);
   }
 
-export function restart(g: ChapterState): TickResult {
+export function restart(g: ChapterState, options?: { intro?: boolean }): TickResult {
     const events: KernelEvent[] = [];
     g.kiro.reset();
     g.commands = 0;
@@ -266,14 +269,18 @@ export function restart(g: ChapterState): TickResult {
     g.ended = false;
     g.endedAt = null;
     g.fullRun = true;
-    g.intro = false;
+    g.intro = Boolean(options?.intro);
     applyInitialLoadout(g, 0);
-    loadLevel(g, 0, false, events);
+    loadLevel(g, 0, false, options?.intro ? [] : events);
+    if (options?.intro) {
+      return { output: '', events: [], snapshot: snapshot(g) };
+    }
     return { output: levelBannerText(g), events, snapshot: snapshot(g) };
   }
 
 export function restartFloor(g: ChapterState): TickResult {
     const events: KernelEvent[] = [];
+    g.bus.emit({ kind: 'restart', step: 'go' });
     const arrival = rebootLevel(g, events);
     return { output: `[RETRY] Reloaded ${g.rt.spec.title}.\n${arrival}`, events, snapshot: snapshot(g) };
   }

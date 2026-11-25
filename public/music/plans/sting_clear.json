@@ -3,11 +3,11 @@
   "listed_seconds": 5.0,
   "loop": false,
   "model": "music_v2_5",
-  "plan_ms": 6000,
+  "plan_ms": 5000,
   "plan": {
     "chunks": [
       {
-        "duration_ms": 3000,
+        "duration_ms": 5000,
         "context_adherence": "high",
         "positive_styles": [
           "96 BPM",
@@ -18,43 +18,13 @@
           "dry and close mix",
           "modest clean tone",
           "instrumental intro",
-          "instrumental only"
-        ],
-        "negative_styles": [
-          "bell tree",
-          "choir",
-          "vocals",
-          "singing",
-          "lyrics",
-          "humming",
-          "whistling",
-          "spoken word",
-          "rap",
-          "orchestral trailer",
-          "EDM drop",
-          "thunder",
-          "rain",
-          "noise burst",
-          "bitcrush wash",
-          "smooth riser",
-          "pitch wobble"
-        ],
-        "text": "[Bar 1]"
-      },
-      {
-        "duration_ms": 3000,
-        "context_adherence": "high",
-        "positive_styles": [
-          "96 BPM",
-          "early 1990s tracker sequencing",
+          "instrumental only",
           "C major resolution arpeggio",
           "soft pulse with triangle accent",
           "C5 E5 G5 motif",
-          "narrow stereo field",
-          "dry and close mix",
           "clean ending",
           "fade to silence",
-          "instrumental only"
+          "one five-second cue"
         ],
         "negative_styles": [
           "bell tree",
@@ -75,7 +45,7 @@
           "smooth riser",
           "pitch wobble"
         ],
-        "text": "[Bar 2]"
+        "text": "[Level Clear]"
       }
     ]
   }

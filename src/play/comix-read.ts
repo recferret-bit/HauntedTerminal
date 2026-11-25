@@ -1,3 +1,5 @@
+import { startPageAudio } from '../audio/page.js';
+import type { AppBus } from '../contracts/app-bus.js';
 import '../contracts/migrate-storage.js';
 import { installFullscreenKey } from '../chapters/fullscreen.js';
 import '../styles/hub.css';
@@ -92,16 +94,22 @@ function frame(root: HTMLElement, reader: Reader, now: number): void {
   reader.raf = window.requestAnimationFrame((t) => frame(root, reader, t));
 }
 
+let readerBus: AppBus | null = null;
+
+function turnPage(root: HTMLElement, reader: Reader, next: number): void {
+  reader.page = next;
+  readerBus?.emit({ kind: 'page' });
+  openPage(root, reader);
+}
+
 function bind(root: HTMLElement, reader: Reader): void {
   root.querySelector('#comix-prev')!.addEventListener('click', () => {
     if (reader.page <= 1) return;
-    reader.page -= 1;
-    openPage(root, reader);
+    turnPage(root, reader, reader.page - 1);
   });
   root.querySelector('#comix-next')!.addEventListener('click', () => {
     if (reader.page >= reader.comix.pages.length) return;
-    reader.page += 1;
-    openPage(root, reader);
+    turnPage(root, reader, reader.page + 1);
   });
   root.querySelector('#comix-pause')!.addEventListener('click', () => {
     reader.paused = !reader.paused;
@@ -133,6 +141,7 @@ function missing(mount: HTMLElement, chapterId: string): void {
 function boot(): void {
   const mount = document.getElementById('reader-mount');
   const playCta = document.getElementById('reader-play-cta') as HTMLAnchorElement | null;
+  if (mount) readerBus = startPageAudio('comic', document).bus;
   wireExternalLinksForDesktop();
   wireSteamWishlistLink(document.getElementById('reader-wishlist-cta') as HTMLAnchorElement | null);
   if (!mount) return;

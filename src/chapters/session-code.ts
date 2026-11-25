@@ -16,7 +16,7 @@ import { validateDockerCompose, validateDockerfile } from './validators.js';
 import { computeLevelRank, computeRunRank, creatableParent, emptyStep, okStep, splitParentAndName, type ChapterState, type EditorOpenPayload } from './session-state.js';
 import { cmdCat, collectPickupNode } from './session-fs.js';
 import { cmdHank, cmdHankAudit } from './session-meta.js';
-import { allWinRulesMet, hurt, liveLintFeedback, playEventsSfx, refreshExitGates, sinkIntoNull, syncValidatedCodeBugs, unfinishedObjectives } from './session-rules.js';
+import { allWinRulesMet, hurt, liveLintFeedback, refreshExitGates, sinkIntoNull, syncValidatedCodeBugs, unfinishedObjectives } from './session-rules.js';
 import { snapshot } from './session-snapshot.js';
 import { riddleWrite } from './session-riddle.js';
 
@@ -82,7 +82,6 @@ export function saveEditableFile(g: ChapterState, nameOrPath: string, content: s
     const achEvents = evaluateBatchEvents(events, { preview: g.preview, lab: g.lab !== null });
     if (achEvents.length > 0) events.push(...achEvents);
     const output = `[SAVED] ${res.node.name} (${res.node.content.split('\n').length - 1} lines)\n${diag}${notes}${formatAchievementLines(achEvents)}`;
-    playEventsSfx(g, events);
     return { output, events, snapshot: snapshot(g) };
   }
 
@@ -130,7 +129,7 @@ export function writeRedirect(g: ChapterState, path: string, data: string, appen
       }
       if (!hasWrite(existing.node)) {
         events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: existing.node.id, command: '>' });
-        return emptyStep(1, `bash: ${path}: Permission denied\n`);
+        return okStep('', events, 1, `bash: ${path}: Permission denied\n`);
       }
       existing.node.content = append ? existing.node.content + data : data;
       events.push({
@@ -190,15 +189,27 @@ export function cmdSed(g: ChapterState, args: string[], stdin: string): Step {
     };
 
     if (!inPlace) {
-      const srcText = rest[1] ? cmdCat(g, [rest[1]], '').stdout : stdin;
-      return okStep(applyLineByLine(srcText));
+      if (rest[1]) {
+        const catRes = cmdCat(g, [rest[1]], '');
+        if (catRes.code !== 0) return catRes;
+        return okStep(applyLineByLine(catRes.stdout), catRes.events);
+      }
+      return okStep(applyLineByLine(stdin));
     }
 
     const fileArg = rest[1];
     if (!fileArg) return emptyStep(1, 'sed: -i requires a target file\n');
     const res = resolve(g.rt.cwd, fileArg, true);
-    if (!res.node || res.node.kind !== 'file') return emptyStep(1, `sed: ${fileArg}: No such file\n`);
-    if (!hasWrite(res.node)) return emptyStep(1, `sed: ${fileArg}: Permission denied\n`);
+    if (!res.node) {
+      if (res.denied) {
+        return okStep('', [{ type: 'PERMISSION_DENIED_RATTLE', targetId: res.denied.id, command: 'sed' }], 1, `sed: ${fileArg}: Permission denied\n`);
+      }
+      return emptyStep(1, `sed: ${fileArg}: No such file\n`);
+    }
+    if (res.node.kind !== 'file') return emptyStep(1, `sed: ${fileArg}: No such file\n`);
+    if (!hasWrite(res.node)) {
+      return okStep('', [{ type: 'PERMISSION_DENIED_RATTLE', targetId: res.node.id, command: 'sed' }], 1, `sed: ${fileArg}: Permission denied\n`);
+    }
 
     const events: KernelEvent[] = [];
     res.node.content = applyLineByLine(res.node.content);

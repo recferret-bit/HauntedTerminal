@@ -1,5 +1,7 @@
 import type * as THREE from 'three';
 import type { ZoneId } from '../procgen/core/palette.js';
+import type { AppBus } from '../contracts/app-bus.js';
+import { cueComixAudio } from './audio-cues.js';
 import { CineAudio, safeAudio } from './audio.js';
 import { stepBeats } from './beats.js';
 import { resolvePoint } from './expr.js';
@@ -176,6 +178,7 @@ function stepWorld(world: ComixWorld, letters: LetterNodes, t: number, dt: numbe
     }
   }
   if (world.stage) stepBeats(world, t, live);
+  if (live) cueComixAudio(world, letters, t);
   world.stage?.step(dt);
   world.prev = t;
 }
@@ -196,7 +199,12 @@ function resetWorld(world: ComixWorld, letters: LetterNodes): void {
   cutTo(world, letters, first.id, first.from);
 }
 
-function makeScript(world: ComixWorld, letters: LetterNodes, onDraw?: (world: ComixWorld, t: number) => void): CineScript {
+function makeScript(
+  world: ComixWorld,
+  letters: LetterNodes,
+  bus?: AppBus,
+  onDraw?: (world: ComixWorld, t: number) => void,
+): CineScript {
   const { timeline } = world;
   return {
     end: timeline.durationSec,
@@ -215,6 +223,7 @@ function makeScript(world: ComixWorld, letters: LetterNodes, onDraw?: (world: Co
     skipTo: (t) => resolveSkipTarget(timeline, t),
     acceptsKey: timeline.acceptsKeyFrom !== undefined ? (t) => t >= timeline.acceptsKeyFrom! : undefined,
     onPause: (paused) => world.audio.setPaused(paused),
+    onKeyUi: (kind) => bus?.emit(kind === 'pause' ? { kind: 'menu', action: 'move' } : { kind: 'menu', action: 'close' }),
     reset: () => resetWorld(world, letters),
   };
 }
@@ -235,6 +244,8 @@ function openStage(timeline: ResolvedTimeline): { stage: CinematicStage | null; 
 export interface PlayOpts {
   skippable?: boolean;
   muted?: boolean;
+  /** Shared with the play page so mute, volume and music stay one graph. */
+  bus?: AppBus;
 }
 
 export interface ComixPlayResult {
@@ -258,7 +269,7 @@ export function startComix(
     page.dispose();
     return Promise.resolve({ completed: false, finalTime: 0, showedOverlay: false });
   }
-  const audio = new CineAudio(!!opts.muted || debug.freezeAt !== undefined);
+  const audio = new CineAudio(!!opts.muted || debug.freezeAt !== undefined, opts.bus ?? null);
   try {
     const world = buildWorld(pack, timeline, page, opened.stage, audio);
     const letters = buildLetters(world, stats);
@@ -269,7 +280,7 @@ export function startComix(
       world.audio.dispose();
       world.page.dispose();
     };
-    const runner = runCinematic(world.page.root, makeScript(world, letters, debug.onDraw), {
+    const runner = runCinematic(world.page.root, makeScript(world, letters, opts.bus, debug.onDraw), {
       skippable: opts.skippable !== false,
       freezeAt: debug.freezeAt,
       inputGraceMs: timeline.inputGraceMs,

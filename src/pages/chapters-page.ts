@@ -1,3 +1,5 @@
+import { startPageAudio } from '../audio/page.js';
+import type { AppBus } from '../contracts/app-bus.js';
 import '../contracts/migrate-storage.js';
 import { installFullscreenKey } from '../chapters/fullscreen.js';
 import '../styles/hub.css';
@@ -43,7 +45,7 @@ function renderChapters(els: ChaptersPageEls, state: ChaptersViewState): void {
   restoreActiveFocus(focusSel);
 }
 
-function bootstrapChaptersPage(): void {
+function bootstrapChaptersPage(bus: AppBus): void {
   const els = pageEls();
   const params = new URLSearchParams(window.location.search);
   const activeChapter: ChapterManifest =
@@ -62,6 +64,7 @@ function bootstrapChaptersPage(): void {
           ? 'achievements'
           : 'grimoire',
     workshopBanner: '',
+    bus,
   };
   const playableCount = CHAPTER_MANIFESTS.filter((c) => c.status === 'playable').length;
   els.summaryCountEl.textContent = `${CHAPTER_MANIFESTS.length} Issues Cataloged (${playableCount} Playable Now, ${CHAPTER_MANIFESTS.length - playableCount} Full Roadmap Specs)`;
@@ -99,7 +102,8 @@ function bootstrapChaptersPage(): void {
   });
 }
 
-bootstrapChaptersPage();
+const pageAudio = startPageAudio('level-select');
+bootstrapChaptersPage(pageAudio.bus);
 
 // F11 toggles full screen on this page (spec .kiro/specs/fullscreen-mode/).
 installFullscreenKey();

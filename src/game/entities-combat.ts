@@ -94,10 +94,11 @@ export function signal(world: World, pid: number, sig: PosixSignal, events: Kern
   if (!e) return null;
   const ok = (stdout = ''): SignalResult => ({ code: 0, stdout, stderr: '' });
   const fail = (stderr: string): SignalResult => ({ code: 1, stdout: '', stderr: `${stderr}\n` });
-  const proc = (outcome: 'FROZEN' | 'KILLED' | 'TRAPPED_ENRAGED') => world.host.push(events, { type: 'PROC_SIGNALED', pid, signal: sig, outcome });
+  const proc = (outcome: 'FROZEN' | 'KILLED' | 'TRAPPED_ENRAGED' | 'RESUMED') => world.host.push(events, { type: 'PROC_SIGNALED', pid, signal: sig, outcome });
   const shrug = () => world.host.push(events, { type: 'ENEMY_HIT', entityId: e.id, model: e.model, damage: 0, hpRemaining: e.hp, command: `kill ${pid}` });
 
   if (e.type === 'kernel' || e.type === 'exploit') {
+    world.host.push(events, { type: 'PERMISSION_DENIED_RATTLE', targetId: e.inode ?? world.host.root().id, command: `kill ${pid}` });
     return fail(`kill: (${pid}): Operation not permitted${e.type === 'exploit' ? ' (it escalated to root; make its buffer read-only)' : ''}`);
   }
   if (e.type === 'bug' || e.type === 'trojan') {
@@ -123,6 +124,7 @@ export function signal(world: World, pid: number, sig: PosixSignal, events: Kern
       e.frozen = false;
       if (e.type === 'forkbomb') world.host.bossDown(e.id, 'thawed');
     }
+    proc('RESUMED');
     sync(world, events);
     return ok(`${e.name} resumes (SIGCONT).\n`);
   }

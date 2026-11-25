@@ -20,6 +20,8 @@ export interface CineScript {
   acceptsKey?(t: number): boolean;
   /** The PAUSE / CONTINUE control toggled (suspend audio here). */
   onPause?(paused: boolean): void;
+  /** Keyboard pause (`Space`) or skip (`Esc` / `Enter`) triggered from runner keys. */
+  onKeyUi?(kind: 'pause' | 'skip'): void;
   /** Whether the PAUSE / SKIP controls show at `t` (default: until `end`). */
   showControls?(t: number): boolean;
   /** Reset world & DOM state back to `t = 0` so `seek` / `playFromStart` can replay on the same WebGL stage. */
@@ -160,26 +162,35 @@ function setRunPaused(ctx: RunCtx, p: boolean): void {
   ctx.script.draw(ctx.t);
 }
 
-function togglePause(ctx: RunCtx): void {
-  if (ctx.t >= ctx.script.end && ctx.script.holdAtEnd) return;
+function togglePause(ctx: RunCtx): boolean {
+  if (ctx.finished || ctx.frozen || (ctx.t >= ctx.script.end && ctx.script.holdAtEnd)) return false;
   setRunPaused(ctx, !ctx.paused);
+  return true;
 }
 
-function pressRun(ctx: RunCtx, isSkipKey: boolean, fromButton = false): void {
-  if (ctx.finished || ctx.frozen) return;
-  if (!fromButton && performance.now() - ctx.started < ctx.grace) return;
+function pressRun(ctx: RunCtx, isSkipKey: boolean, fromButton = false): boolean {
+  if (ctx.finished || ctx.frozen) return false;
+  if (!fromButton && performance.now() - ctx.started < ctx.grace) return false;
   if (ctx.t >= ctx.script.end && ctx.script.holdAtEnd) {
-    if (!ctx.script.acceptsKey || ctx.script.acceptsKey(ctx.t)) finishRun(ctx);
-    return;
+    if (!ctx.script.acceptsKey || ctx.script.acceptsKey(ctx.t)) {
+      finishRun(ctx);
+      return true;
+    }
+    return false;
   }
-  if (!isSkipKey || !ctx.opts.skippable) return;
+  if (!isSkipKey || !ctx.opts.skippable) return false;
   const to = ctx.script.skipTo(ctx.t);
-  if (to === 'end') finishRun(ctx);
-  else if (to > ctx.t) {
+  if (to === 'end') {
+    finishRun(ctx);
+    return true;
+  }
+  if (to > ctx.t) {
     fastForward(ctx, to);
     setRunPaused(ctx, false);
     ctx.script.draw(ctx.t);
+    return true;
   }
+  return false;
 }
 
 function handleRunKey(ctx: RunCtx, e: KeyboardEvent): void {
@@ -197,16 +208,22 @@ function handleRunKey(ctx: RunCtx, e: KeyboardEvent): void {
   const holding = ctx.t >= ctx.script.end && !!ctx.script.holdAtEnd;
   const focused = document.activeElement;
   if (!holding && (e.key === 'Enter' || e.key === ' ') && (focused === ctx.pauseBtn || focused === ctx.skipBtn)) {
-    if (focused === ctx.pauseBtn) togglePause(ctx);
-    else pressRun(ctx, true, true);
+    if (focused === ctx.pauseBtn) {
+      if (togglePause(ctx)) ctx.script.onKeyUi?.('pause');
+    } else if (pressRun(ctx, true, true)) {
+      ctx.script.onKeyUi?.('skip');
+    }
     return;
   }
   if (holding) {
     if (!['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(e.key)) pressRun(ctx, false);
     return;
   }
-  if (e.key === ' ') togglePause(ctx);
-  else if (e.key === 'Escape' || e.key === 'Enter') pressRun(ctx, true);
+  if (e.key === ' ') {
+    if (togglePause(ctx)) ctx.script.onKeyUi?.('pause');
+  } else if (e.key === 'Escape' || e.key === 'Enter') {
+    if (pressRun(ctx, true)) ctx.script.onKeyUi?.('skip');
+  }
 }
 
 function handleRunPointer(ctx: RunCtx, e: PointerEvent): void {

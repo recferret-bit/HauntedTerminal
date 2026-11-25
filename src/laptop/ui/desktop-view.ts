@@ -45,7 +45,7 @@ export function createDesktopView(ctx: LaptopContext, scale: () => number): Desk
   const open = new Map<AppId, Open>();
   const layer = h('div', { class: 'lt-windows' });
   const icons = h('div', { class: 'lt-icons' }, ...APP_ORDER.map((app) =>
-    h('button', { class: 'lt-icon', 'data-app': app, title: APPS[app].blurb, ondblclick: () => dispatch({ type: 'open', app }), onkeydown: (ev: Event) => { if ((ev as KeyboardEvent).key === 'Enter') dispatch({ type: 'open', app }); } },
+    h('button', { class: 'lt-icon', 'data-app': app, title: APPS[app].blurb, ondblclick: () => dispatch({ type: 'open', app }), onkeydown: (ev: Event) => { if ((ev as KeyboardEvent).key === 'Enter') { ev.preventDefault(); ctx.sound.button(); dispatch({ type: 'open', app }); } } },
       h('span', { class: 'lt-iglyph' }, APPS[app].glyph), h('small', {}, APPS[app].file))));
   const menu = h('div', { class: 'lt-startmenu', hidden: true },
     h('div', { class: 'lt-startside' }, 'HAUNTED/OS'),

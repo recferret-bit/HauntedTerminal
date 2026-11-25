@@ -7,7 +7,7 @@ import { labRiddleRead, labRiddleWrite } from './lab-riddle.js';
 import type { EntityView, ProcRow } from './entities.js';
 import { empty, out, type Play } from './play.js';
 import {
-  anchorFree, backups, boss, bump, cut, cue, ensure, find, gargoyleNeutral, gateOpen, maxHp, phase1, plankBridged, portal, push,
+  anchorFree, backups, boss, bump, cut, denied, ensure, find, gargoyleNeutral, gateOpen, maxHp, phase1, plankBridged, portal, push,
 } from './runtime.js';
 import type { Step } from './shell.js';
 import { absPath, hasExec, makeNode, modeString, resolve, type VNode } from './tree.js';
@@ -30,15 +30,7 @@ export function readSocket(g: Play, node: VNode): Step {
 export function writeSocket(g: Play, node: VNode, data: string): Step {
   const body = data.trim();
   g.run.socketInputs.set(node.name, body);
-  const labStep = labRiddleWrite(
-    g.lab,
-    g.run.lab,
-    g.run.root,
-    g.run.world,
-    node,
-    data,
-    (events) => events.forEach((ev) => cue(g, ev)),
-  );
+  const labStep = labRiddleWrite(g.lab, g.run.lab, g.run.root, g.run.world, node, data);
   if (labStep) return labStep;
   const events: KernelEvent[] = [];
   if (node.name === 'archivist_gate.sock') {
@@ -99,7 +91,6 @@ export function writeSocket(g: Play, node: VNode, data: string): Step {
   const hint = socketHint(g, node.name);
   const ev = dialogueEvent({ obstacleId: node.name, speaker: socketSpeaker(g, node.name), style: 'JAGGED_SCREAM', mood: 'mocking', text: hint, tokens: [], anchor: node.id });
   events.push(ev);
-  cue(g, ev);
   return { stdout: '', stderr: `${ev.payload.ansiTerminalBanner}${hint}\n`, code: 1, events };
 }
 
@@ -441,11 +432,12 @@ export function kiroEnemyRow(v: EntityView): KiroScanInput['enemies'][number] {
   };
 }
 
-export function psXrayToggle(rows: ProcRow[]): KernelEvent {
+export function psXrayToggle(rows: ProcRow[], active = rows.length > 0): KernelEvent {
   return {
     type: 'HUD_OVERLAY_TOGGLED',
     mode: 'PS_XRAY',
     processes: rows.map((r) => ({ pid: r.pid, ppid: r.ppid, name: r.name, cpu: r.cpu, state: r.state })),
+    active,
   };
 }
 
@@ -483,7 +475,7 @@ export function cmdKiro(g: Play, args: string[], stdin: string): Step {
     if (res.enableXray) {
       g.run.xray = true;
       g.run.world.revealProcesses(events);
-      push(g, events, psXrayToggle(g.run.world.procs()));
+      push(g, events, psXrayToggle(g.run.world.procs(), true));
     }
     if (res.healAmount > 0 && g.run.hp < maxHp(g)) {
       g.run.hp = Math.min(maxHp(g), g.run.hp + res.healAmount);
@@ -522,9 +514,12 @@ export function cmdKiro(g: Play, args: string[], stdin: string): Step {
     const targetArg = args[1];
     if (!targetArg) return empty(1, 'kiro inspect: specify a file (or pipe via `cat <file> | kiro`)\n');
     const found = resolve(g.run.cwd, targetArg, true);
-    if (!found.node) return empty(1, `kiro inspect: ${targetArg}: No such file or directory\n`);
+    if (!found.node) {
+      if (found.denied) return denied(g, found.denied, `kiro inspect: ${targetArg}: Permission denied\n`, `kiro inspect ${targetArg}`);
+      return empty(1, `kiro inspect: ${targetArg}: No such file or directory\n`);
+    }
     if (found.node.kind !== 'file') return empty(1, `kiro inspect: ${targetArg}: Not a regular file\n`);
-    if ((found.node.mode & 0o444) === 0) return empty(1, `kiro inspect: ${targetArg}: Permission denied\n`);
+    if ((found.node.mode & 0o444) === 0) return denied(g, found.node, `kiro inspect: ${targetArg}: Permission denied\n`, `kiro inspect ${targetArg}`);
     bump(g, 'read');
     return out(inspectTextWithKiro(found.node.content, found.node.name, g.kiro.activeCore));
   }

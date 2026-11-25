@@ -105,6 +105,9 @@ export class Play {
   codeEditor: CodeEditor | null = null;
   /** The Esc menu (`src/play/menu.ts`). It never adds a pause reason and never holds the turn timer. */
   menu: EscMenu | null = null;
+  /** While a comix plays, the play scene does not replace its bed. */
+  holdMusic = false;
+  unmountAudio?: () => void;
   manualBook: ManualBook | null = null;
   /** Every event the session produced, newest last (capped). The chapter editor reads it through `__game.events()`. */
   eventLog: KernelEvent[] = [];
@@ -139,6 +142,7 @@ export class Play {
     public skipIntroPref: boolean,
   ) {
     if (document.hidden) this.reasons.add('hidden');
+    stage.stormPaused = true;
     session.setPaused(true);
   }
 }

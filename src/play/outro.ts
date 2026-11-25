@@ -1,8 +1,10 @@
 import { findComixByRole, playComix } from '../cinematic/index.js';
 import { isChapterSession } from '../chapters/chapter-session.js';
+import { publishKernel } from '../contracts/app-bus.js';
 import type { GameSnapshot } from '../game/types.js';
 import type { EndStats } from '../ui/hud.js';
 import { powerOff, powerOn, setCinematic } from '../ui/screen.js';
+import { holdForComix, syncPlayAudio } from './audio-sync.js';
 import { BANNER_MS, CARD_MS, FLOOR_NAMES, type Play } from './state.js';
 
 const nextTask = () => new Promise<void>((r) => window.setTimeout(r, 0));
@@ -34,6 +36,7 @@ export function statsFrom(snap: GameSnapshot): EndStats {
 async function runOverlay<T>(play: Play, show: () => Promise<T>): Promise<T | undefined> {
   play.shell.blur();
   setCinematic(true);
+  play.holdMusic = true;
   play.dom.cineEl.classList.add('active');
   await nextTask();
   try {
@@ -42,6 +45,7 @@ async function runOverlay<T>(play: Play, show: () => Promise<T>): Promise<T | un
     console.error('cinematic failed', err);
     return undefined;
   } finally {
+    play.holdMusic = false;
     play.dom.cineEl.classList.remove('active');
     setCinematic(false);
   }
@@ -66,7 +70,10 @@ function beginEnding(play: Play, stats: EndStats | null): void {
     if (play.sessionSeq !== seq) return;
     const ending = findComixByRole('ending');
     if (ending) {
-      await play.runCinematic(() => playComix(ending.id, play.dom.cineEl, { muted: play.session.snapshot().muted }, final));
+      await play.runCinematic(() => {
+        holdForComix(play, 'ending');
+        return playComix(ending.id, play.dom.cineEl, { muted: play.session.snapshot().muted, bus: play.session.bus }, final);
+      });
       if (play.sessionSeq !== seq) return;
     }
     play.phase = 'stats';
@@ -75,6 +82,7 @@ function beginEnding(play: Play, stats: EndStats | null): void {
     if (play.sessionSeq !== seq) return;
     play.reasons.delete('outro');
     play.syncPause();
+    syncPlayAudio(play);
   }, 900);
 }
 
@@ -88,7 +96,10 @@ async function startRun(play: Play): Promise<void> {
   // If the opening comix reached its own floor title card overlay, suppress the stage's duplicate card.
   const opening = findComixByRole('opening');
   const res = !play.skipIntroPref && opening
-    ? await play.runCinematic(() => playComix(opening.id, play.dom.cineEl, { muted: session.snapshot().muted }))
+    ? await play.runCinematic(() => {
+        holdForComix(play, 'opening');
+        return playComix(opening.id, play.dom.cineEl, { muted: session.snapshot().muted, bus: session.bus });
+      })
     : undefined;
   if (play.sessionSeq !== seq) return;
   const introShowedCard = Boolean(res?.showedOverlay);
@@ -108,9 +119,11 @@ async function startRun(play: Play): Promise<void> {
     path: snap.cwd,
   };
   const revealStartedAt = performance.now();
+  const hadStashedCard = play.stashedFloorCard !== null;
   play.stashedFloorCard = null;
   play.stage.triggerLightningIntro();
   play.apply(introShowedCard ? [] : [card], snap);
+  if (!introShowedCard && !hadStashedCard) publishKernel(play.session.bus, [card]);
   await powerOn(true);
   if (play.sessionSeq !== seq) return;
   await play.shell.typeOut(play.activeBanner, BANNER_MS);

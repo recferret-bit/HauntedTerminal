@@ -84,7 +84,7 @@ export function heroEmote(stage: ComicStage, hero: StageActor, emote: string, te
 /**
  * The hero shouts into the dark: the FIGHT! banner preset with its word replaced, drawn big over the
  * panel, one camera shake, and a stretch-and-hop of the hero on the same 12 fps beat. The stage has no
- * sound of its own; the sound cue belongs to the play layer (`src/game/sfx.ts`).
+ * sound of its own; the sound cue belongs to the app bus (`src/audio/`).
  */
 function shout(stage: ComicStage, hero: StageActor, word: string): void {
   playFx(stage, 'fx.fight', anchorPoint(stage, 'panel', null), { text: word, scale: 1.2, noShake: true }, 'shout');

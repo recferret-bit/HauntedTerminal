@@ -1,9 +1,11 @@
+import type { KernelEvent } from '../contracts/events.js';
 import { createBattle, type BattleHold, type BattleState } from '../game/battle.js';
 import type { WorldHost } from '../game/entities.js';
 import { starterInventory } from '../game/inventory.js';
 import { KiroCompanion } from '../game/kiro.js';
 import type { Session } from '../game/session.js';
 import type { Host, Step, Word } from '../game/shell.js';
+import { createAppBus, publishKernel, type AppBus } from '../contracts/app-bus.js';
 import { createSfx, type Sfx } from '../game/sfx.js';
 import { absPath } from '../game/tree.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from '../game/types.js';
@@ -30,6 +32,11 @@ export function createChapterSession(options: ChapterSessionOptions): ChapterSes
   return new DeclarativeChapterGame(options);
 }
 
+function heard<T extends { events: KernelEvent[] }>(g: DeclarativeChapterGame, result: T): T {
+  publishKernel(g.bus, result.events);
+  return result;
+}
+
 class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   readonly isChapterSession = true as const;
   readonly chapterId: string;
@@ -37,6 +44,8 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   readonly preview: boolean;
   readonly levels: LevelSpec[];
   readonly sfx: Sfx = createSfx();
+  readonly bus: AppBus = createAppBus();
+  commandCue: 'locked' | null = null;
   readonly kiro = new KiroCompanion();
   readonly chaosMode: boolean;
   readonly chaosSeed: string;
@@ -120,7 +129,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   }
 
   jumpToLevel(levelIdOrIndex: string | number): TickResult {
-    return flow.jumpToLevel(this, levelIdOrIndex);
+    return heard(this, flow.jumpToLevel(this, levelIdOrIndex));
   }
 
   isChaosMode(): boolean {
@@ -132,7 +141,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   }
 
   saveEditableFile(nameOrPath: string, content: string): CommandResult {
-    return code.saveEditableFile(this, nameOrPath, content);
+    return heard(this, code.saveEditableFile(this, nameOrPath, content));
   }
 
   consumeEditorRequest(): EditorOpenPayload | null {
@@ -148,7 +157,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   }
 
   arriveLevel(): TickResult {
-    return flow.arriveLevel(this);
+    return heard(this, flow.arriveLevel(this));
   }
 
   inspect(): LabInspect {
@@ -156,11 +165,12 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   }
 
   labTick(): TickResult {
-    return lab.labTick(this);
+    return heard(this, lab.labTick(this));
   }
 
   skipBattleIntro(): TickResult | null {
-    return flow.skipBattleIntro(this);
+    const res = flow.skipBattleIntro(this);
+    return res ? heard(this, res) : null;
   }
 
   holdTurnTimer(hold: BattleHold, on: boolean): void {
@@ -168,19 +178,20 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   }
 
   forceEnemyTurn(): TickResult | null {
-    return flow.forceEnemyTurn(this);
+    const res = flow.forceEnemyTurn(this);
+    return res ? heard(this, res) : null;
   }
 
   inject(what: LabInjection): TickResult {
-    return lab.inject(this, what);
+    return heard(this, lab.inject(this, what));
   }
 
   exec(line: string): CommandResult {
-    return flow.exec(this, this, line);
+    return heard(this, flow.exec(this, this, line));
   }
 
   tick(): TickResult {
-    return flow.tick(this);
+    return heard(this, flow.tick(this));
   }
 
   snapshot(): GameSnapshot {
@@ -203,16 +214,16 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
     flow.setVolume(this, volume);
   }
 
-  restart(): TickResult {
-    return flow.restart(this);
+  restart(options?: { intro?: boolean }): TickResult {
+    return heard(this, flow.restart(this, options));
   }
 
   restartFloor(): TickResult {
-    return flow.restartFloor(this);
+    return heard(this, flow.restartFloor(this));
   }
 
   debugTeleport(floor: FloorId): TickResult {
-    return flow.debugTeleport(this, floor);
+    return heard(this, flow.debugTeleport(this, floor));
   }
 
   debugHeal(): GameSnapshot {
@@ -220,11 +231,11 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   }
 
   debugDamage(amount = 10): TickResult {
-    return flow.debugDamage(this, amount);
+    return heard(this, flow.debugDamage(this, amount));
   }
 
   skipTutorial(): TickResult {
-    return flow.skipTutorial(this);
+    return heard(this, flow.skipTutorial(this));
   }
 
   setPaused(paused: boolean): void {

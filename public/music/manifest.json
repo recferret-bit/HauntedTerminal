@@ -1,8 +1,8 @@
 {
   "model": "music_v2_5",
   "output_format": "mp3_44100_192",
-  "variants": 3,
-  "style_note": "Each cue has one composition plan. All three files for that cue were composed from that same plan.",
+  "variants": 1,
+  "style_note": "One kept take per cue. The variant suffix was removed after the unwanted takes were deleted. The four 5-second stings live in public/sfx.",
   "cues": [
     {
       "name": "title_theme",
@@ -13,15 +13,7 @@
       "plan": "plans/title_theme.json",
       "files": [
         {
-          "file": "title_theme_1.mp3",
-          "bytes": 1152984
-        },
-        {
-          "file": "title_theme_2.mp3",
-          "bytes": 1152984
-        },
-        {
-          "file": "title_theme_3.mp3",
+          "file": "title_theme.mp3",
           "bytes": 1152984
         }
       ]
@@ -35,15 +27,7 @@
       "plan": "plans/menu_bed.json",
       "files": [
         {
-          "file": "menu_bed_1.mp3",
-          "bytes": 576827
-        },
-        {
-          "file": "menu_bed_2.mp3",
-          "bytes": 576827
-        },
-        {
-          "file": "menu_bed_3.mp3",
+          "file": "menu_bed.mp3",
           "bytes": 576827
         }
       ]
@@ -57,15 +41,7 @@
       "plan": "plans/level_select.json",
       "files": [
         {
-          "file": "level_select_1.mp3",
-          "bytes": 865219
-        },
-        {
-          "file": "level_select_2.mp3",
-          "bytes": 865219
-        },
-        {
-          "file": "level_select_3.mp3",
+          "file": "level_select.mp3",
           "bytes": 865219
         }
       ]
@@ -79,15 +55,7 @@
       "plan": "plans/manual_bed.json",
       "files": [
         {
-          "file": "manual_bed_1.mp3",
-          "bytes": 1152984
-        },
-        {
-          "file": "manual_bed_2.mp3",
-          "bytes": 1152984
-        },
-        {
-          "file": "manual_bed_3.mp3",
+          "file": "manual_bed.mp3",
           "bytes": 1152984
         }
       ]
@@ -101,15 +69,7 @@
       "plan": "plans/achievements_bed.json",
       "files": [
         {
-          "file": "achievements_bed_1.mp3",
-          "bytes": 480906
-        },
-        {
-          "file": "achievements_bed_2.mp3",
-          "bytes": 480906
-        },
-        {
-          "file": "achievements_bed_3.mp3",
+          "file": "achievements_bed.mp3",
           "bytes": 480906
         }
       ]
@@ -123,15 +83,7 @@
       "plan": "plans/comic_reader.json",
       "files": [
         {
-          "file": "comic_reader_1.mp3",
-          "bytes": 1152984
-        },
-        {
-          "file": "comic_reader_2.mp3",
-          "bytes": 1152984
-        },
-        {
-          "file": "comic_reader_3.mp3",
+          "file": "comic_reader.mp3",
           "bytes": 1152984
         }
       ]
@@ -145,15 +97,7 @@
       "plan": "plans/rank_card.json",
       "files": [
         {
-          "file": "rank_card_1.mp3",
-          "bytes": 240788
-        },
-        {
-          "file": "rank_card_2.mp3",
-          "bytes": 240788
-        },
-        {
-          "file": "rank_card_3.mp3",
+          "file": "rank_card.mp3",
           "bytes": 240788
         }
       ]
@@ -167,16 +111,19 @@
       "plan": "plans/floor_attic.json",
       "files": [
         {
-          "file": "floor_attic_1.mp3",
-          "bytes": 961141
+          "file": "floor_attic.mp3",
+          "bytes": 961141,
+          "note": "Full take. Kept. The first twenty seconds are the lead-in."
         },
         {
-          "file": "floor_attic_2.mp3",
-          "bytes": 961141
+          "file": "floor_attic_intro.m4a",
+          "bytes": 128885,
+          "note": "Two bars of that lead-in, played once."
         },
         {
-          "file": "floor_attic_3.mp3",
-          "bytes": 961141
+          "file": "floor_attic_loop.m4a",
+          "bytes": 497980,
+          "note": "The tune from the downbeat, eight bars, the part that loops."
         }
       ]
     },
@@ -189,15 +136,7 @@
       "plan": "plans/floor_crypt.json",
       "files": [
         {
-          "file": "floor_crypt_1.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "floor_crypt_2.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "floor_crypt_3.mp3",
+          "file": "floor_crypt.mp3",
           "bytes": 961141
         }
       ]
@@ -211,15 +150,7 @@
       "plan": "plans/floor_maze.json",
       "files": [
         {
-          "file": "floor_maze_1.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "floor_maze_2.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "floor_maze_3.mp3",
+          "file": "floor_maze.mp3",
           "bytes": 961141
         }
       ]
@@ -233,15 +164,7 @@
       "plan": "plans/floor_furnace.json",
       "files": [
         {
-          "file": "floor_furnace_1.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "floor_furnace_2.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "floor_furnace_3.mp3",
+          "file": "floor_furnace.mp3",
           "bytes": 961141
         }
       ]
@@ -255,15 +178,7 @@
       "plan": "plans/floor_core.json",
       "files": [
         {
-          "file": "floor_core_1.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "floor_core_2.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "floor_core_3.mp3",
+          "file": "floor_core.mp3",
           "bytes": 961141
         }
       ]
@@ -277,15 +192,7 @@
       "plan": "plans/hub_matrix.json",
       "files": [
         {
-          "file": "hub_matrix_1.mp3",
-          "bytes": 1440749
-        },
-        {
-          "file": "hub_matrix_2.mp3",
-          "bytes": 1440749
-        },
-        {
-          "file": "hub_matrix_3.mp3",
+          "file": "hub_matrix.mp3",
           "bytes": 1440749
         }
       ]
@@ -299,15 +206,7 @@
       "plan": "plans/battle_loop.json",
       "files": [
         {
-          "file": "battle_loop_1.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "battle_loop_2.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "battle_loop_3.mp3",
+          "file": "battle_loop.mp3",
           "bytes": 961141
         }
       ]
@@ -321,15 +220,7 @@
       "plan": "plans/battle_boss.json",
       "files": [
         {
-          "file": "battle_boss_1.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "battle_boss_2.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "battle_boss_3.mp3",
+          "file": "battle_boss.mp3",
           "bytes": 961141
         }
       ]
@@ -343,104 +234,8 @@
       "plan": "plans/low_hp_bed.json",
       "files": [
         {
-          "file": "low_hp_bed_1.mp3",
+          "file": "low_hp_bed.mp3",
           "bytes": 480906
-        },
-        {
-          "file": "low_hp_bed_2.mp3",
-          "bytes": 480906
-        },
-        {
-          "file": "low_hp_bed_3.mp3",
-          "bytes": 480906
-        }
-      ]
-    },
-    {
-      "name": "sting_lantern",
-      "where": "Lantern taken, a dark room lighting, the human motif stated alone",
-      "listed_seconds": 5.0,
-      "plan_ms": 5000,
-      "loop": false,
-      "plan": "plans/sting_lantern.json",
-      "files": [
-        {
-          "file": "sting_lantern_1.mp3",
-          "bytes": 121043
-        },
-        {
-          "file": "sting_lantern_2.mp3",
-          "bytes": 121043
-        },
-        {
-          "file": "sting_lantern_3.mp3",
-          "bytes": 121043
-        }
-      ]
-    },
-    {
-      "name": "sting_kiro",
-      "where": "Kiro Ghost arrives or gives advice. Friendlier and slower than the lantern figure",
-      "listed_seconds": 5.0,
-      "plan_ms": 5000,
-      "loop": false,
-      "plan": "plans/sting_kiro.json",
-      "files": [
-        {
-          "file": "sting_kiro_1.mp3",
-          "bytes": 121043
-        },
-        {
-          "file": "sting_kiro_2.mp3",
-          "bytes": 121043
-        },
-        {
-          "file": "sting_kiro_3.mp3",
-          "bytes": 121043
-        }
-      ]
-    },
-    {
-      "name": "sting_taunt",
-      "where": "An agent of the big four taunts (Anti-Gravy, Codec, Gork, Clod)",
-      "listed_seconds": 5.0,
-      "plan_ms": 5000,
-      "loop": false,
-      "plan": "plans/sting_taunt.json",
-      "files": [
-        {
-          "file": "sting_taunt_1.mp3",
-          "bytes": 121043
-        },
-        {
-          "file": "sting_taunt_2.mp3",
-          "bytes": 121043
-        },
-        {
-          "file": "sting_taunt_3.mp3",
-          "bytes": 121043
-        }
-      ]
-    },
-    {
-      "name": "sting_clear",
-      "where": "Level cleared, a two-bar button under the level-clear sound effect",
-      "listed_seconds": 5.0,
-      "plan_ms": 6000,
-      "loop": false,
-      "plan": "plans/sting_clear.json",
-      "files": [
-        {
-          "file": "sting_clear_1.mp3",
-          "bytes": 144866
-        },
-        {
-          "file": "sting_clear_2.mp3",
-          "bytes": 144866
-        },
-        {
-          "file": "sting_clear_3.mp3",
-          "bytes": 144866
         }
       ]
     },
@@ -453,15 +248,7 @@
       "plan": "plans/laptop_bed.json",
       "files": [
         {
-          "file": "laptop_bed_1.mp3",
-          "bytes": 480906
-        },
-        {
-          "file": "laptop_bed_2.mp3",
-          "bytes": 480906
-        },
-        {
-          "file": "laptop_bed_3.mp3",
+          "file": "laptop_bed.mp3",
           "bytes": 480906
         }
       ]
@@ -475,15 +262,7 @@
       "plan": "plans/lab_bed.json",
       "files": [
         {
-          "file": "lab_bed_1.mp3",
-          "bytes": 480906
-        },
-        {
-          "file": "lab_bed_2.mp3",
-          "bytes": 480906
-        },
-        {
-          "file": "lab_bed_3.mp3",
+          "file": "lab_bed.mp3",
           "bytes": 480906
         }
       ]
@@ -497,15 +276,7 @@
       "plan": "plans/cine_intro.json",
       "files": [
         {
-          "file": "cine_intro_1.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "cine_intro_2.mp3",
-          "bytes": 961141
-        },
-        {
-          "file": "cine_intro_3.mp3",
+          "file": "cine_intro.mp3",
           "bytes": 961141
         }
       ]
@@ -519,15 +290,7 @@
       "plan": "plans/cine_outro.json",
       "files": [
         {
-          "file": "cine_outro_1.mp3",
-          "bytes": 265239
-        },
-        {
-          "file": "cine_outro_2.mp3",
-          "bytes": 265239
-        },
-        {
-          "file": "cine_outro_3.mp3",
+          "file": "cine_outro.mp3",
           "bytes": 265239
         }
       ]

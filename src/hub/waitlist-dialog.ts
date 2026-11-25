@@ -49,7 +49,7 @@ function waitlistForm(): HTMLFormElement {
       el('code', {}, 'v*'), ' releases on GitHub.'),
     el('div', { id: 'waitlist-dialog-status', class: 'save-feedback', role: 'status', 'aria-live': 'polite', hidden: true }),
     el('div', { class: 'dialog-actions' },
-      el('button', { type: 'submit', class: 'comic-btn primary' }, 'Save Steam Launch Pass'),
+      el('button', { type: 'submit', id: 'waitlist-submit-btn', class: 'comic-btn primary' }, 'Save Steam Launch Pass'),
       el('div', { class: 'dialog-secondary-actions' },
         el('button', { type: 'button', class: 'comic-btn teal', id: 'waitlist-export-btn' }, 'Export Pass (.json)'),
         el('a', { class: 'comic-btn paper', href: RELEASES_URL, target: '_blank', rel: 'noopener noreferrer' }, 'Watch GitHub Tags'))),

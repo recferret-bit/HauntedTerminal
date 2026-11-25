@@ -2,7 +2,7 @@
   "model": "eleven_text_to_sound_v3",
   "prompt_influence": 0.8,
   "output_format": "mp3_44100_192",
-  "variants": 3,
+  "variants": 1,
   "duration_note": "The sound-generation API rejects durations under 0.5 seconds. Cues listed shorter were requested at 0.5 seconds. The prompt still states the shorter event and ends in silence.",
   "sounds": [
     {
@@ -14,37 +14,7 @@
       "loop": false,
       "files": [
         {
-          "file": "key_press_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "key_press_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "key_press_3.mp3",
-          "bytes": 13208
-        }
-      ]
-    },
-    {
-      "row": 2,
-      "name": "key_release",
-      "effect": "Key release",
-      "listed_seconds": 0.1,
-      "duration_seconds": 0.5,
-      "loop": false,
-      "files": [
-        {
-          "file": "key_release_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "key_release_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "key_release_3.mp3",
+          "file": "key_press.mp3",
           "bytes": 13208
         }
       ]
@@ -58,15 +28,7 @@
       "loop": false,
       "files": [
         {
-          "file": "key_enter_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "key_enter_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "key_enter_3.mp3",
+          "file": "key_enter.mp3",
           "bytes": 13208
         }
       ]
@@ -80,15 +42,7 @@
       "loop": false,
       "files": [
         {
-          "file": "key_backspace_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "key_backspace_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "key_backspace_3.mp3",
+          "file": "key_backspace.mp3",
           "bytes": 13208
         }
       ]
@@ -102,15 +56,7 @@
       "loop": false,
       "files": [
         {
-          "file": "cmd_ok_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cmd_ok_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cmd_ok_3.mp3",
+          "file": "cmd_ok.mp3",
           "bytes": 13208
         }
       ]
@@ -124,15 +70,7 @@
       "loop": false,
       "files": [
         {
-          "file": "cmd_fail_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cmd_fail_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cmd_fail_3.mp3",
+          "file": "cmd_fail.mp3",
           "bytes": 13208
         }
       ]
@@ -146,15 +84,7 @@
       "loop": false,
       "files": [
         {
-          "file": "perm_denied_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "perm_denied_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "perm_denied_3.mp3",
+          "file": "perm_denied.mp3",
           "bytes": 20732
         }
       ]
@@ -168,15 +98,7 @@
       "loop": false,
       "files": [
         {
-          "file": "cmd_locked_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cmd_locked_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cmd_locked_3.mp3",
+          "file": "cmd_locked.mp3",
           "bytes": 13208
         }
       ]
@@ -190,81 +112,7 @@
       "loop": false,
       "files": [
         {
-          "file": "tab_complete_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "tab_complete_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "tab_complete_3.mp3",
-          "bytes": 13208
-        }
-      ]
-    },
-    {
-      "row": 10,
-      "name": "dialog_open",
-      "effect": "Dialog box appears",
-      "listed_seconds": 0.4,
-      "duration_seconds": 0.5,
-      "loop": false,
-      "files": [
-        {
-          "file": "dialog_open_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "dialog_open_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "dialog_open_3.mp3",
-          "bytes": 13208
-        }
-      ]
-    },
-    {
-      "row": 11,
-      "name": "dialog_close",
-      "effect": "Dialog box dismisses",
-      "listed_seconds": 0.3,
-      "duration_seconds": 0.5,
-      "loop": false,
-      "files": [
-        {
-          "file": "dialog_close_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "dialog_close_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "dialog_close_3.mp3",
-          "bytes": 13208
-        }
-      ]
-    },
-    {
-      "row": 12,
-      "name": "dialog_tick",
-      "effect": "Dialog text tick (per character)",
-      "listed_seconds": 0.05,
-      "duration_seconds": 0.5,
-      "loop": false,
-      "files": [
-        {
-          "file": "dialog_tick_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "dialog_tick_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "dialog_tick_3.mp3",
+          "file": "tab_complete.mp3",
           "bytes": 13208
         }
       ]
@@ -278,15 +126,7 @@
       "loop": false,
       "files": [
         {
-          "file": "agent_taunt_1.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "agent_taunt_2.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "agent_taunt_3.mp3",
+          "file": "agent_taunt.mp3",
           "bytes": 15716
         }
       ]
@@ -300,15 +140,7 @@
       "loop": false,
       "files": [
         {
-          "file": "kiro_advice_1.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "kiro_advice_2.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "kiro_advice_3.mp3",
+          "file": "kiro_advice.mp3",
           "bytes": 18224
         }
       ]
@@ -322,15 +154,7 @@
       "loop": false,
       "files": [
         {
-          "file": "timer_tick_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "timer_tick_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "timer_tick_3.mp3",
+          "file": "timer_tick.mp3",
           "bytes": 13208
         }
       ]
@@ -344,15 +168,7 @@
       "loop": false,
       "files": [
         {
-          "file": "timer_expired_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "timer_expired_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "timer_expired_3.mp3",
+          "file": "timer_expired.mp3",
           "bytes": 20732
         }
       ]
@@ -366,15 +182,7 @@
       "loop": false,
       "files": [
         {
-          "file": "menu_open_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "menu_open_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "menu_open_3.mp3",
+          "file": "menu_open.mp3",
           "bytes": 13208
         }
       ]
@@ -388,37 +196,7 @@
       "loop": false,
       "files": [
         {
-          "file": "menu_close_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "menu_close_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "menu_close_3.mp3",
-          "bytes": 13208
-        }
-      ]
-    },
-    {
-      "row": 19,
-      "name": "menu_confirm",
-      "effect": "Menu item select / confirm",
-      "listed_seconds": 0.2,
-      "duration_seconds": 0.5,
-      "loop": false,
-      "files": [
-        {
-          "file": "menu_confirm_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "menu_confirm_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "menu_confirm_3.mp3",
+          "file": "menu_close.mp3",
           "bytes": 13208
         }
       ]
@@ -432,15 +210,7 @@
       "loop": false,
       "files": [
         {
-          "file": "menu_move_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "menu_move_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "menu_move_3.mp3",
+          "file": "menu_move.mp3",
           "bytes": 13208
         }
       ]
@@ -454,15 +224,7 @@
       "loop": false,
       "files": [
         {
-          "file": "achievement_1.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "achievement_2.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "achievement_3.mp3",
+          "file": "achievement.mp3",
           "bytes": 37032
         }
       ]
@@ -476,37 +238,7 @@
       "loop": false,
       "files": [
         {
-          "file": "item_lit_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "item_lit_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "item_lit_3.mp3",
-          "bytes": 13208
-        }
-      ]
-    },
-    {
-      "row": 23,
-      "name": "item_hold",
-      "effect": "`hold <item>` (take in hand)",
-      "listed_seconds": 0.4,
-      "duration_seconds": 0.5,
-      "loop": false,
-      "files": [
-        {
-          "file": "item_hold_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "item_hold_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "item_hold_3.mp3",
+          "file": "item_lit.mp3",
           "bytes": 13208
         }
       ]
@@ -520,38 +252,8 @@
       "loop": false,
       "files": [
         {
-          "file": "manual_open_1.mp3",
+          "file": "manual_open.mp3",
           "bytes": 25747
-        },
-        {
-          "file": "manual_open_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "manual_open_3.mp3",
-          "bytes": 25747
-        }
-      ]
-    },
-    {
-      "row": 25,
-      "name": "manual_page",
-      "effect": "Manual page flip",
-      "listed_seconds": 0.6,
-      "duration_seconds": 0.6,
-      "loop": false,
-      "files": [
-        {
-          "file": "manual_page_1.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "manual_page_2.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "manual_page_3.mp3",
-          "bytes": 15716
         }
       ]
     },
@@ -564,15 +266,7 @@
       "loop": false,
       "files": [
         {
-          "file": "manual_close_1.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "manual_close_2.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "manual_close_3.mp3",
+          "file": "manual_close.mp3",
           "bytes": 18224
         }
       ]
@@ -586,15 +280,7 @@
       "loop": false,
       "files": [
         {
-          "file": "title_card_1.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "title_card_2.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "title_card_3.mp3",
+          "file": "title_card.mp3",
           "bytes": 37032
         }
       ]
@@ -608,15 +294,7 @@
       "loop": false,
       "files": [
         {
-          "file": "level_clear_1.mp3",
-          "bytes": 49571
-        },
-        {
-          "file": "level_clear_2.mp3",
-          "bytes": 49571
-        },
-        {
-          "file": "level_clear_3.mp3",
+          "file": "level_clear.mp3",
           "bytes": 49571
         }
       ]
@@ -630,15 +308,7 @@
       "loop": false,
       "files": [
         {
-          "file": "rank_reveal_1.mp3",
-          "bytes": 60856
-        },
-        {
-          "file": "rank_reveal_2.mp3",
-          "bytes": 60856
-        },
-        {
-          "file": "rank_reveal_3.mp3",
+          "file": "rank_reveal.mp3",
           "bytes": 60856
         }
       ]
@@ -652,15 +322,7 @@
       "loop": false,
       "files": [
         {
-          "file": "restart_arm_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "restart_arm_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "restart_arm_3.mp3",
+          "file": "restart_arm.mp3",
           "bytes": 13208
         }
       ]
@@ -674,15 +336,7 @@
       "loop": false,
       "files": [
         {
-          "file": "level_restart_1.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "level_restart_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "level_restart_3.mp3",
+          "file": "level_restart.mp3",
           "bytes": 30136
         }
       ]
@@ -696,15 +350,7 @@
       "loop": false,
       "files": [
         {
-          "file": "lightning_1.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "lightning_2.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "lightning_3.mp3",
+          "file": "lightning.mp3",
           "bytes": 37032
         }
       ]
@@ -718,15 +364,7 @@
       "loop": false,
       "files": [
         {
-          "file": "thunder_close_1.mp3",
-          "bytes": 85306
-        },
-        {
-          "file": "thunder_close_2.mp3",
-          "bytes": 85306
-        },
-        {
-          "file": "thunder_close_3.mp3",
+          "file": "thunder_close.mp3",
           "bytes": 85306
         }
       ]
@@ -740,15 +378,7 @@
       "loop": false,
       "files": [
         {
-          "file": "thunder_far_1.mp3",
-          "bytes": 97845
-        },
-        {
-          "file": "thunder_far_2.mp3",
-          "bytes": 97845
-        },
-        {
-          "file": "thunder_far_3.mp3",
+          "file": "thunder_far.mp3",
           "bytes": 97845
         }
       ]
@@ -762,15 +392,7 @@
       "loop": true,
       "files": [
         {
-          "file": "rain_loop_1.mp3",
-          "bytes": 241414
-        },
-        {
-          "file": "rain_loop_2.mp3",
-          "bytes": 241414
-        },
-        {
-          "file": "rain_loop_3.mp3",
+          "file": "rain_loop.mp3",
           "bytes": 241414
         }
       ]
@@ -784,15 +406,7 @@
       "loop": false,
       "files": [
         {
-          "file": "glass_burst_1.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "glass_burst_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "glass_burst_3.mp3",
+          "file": "glass_burst.mp3",
           "bytes": 30136
         }
       ]
@@ -806,15 +420,7 @@
       "loop": false,
       "files": [
         {
-          "file": "teleport_zap_1.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "teleport_zap_2.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "teleport_zap_3.mp3",
+          "file": "teleport_zap.mp3",
           "bytes": 37032
         }
       ]
@@ -828,15 +434,7 @@
       "loop": false,
       "files": [
         {
-          "file": "shatter_1.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "shatter_2.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "shatter_3.mp3",
+          "file": "shatter.mp3",
           "bytes": 37032
         }
       ]
@@ -850,15 +448,7 @@
       "loop": false,
       "files": [
         {
-          "file": "hop_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "hop_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "hop_3.mp3",
+          "file": "hop.mp3",
           "bytes": 13208
         }
       ]
@@ -872,15 +462,7 @@
       "loop": false,
       "files": [
         {
-          "file": "panels_smash_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "panels_smash_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "panels_smash_3.mp3",
+          "file": "panels_smash.mp3",
           "bytes": 20732
         }
       ]
@@ -894,15 +476,7 @@
       "loop": false,
       "files": [
         {
-          "file": "symlink_loop_1.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "symlink_loop_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "symlink_loop_3.mp3",
+          "file": "symlink_loop.mp3",
           "bytes": 30136
         }
       ]
@@ -916,15 +490,7 @@
       "loop": false,
       "files": [
         {
-          "file": "page_turn_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "page_turn_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "page_turn_3.mp3",
+          "file": "page_turn.mp3",
           "bytes": 13208
         }
       ]
@@ -938,15 +504,7 @@
       "loop": false,
       "files": [
         {
-          "file": "lantern_on_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "lantern_on_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "lantern_on_3.mp3",
+          "file": "lantern_on.mp3",
           "bytes": 20732
         }
       ]
@@ -960,15 +518,7 @@
       "loop": false,
       "files": [
         {
-          "file": "reveal_1.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "reveal_2.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "reveal_3.mp3",
+          "file": "reveal.mp3",
           "bytes": 15716
         }
       ]
@@ -982,15 +532,7 @@
       "loop": false,
       "files": [
         {
-          "file": "gate_open_1.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "gate_open_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "gate_open_3.mp3",
+          "file": "gate_open.mp3",
           "bytes": 30136
         }
       ]
@@ -1004,15 +546,7 @@
       "loop": false,
       "files": [
         {
-          "file": "gate_locked_1.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "gate_locked_2.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "gate_locked_3.mp3",
+          "file": "gate_locked.mp3",
           "bytes": 15716
         }
       ]
@@ -1026,15 +560,7 @@
       "loop": false,
       "files": [
         {
-          "file": "petrify_1.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "petrify_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "petrify_3.mp3",
+          "file": "petrify.mp3",
           "bytes": 30136
         }
       ]
@@ -1048,15 +574,7 @@
       "loop": false,
       "files": [
         {
-          "file": "chmod_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "chmod_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "chmod_3.mp3",
+          "file": "chmod.mp3",
           "bytes": 13208
         }
       ]
@@ -1070,15 +588,7 @@
       "loop": false,
       "files": [
         {
-          "file": "file_create_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "file_create_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "file_create_3.mp3",
+          "file": "file_create.mp3",
           "bytes": 13208
         }
       ]
@@ -1092,15 +602,7 @@
       "loop": false,
       "files": [
         {
-          "file": "file_remove_1.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "file_remove_2.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "file_remove_3.mp3",
+          "file": "file_remove.mp3",
           "bytes": 18224
         }
       ]
@@ -1114,15 +616,7 @@
       "loop": false,
       "files": [
         {
-          "file": "file_move_1.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "file_move_2.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "file_move_3.mp3",
+          "file": "file_move.mp3",
           "bytes": 15716
         }
       ]
@@ -1136,15 +630,7 @@
       "loop": false,
       "files": [
         {
-          "file": "crate_bridge_1.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "crate_bridge_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "crate_bridge_3.mp3",
+          "file": "crate_bridge.mp3",
           "bytes": 30136
         }
       ]
@@ -1158,15 +644,7 @@
       "loop": false,
       "files": [
         {
-          "file": "null_suck_1.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "null_suck_2.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "null_suck_3.mp3",
+          "file": "null_suck.mp3",
           "bytes": 37032
         }
       ]
@@ -1180,15 +658,7 @@
       "loop": false,
       "files": [
         {
-          "file": "data_flood_1.mp3",
-          "bytes": 49571
-        },
-        {
-          "file": "data_flood_2.mp3",
-          "bytes": 49571
-        },
-        {
-          "file": "data_flood_3.mp3",
+          "file": "data_flood.mp3",
           "bytes": 49571
         }
       ]
@@ -1202,15 +672,7 @@
       "loop": false,
       "files": [
         {
-          "file": "xray_on_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "xray_on_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "xray_on_3.mp3",
+          "file": "xray_on.mp3",
           "bytes": 20732
         }
       ]
@@ -1224,15 +686,7 @@
       "loop": false,
       "files": [
         {
-          "file": "xray_off_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "xray_off_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "xray_off_3.mp3",
+          "file": "xray_off.mp3",
           "bytes": 13208
         }
       ]
@@ -1246,15 +700,7 @@
       "loop": false,
       "files": [
         {
-          "file": "hand_spawn_1.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "hand_spawn_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "hand_spawn_3.mp3",
+          "file": "hand_spawn.mp3",
           "bytes": 30136
         }
       ]
@@ -1268,15 +714,7 @@
       "loop": false,
       "files": [
         {
-          "file": "cron_restore_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "cron_restore_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "cron_restore_3.mp3",
+          "file": "cron_restore.mp3",
           "bytes": 20732
         }
       ]
@@ -1290,15 +728,7 @@
       "loop": false,
       "files": [
         {
-          "file": "puzzle_solved_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "puzzle_solved_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "puzzle_solved_3.mp3",
+          "file": "puzzle_solved.mp3",
           "bytes": 25747
         }
       ]
@@ -1312,15 +742,7 @@
       "loop": false,
       "files": [
         {
-          "file": "socket_crackle_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "socket_crackle_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "socket_crackle_3.mp3",
+          "file": "socket_crackle.mp3",
           "bytes": 20732
         }
       ]
@@ -1334,15 +756,7 @@
       "loop": false,
       "files": [
         {
-          "file": "door_usb_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "door_usb_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "door_usb_3.mp3",
+          "file": "door_usb.mp3",
           "bytes": 25747
         }
       ]
@@ -1356,15 +770,7 @@
       "loop": false,
       "files": [
         {
-          "file": "door_ethernet_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "door_ethernet_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "door_ethernet_3.mp3",
+          "file": "door_ethernet.mp3",
           "bytes": 25747
         }
       ]
@@ -1378,15 +784,7 @@
       "loop": false,
       "files": [
         {
-          "file": "door_hdmi_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "door_hdmi_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "door_hdmi_3.mp3",
+          "file": "door_hdmi.mp3",
           "bytes": 25747
         }
       ]
@@ -1400,15 +798,7 @@
       "loop": false,
       "files": [
         {
-          "file": "door_serial_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "door_serial_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "door_serial_3.mp3",
+          "file": "door_serial.mp3",
           "bytes": 25747
         }
       ]
@@ -1422,15 +812,7 @@
       "loop": false,
       "files": [
         {
-          "file": "door_firewall_1.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "door_firewall_2.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "door_firewall_3.mp3",
+          "file": "door_firewall.mp3",
           "bytes": 37032
         }
       ]
@@ -1444,15 +826,7 @@
       "loop": false,
       "files": [
         {
-          "file": "door_loopback_1.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "door_loopback_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "door_loopback_3.mp3",
+          "file": "door_loopback.mp3",
           "bytes": 30136
         }
       ]
@@ -1466,15 +840,7 @@
       "loop": false,
       "files": [
         {
-          "file": "door_null_1.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "door_null_2.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "door_null_3.mp3",
+          "file": "door_null.mp3",
           "bytes": 37032
         }
       ]
@@ -1488,15 +854,7 @@
       "loop": false,
       "files": [
         {
-          "file": "battle_start_1.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "battle_start_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "battle_start_3.mp3",
+          "file": "battle_start.mp3",
           "bytes": 30136
         }
       ]
@@ -1510,15 +868,7 @@
       "loop": false,
       "files": [
         {
-          "file": "fight_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "fight_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "fight_3.mp3",
+          "file": "fight.mp3",
           "bytes": 25747
         }
       ]
@@ -1532,15 +882,7 @@
       "loop": false,
       "files": [
         {
-          "file": "turn_player_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "turn_player_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "turn_player_3.mp3",
+          "file": "turn_player.mp3",
           "bytes": 13208
         }
       ]
@@ -1554,15 +896,7 @@
       "loop": false,
       "files": [
         {
-          "file": "turn_enemy_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "turn_enemy_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "turn_enemy_3.mp3",
+          "file": "turn_enemy.mp3",
           "bytes": 13208
         }
       ]
@@ -1576,15 +910,7 @@
       "loop": false,
       "files": [
         {
-          "file": "battle_won_1.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "battle_won_2.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "battle_won_3.mp3",
+          "file": "battle_won.mp3",
           "bytes": 37032
         }
       ]
@@ -1598,15 +924,7 @@
       "loop": false,
       "files": [
         {
-          "file": "respawn_1.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "respawn_2.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "respawn_3.mp3",
+          "file": "respawn.mp3",
           "bytes": 37032
         }
       ]
@@ -1620,15 +938,7 @@
       "loop": false,
       "files": [
         {
-          "file": "atk_bug_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "atk_bug_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "atk_bug_3.mp3",
+          "file": "atk_bug.mp3",
           "bytes": 13208
         }
       ]
@@ -1642,15 +952,7 @@
       "loop": false,
       "files": [
         {
-          "file": "atk_spyware_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "atk_spyware_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "atk_spyware_3.mp3",
+          "file": "atk_spyware.mp3",
           "bytes": 13208
         }
       ]
@@ -1664,15 +966,7 @@
       "loop": false,
       "files": [
         {
-          "file": "atk_rootkit_1.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "atk_rootkit_2.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "atk_rootkit_3.mp3",
+          "file": "atk_rootkit.mp3",
           "bytes": 18224
         }
       ]
@@ -1686,15 +980,7 @@
       "loop": false,
       "files": [
         {
-          "file": "atk_worm_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "atk_worm_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "atk_worm_3.mp3",
+          "file": "atk_worm.mp3",
           "bytes": 20732
         }
       ]
@@ -1708,15 +994,7 @@
       "loop": false,
       "files": [
         {
-          "file": "atk_crack_1.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "atk_crack_2.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "atk_crack_3.mp3",
+          "file": "atk_crack.mp3",
           "bytes": 15716
         }
       ]
@@ -1730,15 +1008,7 @@
       "loop": false,
       "files": [
         {
-          "file": "atk_trojan_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "atk_trojan_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "atk_trojan_3.mp3",
+          "file": "atk_trojan.mp3",
           "bytes": 20732
         }
       ]
@@ -1752,15 +1022,7 @@
       "loop": false,
       "files": [
         {
-          "file": "atk_virus_1.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "atk_virus_2.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "atk_virus_3.mp3",
+          "file": "atk_virus.mp3",
           "bytes": 18224
         }
       ]
@@ -1774,15 +1036,7 @@
       "loop": false,
       "files": [
         {
-          "file": "atk_exploit_1.mp3",
-          "bytes": 22612
-        },
-        {
-          "file": "atk_exploit_2.mp3",
-          "bytes": 22612
-        },
-        {
-          "file": "atk_exploit_3.mp3",
+          "file": "atk_exploit.mp3",
           "bytes": 22612
         }
       ]
@@ -1796,15 +1050,7 @@
       "loop": false,
       "files": [
         {
-          "file": "atk_ransomware_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "atk_ransomware_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "atk_ransomware_3.mp3",
+          "file": "atk_ransomware.mp3",
           "bytes": 25747
         }
       ]
@@ -1818,15 +1064,7 @@
       "loop": false,
       "files": [
         {
-          "file": "atk_zombie_1.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "atk_zombie_2.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "atk_zombie_3.mp3",
+          "file": "atk_zombie.mp3",
           "bytes": 18224
         }
       ]
@@ -1840,15 +1078,7 @@
       "loop": false,
       "files": [
         {
-          "file": "boss_forkbomb_1.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "boss_forkbomb_2.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "boss_forkbomb_3.mp3",
+          "file": "boss_forkbomb.mp3",
           "bytes": 37032
         }
       ]
@@ -1862,15 +1092,7 @@
       "loop": false,
       "files": [
         {
-          "file": "boss_kernel_panic_1.mp3",
-          "bytes": 43928
-        },
-        {
-          "file": "boss_kernel_panic_2.mp3",
-          "bytes": 43928
-        },
-        {
-          "file": "boss_kernel_panic_3.mp3",
+          "file": "boss_kernel_panic.mp3",
           "bytes": 43928
         }
       ]
@@ -1884,15 +1106,7 @@
       "loop": false,
       "files": [
         {
-          "file": "enemy_tell_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "enemy_tell_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "enemy_tell_3.mp3",
+          "file": "enemy_tell.mp3",
           "bytes": 13208
         }
       ]
@@ -1906,15 +1120,7 @@
       "loop": false,
       "files": [
         {
-          "file": "enemy_miss_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "enemy_miss_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "enemy_miss_3.mp3",
+          "file": "enemy_miss.mp3",
           "bytes": 13208
         }
       ]
@@ -1928,15 +1134,7 @@
       "loop": false,
       "files": [
         {
-          "file": "enemy_spawn_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "enemy_spawn_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "enemy_spawn_3.mp3",
+          "file": "enemy_spawn.mp3",
           "bytes": 20732
         }
       ]
@@ -1950,15 +1148,7 @@
       "loop": false,
       "files": [
         {
-          "file": "virus_split_1.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "virus_split_2.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "virus_split_3.mp3",
+          "file": "virus_split.mp3",
           "bytes": 18224
         }
       ]
@@ -1972,15 +1162,7 @@
       "loop": false,
       "files": [
         {
-          "file": "enemy_enraged_1.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "enemy_enraged_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "enemy_enraged_3.mp3",
+          "file": "enemy_enraged.mp3",
           "bytes": 30136
         }
       ]
@@ -1994,15 +1176,7 @@
       "loop": false,
       "files": [
         {
-          "file": "player_hit_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "player_hit_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "player_hit_3.mp3",
+          "file": "player_hit.mp3",
           "bytes": 13208
         }
       ]
@@ -2016,15 +1190,7 @@
       "loop": false,
       "files": [
         {
-          "file": "player_hit_heavy_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "player_hit_heavy_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "player_hit_heavy_3.mp3",
+          "file": "player_hit_heavy.mp3",
           "bytes": 20732
         }
       ]
@@ -2038,15 +1204,7 @@
       "loop": true,
       "files": [
         {
-          "file": "low_hp_loop_1.mp3",
-          "bytes": 73394
-        },
-        {
-          "file": "low_hp_loop_2.mp3",
-          "bytes": 73394
-        },
-        {
-          "file": "low_hp_loop_3.mp3",
+          "file": "low_hp_loop.mp3",
           "bytes": 73394
         }
       ]
@@ -2060,15 +1218,7 @@
       "loop": false,
       "files": [
         {
-          "file": "hp_tier_drop_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "hp_tier_drop_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "hp_tier_drop_3.mp3",
+          "file": "hp_tier_drop.mp3",
           "bytes": 13208
         }
       ]
@@ -2082,15 +1232,7 @@
       "loop": false,
       "files": [
         {
-          "file": "enemy_hit_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "enemy_hit_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "enemy_hit_3.mp3",
+          "file": "enemy_hit.mp3",
           "bytes": 13208
         }
       ]
@@ -2104,15 +1246,7 @@
       "loop": false,
       "files": [
         {
-          "file": "kill_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "kill_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "kill_3.mp3",
+          "file": "kill.mp3",
           "bytes": 25747
         }
       ]
@@ -2126,15 +1260,7 @@
       "loop": false,
       "files": [
         {
-          "file": "sigterm_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "sigterm_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "sigterm_3.mp3",
+          "file": "sigterm.mp3",
           "bytes": 25747
         }
       ]
@@ -2148,15 +1274,7 @@
       "loop": false,
       "files": [
         {
-          "file": "sigstop_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "sigstop_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "sigstop_3.mp3",
+          "file": "sigstop.mp3",
           "bytes": 25747
         }
       ]
@@ -2170,15 +1288,7 @@
       "loop": false,
       "files": [
         {
-          "file": "sigcont_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "sigcont_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "sigcont_3.mp3",
+          "file": "sigcont.mp3",
           "bytes": 20732
         }
       ]
@@ -2192,15 +1302,7 @@
       "loop": false,
       "files": [
         {
-          "file": "kill_rm_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "kill_rm_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "kill_rm_3.mp3",
+          "file": "kill_rm.mp3",
           "bytes": 20732
         }
       ]
@@ -2214,15 +1316,7 @@
       "loop": false,
       "files": [
         {
-          "file": "kill_null_1.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "kill_null_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "kill_null_3.mp3",
+          "file": "kill_null.mp3",
           "bytes": 30136
         }
       ]
@@ -2236,15 +1330,7 @@
       "loop": false,
       "files": [
         {
-          "file": "core_dump_1.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "core_dump_2.mp3",
-          "bytes": 37032
-        },
-        {
-          "file": "core_dump_3.mp3",
+          "file": "core_dump.mp3",
           "bytes": 37032
         }
       ]
@@ -2258,15 +1344,7 @@
       "loop": false,
       "files": [
         {
-          "file": "boss_defeated_1.mp3",
-          "bytes": 73394
-        },
-        {
-          "file": "boss_defeated_2.mp3",
-          "bytes": 73394
-        },
-        {
-          "file": "boss_defeated_3.mp3",
+          "file": "boss_defeated.mp3",
           "bytes": 73394
         }
       ]
@@ -2280,15 +1358,7 @@
       "loop": false,
       "files": [
         {
-          "file": "pickup_energy_1.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "pickup_energy_2.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "pickup_energy_3.mp3",
+          "file": "pickup_energy.mp3",
           "bytes": 15716
         }
       ]
@@ -2302,15 +1372,7 @@
       "loop": false,
       "files": [
         {
-          "file": "pickup_ram_1.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "pickup_ram_2.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "pickup_ram_3.mp3",
+          "file": "pickup_ram.mp3",
           "bytes": 15716
         }
       ]
@@ -2324,15 +1386,7 @@
       "loop": false,
       "files": [
         {
-          "file": "pickup_ssd_1.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "pickup_ssd_2.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "pickup_ssd_3.mp3",
+          "file": "pickup_ssd.mp3",
           "bytes": 18224
         }
       ]
@@ -2346,15 +1400,7 @@
       "loop": false,
       "files": [
         {
-          "file": "pickup_lantern_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "pickup_lantern_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "pickup_lantern_3.mp3",
+          "file": "pickup_lantern.mp3",
           "bytes": 25747
         }
       ]
@@ -2368,15 +1414,7 @@
       "loop": true,
       "files": [
         {
-          "file": "pickup_hover_1.mp3",
-          "bytes": 49571
-        },
-        {
-          "file": "pickup_hover_2.mp3",
-          "bytes": 49571
-        },
-        {
-          "file": "pickup_hover_3.mp3",
+          "file": "pickup_hover.mp3",
           "bytes": 49571
         }
       ]
@@ -2390,15 +1428,7 @@
       "loop": false,
       "files": [
         {
-          "file": "hero_type_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "hero_type_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "hero_type_3.mp3",
+          "file": "hero_type.mp3",
           "bytes": 25747
         }
       ]
@@ -2412,15 +1442,7 @@
       "loop": false,
       "files": [
         {
-          "file": "hero_cast_1.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "hero_cast_2.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "hero_cast_3.mp3",
+          "file": "hero_cast.mp3",
           "bytes": 18224
         }
       ]
@@ -2434,15 +1456,7 @@
       "loop": false,
       "files": [
         {
-          "file": "hero_collect_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "hero_collect_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "hero_collect_3.mp3",
+          "file": "hero_collect.mp3",
           "bytes": 13208
         }
       ]
@@ -2456,15 +1470,7 @@
       "loop": false,
       "files": [
         {
-          "file": "emote_shock_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "emote_shock_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "emote_shock_3.mp3",
+          "file": "emote_shock.mp3",
           "bytes": 13208
         }
       ]
@@ -2478,15 +1484,7 @@
       "loop": false,
       "files": [
         {
-          "file": "emote_panic_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "emote_panic_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "emote_panic_3.mp3",
+          "file": "emote_panic.mp3",
           "bytes": 25747
         }
       ]
@@ -2500,15 +1498,7 @@
       "loop": false,
       "files": [
         {
-          "file": "emote_relief_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "emote_relief_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "emote_relief_3.mp3",
+          "file": "emote_relief.mp3",
           "bytes": 20732
         }
       ]
@@ -2522,15 +1512,7 @@
       "loop": false,
       "files": [
         {
-          "file": "emote_shout_1.mp3",
-          "bytes": 22612
-        },
-        {
-          "file": "emote_shout_2.mp3",
-          "bytes": 22612
-        },
-        {
-          "file": "emote_shout_3.mp3",
+          "file": "emote_shout.mp3",
           "bytes": 22612
         }
       ]
@@ -2544,15 +1526,7 @@
       "loop": false,
       "files": [
         {
-          "file": "kiro_scan_1.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "kiro_scan_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "kiro_scan_3.mp3",
+          "file": "kiro_scan.mp3",
           "bytes": 30136
         }
       ]
@@ -2566,15 +1540,7 @@
       "loop": false,
       "files": [
         {
-          "file": "kiro_load_1.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "kiro_load_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "kiro_load_3.mp3",
+          "file": "kiro_load.mp3",
           "bytes": 30136
         }
       ]
@@ -2588,15 +1554,7 @@
       "loop": false,
       "files": [
         {
-          "file": "kiro_crack_start_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "kiro_crack_start_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "kiro_crack_start_3.mp3",
+          "file": "kiro_crack_start.mp3",
           "bytes": 20732
         }
       ]
@@ -2610,15 +1568,7 @@
       "loop": false,
       "files": [
         {
-          "file": "kiro_crack_step_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "kiro_crack_step_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "kiro_crack_step_3.mp3",
+          "file": "kiro_crack_step.mp3",
           "bytes": 13208
         }
       ]
@@ -2632,15 +1582,7 @@
       "loop": false,
       "files": [
         {
-          "file": "kiro_crack_done_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "kiro_crack_done_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "kiro_crack_done_3.mp3",
+          "file": "kiro_crack_done.mp3",
           "bytes": 25747
         }
       ]
@@ -2654,15 +1596,7 @@
       "loop": false,
       "files": [
         {
-          "file": "lap_open_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "lap_open_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "lap_open_3.mp3",
+          "file": "lap_open.mp3",
           "bytes": 20732
         }
       ]
@@ -2676,15 +1610,7 @@
       "loop": false,
       "files": [
         {
-          "file": "lap_close_1.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "lap_close_2.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "lap_close_3.mp3",
+          "file": "lap_close.mp3",
           "bytes": 15716
         }
       ]
@@ -2698,15 +1624,7 @@
       "loop": false,
       "files": [
         {
-          "file": "lap_post_beep_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "lap_post_beep_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "lap_post_beep_3.mp3",
+          "file": "lap_post_beep.mp3",
           "bytes": 13208
         }
       ]
@@ -2720,15 +1638,7 @@
       "loop": false,
       "files": [
         {
-          "file": "lap_fan_1.mp3",
-          "bytes": 73394
-        },
-        {
-          "file": "lap_fan_2.mp3",
-          "bytes": 73394
-        },
-        {
-          "file": "lap_fan_3.mp3",
+          "file": "lap_fan.mp3",
           "bytes": 73394
         }
       ]
@@ -2742,15 +1652,7 @@
       "loop": false,
       "files": [
         {
-          "file": "lap_disk_1.mp3",
-          "bytes": 49571
-        },
-        {
-          "file": "lap_disk_2.mp3",
-          "bytes": 49571
-        },
-        {
-          "file": "lap_disk_3.mp3",
+          "file": "lap_disk.mp3",
           "bytes": 49571
         }
       ]
@@ -2764,60 +1666,8 @@
       "loop": false,
       "files": [
         {
-          "file": "lap_ready_1.mp3",
+          "file": "lap_ready.mp3",
           "bytes": 30136
-        },
-        {
-          "file": "lap_ready_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "lap_ready_3.mp3",
-          "bytes": 30136
-        }
-      ]
-    },
-    {
-      "row": 127,
-      "name": "lap_key_down",
-      "effect": "Laptop key down",
-      "listed_seconds": 0.1,
-      "duration_seconds": 0.5,
-      "loop": false,
-      "files": [
-        {
-          "file": "lap_key_down_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "lap_key_down_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "lap_key_down_3.mp3",
-          "bytes": 13208
-        }
-      ]
-    },
-    {
-      "row": 128,
-      "name": "lap_key_up",
-      "effect": "Laptop key up",
-      "listed_seconds": 0.1,
-      "duration_seconds": 0.5,
-      "loop": false,
-      "files": [
-        {
-          "file": "lap_key_up_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "lap_key_up_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "lap_key_up_3.mp3",
-          "bytes": 13208
         }
       ]
     },
@@ -2830,59 +1680,7 @@
       "loop": false,
       "files": [
         {
-          "file": "lap_trackpad_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "lap_trackpad_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "lap_trackpad_3.mp3",
-          "bytes": 13208
-        }
-      ]
-    },
-    {
-      "row": 130,
-      "name": "lap_win_open",
-      "effect": "Window opens",
-      "listed_seconds": 0.3,
-      "duration_seconds": 0.5,
-      "loop": false,
-      "files": [
-        {
-          "file": "lap_win_open_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "lap_win_open_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "lap_win_open_3.mp3",
-          "bytes": 13208
-        }
-      ]
-    },
-    {
-      "row": 131,
-      "name": "lap_win_close",
-      "effect": "Window closes",
-      "listed_seconds": 0.3,
-      "duration_seconds": 0.5,
-      "loop": false,
-      "files": [
-        {
-          "file": "lap_win_close_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "lap_win_close_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "lap_win_close_3.mp3",
+          "file": "lap_trackpad.mp3",
           "bytes": 13208
         }
       ]
@@ -2896,60 +1694,8 @@
       "loop": false,
       "files": [
         {
-          "file": "lap_run_1.mp3",
+          "file": "lap_run.mp3",
           "bytes": 13208
-        },
-        {
-          "file": "lap_run_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "lap_run_3.mp3",
-          "bytes": 13208
-        }
-      ]
-    },
-    {
-      "row": 133,
-      "name": "lap_check_pass",
-      "effect": "Task check passes",
-      "listed_seconds": 1.0,
-      "duration_seconds": 1.0,
-      "loop": false,
-      "files": [
-        {
-          "file": "lap_check_pass_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "lap_check_pass_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "lap_check_pass_3.mp3",
-          "bytes": 25747
-        }
-      ]
-    },
-    {
-      "row": 134,
-      "name": "lap_check_fail",
-      "effect": "Task check fails",
-      "listed_seconds": 0.7,
-      "duration_seconds": 0.7,
-      "loop": false,
-      "files": [
-        {
-          "file": "lap_check_fail_1.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "lap_check_fail_2.mp3",
-          "bytes": 18224
-        },
-        {
-          "file": "lap_check_fail_3.mp3",
-          "bytes": 18224
         }
       ]
     },
@@ -2962,15 +1708,7 @@
       "loop": false,
       "files": [
         {
-          "file": "lap_loop_guard_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "lap_loop_guard_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "lap_loop_guard_3.mp3",
+          "file": "lap_loop_guard.mp3",
           "bytes": 20732
         }
       ]
@@ -2984,38 +1722,8 @@
       "loop": false,
       "files": [
         {
-          "file": "lap_shutdown_1.mp3",
+          "file": "lap_shutdown.mp3",
           "bytes": 30136
-        },
-        {
-          "file": "lap_shutdown_2.mp3",
-          "bytes": 30136
-        },
-        {
-          "file": "lap_shutdown_3.mp3",
-          "bytes": 30136
-        }
-      ]
-    },
-    {
-      "row": 137,
-      "name": "cine_key_clatter",
-      "effect": "Key clatter (`key_clicks` beat)",
-      "listed_seconds": 2.0,
-      "duration_seconds": 2.0,
-      "loop": false,
-      "files": [
-        {
-          "file": "cine_key_clatter_1.mp3",
-          "bytes": 49571
-        },
-        {
-          "file": "cine_key_clatter_2.mp3",
-          "bytes": 49571
-        },
-        {
-          "file": "cine_key_clatter_3.mp3",
-          "bytes": 49571
         }
       ]
     },
@@ -3028,15 +1736,7 @@
       "loop": false,
       "files": [
         {
-          "file": "cine_panel_flash_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cine_panel_flash_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cine_panel_flash_3.mp3",
+          "file": "cine_panel_flash.mp3",
           "bytes": 13208
         }
       ]
@@ -3050,15 +1750,7 @@
       "loop": false,
       "files": [
         {
-          "file": "cine_glitch_text_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "cine_glitch_text_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "cine_glitch_text_3.mp3",
+          "file": "cine_glitch_text.mp3",
           "bytes": 20732
         }
       ]
@@ -3072,15 +1764,7 @@
       "loop": false,
       "files": [
         {
-          "file": "cine_pixelate_1.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "cine_pixelate_2.mp3",
-          "bytes": 20732
-        },
-        {
-          "file": "cine_pixelate_3.mp3",
+          "file": "cine_pixelate.mp3",
           "bytes": 20732
         }
       ]
@@ -3094,15 +1778,7 @@
       "loop": false,
       "files": [
         {
-          "file": "cine_invert_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cine_invert_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cine_invert_3.mp3",
+          "file": "cine_invert.mp3",
           "bytes": 13208
         }
       ]
@@ -3116,15 +1792,7 @@
       "loop": false,
       "files": [
         {
-          "file": "cine_shake_1.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "cine_shake_2.mp3",
-          "bytes": 25747
-        },
-        {
-          "file": "cine_shake_3.mp3",
+          "file": "cine_shake.mp3",
           "bytes": 25747
         }
       ]
@@ -3138,15 +1806,7 @@
       "loop": false,
       "files": [
         {
-          "file": "cine_sfx_slam_1.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "cine_sfx_slam_2.mp3",
-          "bytes": 15716
-        },
-        {
-          "file": "cine_sfx_slam_3.mp3",
+          "file": "cine_sfx_slam.mp3",
           "bytes": 15716
         }
       ]
@@ -3160,15 +1820,7 @@
       "loop": false,
       "files": [
         {
-          "file": "cine_caption_in_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cine_caption_in_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cine_caption_in_3.mp3",
+          "file": "cine_caption_in.mp3",
           "bytes": 13208
         }
       ]
@@ -3182,18 +1834,67 @@
       "loop": false,
       "files": [
         {
-          "file": "cine_bubble_pop_1.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cine_bubble_pop_2.mp3",
-          "bytes": 13208
-        },
-        {
-          "file": "cine_bubble_pop_3.mp3",
+          "file": "cine_bubble_pop.mp3",
           "bytes": 13208
         }
       ]
+    },
+    {
+      "name": "sting_clear",
+      "effect": "Level-clear motif, one kept music take moved out of public/music",
+      "listed_seconds": 5.0,
+      "duration_seconds": 5.0,
+      "loop": false,
+      "source": "music_v2_5",
+      "files": [
+        {
+          "file": "sting_clear.mp3",
+          "bytes": 121043
+        }
+      ]
+    },
+    {
+      "name": "sting_kiro",
+      "effect": "Kiro motif, one kept music take moved out of public/music",
+      "listed_seconds": 5.0,
+      "duration_seconds": 5.0,
+      "loop": false,
+      "source": "music_v2_5",
+      "files": [
+        {
+          "file": "sting_kiro.mp3",
+          "bytes": 121043
+        }
+      ]
+    },
+    {
+      "name": "sting_lantern",
+      "effect": "Lantern motif, one kept music take moved out of public/music",
+      "listed_seconds": 5.0,
+      "duration_seconds": 5.0,
+      "loop": false,
+      "source": "music_v2_5",
+      "files": [
+        {
+          "file": "sting_lantern.mp3",
+          "bytes": 121043
+        }
+      ]
+    },
+    {
+      "name": "sting_taunt",
+      "effect": "Agent taunt motif, one kept music take moved out of public/music",
+      "listed_seconds": 5.0,
+      "duration_seconds": 5.0,
+      "loop": false,
+      "source": "music_v2_5",
+      "files": [
+        {
+          "file": "sting_taunt.mp3",
+          "bytes": 121043
+        }
+      ]
     }
-  ]
+  ],
+  "variant_note": "One kept take per cue. The _1/_2/_3 suffix was removed. Near-duplicate clicks, sweeps, page flips and confirm chimes were dropped."
 }

@@ -21,7 +21,7 @@ const MAX_CHARS = 100_000;
 /** Paths that must have exactly one owner: source, content, assets, property suites, docs and the files agents keep current. */
 const OWNED = /^(src\/|chapters\/|comix\/|public\/assets\/|scripts\/harness\/props\/|scripts\/harness\/property-tests\.mjs$|scripts\/harness\/visual-audit\.mjs$|scripts\/harness\/lib\/visual-[^/]+\.mjs$|scripts\/harness\/visual\/|docs\/|\.kiro\/specs\/|\.kiro\/steering\/|(AGENTS|CLAUDE|README)\.md$)/;
 /** Infrastructure no agent writes (it holds their own fences, the harness and the build): a change is the user's. */
-const INFRA = /^(scripts\/|\.github\/|\.kiro\/(agents|hooks|skills|settings|powers)\/|pages\/|public\/_redirects$|public\/comix\/|public\/fonts\/|package(-lock)?\.json$|tsconfig\.json$|vite\.config\.ts$|LICENSE$|\.gitignore$)/;
+const INFRA = /^(scripts\/|\.github\/|\.kiro\/(agents|hooks|skills|settings|powers)\/|pages\/|public\/_redirects$|public\/comix\/|public\/fonts\/|public\/(?:music|sfx)\/|package(-lock)?\.json$|tsconfig\.json$|vite\.config\.ts$|LICENSE$|\.gitignore$)/;
 /** Compiled output: written by the compilers for whoever ran them, owned by nobody. */
 const UNOWNED = [/^src\/chapters\/generated\//, /^src\/cinematic\/generated\//, /^chapters\/[^/]+\/story\/out\//, /^docs\/qa\/baselines\//];
 

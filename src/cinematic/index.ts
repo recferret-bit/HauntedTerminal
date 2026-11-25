@@ -8,6 +8,7 @@
  *
  * Preview / freeze-frame studio: `/cinematic.html?play=<slug>&t=<seconds>&muted=1`.
  */
+import type { AppBus } from '../contracts/app-bus.js';
 import { suspendComicLight } from '../shaders/comic-material.js';
 import { COMIX_MANIFESTS, findComixByRole, getComixPack } from './catalog.js';
 import { readDraftComixPack } from './draft.js';
@@ -22,6 +23,8 @@ export interface CinematicOptions {
   /** Allow Esc / Enter / SKIP button to skip. Default true. */
   skippable?: boolean;
   muted?: boolean;
+  /** Play-page bus. Omitted (or muted) stays silent. */
+  bus?: AppBus;
 }
 
 /** Play any compiled (or draft) comix sequence by id inside `host`. */

@@ -14,7 +14,8 @@ export function cmdPs(g: ChapterState, cmd: string): Step {
     g.rt.world.revealProcesses(events);
     if (cmd === 'top') g.rt.xray = !g.rt.xray;
     const rows = g.rt.world.procs();
-    events.push(psXrayToggle(rows));
+    const xrayOn = cmd === 'top' ? g.rt.xray : rows.length > 0 || g.rt.xray;
+    events.push(psXrayToggle(xrayOn ? rows : [], xrayOn));
     const kiroGguf = kiroIsWeak(g) ? WEAK_GGUF : g.kiro.activeCore.gguf;
     const header = '  PID  PPID USER     STATE     %CPU COMMAND\n';
     const body = [
@@ -80,6 +81,8 @@ export function cmdKill(g: ChapterState, args: string[]): Step {
       if (pid === 1 && hasBossRule) {
         const phase = computeBossPhase(g);
         if (phase < 3) {
+          const bossInode = g.rt.world.enemies.find((e) => e.pid === 1)?.inode ?? g.rt.cwd.id;
+          events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: bossInode, command: `kill ${sig}` });
           stderr += `kill: (1): Operation not permitted — kernel anchors still shield PID 1 (${phase}/3 disarmed)\n`;
           code = 1;
           continue;

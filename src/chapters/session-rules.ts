@@ -170,48 +170,6 @@ export function liveLintFeedback(g: ChapterState, node: VNode): string {
     return '';
   }
 
-export function playEventsSfx(g: ChapterState, events: KernelEvent[]): void {
-    for (const ev of events) {
-      if (ev.type === 'ENEMY_KILLED') {
-        g.sfx.play('kill');
-        return;
-      }
-      if (ev.type === 'FLOOR_CLEARED' || ev.type === 'ROOM_TRANSITION') {
-        g.sfx.play('page');
-        return;
-      }
-      if (ev.type === 'PERMISSION_DENIED_RATTLE') {
-        g.sfx.play('denied');
-        return;
-      }
-      if (ev.type === 'LANTERN_REVEAL' || ev.type === 'ACHIEVEMENT_UNLOCKED') {
-        g.sfx.play('reveal');
-        return;
-      }
-      if (ev.type === 'KIRO_ACTION') {
-        g.sfx.play(ev.action === 'crack_done' || ev.action === 'scan' ? 'reveal' : 'hop');
-        return;
-      }
-      if (ev.type === 'VIBECODER_EMOTE' && ev.emote === 'shout') {
-        g.sfx.play('lightning');
-        return;
-      }
-      if (ev.type === 'ITEM_GIVEN') {
-        g.sfx.play('reveal');
-        return;
-      }
-      if (ev.type === 'PICKUP_COLLECTED') {
-        g.sfx.play('hop');
-        return;
-      }
-      if (ev.type === 'INODE_MODE_CHANGED') {
-        g.sfx.play('gate');
-        return;
-      }
-    }
-    if (events.length > 0) g.sfx.play('type');
-  }
-
 export function unfinishedObjectives(g: ChapterState): string {
   return getChecklist(g).filter((c) => !c.done).map((c) => `  - ${c.description}`).join('\n');
 }

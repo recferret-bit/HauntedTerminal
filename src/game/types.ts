@@ -17,6 +17,10 @@ export interface GameSnapshot {
   muted: boolean;
   /** Master volume of the in-game sounds, 0 to 1 (absent: 1). */
   volume?: number;
+  /** Level mechanic is `hub`. Absent on the classic floors. */
+  hub?: boolean;
+  /** Level mechanic is `boss`. Absent on the classic floors. */
+  bossLevel?: boolean;
   /** The level the hero is in, for the HUD level block and the Esc menu. */
   level?: LevelInfo;
   /** Minimal command-free tasks and goals for the centered `? Hint` dialog. */

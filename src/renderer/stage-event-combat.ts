@@ -50,6 +50,9 @@ function onProcSignaled(stage: ComicStage, ev: Extract<KernelEvent, { type: 'PRO
   if (ev.outcome === 'FROZEN') {
     subject.rest = 'frozen';
     setRest(subject);
+  } else if (ev.outcome === 'RESUMED') {
+    subject.rest = 'idle';
+    setRest(subject);
   } else if (ev.outcome === 'TRAPPED_ENRAGED') {
     subject.rest = 'enraged';
     setRest(subject);

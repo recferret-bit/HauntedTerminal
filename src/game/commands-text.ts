@@ -1,7 +1,7 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { BESTIARY, PICKUP_INFO } from './bestiary.js';
 import { readSocket } from './puzzle.js';
-import { bump, denied, target } from './runtime.js';
+import { bump, denied, push, target } from './runtime.js';
 import { empty, escapeReg, linesOf, out, type Play } from './play.js';
 
 function walkArgs(args: string[], on: (arg: string, next: () => string | undefined) => void): void {
@@ -16,7 +16,10 @@ export function cmdCat(g: Play, args: string[], stdin: string): Step {
   const events: KernelEvent[] = [];
   for (const arg of args) {
     const found = resolve(g.run.cwd, arg, true);
-    if (!found.node) return { stdout: text, stderr: `cat: ${arg}: No such file or directory\n`, code: 1, events };
+    if (!found.node) {
+      if (found.denied) push(g, events, { type: 'PERMISSION_DENIED_RATTLE', targetId: found.denied.id, command: `cat ${arg}` });
+      return { stdout: text, stderr: `cat: ${arg}: ${found.denied ? 'Permission denied' : 'No such file or directory'}\n`, code: 1, events };
+    }
     const node = found.node;
     if (node.kind === 'dir') return { stdout: text, stderr: `cat: ${arg}: Is a directory\n`, code: 1, events };
     if (node.kind === 'socket') {
@@ -29,6 +32,7 @@ export function cmdCat(g: Play, args: string[], stdin: string): Step {
     if ((node.mode & 0o444) === 0) {
       const pickup = g.run.world.pickupByInode(node.id);
       const why = pickup ? ` (encrypted: chmod 644 ${arg})` : '';
+      push(g, events, { type: 'PERMISSION_DENIED_RATTLE', targetId: node.id, command: `cat ${arg}` });
       return { stdout: text, stderr: `cat: ${arg}: Permission denied${why}\n`, code: 1, events };
     }
     g.run.filesRead.add(absPath(node));

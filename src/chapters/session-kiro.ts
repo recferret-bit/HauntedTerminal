@@ -86,7 +86,7 @@ function kiroScan(g: ChapterState): Step {
       if (res.enableXray) {
         g.rt.xray = true;
         g.rt.world.revealProcesses(events);
-        events.push(psXrayToggle(g.rt.world.procs()));
+        events.push(psXrayToggle(g.rt.world.procs(), true));
       }
       if (res.healAmount > 0 && g.hp < maxHpFor(g.ram)) {
         g.hp = Math.min(maxHpFor(g.ram), g.hp + res.healAmount);
@@ -144,9 +144,16 @@ export function cmdKiro(g: ChapterState, args: string[], stdin: string): Step {
       const targetArg = args[1];
       if (!targetArg) return emptyStep(1, 'kiro inspect: specify a file (or pipe via `cat <file> | kiro`)\n');
       const found = resolve(g.rt.cwd, targetArg, true);
-      if (!found.node) return emptyStep(1, `kiro inspect: ${targetArg}: No such file\n`);
+      if (!found.node) {
+        if (found.denied) {
+          return okStep('', [{ type: 'PERMISSION_DENIED_RATTLE', targetId: found.denied.id, command: 'kiro inspect' }], 1, `kiro inspect: ${targetArg}: Permission denied\n`);
+        }
+        return emptyStep(1, `kiro inspect: ${targetArg}: No such file\n`);
+      }
       if (found.node.kind !== 'file') return emptyStep(1, `kiro inspect: ${targetArg}: Not a regular file\n`);
-      if ((found.node.mode & 0o400) === 0) return emptyStep(1, `kiro inspect: ${targetArg}: Permission denied\n`);
+      if ((found.node.mode & 0o400) === 0) {
+        return okStep('', [{ type: 'PERMISSION_DENIED_RATTLE', targetId: found.node.id, command: 'kiro inspect' }], 1, `kiro inspect: ${targetArg}: Permission denied\n`);
+      }
       return okStep(inspectTextWithKiro(found.node.content, found.node.name, g.kiro.activeCore), [
         { type: 'VIBECODER_ACTION', action: 'read', command: `kiro inspect ${found.node.name}` },
       ]);

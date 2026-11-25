@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { AppBus } from '../contracts/app-bus.js';
 import type { KernelEvent } from '../contracts/events.js';
 import type { AssetRegistry } from '../assets/asset-registry.js';
 import { createComicComposer, frameOrtho, type ComicPost } from '../shaders/comic-composer.js';
@@ -130,6 +131,9 @@ export class ComicStage {
   devFrozen = false;
   /** Dev: no ambient storm strikes (the self-check counts fx plays). */
   devNoStorm = false;
+  /** Play overlay: true while cinematics, outro, stats, or a hidden tab covers the stage. */
+  stormPaused = false;
+  audioBus: AppBus | null = null;
 
   constructor(
     readonly mount: HTMLElement,
@@ -280,8 +284,11 @@ export class ComicStage {
   }
 
   triggerLightningIntro(): void {
+    this.stormIn = 7 / Math.max(0.35, this.stormIntensity);
     const at = new THREE.Vector3((this.panelLeft + this.panelRight) / 2 + 0.6, this.feetY, ACTOR_Z);
     playFx(this, 'fx.lightning-strike', at);
+    this.audioBus?.emit({ kind: 'cine', cue: 'lightning' });
+    this.audioBus?.emit({ kind: 'cine', cue: 'thunder' });
   }
 
   buildScene(): void {

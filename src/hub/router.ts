@@ -1,4 +1,4 @@
-import { clearRefresh } from './boot.js';
+import { clearRefresh, setHubMusic } from './boot.js';
 import { mount as mountAchievements } from './page-achievements.js';
 import { mount as mountComix } from './page-comix.js';
 import { mount as mountDesktop } from './page-desktop.js';
@@ -50,6 +50,7 @@ function show(tab: HubTabId, doc: Document): void {
   swapContent(doc);
   markCurrentTab(tab);
   current = tab;
+  setHubMusic(tab);
   syncSteamCtaLabels();
   window.scrollTo(0, 0);
   MOUNT[tab]();

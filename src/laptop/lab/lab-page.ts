@@ -3,6 +3,8 @@
  * sits in a comic panel; the side panel shows the lifecycle machine (and sends its events), the live
  * input mirror and the quests. URL: `?state=<state>` starts there, `?speed=0|0.5|1`, `?mute=1`.
  */
+import { startPageAudio } from '../../audio/page.js';
+import type { LaptopAction } from '../../contracts/app-bus.js';
 import { h } from '../../editor-core/dom.js';
 import { APPS } from '../domain/apps.js';
 import { LAPTOP_STATES, userEvents, type LaptopEvent, type LaptopState } from '../domain/machine.js';
@@ -80,11 +82,24 @@ function questBox(lt: LaptopHandle): HTMLElement {
   return section('Quests', head, list, h('button', { class: 'btn small', onclick: () => lt.resetProgress() }, 'Reset progress'));
 }
 
-function soundBox(lt: LaptopHandle): HTMLElement {
-  const box = h('input', { type: 'checkbox', 'aria-label': 'Sound' });
+function soundBox(lt: LaptopHandle, onMute: (muted: boolean) => void, onUnmuted: () => void): HTMLElement {
+  const box = h('input', { id: 'll-sound', type: 'checkbox', 'aria-label': 'Sound' });
   box.checked = !lt.ctx.sound.muted;
-  box.addEventListener('change', () => { lt.ctx.sound.muted = !box.checked; });
+  box.addEventListener('change', () => {
+    const muted = !box.checked;
+    lt.ctx.sound.muted = muted;
+    onMute(muted);
+    if (!muted) onUnmuted();
+  });
   return section('Sound', h('label', { class: 'll-kv' }, box, ' key clicks, beeps, disk'));
+}
+
+const LAPTOP_ACTIONS: readonly LaptopAction[] = [
+  'open', 'close', 'post', 'disk', 'ready', 'trackpad', 'run', 'loop-guard', 'shutdown', 'key',
+];
+
+function laptopAction(action: string): LaptopAction | null {
+  return LAPTOP_ACTIONS.some((name) => name === action) ? action as LaptopAction : null;
 }
 
 export function startLaptopLab(root: HTMLElement): LaptopHandle {
@@ -96,12 +111,29 @@ export function startLaptopLab(root: HTMLElement): LaptopHandle {
     h('header', { class: 'll-top' }, h('a', { class: 'll-back', href: '/dev' }, '<- DEV'), h('b', {}, 'LAPTOP ', h('span', {}, 'LAB')), h('small', {}, 'the old clamshell from his inventory')),
     h('main', { class: 'll-main' }, h('div', { class: 'll-panel' }, stage, caption), side)));
   const start = q.get('state') as LaptopState | null;
+  const page = startPageAudio('laptop', root, q.get('mute') === '1' ? { muted: true } : undefined);
+  const muted = page.muted;
+  const hear = (action: string): void => {
+    if (action === 'fan-on') page.bus.emit({ kind: 'loop', cue: 'lap_fan', on: true });
+    else if (action === 'fan-off') page.bus.emit({ kind: 'loop', cue: 'lap_fan', on: false });
+    else if (action === 'check-fail') page.bus.emit({ kind: 'command', result: 'fail' });
+    else {
+      const name = laptopAction(action);
+      if (name) page.bus.emit({ kind: 'laptop', action: name });
+    }
+  };
   const lt = mountLaptop(stage, {
     start: start && LAPTOP_STATES.includes(start) ? start : 'closed',
     speed: q.has('speed') ? Number(q.get('speed')) : 1,
-    muted: q.get('mute') === '1',
+    muted,
+    hear,
   });
-  side.append(machineBox(lt), inputBox(lt), questBox(lt), soundBox(lt));
+  side.append(
+    machineBox(lt),
+    inputBox(lt),
+    questBox(lt),
+    soundBox(lt, (next) => page.setMuted(next), () => page.bus.emit({ kind: 'menu', action: 'move' })),
+  );
   const say = (s: LaptopState): void => { caption.textContent = CAPTION[s]; };
   say(lt.machine.state);
   lt.onState(say);

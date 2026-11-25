@@ -1,4 +1,4 @@
-import { refreshOnSaveChange } from './boot.js';
+import { hubBus, refreshOnSaveChange } from './boot.js';
 import { wirePortableSaves } from './portable-saves.js';
 import { renderTrophyRack, type TrophyFilter } from './trophy-rack.js';
 
@@ -11,6 +11,6 @@ export function mount(): void {
     });
   };
   refresh();
-  wirePortableSaves(refresh);
+  wirePortableSaves(refresh, hubBus());
   refreshOnSaveChange(refresh);
 }

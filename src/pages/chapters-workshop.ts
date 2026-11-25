@@ -50,6 +50,10 @@ function renderWorkshop(els: ChaptersPageEls, state: ChaptersViewState, meta: Me
       const res = purchaseOrTogglePerk(btn.dataset.perkId ?? '');
       for (const ev of res.unlockedAchievements ?? []) {
         void forwardSteamAchievement(ev.steamApiName);
+        state.bus?.emit({ kind: 'kernel', event: ev });
+      }
+      if (!res.unlockedAchievements?.length) {
+        state.bus?.emit({ kind: 'command', result: res.ok ? 'ok' : 'fail' });
       }
       const achSuffix =
         res.unlockedAchievements && res.unlockedAchievements.length > 0

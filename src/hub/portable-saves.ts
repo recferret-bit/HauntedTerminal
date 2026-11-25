@@ -1,7 +1,8 @@
 import { ACHIEVEMENT_SPECS } from '../chapters/achievements.js';
 import { exportPortableSaveFile, importPortableSaveBundle } from '../chapters/portable-save.js';
+import type { AppBus } from '../contracts/app-bus.js';
 
-export function wirePortableSaves(refreshAll: () => void): void {
+export function wirePortableSaves(refreshAll: () => void, bus: AppBus | null = null): void {
   const exportBtn = document.getElementById('export-save-btn') as HTMLButtonElement | null;
   const importBtn = document.getElementById('import-save-btn') as HTMLButtonElement | null;
   const importInput = document.getElementById('import-save-input') as HTMLInputElement | null;
@@ -35,6 +36,7 @@ export function wirePortableSaves(refreshAll: () => void): void {
       if (!file) return;
       const text = await file.text();
       const res = importPortableSaveBundle(text);
+      bus?.emit({ kind: 'command', result: res.ok ? 'ok' : 'fail' });
       showFeedback(res.message, !res.ok);
       if (res.ok) refreshAll();
     };

@@ -84,6 +84,7 @@ Always run before declaring work done (plus targeted suites for areas touched):
 - When chapters, comix, editors, labs, laptop, or assets changed, run the corresponding verifiers:
   - Chapters/editors: `node scripts/harness/generate-chapter.mjs --verify`, `node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs`, `node scripts/harness/editor-unit-test.mjs`, `node scripts/harness/editor-smoke.mjs`
   - Battles (turn-based combat, `src/game/battle.ts`; no real-time damage, no Tactical Mode): `node scripts/harness/battle-unit.mjs`, `node scripts/harness/property-tests.mjs --only gameplay`, `node scripts/harness/playthrough.mjs --ticks 3`. Spec: `.kiro/specs/turn-based-battles/`
+  - App bus, SFX and music (`src/audio/`, `src/contracts/app-bus.ts`): `node scripts/harness/audio-unit.mjs`. Spec: `.kiro/specs/app-events-audio/`
   - Comix/editor: `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs`, `node scripts/harness/comix-editor-smoke.mjs`
   - Terminal Lab: `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs`, `node scripts/harness/terminal-lab.mjs --all`, `node scripts/harness/terminal-lab-smoke.mjs` (1600x950 and `--width 1280 --height 820`)
   - Interactive Field Manual (`/manual`, `F1`, `manual`): `node scripts/harness/manual-unit.mjs`, `node scripts/harness/manual-smoke.mjs`. Spec: `.kiro/specs/inventory/items/manual/`

@@ -135,8 +135,13 @@ export function cmdMv(g: Play, args: string[]): Step {
   if (paths.length < 2) return empty(1, 'mv: missing destination file operand\n');
   const srcPath = paths[0] ?? '';
   const destPath = paths[paths.length - 1] ?? '';
-  const src = resolve(g.run.cwd, srcPath, false).node;
-  if (!src || !src.parent) return empty(1, `mv: cannot stat '${srcPath}': No such file or directory\n`);
+  const foundSrc = resolve(g.run.cwd, srcPath, false);
+  const src = foundSrc.node;
+  if (!src) {
+    if (foundSrc.denied) return denied(g, foundSrc.denied, `mv: cannot stat '${srcPath}': Permission denied\n`, `mv ${srcPath}`);
+    return empty(1, `mv: cannot stat '${srcPath}': No such file or directory\n`);
+  }
+  if (!src.parent) return empty(1, `mv: cannot stat '${srcPath}': No such file or directory\n`);
   if (!canUnlink(g, src)) return denied(g, src, `mv: cannot move '${srcPath}': Permission denied\n`, `mv ${srcPath}`);
   const events: KernelEvent[] = [];
   target(g, src);
@@ -151,7 +156,12 @@ export function cmdMv(g: Play, args: string[]): Step {
   const dest = resolve(g.run.cwd, destPath, true).node;
   if (dest?.device === 'null') {
     const veto = vetoSubtree(g, src, events);
-    if (veto) return { stdout: '', stderr: `mv: ${veto}\n`, code: 1, events };
+    if (veto) {
+      if (!events.some((e) => e.type === 'ENEMY_HIT' || e.type === 'ENTITY_SPAWNED')) {
+        push(g, events, { type: 'PERMISSION_DENIED_RATTLE', targetId: src.id, command: `mv ${srcPath}` });
+      }
+      return { stdout: '', stderr: `mv: ${veto}\n`, code: 1, events };
+    }
     if (src.name === 'chaos.stream') g.run.phase1 = true;
     const entityId = g.run.world.entityOf(src.id);
     push(g, events, {
@@ -263,9 +273,13 @@ export function cmdChmod(g: Play, args: string[]): Step {
   let stderr = '';
   let code = 0;
   for (const path of rest.slice(1)) {
-    const node = resolve(g.run.cwd, path, true).node;
+    const found = resolve(g.run.cwd, path, true);
+    const node = found.node;
     if (!node || node.device === 'null') {
-      stderr += `chmod: cannot access '${path}': No such file or directory\n`;
+      if (!node && found.denied) {
+        push(g, events, { type: 'PERMISSION_DENIED_RATTLE', targetId: found.denied.id, command: `chmod ${spec} ${path}` });
+      }
+      stderr += `chmod: cannot access '${path}': ${!node && found.denied ? 'Permission denied' : 'No such file or directory'}\n`;
       code = 1;
       continue;
     }

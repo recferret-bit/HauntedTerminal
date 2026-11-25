@@ -1,0 +1,99 @@
+import type { KernelEvent } from './events.js';
+
+export type MusicSurface =
+  | 'title'
+  | 'level-select'
+  | 'manual'
+  | 'achievements'
+  | 'comic'
+  | 'play'
+  | 'laptop'
+  | 'lab'
+  | 'cine-intro'
+  | 'cine-outro'
+  | 'rank';
+
+export type MusicBattle = 'none' | 'fight' | 'boss';
+
+/** What the music orchestrator needs. Built by the page, not by the sample player. */
+export interface MusicScene {
+  surface: MusicSurface;
+  /** Esc menu is open. The clock and the turn timer keep running. */
+  menu: boolean;
+  /** Field manual is open. */
+  reading: boolean;
+  battle: MusicBattle;
+  /** HUD low HP: hp > 0 and hp / maxHp <= 0.3. */
+  lowHp: boolean;
+  /** Level spec floor theme, 1..5. Null off the play surface. */
+  floorTheme: 1 | 2 | 3 | 4 | 5 | null;
+  /** Level mechanic is `hub`. */
+  hub: boolean;
+}
+
+export type LaptopAction =
+  | 'open' | 'close' | 'post' | 'disk' | 'ready' | 'trackpad'
+  | 'run' | 'loop-guard' | 'shutdown' | 'key';
+
+export type LoopCue = 'rain_loop' | 'low_hp_loop' | 'lap_fan';
+
+export type CineCue = 'thunder' | 'thunder-far' | 'burst' | 'zap' | 'shatter' | 'lightning';
+
+export type LetterCue = 'slam' | 'bubble' | 'caption' | 'glitch' | 'flash' | 'invert' | 'shake' | 'pixel';
+
+export type AppEvent =
+  | { kind: 'kernel'; event: KernelEvent }
+  | { kind: 'pointer'; surface: string; id: string }
+  | { kind: 'key'; key: 'press' | 'enter' | 'backspace' | 'tab' }
+  | { kind: 'command'; result: 'ok' | 'fail' | 'locked' }
+  | { kind: 'scene'; scene: MusicScene }
+  | { kind: 'menu'; action: 'open' | 'close' | 'move' }
+  | { kind: 'restart'; step: 'arm' | 'go' }
+  | { kind: 'manual'; open: boolean }
+  | { kind: 'timer'; secondsLeft: number }
+  | { kind: 'laptop'; action: LaptopAction }
+  | { kind: 'loop'; cue: LoopCue; on: boolean }
+  | { kind: 'cine'; cue: CineCue }
+  | { kind: 'letter'; letter: LetterCue }
+  | { kind: 'page' }
+  | { kind: 'audio-hold'; paused: boolean };
+
+/** Mute and volume, forwarded from the session onto the sample graph. */
+export interface SoundSink {
+  setMuted(muted: boolean): void;
+  setVolume(volume: number): void;
+}
+
+export interface AppBus {
+  emit(event: AppEvent): void;
+  subscribe(fn: (event: AppEvent) => void): () => void;
+  /** Newest last, capped. A later analytics subscriber can read or listen. */
+  recent(): readonly AppEvent[];
+}
+
+const RECENT_CAP = 200;
+
+export function createAppBus(): AppBus {
+  const listeners = new Set<(event: AppEvent) => void>();
+  const log: AppEvent[] = [];
+  return {
+    emit(event) {
+      log.push(event);
+      if (log.length > RECENT_CAP) log.shift();
+      for (const fn of listeners) fn(event);
+    },
+    subscribe(fn) {
+      listeners.add(fn);
+      return () => listeners.delete(fn);
+    },
+    recent() {
+      return log.slice();
+    },
+  };
+}
+
+/** Publish each kernel event once. A missing bus (a bare test double) is silent. */
+export function publishKernel(bus: AppBus | undefined, events: readonly KernelEvent[]): void {
+  if (!bus || events.length === 0) return;
+  for (const event of events) bus.emit({ kind: 'kernel', event });
+}

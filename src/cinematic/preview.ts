@@ -1,4 +1,5 @@
 import '../contracts/migrate-storage.js';
+import type { AppBus, MusicSurface } from '../contracts/app-bus.js';
 /**
  * `/cinematic.html`: standalone preview & freeze-frame studio for any comix in `comix/<slug>/`.
  *   ?play=<slug>             start that comix immediately (otherwise show a dynamic catalog menu)
@@ -10,6 +11,7 @@ import '../contracts/migrate-storage.js';
  * `window.__cinematic` exposes `{ state, which, manifests, text(), children(), seek(), sceneView(), ... }`.
  */
 import { COMIX_MANIFESTS, playComix, type ComixStats, type DebugOptions } from './index.js';
+import { cineScene } from './audio.js';
 import { EditorSelectionOverlay, pickComixElementAt, type ComixElementRef } from './editor-select.js';
 import { el } from './page.js';
 import type { ComixWorld } from './reel.js';
@@ -229,8 +231,12 @@ const stats: ComixStats = {
   shortcuts: (params.get('shortcuts') ?? 'ls -la,chmod +x,kill -9,cd -,!!,tab-complete').split(',').filter(Boolean),
 };
 
-const opts = { muted: params.get('muted') === '1', skippable: params.get('skippable') !== '0' };
+const previewBaseOpts = { muted: params.get('muted') === '1', skippable: params.get('skippable') !== '0' };
 const freeze = params.has('t') ? Number(params.get('t')) : undefined;
+let previewBus: AppBus | null = null;
+export function setCinematicPreviewBus(bus: AppBus | null): void {
+  previewBus = bus;
+}
 const debug: DebugOptions = {
   onRunner: (r) => {
     activeRunner = r;
@@ -262,27 +268,40 @@ async function play(which: string): Promise<void> {
   menu.hidden = true;
   state.state = 'playing';
   state.which = which;
+  const silent = previewBaseOpts.muted || debug.freezeAt !== undefined;
+  const role = COMIX_MANIFESTS.find((m) => m.id === which)?.role;
+  const surface: MusicSurface = role === 'opening' ? 'cine-intro' : role === 'ending' ? 'cine-outro' : 'comic';
+  if (!silent) {
+    previewBus?.emit({ kind: 'scene', scene: cineScene(surface) });
+  }
   try {
-    await playComix(which, host, opts, stats, debug);
+    await playComix(which, host, { ...previewBaseOpts, bus: previewBus ?? undefined }, stats, debug);
   } finally {
     activeRunner = null;
     activeWorld = null;
+    if (!silent) {
+      previewBus?.emit({ kind: 'scene', scene: cineScene('play') });
+    }
   }
   state.state = 'done';
   menu.hidden = false;
 }
 
-for (const manifest of COMIX_MANIFESTS) {
-  const btn = el('button', '', `PLAY ${manifest.title.toUpperCase()} (${manifest.durationSec}s · ${manifest.pages.length}p)`);
-  btn.type = 'button';
-  btn.dataset.play = manifest.id;
-  btn.addEventListener('click', () => void play(manifest.id));
-  listHost.appendChild(btn);
-}
-
-const requested = params.get('play');
-if (requested && (debug.draft || COMIX_MANIFESTS.some((m) => m.id === requested))) {
-  void play(requested);
-} else {
-  menu.hidden = false;
+export function bootCinematicPreview(bus: AppBus | null = null): void {
+  previewBus = bus;
+  if (!listHost.childElementCount) {
+    for (const manifest of COMIX_MANIFESTS) {
+      const btn = el('button', '', `PLAY ${manifest.title.toUpperCase()} (${manifest.durationSec}s · ${manifest.pages.length}p)`);
+      btn.type = 'button';
+      btn.dataset.play = manifest.id;
+      btn.addEventListener('click', () => void play(manifest.id));
+      listHost.appendChild(btn);
+    }
+  }
+  const requested = params.get('play');
+  if (requested && (debug.draft || COMIX_MANIFESTS.some((m) => m.id === requested))) {
+    void play(requested);
+  } else {
+    menu.hidden = false;
+  }
 }

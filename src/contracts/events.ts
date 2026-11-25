@@ -90,12 +90,13 @@ export type KernelEvent =
       type: 'PROC_SIGNALED';
       pid: number;
       signal: PosixSignal;
-      outcome: 'FROZEN' | 'KILLED' | 'TRAPPED_ENRAGED';
+      outcome: 'FROZEN' | 'KILLED' | 'TRAPPED_ENRAGED' | 'RESUMED';
     }
   | {
       type: 'HUD_OVERLAY_TOGGLED';
       mode: 'PS_XRAY';
       processes: Array<{ pid: number; ppid: number; name: string; cpu: number; state: ProcState }>;
+      active?: boolean;
     }
   | {
       type: 'OBSTACLE_DIALOGUE_RENDERED';

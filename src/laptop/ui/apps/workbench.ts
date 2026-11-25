@@ -109,8 +109,10 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
   const el = h('div', { class: `lt-bench ${cfg.app}` }, toolbar, strip.el, work, consolePane.el);
 
   const exec = async (report: Promise<RunReport>): Promise<RunReport> => {
+    ctx.sound.note('run');
     const r = await report;
     consolePane.finish(r);
+    if (r.timedOut) ctx.sound.note('loop-guard');
     return r;
   };
 
@@ -145,6 +147,8 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
         ctx.setProgress(markDone(ctx.progress(), current.id));
         ctx.sound.beep();
         ctx.pow('SOLVED!');
+      } else {
+        ctx.sound.note('check-fail');
       }
       return results;
     },

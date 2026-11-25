@@ -168,6 +168,8 @@ export function snapshot(g: ChapterState): GameSnapshot {
     return {
       cwd: cwdPath,
       floor: g.rt.spec.floorTheme,
+      hub: g.rt.spec.mechanic === 'hub',
+      bossLevel: g.rt.spec.mechanic === 'boss',
       hp: g.hp,
       maxHp,
       commands: g.commands,

@@ -1,4 +1,6 @@
 import { installFullscreenKey, isFullscreen, onFullscreenChange, toggleFullscreen } from '../chapters/fullscreen.js';
+import { queryMuted } from '../audio/page.js';
+import { syncPlayAudio } from './audio-sync.js';
 import { mountEscMenu } from '../ui/esc-menu.js';
 import { readSoundPref, writeSoundPref } from '../ui/sound-pref.js';
 import { colourise } from '../ui/terminal.js';
@@ -22,9 +24,9 @@ function saveSound(play: Play): void {
 /** Applies the saved sound choice once, right after the session exists. */
 function applySavedSound(play: Play): void {
   const pref = readSoundPref();
-  if (!pref) return;
-  play.session.setVolume(pref.volume);
-  if (pref.muted !== play.session.snapshot().muted) play.session.toggleMute();
+  if (pref) play.session.setVolume(pref.volume);
+  const wantMuted = queryMuted() ? true : (pref?.muted ?? false);
+  if (wantMuted !== play.session.snapshot().muted) play.session.toggleMute();
   play.hud?.update(play.session.snapshot());
 }
 
@@ -47,7 +49,12 @@ export function mountPlayMenu(play: Play): void {
       play.session.setVolume(volume);
       saveSound(play);
     },
-    onRestartLevel: () => restartLevel(play),
+    onMove: () => play.session.bus?.emit({ kind: 'menu', action: 'move' }),
+    onOpen: () => syncPlayAudio(play),
+    onClose: () => syncPlayAudio(play),
+    onRestartLevel: () => {
+      restartLevel(play);
+    },
     onLeave: () => window.location.assign(MAIN_MENU_URL),
     onFullscreen: () => void toggleFullscreen(),
     isFullscreen,

@@ -3,10 +3,12 @@ import { readDraftPack } from '../chapters/draft.js';
 import { readLabConfig } from '../chapters/lab-config.js';
 import { isLabSession, type LabConfig, type LabInjection } from '../chapters/session-lab-types.js';
 import type { ExecRecord } from '../contracts/exec-record.js';
+import { publishKernel } from '../contracts/app-bus.js';
 import { createSession, type Session } from '../game/session.js';
 import type { CommandResult } from '../game/types.js';
 import { resetScreen } from '../ui/screen.js';
 import { chapterBanner } from './boot.js';
+import { mountPlayAudio, syncPlayAudio } from './audio-sync.js';
 import { mountPlayHud } from './input.js';
 import { FLOOR_NAMES, type DebugGive, type Play, type SkipTutorial } from './state.js';
 
@@ -47,7 +49,9 @@ function swapLabSession(play: Play, packId: string, levelId: string): boolean {
   if (!draft) return false;
   const lab = readLabConfig(packId);
   const hadFocus = frameHasFocus();
-  const wasMuted = play.session.snapshot().muted;
+  const prevSnap = play.session.snapshot();
+  const wasMuted = prevSnap.muted;
+  const prevVol = prevSnap.volume;
   const next: Session = lab.classic
     ? createSession({ lab })
     : createChapterSession({
@@ -58,6 +62,7 @@ function swapLabSession(play: Play, packId: string, levelId: string): boolean {
         lab,
       });
   if (wasMuted !== next.snapshot().muted) next.toggleMute();
+  if (prevVol !== undefined) next.setVolume(prevVol);
 
   window.clearTimeout(play.cardTimer);
   play.cardTimer = 0;
@@ -76,6 +81,8 @@ function swapLabSession(play: Play, packId: string, levelId: string): boolean {
   const manifest = lab.classic ? undefined : draft.manifest;
   play.session = next;
   play.terminalLab = lab;
+  mountPlayAudio(play);
+  syncPlayAudio(play);
   play.activeBanner = chapterBanner(next, manifest);
   play.debugGive = (next as Session & { debugGive?: DebugGive }).debugGive?.bind(next);
   play.skipTutorial = (next as Session & { skipTutorial?: SkipTutorial }).skipTutorial?.bind(next);
@@ -102,6 +109,7 @@ function swapLabSession(play: Play, packId: string, levelId: string): boolean {
     path: snap.cwd,
   };
   play.apply([card], snap);
+  publishKernel(next.bus, [card]);
   window.clearTimeout(play.cardTimer);
   play.cardTimer = 0;
   play.reasons.delete('card');

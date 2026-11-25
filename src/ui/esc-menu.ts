@@ -30,6 +30,10 @@ import { el } from './dom-lite.js';
 export interface EscMenuHandlers {
   onMute(): void;
   onVolume(volume: number): void;
+  /** Volume slider or a confirm step. Optional. */
+  onMove?(): void;
+  onOpen?(): void;
+  onClose?(): void;
   onRestartLevel(): void;
   onLeave(): void;
   onFullscreen(): void;
@@ -218,24 +222,31 @@ function renderSnapshot(p: Parts, snap: GameSnapshot): void {
 /** Button clicks of the two-step Restart level, the leave confirm, the sound controls and the close button. */
 function wireControls(p: Parts, handlers: EscMenuHandlers, close: () => void): void {
   p.close.onclick = close;
-  p.fullscreen.onclick = () => handlers.onFullscreen();
+  p.fullscreen.onclick = () => {
+    handlers.onFullscreen();
+    handlers.onMove?.();
+  };
   p.mute.onclick = () => {
     const nowMuted = p.mute.getAttribute('aria-pressed') !== 'true';
     setText(p.mute, nowMuted ? 'Sound: muted' : 'Sound: on');
     p.mute.setAttribute('aria-pressed', nowMuted ? 'true' : 'false');
     handlers.onMute();
+    handlers.onMove?.();
   };
   p.volume.addEventListener('input', () => {
     const v = Math.max(0, Math.min(100, Math.round(Number(p.volume.value) / 5) * 5));
     setText(p.volumeValue, String(v));
     handlers.onVolume(v / 100);
+    handlers.onMove?.();
   });
   p.restart.onclick = () => {
+    handlers.onMove?.();
     showLeaveStep(p, false);
     showRestartStep(p, true);
     focus(p.restartNo);
   };
   p.restartNo.onclick = () => {
+    handlers.onMove?.();
     showRestartStep(p, false);
     focus(p.restart);
   };
@@ -247,11 +258,13 @@ function wireControls(p: Parts, handlers: EscMenuHandlers, close: () => void): v
     }
   };
   p.leave.onclick = () => {
+    handlers.onMove?.();
     showRestartStep(p, false);
     showLeaveStep(p, true);
     focus(p.leaveNo);
   };
   p.leaveNo.onclick = () => {
+    handlers.onMove?.();
     showLeaveStep(p, false);
     focus(p.leave);
   };
@@ -299,6 +312,7 @@ export function mountEscMenu(host: HTMLElement, handlers: EscMenuHandlers): EscM
     const at = list.indexOf(document.activeElement as HTMLElement);
     const step = ev.shiftKey ? -1 : 1;
     focus(list[at < 0 ? (step > 0 ? 0 : list.length - 1) : (at + step + list.length) % list.length]);
+    handlers.onMove?.();
   };
 
   const listen = (on: boolean): void => {
@@ -320,6 +334,7 @@ export function mountEscMenu(host: HTMLElement, handlers: EscMenuHandlers): EscM
     globalThis.setTimeout(() => {
       if (!open) focus(back);
     }, 0);
+    handlers.onClose?.();
   };
 
   p.card.addEventListener('keydown', onTab as EventListener);
@@ -338,6 +353,7 @@ export function mountEscMenu(host: HTMLElement, handlers: EscMenuHandlers): EscM
       update(snap);
       focus(p.close);
       p.card.scrollTop = 0;
+      handlers.onOpen?.();
     },
     close,
     isOpen: () => open,

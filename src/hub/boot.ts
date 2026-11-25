@@ -1,3 +1,6 @@
+import { sceneFor } from '../audio/music-for.js';
+import { startPageAudio, type PageAudio } from '../audio/page.js';
+import type { AppBus, MusicSurface } from '../contracts/app-bus.js';
 import '../styles/hub.css';
 import '../styles/landing.css';
 import '../styles/hub-tabs.css';
@@ -12,10 +15,29 @@ import type { HubTabId } from './tabs.js';
  * First thing every hub page does: the header, the Steam waitlist dialog (the header's Steam button opens it on every
  * page), then the waitlist wiring and desktop link handling. A saved pass redraws the current page.
  */
+/** One bed for the whole landing: Home, Desktop, Achievements and Comix. */
+const HUB_BED: Record<HubTabId, MusicSurface> = {
+  home: 'title',
+  desktop: 'title',
+  achievements: 'title',
+  comix: 'title',
+};
+
+let hubAudio: PageAudio | null = null;
+
+export function hubBus(): AppBus | null {
+  return hubAudio?.bus ?? null;
+}
+
+export function setHubMusic(tab: HubTabId): void {
+  hubAudio?.bus.emit({ kind: 'scene', scene: sceneFor(HUB_BED[tab]) });
+}
+
 export function bootHubPage(current: HubTabId): void {
+  hubAudio = startPageAudio(HUB_BED[current]);
   renderHubNav(current);
   if (document.getElementById('hub-header')) renderWaitlistDialog();
-  wireSteamWaitlist(() => activeRefresh?.());
+  wireSteamWaitlist(() => activeRefresh?.(), hubAudio.bus);
   wireExternalLinksForDesktop();
   installSaveListeners();
 }

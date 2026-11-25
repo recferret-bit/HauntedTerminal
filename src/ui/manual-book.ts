@@ -12,7 +12,8 @@ export interface ManualBookOptions {
   initialPage?: number;
   onInsertCommand?(command: string): void;
   onClose?(): void;
-  onPageChange?(page: BookPage): void;
+  onPageChange?(page: BookPage, turned: boolean, animated: boolean): void;
+  onSearchDismiss?(): void;
 }
 
 export interface ManualBook {
@@ -74,6 +75,7 @@ function handleBookKeydown(
   searchPanel: SearchPanel,
   onClose: () => void,
   onStep: (delta: -1 | 1) => void,
+  onSearchDismiss?: () => void,
 ): void {
   const active = document.activeElement;
   const inText = active instanceof HTMLInputElement && active.type !== 'checkbox';
@@ -84,6 +86,7 @@ function handleBookKeydown(
       e.stopPropagation();
       e.stopImmediatePropagation();
       searchPanel.closeResults();
+      onSearchDismiss?.();
       return;
     }
     if (modalMode) {
@@ -285,18 +288,19 @@ export function mountManualBook(host: HTMLElement, options: ManualBookOptions = 
     searchPanel.closeResults();
     const spread = isSpreadMode();
     const prevStart = alignedStart(currentIndex);
-    const nextStart = alignedStart(targetIdx);
+    const clamped = Math.max(0, Math.min(BOOK_PAGES.length - 1, targetIdx));
+    const nextStart = alignedStart(clamped);
     const forward = nextStart > prevStart;
     const turnSel = forward ? (spread ? '.mb-page-right' : '.mb-page') : (spread ? '.mb-page-left' : '.mb-page');
     const prevTurning = animate && nextStart !== prevStart ? shell.spreadHost.querySelector<HTMLElement>(turnSel) : null;
     const turnScroll = prevTurning?.scrollTop ?? 0;
-    currentIndex = Math.max(0, Math.min(BOOK_PAGES.length - 1, targetIdx));
+    currentIndex = clamped;
     paintPages();
     const backSel = forward ? (spread ? '.mb-page-left' : null) : (spread ? '.mb-page-right' : null);
     const arrivingBack = backSel ? shell.spreadHost.querySelector<HTMLElement>(backSel) : null;
     window.clearTimeout(flipTimer);
     flipTimer = prevTurning && nextStart !== prevStart ? playFlipLeaf(shell.flipHost, forward ? 'next' : 'prev', prevTurning, turnScroll, arrivingBack) : 0;
-    options.onPageChange?.(BOOK_PAGES[currentIndex]!);
+    options.onPageChange?.(BOOK_PAGES[currentIndex]!, nextStart !== prevStart, animate);
   }
 
   function open(queryOrPage?: string | number): void {
@@ -321,7 +325,9 @@ export function mountManualBook(host: HTMLElement, options: ManualBookOptions = 
     options.onClose?.();
   }
 
-  const onKeyDown = (e: KeyboardEvent): void => { if (opened) handleBookKeydown(e, modalMode, searchPanel, close, stepPage); };
+  const onKeyDown = (e: KeyboardEvent): void => {
+    if (opened) handleBookKeydown(e, modalMode, searchPanel, close, stepPage, options.onSearchDismiss);
+  };
   const onResize = (): void => { if (opened) paintPages(); };
   window.addEventListener('keydown', onKeyDown, true);
   window.addEventListener('resize', onResize);

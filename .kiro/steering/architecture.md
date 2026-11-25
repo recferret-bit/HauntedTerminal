@@ -5,7 +5,8 @@ Code follows clean architecture: dependencies point inward, and the rules are en
 ## Layers (inner to outer)
 
 ```
-contracts/            pure types shared by game and tools (events, room view), the project name (`brand.ts`) and the saved-key migration (`legacy-keys.ts`; every page entry imports `migrate-storage.ts` first)
+contracts/            pure types shared by game and tools (events, the app bus, room view), the project name (`brand.ts`) and the saved-key migration (`legacy-keys.ts`; every page entry imports `migrate-storage.ts` first)
+audio/                sample playback. Imports contracts only. The SFX orchestrator and the music orchestrator subscribe to the app bus. One-shot voices default to 10 (`SOUND_SOURCES`). Game and chapters emit; they do not import this layer.
 procgen/core          domain: palette, rng, types, catalogs, pixel buffers. No three.
 procgen/geometry      shape -> geometry, software raster (three math only)
 procgen/kit, textures, archetypes, fx, anim, validate

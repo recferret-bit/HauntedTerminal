@@ -39,6 +39,7 @@ function fireLightning(world: ComixWorld, beat: Extract<PanelBeat, { kind: 'ligh
   else stage.lightning.flashPos.copy(at);
   stage.lightning.flashStrength = beat.flash;
   if (!live) return;
+  world.sound.cue('lightning');
   if (beat.audio === 'distant') world.sound.distantThunder();
   if (beat.audio === 'thunder') world.sound.thunder();
 }
@@ -61,6 +62,7 @@ function fireOneBeat(world: ComixWorld, item: ResolvedBeat, t: number, live: boo
         stage.lightning.spawnGridOverloadArc(worldPoint(world, beat.from), worldPoint(world, beat.to));
         if (beat.flash !== undefined) stage.lightning.flashStrength = beat.flash;
       }
+      if (live) world.sound.cue('lightning');
       break;
     case 'look':
       for (const id of beat.actors) world.actors.get(id)?.actor.animator.setLook(beat.x, beat.y);

@@ -21,6 +21,8 @@ export interface LaptopOptions {
   muted?: boolean;
   /** localStorage key for quest progress; null keeps it in memory only. */
   storageKey?: string | null;
+  /** Hears laptop actions (`open`, `key`, `fan-on`, ...). The lab turns them into app events. */
+  hear?: (action: string) => void;
 }
 
 export interface LaptopHandle {
@@ -104,7 +106,7 @@ function wireInput(view: LaptopView): () => void {
 }
 
 export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): LaptopHandle {
-  const sound = createLaptopSound();
+  const sound = createLaptopSound(opts.hear);
   sound.muted = !!opts.muted;
   const saved = store(opts.storageKey === undefined ? 'credits.laptop.progress' : opts.storageKey);
   let progress = saved.load();
@@ -158,7 +160,13 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
       view.boot.play(machine.speed);
       sound.beep();
       sound.disk(2400 * machine.speed);
+      sound.note('fan-on');
     } else view.boot.stop();
+    if (state === 'opening') sound.note('open');
+    if (state === 'closing') sound.note('close');
+    if (state === 'desktop') sound.note('ready');
+    if (state !== 'booting') sound.note('fan-off');
+    if (state === 'shutting') sound.note('shutdown');
     if (state === 'shutting') desktop.reset();
     if (state === 'desktop') ctx.open('quests');
     stateFns.forEach((fn) => fn(state, event));
@@ -198,6 +206,7 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
       unhookInput();
       ro.disconnect();
       view.boot.stop();
+      sound.note('fan-off');
       desktop.dispose();
       view.el.remove();
     },

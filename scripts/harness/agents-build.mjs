@@ -89,7 +89,7 @@ const FORGE_READ = ['list_levels', 'get_level', 'validate_level', 'solve_level']
 const TEAM = {
   'lead-dev': {
     description: 'Lead game developer and orchestrator of the Out Of Credits team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here; also the member that Kiro Crew runs.',
-    writes: ['.kiro/specs/**', '.kiro/steering/**', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'docs/*.md', 'docs/media/**', 'docs/reviews/**', 'scripts/harness/property-tests.mjs', 'scripts/harness/props/{kit,arbitraries}.mjs', 'src/contracts/**', 'src/editor-core/**', 'src/play/**', 'src/pages/**', 'src/hub/**', 'src/styles/**', 'src/sandbox/**', 'src/main.ts', 'src/style.css', 'src/game/{session,play,runtime,types,floors,sfx,selfcheck,view,view-layouts}.ts', ...VISUAL_AUDIT],
+    writes: ['.kiro/specs/**', '.kiro/steering/**', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'docs/*.md', 'docs/media/**', 'docs/reviews/**', 'scripts/harness/property-tests.mjs', 'scripts/harness/props/{kit,arbitraries}.mjs', 'src/contracts/**', 'src/audio/**', 'src/editor-core/**', 'src/play/**', 'src/pages/**', 'src/hub/**', 'src/styles/**', 'src/sandbox/**', 'src/main.ts', 'src/style.css', 'src/game/{session,play,runtime,types,floors,sfx,selfcheck,view,view-layouts}.ts', ...VISUAL_AUDIT],
     resources: [steer('skills-map'), 'file://.kiro/specs/agent-team/requirements.md', 'file://.kiro/specs/agent-team/design.md'],
     skills: ['feature-spec-grill'],
     subagents: ['terminal-designer', 'laptop-designer', 'comix-designer', 'chapters-designer', 'artist', 'qa'],

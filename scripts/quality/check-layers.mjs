@@ -10,6 +10,8 @@ const SRC = resolve('src');
 /** area = path prefix under src/. `may` = areas it can import (own area always allowed). */
 const LAYERS = [
   { area: 'contracts/', may: [], three: false },
+  // Samples. Subscribes to the app bus. Game and chapters emit; they do not import this layer.
+  { area: 'audio/', may: ['contracts/'], three: false },
   { area: 'procgen/core/', may: ['contracts/'], three: false },
   { area: 'procgen/geometry/', may: ['contracts/', 'procgen/core/'], three: true },
   { area: 'procgen/kit/', may: ['contracts/', 'procgen/core/', 'procgen/geometry/'], three: true },
@@ -38,7 +40,7 @@ const LAYERS = [
   { area: 'cinematic/', may: ['contracts/', 'procgen/', 'shaders/'], three: true },
   { area: 'ui/', may: ['contracts/', 'game/', 'chapters/', 'shaders/', 'renderer/'], three: false },
   { area: 'sandbox/', may: ['contracts/', 'game/', 'renderer/', 'ui/'], three: false },
-  { area: 'pages/', may: ['contracts/', 'game/', 'chapters/', 'ui/'], three: false },
+  { area: 'pages/', may: ['contracts/', 'game/', 'chapters/', 'ui/', 'audio/'], three: false },
   // Shared workstation UI toolkit (schema forms, dock layout, workspace toggles, viewport stage, HTTP helpers); no three.
   { area: 'editor-core/', may: ['contracts/'], three: false },
   // Chapter editor: edits chapter specs with forms driven by its own schema, previews through the game in an iframe.
@@ -46,15 +48,15 @@ const LAYERS = [
   // Comix editor: uses shared editor-core toolkit and validates against procgen catalogs; no three.
   { area: 'comix-editor/', may: ['contracts/', 'editor-core/', 'cinematic/', 'procgen/'], three: false },
   // Terminal Lab: a test bench for the terminal. Builds a throwaway pack, plays it in the game iframe, never edits specs. Reuses the chapter editor's field tables.
-  { area: 'terminal-lab/', may: ['contracts/', 'editor-core/', 'chapter-editor/', 'game/', 'chapters/', 'procgen/'], three: false },
+  { area: 'terminal-lab/', may: ['contracts/', 'editor-core/', 'chapter-editor/', 'game/', 'chapters/', 'procgen/', 'audio/'], three: false },
   // Laptop: the developer's inventory laptop (emulator, desktop, code apps, coding tasks). domain <- runtime <- ui <- lab.
   { area: 'laptop/domain/', may: [], three: false },
   { area: 'laptop/runtime/', may: ['laptop/domain/'], three: false },
   { area: 'laptop/ui/', may: ['laptop/domain/', 'laptop/runtime/', 'editor-core/', 'procgen/core/'], three: false },
-  { area: 'laptop/', may: ['contracts/', 'laptop/', 'editor-core/'], three: false },
-  { area: 'hub/', may: ['contracts/', 'chapters/', 'cinematic/catalog'], three: false },
+  { area: 'laptop/', may: ['contracts/', 'laptop/', 'editor-core/', 'audio/'], three: false },
+  { area: 'hub/', may: ['contracts/', 'chapters/', 'cinematic/catalog', 'audio/'], three: false },
   // Play page composition. main.ts only starts it. Helpers live in play/ so the entry stays small.
-  { area: 'play/', may: ['assets/', 'chapters/', 'cinematic/', 'contracts/', 'game/', 'renderer/', 'sandbox/', 'ui/'], three: true },
+  { area: 'play/', may: ['assets/', 'audio/', 'chapters/', 'cinematic/', 'contracts/', 'game/', 'renderer/', 'sandbox/', 'ui/'], three: true },
   { area: 'main.ts', may: ['contracts/', 'play/'], three: false },
 ];
 

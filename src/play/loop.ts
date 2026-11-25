@@ -3,15 +3,18 @@ import type { KernelEvent } from '../contracts/events.js';
 import type { GameSnapshot, TickResult } from '../game/types.js';
 import { setHudHidden } from '../ui/screen.js';
 import { colourise } from '../ui/terminal.js';
-import { openHintDialog, openManualModal } from './input.js';
+import { emitKernelEvent, openHintDialog, openManualModal } from './input.js';
 import { exposeLabHooks } from './lab.js';
 import { mountTutorial, taunt } from '../ui/tutorial.js';
-import { CARD_MS, type Play } from './state.js';
+import { syncPlayAudio } from './audio-sync.js';
+import { CARD_MS, type PauseReason, type Play } from './state.js';
 
 const EVENT_LOG_CAP = 400;
+const OVERLAY_STORM_BLOCKERS: readonly PauseReason[] = ['cinematic', 'intro', 'outro', 'ended', 'hidden'];
 
 function syncPause(play: Play): void {
   play.session.setPaused(play.reasons.size > 0);
+  play.stage.stormPaused = play.phase !== 'play' || OVERLAY_STORM_BLOCKERS.some((r) => play.reasons.has(r));
   const blocking = [...play.reasons].some((r) => r !== 'hidden') || Boolean(play.manualBook?.isOpen());
   play.shell.setBlocked(blocking);
   // A card, cinematic or the end of the run takes the screen: overlays step aside.
@@ -45,6 +48,7 @@ function paint(play: Play, snap: GameSnapshot): void {
     console.error(err);
   }
   if (snap.ended && !play.endingStarted && play.phase === 'play') play.beginEnding(null);
+  syncPlayAudio(play);
 }
 
 function holdForCard(play: Play): void {
@@ -210,7 +214,7 @@ function exposePlayHooks(play: Play): void {
     /** Print text above the prompt, as if a command had produced it. */
     print: (text: string) => play.shell.printAbove(text),
     /** Push a synthetic KernelEvent through the same sink as session results (stage + HUD + flow). */
-    emit: (ev: KernelEvent) => play.apply([ev], play.session.snapshot()),
+    emit: (ev: KernelEvent) => emitKernelEvent(play, ev),
     phase: () => play.phase,
     paused: () => [...play.reasons],
     statsOpen: () => play.dom.statsEl.classList.contains('open'),

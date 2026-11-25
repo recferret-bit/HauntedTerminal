@@ -25,7 +25,7 @@ export function handleCastEvent(stage: ComicStage, ev: KernelEvent, subject: Sta
       return true;
     case 'HUD_OVERLAY_TOGGLED':
       stage.xrayProcs = ev.processes.map((p) => ({ pid: p.pid, ppid: p.ppid, name: p.name, cpu: p.cpu }));
-      stage.xrayOn = stage.xrayProcs.length > 0;
+      stage.xrayOn = ev.active ?? stage.xrayProcs.length > 0;
       syncOverlays(stage);
       return true;
     case 'OBSTACLE_DIALOGUE_RENDERED':

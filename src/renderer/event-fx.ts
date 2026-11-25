@@ -79,6 +79,7 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
       return [cue('fx.fork-spawn', 'hand', ev.reason === 'cron_restore' ? 280 : 530)];
     case 'PROC_SIGNALED':
       if (ev.outcome === 'FROZEN') return [cue('fx.sigstop-ice', 'subject')];
+      if (ev.outcome === 'RESUMED') return [];
       if (ev.outcome === 'TRAPPED_ENRAGED') return [cue('fx.sigterm-rage', 'subject')];
       return [cue('fx.sigkill', 'subject', 120), cue('fx.lightning-strike', 'subject-feet', 0, ' ')];
     case 'HUD_OVERLAY_TOGGLED':

@@ -34,6 +34,7 @@ function renderAchievementsBinder(host: HTMLElement, state: ChaptersViewState, o
   expBtn.textContent = 'Export Save (.json)';
   expBtn.onclick = async () => {
     const { savedPath } = await exportPortableSaveFile();
+    state.bus?.emit({ kind: 'command', result: savedPath ? 'ok' : 'fail' });
     const label = savedPath ? savedPath.split(/[\\/]/).pop() ?? savedPath : '';
     state.workshopBanner = savedPath
       ? `Exported ${label}.`
@@ -59,6 +60,7 @@ function renderAchievementsBinder(host: HTMLElement, state: ChaptersViewState, o
     impInput.value = '';
     if (!file) return;
     const res = importPortableSaveBundle(await file.text());
+    state.bus?.emit({ kind: 'command', result: res.ok ? 'ok' : 'fail' });
     state.workshopBanner = res.message;
     onRefresh();
   };

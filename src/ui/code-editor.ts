@@ -4,6 +4,7 @@ import { escHtml } from '../renderer/html-escape.js';
 
 export interface CodeEditorHandlers {
   onSave(fileName: string, content: string): void;
+  onMove?(): void;
   onClose(): void;
   onLayoutChange(): void;
 }
@@ -91,6 +92,8 @@ function renderChips(st: EditorState): void {
         st.area.scrollTop = prevScroll;
         st.gutterEl.scrollTop = prevScroll;
         triggerSave(st, 'PATCH APPLIED');
+      } else {
+        st.handlers.onMove?.();
       }
     };
   });

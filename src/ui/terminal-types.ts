@@ -7,6 +7,8 @@ export interface ShellHooks {
   prompt(): { cwd: string; gold: boolean };
   /** Enter was pressed. Return true to swallow it: nothing runs and the typed line stays on the prompt (the battle intro). */
   onEnter?(): boolean;
+  /** A key the player can hear: press, Enter, Backspace or Tab. */
+  onAudibleKey?(key: 'press' | 'enter' | 'backspace' | 'tab'): void;
 }
 
 export interface Shell {

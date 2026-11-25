@@ -3,7 +3,7 @@ import { PICKUP_INFO, maxHpFor } from '../game/bestiary.js';
 import type { Pickup } from '../game/entities.js';
 import { giveItem, holdItem } from '../game/inventory.js';
 import type { Step } from '../game/shell.js';
-import { absPath, lookup, makeNode, modeString, resolve, walk, type VNode } from '../game/tree.js';
+import { absPath, hasExec, hasWrite, lookup, makeNode, modeString, resolve, walk, type VNode } from '../game/tree.js';
 import { evaluateLevelClearAchievements, formatAchievementLines } from './achievements.js';
 import { recordLevelClear } from './catalog.js';
 import { computeLevelRank, creatableParent, emptyStep, ensureDirChain, globToRegExp, okStep, splitParentAndName, type ChapterState } from './session-state.js';
@@ -38,14 +38,14 @@ export function cmdLs(g: ChapterState, args: string[]): Step {
     const res = resolve(g.rt.cwd, targetPath, true);
     if (!res.node) {
       if (res.denied) events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.denied.id, command: 'ls' });
-      return emptyStep(1, `ls: cannot access '${targetPath}': ${res.error}\n`);
+      return okStep('', events, 1, `ls: cannot access '${targetPath}': ${res.error}\n`);
     }
     if (res.node.kind !== 'dir') {
       return okStep(`${longFmt ? longRow(res.node) : res.node.name}\n`);
     }
     if ((res.node.mode & 0o400) === 0) {
       events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.node.id, command: 'ls' });
-      return emptyStep(1, `ls: cannot open directory '${targetPath}': Permission denied\n`);
+      return okStep('', events, 1, `ls: cannot open directory '${targetPath}': Permission denied\n`);
     }
 
     if (showAll && res.node === g.rt.cwd) {
@@ -80,20 +80,14 @@ export function cmdLs(g: ChapterState, args: string[]): Step {
 export function cmdCd(g: ChapterState, args: string[]): Step {
     const events: KernelEvent[] = [];
     const target = args[0] ?? '~';
-    if (
-      g.rt.spec.mechanic !== 'hub' &&
-      (target === '~' || target === '/home/dev' || target.startsWith('/home/dev/'))
-    ) {
-      return emptyStep(
-        1,
-        'bash: cd: /home/dev: SSH connection locked until sector deployment completes\n',
-      );
+    if (g.rt.spec.mechanic !== 'hub' && (target === '~' || target === '/home/dev' || target.startsWith('/home/dev/'))) {
+      return emptyStep(1, 'bash: cd: /home/dev: SSH connection locked until sector deployment completes\n');
     }
 
     const res = resolve(g.rt.cwd, target, true);
     if (!res.node) {
       if (res.denied) events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.denied.id, command: 'cd' });
-      return emptyStep(1, `bash: cd: ${target}: ${res.error}\n`);
+      return okStep('', events, 1, `bash: cd: ${target}: ${res.error}\n`);
     }
     if (res.node.kind !== 'dir') {
       return emptyStep(1, `bash: cd: ${target}: Not a directory\n`);
@@ -104,10 +98,7 @@ export function cmdCd(g: ChapterState, args: string[]): Step {
 
     // Enforce mission chroot boundary so `cd ..` or `cd /srv` never escapes into undressed parent directories!
     if (destPath !== levelRoot && !destPath.startsWith(`${levelRoot}/`)) {
-      return emptyStep(
-        1,
-        `bash: cd: ${target}: chroot jail active at ${levelRoot} (clear sector exit gate to advance)\n`,
-      );
+      return emptyStep(1, `bash: cd: ${target}: chroot jail active at ${levelRoot} (clear sector exit gate to advance)\n`);
     }
 
     // If stepping into the level's exitDir, check winRules and transition to the next level!
@@ -115,22 +106,14 @@ export function cmdCd(g: ChapterState, args: string[]): Step {
       refreshExitGates(g, events);
       if (!allWinRulesMet(g)) {
         events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.node.id, command: 'cd' });
-        const remaining = unfinishedObjectives(g);
-        return emptyStep(
-          1,
-          `bash: cd: ${res.node.name}: Sector gate locked! Remaining objectives:\n${remaining}\n`,
-        );
+        return okStep('', events, 1, `bash: cd: ${res.node.name}: Sector gate locked! Remaining objectives:\n${unfinishedObjectives(g)}\n`);
       }
 
       const clearedIndex = g.rt.spec.index;
       const clearedId = g.rt.spec.id;
       const clearedMechanic = g.rt.spec.mechanic;
       const levelSec = Math.max(1, Math.floor((Date.now() - g.rt.levelStartedAt) / 1000));
-      const lvlRank = computeLevelRank(
-        g.rt.levelCommands,
-        g.rt.levelDeaths,
-        g.rt.usedSpoilerRung,
-      );
+      const lvlRank = computeLevelRank(g.rt.levelCommands, g.rt.levelDeaths, g.rt.usedSpoilerRung);
       const reward = g.preview
         ? { scrapEarned: 0, totalScrap: 0 }
         : recordLevelClear(g.chapterId, clearedId, lvlRank, g.rt.levelCommands, levelSec, g.chaosMode);
@@ -143,12 +126,7 @@ export function cmdCd(g: ChapterState, args: string[]): Step {
         lab: g.lab !== null,
       });
       if (!g.rt.tutorialSkipped) finishTutorial(g, events);
-      events.push({
-        type: 'FLOOR_CLEARED',
-        floorId: clearedIndex,
-        speedrunBonus: lvlRank === 'S',
-        commandsCount: g.rt.levelCommands,
-      });
+      events.push({ type: 'FLOOR_CLEARED', floorId: clearedIndex, speedrunBonus: lvlRank === 'S', commandsCount: g.rt.levelCommands });
       events.push(...achUnlocked);
 
       if (g.levelIdx + 1 < g.levels.length) {
@@ -163,19 +141,12 @@ export function cmdCd(g: ChapterState, args: string[]): Step {
 
     if ((res.node.mode & 0o111) === 0) {
       events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.node.id, command: 'cd' });
-      return emptyStep(1, `bash: cd: ${target}: Permission denied\n`);
+      return okStep('', events, 1, `bash: cd: ${target}: Permission denied\n`);
     }
 
     const fromId = g.rt.cwd.id;
     g.rt.cwd = res.node;
-    events.push({
-      type: 'ROOM_TRANSITION',
-      fromDir: fromId,
-      toDir: res.node.id,
-      toPath: destPath,
-      upwardPanelsSmashed: 0,
-      viaSymlinkLoop: false,
-    });
+    events.push({ type: 'ROOM_TRANSITION', fromDir: fromId, toDir: res.node.id, toPath: destPath, upwardPanelsSmashed: 0, viaSymlinkLoop: false });
     return okStep('', events);
   }
 
@@ -188,6 +159,10 @@ export function cmdCat(g: ChapterState, args: string[], stdin: string): Step {
     for (const arg of args) {
       const res = resolve(g.rt.cwd, arg, true);
       if (!res.node || isNodeHidden(g, res.node)) {
+        if (res.denied) {
+          events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.denied.id, command: 'cat' });
+          return okStep('', events, 1, `cat: ${arg}: Permission denied\n`);
+        }
         return emptyStep(1, `cat: ${arg}: ${res.error ?? 'No such file or directory'}\n`);
       }
       if (res.node.kind === 'socket') {
@@ -195,10 +170,7 @@ export function cmdCat(g: ChapterState, args: string[], stdin: string): Step {
         if (riddle) return riddle;
         g.rt.talkedSockets.add(res.node.name);
         if (bossRule && bossRule.kind === 'boss_defeated' && res.node.name === bossRule.verifySocket) {
-          return okStep(
-            `[${res.node.name}] Awaiting ${bossRule.expectedToken} token via \`>\` redirect...\n`,
-            events,
-          );
+          return okStep(`[${res.node.name}] Awaiting ${bossRule.expectedToken} token via \`>\` redirect...\n`, events);
         }
         if (res.node.name.includes('hank') || res.node.name.endsWith('.sock')) {
           return cmdHank(g, []);
@@ -209,16 +181,11 @@ export function cmdCat(g: ChapterState, args: string[], stdin: string): Step {
       }
       if ((res.node.mode & 0o400) === 0) {
         events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.node.id, command: 'cat' });
-        return emptyStep(1, `cat: ${arg}: Permission denied\n`);
+        return okStep('', events, 1, `cat: ${arg}: Permission denied\n`);
       }
       const full = absPath(res.node);
       g.rt.filesRead.add(full);
-      events.push({
-        type: 'VIBECODER_ACTION',
-        action: 'read',
-        command: 'cat',
-        targetEntityId: g.rt.world.entityOf(res.node.id),
-      });
+      events.push({ type: 'VIBECODER_ACTION', action: 'read', command: 'cat', targetEntityId: g.rt.world.entityOf(res.node.id) });
       outText += res.node.content;
     }
     refreshExitGates(g, events);
@@ -345,7 +312,13 @@ export function cmdTouch(g: ChapterState, args: string[]): Step {
       const ex = resolve(g.rt.cwd, a, true);
       if (ex.node) continue;
       const placed = creatableParent(g.rt.root, g.rt.cwd, a);
-      if (!placed) return emptyStep(1, `touch: cannot touch '${a}': Permission denied\n`);
+      if (!placed) {
+        const full = a.startsWith('/') ? a : `${absPath(g.rt.cwd)}/${a}`;
+        const parent = lookup(g.rt.root, splitParentAndName(full).parentPath);
+        const deniedNode = ex.denied ?? (parent && parent.kind === 'dir' && (!hasWrite(parent) || !hasExec(parent)) ? parent : null);
+        if (deniedNode) events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: deniedNode.id, command: 'touch' });
+        return okStep('', events, 1, `touch: cannot touch '${a}': Permission denied\n`);
+      }
       const created = makeNode(placed.parent, placed.name, 'file', 0o644);
       events.push({ type: 'FILE_CREATED', inodeId: created.id, name: created.name });
     }
@@ -383,6 +356,11 @@ export function cmdRm(g: ChapterState, args: string[]): Step {
     for (const t of targets) {
       const res = resolve(g.rt.cwd, t, false);
       if (!res.node || isNodeHidden(g, res.node)) {
+        if (!res.node && res.denied) {
+          events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.denied.id, command: 'rm' });
+          if (!force) errors.push(`rm: cannot remove '${t}': Permission denied`);
+          continue;
+        }
         if (!force) errors.push(`rm: cannot remove '${t}': No such file or directory`);
         continue;
       }
@@ -396,6 +374,7 @@ export function cmdRm(g: ChapterState, args: string[]): Step {
       }
       const veto = g.rt.world.vetoRemove(res.node, events);
       if (veto) {
+        rattleVeto(events, res.node.id, 'rm');
         errors.push(`rm: ${veto}`);
         continue;
       }
@@ -415,7 +394,13 @@ export function cmdCp(g: ChapterState, args: string[]): Step {
     const clean = args.filter((a) => !a.startsWith('-'));
     if (clean.length < 2) return emptyStep(1, 'usage: cp SRC DEST\n');
     const src = resolve(g.rt.cwd, clean[0]!, true);
-    if (!src.node || src.node.kind !== 'file') return emptyStep(1, `cp: cannot stat '${clean[0]}'\n`);
+    if (!src.node) {
+      if (src.denied) {
+        return okStep('', [{ type: 'PERMISSION_DENIED_RATTLE', targetId: src.denied.id, command: 'cp' }], 1, `cp: cannot stat '${clean[0]}': Permission denied\n`);
+      }
+      return emptyStep(1, `cp: cannot stat '${clean[0]}'\n`);
+    }
+    if (src.node.kind !== 'file') return emptyStep(1, `cp: cannot stat '${clean[0]}'\n`);
     if ((src.node.mode & 0o400) === 0) {
       const events: KernelEvent[] = [{ type: 'PERMISSION_DENIED_RATTLE', targetId: src.node.id, command: 'cp' }];
       return okStep('', events, 1, `cp: cannot open '${clean[0]}' for reading: Permission denied\n`);
@@ -463,22 +448,29 @@ function isWithin(node: VNode, ancestor: VNode): boolean {
   return false;
 }
 
+const HOME_DESTS = new Set(['~', '~/', '$HOME', '/home/dev', '/home/dev/']);
+
+function rattleVeto(events: KernelEvent[], targetId: number, command: string): void {
+  if (!events.some((e) => e.type === 'ENEMY_HIT' || e.type === 'ENTITY_SPAWNED')) {
+    events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId, command });
+  }
+}
+
 export function cmdMv(g: ChapterState, args: string[]): Step {
     const clean = args.filter((a) => !a.startsWith('-'));
     if (clean.length < 2) return emptyStep(1, 'usage: mv SRC DEST\n');
     const events: KernelEvent[] = [];
     const src = resolve(g.rt.cwd, clean[0]!, false);
-    if (!src.node || isNodeHidden(g, src.node)) return emptyStep(1, `mv: cannot stat '${clean[0]}': No such file\n`);
+    if (!src.node || isNodeHidden(g, src.node)) {
+      if (!src.node && src.denied) {
+        return okStep('', [{ type: 'PERMISSION_DENIED_RATTLE', targetId: src.denied.id, command: 'mv' }], 1, `mv: cannot stat '${clean[0]}': Permission denied\n`);
+      }
+      return emptyStep(1, `mv: cannot stat '${clean[0]}': No such file\n`);
+    }
 
     const destRaw = clean[1]!;
     // Pocketing hardware pickups into `/home/dev` (`mv ram_16gb.dimm ~`), matching Classic mode & Feature 01 SPEC!
-    if (
-      destRaw === '~' ||
-      destRaw === '~/' ||
-      destRaw === '$HOME' ||
-      destRaw === '/home/dev' ||
-      destRaw === '/home/dev/'
-    ) {
+    if (HOME_DESTS.has(destRaw)) {
       const pickup = g.rt.world.pickupByInode(src.node.id);
       if (pickup) {
         return collectPickupNode(g, pickup, src.node, 'mv', events);
@@ -490,7 +482,10 @@ export function cmdMv(g: ChapterState, args: string[]): Step {
 
     if (destRaw === '/dev/null') {
       const veto = g.rt.world.vetoRemove(src.node, events);
-      if (veto) return emptyStep(1, `mv: ${veto}\n`);
+      if (veto) {
+        rattleVeto(events, src.node.id, 'mv');
+        return okStep('', events, 1, `mv: ${veto}\n`);
+      }
       if (src.node.name.endsWith('.stream')) g.rt.streamDrained = true;
       src.node.parent?.children.delete(src.node.name);
       g.rt.world.cause = 'devnull';
@@ -505,10 +500,13 @@ export function cmdMv(g: ChapterState, args: string[]): Step {
     const dst = resolve(g.rt.cwd, destRaw, true);
     const into = dst.node && dst.node.kind === 'dir' ? dst.node : lookup(g.rt.root, splitParentAndName(destRaw.startsWith('/') ? destRaw : `${absPath(g.rt.cwd)}/${destRaw}`).parentPath);
     if (into && isWithin(into, src.node)) return emptyStep(1, `mv: cannot move '${clean[0]}' into itself\n`);
+    const fromDir = src.node.parent?.id ?? g.rt.cwd.id;
+    let toDir = fromDir;
     if (dst.node && dst.node.kind === 'dir') {
       src.node.parent?.children.delete(src.node.name);
       src.node.parent = dst.node;
       dst.node.children.set(src.node.name, src.node);
+      toDir = dst.node.id;
     } else {
       const { parentPath, name } = splitParentAndName(
         destRaw.startsWith('/') ? destRaw : `${absPath(g.rt.cwd)}/${destRaw}`,
@@ -519,7 +517,9 @@ export function cmdMv(g: ChapterState, args: string[]): Step {
       src.node.parent = parent;
       src.node.name = name;
       parent.children.set(name, src.node);
+      toDir = parent.id;
     }
+    events.push({ type: 'OBJECT_MOVED', inodeId: src.node.id, fromDir, toDir, formedBridge: false, suckedIntoNull: false });
     g.rt.world.sync(events);
     refreshExitGates(g, events);
     return okStep('', events);
@@ -534,7 +534,13 @@ export function cmdChmod(g: ChapterState, args: string[]): Step {
 
     for (const t of targets) {
       const res = resolve(g.rt.cwd, t, true);
-      if (!res.node) return emptyStep(1, `chmod: cannot access '${t}': No such file or directory\n`);
+      if (!res.node) {
+        if (res.denied) {
+          events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.denied.id, command: 'chmod' });
+          return okStep('', events, 1, `chmod: cannot access '${t}': Permission denied\n`);
+        }
+        return okStep('', events, 1, `chmod: cannot access '${t}': No such file or directory\n`);
+      }
       const veto = g.rt.world.vetoChmod(res.node);
       if (veto) {
         events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.node.id, command: 'chmod' });
@@ -548,10 +554,7 @@ export function cmdChmod(g: ChapterState, args: string[]): Step {
       } else {
         const m = /^([ugoa]*)([+-=])([rwx]+)$/.exec(modeSpec);
         if (!m) return emptyStep(1, `chmod: invalid mode: '${modeSpec}'\n`);
-        const bits =
-          (m[3]!.includes('r') ? 0o444 : 0) |
-          (m[3]!.includes('w') ? 0o222 : 0) |
-          (m[3]!.includes('x') ? 0o111 : 0);
+        const bits = (m[3]!.includes('r') ? 0o444 : 0) | (m[3]!.includes('w') ? 0o222 : 0) | (m[3]!.includes('x') ? 0o111 : 0);
         if (m[2] === '+') newMode = oldMode | bits;
         else if (m[2] === '-') newMode = oldMode & ~bits;
         else newMode = bits;
@@ -559,12 +562,7 @@ export function cmdChmod(g: ChapterState, args: string[]): Step {
 
       res.node.mode = newMode;
       events.push({ type: 'INODE_MODE_CHANGED', inodeId: res.node.id, oldMode, newMode });
-      events.push({
-        type: 'VIBECODER_ACTION',
-        action: 'cast',
-        command: 'chmod',
-        targetEntityId: g.rt.world.entityOf(res.node.id),
-      });
+      events.push({ type: 'VIBECODER_ACTION', action: 'cast', command: 'chmod', targetEntityId: g.rt.world.entityOf(res.node.id) });
     }
 
     g.rt.world.sync(events);

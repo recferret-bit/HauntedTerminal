@@ -6,6 +6,7 @@ import type { KiroCompanion } from '../game/kiro.js';
 import { COMMANDS } from '../game/manual.js';
 import { ensureLabDirChain, placeLabFile, splitLabParentAndName } from '../game/lab-support.js';
 import type { Session } from '../game/session.js';
+import type { AppBus } from '../contracts/app-bus.js';
 import type { Sfx } from '../game/sfx.js';
 import { absPath, hasWrite, lookup, type VNode } from '../game/tree.js';
 import type { CommandResult, TickResult } from '../game/types.js';
@@ -147,6 +148,9 @@ export interface ChapterState {
   readonly preview: boolean;
   readonly levels: LevelSpec[];
   readonly sfx: Sfx;
+  readonly bus: AppBus;
+  /** Set by a `script.locks` refusal so the command event is `locked`, not `fail`. */
+  commandCue: 'locked' | null;
   readonly kiro: KiroCompanion;
   readonly chaosMode: boolean;
   readonly chaosSeed: string;

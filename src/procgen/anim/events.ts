@@ -137,7 +137,7 @@ export function animEventVariant(ev: KernelEvent): string {
     case 'SYSTEM_HAND_SPAWN':
       return ev.reason;
     case 'PROC_SIGNALED':
-      return ev.outcome === 'FROZEN' ? 'frozen' : ev.outcome === 'KILLED' ? 'killed' : 'enraged';
+      return ev.outcome === 'FROZEN' ? 'frozen' : ev.outcome === 'KILLED' ? 'killed' : ev.outcome === 'RESUMED' ? 'resumed' : 'enraged';
     case 'HUD_OVERLAY_TOGGLED':
       return ev.processes.length > 0 ? 'xray' : 'xray_off';
     case 'OBSTACLE_DIALOGUE_RENDERED':

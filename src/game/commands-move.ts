@@ -132,6 +132,7 @@ export function cmdLs(g: Play, args: string[]): Step {
   for (const entry of targets) {
     const found = resolve(g.run.cwd, entry, true);
     if (!found.node) {
+      if (found.denied) push(g, events, { type: 'PERMISSION_DENIED_RATTLE', targetId: found.denied.id, command: `ls ${entry}` });
       stderr += `ls: cannot access '${entry}': ${found.denied ? 'Permission denied' : 'No such file or directory'}\n`;
       code = 1;
       continue;

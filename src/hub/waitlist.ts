@@ -1,3 +1,4 @@
+import type { AppBus } from '../contracts/app-bus.js';
 import {
   GITHUB_RELEASES_URL,
   STEAM_RELEASE_META,
@@ -201,10 +202,21 @@ function wireWaitlistSubmitAndExport(
   statusEl: HTMLElement | null,
   exportBtn: HTMLButtonElement | null,
   onSaved: (entry: WaitlistEntry) => void,
+  bus: AppBus | null,
 ): void {
+  form.addEventListener(
+    'invalid',
+    (ev) => {
+      if (ev.target instanceof HTMLElement && ev.target === form.querySelector(':invalid')) {
+        bus?.emit({ kind: 'command', result: 'fail' });
+      }
+    },
+    true,
+  );
   form.addEventListener('submit', (ev) => {
     ev.preventDefault();
     if (!form.checkValidity()) {
+      bus?.emit({ kind: 'command', result: 'fail' });
       form.querySelector<HTMLElement>(':invalid')?.focus();
       return;
     }
@@ -218,6 +230,7 @@ function wireWaitlistSubmitAndExport(
     };
     saveWaitlistEntry(entry);
     onSaved(entry);
+    bus?.emit({ kind: 'command', result: 'ok' });
     if (STEAM_RELEASE_META.waitlistFormUrl) {
       void fetch(STEAM_RELEASE_META.waitlistFormUrl, {
         method: 'POST',
@@ -245,6 +258,7 @@ function wireWaitlistSubmitAndExport(
     exportBtn.onclick = async () => {
       const saved = readWaitlistEntry();
       if (!saved) {
+        bus?.emit({ kind: 'command', result: 'fail' });
         if (statusEl) {
           statusEl.hidden = false;
           statusEl.classList.remove('err');
@@ -253,6 +267,7 @@ function wireWaitlistSubmitAndExport(
         return;
       }
       const savedPath = await downloadJsonBlob('out-of-credits-steam-waitlist.json', saved);
+      bus?.emit({ kind: 'command', result: savedPath ? 'ok' : 'fail' });
       if (statusEl) {
         statusEl.hidden = false;
         statusEl.classList.toggle('err', savedPath === null);
@@ -265,7 +280,7 @@ function wireWaitlistSubmitAndExport(
   }
 }
 
-export function wireSteamWaitlist(onSaved: (entry: WaitlistEntry) => void): void {
+export function wireSteamWaitlist(onSaved: (entry: WaitlistEntry) => void, bus: AppBus | null = null): void {
   const dialog = document.getElementById('steam-waitlist-dialog') as HTMLDialogElement | null;
   const form = document.getElementById('steam-waitlist-form') as HTMLFormElement | null;
   const emailInput = document.getElementById('waitlist-email') as HTMLInputElement | null;
@@ -323,5 +338,6 @@ export function wireSteamWaitlist(onSaved: (entry: WaitlistEntry) => void): void
     statusEl,
     exportBtn,
     onSaved,
+    bus,
   );
 }

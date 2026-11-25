@@ -116,9 +116,11 @@ function cmdRestartLevel(g: ChapterState, args: string[]): Step {
   const now = { commands: g.rt.levelCommands, ticks: g.rt.levelTicks };
   if (decideRestart(g.rt.restartPending, now, parsed.yes) === 'arm') {
     g.rt.restartPending = { armedAtCommand: now.commands, armedAtTick: now.ticks };
+    g.bus.emit({ kind: 'restart', step: 'arm' });
     return okStep(armMessage(g.rt.spec.title));
   }
   const events: KernelEvent[] = [];
+  g.bus.emit({ kind: 'restart', step: 'go' });
   const arrival = rebootLevel(g, events);
   g.reloadedNow = true;
   return okStep(`[RETRY] Reloaded ${g.rt.spec.title}.\n${arrival}`, events);
@@ -127,7 +129,10 @@ function cmdRestartLevel(g: ChapterState, args: string[]): Step {
 /** A `script.locks` entry refuses the command before it runs (`ls`, `ls -a`, `ls -la`: the first word decides). */
 export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
     const locked = lockMessage(g, argv[0] ?? '');
-    if (locked !== undefined) return emptyStep(1, locked.replace(/\n?$/, '\n'));
+    if (locked !== undefined) {
+      g.commandCue = 'locked';
+      return emptyStep(1, locked.replace(/\n?$/, '\n'));
+    }
     return dispatchCommand(g, argv, stdin);
   }
 

@@ -43,25 +43,8 @@ export function spawnRoom(g: Play, events: KernelEvent[]): void {
   }
 }
 
-export function cue(g: Play, ev: KernelEvent): void {
-  if (ev.type === 'ROOM_TRANSITION') g.sfx.play(ev.viaSymlinkLoop ? 'flood' : ev.upwardPanelsSmashed >= 3 ? 'page' : 'hop');
-  else if (ev.type === 'PERMISSION_DENIED_RATTLE') g.sfx.play('denied');
-  else if (ev.type === 'LANTERN_REVEAL') g.sfx.play('reveal');
-  else if (ev.type === 'PROC_SIGNALED' && ev.outcome === 'KILLED') g.sfx.play('kill');
-  else if (ev.type === 'PROC_SIGNALED') g.sfx.play('stone');
-  else if (ev.type === 'INODE_MODE_CHANGED') g.sfx.play((ev.newMode & 0o111) === 0 ? 'stone' : 'gate');
-  else if (ev.type === 'OBJECT_MOVED') g.sfx.play(ev.suckedIntoNull ? 'flood' : 'page');
-  else if (ev.type === 'FLOOR_CLEARED' || ev.type === 'SYSTEM_HAND_SPAWN') g.sfx.play('page');
-  else if (ev.type === 'PLAYER_DAMAGED') g.sfx.play('denied');
-  else if (ev.type === 'PUZZLE_DOOR_RESOLVED' || ev.type === 'PICKUP_COLLECTED') g.sfx.play('reveal');
-  else if (ev.type === 'ENEMY_KILLED') g.sfx.play('kill');
-  else if (ev.type === 'KIRO_ACTION') g.sfx.play(ev.action === 'crack_done' || ev.action === 'scan' ? 'reveal' : 'hop');
-  else if (ev.type === 'PLAYER_RESPAWNED' || ev.type === 'GAME_ENDED') g.sfx.play('lightning');
-}
-
-export function push(g: Play, events: KernelEvent[], ev: KernelEvent): void {
+export function push(_g: Play, events: KernelEvent[], ev: KernelEvent): void {
   events.push(ev);
-  cue(g, ev);
 }
 
 export function find(g: Play, path: string): VNode | null {

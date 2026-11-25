@@ -160,8 +160,8 @@ export function signalPid(g: Play, pid: number, signal: PosixSignal): Step {
   if (enemy) bump(g, 'cast', enemy.id);
   const hit = g.run.world.signal(pid, signal, events);
   if (hit) return { stdout: hit.stdout, stderr: hit.stderr, code: hit.code, events };
-  if (pid === 1) return empty(1, 'kill: (1): Operation not permitted (agentd is the agents\' PID 1)\n');
-  if (pid === 10) return empty(1, 'kill: (10): Operation not permitted (cron_restorer keeps you from soft-locking)\n');
+  if (pid === 1) return denied(g, g.run.root, 'kill: (1): Operation not permitted (agentd is the agents\' PID 1)\n', `kill ${signal}`);
+  if (pid === 10) return denied(g, g.run.root, 'kill: (10): Operation not permitted (cron_restorer keeps you from soft-locking)\n', `kill ${signal}`);
   if (pid === SHELL_PID) return empty(1, `kill: (${pid}): that is your own shell. The agents would love that.\n`);
   return empty(1, `kill: (${pid}): No such process\n`);
 }

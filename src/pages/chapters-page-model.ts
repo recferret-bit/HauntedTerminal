@@ -1,3 +1,4 @@
+import type { AppBus } from '../contracts/app-bus.js';
 import type { ChapterLevelSummary, ChapterManifest } from '../chapters/types.js';
 
 export interface ChaptersViewState {
@@ -6,6 +7,7 @@ export interface ChaptersViewState {
   launchChaos: boolean;
   activeBinderTab: 'grimoire' | 'bestiary' | 'achievements';
   workshopBanner: string;
+  bus?: AppBus;
 }
 
 export interface ChaptersPageEls {

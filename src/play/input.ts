@@ -1,4 +1,7 @@
 import '../styles/manual-book.css';
+import { publishKernel } from '../contracts/app-bus.js';
+import type { KernelEvent } from '../contracts/events.js';
+import { getChapterPack } from '../chapters/catalog.js';
 import { isChapterSession } from '../chapters/chapter-session.js';
 import { findComixByRole, playComix, type ComixRole } from '../cinematic/index.js';
 import { mountDevInspector } from '../sandbox/dev-inspector.js';
@@ -12,9 +15,11 @@ import { powerOff, powerOn } from '../ui/screen.js';
 import { colourise, mountShell } from '../ui/terminal.js';
 import { mountVisualLab } from '../ui/visual-lab.js';
 import { recordExec } from './lab.js';
+import { holdForComix, mountPlayAudio, syncPlayAudio } from './audio-sync.js';
+import { chapterBanner } from './boot.js';
 import { mountPlayMenu } from './menu.js';
 import { statsFrom } from './outro.js';
-import { FLOOR_NAMES, writeSkipPref, type PauseReason, type Play } from './state.js';
+import { FLOOR_NAMES, STORY, writeSkipPref, type PauseReason, type Play } from './state.js';
 
 /** Enter during the battle intro skips it; the typed line stays on the prompt and does not run (Req 12). */
 function skipBattleIntroOnEnter(play: Play): boolean {
@@ -39,6 +44,7 @@ function runShellLine(play: Play, line: string): { output: string; clear?: boole
         // The battle turn timer waits while he writes code (turn-based-battles Req 17).
         session.holdTurnTimer('editor', true);
         play.codeEditor.open(edReq);
+        play.session.bus?.emit({ kind: 'menu', action: 'open' });
       }
     }
     const manualReq = session.consumeManualRequest?.();
@@ -56,6 +62,7 @@ function runShellLine(play: Play, line: string): { output: string; clear?: boole
 }
 
 export function mountPlayShell(play: Play): void {
+  mountPlayAudio(play);
   play.shell = mountShell(play.dom.termEl, {
     run: (line) => runShellLine(play, line),
     complete: (before) => play.session.complete(before),
@@ -64,6 +71,7 @@ export function mountPlayShell(play: Play): void {
       return { cwd: snap.cwd, gold: snap.promptGold };
     },
     onEnter: () => skipBattleIntroOnEnter(play),
+    onAudibleKey: (key) => play.session.bus?.emit({ kind: 'key', key }),
   });
   play.shell.setBlocked(true);
   const pane = play.dom.editorPaneEl;
@@ -73,10 +81,13 @@ export function mountPlayShell(play: Play): void {
       onSave: (fileName, content) => {
         if (!isChapterSession(play.session)) return;
         const res = play.session.saveEditableFile(fileName, content);
+        play.session.bus?.emit({ kind: 'command', result: res.stderr ? 'fail' : 'ok' });
         if (res.output) play.shell.printAbove(colourise(res.output, res.stderr));
         play.apply(res.events, res.snapshot, res.output);
       },
+      onMove: () => play.session.bus?.emit({ kind: 'menu', action: 'move' }),
       onClose: () => {
+        play.session.bus?.emit({ kind: 'menu', action: 'close' });
         if (isChapterSession(play.session)) play.session.holdTurnTimer('editor', false);
         if (play.phase === 'play') window.setTimeout(() => play.shell.focus(), 0);
       },
@@ -91,6 +102,10 @@ export function mountPlayShell(play: Play): void {
   if (play.dom.manualModalEl) {
     play.manualBook = mountManualBook(play.dom.manualModalEl, {
       modal: true,
+      onPageChange: (_page, turned, animated) => {
+        if (animated) play.session.bus?.emit(turned ? { kind: 'page' } : { kind: 'menu', action: 'move' });
+      },
+      onSearchDismiss: () => play.session.bus?.emit({ kind: 'menu', action: 'move' }),
       onInsertCommand: (cmd) => {
         play.manualBook?.close();
         play.shell.setInput(cmd);
@@ -98,6 +113,7 @@ export function mountPlayShell(play: Play): void {
       },
       onClose: () => {
         play.syncPause();
+        syncPlayAudio(play);
         window.setTimeout(() => {
           if (play.phase === 'play' && !play.codeEditor?.isOpen() && !play.menu?.isOpen() && !play.hintDialog?.isOpen() && !play.manualBook?.isOpen()) {
             play.shell.focus();
@@ -142,12 +158,15 @@ export function openManualModal(play: Play, queryOrPage?: string | number): void
   if (play.hintDialog?.isOpen()) play.hintDialog.close();
   play.manualBook.open(queryOrPage);
   play.syncPause();
+  syncPlayAudio(play);
 }
 
 function toggleManualModal(play: Play): void {
   if (!canOpenManual(play)) return;
-  if (play.manualBook?.isOpen()) play.manualBook.close();
-  else openManualModal(play);
+  if (play.manualBook?.isOpen()) {
+    play.manualBook.close();
+    syncPlayAudio(play);
+  } else openManualModal(play);
 }
 
 function playAgain(play: Play, skip: boolean): void {
@@ -155,11 +174,19 @@ function playAgain(play: Play, skip: boolean): void {
   play.skipIntroPref = skip;
   writeSkipPref(skip);
   play.hud?.hideStats();
-  const res = play.session.restart();
-  play.endingStarted = false;
+  window.clearTimeout(play.cardTimer);
+  play.stashedFloorCard = null;
+  play.reasons.delete('card');
+  play.reasons.delete('reveal');
+  play.reasons.delete('outro');
   play.reasons.delete('ended');
   play.reasons.add('intro');
   play.phase = 'intro';
+  play.endingStarted = false;
+  const res = play.session.restart({ intro: true });
+  play.activeBanner = isChapterSession(play.session)
+    ? chapterBanner(play.session, getChapterPack(play.session.chapterId)?.manifest)
+    : STORY;
   play.shell.reset();
   play.apply(res.events, res.snapshot);
   void play.startRun();
@@ -173,6 +200,7 @@ export function mountPlayHud(play: Play): void {
   play.dialogBox = play.dialogs.box;
   play.hintDialog = mountHintDialog(play.dom.stageWrap, {
     onClose: (returnFocus) => {
+      play.session.bus?.emit({ kind: 'menu', action: 'move' });
       window.setTimeout(() => {
         if (play.menu?.isOpen() || play.manualBook?.isOpen() || play.hintDialog?.isOpen()) return;
         if (play.codeEditor?.isOpen()) {
@@ -213,7 +241,10 @@ export function bindPlayInput(play: Play): void {
     setLight: (mode) => play.stage.setLightMode(mode),
   });
 
-  const toggleInspector = () => play.dom.inspectorEl.classList.toggle('hidden');
+  const toggleInspector = () => {
+    play.dom.inspectorEl.classList.toggle('hidden');
+    play.session.bus?.emit({ kind: 'menu', action: 'move' });
+  };
   play.dom.toggleBtn.onclick = toggleInspector;
   play.dom.manualBtnEl?.addEventListener('click', () => toggleManualModal(play));
   window.addEventListener('keydown', (e) => {
@@ -223,9 +254,16 @@ export function bindPlayInput(play: Play): void {
     }
     if (e.key === 'F1') toggleManualModal(play);
     else if (e.key === 'F2') toggleInspector();
-    else if (e.key === 'F8') play.lab.toggle();
-    else if (e.key === 'F9') play.lab.toggleCrt();
-    else if (e.key === 'F10') play.lab.togglePixel();
+    else if (e.key === 'F8') {
+      play.lab.toggle();
+      play.session.bus?.emit({ kind: 'menu', action: 'move' });
+    } else if (e.key === 'F9') {
+      play.lab.toggleCrt();
+      play.session.bus?.emit({ kind: 'menu', action: 'move' });
+    } else if (e.key === 'F10') {
+      play.lab.togglePixel();
+      play.session.bus?.emit({ kind: 'menu', action: 'move' });
+    }
   }, true);
 
   let fitFrame = 0;
@@ -265,10 +303,19 @@ async function devCinematic(play: Play, role: ComixRole): Promise<void> {
   const muted = play.session.snapshot().muted;
   if (role === 'ending') await powerOff();
   const stats = role === 'ending' ? statsFrom(play.session.snapshot()) : undefined;
-  await play.runCinematic(() => playComix(seq.id, play.dom.cineEl, { muted }, stats));
+  await play.runCinematic(() => {
+    holdForComix(play, role);
+    return playComix(seq.id, play.dom.cineEl, { muted, bus: play.session.bus }, stats);
+  });
+  syncPlayAudio(play);
   await powerOn(true);
   play.reasons.delete('cinematic');
   play.syncPause();
+}
+
+export function emitKernelEvent(play: Play, ev: KernelEvent): void {
+  play.apply([ev], play.session.snapshot());
+  if (play.session.bus) publishKernel(play.session.bus, [ev]);
 }
 
 export function mountPlayDev(play: Play): void {
@@ -308,6 +355,6 @@ export function mountPlayDev(play: Play): void {
     onPlayIntro: () => void devCinematic(play, 'opening'),
     onPlayOutro: () => void devCinematic(play, 'ending'),
     onAssetsReloaded: () => play.paint(play.session.snapshot()),
-    emit: (ev) => play.apply([ev], play.session.snapshot()),
+    emit: (ev) => emitKernelEvent(play, ev),
   });
 }

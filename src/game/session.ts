@@ -20,6 +20,7 @@ import {
   kernelPhase, load, maxHp, noteAction, portal, push, rank, restoreQuests,
 } from './runtime.js';
 import { runLine, type Host, type Step, type Word } from './shell.js';
+import { createAppBus, publishKernel, type AppBus } from '../contracts/app-bus.js';
 import { createSfx, type Sfx } from './sfx.js';
 import { absPath, resolve } from './tree.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from './types.js';
@@ -34,7 +35,7 @@ export interface Session {
   toggleMute(): boolean;
   /** Master volume of the in-game sounds, 0 to 1. */
   setVolume(volume: number): void;
-  restart(): TickResult;
+  restart(options?: { intro?: boolean }): TickResult;
   restartFloor(): TickResult;
   debugTeleport(floor: FloorId): TickResult;
   debugHeal(): GameSnapshot;
@@ -48,6 +49,9 @@ export interface Session {
   skipIntro(): void;
   /** Consume a pending `manual [query]` UI open request from the last command. */
   consumeManualRequest?(): string | null;
+  /** App bus. Pages subscribe; headless tests can read `recent()`. */
+  readonly bus?: AppBus;
+  readonly sfx?: Sfx;
 }
 
 export interface ClassicSessionOptions {
@@ -61,6 +65,7 @@ export function createSession(options?: ClassicSessionOptions): LabSession {
 
 class Game implements LabSession, Host {
   readonly sfx: Sfx = createSfx();
+  readonly bus: AppBus = createAppBus();
   private volume = 1;
   readonly kiro = new KiroCompanion();
   readonly agents = new AgentDirector(this.kiro);
@@ -100,7 +105,6 @@ class Game implements LabSession, Host {
     if (typed) {
       this.run.commands += 1;
       this.run.intro = false;
-      this.sfx.play('type');
     }
     this.run.line = line;
     this.act = { action: 'type' };
@@ -131,8 +135,23 @@ class Game implements LabSession, Host {
       events.push(...progress.events, ...talk.events);
       events.unshift({ type: 'VIBECODER_ACTION', action: this.act.action, command: typed, targetEntityId: this.act.target, ...(ran.code !== 0 ? { failed: true } : {}) });
       observeLab(this.lab, this.run.lab, { line: typed, output, code: ran.code, eventTypes: events.map((e) => e.type) });
+      this.bus.emit({ kind: 'command', result: ran.code ? 'fail' : 'ok' });
     }
-    return { output, stderr: ran.stderr || undefined, code: typed ? ran.code : 0, events, snapshot: this.snapshot(), clear: ran.clear || undefined };
+    return this.heard(output, events, {
+      stderr: ran.stderr || undefined,
+      code: typed ? ran.code : 0,
+      clear: ran.clear || undefined,
+    });
+  }
+
+  /** Publish the batch, then hand it back. One place, so a command cannot forget the bus. */
+  private heard(
+    output: string,
+    events: KernelEvent[],
+    extra: Partial<Pick<CommandResult, 'stderr' | 'code' | 'clear'>> = {},
+  ): CommandResult {
+    publishKernel(this.bus, events);
+    return { output, events, snapshot: this.snapshot(), ...extra };
   }
 
   setPaused(paused: boolean): void {
@@ -164,7 +183,7 @@ class Game implements LabSession, Host {
 
   skipTutorial(): TickResult {
     const chatter = this.quietSkip();
-    return { output: chatter.text, events: chatter.events, snapshot: this.snapshot() };
+    return this.heard(chatter.text, chatter.events);
   }
 
   /** The tutorial's last prompt is done once the hero is no longer at the desk he woke up at. */
@@ -217,7 +236,7 @@ class Game implements LabSession, Host {
     output += talk.text;
     events.push(...talk.events);
     observeLab(this.lab, this.run.lab, { output, eventTypes: events.map((e) => e.type) });
-    return { output, stderr: this.deathText || undefined, events, snapshot: this.snapshot() };
+    return this.heard(output, events, { stderr: this.deathText || undefined });
   }
 
   inspect(): LabInspect {
@@ -241,7 +260,7 @@ class Game implements LabSession, Host {
   inject(what: LabInjection): TickResult {
     const events = applyLabInjection(this.run.root, this.run.world, what);
     observeLab(this.lab, this.run.lab, { output: '', eventTypes: events.map((e) => e.type) });
-    return { output: '', events, snapshot: this.snapshot() };
+    return this.heard('', events);
   }
 
   snapshot(): GameSnapshot {
@@ -321,16 +340,17 @@ class Game implements LabSession, Host {
     this.sfx.setVolume(this.volume);
   }
 
-  restart(): TickResult {
+  restart(options?: { intro?: boolean }): TickResult {
     this.restartPending = null;
     const muted = this.run.muted;
     this.run = this.blank(muted);
     const events: KernelEvent[] = [];
-    enterFloorEvents(this, events);
-    return { output: '', events, snapshot: this.snapshot() };
+    if (!options?.intro) enterFloorEvents(this, events);
+    return this.heard('', events);
   }
 
-  private openedFloor(floor: FloorId, output: string): TickResult {
+  /** Loads a floor and builds its enter events. Does not publish: callers that return the batch do. */
+  private floorEvents(floor: FloorId, output: string): TickResult {
     this.restartPending = null;
     load(this, floor);
     this.run.hp = maxHp(this);
@@ -339,10 +359,16 @@ class Game implements LabSession, Host {
     return { output, events, snapshot: this.snapshot() };
   }
 
+  private openedFloor(floor: FloorId, output: string): TickResult {
+    const res = this.floorEvents(floor, output);
+    return this.heard(res.output, res.events);
+  }
+
   restartFloor(): TickResult {
     this.run.ended = false;
     this.run.ram = this.run.entryRam;
     this.run.ssd = this.run.entrySsd;
+    this.bus.emit({ kind: 'restart', step: 'go' });
     return this.openedFloor(this.run.floor, 'Floor restarted.\n');
   }
 
@@ -353,10 +379,15 @@ class Game implements LabSession, Host {
     const now = { commands: this.run.commands, ticks: this.ticks };
     if (decideRestart(this.restartPending, now, parsed.yes) === 'arm') {
       this.restartPending = { armedAtCommand: now.commands, armedAtTick: now.ticks };
+      this.bus.emit({ kind: 'restart', step: 'arm' });
       return out(armMessage(FLOOR_TITLES[this.run.floor] ?? `Floor ${this.run.floor}`));
     }
-    const res = this.restartFloor();
+    this.run.ended = false;
+    this.run.ram = this.run.entryRam;
+    this.run.ssd = this.run.entrySsd;
+    const res = this.floorEvents(this.run.floor, 'Floor restarted.\n');
     this.reloadedNow = true;
+    this.bus.emit({ kind: 'restart', step: 'go' });
     return { stdout: res.output, stderr: '', code: 0, events: res.events };
   }
 
@@ -380,13 +411,13 @@ class Game implements LabSession, Host {
     const events: KernelEvent[] = [
       { type: 'PLAYER_DAMAGED', amount: dmg, hpRemaining: this.run.hp, sourceName: 'dev_panel' },
     ];
-    return { output: '', events, snapshot: this.snapshot() };
+    return this.heard('', events);
   }
 
   debugGive(item: PickupType, amount?: number): TickResult {
     const events: KernelEvent[] = [];
     const text = applyPickup(this, item, amount ?? PICKUP_INFO[item].amount, `debug-${item}`, events);
-    return { output: text, events, snapshot: this.snapshot() };
+    return this.heard(text, events);
   }
 
   expand(word: Word): string[] {
