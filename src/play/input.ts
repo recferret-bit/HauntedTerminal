@@ -12,7 +12,7 @@ import { powerOff, powerOn } from '../ui/screen.js';
 import { colourise, mountShell } from '../ui/terminal.js';
 import { mountVisualLab } from '../ui/visual-lab.js';
 import { recordExec } from './lab.js';
-import { mountPlayMenu } from './menu.js';
+import { mountPlayMenu, setPlaySkin } from './menu.js';
 import { statsFrom } from './outro.js';
 import { FLOOR_NAMES, writeSkipPref, type PauseReason, type Play } from './state.js';
 
@@ -41,6 +41,8 @@ function runShellLine(play: Play, line: string): { output: string; clear?: boole
         play.codeEditor.open(edReq);
       }
     }
+    const skinReq = session.consumeSkinRequest?.();
+    if (skinReq) setPlaySkin(play, skinReq);
     const manualReq = session.consumeManualRequest?.();
     if (manualReq !== null && manualReq !== undefined && !play.terminalLab) openManualModal(play, manualReq);
   } finally {

@@ -1,0 +1,111 @@
+/*
+ * Terminal skins (spec .kiro/specs/terminal-skins/). The default rules in game.css are the iTerm2 window; each block
+ * below restyles only the window chrome for one `#terminal-bezel[data-skin]`. The terminal body (#terminal-panel, xterm)
+ * is never restyled. Window buttons and the new-tab controls are drawn with borders, not glyphs (bundled fonts only).
+ * Nothing here adds padding or a border to #terminal-panel: the xterm fit measures it.
+ */
+
+/* Extras that only some skins show. */
+.tty-winbtns, .tty-tab-new { display: none; }
+.tty-winbtns { align-items: center; gap: 2px; }
+.tty-wb { position: relative; display: inline-block; width: 28px; height: 22px; }
+.tty-wb-min::before { content: ""; position: absolute; left: 9px; right: 9px; top: 50%; border-top: 1px solid currentColor; }
+.tty-wb-max::before { content: ""; position: absolute; left: 9px; top: 6px; width: 9px; height: 9px; border: 1px solid currentColor; }
+.tty-wb-close::before,
+.tty-wb-close::after { content: ""; position: absolute; left: 8px; right: 8px; top: 50%; border-top: 1px solid currentColor; }
+.tty-wb-close::before { transform: rotate(45deg); }
+.tty-wb-close::after { transform: rotate(-45deg); }
+
+.tty-tab-new { align-items: center; gap: 4px; padding: 0 8px; color: #c8c8c8; }
+.tty-plus, .tty-chev { position: relative; display: inline-block; width: 16px; height: 16px; }
+.tty-plus::before, .tty-plus::after { content: ""; position: absolute; background: currentColor; }
+.tty-plus::before { left: 3px; right: 3px; top: 7.5px; height: 1px; }
+.tty-plus::after { top: 3px; bottom: 3px; left: 7.5px; width: 1px; }
+.tty-chev::before {
+  content: ""; position: absolute; left: 5px; top: 4px; width: 5px; height: 5px;
+  border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(45deg);
+}
+
+/* ---- macOS Terminal.app: light grey title bar, window dots, no tab row ---- */
+#terminal-bezel[data-skin="terminal-app"] #tty-bar { background: #e8e6e8; color: #4a4a4c; border-bottom-color: #b8b6b8; }
+#terminal-bezel[data-skin="terminal-app"] #tty-tabs { display: none; }
+#terminal-bezel[data-skin="terminal-app"] #tty-manual-btn { background: #ffffff; color: #2b2b2e; border-color: #b8b6b8; }
+#terminal-bezel[data-skin="terminal-app"] #tty-manual-btn:hover { background: #f2f2f4; }
+
+/* ---- PuTTY: flat navy title bar, title on the left, grey Windows-classic buttons ---- */
+#terminal-bezel[data-skin="putty"] #tty-bar { height: 22px; padding: 0 2px 0 6px; background: #0a246a; color: #ffffff; border-bottom: 0; }
+#terminal-bezel[data-skin="putty"] .tty-dots,
+#terminal-bezel[data-skin="putty"] #tty-tabs { display: none; }
+#terminal-bezel[data-skin="putty"] .tty-title { position: static; transform: none; max-width: none; flex: 1; font-weight: 600; }
+#terminal-bezel[data-skin="putty"] .tty-winbtns { display: inline-flex; color: #000000; }
+#terminal-bezel[data-skin="putty"] .tty-wb {
+  width: 16px; height: 14px; background: #d4d0c8;
+  box-shadow: inset -1px -1px 0 #404040, inset 1px 1px 0 #ffffff;
+}
+#terminal-bezel[data-skin="putty"] .tty-wb-min::before { left: 4px; right: 5px; top: auto; bottom: 3px; border-top-width: 2px; }
+#terminal-bezel[data-skin="putty"] .tty-wb-max::before { left: 3px; top: 2px; width: 8px; height: 7px; border-top-width: 2px; }
+#terminal-bezel[data-skin="putty"] .tty-wb-close { margin-left: 2px; }
+#terminal-bezel[data-skin="putty"] .tty-wb-close::before,
+#terminal-bezel[data-skin="putty"] .tty-wb-close::after { left: 3px; right: 3px; border-top-width: 2px; }
+#terminal-bezel[data-skin="putty"] #tty-manual-btn {
+  padding: 0 6px; border: 0; border-radius: 0; font-size: 10px; background: #d4d0c8; color: #000000;
+  box-shadow: inset -1px -1px 0 #404040, inset 1px 1px 0 #ffffff;
+}
+
+/* ---- Windows Terminal: the tab row is the title bar (tab, +, chevron on the left, buttons on the right) ---- */
+#terminal-bezel[data-skin="windows-terminal"] { position: relative; }
+#terminal-bezel[data-skin="windows-terminal"] #tty-bar { height: 34px; padding: 0 0 0 8px; background: #202020; color: #ffffff; border-bottom: 0; }
+#terminal-bezel[data-skin="windows-terminal"] .tty-dots,
+#terminal-bezel[data-skin="windows-terminal"] .tty-title { display: none; }
+#terminal-bezel[data-skin="windows-terminal"] .tty-bar-right { margin-left: auto; gap: 6px; }
+#terminal-bezel[data-skin="windows-terminal"] .tty-winbtns { display: inline-flex; color: #ffffff; gap: 0; }
+#terminal-bezel[data-skin="windows-terminal"] .tty-wb { width: 46px; height: 34px; }
+#terminal-bezel[data-skin="windows-terminal"] .tty-wb-min::before { left: 18px; right: 18px; }
+#terminal-bezel[data-skin="windows-terminal"] .tty-wb-max::before { left: 18px; top: 12px; width: 10px; height: 10px; }
+#terminal-bezel[data-skin="windows-terminal"] .tty-wb-close::before,
+#terminal-bezel[data-skin="windows-terminal"] .tty-wb-close::after { left: 17px; right: 17px; }
+#terminal-bezel[data-skin="windows-terminal"] #tty-tabs {
+  position: absolute; top: 0; left: 8px; height: 34px; align-items: flex-end; background: transparent; border-bottom: 0;
+}
+#terminal-bezel[data-skin="windows-terminal"] .tty-tab {
+  height: 28px; min-width: 180px; justify-content: flex-start; padding: 0 12px;
+  background: #0c0c0c; color: #ffffff; border-right: 0; border-radius: 6px 6px 0 0;
+}
+#terminal-bezel[data-skin="windows-terminal"] .tty-tab-new { display: inline-flex; height: 28px; }
+#terminal-bezel[data-skin="windows-terminal"] #tty-manual-btn { background: #2d2d2d; border-color: #3d3d3d; border-radius: 4px; }
+
+/* ---- GNOME Terminal: Adwaita dark header bar, bold centred title, one round close button ---- */
+#terminal-bezel[data-skin="gnome-terminal"] #tty-bar { height: 38px; padding: 0 8px 0 12px; background: #303030; color: #ffffff; border-bottom-color: #1e1e1e; }
+#terminal-bezel[data-skin="gnome-terminal"] .tty-dots,
+#terminal-bezel[data-skin="gnome-terminal"] #tty-tabs,
+#terminal-bezel[data-skin="gnome-terminal"] .tty-wb-min,
+#terminal-bezel[data-skin="gnome-terminal"] .tty-wb-max { display: none; }
+#terminal-bezel[data-skin="gnome-terminal"] .tty-bar-right { margin-left: auto; }
+#terminal-bezel[data-skin="gnome-terminal"] .tty-title { font-weight: 700; }
+#terminal-bezel[data-skin="gnome-terminal"] .tty-winbtns { display: inline-flex; color: #ffffff; }
+#terminal-bezel[data-skin="gnome-terminal"] .tty-wb-close { width: 24px; height: 24px; border-radius: 50%; background: #474747; }
+#terminal-bezel[data-skin="gnome-terminal"] .tty-wb-close::before,
+#terminal-bezel[data-skin="gnome-terminal"] .tty-wb-close::after { left: 7px; right: 7px; }
+#terminal-bezel[data-skin="gnome-terminal"] #tty-manual-btn { background: #474747; border-color: #474747; border-radius: 6px; }
+
+/* ---- VT100: a beige CRT bezel around today's terminal body, a VT100 badge, no title bar ---- */
+#terminal-bezel[data-skin="vt100"] {
+  position: relative; padding: 24px 18px 22px; background: #d8cfb8;
+  box-shadow: inset 0 0 0 2px #b9ae93;
+}
+#terminal-bezel[data-skin="vt100"] #tty-bar {
+  position: absolute; top: 4px; right: 18px; height: 16px; padding: 0; background: transparent; border: 0;
+}
+#terminal-bezel[data-skin="vt100"] .tty-dots,
+#terminal-bezel[data-skin="vt100"] .tty-title,
+#terminal-bezel[data-skin="vt100"] #tty-tabs { display: none; }
+#terminal-bezel[data-skin="vt100"] #tty-manual-btn {
+  padding: 0 8px; font-size: 10px; line-height: 14px; border: 1px solid #8f8470; border-radius: 2px;
+  background: #c9bfa5; color: #3a3428;
+}
+/* The dark lip around the screen: an outer shadow, so the panel's own size (what xterm measures) is untouched. */
+#terminal-bezel[data-skin="vt100"] #terminal-panel { box-shadow: 0 0 0 3px #2a2620, 0 0 0 5px #a89d82; border-radius: 4px; }
+#terminal-bezel[data-skin="vt100"]::after {
+  content: "VT100"; position: absolute; right: 22px; bottom: 4px;
+  font-family: var(--display); font-weight: 700; font-size: 11px; letter-spacing: 0.18em; color: #6b6250;
+}

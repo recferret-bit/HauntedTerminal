@@ -1,5 +1,7 @@
 import { installFullscreenKey, isFullscreen, onFullscreenChange, toggleFullscreen } from '../chapters/fullscreen.js';
+import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import { mountEscMenu } from '../ui/esc-menu.js';
+import { applySkin, initialSkin, writeSkinPref } from '../ui/terminal-skin.js';
 import { readSoundPref, writeSoundPref } from '../ui/sound-pref.js';
 import { colourise } from '../ui/terminal.js';
 import type { PauseReason, Play } from './state.js';
@@ -35,6 +37,17 @@ function restartLevel(play: Play): void {
   play.apply(res.events, res.snapshot);
 }
 
+/**
+ * Puts `id` on the terminal window (from the Esc menu or a `skin <id>` command) and keeps it for the next visit,
+ * except in a preview or a lab, which record nothing (spec .kiro/specs/terminal-skins/ Req 7).
+ */
+export function setPlaySkin(play: Play, id: TerminalSkinId): void {
+  play.skin = id;
+  applySkin(document.getElementById('terminal-bezel'), id);
+  if (!play.preview && !play.terminalLab) writeSkinPref(id);
+  play.menu?.update(play.session.snapshot());
+}
+
 /** The Esc menu: mounted once, opened by Esc (capture phase, so xterm and the page never see that key). */
 export function mountPlayMenu(play: Play): void {
   const menu = mountEscMenu(play.dom.stageWrap, {
@@ -51,9 +64,14 @@ export function mountPlayMenu(play: Play): void {
     onLeave: () => window.location.assign(MAIN_MENU_URL),
     onFullscreen: () => void toggleFullscreen(),
     isFullscreen,
+    onSkin: (id) => setPlaySkin(play, id),
+    currentSkin: () => play.skin,
   });
   play.menu = menu;
   applySavedSound(play);
+  // The saved skin, else the OS default; applying the start skin saves nothing.
+  play.skin = initialSkin();
+  applySkin(document.getElementById('terminal-bezel'), play.skin);
   // F11 and the menu toggle share one helper; the label follows every change (F11, browser Esc, the OS).
   installFullscreenKey();
   onFullscreenChange(() => menu.update(play.session.snapshot()));

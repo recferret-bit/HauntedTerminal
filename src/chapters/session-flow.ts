@@ -1,3 +1,4 @@
+import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import type { KernelEvent } from '../contracts/events.js';
 import { maxHpFor } from '../game/bestiary.js';
 import { giveItem, hasItem, holdItem, starterInventory } from '../game/inventory.js';
@@ -64,6 +65,12 @@ export function consumeManualRequest(g: ChapterState): string | null {
     const req = g.pendingManual;
     g.pendingManual = null;
     return req;
+  }
+
+export function consumeSkinRequest(g: ChapterState): TerminalSkinId | null {
+    const id = g.pendingSkin;
+    g.pendingSkin = null;
+    return id;
   }
 
 export function jumpToLevel(g: ChapterState, levelIdOrIndex: string | number): TickResult {

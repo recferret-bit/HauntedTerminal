@@ -1,5 +1,6 @@
 import { runInventory } from '../game/inventory.js';
-import { armMessage, decideRestart, parseRestartArgs } from '../game/commands-proc.js';
+import { armMessage, decideRestart, parseRestartArgs, runSkin } from '../game/commands-proc.js';
+import { SKIN_IDS } from '../contracts/terminal-skins.js';
 import type { KernelEvent } from '../contracts/events.js';
 import { rebootLevel } from './session-level.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
@@ -52,6 +53,12 @@ export function complete(g: ChapterState, line: string): { line: string; matches
       const topics = manualTopics(last);
       if (topics.length === 1) return { line: `manual ${topics[0]} `, matches: topics };
       if (topics.length > 1) return { line, matches: topics };
+    }
+    if (parts[0] === 'skin' && (parts.length === 1 || (parts.length === 2 && !endsWithSpace)) && !last.includes('/')) {
+      const skins = SKIN_IDS.filter((k) => k.startsWith(last));
+      if (skins.length === 1) return { line: `skin ${skins[0]} `, matches: [...skins] };
+      if (skins.length > 1) return { line, matches: [...skins] };
+      return { line, matches: [] };
     }
     if (parts[0] === 'hold' && (parts.length === 1 || (parts.length === 2 && !endsWithSpace)) && !last.includes('/')) {
       const items = g.inventory.items.filter((k) => k.startsWith(last));
@@ -137,6 +144,12 @@ function dispatchManual(g: ChapterState, args: string[]): Step {
     return m.step;
   }
 
+function dispatchSkin(g: ChapterState, args: string[]): Step {
+    const r = runSkin(args);
+    if (r.request) g.pendingSkin = r.request;
+    return r.step;
+  }
+
 function dispatchTutorial(g: ChapterState, args: string[]): Step {
     if (args[0] === 'skip' || args[0] === 'off') {
       const events: Step['events'] = [];
@@ -177,6 +190,8 @@ function dispatchCommand(g: ChapterState, argv: string[], stdin: string): Step {
       }
       case 'manual':
         return dispatchManual(g, args);
+      case 'skin':
+        return dispatchSkin(g, args);
       case 'tutorial':
         return dispatchTutorial(g, args);
       case 'hank':

@@ -22,13 +22,13 @@
       </div>
       <div id="terminal-dock">
         <section id="code-editor-pane" class="hidden" aria-label="Split Code Mini-Editor"></section>
-        <div id="terminal-bezel">
+        <div id="terminal-bezel" data-skin="iterm2">
           <div id="tty-bar">
             <span class="tty-dots" aria-hidden="true"><i class="tty-dot tty-close"></i><i class="tty-dot tty-min"></i><i class="tty-dot tty-zoom"></i></span>
             <span class="tty-title">vibecoder@motherboard: ~ (zsh)</span>
-            <span class="tty-bar-right"><button type="button" id="tty-manual-btn" title="Open Interactive Terminal Field Manual (F1)">MANUAL (F1)</button></span>
+            <span class="tty-bar-right"><button type="button" id="tty-manual-btn" title="Open Interactive Terminal Field Manual (F1)">MANUAL (F1)</button><span class="tty-winbtns" aria-hidden="true"><i class="tty-wb tty-wb-min"></i><i class="tty-wb tty-wb-max"></i><i class="tty-wb tty-wb-close"></i></span></span>
           </div>
-          <div id="tty-tabs" role="tablist" aria-label="Terminal tabs"><span class="tty-tab active" role="tab" aria-selected="true">zsh</span></div>
+          <div id="tty-tabs" role="tablist" aria-label="Terminal tabs"><span class="tty-tab active" role="tab" aria-selected="true"><span class="tty-tab-label">zsh</span></span><span class="tty-tab-new" aria-hidden="true"><i class="tty-plus"></i><i class="tty-chev"></i></span></div>
           <div id="terminal-panel"></div>
         </div>
       </div>

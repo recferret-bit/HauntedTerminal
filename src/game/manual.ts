@@ -8,7 +8,7 @@ export const COMMANDS = [
   'pwd', 'ls', 'cd', 'cat', 'readlink', 'find', 'touch', 'rm', 'mv', 'cp', 'chmod', 'ln',
   'echo', 'grep', 'wc', 'cut', 'rev', 'sed', 'head', 'tail', 'ps', 'top', 'kill', 'pkill',
   'source', '.', 'kiro', 'help', 'man', 'manual', 'status', 'whoami', 'tutorial', 'clear', 'exit', 'logout',
-  'inventory', 'inv', 'hold', 'restart-level', 'retry',
+  'inventory', 'inv', 'hold', 'restart-level', 'retry', 'skin',
 ];
 
 export function helpText(hint: string): string {
@@ -24,6 +24,7 @@ export function helpText(hint: string): string {
     '  shell  ;  &&  ||  |  >  >>   globs *.log   braces {a,b,c}.rune   Tab completes',
     '  carry  inventory (inv)   hold <item>   (ls -a raises the lantern)',
     '  level  restart-level (retry) [--yes]   reload this level; run it twice to confirm',
+    '  look   skin [<id>]   terminal window skin: iterm2, terminal-app, putty, windows-terminal, gnome-terminal, vt100',
     '  tutorial  the agents\' current prompt   (tutorial skip skips the onboarding)',
     '  manual [query]   interactive Field Manual book (F1) — flags, -9 signals, chmod math & search',
     '  man <command>, or man <malware>: virus worm trojan bug exploit crack ransomware spyware rootkit zombie forkbomb kernel',
@@ -136,6 +137,12 @@ const MAN: Record<string, string[]> = {
     '  --yes         restart in one step, at any time (for scripts).',
     '  The confirm expires on any other command, a level change, or after 20 seconds.',
     '  restart (no -level) is different: after the last level it plays the whole chapter again.',
+  ],
+  skin: [
+    'skin [<id>]: change the terminal window skin (only the window around the shell; the text stays the same).',
+    '  skin               list the skins and their ids.',
+    '  skin <id>          switch now: iterm2, terminal-app, putty, windows-terminal, gnome-terminal, vt100.',
+    '  The Esc menu has the same picker. The choice is kept for the next visit.',
   ],
   mkdir: ['mkdir [-p] <dir>...: create directories. -p creates parent rooms too.'],
   edit: ['edit <file>  (aliases: nano, vim, code): open the Split Code Mini-Editor (Ctrl+S saves).'],

@@ -155,5 +155,6 @@ export async function bootPlay(): Promise<Play> {
 
   const play = new Play(dom, stage, session, chapterBanner(session, chapterManifest), debugGive, skipTutorial, skipIntroPref);
   play.terminalLab = lab;
+  play.preview = isPreview;
   return play;
 }

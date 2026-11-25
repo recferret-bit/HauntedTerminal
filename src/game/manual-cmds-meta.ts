@@ -372,4 +372,30 @@ export const MANUAL_TOOLS_AND_META: readonly ManualCommandEntry[] = [
     related: ['status', 'exit', 'clear'],
     keywords: ['retry', 'reset', 'reload', 'floor', 'level', '--yes', 'confirm', 'esc'],
   },
+  {
+    command: 'skin',
+    aliases: [],
+    section: 'game-meta',
+    categoryLabel: 'Session Control',
+    filters: ['beginner', 'game'],
+    availability: 'both',
+    syntax: 'skin [<id>]',
+    summary: 'List the terminal window skins, or switch to one.',
+    realWorld: 'Like picking a terminal app (iTerm2, PuTTY, Windows Terminal...): the window around the shell changes, the shell inside does not.',
+    inGame:
+      'Bare `skin` lists the six skins and their ids. `skin <id>` switches the window at once and keeps the choice for the next visit (previews and labs do not save it). The Esc menu has the same picker. Only the window chrome changes; text colours and the font stay the same.',
+    flags: [
+      { flag: '(no args)', kind: 'operator', meaning: 'List the skins and their ids', example: 'skin' },
+      { flag: '<id>', kind: 'operator', meaning: 'Switch to iterm2, terminal-app, putty, windows-terminal, gnome-terminal or vt100', example: 'skin putty' },
+    ],
+    pitfalls: [
+      'An unknown id is refused with exit 1 and the list of valid ids; nothing changes.',
+    ],
+    examples: [
+      { command: 'skin', outcome: 'Lists the six terminal skins.' },
+      { command: 'skin vt100', outcome: 'Wraps the terminal in a beige VT100 bezel.' },
+    ],
+    related: ['clear', 'help', 'manual'],
+    keywords: ['skin', 'theme', 'iterm', 'putty', 'windows terminal', 'gnome', 'vt100', 'look', 'window'],
+  },
 ];

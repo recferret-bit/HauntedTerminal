@@ -1,3 +1,4 @@
+import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import type { BattleHold, BattleState } from '../game/battle.js';
 import type { RestartPending } from '../game/commands-proc.js';
 import type { World, WorldHost } from '../game/entities.js';
@@ -35,6 +36,7 @@ export interface ChapterSession extends Session {
   saveEditableFile(nameOrPath: string, content: string): CommandResult;
   consumeEditorRequest(): EditorOpenPayload | null;
   consumeManualRequest(): string | null;
+  consumeSkinRequest(): TerminalSkinId | null;
   getChecklist(): Array<{ description: string; done: boolean }>;
   arriveLevel(): TickResult;
   /** Read-only view of the whole level for tools (the Terminal Lab). Never changes the game. */
@@ -186,6 +188,7 @@ export interface ChapterState {
   entryInventory: Inventory;
   pendingEditor: EditorOpenPayload | null;
   pendingManual: string | null;
+  pendingSkin: TerminalSkinId | null;
   currentRedirectTarget: string;
   rt: LevelRuntime;
 }
