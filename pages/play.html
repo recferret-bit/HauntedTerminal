@@ -23,7 +23,12 @@
       <div id="terminal-dock">
         <section id="code-editor-pane" class="hidden" aria-label="Split Code Mini-Editor"></section>
         <div id="terminal-bezel">
-          <div id="tty-bar"><span><i></i>TTY0</span><span class="tty-bar-right"><button type="button" id="tty-manual-btn" title="Open Interactive Terminal Field Manual (F1)">MANUAL (F1)</button><span>SHELL</span></span></div>
+          <div id="tty-bar">
+            <span class="tty-dots" aria-hidden="true"><i class="tty-dot tty-close"></i><i class="tty-dot tty-min"></i><i class="tty-dot tty-zoom"></i></span>
+            <span class="tty-title">vibecoder@motherboard: ~ (zsh)</span>
+            <span class="tty-bar-right"><button type="button" id="tty-manual-btn" title="Open Interactive Terminal Field Manual (F1)">MANUAL (F1)</button></span>
+          </div>
+          <div id="tty-tabs" role="tablist" aria-label="Terminal tabs"><span class="tty-tab active" role="tab" aria-selected="true">zsh</span></div>
           <div id="terminal-panel"></div>
         </div>
       </div>

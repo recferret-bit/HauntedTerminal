@@ -38,12 +38,14 @@ body {
   background-size: 5px 5px;
 }
 
+/* Edge to edge (spec .kiro/specs/play-edge-layout-terminal-skin/): no page padding or gutter on /play. */
 #page {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 8px;
-  gap: 8px;
+  padding: 0;
+  gap: 0;
+  background: var(--void);
 }
 
 #topbar {
@@ -231,13 +233,14 @@ body {
   50% { filter: brightness(1.35) saturate(1.4); }
 }
 
+/* The stage touches the window edges: no ink frame, no drop shadow (a deliberate exception to the art bible's panel frame). */
 #stage-wrapper {
   position: relative;
   flex: 1;
   min-height: 0;
-  border: 5px solid var(--ink);
+  border: 0;
   background: #1a1424;
-  box-shadow: 6px 6px 0 var(--ink);
+  box-shadow: none;
   overflow: hidden;
 }
 
@@ -740,29 +743,63 @@ body.hud-enter #sandbox-toggle-btn {
   min-height: 200px;
   display: flex;
   flex: none;
+  border-top: 1px solid #000;
 }
 
+/* The terminal is an iTerm2 window: flat dark title bar with the window dots, a centred title, one tab, then the shell. */
 #terminal-bezel {
   width: 100%;
   height: 100%;
-  background: var(--plate);
+  background: var(--void);
   color: var(--hull);
-  border-top: 3px solid var(--orange);
-  box-shadow: 0 10px 28px rgba(7, 8, 10, 0.35);
+  border: 0;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
-  padding: 6px 10px 8px;
+  padding: 0;
+  /* Bundled font only (offline desktop build): the chrome uses IBM Plex Mono, never a system font. */
+  --tty-chrome-font: var(--mono);
 }
 
 #tty-bar {
+  position: relative;
+  flex: none;
+  height: 28px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-family: var(--display);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  color: var(--steel);
-  padding: 2px 2px 4px;
+  justify-content: space-between;
+  padding: 0 10px;
+  background: #2b2b2e;
+  border-bottom: 1px solid #000;
+  color: #b9b9be;
+  font-family: var(--tty-chrome-font);
+  font-size: 12px;
+  user-select: none;
+}
+
+.tty-dots { display: inline-flex; gap: 8px; align-items: center; }
+.tty-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.28);
+}
+.tty-close { background: #ff5f57; }
+.tty-min { background: #febc2e; }
+.tty-zoom { background: #28c840; }
+
+/* Centred on the whole bar, not between the dots and the button. */
+.tty-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 260px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  pointer-events: none;
 }
 
 .tty-bar-right {
@@ -772,39 +809,56 @@ body.hud-enter #sandbox-toggle-btn {
 }
 
 #tty-manual-btn {
-  font-family: var(--display);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  padding: 2px 8px;
-  border: 1.5px solid #e6a73c;
-  background: #23191e;
-  color: #ffd166;
+  font-family: var(--tty-chrome-font);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 2px 10px;
+  border: 1px solid #4a4a50;
+  border-radius: 5px;
+  background: #3a3a3f;
+  color: #e6e6ea;
   cursor: pointer;
 }
 
-#tty-manual-btn:hover {
-  background: #ffd166;
-  color: #140f12;
+#tty-manual-btn:hover { background: #4a4a50; color: #fff; }
+#tty-manual-btn:focus-visible { outline: 2px solid #5b8cff; outline-offset: 1px; }
+
+#tty-tabs {
+  flex: none;
+  height: 24px;
+  display: flex;
+  align-items: stretch;
+  background: #1c1c1e;
+  border-bottom: 1px solid #000;
+  font-family: var(--tty-chrome-font);
+  font-size: 11.5px;
+  user-select: none;
 }
 
-#tty-bar i {
-  width: 7px;
-  height: 7px;
-  background: var(--orange);
-  display: inline-block;
-  margin-right: 6px;
+.tty-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  padding: 0 14px;
+  color: #8e8e93;
+  border-right: 1px solid #000;
 }
 
+.tty-tab.active { background: var(--void); color: #e6e6ea; }
+
+/* The margins sit on .xterm, not here: the fit addon measures this element's full height and subtracts only the
+   .xterm padding, so padding here would give one row too many and spill. */
 #terminal-panel {
   flex: 1;
   min-height: 0;
   background: var(--void);
-  padding: 4px 6px 2px;
+  padding: 0;
   overflow: hidden;
 }
 
-#terminal-panel .xterm { height: 100%; }
+#terminal-panel .xterm { height: 100%; padding: 6px 10px 4px; }
 #terminal-panel .xterm-viewport { overflow-y: auto !important; }
 
 #dev-inspector {
@@ -979,7 +1033,7 @@ body.hud-enter #sandbox-toggle-btn {
 .hidden { display: none !important; }
 
 #terminal-dock.editor-open {
-  gap: 8px;
+  gap: 0;
 }
 
 #terminal-dock.editor-open #code-editor-pane {
@@ -988,9 +1042,9 @@ body.hud-enter #sandbox-toggle-btn {
   height: 100%;
   background: #0e1117;
   color: var(--hull);
-  border-top: 3px solid var(--teal);
-  border-right: 3px solid var(--ink);
-  box-shadow: 0 10px 28px rgba(7, 8, 10, 0.35);
+  border-top: 2px solid var(--teal);
+  border-right: 1px solid #000;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1134,7 +1188,7 @@ body.hud-enter #sandbox-toggle-btn {
     min-width: 0;
     height: 56%;
     border-right: none;
-    border-bottom: 3px solid var(--ink);
+    border-bottom: 1px solid #000;
   }
 
   #terminal-dock.editor-open #terminal-bezel {

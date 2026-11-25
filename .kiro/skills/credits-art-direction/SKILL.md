@@ -25,6 +25,8 @@ Three references, each with one job:
 When they pull apart: the **computer** decides what a thing is made of, the **mansion** decides its
 shape and mood, the **comic** decides how it is drawn.
 
+**Exception, the play page (`/play`):** the gameplay stage and the terminal fill the window edge to edge, with no ink frame, paper gutter or drop shadow, and the terminal wears an iTerm2 window (title bar, window dots, one tab). Comic pages, the reader, the landing and the rendered scene keep the comic look. Spec: `.kiro/specs/play-edge-layout-terminal-skin/`.
+
 ## Who is who
 
 The game's VFS names stay as they are (`stone_gargoyle.bin`, `.poltergeist.lock`); the art shows
