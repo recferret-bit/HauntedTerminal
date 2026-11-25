@@ -1,6 +1,7 @@
 import { stripCommandsFromText } from '../game/puzzle.js';
 import type { GameSnapshot, HintGoals, HintTask } from '../game/types.js';
-import { el } from './dom-lite.js';
+import { el, setText } from './dom-lite.js';
+import { createNativeModal } from './modal-dialog.js';
 
 export interface HintDialogHandlers {
   onClose?(returnFocus: HTMLElement | null): void;
@@ -22,10 +23,6 @@ interface HintParts {
   list: HTMLElement;
   closeBtn: HTMLButtonElement;
   xBtn: HTMLButtonElement;
-}
-
-function setText(node: HTMLElement, text: string): void {
-  if (node.textContent !== text) node.textContent = text;
 }
 
 function fallbackGoals(snap: GameSnapshot): HintGoals {
@@ -160,74 +157,17 @@ export function mountHintDialog(host: HTMLElement, handlers: HintDialogHandlers 
   host.querySelector('#hint-dialog')?.remove();
   const p = buildHintDialog();
   host.appendChild(p.dialog);
-
-  const hasShowModal = typeof p.dialog.showModal === 'function';
-  let open = false;
-  let returnFocus: HTMLElement | null = null;
-
-  const isActuallyOpen = (): boolean => (hasShowModal ? Boolean(open && p.dialog.open) : open);
-
-  const markClosed = (): void => {
-    if (!open) return;
-    open = false;
-    p.dialog.returnValue = '';
-    p.dialog.classList.remove('open');
-    const back = returnFocus;
-    returnFocus = null;
-    handlers.onClose?.(back);
-  };
-
-  const close = (): void => {
-    if (!open && (!hasShowModal || !p.dialog.open)) return;
-    if (typeof p.dialog.close === 'function') {
-      if (p.dialog.open) p.dialog.close();
-      // Native `<dialog>.close()` queues the `close` event; sync state immediately too.
-      markClosed();
-    } else {
-      p.dialog.removeAttribute?.('open');
-      markClosed();
-    }
-  };
-
-  p.dialog.addEventListener?.('close', () => {
-    // Ignore a queued `close` event from an earlier close if the dialog was already reopened.
-    if (hasShowModal && p.dialog.open) return;
-    markClosed();
-  });
-  p.closeBtn.onclick = (ev) => {
-    if (!hasShowModal) {
-      ev.preventDefault();
-      close();
-    }
-  };
-  p.xBtn.onclick = (ev) => {
-    if (!hasShowModal) {
-      ev.preventDefault();
-      close();
-    }
-  };
-  wireLightDismissFallback(p.dialog, close);
+  const modal = createNativeModal(p.dialog, [p.closeBtn, p.xBtn], handlers.onClose);
 
   return {
     open(snap) {
       renderHintGoals(p, snap);
-      // Sync if native close already hid the dialog before its queued `close` event fired.
-      if (open && hasShowModal && !p.dialog.open) open = false;
-      if (open) return;
-      open = true;
-      returnFocus = typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null;
-      p.dialog.classList.add('open');
-      if (hasShowModal) {
-        if (!p.dialog.open) p.dialog.showModal();
-      } else {
-        p.dialog.setAttribute('open', '');
-      }
-      p.closeBtn.focus?.({ preventScroll: true });
+      modal.open(p.closeBtn);
     },
-    close,
-    isOpen: isActuallyOpen,
+    close: modal.close,
+    isOpen: modal.isOpen,
     update(snap) {
-      if (isActuallyOpen()) renderHintGoals(p, snap);
+      if (modal.isOpen()) renderHintGoals(p, snap);
     },
   };
 }

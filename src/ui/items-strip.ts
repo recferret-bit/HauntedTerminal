@@ -15,11 +15,31 @@ const ICON_PX = 36;
  * Always-visible HUD strip: one slot per item (`lantern`, `terminal`, `laptop`, `manual`).
  * Classes: `items-strip`, `item-slot` (`carried`, `held`, `pop`, `item-<id>`), `item-icon`, `item-label`.
  */
-export function mountItemsStrip(parent: HTMLElement, drawPortrait: DrawPortrait): ItemsStrip {
+export function mountItemsStrip(
+  parent: HTMLElement,
+  drawPortrait: DrawPortrait,
+  onItemClick?: (id: ItemId) => void,
+): ItemsStrip {
   const slots = new Map<ItemId, HTMLElement>();
   for (const id of ITEM_IDS) {
     const slot = el('div', `item-slot item-${id}`, [el('span', 'item-icon', [drawPortrait(ITEMS[id].model, ICON_PX)]), el('span', 'item-label', [ITEMS[id].label])]);
-    slot.title = `${ITEMS[id].label}: ${ITEMS[id].use}`;
+    slot.title = id === 'map' && onItemClick ? `${ITEMS[id].label}: ${ITEMS[id].use} (Click or F3)` : `${ITEMS[id].label}: ${ITEMS[id].use}`;
+    slot.dataset.item = id;
+    if (id === 'map' && onItemClick) {
+      slot.classList.add('clickable');
+      slot.setAttribute('role', 'button');
+      slot.tabIndex = 0;
+      const fire = () => {
+        if (slot.classList.contains('carried')) onItemClick(id);
+      };
+      slot.onclick = fire;
+      slot.onkeydown = (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          fire();
+        }
+      };
+    }
     slots.set(id, slot);
   }
   const root = el('div', 'items-strip', [...slots.values()]);

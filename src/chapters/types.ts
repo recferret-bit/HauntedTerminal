@@ -81,7 +81,7 @@ export interface ChapterManifest {
   mechanicsSummary: string[];
   /** Hardware and cores owned when a level is entered directly (see `ChapterGrant`). */
   grants?: ChapterGrant[];
-  /** Items he carries when a run starts (default `['lantern', 'terminal', 'manual']`). */
+  /** Items he carries when a run starts (default `['lantern', 'terminal', 'manual', 'map']`). */
   startItems?: ItemId[];
   /** Closing card shown after the last level. */
   outro?: ChapterOutro;

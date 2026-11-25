@@ -297,6 +297,9 @@ try {
   await browser.open(`${base}/play/${listChapterSlugs()[0]}?nointro=1`);
   await browser.waitFor("window.__game && window.__manual && window.__term && !window.__game.snapshot().paused", 30000, '/play booted & unpaused');
 
+  await $("window.__term.submit('tutorial skip')");
+  await browser.waitFor("window.__game.snapshot().inventory.items.includes('terminal')", 5000, 'tutorial skip grants terminal');
+
   await $(`document.querySelector('#tty-manual-btn').click()`);
   await browser.waitFor("window.__manual.isOpen() && !document.querySelector('#manual-book-modal').classList.contains('hidden')", 5000, 'modal opens from HUD tty button');
   check(await $('window.__game.snapshot().paused === false'), 'opening manual modal does NOT pause gameplay clock (Q4)');
@@ -321,7 +324,7 @@ try {
       fits: document.documentElement.scrollWidth <= window.innerWidth && Boolean(hud && hud.right <= window.innerWidth + 1),
     };
   })()`);
-  check(hudLayout1280.slots === 4 && hudLayout1280.nonOverlap && hudLayout1280.clearDoors && hudLayout1280.fits, `4-item HUD strip clean at 1280x820 (${JSON.stringify(hudLayout1280)})`);
+  check(hudLayout1280.slots === 5 && hudLayout1280.nonOverlap && hudLayout1280.clearDoors && hudLayout1280.fits, `5-item HUD strip clean at 1280x820 (${JSON.stringify(hudLayout1280)})`);
   await browser.shoot(out('04-play-modal'));
 
   await browser.send('Emulation.setDeviceMetricsOverride', { width: 1024, height: 768, deviceScaleFactor: 1, mobile: false });
@@ -337,7 +340,7 @@ try {
     const ncards = [...document.querySelectorAll('.st-ncard')].map((n) => n.getBoundingClientRect());
     return Boolean(title && hud && strip && title.right <= hud.left + 1 && hud.right <= window.innerWidth + 1 && ncards.every((c) => !overlap(hud, c) && !overlap(strip, c)));
   })()`);
-  check(hudLayout1024, '4-item HUD strip and #hud stay clear of #titleblock and .st-ncard at 1024x768');
+  check(hudLayout1024, '5-item HUD strip and #hud stay clear of #titleblock and .st-ncard at 1024x768');
   await browser.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 820, deviceScaleFactor: 1, mobile: false });
   await browser.evaluate("window.dispatchEvent(new Event('resize'))");
   await browser.waitFor("window.innerWidth === 1280", 3000, 'modal restored to 1280x820');
@@ -399,13 +402,58 @@ try {
   await browser.waitFor(`window.__game.snapshot().commands === ${cmdsBefore + 2}`, 5000, 'edited inserted command executes on Enter');
   check(/no_such_file\.txt/.test(await $('window.__term.text()')), 'real Backspace + typing + Enter executes edited inserted command');
 
-  // Mid-battle F1 keeps 30s turn timer running while reading (Q4)
+  // Chapter Map popup via #hud-map button, .item-slot.item-map click, F3, `map 2` command, and two-step Deploy
+  await $(`document.querySelector('#hud-map').click()`);
+  await browser.waitFor("window.__map && window.__map.isOpen() && document.querySelectorAll('#chapter-map-dialog .cm-block').length === 11", 5000, 'chapter map opens with 11 motherboard blocks');
+  check((await count('#chapter-map-dialog .cm-channel')) === 3, 'motherboard renders 3 data channels');
+  check((await count('#chapter-map-dialog .cm-wire')) >= 6, 'motherboard renders PCB bus wires');
+  check((await count('#chapter-map-dialog .cm-block.status-current .cm-here-badge')) === 1, 'current block shows LOC probe badge');
+  check((await count('#chapter-map-dialog .cm-block.status-current .cm-scanbeam')) === 1, 'current block renders scanbeam sweep');
+  check((await count('#chapter-map-dialog .cm-block.status-unknown')) === 10, '10 unreached blocks render in unknown state');
+  check(
+    await $(`(() => { const b = document.querySelector('#chapter-map-dialog .cm-block.status-unknown'); return b ? parseFloat(getComputedStyle(b).opacity) < 0.6 : false; })()`),
+    'unknown location blocks appear half-transparent / disabled',
+  );
+  check((await count('#chapter-map-dialog .cm-hw-bay')) === 4, 'motherboard renders 4 PC hardware bays');
+  check(
+    await $(`['.cm-cmos-battery', '.cm-post-box', '.cm-fan-rotor', '.cm-dimm-slot'].every((s) => document.querySelector('#cm-board ' + s))`),
+    'motherboard renders CMOS battery, BIOS POST digits, PWM fan, and DIMM slots',
+  );
+  check(await $('window.__game.snapshot().paused === false'), 'opening chapter map does NOT pause gameplay clock');
+  const mapCmdsBefore = await $('window.__game.snapshot().commands');
+  await browser.send('Input.insertText', { text: 'ls' });
+  await browser.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+  await browser.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+  check((await $('window.__game.snapshot().commands')) === mapCmdsBefore, 'terminal typing stays blocked while chapter map dialog is open');
+  await $(`document.querySelector('#chapter-map-dialog .cm-block[data-level-index="4"]').click()`);
+  check(/LVL 04/.test(await text('#cm-inspector')), 'clicking motherboard block updates chip inspector to Level 04');
+  await browser.waitFor("(() => { const d = document.querySelector('#chapter-map-dialog'); return d && getComputedStyle(d).opacity === '1' && d.getBoundingClientRect().height > 200; })()", 3000, 'chapter map dialog animation settles visibly');
+  await browser.shoot(out('05-chapter-map'));
+  await $(`document.querySelector('#cm-close-x').click()`);
+  await browser.waitFor("!window.__map.isOpen()", 5000, 'closing chapter map via X button');
+
+  await $(`document.querySelector('.items-strip .item-slot.item-map').click()`);
+  await browser.waitFor("window.__map.isOpen()", 5000, 'clicking .item-slot.item-map opens chapter map');
+  await browser.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'F3', code: 'F3', windowsVirtualKeyCode: 114 });
+  await browser.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'F3', code: 'F3', windowsVirtualKeyCode: 114 });
+  await browser.waitFor("!window.__map.isOpen()", 5000, 'F3 closes chapter map');
+
+  await $(`(() => { window.__term.submit('map 2'); })()`);
+  await browser.waitFor("window.__map.isOpen() && /LVL 02/.test(document.querySelector('#cm-inspector')?.textContent ?? '')", 5000, 'map 2 opens map focused on level 2');
+  await $(`document.querySelector('#cm-deploy-btn').click()`);
+  await browser.waitFor("!document.querySelector('#cm-confirm-row').classList.contains('hidden')", 5000, 'deploy shows confirm step when current level has commands');
+  await $(`document.querySelector('#cm-confirm-yes').click()`);
+  await browser.waitFor("!window.__map.isOpen() && window.__game.snapshot().room.floor === 2", 8000, 'confirming deploy jumps in-place to level 2');
+  check(/level-02/.test(await $('location.pathname')), 'in-place deploy updates URL to level 2');
+  await browser.waitFor("!window.__game.snapshot().paused", 5000, 'floor reveal card clears after deploy');
+
+  // Mid-battle F1 & F3 keep 30s turn timer running while reading (Q4 / D5)
   const slug = listChapterSlugs()[0];
   const battleLevel = readChapter(slug).levels.map((l) => l.spec).find((l) => l.enemies.length > 0 && !l.script?.safe);
   check(Boolean(battleLevel), 'found a combat level for mid-battle F1 live timer verification');
   if (battleLevel) {
     await browser.open(`${base}/play/${slug}/${battleLevel.id}?nointro=1`);
-    await browser.waitFor("window.__game && window.__manual && window.__term && !window.__game.snapshot().paused", 30000, 'battle level ready');
+    await browser.waitFor("window.__game && window.__manual && window.__map && window.__term && !window.__game.snapshot().paused", 30000, 'battle level ready');
     await $(`window.__term.submit('ls')`);
     await browser.waitFor("window.__game.snapshot().battle !== null", 8000, 'battle entered');
     await browser.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
@@ -418,12 +466,18 @@ try {
     await new Promise((r) => setTimeout(r, 2200));
     const secDuring = await $('window.__game.snapshot().battle.secondsLeft');
     check(secDuring < secBefore, `F1 keeps 30s battle turn timer live while open (${secBefore} -> ${secDuring})`);
+    await browser.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'F3', code: 'F3', windowsVirtualKeyCode: 114 });
+    await browser.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'F3', code: 'F3', windowsVirtualKeyCode: 114 });
+    await browser.waitFor("window.__map.isOpen() && !window.__manual.isOpen()", 5000, 'F3 swaps from manual to chapter map during battle');
+    await new Promise((r) => setTimeout(r, 2200));
+    const secAfterMap = await $('window.__game.snapshot().battle.secondsLeft');
+    check(secAfterMap < secDuring, `F3 keeps 30s battle turn timer live while map open (${secDuring} -> ${secAfterMap})`);
   }
 
-  // 7. Classic mode (/play/floor/1) carries manual item, equips vibecoder.dev_manual, and /manual/ route resolves
+  // 7. Classic mode (/play/floor/1) carries manual & map items, equips vibecoder.dev_manual/map, and /manual/ route resolves
   await browser.open(`${base}/play/floor/1?nointro=1`);
   await browser.waitFor("window.__game && window.__manual && window.__term && !window.__game.snapshot().paused", 30000, 'classic /play/floor/1 booted');
-  check(await $("document.querySelectorAll('.items-strip .item-slot').length === 4"), 'classic mode renders 4-slot items strip');
+  check(await $("document.querySelectorAll('.items-strip .item-slot').length === 5"), 'classic mode renders 5-slot items strip');
   await $(`document.querySelector('#terminal-pane .xterm-helper-textarea')?.focus()`);
   await browser.send('Input.insertText', { text: 'hold manual' });
   await browser.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });

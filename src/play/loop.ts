@@ -3,7 +3,7 @@ import type { KernelEvent } from '../contracts/events.js';
 import type { GameSnapshot, TickResult } from '../game/types.js';
 import { setHudHidden } from '../ui/screen.js';
 import { colourise } from '../ui/terminal.js';
-import { emitKernelEvent, openHintDialog, openManualModal } from './input.js';
+import { emitKernelEvent, openChapterMap, openHintDialog, openManualModal } from './input.js';
 import { exposeLabHooks } from './lab.js';
 import { mountTutorial, taunt } from '../ui/tutorial.js';
 import { syncPlayAudio } from './audio-sync.js';
@@ -15,11 +15,15 @@ const OVERLAY_STORM_BLOCKERS: readonly PauseReason[] = ['cinematic', 'intro', 'o
 function syncPause(play: Play): void {
   play.session.setPaused(play.reasons.size > 0);
   play.stage.stormPaused = play.phase !== 'play' || OVERLAY_STORM_BLOCKERS.some((r) => play.reasons.has(r));
-  const blocking = [...play.reasons].some((r) => r !== 'hidden') || Boolean(play.manualBook?.isOpen());
+  const blocking =
+    [...play.reasons].some((r) => r !== 'hidden') ||
+    Boolean(play.manualBook?.isOpen()) ||
+    Boolean(play.chapterMap?.isOpen());
   play.shell.setBlocked(blocking);
   // A card, cinematic or the end of the run takes the screen: overlays step aside.
   if (play.menu?.isOpen() && [...play.reasons].some((r) => r !== 'hidden' && r !== 'intro')) play.menu.close();
   if (play.hintDialog?.isOpen() && [...play.reasons].some((r) => r !== 'hidden' && r !== 'intro')) play.hintDialog.close();
+  if (play.chapterMap?.isOpen() && [...play.reasons].some((r) => r !== 'hidden' && r !== 'intro')) play.chapterMap.close();
   if (play.manualBook?.isOpen() && [...play.reasons].some((r) => r === 'cinematic' || r === 'outro' || r === 'ended')) {
     play.manualBook.close();
   }
@@ -39,6 +43,7 @@ function paint(play: Play, snap: GameSnapshot): void {
   play.hud?.update(snap);
   play.menu?.update(snap);
   play.hintDialog?.update(snap);
+  play.chapterMap?.update(snap);
   play.tutorial.sync(play.phase === 'play' || play.phase === 'intro' ? (snap.tutorial ?? null) : null);
   play.dom.captionEl.textContent = snap.room.title;
   play.dom.captionEl.title = snap.cwd;
@@ -127,6 +132,7 @@ function applySlice(play: Play, events: KernelEvent[], snap: GameSnapshot, print
         play.dialogs?.handleEvent(ev);
         break;
       case 'FLOOR_ENTERED':
+        play.levelEntryCommands = snap.commands;
         play.dialogs?.handleEvent(ev);
         if (play.phase === 'play') holdForCard(play);
         break;
@@ -204,6 +210,11 @@ function exposePlayHooks(play: Play): void {
     isOpen: () => play.manualBook?.isOpen() ?? false,
     open: (queryOrPage?: string | number) => openManualModal(play, queryOrPage),
     close: () => play.manualBook?.close(),
+  };
+  (window as unknown as { __map?: unknown }).__map = {
+    isOpen: () => play.chapterMap?.isOpen() ?? false,
+    open: (queryOrIndex?: string | number) => openChapterMap(play, queryOrIndex),
+    close: () => play.chapterMap?.close(),
   };
   (window as unknown as { __term?: unknown }).__term = {
     /** Exactly what Enter does: echo, run, print; queued while input is blocked. */

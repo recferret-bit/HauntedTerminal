@@ -7,7 +7,7 @@ import type { Step } from './shell.js';
 export const COMMANDS = [
   'pwd', 'ls', 'cd', 'cat', 'readlink', 'find', 'touch', 'rm', 'mv', 'cp', 'chmod', 'ln',
   'echo', 'grep', 'wc', 'cut', 'rev', 'sed', 'head', 'tail', 'ps', 'top', 'kill', 'pkill',
-  'source', '.', 'kiro', 'help', 'man', 'manual', 'status', 'whoami', 'tutorial', 'clear', 'exit', 'logout',
+  'source', '.', 'kiro', 'help', 'man', 'manual', 'map', 'status', 'whoami', 'tutorial', 'clear', 'exit', 'logout',
   'inventory', 'inv', 'hold', 'restart-level', 'retry',
 ];
 
@@ -26,6 +26,7 @@ export function helpText(hint: string): string {
     '  level  restart-level (retry) [--yes]   reload this level; run it twice to confirm',
     '  tutorial  the agents\' current prompt   (tutorial skip skips the onboarding)',
     '  manual [query]   interactive Field Manual book (F1) — flags, -9 signals, chmod math & search',
+    '  map [level]      open the interactive Motherboard Chapter Map dialog (F3)',
     '  man <command>, or man <malware>: virus worm trojan bug exploit crack ransomware spyware rootkit zombie forkbomb kernel',
     `\x1b[1;96mHint:\x1b[0m ${hint}`,
   ].join('\n');
@@ -118,11 +119,16 @@ const MAN: Record<string, string[]> = {
     'manual [command|flag|number]: open the interactive comic-book Field Manual (F1).',
     '  Covers every command, all flags (-9, -rf, -i), chmod numbers (755/644/444/000), and search.',
   ],
+  map: [
+    'map [level|sector]: open the interactive PCB Motherboard Chapter Map popup dialog (F3).',
+    '  Shows every level as an IC chip block across Boot ROM, 3 Data Channels, Hubs & CPU Core.',
+    '  Pass a level number (1..11) or search term to highlight and inspect that block immediately.',
+  ],
   status: ['status: HP, RAM, SSD backups, malware left on this floor, where you are.'],
   whoami: ['whoami: who you are in here.'],
   inventory: ['inventory (inv): what you carry; * marks the item in your hand.'],
   inv: ['inv: short for inventory.'],
-  hold: ['hold <item>: take an item you carry in your hand (hold lantern, hold terminal, hold manual, hold laptop).'],
+  hold: ['hold <item>: take an item you carry in your hand (hold lantern, hold terminal, hold manual, hold map, hold laptop).'],
   tutorial: ['tutorial: show the agents\' current prompt.   tutorial skip: skip the onboarding.'],
   clear: ['clear: wipe the terminal (Ctrl+L).'],
   exit: [
@@ -205,6 +211,20 @@ export function runManual(args: string[]): { query: string; step: Step } {
   return {
     query,
     step: out(formatManualTerminalReply(query), [{ type: 'VIBECODER_ACTION', action: 'read', command: query ? `manual ${query}` : 'manual' }]),
+  };
+}
+
+export function mapTopics(prefix: string, extra: readonly string[] = []): string[] {
+  const pool = ['boot', 'hub', 'boss', 'core', 'qwen', 'deepseek', 'llama', ...extra];
+  return [...new Set(pool.filter((name) => name.startsWith(prefix)))];
+}
+
+export function runMap(args: string[], summary?: string): { query: string; step: Step } {
+  const query = args.join(' ').trim();
+  const base = summary ?? `[MOTHERBOARD MAP] Opened interactive Chapter Map dialog${query ? ` (focus: ${query})` : ''} (F3 / Esc closes).\n`;
+  return {
+    query,
+    step: out(base, [{ type: 'VIBECODER_ACTION', action: 'read', command: query ? `map ${query}` : 'map' }]),
   };
 }
 

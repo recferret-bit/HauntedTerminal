@@ -18,6 +18,10 @@ await withProcgen(async (_p, vite) => {
   const { createChapterSession } = await load('/src/chapters/chapter-session.ts');
   const { modeText } = await import('./props/terminal.mjs');
   const {
+    buildMotherboardTopology,
+    resolveLevelByQuery,
+  } = await load('/src/ui/chapter-map-model.ts');
+  const {
     BOOK_PAGES,
     BOOK_SECTIONS,
     MANUAL_COMMANDS,
@@ -235,6 +239,89 @@ await withProcgen(async (_p, vite) => {
       assert.ok(turnEvents.filter((e) => e.type === 'BATTLE_TURN').length >= 2, 'unpaused battle countdown fires BATTLE_TURN transition on 0s timeout');
       assert.equal(session.snapshot().battle?.secondsLeft, 30, 'battle turn timer resets to 30s after timeout enemy turn');
     }
+  });
+
+  test('skip tutorial drops later dialogs and still hands over the terminal', () => {
+    const session = createChapterSession({ chapterId: slug, preview: true });
+    session.skipIntro();
+    const skipped = session.skipTutorial();
+    const kinds = skipped.events.map((event) => event.type);
+    assert.ok(!kinds.includes('DIALOG_BOX'), `skip still emitted a dialog: ${kinds.join(',')}`);
+    assert.ok(!kinds.includes('VIBECODER_EMOTE'), `skip still emitted an emote: ${kinds.join(',')}`);
+    assert.equal(session.snapshot().tutorial, null);
+    assert.ok(session.snapshot().inventory.items.includes('terminal'), 'skip still gives the terminal');
+    const later = [];
+    for (let i = 0; i < 40; i++) later.push(...session.tick().events);
+    const late = later.filter((event) => event.type === 'DIALOG_BOX' || event.type === 'VIBECODER_EMOTE' || event.type === 'AGENT_TAUNT');
+    assert.deepEqual(late, []);
+  });
+
+  test('chapter motherboard map item, command, and 4-stage Kiroween topology', () => {
+    assert.ok(ITEM_IDS.includes('map'), 'map is registered in ITEM_IDS');
+    assert.equal(ITEMS.map.model, 'item.map');
+    assert.equal(ITEMS.map.heroModel, 'vibecoder.dev_map');
+    assert.ok(starterInventory().items.includes('map'), 'starterInventory carries map by default');
+    assert.ok(findCommandDoc('map'), 'map command is documented in Field Manual');
+
+    const chapterManifest = readChapter(slug).manifest;
+    assert.ok(chapterManifest.startItems?.includes('map'), 'chapter 1 startItems carries map');
+
+    const topo = buildMotherboardTopology(chapterManifest, {}, chapterManifest.levels[0].id);
+    assert.equal(topo.totalCount, chapterManifest.levels.length);
+    assert.equal(topo.bootBlock?.level.index, 1, 'boot ROM socket holds level 1');
+    assert.equal(topo.channels.length, 3, 'three motherboard data channels for Kiroween');
+    assert.equal(topo.channels[0].taskBlocks.map((b) => b.level.index).join(','), '2,3');
+    assert.equal(topo.channels[0].hubBlock?.level.index, 4);
+    assert.equal(topo.channels[0].hubBlock?.coreGrant, 'QWEN');
+    assert.equal(topo.channels[1].taskBlocks.map((b) => b.level.index).join(','), '5,6');
+    assert.equal(topo.channels[1].hubBlock?.level.index, 7);
+    assert.equal(topo.channels[1].hubBlock?.coreGrant, 'DEEPSEEK');
+    assert.equal(topo.channels[2].taskBlocks.map((b) => b.level.index).join(','), '8,9');
+    assert.equal(topo.channels[2].hubBlock?.level.index, 10);
+    assert.equal(topo.channels[2].hubBlock?.coreGrant, 'LLAMA');
+    assert.equal(topo.coreBlocks.length, 1);
+    assert.equal(topo.coreBlocks[0].level.index, 11, 'CPU core socket holds boss level 11');
+    assert.equal(topo.bootBlock?.status, 'current');
+    assert.equal(topo.channels[0].taskBlocks[0].status, 'unknown', 'unreached level 2 starts as unknown');
+    assert.equal(topo.coreBlocks[0].status, 'unknown', 'unreached boss level starts as unknown');
+
+    const clearedLvl1Progress = {
+      [slug]: {
+        [chapterManifest.levels[0].id]: {
+          cleared: true,
+          bestRank: 'S',
+          bestCommands: 3,
+          bestTimeSec: 12,
+          chaosCleared: false,
+        },
+      },
+    };
+    const nextTopo = buildMotherboardTopology(chapterManifest, clearedLvl1Progress, chapterManifest.levels[0].id);
+    assert.equal(nextTopo.channels[0].taskBlocks[0].status, 'ready', 'clearing level 1 opens level 2 as ready');
+    assert.equal(nextTopo.channels[0].taskBlocks[1].status, 'unknown', 'level 3 stays unknown until level 2 clears');
+
+    assert.equal(resolveLevelByQuery(chapterManifest, '4').index, 4);
+    assert.equal(resolveLevelByQuery(chapterManifest, 'boot').index, 1);
+    assert.equal(resolveLevelByQuery(chapterManifest, 'boss').index, 11);
+    assert.equal(resolveLevelByQuery(chapterManifest, 'deepseek').index, 7);
+
+    const classic = createSession();
+    assert.equal(classic.exec('map 2').code, 0);
+    assert.equal(classic.consumeMapRequest(), '2');
+    assert.equal(classic.consumeMapRequest(), null);
+    assert.ok(classic.complete('map ').matches.includes('boot'));
+
+    const session = createChapterSession({ chapterId: slug, preview: true });
+    session.skipTutorial();
+    assert.ok(session.snapshot().inventory.items.includes('map'), 'chapter session starts carrying map');
+    assert.equal(session.exec('hold map').code, 0);
+    assert.equal(session.snapshot().inventory.held, 'map');
+    assert.ok(session.complete('hold m').matches.includes('map'));
+    const mapRes = session.exec('map 4');
+    assert.equal(mapRes.code, 0);
+    assert.equal(session.consumeMapRequest(), '4');
+    assert.equal(session.consumeMapRequest(), null);
+    assert.ok(session.complete('map 1').matches.includes('11'));
   });
 });
 

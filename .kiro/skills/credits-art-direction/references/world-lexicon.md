@@ -22,6 +22,8 @@ What he carries. Each stands on the floor with a `grip` socket; the developer ho
 | `vibecoder.dev_laptop` | The developer with the laptop in his screen-right hand instead of the lantern |
 | `item.manual` | His dog-eared hardcover Unix Field Manual, carried by a leather handle: `pcb` teal boards, brown `hair` spine and strap, creamy `paper` page block, orange `hoodie` bookmark ribbon, and a `phosphor` `>_` emblem. Held by `vibecoder.dev_manual` |
 | `vibecoder.dev_manual` | The developer holding the hardcover Unix Field Manual in his screen-right hand instead of the lantern |
+| `item.map` | His trace-etched PCB motherboard schematic slate, carried by a leather top strap: `pcb` board, `hair` strap and side rails, `ink` schematic bed, `paper` channel buses, `hoodie` / `pcb` IC blocks, and glowing `phosphor` node beacons. Held by `vibecoder.dev_map` |
+| `vibecoder.dev_map` | The developer holding the PCB motherboard schematic map in his screen-right hand instead of the lantern |
 
 ## Malware bestiary
 

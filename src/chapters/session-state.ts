@@ -36,6 +36,7 @@ export interface ChapterSession extends Session {
   saveEditableFile(nameOrPath: string, content: string): CommandResult;
   consumeEditorRequest(): EditorOpenPayload | null;
   consumeManualRequest(): string | null;
+  consumeMapRequest(): string | null;
   getChecklist(): Array<{ description: string; done: boolean }>;
   arriveLevel(): TickResult;
   /** Read-only view of the whole level for tools (the Terminal Lab). Never changes the game. */
@@ -190,6 +191,7 @@ export interface ChapterState {
   entryInventory: Inventory;
   pendingEditor: EditorOpenPayload | null;
   pendingManual: string | null;
+  pendingMap: string | null;
   currentRedirectTarget: string;
   rt: LevelRuntime;
 }

@@ -1,7 +1,7 @@
 import { ACHIEVEMENT_SPECS, readAchievements } from '../chapters/achievements.js';
 import { downloadPortableSaveFile } from '../chapters/portable-save.js';
 import { wireExternalLinksForDesktop, wireSteamWishlistLink } from '../chapters/steam-bridge.js';
-import { heroModel } from '../game/inventory.js';
+import { heroModel, type ItemId } from '../game/inventory.js';
 import type { GameSnapshot } from '../game/types.js';
 import {
   el, heroFaceTierForHp, PORTRAIT_FRAMES, type DrawPortrait, type HeroFaceTier,
@@ -10,6 +10,7 @@ import { mountItemsStrip, type ItemsStrip } from './items-strip.js';
 
 export interface HudHandlers {
   onHint(): void;
+  onMap?(): void;
   onPlayAgain(skipIntroNextTime: boolean): void;
   maxFloors?: number;
   /** Draws the item icons of the strip (the renderer's `drawPortrait`, passed in by `src/play`: `src/ui` imports no three). Without it the strip is not mounted. */
@@ -87,6 +88,7 @@ const HUD_HTML = (maxFloors: number) => `
       <b id="hud-time">0:00</b><span class="hud-pause" id="hud-pause">II</span>
     </div>
     <div class="hud-btns">
+      <button type="button" id="hud-map" title="Open Chapter Motherboard Map (F3)">Map</button>
       <button type="button" id="hud-hint" title="Tasks & goals for this room">? Hint</button>
     </div>
   `;
@@ -339,6 +341,8 @@ function hudApi(view: HudView): Hud {
 }
 
 function bindHud(root: HTMLElement, handlers: HudHandlers): void {
+  const mapBtn = root.querySelector<HTMLButtonElement>('#hud-map');
+  if (mapBtn) mapBtn.onclick = () => handlers.onMap?.();
   q<HTMLButtonElement>('#hud-hint', root).onclick = () => handlers.onHint();
 }
 
@@ -347,10 +351,11 @@ function mountLeftItemsStrip(
   fallback: HTMLElement,
   heroRoot: HTMLElement,
   drawPortrait?: DrawPortrait,
+  onItemClick?: (id: ItemId) => void,
 ): ItemsStrip | null {
   if (!drawPortrait) return null;
   const host = titleblock ?? fallback;
-  const items = mountItemsStrip(host, drawPortrait);
+  const items = mountItemsStrip(host, drawPortrait, onItemClick);
   const stripEl = host.querySelector<HTMLElement>('.items-strip');
   if (titleblock && stripEl && typeof heroRoot.after === 'function') heroRoot.after(stripEl);
   return items;
@@ -420,7 +425,15 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     achQueue: [],
     achTimer: 0,
     skipBox,
-    items: mountLeftItemsStrip(stageWrap.querySelector<HTMLElement>('#titleblock'), root, hero.root, handlers.drawPortrait),
+    items: mountLeftItemsStrip(
+      stageWrap.querySelector<HTMLElement>('#titleblock'),
+      root,
+      hero.root,
+      handlers.drawPortrait,
+      (id) => {
+        if (id === 'map') handlers.onMap?.();
+      },
+    ),
     drawPortrait: handlers.drawPortrait,
     heroModelId: DEFAULT_HERO_MODEL,
     heroFrame: 0,

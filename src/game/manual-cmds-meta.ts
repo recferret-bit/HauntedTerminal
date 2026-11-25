@@ -147,8 +147,33 @@ export const MANUAL_TOOLS_AND_META: readonly ManualCommandEntry[] = [
       { command: 'manual -9', outcome: 'Opens directly to the `kill` & POSIX signals guide.' },
       { command: 'manual chmod', outcome: 'Opens straight to `chmod` with its interactive octal calculator.' },
     ],
-    related: ['man', 'help', 'grimoire', 'bestiary'],
+    related: ['man', 'help', 'grimoire', 'bestiary', 'map'],
     keywords: ['book', 'guide', 'search', 'reference', 'calculator', 'flags', 'f1'],
+  },
+  {
+    command: 'map',
+    aliases: [],
+    section: 'game-meta',
+    categoryLabel: 'Motherboard Map',
+    filters: ['beginner', 'game'],
+    availability: 'both',
+    syntax: 'map [level | sector]',
+    summary: 'Open the interactive PCB Motherboard Chapter Map popup without pausing the game or battle clock.',
+    realWorld: 'Visual motherboard schematic showing Boot ROM, Data Channels, Hub Controllers, and the CPU Core Socket.',
+    inGame:
+      'Opens the Chapter Motherboard Map popup (same as pressing `F3`, clicking `Map` in the HUD, or clicking the `map` item slot). Inspect any block or deploy straight to any sector while keeping the 30s battle timer running.',
+    flags: [
+      { flag: '[level]', kind: 'operator', meaning: 'Optional 1-based level number (`1`..`11`), `boot`, `hub`, `boss`, or sector name to focus', example: 'map 4' },
+    ],
+    pitfalls: [
+      'Like `manual` and `Esc`, opening the map keeps the 30s battle clock live — use `F3` or click `Map` instead of typing `map` mid-battle if you want to save your command turn.',
+    ],
+    examples: [
+      { command: 'map', outcome: 'Opens the PCB Motherboard Chapter Map focused on your current sector.' },
+      { command: 'map 4', outcome: 'Opens the Chapter Map with Hub Level 04 selected in the chip inspector.' },
+    ],
+    related: ['manual', 'status', 'hold', 'inventory'],
+    keywords: ['motherboard', 'pcb', 'circuit', 'channels', 'wires', 'blocks', 'levels', 'f3', 'jump'],
   },
   {
     command: 'man',

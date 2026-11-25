@@ -6,6 +6,7 @@ import type { GameSnapshot, TickResult } from '../game/types.js';
 import type { ComicStage } from '../renderer/comic-stage.js';
 import type { CodeEditor } from '../ui/code-editor.js';
 import type { EscMenu } from '../ui/esc-menu.js';
+import type { ChapterMapDialog } from '../ui/chapter-map.js';
 import type { HintDialog } from '../ui/hint-dialog.js';
 import type { EndStats, Hud } from '../ui/hud.js';
 import type { ManualBook } from '../ui/manual-book.js';
@@ -102,6 +103,10 @@ export class Play {
   dialogBox: DialogBox | null = null;
   /** Centered Tasks & Goals hint popup (`src/ui/hint-dialog.ts`). */
   hintDialog: HintDialog | null = null;
+  /** Motherboard Chapter Map popup dialog (`src/ui/chapter-map.ts`). */
+  chapterMap: ChapterMapDialog | null = null;
+  /** Session command count at entry to the current level (detects unsaved progress before map jumps). */
+  levelEntryCommands = 0;
   codeEditor: CodeEditor | null = null;
   /** The Esc menu (`src/play/menu.ts`). It never adds a pause reason and never holds the turn timer. */
   menu: EscMenu | null = null;

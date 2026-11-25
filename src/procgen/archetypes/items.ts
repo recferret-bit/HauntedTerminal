@@ -10,6 +10,7 @@ import type { ModelSpec } from '../core/types.js';
 import { buildLantern } from './items/lantern.js';
 import { buildLaptop } from './items/laptop.js';
 import { buildManual } from './items/manual.js';
+import { buildMap } from './items/map.js';
 import { buildTerminal } from './items/terminal.js';
 
 export const ITEM_BUILDERS: Record<ItemId, (seed: number) => ModelSpec> = {
@@ -17,6 +18,7 @@ export const ITEM_BUILDERS: Record<ItemId, (seed: number) => ModelSpec> = {
   terminal: buildTerminal,
   laptop: buildLaptop,
   manual: buildManual,
+  map: buildMap,
 };
 
 for (const def of Object.values(ITEMS)) {

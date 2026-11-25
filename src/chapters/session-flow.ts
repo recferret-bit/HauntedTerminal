@@ -66,6 +66,12 @@ export function consumeManualRequest(g: ChapterState): string | null {
     return req;
   }
 
+export function consumeMapRequest(g: ChapterState): string | null {
+    const req = g.pendingMap;
+    g.pendingMap = null;
+    return req;
+  }
+
 export function jumpToLevel(g: ChapterState, levelIdOrIndex: string | number): TickResult {
     const events: KernelEvent[] = [];
     let idx = -1;
@@ -114,7 +120,7 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
         const r = restart(g);
         return { output: r.output, events: r.events, snapshot: r.snapshot };
       }
-      if (!/[;&|<>]/.test(typed) && /^(?:achievements|ach|trophies|manual|man\s+achievements)(?:\s|$)/i.test(typed)) {
+      if (!/[;&|<>]/.test(typed) && /^(?:achievements|ach|trophies|manual|map|man\s+achievements)(?:\s|$)/i.test(typed)) {
         const s = runLine(typed, host);
         return { output: s.output, stderr: s.stderr || undefined, code: s.code, events: s.events, snapshot: snapshot(g) };
       }

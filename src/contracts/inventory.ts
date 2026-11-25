@@ -2,7 +2,7 @@
  * Item types and descriptors for the developer's inventory.
  * Pure data and contracts shared across procgen (3D models, hero variants) and game (inventory state, shell).
  */
-export const ITEM_IDS = ['lantern', 'terminal', 'laptop', 'manual'] as const;
+export const ITEM_IDS = ['lantern', 'terminal', 'laptop', 'manual', 'map'] as const;
 export type ItemId = (typeof ITEM_IDS)[number];
 
 export interface ItemDef {
@@ -68,6 +68,16 @@ export const ITEMS: Readonly<Record<ItemId, ItemDef>> = {
     lore: 'A dog-eared hardcover unix field manual with a ribbon bookmark and phosphor reference badge: the pocket guide to every command and flag.',
     heroLore: 'The developer holding his hardcover Unix Field Manual by its spine strap: ready to flip to any command, flag, or chmod octal mask.',
     use: 'a hardcover unix field manual with command, flag, and chmod references.',
+  },
+  map: {
+    id: 'map',
+    label: 'map',
+    model: 'item.map',
+    heroModel: 'vibecoder.dev_map',
+    heroLabel: 'The developer (map)',
+    lore: 'A trace-etched PCB motherboard schematic slate with gold bus channels, IC sector blocks, and glowing phosphor trace nodes: the live circuit map of the chapter.',
+    heroLore: 'The developer holding his PCB motherboard schematic map by its top strap: tracing data channels and sector blocks across the machine.',
+    use: 'a PCB motherboard schematic map of all chapter channels and sector blocks.',
   },
 };
 

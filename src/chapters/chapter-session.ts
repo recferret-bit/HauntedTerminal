@@ -79,6 +79,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   entryInventory = starterInventory();
   pendingEditor: EditorOpenPayload | null = null;
   pendingManual: string | null = null;
+  pendingMap: string | null = null;
   currentRedirectTarget = '';
   rt!: LevelRuntime;
 
@@ -150,6 +151,10 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
 
   consumeManualRequest(): string | null {
     return flow.consumeManualRequest(this);
+  }
+
+  consumeMapRequest(): string | null {
+    return flow.consumeMapRequest(this);
   }
 
   getChecklist(): Array<{ description: string; done: boolean }> {

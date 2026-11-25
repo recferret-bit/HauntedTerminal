@@ -56,6 +56,7 @@ function beginEnding(play: Play, stats: EndStats | null): void {
   const seq = play.sessionSeq;
   play.endingStarted = true;
   play.manualBook?.close();
+  play.chapterMap?.close();
   play.reasons.add('ended');
   play.syncPause();
   const final = stats ?? statsFrom(play.session.snapshot());

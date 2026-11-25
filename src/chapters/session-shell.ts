@@ -3,7 +3,7 @@ import { armMessage, decideRestart, parseRestartArgs } from '../game/commands-pr
 import type { KernelEvent } from '../contracts/events.js';
 import { rebootLevel } from './session-level.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
-import { helpText, manPage, manualTopics, runMan, runManual } from '../game/manual.js';
+import { helpText, manPage, manualTopics, mapTopics, runMan, runManual, runMap } from '../game/manual.js';
 import type { Step, Word } from '../game/shell.js';
 import { absPath, resolve } from '../game/tree.js';
 import { runLn, runReadlink } from '../game/tree-links.js';
@@ -51,6 +51,12 @@ export function complete(g: ChapterState, line: string): { line: string; matches
     if (parts[0] === 'manual' && (parts.length === 1 || (parts.length === 2 && !endsWithSpace)) && !last.includes('/')) {
       const topics = manualTopics(last);
       if (topics.length === 1) return { line: `manual ${topics[0]} `, matches: topics };
+      if (topics.length > 1) return { line, matches: topics };
+    }
+    if (parts[0] === 'map' && (parts.length === 1 || (parts.length === 2 && !endsWithSpace)) && !last.includes('/')) {
+      const levelTokens = g.levels.flatMap((l) => [String(l.index), l.id]);
+      const topics = mapTopics(last, levelTokens).sort();
+      if (topics.length === 1) return { line: `map ${topics[0]} `, matches: topics };
       if (topics.length > 1) return { line, matches: topics };
     }
     if (parts[0] === 'hold' && (parts.length === 1 || (parts.length === 2 && !endsWithSpace)) && !last.includes('/')) {
@@ -142,6 +148,14 @@ function dispatchManual(g: ChapterState, args: string[]): Step {
     return m.step;
   }
 
+function dispatchMap(g: ChapterState, args: string[]): Step {
+    const cur = g.rt.spec;
+    const header = `[MOTHERBOARD MAP] ${g.pack.manifest.title} — Sector ${String(cur.index).padStart(2, '0')}/${g.levels.length}: ${cur.title}\n`;
+    const m = runMap(args, header);
+    g.pendingMap = m.query;
+    return m.step;
+  }
+
 function dispatchTutorial(g: ChapterState, args: string[]): Step {
     if (args[0] === 'skip' || args[0] === 'off') {
       const events: Step['events'] = [];
@@ -182,6 +196,8 @@ function dispatchCommand(g: ChapterState, argv: string[], stdin: string): Step {
       }
       case 'manual':
         return dispatchManual(g, args);
+      case 'map':
+        return dispatchMap(g, args);
       case 'tutorial':
         return dispatchTutorial(g, args);
       case 'hank':

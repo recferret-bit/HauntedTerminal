@@ -12,7 +12,7 @@ import { KiroCompanion } from './kiro.js';
 import { observeLab } from './lab-checks.js';
 import { applyLabInjection, buildLabInspect } from './lab-support.js';
 import { freshLabLevelState, type LabConfig, type LabInjection, type LabInspect, type LabSession } from './lab-types.js';
-import { helpText, runMan, runManual } from './manual.js';
+import { helpText, runMan, runManual, runMap } from './manual.js';
 import { brace, empty, out, thisPlaceholder, type HeroAction, type Run } from './play.js';
 import { classicHintGoals, cmdKiro, puzzleHint, statusText, stepKiroCrack, threatHint } from './puzzle.js';
 import {
@@ -49,6 +49,8 @@ export interface Session {
   skipIntro(): void;
   /** Consume a pending `manual [query]` UI open request from the last command. */
   consumeManualRequest?(): string | null;
+  /** Consume a pending `map [level]` UI open request from the last command. */
+  consumeMapRequest?(): string | null;
   /** App bus. Pages subscribe; headless tests can read `recent()`. */
   readonly bus?: AppBus;
   readonly sfx?: Sfx;
@@ -79,6 +81,7 @@ class Game implements LabSession, Host {
   act: { action: HeroAction; target?: string } = { action: 'type' };
   private lineArgs: string[][] = [];
   private pendingManual: string | null = null;
+  private pendingMap: string | null = null;
   paused = false;
   pausedAt: number | null = null;
   readonly host: WorldHost = {
@@ -171,6 +174,12 @@ class Game implements LabSession, Host {
   consumeManualRequest(): string | null {
     const q = this.pendingManual;
     this.pendingManual = null;
+    return q;
+  }
+
+  consumeMapRequest(): string | null {
+    const q = this.pendingMap;
+    this.pendingMap = null;
     return q;
   }
 
@@ -487,6 +496,11 @@ class Game implements LabSession, Host {
       case 'manual': {
         const m = runManual(args);
         this.pendingManual = m.query;
+        return m.step;
+      }
+      case 'map': {
+        const m = runMap(args);
+        this.pendingMap = m.query;
         return m.step;
       }
       case 'status': return out(statusText(this));

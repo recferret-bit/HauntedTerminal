@@ -249,14 +249,14 @@ export const GRIMOIRE_ENTRIES: readonly GrimoireEntry[] = [
     category: 'POSIX',
     syntax: 'inventory | inv',
     realWorld: 'Inspects carried developer equipment and tools.',
-    comicEffect: 'Lists carried gear (* indicates held item in hand): lantern, terminal, laptop, and manual.',
+    comicEffect: 'Lists carried gear (* indicates held item in hand): lantern, terminal, laptop, manual, and map.',
   },
   {
     command: 'hold',
     category: 'POSIX',
-    syntax: 'hold <lantern|terminal|laptop|manual>',
+    syntax: 'hold <lantern|terminal|laptop|manual|map>',
     realWorld: 'Equips or switches active tool into the screen-right hand.',
-    comicEffect: 'Changes developer visual model and active capabilities (lantern casts light; laptop opens coding lab; manual equips his field book).',
+    comicEffect: 'Changes developer visual model and active capabilities (lantern casts light; laptop opens coding lab; manual equips field book; map equips motherboard map).',
   },
   {
     command: 'achievements',

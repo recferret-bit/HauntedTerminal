@@ -10,6 +10,10 @@ export function el<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
+export function setText(node: HTMLElement, text: string): void {
+  if (node.textContent !== text) node.textContent = text;
+}
+
 /** Restart a CSS animation by toggling its class. */
 export function replayClass(node: HTMLElement, cls: string): void {
   node.classList.remove(cls);
