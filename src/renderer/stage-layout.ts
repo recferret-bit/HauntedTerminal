@@ -87,6 +87,8 @@ export function syncRoomModel(stage: ComicStage, kind: RoomKind): void {
 export function buildStageScene(stage: ComicStage): void {
   stage.tweens.clear();
   stage.fxPlayer.clear();
+  stage.lightning.clear();
+  stage.recentStrikes.clear();
   stage.cardKill = null;
   stage.bubble = null;
   stage.heroOuchUntil = 0;

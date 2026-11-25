@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { BARE_HERO_MODEL } from '../contracts/inventory.js';
+import { mergeComicFxLights } from '../shaders/comic-material.js';
 import { setCrtTime } from '../shaders/crt-pass.js';
 import type { RoomActor } from './room-view.js';
 import type { StageActor } from './stage-cast.js';
@@ -39,8 +40,11 @@ export function stepStage(stage: ComicStage, dt: number): void {
     if (stage.stormIn <= 0) {
       stage.stormIn = 7 / Math.max(0.35, stage.stormIntensity);
       const x = stage.panelRight + Math.random() * (stage.panelLeft - stage.panelRight);
-      playFx(stage, 'fx.lightning-strike', new THREE.Vector3(x, stage.feetY, ACTOR_Z + 0.4), { text: ' ', noShake: true, flashMul: 0.18 * stage.stormIntensity, lightMul: 0.55 * stage.stormIntensity, scale: 0.85 });
-      stage.audioBus?.emit({ kind: 'cine', cue: 'thunder-far' });
+      stage.strikeLightning(new THREE.Vector3(x, stage.feetY, ACTOR_Z), 5.2, {
+        flash: 1.6 * stage.stormIntensity,
+        scale: 0.85,
+      });
+      stage.audioBus?.emit({ kind: 'cine', cue: 'lightning' });
     }
   }
   stage.lightning.update(dt);
@@ -102,7 +106,7 @@ function lightFrame(stage: ComicStage, dt: number): void {
     heroGlow: h && !h.disposed && h.group.visible ? new THREE.Vector3(h.group.position.x, stage.feetY + 0.85, 0) : null,
     heroBare: h?.modelId === BARE_HERO_MODEL,
     flash: stage.lightning.flashStrength,
-    fxLights: stage.fxPlayer.activeLights(),
+    fxLights: mergeComicFxLights([stage.lightning.activeLights(), stage.fxPlayer.activeLights()]),
   });
   // The bulb itself burns brighter while the light is boosted.
   const glow = h?.glow;

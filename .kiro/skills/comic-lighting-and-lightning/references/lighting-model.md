@@ -93,20 +93,26 @@ captions. The light vector is the same on every floor.
 ### Storm
 
 `setStorm(on, intensity)`: stores both; turning it off zeroes `lightning.flashStrength`.
-Defaults: on, intensity 0.65, first strike after 1.4 s. In `frame()`: when the timer runs out it is
-reset to `7 / max(0.35, intensity)` seconds (10.8 s at 0.65, 7 s at 1.0, 4.7 s at 1.5) and calls
-`lightning.strikeAt((-2.4, 4.2, 1.2), 0.35 * intensity)`: a very short bolt high on the screen-right
-side, whose real effect is the flash from that corner. `main.ts` wires it to the visual lab's STORM
-tab (intensity slider 0..1.5).
+Defaults: on, intensity 0.65, first strike after 1.4 s. In `stepStage()`: when the timer runs out it
+is reset to `7 / max(0.35, intensity)` seconds (10.8 s at 0.65, 7 s at 1.0, 4.7 s at 1.5) and calls
+`stage.strikeLightning((x, feetY, ACTOR_Z), 5.2, { flash: 1.6 * intensity, scale: 0.85 })` along
+with emitting `{ kind: 'cine', cue: 'lightning' }` on `audioBus`. `main.ts` wires it to the visual
+lab's STORM tab (intensity slider 0..1.5).
 
 ### Lightning callers
 
+All in-game lightning uses `ComicStage.strikeLightning` -> `LightningStrikeSystem.strikeAt`
+(synchronized to `LIGHTNING_SOUND_SEC = 1.41` s, matching `public/sfx/lightning.mp3`); 2D comic
+bolts (`fx.lightning-strike`, `makeComicBolt`) remain for `comix/intro` and `comix/outro`.
+
 | Caller | Call | With |
 |---|---|---|
-| `triggerLightningIntro()` | `strikeAt((0.1, 0.02, 0.7), 5.4)` | `triggerShake(1.6)`, `KRAKOOM!!` in `#4cc9f0` |
-| Storm timer | `strikeAt((-2.4, 4.2, 1.2), 0.35 * intensity)` | nothing else |
-| `PROC_SIGNALED` `KILLED` | `strikeAt(boss at y 0.05, 4.6)` | `triggerShake(1.6)`, `KILL -9 // REAPED!` |
-| `PROC_SIGNALED` `TRAPPED_ENRAGED` | `spawnGridOverloadArc(boss + (-0.2, 1.5, 0), boss + (0.35, 0.4, 0.1))` | `triggerShake(1.3)`, boss painted `0xff2a55` |
+| `triggerLightningIntro()` | `strikeLightning((midX + 0.6, feetY, ACTOR_Z), 5.4)` | `triggerShake(1.6)`, `lightning` + `thunder` cues |
+| Storm timer | `strikeLightning((x, feetY, ACTOR_Z), 5.2, { flash: 1.6 * intensity, scale: 0.85 })` | `lightning` cue |
+| `PROC_SIGNALED` `KILLED` / `ENEMY_KILLED` `SIGKILL` | `strikeLightning(subject-feet, 5.2, undefined, 'kill:<id>')` | `fx.sigkill` (120 ms delay), `kill` / `lightning` SFX |
+| `GAME_ENDED` | `strikeLightning(panel-floor, 5.4, undefined, 'game-ended')` | `triggerShake(1.6)`, end card |
+| `VIBECODER_EMOTE` `shout` | `strikeLightning(panel-floor, 5.2, undefined, 'shout')` | `fx.fight` word banner, `triggerShake(1.4)`, `emote_shout` + `lightning` SFX |
+| Comix `lightning` / `arc` beats | `stage.lightning.strikeAt` / `spawnGridOverloadArc` | `fx.lightning-strike` / `makeComicBolt` |
 
 `triggerShake(mul)`: 280 ms, amplitude `config.shakeIntensity (10) * 0.006 * mul` world units,
 decaying linearly, camera x and y only.
@@ -140,27 +146,29 @@ Floor 3 starts at 20%; each `viaSymlinkLoop` transition adds 18%, capped at 85%.
 ## `LightningStrikeSystem`: `src/shaders/lightning.ts`
 
 ```ts
+export const LIGHTNING_SOUND_SEC = 1.41; // matches public/sfx/lightning.mp3
 new LightningStrikeSystem(scene: THREE.Scene)
 flashStrength: number            // read by the stage every frame
 readonly flashPos: THREE.Vector3
-strikeAt(targetPos: THREE.Vector3, skyHeight = 5.2): void
+strikeAt(targetPos: THREE.Vector3, skyHeight = 5.2, opts?: LightningStrikeOptions): void
 spawnGridOverloadArc(p1: THREE.Vector3, p2: THREE.Vector3): void
+clear(): void
 update(dt: number): void         // seconds
 buildJaggedBoltGeometry(start, end, generations = 5, trunkRadius = 0.02, spawnForks = true): THREE.BufferGeometry | null
 ```
 
-| | `strikeAt` | `spawnGridOverloadArc` |
+| | `strikeAt` (defaults: `dur = 1.41 s`, `scale = 1`, `flash = 3.6`) | `spawnGridOverloadArc` |
 |---|---|---|
-| Main bolt | from `target + (±0.6, skyHeight, ±0.6)` to target; 5 generations, radius 0.022, forks, 0.42 s | `p1` to `p2`; 4 generations, radius 0.01, no forks, 0.16 s |
-| Extras | 3 ground tendrils 0.45..1.0 long (4 generations, radius 0.012, 0.22 s); a Lichtenberg web: a 6.2-unit plane scaled 0.22, 0.7 s | none |
-| Flash | `flashStrength = 5.5` at the target | `max(current, 2.2)` at the midpoint |
+| Sky bolts | 3 channels (`delay 0`, `0.18 * dur`, `0.42 * dur`), `generations` 5/5/4, `radius` `0.036/0.028/0.022 * scale`, forks, `dur * 0.62 / 0.62 / 0.56` | `p1` to `p2`; 4 generations, radius 0.014, no forks, 0.24 s |
+| Ground tendrils & web | 4 immediate tendrils (`dur * 0.48`) + 3 delayed tendrils (`delay 0.24 * dur`, `dur * 0.62`), arcing upward in y; Voronoi Lichtenberg web (`6.2`-unit plane tilted `-0.52` rad toward `-z`, scaled `0.42 * scale`, `depthTest: false`, lasting `dur`) | none |
+| Flash | `flashStrength = max(current, peakFlash)` at target; re-strike channels pulse `0.42 * peakFlash` and `0.25 * peakFlash`; decays at `max(18, peakFlash / 0.18)` per s | `max(current, 2.2)` at the midpoint |
 
 - Bolt shape: recursive midpoint displacement. Sway starts at 16% of the bolt length and is
   multiplied by 0.52 per generation; y sway is 35% of x and z. A fork (55% of the segment, radius
   x0.42) spawns with probability 0.32 in generations 0..2. Segments are 4-sided tubes, merged.
-- Bolt material: `MeshBasicMaterial`, colour `(2.475, 4.84, 6.0)`, additive, `toneMapped: false`,
-  no depth write, `renderOrder` 3. Opacity per frame: `sin(t * 6π) > -0.2 ? 1 - t : 0.2`.
-- `update(dt)`: `flashStrength -= 14 * dt` (5.5 reaches 0 in 0.39 s); ages and disposes bolts and webs.
+- Bolt material: `MeshBasicMaterial`, colour `(1.024, 2.816, 3.6)`, additive, `toneMapped: false`,
+  no depth write, `renderOrder` 3. Opacity per frame: `sin(t * 10π) > -0.15 ? 1 - 0.85 * t : 0.15`.
+- `update(dt)`: `flashStrength -= flashDecay * dt`; ages and disposes bolts (after `delay + duration`) and webs.
 - Randomness is `Math.random()`: strikes are not reproducible.
 
 ## Parity copies

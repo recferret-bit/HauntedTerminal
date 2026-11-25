@@ -87,6 +87,7 @@ export function heroEmote(stage: ComicStage, hero: StageActor, emote: string, te
  * sound of its own; the sound cue belongs to the app bus (`src/audio/`).
  */
 function shout(stage: ComicStage, hero: StageActor, word: string): void {
+  stage.strikeLightning(anchorPoint(stage, 'panel-floor', hero), 5.2, undefined, 'shout');
   playFx(stage, 'fx.fight', anchorPoint(stage, 'panel', null), { text: word, scale: 1.2, noShake: true }, 'shout');
   triggerShake(stage, 1.4);
   hopInPlace(stage, hero, 0.12, 300);

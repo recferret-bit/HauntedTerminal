@@ -71,21 +71,24 @@ screen-left and the light's x is negative); the software rasterizer agrees. Trus
 
 ## Lightning, as it is today
 
-`LightningStrikeSystem(scene)` exposes `strikeAt(target, skyHeight = 5.2)`,
-`spawnGridOverloadArc(p1, p2)`, `update(dtSeconds)`, `buildJaggedBoltGeometry(...)`, and the two
-fields the stage reads every frame: `flashStrength` (set to 5.5 by a strike, decays at 14 per
-second, so about 0.4 s) and `flashPos`. `ComicStage.frame()` copies both into `uFlash` / `uFlashPos`
-of every comic material it collected in `this.comics`.
+`LightningStrikeSystem(scene)` (`src/shaders/lightning.ts`) exposes `LIGHTNING_SOUND_SEC = 1.41`,
+`strikeAt(target, skyHeight = 5.2, opts?)`, `spawnGridOverloadArc(p1, p2)`, `clear()`,
+`update(dtSeconds)`, `buildJaggedBoltGeometry(...)`, and the two fields the stage reads every frame:
+`flashStrength` (set to 3.6 by a default strike, pulsed at 0.42x and 0.25x by re-strikes, and
+decaying quickly across ~0.18 s so the dark room and glowing Lichtenberg floor web stay crisp
+across the `1.41 s` `lightning.mp3` duration) and `flashPos`. `ComicStage` steps it and copies both into
+`uFlash` / `uFlashPos` of every comic material it collected in `this.comics`.
 
-Callers: `triggerLightningIntro()` (strike at the desk, shake 1.6, `KRAKOOM!!`), the storm timer,
-`PROC_SIGNALED` `KILLED` (strike on the boss) and `TRAPPED_ENRAGED` (a short arc). Usage and
-parameters: [LightningStrikeSystem.ts](./examples/LightningStrikeSystem.ts).
+In-game callers use `ComicStage.strikeLightning(...)` -> `LightningStrikeSystem` (multi-channel
+forked 3D bolts, rising ground tendrils, and the Voronoi Lichtenberg floor web shader):
+`triggerLightningIntro()` (run start & F2 `#btn-lightning`, shake 1.6), ambient storm strikes in
+`stepStage` (`scale: 0.85`, `flash: 1.6 * stormIntensity`), `SIGKILL` (`PROC_SIGNALED` `KILLED` and
+`ENEMY_KILLED` `SIGKILL`), `GAME_ENDED` (shake 1.6), and `VIBECODER_EMOTE` `shout` (tutorial
+`"HELLOOOO??"` roar).
 
-Known gaps, so you do not design around features that are not there: bolts are additive glowing
-tubes rather than ink-edged shapes; midpoint displacement and the ground web use `Math.random()` and
-spread in x and z, but z is invisible to the front camera and the web lies flat on the floor, edge-on
-to it; bolt opacity fades instead of stepping. The comic version of a bolt already exists as data: `fx.lightning-strike`
-(`src/procgen/fx/presets.ts`).
+The 2D comic lightning (`fx.lightning-strike` in `src/procgen/fx/presets.ts`, `makeComicBolt` in
+`src/cinematic/set.ts`) stays reserved for the intro and outro comixes (`comix/intro`, `comix/outro`).
+Usage and parameters: [LightningStrikeSystem.ts](./examples/LightningStrikeSystem.ts).
 
 ## How lightning should be drawn
 

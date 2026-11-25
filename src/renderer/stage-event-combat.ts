@@ -57,6 +57,7 @@ function onProcSignaled(stage: ComicStage, ev: Extract<KernelEvent, { type: 'PRO
     subject.rest = 'enraged';
     setRest(subject);
   } else {
+    stage.strikeLightning(anchorPoint(stage, 'subject-feet', subject), 5.2, undefined, `kill:${subject.id}`);
     kill(stage, subject, 'SIGKILL', 0, false);
     for (const child of childrenOf(stage, subject)) kill(stage, child, 'SIGKILL', 120, false);
   }
@@ -86,6 +87,7 @@ function onEnemyHit(stage: ComicStage, ev: Extract<KernelEvent, { type: 'ENEMY_H
 
 function onEnemyKilled(stage: ComicStage, ev: Extract<KernelEvent, { type: 'ENEMY_KILLED' }>, subject: StageActor | null): void {
   if (!subject) return;
+  if (ev.how === 'SIGKILL') stage.strikeLightning(anchorPoint(stage, 'subject-feet', subject), 5.2, undefined, `kill:${subject.id}`);
   if (ev.how === 'devnull') suckIntoNull(stage, subject);
   else kill(stage, subject, ev.how, 0, true);
 }

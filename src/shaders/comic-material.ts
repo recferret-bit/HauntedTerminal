@@ -234,6 +234,21 @@ export function clearComicFxLights(): void {
   setComicFxLights([]);
 }
 
+/** Merge multiple FX light lists and keep the strongest `max` (by power * radius). */
+export function mergeComicFxLights(
+  sources: readonly (readonly ComicFxLight[])[],
+  max = MAX_COMIC_FX_LIGHTS,
+): ComicFxLight[] {
+  const out: ComicFxLight[] = [];
+  for (const list of sources) {
+    for (const l of list) {
+      if (l.power > 0.001 && l.radius > 0.001) out.push(l);
+    }
+  }
+  if (out.length <= max) return out;
+  return out.sort((a, b) => b.power * b.radius - a.power * a.radius).slice(0, max);
+}
+
 export function createComicMaterial(color: number, opts: ComicOptions = {}): ComicMaterial {
   const mat = new THREE.ShaderMaterial({
     uniforms: {

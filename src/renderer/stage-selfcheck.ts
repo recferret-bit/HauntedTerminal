@@ -45,9 +45,9 @@ export function demoRoom(path = '/selfcheck/furnace', extra: RoomActor[] = []): 
     { key: 'entity', id: 'virus-1', model: 'malware.virus', kind: 'enemy', x: 0.6, y: 0.4, hidden: false, hp: 3, maxHp: 3, pid: 669, target: 'virus.exe' },
     { key: 'entity', id: 'bug-1', model: 'malware.bug', kind: 'enemy', x: 0.1, hidden: false, hp: 1, maxHp: 1, pid: 670, state: 'frozen', target: 'bug.c' },
     { key: 'entity', id: 'trojan-1', model: 'malware.trojan', kind: 'enemy', x: -0.3, hidden: false, petrified: true, target: 'trojan.bin' },
-    { key: 'entity', id: 'energy-1', model: 'pickup.energy', kind: 'pickup', x: 3.7, y: 0.5, hidden: false, target: 'energy.cell' },
-    { key: 'entity', id: 'ram-1', model: 'pickup.ram', kind: 'pickup', x: 2.8, y: 0.5, hidden: false, target: 'ram.stick' },
-    { key: 'entity', id: 'ssd-1', model: 'pickup.ssd', kind: 'pickup', x: 1.8, y: 0.5, hidden: false, target: 'ssd.drive' },
+    { key: 'entity', id: 'energy-1', model: 'pickup.energy', kind: 'pickup', x: 3.7, hidden: false, target: 'energy.cell' },
+    { key: 'entity', id: 'ram-1', model: 'pickup.ram', kind: 'pickup', x: 2.8, hidden: false, target: 'ram.stick' },
+    { key: 'entity', id: 'ssd-1', model: 'pickup.ssd', kind: 'pickup', x: 1.8, hidden: false, target: 'ssd.drive' },
     { key: 'entity', id: 'door-usb', model: 'door.usb', kind: 'door', x: -1.0, hidden: false, label: 'usb_port', state: 'petrified' },
     { key: 'entity', id: 'devnull', model: 'door.devnull', kind: 'door', x: -0.7, hidden: false, label: '/dev/null' },
     { key: 'entity', id: 'fan-1', model: 'prop.fan', kind: 'prop', x: 0.9, hidden: false },
@@ -213,7 +213,7 @@ function pairCases(): PairCase[] {
       { type: 'FILE_REMOVED', inodeId: 40, name: 'worm.bin', entityId: 'worm-1' },
       { type: 'ENEMY_KILLED', entityId: 'worm-1', model: 'malware.worm', how: 'rm' },
     ] },
-    { name: 'kill -9 boss', remove: ['boss-1'], expect: { 'fx.sigkill': [1, 1], 'fx.lightning-strike': [1, 1], 'fx.rm-ash': [0, 0] }, events: [
+    { name: 'kill -9 boss', remove: ['boss-1'], expect: { 'fx.sigkill': [1, 1], 'fx.rm-ash': [0, 0] }, events: [
       { type: 'PROC_SIGNALED', pid: 666, signal: 'SIGKILL', outcome: 'KILLED' },
       { type: 'FILE_REMOVED', inodeId: 41, name: 'forkbomb', entityId: 'boss-1' },
       { type: 'ENEMY_KILLED', entityId: 'boss-1', model: 'boss.forkbomb', how: 'SIGKILL' },
@@ -239,7 +239,7 @@ function pairCases(): PairCase[] {
     ] },
     // The kernel's view already says `death` while the kill is queued behind the hero's walk:
     // the kill must still play its own fx on the boss, then the same id listed alive comes back visible.
-    { name: 'kill behind a walk, view says death', expect: { 'fx.sigkill': [1, 1], 'fx.lightning-strike': [1, 1] },
+    { name: 'kill behind a walk, view says death', expect: { 'fx.sigkill': [1, 1] },
       after: (v) => setActor(v, 'boss-1', { state: 'death', hp: 0 }),
       then: (v) => setActor(v, 'boss-1', { state: 'idle', hp: 8 }),
       events: [
@@ -462,7 +462,8 @@ export function runStageSelfCheck(stage: StageLike, restore?: RoomView | null): 
     if (ov.badges > liveActors) pairFailures.push(`overlay has ${ov.badges} badge holders for ${liveActors} actors`);
   }
   const errors = stage.errors.slice(errorsBefore);
-  const missingFx = FX_IDS.filter((id) => !stage.fxPlayer.played.has(id));
+  // `fx.lightning-strike` is reserved for comixes (in-game strikes use `LightningStrikeSystem`).
+  const missingFx = FX_IDS.filter((id) => id !== 'fx.lightning-strike' && !stage.fxPlayer.played.has(id));
   const playedFx = stage.fxPlayer.played.size;
   for (const id of played0) stage.fxPlayer.played.add(id);
   stage.devNoStorm = stormWas;

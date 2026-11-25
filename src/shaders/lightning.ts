@@ -1,21 +1,49 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { MAX_COMIC_FX_LIGHTS, mergeComicFxLights, type ComicFxLight } from './comic-material.js';
 
 /**
  * Procedural bolts and a Lichtenberg ground web with an electric-surface shader,
- * scaled for a room-sized diorama.
+ * scaled for a room-sized diorama and synchronized with `public/sfx/lightning.mp3`.
  */
 
-interface ActiveBolt {
+/** Duration of `public/sfx/lightning.mp3` (~1.41s). */
+export const LIGHTNING_SOUND_SEC = 1.41;
+const LIGHTNING_FX_COLOR = 0x4cc9f0;
+
+export interface LightningStrikeOptions {
+  /** Total strike and ground-web duration in seconds (defaults to LIGHTNING_SOUND_SEC = 1.41s). */
+  duration?: number;
+  /** Peak comic-shader flash strength (defaults to 3.6). */
+  flash?: number;
+  /** Scale multiplier for bolt radius, tendril reach, and ground web (defaults to 1). */
+  scale?: number;
+}
+
+interface BoltLightSpec {
+  reFlash: number;
+  flashScale: number;
+  lightPos: THREE.Vector3;
+  lightRadius: number;
+  lightPower: number;
+}
+
+interface ActiveBolt extends BoltLightSpec {
   mesh: THREE.Mesh;
   age: number;
+  delay: number;
   duration: number;
+  flashed: boolean;
+  opacity: number;
 }
 
 interface ActiveWeb {
   mesh: THREE.Mesh;
   age: number;
   duration: number;
+  center: THREE.Vector3;
+  scale: number;
+  intensity: number;
 }
 
 const ELECTRIC_VERT = /* glsl */ `
@@ -127,13 +155,14 @@ export class LightningStrikeSystem {
   flashStrength = 0;
   readonly flashPos = new THREE.Vector3();
 
+  private flashDecay = 5.5 / LIGHTNING_SOUND_SEC;
   private readonly activeBolts: ActiveBolt[] = [];
   private readonly webs: ActiveWeb[] = [];
   private readonly boltMaterial: THREE.MeshBasicMaterial;
 
   constructor(private readonly scene: THREE.Scene) {
     this.boltMaterial = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(0.45 * 5.5, 0.88 * 5.5, 1.0 * 6.0),
+      color: new THREE.Color(0.32 * 3.2, 0.88 * 3.2, 1.0 * 3.6),
       toneMapped: false,
       transparent: true,
       opacity: 1,
@@ -191,50 +220,165 @@ export class LightningStrikeSystem {
     return mergeGeometries(tubes, false);
   }
 
-  strikeAt(targetPos: THREE.Vector3, skyHeight = 5.2): void {
-    const skyOrigin = new THREE.Vector3(
-      targetPos.x + (Math.random() - 0.5) * 1.2,
-      targetPos.y + skyHeight,
-      targetPos.z + (Math.random() - 0.5) * 1.2,
-    );
-    this.spawnBolt(skyOrigin, targetPos, 5, 0.022, true, 0.42);
-    const tendrilOrigin = new THREE.Vector3(targetPos.x, targetPos.y + 0.04, targetPos.z);
-    const baseRotation = Math.random() * Math.PI * 2;
-    for (let i = 0; i < 3; i++) {
-      const ang = baseRotation + (i / 3) * Math.PI * 2 + (Math.random() - 0.5) * 0.95;
-      const dist = 0.45 + Math.random() * 0.55;
-      const tendrilEnd = new THREE.Vector3(
-        targetPos.x + Math.cos(ang) * dist,
-        targetPos.y + 0.04,
-        targetPos.z + Math.sin(ang) * dist,
+  strikeAt(targetPos: THREE.Vector3, skyHeight = 5.2, opts: LightningStrikeOptions = {}): void {
+    const dur = Math.max(0.25, opts.duration ?? LIGHTNING_SOUND_SEC);
+    const scale = Math.max(0.35, opts.scale ?? 1);
+    const peakFlash = opts.flash ?? 3.6;
+    const channels: ReadonlyArray<{
+      spread: number; dz: number; gens: number; radius: number; durMul: number; delayMul: number;
+      reFlash: number; powerMul: number; flashMul: number;
+    }> = [
+      { spread: 1.2, dz: -0.12, gens: 5, radius: 0.036, durMul: 0.62, delayMul: 0, reFlash: peakFlash, powerMul: 2.1, flashMul: 0.55 },
+      { spread: 1.4, dz: -0.14, gens: 5, radius: 0.028, durMul: 0.62, delayMul: 0.18, reFlash: peakFlash * 0.72, powerMul: 1.9, flashMul: 0.48 },
+      { spread: 1.6, dz: -0.14, gens: 4, radius: 0.022, durMul: 0.56, delayMul: 0.42, reFlash: peakFlash * 0.58, powerMul: 1.7, flashMul: 0.42 },
+    ];
+    for (const ch of channels) {
+      const skyOrigin = new THREE.Vector3(
+        targetPos.x + (Math.random() - 0.5) * ch.spread,
+        targetPos.y + skyHeight,
+        targetPos.z + ch.dz,
       );
-      this.spawnBolt(tendrilOrigin, tendrilEnd, 4, 0.012, true, 0.22);
+      const lightPos = new THREE.Vector3(targetPos.x * 0.72 + skyOrigin.x * 0.28, targetPos.y + 1.15, targetPos.z);
+      this.spawnBolt(skyOrigin, targetPos, ch.gens, ch.radius * scale, true, dur * ch.durMul, dur * ch.delayMul, {
+        reFlash: ch.reFlash,
+        flashScale: peakFlash * ch.flashMul,
+        lightPos,
+        lightRadius: 6.8 * scale,
+        lightPower: ch.powerMul * scale,
+      });
     }
-    this.spawnSurfaceWeb(targetPos);
+    this.spawnTendrils(targetPos, 4, 0, dur * 0.48, 0.015 * scale, scale, peakFlash, 0);
+    this.spawnTendrils(targetPos, 3, dur * 0.24, dur * 0.62, 0.012 * scale, scale, peakFlash, peakFlash * 0.38);
+    this.spawnSurfaceWeb(targetPos, dur, scale);
     this.flashPos.copy(targetPos);
-    this.flashStrength = 5.5;
+    this.flashStrength = Math.max(this.flashStrength, peakFlash);
+    this.flashDecay = Math.max(18, peakFlash / 0.18);
   }
 
   spawnGridOverloadArc(p1: THREE.Vector3, p2: THREE.Vector3): void {
-    this.spawnBolt(p1, p2, 4, 0.01, false, 0.16);
-    this.flashPos.copy(p1).lerp(p2, 0.5);
+    const mid = p1.clone().lerp(p2, 0.5);
+    this.spawnBolt(p1, p2, 4, 0.014, false, 0.24, 0, {
+      reFlash: 0,
+      flashScale: 1.8,
+      lightPos: mid,
+      lightRadius: 4.8,
+      lightPower: 1.6,
+    });
+    this.flashPos.copy(mid);
     this.flashStrength = Math.max(this.flashStrength, 2.2);
+    this.flashDecay = Math.max(this.flashDecay, 8);
+  }
+
+  clear(): void {
+    this.flashStrength = 0;
+    for (const bolt of this.activeBolts) this.disposeMesh(bolt.mesh);
+    this.activeBolts.length = 0;
+    for (const web of this.webs) this.disposeMesh(web.mesh);
+    this.webs.length = 0;
   }
 
   update(dt: number): void {
-    this.flashStrength = Math.max(0, this.flashStrength - dt * 14);
+    this.flashStrength = Math.max(0, this.flashStrength - dt * this.flashDecay);
     this.ageList(this.activeBolts, dt);
     for (let i = this.webs.length - 1; i >= 0; i--) {
-      const web = this.webs[i];
+      const web = this.webs[i]!;
       web.age += dt;
-      const mat = web.mesh.material as THREE.ShaderMaterial;
-      mat.uniforms.uAge.value = web.age;
+      (web.mesh.material as THREE.ShaderMaterial).uniforms.uAge!.value = web.age;
       if (web.age >= web.duration) {
-        this.scene.remove(web.mesh);
-        web.mesh.geometry.dispose();
-        mat.dispose();
+        this.disposeMesh(web.mesh);
         this.webs.splice(i, 1);
+      } else {
+        const life = Math.min(1, web.age / Math.max(0.001, web.duration));
+        web.intensity = Math.pow(1 - life, 1.25) * (0.8 + 0.2 * Math.sin(web.age * 22));
       }
+    }
+    this.refreshFlashFloor();
+  }
+
+  /** Live comic FX lights for every active bolt, spark tendril, and Lichtenberg ground web. */
+  activeLights(): ComicFxLight[] {
+    const out: ComicFxLight[] = [];
+    for (const bolt of this.activeBolts) {
+      if (bolt.opacity <= 0.05 || bolt.lightPower <= 0.001) continue;
+      out.push({
+        x: bolt.lightPos.x,
+        y: bolt.lightPos.y,
+        radius: bolt.lightRadius * (0.85 + 0.15 * bolt.opacity),
+        power: bolt.lightPower * bolt.opacity,
+        color: LIGHTNING_FX_COLOR,
+      });
+    }
+    for (const web of this.webs) {
+      if (web.intensity <= 0.04) continue;
+      out.push({
+        x: web.center.x,
+        y: web.center.y + 0.32,
+        radius: 5.4 * web.scale * (0.75 + 0.25 * web.intensity),
+        power: 1.55 * web.intensity,
+        color: LIGHTNING_FX_COLOR,
+      });
+    }
+    return mergeComicFxLights([out], MAX_COMIC_FX_LIGHTS);
+  }
+
+  private refreshFlashFloor(): void {
+    let strongest = 0;
+    let strongestPos: THREE.Vector3 | null = null;
+    for (const bolt of this.activeBolts) {
+      if (bolt.opacity <= 0) continue;
+      const contrib = bolt.flashScale * bolt.opacity;
+      if (contrib > strongest) {
+        strongest = contrib;
+        strongestPos = bolt.lightPos;
+      }
+    }
+    for (const web of this.webs) {
+      if (web.intensity <= 0) continue;
+      const contrib = 1.25 * web.intensity;
+      if (contrib > strongest) {
+        strongest = contrib;
+        strongestPos = web.center;
+      }
+    }
+    const capped = Math.min(3.6, strongest);
+    if (strongestPos && capped > this.flashStrength) {
+      this.flashStrength = capped;
+      this.flashPos.copy(strongestPos);
+    }
+  }
+
+  private spawnTendrils(
+    targetPos: THREE.Vector3,
+    count: number,
+    delay: number,
+    duration: number,
+    radius: number,
+    scale: number,
+    peakFlash: number,
+    reFlash: number,
+  ): void {
+    const origin = new THREE.Vector3(targetPos.x, targetPos.y + 0.05, targetPos.z - 0.08);
+    const baseRotation = Math.random() * Math.PI * 2;
+    for (let i = 0; i < count; i++) {
+      const ang = baseRotation + (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.95;
+      const dist = (0.55 + Math.random() * 0.65) * scale;
+      const end = new THREE.Vector3(
+        targetPos.x + Math.cos(ang) * dist,
+        targetPos.y + 0.08 + Math.random() * 0.34 * scale,
+        targetPos.z - 0.1 + Math.sin(ang) * dist * 0.35,
+      );
+      const lightPos = new THREE.Vector3(
+        origin.x * 0.35 + end.x * 0.65,
+        targetPos.y + 0.35,
+        targetPos.z,
+      );
+      this.spawnBolt(origin, end, 4, radius, true, duration, delay, {
+        reFlash: i === 0 ? reFlash : 0,
+        flashScale: peakFlash * 0.32,
+        lightPos,
+        lightRadius: 4.6 * scale,
+        lightPower: 1.25 * scale,
+      });
     }
   }
 
@@ -245,17 +389,29 @@ export class LightningStrikeSystem {
     radius: number,
     forks: boolean,
     duration: number,
+    delay: number,
+    light: BoltLightSpec,
   ): void {
     const geo = this.buildJaggedBoltGeometry(a, b, generations, radius, forks);
     if (!geo) return;
     const mat = this.boltMaterial.clone();
     const mesh = new THREE.Mesh(geo, mat);
     mesh.renderOrder = 3;
+    const immediate = delay <= 0;
+    mesh.visible = immediate;
     this.scene.add(mesh);
-    this.activeBolts.push({ mesh, age: 0, duration });
+    this.activeBolts.push({
+      mesh,
+      age: 0,
+      delay,
+      duration,
+      flashed: immediate,
+      opacity: immediate ? 1 : 0,
+      ...light,
+    });
   }
 
-  private spawnSurfaceWeb(center: THREE.Vector3): void {
+  private spawnSurfaceWeb(center: THREE.Vector3, duration = LIGHTNING_SOUND_SEC, scale = 1): void {
     const geo = new THREE.PlaneGeometry(6.2, 6.2, 1, 1);
     geo.rotateX(-Math.PI / 2);
     const normal = geo.attributes.normal;
@@ -264,37 +420,58 @@ export class LightningStrikeSystem {
     const mat = new THREE.ShaderMaterial({
       uniforms: {
         uAge: { value: 0 },
-        uDuration: { value: 0.7 },
+        uDuration: { value: duration },
         uSeed: { value: Math.random() * 100 },
       },
       vertexShader: ELECTRIC_VERT,
       fragmentShader: ELECTRIC_FRAG,
       transparent: true,
+      depthTest: false,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
       side: THREE.DoubleSide,
       toneMapped: false,
     });
     const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.set(center.x, center.y + 0.03, center.z);
-    mesh.scale.setScalar(0.22);
+    mesh.position.set(center.x, center.y + 0.06, center.z - 0.14);
+    mesh.rotation.x = -0.52;
+    mesh.scale.setScalar(0.42 * scale);
     mesh.renderOrder = 2;
     this.scene.add(mesh);
-    this.webs.push({ mesh, age: 0, duration: 0.7 });
+    this.webs.push({ mesh, age: 0, duration, center: center.clone(), scale, intensity: 1 });
+  }
+
+  private disposeMesh(mesh: THREE.Mesh): void {
+    this.scene.remove(mesh);
+    mesh.geometry.dispose();
+    (mesh.material as THREE.Material).dispose();
   }
 
   private ageList(list: ActiveBolt[], dt: number): void {
     for (let i = list.length - 1; i >= 0; i--) {
-      const bolt = list[i];
+      const bolt = list[i]!;
       bolt.age += dt;
-      if (bolt.age >= bolt.duration) {
-        this.scene.remove(bolt.mesh);
-        bolt.mesh.geometry.dispose();
-        (bolt.mesh.material as THREE.Material).dispose();
+      if (bolt.age < bolt.delay) {
+        bolt.mesh.visible = false;
+        bolt.opacity = 0;
+        continue;
+      }
+      if (!bolt.flashed) {
+        bolt.flashed = true;
+        bolt.mesh.visible = true;
+        if (bolt.reFlash > 0) {
+          this.flashStrength = Math.max(this.flashStrength, bolt.reFlash);
+          this.flashPos.copy(bolt.lightPos);
+        }
+      }
+      const localAge = bolt.age - bolt.delay;
+      if (localAge >= bolt.duration) {
+        this.disposeMesh(bolt.mesh);
         list.splice(i, 1);
       } else {
-        const t = bolt.age / bolt.duration;
-        const flicker = Math.sin(t * Math.PI * 6) > -0.2 ? 1 - t : 0.2;
+        const t = localAge / bolt.duration;
+        const flicker = Math.sin(t * Math.PI * 10) > -0.15 ? 1 - t * 0.8 : 0.28;
+        bolt.opacity = flicker;
         (bolt.mesh.material as THREE.MeshBasicMaterial).opacity = flicker;
       }
     }

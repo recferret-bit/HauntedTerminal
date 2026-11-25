@@ -5,7 +5,7 @@ import type { AssetRegistry } from '../assets/asset-registry.js';
 import { createComicComposer, frameOrtho, type ComicPost } from '../shaders/comic-composer.js';
 import { isComic } from '../shaders/comic-material.js';
 import { setCrtParams, setCrtSize, type CrtParams } from '../shaders/crt-pass.js';
-import { LightningStrikeSystem } from '../shaders/lightning.js';
+import { LightningStrikeSystem, type LightningStrikeOptions } from '../shaders/lightning.js';
 import { DEFAULT_PIXEL_PARAMS, setPixelArtParams, setPixelArtSize, type PixelArtParams } from '../shaders/pixel-art.js';
 import type { BuiltModel, ModelAnimator } from '../procgen/index.js';
 import type { RoomKind, RoomView } from './room-view.js';
@@ -23,7 +23,7 @@ import { enqueueStageEvent } from './stage-events.js';
 import { buildStageScene, layoutFill } from './stage-layout.js';
 import { syncRoomInner } from './stage-sync.js';
 import { stepStage } from './stage-frame.js';
-import { playFx, say, triggerShake } from './stage-fx.js';
+import { say, triggerShake } from './stage-fx.js';
 
 export { HERO_WALK_MS } from './stage-const.js';
 
@@ -83,6 +83,7 @@ export class ComicStage {
   readonly actors = new Map<string, StageActor>();
   actorSeed = 1;
   readonly pendingSpawn = new Map<string, { reason: string; at: number; entrance?: 'appear' | 'glide' }>();
+  readonly recentStrikes = new Map<string, number>();
   queue: { at: number; ev: KernelEvent }[] = [];
   cursor = 0;
   clockMs = 0;
@@ -283,10 +284,22 @@ export class ComicStage {
     say(this, 'STAGE LOAD!', new THREE.Vector3(-0.4, 1.6, 1.2), '#ffd166', 0.2);
   }
 
+  strikeLightning(at: THREE.Vector3, skyHeight = 5.2, opts?: LightningStrikeOptions, dedupeKey?: string): void {
+    if (!Number.isFinite(at.x + at.y + at.z)) return;
+    if (dedupeKey !== undefined) {
+      const last = this.recentStrikes.get(dedupeKey);
+      if (last !== undefined && this.clockMs - last < 180) return;
+      this.recentStrikes.set(dedupeKey, this.clockMs);
+      if (this.recentStrikes.size > 64) this.recentStrikes.clear();
+    }
+    this.lightning.strikeAt(at, skyHeight, opts);
+  }
+
   triggerLightningIntro(): void {
     this.stormIn = 7 / Math.max(0.35, this.stormIntensity);
     const at = new THREE.Vector3((this.panelLeft + this.panelRight) / 2 + 0.6, this.feetY, ACTOR_Z);
-    playFx(this, 'fx.lightning-strike', at);
+    this.strikeLightning(at, 5.4);
+    triggerShake(this, 1.6);
     this.audioBus?.emit({ kind: 'cine', cue: 'lightning' });
     this.audioBus?.emit({ kind: 'cine', cue: 'thunder' });
   }

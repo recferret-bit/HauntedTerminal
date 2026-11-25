@@ -47,7 +47,8 @@ function agentTauntFx(agent: unknown): FxId | null {
 /**
  * The event -> FX table. Every KernelEvent variant that has an effect, and every preset in FxCatalog.
  * Beats follow ANIM_EVENT_MAP (src/procgen/anim/events.ts) and the death beats of the malware sheets
- * (`collapse` at 250 ms). Storm strikes and the intro play `fx.lightning-strike` from the stage clock.
+ * (`collapse` at 250 ms). Storm strikes, the intro, SIGKILL, GAME_ENDED and shouts play
+ * `LightningStrikeSystem` from the stage; `fx.lightning-strike` stays for comixes.
  */
 export function fxCuesFor(ev: KernelEvent): FxCue[] {
   switch (ev.type) {
@@ -81,7 +82,7 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
       if (ev.outcome === 'FROZEN') return [cue('fx.sigstop-ice', 'subject')];
       if (ev.outcome === 'RESUMED') return [];
       if (ev.outcome === 'TRAPPED_ENRAGED') return [cue('fx.sigterm-rage', 'subject')];
-      return [cue('fx.sigkill', 'subject', 120), cue('fx.lightning-strike', 'subject-feet', 0, ' ')];
+      return [cue('fx.sigkill', 'subject', 120)];
     case 'HUD_OVERLAY_TOGGLED':
     case 'OBSTACLE_DIALOGUE_RENDERED':
       return [];
@@ -100,7 +101,7 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
     case 'ENEMY_KILLED':
       switch (ev.how) {
         case 'SIGKILL':
-          return [cue('fx.sigkill', 'subject', 120), cue('fx.lightning-strike', 'subject-feet', 0, ' ')];
+          return [cue('fx.sigkill', 'subject', 120)];
         case 'rm':
           return [cue('fx.rm-ash', 'subject', 250)];
         case 'devnull':
@@ -114,8 +115,8 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
       if (ev.state === 'revealed') return [cue('fx.reveal', 'subject', 80, ' ')];
       return [];
     case 'PICKUP_COLLECTED': {
-      // The lantern: the energy burst, then the reveal starburst once it is lit (existing presets only).
-      if (ev.item === 'lantern') return [cue('fx.pickup-energy', 'subject', 0, ev.label || undefined), cue('fx.reveal', 'vibecoder', 220, ' ')];
+      // The lantern or laptop: the energy burst, then the reveal starburst once equipped (existing presets only).
+      if (ev.item === 'lantern' || ev.item === 'laptop') return [cue('fx.pickup-energy', 'subject', 0, ev.label || undefined), cue('fx.reveal', 'vibecoder', 220, ' ')];
       const id: FxId = ev.item === 'ram' ? 'fx.pickup-ram' : ev.item === 'ssd' ? 'fx.pickup-ssd' : 'fx.pickup-energy';
       return [cue(id, 'subject', 0, ev.label || undefined)];
     }
@@ -138,7 +139,7 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
       // The battle begins: the banner plays once, on the player's first turn (BATTLE_STARTED / ENEMY_ACTING / BATTLE_ENDED have none).
       return ev.first && ev.actor === 'player' ? [cue('fx.fight', 'panel')] : [];
     case 'GAME_ENDED':
-      return [cue('fx.lightning-strike', 'panel-floor')];
+      return [];
     default:
       return [];
   }

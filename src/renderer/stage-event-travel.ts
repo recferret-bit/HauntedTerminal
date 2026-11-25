@@ -2,7 +2,7 @@ import type { KernelEvent } from '../contracts/events.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
 import { setRest } from './stage-actor.js';
 import { FLOORS } from './stage-const.js';
-import { playCard, playFx, say } from './stage-fx.js';
+import { playCard, playFx, say, triggerShake } from './stage-fx.js';
 import { applyLantern, syncFlood } from './stage-layout.js';
 import { claim, hopInPlace, owns, rattle, release, slideToHome, suckIntoNull } from './stage-motion.js';
 import { anchorPoint, findByModel } from './stage-resolve.js';
@@ -34,6 +34,8 @@ export function handleTravelEvent(stage: ComicStage, ev: KernelEvent, subject: S
       onFloorEntered(stage, ev);
       return true;
     case 'GAME_ENDED':
+      stage.strikeLightning(anchorPoint(stage, 'panel-floor', null), 5.4, undefined, 'game-ended');
+      triggerShake(stage, 1.6);
       playCard(stage, 'THE END // YOU WOKE UP', `RANK ${ev.rank}`, `${Math.round(ev.timeSec)}s  ${ev.commands} commands`, '#ffd166', 4200);
       return true;
     default:

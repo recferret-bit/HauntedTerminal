@@ -228,6 +228,9 @@ export function setHeroFaceTier(
   onSwap?.(actor.group);
 }
 
+const PICKUP_STAGE_SCALE = 2.4;
+const PICKUP_FLOOR_CLEARANCE = 0.22;
+
 export function buildStageActor(ra: RoomActor, seed: number): StageActor {
   const modelId = modelIdFor(ra);
   const legacy = ra.key !== 'entity' ? LEGACY_CAST[ra.key as keyof HauntedCast] : undefined;
@@ -249,8 +252,18 @@ export function buildStageActor(ra: RoomActor, seed: number): StageActor {
   body.name = 'body';
   body.add(model.group);
   group.add(body);
-  const scale = legacy && modelId === legacy.model && legacy.scale ? legacy.scale : 1;
+  const rawBox = new THREE.Box3().setFromObject(model.group);
+  const isPickup = modelId.startsWith('pickup.');
+  const scale = legacy && modelId === legacy.model && legacy.scale
+    ? legacy.scale
+    : isPickup
+      ? PICKUP_STAGE_SCALE
+      : 1;
   body.scale.setScalar(scale);
+  // Pickups bake ~0.5 hover into geometry; compensate so 2.4x scale keeps them near waist height instead of floating too high.
+  if (isPickup && Number.isFinite(rawBox.min.y)) {
+    body.position.y = PICKUP_FLOOR_CLEARANCE - rawBox.min.y * scale;
+  }
 
   let vortex: THREE.ShaderMaterial | undefined;
   let vortexMesh: THREE.Mesh | undefined;
@@ -266,8 +279,8 @@ export function buildStageActor(ra: RoomActor, seed: number): StageActor {
     if (voidPart) voidPart.visible = false;
   }
 
-  const box = new THREE.Box3().setFromObject(model.group);
-  const height = Math.max(0.3, (Number.isFinite(box.max.y) ? box.max.y : 1) * scale);
+  const rawTop = Number.isFinite(rawBox.max.y) ? rawBox.max.y : 1;
+  const height = Math.max(0.3, rawTop * scale + body.position.y);
   const sheet = ANIM_MALWARE_ACTING[modelId];
   const actor: StageActor = {
     id,
