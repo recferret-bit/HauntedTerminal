@@ -1,6 +1,6 @@
 # Esc menu hud rework: design
 
-Status: design-approved (written 2026-11-25 from `requirements.md`; approved by the user the same day, see Decisions below)
+Status: done (written 2026-11-25 from `requirements.md`; updated 2026-11-25 with post-merge user UI adjustments)
 
 Every claim below was read in the code on 2026-11-25. Where I did not read something, it says "not verified". Items marked **D#** are decisions that need the user's call (section 13).
 
@@ -45,7 +45,7 @@ New files are inside existing areas (`src/ui`, `src/game`, `src/styles`). No new
 A `keydown` listener on `window` in the capture phase, next to the F2/F8/F9/F10 one.
 
 - Acts only when `e.key === 'Escape'`, `!e.repeat`, `play.phase === 'play'`, and `play.reasons` holds none of `intro`, `card`, `outro`, `ended`, `cinematic`, `reveal` (`hidden` is not a blocker). It also does nothing when the stats screen is open.
-- **Yields to the code editor.** The editor closes itself on Esc from its textarea (`code-editor.ts:153`), which runs after a window capture listener. So the handler returns without touching the event when `play.codeEditor?.isOpen()`. While the menu is open the editor cannot be opened (typing is blocked), so there is no overlap.
+- **Yields to the code editor and Field Manual.** Both close themselves on Esc (`code-editor.ts`, `manual-book.ts`), so `src/play/menu.ts` yields `Escape` whenever `play.codeEditor?.isOpen()` or `play.manualBook?.isOpen()`. When opening the Field Manual via `manual` or `F1`, any open Esc menu closes cleanly first.
 - When it acts: `preventDefault()`, `stopPropagation()`, then toggle the menu. Second Esc closes it; a pending two-step restart is cancelled by closing (Req 19).
 - **Input blocking without `setBlocked`.** `syncPause` (`loop.ts:11`) rewrites `shell.setBlocked` on every reason change, so a menu-owned `setBlocked(true)` would be overwritten. I also did not verify what `setBlocked` does to a half-typed line. Instead the menu is a full-viewport backdrop (`role="dialog" aria-modal`) that covers the terminal dock, takes focus, traps Tab, and while open a capture listener on `window` swallows keys whose target is outside the menu. xterm reads only its focused helper textarea, so it receives nothing; its line buffer is never touched, and `printAbove` keeps working (output of enemy turns lands above the prompt).
 - **Focus restore.** On close, `play.shell.focus()` after `setTimeout(0)`, the call `input.ts:75` already uses for the editor. The existing click handler (`input.ts:175`) is extended to skip refocus while the menu is open.
@@ -66,21 +66,18 @@ Content, top to bottom:
 
 Handlers are supplied by `src/play` (ui imports no `play`): `onMute`, `onVolume(v)`, `onRestartLevel` (calls `session.restartFloor()`, prints `colourise(res.output)` and `play.apply`, the same code as the old `onRestartFloor`, which is deleted), `onLeave`.
 
-## 5. Level block and the avatar card
+## 5. Avatar card, post-flip HUD reveal, and left-column stack
 
-- New `src/ui/level-block.ts`: `mountLevelBlock(statusCol)` appends `#level-block` (name line, one-line objective) inside `.hero-status-col`, below `#hud-hp-cell` and `#hud-turn` (`hud.ts:240` builds that column). `update(snap.level)`.
-- Data: add `GameSnapshot.level?: { title: string; objective: string; checklist: { description: string; done: boolean }[]; bugsLeft: number; bugsTotal: number }` (`game/types.ts`, lead-dev). The chapter snapshot fills it from `g.rt.spec.title` and `getChecklist(g)` (both exist). Classic sessions fill `title` from `FLOOR_NAMES` and an empty checklist.
-- Objective line: the first unfinished checklist item, else `spec.summary`, else "Open the exit." (D6).
-- **What leaves the avatar card:** `#stage-caption` (floor title and path) is hidden by CSS and its node stays (`boot.ts` requires it; `loop.ts:23-24` still writes it, so harnesses reading it keep working). The `#tutorial-card` is not part of the card and stays where it is. The `FL`, `BUGS`, `CMD`, `TIME` cells stay in `#hud` (Req 8).
-- The old title card text is not duplicated: the menu shows the path.
+- **No level block below the avatar**: `src/ui/level-block.ts` and `.hero-status-col > #level-block` are removed per user request; `.hero-status-col` holds only `#hero-avatar`, `#hud-hp-cell`, and `#hud-turn`. `#stage-caption` stays hidden in DOM (`display: none`). Level title, path, objective, checklist, and bugs live in the Esc menu (`GameSnapshot.level`).
+- **Out-of-flow hero dialog drawer**: `.hero-dialog-drawer` uses `position: absolute; left: 100%; top: -3px` and `clip-path` stepped animations instead of in-flow `max-width` transitions, so opening a `vibecoder` line never shifts `.hero-status-col`, `#hud`, `.items-strip`, or `#tutorial-card`. `StageOverlay.collectObstacles()` includes `#hero-hud.open .hero-dialog-drawer`.
+- **Smooth post-page-flip HUD reveal**: `pages/play.html` and `src/play/boot.ts` start with `body.hud-hidden`; `syncPause` keeps `hud-hidden` active through `boot`, `intro`, `reveal`, `card`, and `cinematic` and calls `setHudHidden(false)` once the floor page-turn card finishes flipping, triggering `body.hud-enter` animations (honoring `prefers-reduced-motion`).
+- **Left-column stack (`#titleblock`)**: `#hero-hud` -> `.items-strip` (`pointer-events: auto`) -> `#tutorial-card` (`KIRO.D` help card moved from bottom-right into normal flow below `.items-strip`) -> `#fx-hint` (anchored below `.items-strip`).
 
-## 6. Tips box (`.hint-note` / `#fx-hint`)
+## 6. Tips box (`.hint-note` / `#fx-hint`) & Kiro prompt card (`#tutorial-card`)
 
-- `mountFx` (`hud.ts:376`) keeps creating the node; `mountHud` then moves it into `#titleblock`, after `#hero-hud`, with CSS `position: absolute; top: 100%; left: 0` relative to `#titleblock`, so it floats under the level block and never moves the layout. The `top: 104px` rule in `game.css:437` is removed.
-- Remove `onHintShow` from `HudHandlers`, `HudView` and `showHint` (`hud.ts:20,161,339`), and the `onHintShow` line in `input.ts:113`.
-- It stays outside the `DialogOrchestrator` and its queue; the 9-second auto-hide and click-to-close stay.
-- D10: also remove `onRightDialogOpen` / `onClear` -> `hideHint()` (`input.ts:106-107`) and the now unused `onHintOpened()` (`dialog-orchestrator.ts:43`, doc comment line 92, `state.ts:94` comment). Dialog behaviour does not change; these only existed because both used the right side.
-- Not verified: the vertical room in the left column at 1280x820 with avatar, HP, turn, level block and a tip open together. The visual audit and `qa` decide; the fallback is a 2-line objective clamp.
+- `mountFx` (`hud.ts`) creates `#fx-hint` and moves it into `#titleblock` anchored at `top: 184px; left: 0` (adjusting to `top: 206px` during battles when `#hud-turn` is shown), keeping `max-height: 200px; overflow-y: auto` so `#sandbox-toggle-btn` (`F2`) stays unobstructed at `1280x820` and `1024x768`.
+- `wirePlayLoop` mounts `#tutorial-card` (`mountTutorial`) inside `#titleblock` right after `.items-strip` so it sits on the left below the inventory and never overlaps right-side door locks.
+- Remove `onHintShow` / `onRightDialogOpen` / `onClear` coupling between `#fx-hint` and `DialogOrchestrator`.
 
 ## 7. Volume and persistence
 

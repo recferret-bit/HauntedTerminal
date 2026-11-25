@@ -13,11 +13,35 @@ export const POWER_OFF_MS = 460;
 const body = () => document.body.classList;
 const wait = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
 let screenSeq = 0;
+let hudEnterTimer = 0;
+const HUD_ENTER_MS = 420;
 
 /** Cancels any pending CRT power transition timer and leaves the terminal visible and settled. */
 export function resetScreen(): void {
   screenSeq += 1;
-  body().remove('cine', 'term-off', 'term-on', 'term-down', 'stage-drop');
+  window.clearTimeout(hudEnterTimer);
+  hudEnterTimer = 0;
+  body().remove('cine', 'term-off', 'term-on', 'term-down', 'stage-drop', 'hud-hidden', 'hud-enter');
+}
+
+/** Hides HUD/controls while a level loads or page card flips, then smoothly animates them in once ready. */
+export function setHudHidden(hidden: boolean): void {
+  if (hidden) {
+    window.clearTimeout(hudEnterTimer);
+    hudEnterTimer = 0;
+    body().remove('hud-enter');
+    body().add('hud-hidden');
+    return;
+  }
+  if (!body().contains('hud-hidden')) return;
+  window.clearTimeout(hudEnterTimer);
+  body().remove('hud-hidden', 'hud-enter');
+  void document.body.offsetWidth;
+  body().add('hud-enter');
+  hudEnterTimer = window.setTimeout(() => {
+    hudEnterTimer = 0;
+    body().remove('hud-enter');
+  }, HUD_ENTER_MS);
 }
 
 /** Fullscreen cinematic on/off. While on, the terminal is dark. */

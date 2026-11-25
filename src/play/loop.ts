@@ -1,7 +1,9 @@
 import { forwardSteamAchievement } from '../chapters/steam-bridge.js';
 import type { KernelEvent } from '../contracts/events.js';
 import type { GameSnapshot, TickResult } from '../game/types.js';
+import { setHudHidden } from '../ui/screen.js';
 import { colourise } from '../ui/terminal.js';
+import { openManualModal } from './input.js';
 import { exposeLabHooks } from './lab.js';
 import { mountTutorial, taunt } from '../ui/tutorial.js';
 import { CARD_MS, type Play } from './state.js';
@@ -10,10 +12,20 @@ const EVENT_LOG_CAP = 400;
 
 function syncPause(play: Play): void {
   play.session.setPaused(play.reasons.size > 0);
-  const blocking = [...play.reasons].some((r) => r !== 'hidden');
+  const blocking = [...play.reasons].some((r) => r !== 'hidden') || Boolean(play.manualBook?.isOpen());
   play.shell.setBlocked(blocking);
   // A card, cinematic or the end of the run takes the screen: the Esc menu steps aside.
   if (play.menu?.isOpen() && [...play.reasons].some((r) => r !== 'hidden' && r !== 'intro')) play.menu.close();
+  if (play.manualBook?.isOpen() && [...play.reasons].some((r) => r === 'cinematic' || r === 'outro' || r === 'ended')) {
+    play.manualBook.close();
+  }
+  const hideHud =
+    play.phase === 'boot' ||
+    play.phase === 'intro' ||
+    play.reasons.has('reveal') ||
+    play.reasons.has('card') ||
+    play.reasons.has('cinematic');
+  setHudHidden(hideHud);
   play.hud?.update(play.session.snapshot());
 }
 
@@ -147,7 +159,8 @@ export function wirePlayLoop(play: Play): void {
   play.paint = (snap) => paint(play, snap);
   play.apply = (events, snap, printed = '') => applyEvents(play, events, snap, printed);
   play.applyTick = (res) => applyTick(play, res);
-  play.tutorial = mountTutorial(play.dom.stageWrap, () => {
+  const tutHost = play.dom.stageWrap.querySelector<HTMLElement>('#titleblock') ?? play.dom.stageWrap;
+  play.tutorial = mountTutorial(tutHost, () => {
     if (play.phase !== 'play' || !play.skipTutorial) return;
     const r = play.skipTutorial();
     if (r && 'snapshot' in r) {
@@ -173,6 +186,11 @@ function exposePlayHooks(play: Play): void {
     open: () => play.menu?.open(play.session.snapshot()),
     close: () => play.menu?.close(),
     isOpen: () => play.menu?.isOpen() ?? false,
+  };
+  (window as unknown as { __manual?: unknown }).__manual = {
+    isOpen: () => play.manualBook?.isOpen() ?? false,
+    open: (queryOrPage?: string | number) => openManualModal(play, queryOrPage),
+    close: () => play.manualBook?.close(),
   };
   (window as unknown as { __term?: unknown }).__term = {
     /** Exactly what Enter does: echo, run, print; queued while input is blocked. */

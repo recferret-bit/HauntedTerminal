@@ -23,6 +23,8 @@ export interface Shell {
   typeOut(text: string, ms: number): Promise<void>;
   /** Wipe the screen and the scrollback, keep history. */
   reset(banner?: string): void;
+  /** Prefill the active prompt buffer without executing it. */
+  setInput(text: string): void;
   fit(): void;
   focus(): void;
   blur(): void;

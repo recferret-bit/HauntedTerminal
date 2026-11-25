@@ -22,8 +22,8 @@ export interface Inventory {
   readonly held: ItemId;
 }
 
-/** He walks in with what the chapter's `startItems` name (default: the lantern and his terminal); the lantern is held when he has it. */
-export function starterInventory(items: readonly ItemId[] = ['lantern', 'terminal']): Inventory {
+/** He walks in with what the chapter's `startItems` name (default: the lantern, terminal, and field manual); the lantern is held when he has it. */
+export function starterInventory(items: readonly ItemId[] = ['lantern', 'terminal', 'manual']): Inventory {
   const unique = items.filter((id, i) => items.indexOf(id) === i);
   return { items: unique, held: unique.includes('lantern') ? 'lantern' : (unique[0] ?? 'terminal') };
 }

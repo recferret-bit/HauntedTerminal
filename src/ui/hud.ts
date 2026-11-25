@@ -8,7 +8,6 @@ import {
   el, heroFaceTierForHp, PORTRAIT_FRAMES, type DrawPortrait, type HeroFaceTier,
 } from './dom-lite.js';
 import { mountItemsStrip, type ItemsStrip } from './items-strip.js';
-import { mountLevelBlock, type LevelBlock } from './level-block.js';
 
 export interface HudHandlers {
   onHint(): void;
@@ -135,7 +134,6 @@ interface HudView {
   cmd: HTMLElement;
   time: HTMLElement;
   pause: HTMLElement;
-  levelBlock: LevelBlock;
   flash: HTMLElement;
   hint: HTMLElement;
   backup: HTMLElement;
@@ -170,7 +168,7 @@ function renderHeroAvatar(view: HudView): void {
 function mountHeroHud(
   stageWrap: HTMLElement,
   drawPortrait?: DrawPortrait,
-): { root: HTMLElement; avatar: HTMLElement; hpCell: HTMLElement; hpText: HTMLElement; hpBar: HTMLElement; turn: HTMLElement; levelBlock: LevelBlock } {
+): { root: HTMLElement; avatar: HTMLElement; hpCell: HTMLElement; hpText: HTMLElement; hpBar: HTMLElement; turn: HTMLElement } {
   stageWrap.querySelector('#hero-hud')?.remove();
   const avatar = el('div', 'hero-avatar');
   avatar.id = 'hero-avatar';
@@ -205,7 +203,6 @@ function mountHeroHud(
   turn.setAttribute('aria-live', 'polite');
 
   const statusCol = el('div', 'hero-status-col', [avatar, hpCell, turn]);
-  const levelBlock = mountLevelBlock(statusCol);
   const root = el('div', 'hero-hud', [statusCol, drawer]);
   root.id = 'hero-hud';
   root.dataset.tier = '0';
@@ -214,7 +211,7 @@ function mountHeroHud(
   const host = stageWrap.querySelector<HTMLElement>('#titleblock') ?? stageWrap;
   if (typeof host.prepend === 'function') host.prepend(root);
   else host.appendChild(root);
-  return { root, avatar, hpCell, hpText, hpBar, turn, levelBlock };
+  return { root, avatar, hpCell, hpText, hpBar, turn };
 }
 
 function pop(anchor: HTMLElement, text: string, cls: string): void {
@@ -258,7 +255,6 @@ function updateHud(view: HudView, snap: GameSnapshot): void {
   view.cmd.textContent = String(snap.commands);
   view.time.textContent = clock(snap.timeSec);
   view.pause.classList.toggle('on', !!snap.paused);
-  view.levelBlock.update(snap.level);
   if (snap.inventory) view.items?.update(snap.inventory);
   updateTurn(view, snap.battle);
 }
@@ -364,12 +360,26 @@ function bindHud(root: HTMLElement, hint: HTMLElement, handlers: HudHandlers): v
   hint.onclick = () => hint.classList.remove('open');
 }
 
-/** The tips box is not a dialog: it lives in `#titleblock` (left column, under the level block), outside the orchestrator. */
+/** The tips box is not a dialog: it lives in `#titleblock` (left column, below the inventory), outside the orchestrator. */
 function mountHintNote(stageWrap: HTMLElement, fx: HTMLElement): HTMLElement {
   const hint = q('#fx-hint', fx);
   const host = stageWrap.querySelector<HTMLElement>('#titleblock');
   if (host) host.appendChild(hint);
   return hint;
+}
+
+function mountLeftItemsStrip(
+  titleblock: HTMLElement | null,
+  fallback: HTMLElement,
+  heroRoot: HTMLElement,
+  drawPortrait?: DrawPortrait,
+): ItemsStrip | null {
+  if (!drawPortrait) return null;
+  const host = titleblock ?? fallback;
+  const items = mountItemsStrip(host, drawPortrait);
+  const stripEl = host.querySelector<HTMLElement>('.items-strip');
+  if (titleblock && stripEl && typeof heroRoot.after === 'function') heroRoot.after(stripEl);
+  return items;
 }
 
 function mountFx(stageWrap: HTMLElement): HTMLElement {
@@ -432,7 +442,6 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     cmd: q('#hud-cmd', root),
     time: q('#hud-time', root),
     pause: q('#hud-pause', root),
-    levelBlock: hero.levelBlock,
     flash: q('#fx-damage', fx),
     hint,
     backup: q('#fx-backup', fx),
@@ -440,7 +449,7 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     achQueue: [],
     achTimer: 0,
     skipBox,
-    items: handlers.drawPortrait ? mountItemsStrip(root, handlers.drawPortrait) : null,
+    items: mountLeftItemsStrip(stageWrap.querySelector<HTMLElement>('#titleblock'), root, hero.root, handlers.drawPortrait),
     drawPortrait: handlers.drawPortrait,
     heroModelId: DEFAULT_HERO_MODEL,
     heroFrame: 0,

@@ -4,7 +4,7 @@ import { World, type KillHow, type Pickup } from './entities.js';
 import { FLOOR_PATHS, FLOOR_TITLES, buildFloor } from './floors.js';
 import { ensureLabDirChain, placeLabFile } from './lab-support.js';
 import { freshLabLevelState } from './lab-types.js';
-import { COMMANDS } from './manual.js';
+import { COMMANDS, manualTopics } from './manual.js';
 import { KIRO_CORE_ORDER } from './kiro.js';
 import {
   ACTION_RANK, LOAD_BEARING, READERS, WRITERS, globReg, out, type HeroAction, type Play,
@@ -424,6 +424,9 @@ export function completions(g: Play, token: string, command: boolean, first: str
   if (first === 'man' && !token.includes('/')) {
     const topics = [...COMMANDS, ...Object.keys(BESTIARY)];
     return [...new Set(topics.filter((name) => name.startsWith(token)))].sort();
+  }
+  if (first === 'manual' && !token.includes('/')) {
+    return manualTopics(token);
   }
   if (first === 'hold' && !token.includes('/')) {
     return g.run.inventory.items.filter((name) => name.startsWith(token)).sort();

@@ -38,15 +38,15 @@ src/
   cinematic/      # generic 3D comix player & viewport selector; generated/ is compiled from comix/
   editor-core/    # shared workstation UI primitives: dom, schema, form/form-state, schema-check, http, file-tracker, dock-state/layout, workspace, view-resizer, viewport-stage, play-frame, game-preview, console-dock, chrome
   comix-editor/   # /comix-editor: schema forms, bidirectional element selection, layout map, preview & 60fps verifier
-  ui/             # terminal, HUD (items strip), dialog box, editor
+  ui/             # terminal, HUD (items strip), dialog box, editor, interactive field manual book
   sandbox/        # dev inspector
-  pages/          # chapter select and comic reader
+  pages/          # chapter select, comic reader, and field manual page scripts
   chapter-editor/ # /editor: workstation studio, schema-driven chapter forms, centered game preview, checks (schema.ts is the field table)
   terminal-lab/   # /terminal-lab: test bench for the terminal (lab model, palette, runner, Node and browser drivers, panels); reuses editor-core and the chapter editor's field tables
   laptop/         # /laptop-lab: the developer's laptop emulator. domain (state machine, window reducer, tasks, checks) <- runtime (sandboxed runner, loop guard, sound) <- ui (CSS 3D laptop, desktop, apps) <- lab
   hub/            # the landing: app.ts (the one entry) + router.ts (in-page tab switching), hub.ts (Home) and page-{desktop,achievements,comix}.ts (each exports `mount()`), nav.ts + tabs.ts (shared header), waitlist-dialog.ts, boot.ts, comix-tiles.ts, roadmap.ts, trophy-rack.ts, portable-saves.ts, waitlist.ts
   play/           # play page composition (bootstrap). main.ts only starts it
-  styles/         # game.css, hub.css, editor-workstation.css, chapter-editor.css, comix-editor.css, terminal-lab.css, laptop.css, laptop-lab.css
+  styles/         # game.css, hub.css, manual-book.css, editor-workstation.css, chapter-editor.css, comix-editor.css, terminal-lab.css, laptop.css, laptop-lab.css
   main.ts         # play page (/)
 comix/<slug>/                # animated 3D comix data (intro, outro, ...):
   comix.manifest.json        #   stage, cast, shared cues, skip policy, page index
@@ -55,7 +55,7 @@ chapters/<chapter-slug>/     # LEVEL GEN data, one chapter for Kiroween
   chapter.manifest.json
   story/comix.spec.json, dialogs.json, out/
   levels/level-XX-<slug>/level.spec.json, LEVEL.md
-pages/                       # HTML entry pages: index.html (player front door: Home), desktop.html, achievements.html and comix.html (the landing's tab pages), play.html (game at /play/...), hub.html (redirect to /), chapter-editor.html (/editor, /editor/<chapter>/<level>), comix-editor.html (/comix-editor, /comix-editor/<slug>/<target>), terminal-lab.html (/terminal-lab, /terminal-lab/<lab-id>), laptop-lab.html (/laptop-lab), dev.html (level select, jumps, QA labs), chapters.html, comic.html, cinematic.html, storybook.html
+pages/                       # HTML entry pages: index.html (player front door: Home), desktop.html, achievements.html and comix.html (the landing's tab pages), play.html (game at /play/...), manual.html (/manual, interactive terminal field manual), hub.html (redirect to /), chapter-editor.html (/editor, /editor/<chapter>/<level>), comix-editor.html (/comix-editor, /comix-editor/<slug>/<target>), terminal-lab.html (/terminal-lab, /terminal-lab/<lab-id>), laptop-lab.html (/laptop-lab), dev.html (level select, jumps, QA labs), chapters.html, comic.html, cinematic.html, storybook.html
 public/assets/               # external sprites/meshes (ai-mesh-pipeline)
 public/comix/<chapter-id>/   # rendered comic pages
 public/fonts/                # self-hosted SIL OFL 1.1 Chakra Petch & IBM Plex Mono .woff2 runtime fonts

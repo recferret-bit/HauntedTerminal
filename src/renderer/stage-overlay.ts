@@ -247,6 +247,7 @@ export class StageOverlay {
       boxes.push({ l: b.left - base.left - m, t: b.top - base.top - m, r: b.right - base.left + m, b: b.bottom - base.top + m });
     };
     for (const id of CHROME_IDS) push(document.getElementById(id));
+    push(document.querySelector('#hero-hud.open .hero-dialog-drawer'));
     push(document.querySelector('.dialog-box.open'));
     this.badgeLayer.querySelectorAll('.st-lock').forEach((e) => push(e)); // padlock badges: lettering stays off them
     // The death card flickers (visibility toggles) but its box stays: keep words off it the whole time.

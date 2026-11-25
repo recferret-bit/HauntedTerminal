@@ -28,7 +28,7 @@ function* walkFiles(dir) {
 
 export function verifyDistOffline(distDir) {
   const issues = [];
-  for (const reqPage of ['index.html', 'play.html', 'chapters.html', 'comic.html', 'desktop.html', 'achievements.html', 'comix.html']) {
+  for (const reqPage of ['index.html', 'play.html', 'chapters.html', 'comic.html', 'desktop.html', 'achievements.html', 'comix.html', 'manual.html']) {
     if (!existsSync(join(distDir, reqPage))) {
       issues.push(`dist/${reqPage} is missing (run \`npm run build\` first)`);
     }

@@ -7,7 +7,7 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { projectRoot, startPageServer } from '../harness/lib/load.mjs';
-import { verifySteamOpensInPlace, verifyTabSwitching } from './landing-tabs-check.mjs';
+import { verifyLandingManualLinks, verifyManualTargetPage, verifySteamOpensInPlace, verifyTabSwitching } from './landing-tabs-check.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const outDir = resolve(projectRoot, 'scripts/harness/out');
@@ -169,6 +169,7 @@ async function verifyHeroAndWaitlistDialog(cdp, evalJs, base, externalUrls) {
     const ratio = await measureContrast(evalJs, sel);
     assert.ok(ratio >= 4.5, `${sel} must meet WCAG AA >= 4.5:1 contrast, got ${ratio.toFixed(2)}`);
   }
+  await verifyLandingManualLinks(evalJs, measureContrast);
   assert.equal(initial.ogImage, '/comix/chapter-01-kiroween/page-01.png', 'OpenGraph social image must be wired');
   assert.equal(initial.fontPreloads, 2, 'Primary local WOFF2 display & mono fonts must preload');
   assert.equal(initial.skipLink, true, 'Skip link must target #main-heading');
@@ -545,6 +546,7 @@ async function verifySteamStoreCutoverAndAutoCloud(cdp, evalJs, base) {
 async function verifyTabSwitchingFlow(cdp, evalJs, base) {
   await openPage(cdp, base, '/comix.html', `document.querySelector('.comix-tile')`);
   await verifyTabSwitching(evalJs);
+  await verifyManualTargetPage(openPage, cdp, evalJs, base);
 }
 
 async function verifyLandingFlows(cdp, base, externalUrls) {
@@ -585,11 +587,7 @@ async function main() {
   } finally {
     if (chrome && chrome.exitCode === null) chrome.kill();
     if (vite) await vite.close();
-    try {
-      rmSync(profile, { recursive: true, force: true });
-    } catch {
-      // Ignore profile lock cleanup race
-    }
+    try { rmSync(profile, { recursive: true, force: true }); } catch { /* ignore cleanup race */ }
   }
 }
 

@@ -78,7 +78,7 @@
   100% { opacity: 0; transform: scale(0.7) rotate(6deg); }
 }
 
-.items-strip { display: flex; gap: 6px; align-items: center; }
+.items-strip { display: flex; gap: 6px; align-items: center; pointer-events: auto; }
 .item-slot {
   position: relative;
   display: flex;

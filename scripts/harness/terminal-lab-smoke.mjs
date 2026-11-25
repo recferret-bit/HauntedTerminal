@@ -197,7 +197,9 @@ try {
 
   // Rapid driver toggle while Run all is mid-wait cancels cleanly and swaps in-page; mute survives swap.
   await load(bare('driver-race', [], [{ op: 'wait', ms: 800 }, { op: 'run', line: 'pwd' }]));
-  await $("document.querySelector('.pv-frame').contentDocument.querySelector('#hud-mute')?.click()");
+  await $(`${W}.__menu.open()`);
+  await $("document.querySelector('.pv-frame').contentDocument.querySelector('#esc-mute')?.click()");
+  await $(`${W}.__menu.close()`);
   const mutedBefore = await $(`${W}.__game.snapshot().muted`);
   await $(`window.__term0 = ${W}.__term; window.__seq0 = ${W}.__lab.seq()`);
   await $("[...document.querySelectorAll('.lab-transport button')].find((b) => /Run all/.test(b.textContent)).click()");

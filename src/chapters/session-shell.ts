@@ -3,7 +3,7 @@ import { armMessage, decideRestart, parseRestartArgs } from '../game/commands-pr
 import type { KernelEvent } from '../contracts/events.js';
 import { rebootLevel } from './session-level.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
-import { helpText, manPage, runMan } from '../game/manual.js';
+import { helpText, manPage, manualTopics, runMan, runManual } from '../game/manual.js';
 import type { Step, Word } from '../game/shell.js';
 import { absPath, resolve } from '../game/tree.js';
 import { runLn, runReadlink } from '../game/tree-links.js';
@@ -47,6 +47,11 @@ export function complete(g: ChapterState, line: string): { line: string; matches
       const achOpts = ['export', 'sync', 'campaign', 'combat', 'craft', 'mastery'].filter((k) => k.startsWith(last));
       if (achOpts.length === 1) return { line: `${parts[0]} ${achOpts[0]} `, matches: achOpts };
       if (achOpts.length > 1) return { line, matches: achOpts };
+    }
+    if (parts[0] === 'manual' && (parts.length === 1 || (parts.length === 2 && !endsWithSpace)) && !last.includes('/')) {
+      const topics = manualTopics(last);
+      if (topics.length === 1) return { line: `manual ${topics[0]} `, matches: topics };
+      if (topics.length > 1) return { line, matches: topics };
     }
     if (parts[0] === 'hold' && (parts.length === 1 || (parts.length === 2 && !endsWithSpace)) && !last.includes('/')) {
       const items = g.inventory.items.filter((k) => k.startsWith(last));
@@ -126,6 +131,23 @@ export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
     return dispatchCommand(g, argv, stdin);
   }
 
+function dispatchManual(g: ChapterState, args: string[]): Step {
+    const m = runManual(args);
+    g.pendingManual = m.query;
+    return m.step;
+  }
+
+function dispatchTutorial(g: ChapterState, args: string[]): Step {
+    if (args[0] === 'skip' || args[0] === 'off') {
+      const events: Step['events'] = [];
+      const text = applySkipTutorial(g, events);
+      return okStep(text ? `${text.replace(/\n?$/, '\n')}` : 'No tutorial running.\n', events);
+    }
+    const st = tutorialState(g);
+    if (!st) return okStep('No onboarding tutorial running in this sector. Type `hank` or `status` for objectives.\n');
+    return okStep(`[${st.agent.toUpperCase()}] ${st.prompt}\n  type: ${st.command}   (step ${st.step}/${st.total}; tutorial skip to skip)\n`);
+  }
+
 function dispatchCommand(g: ChapterState, argv: string[], stdin: string): Step {
     const cmd = argv[0] ?? '';
     const args = argv.slice(1);
@@ -153,16 +175,10 @@ function dispatchCommand(g: ChapterState, argv: string[], stdin: string): Step {
         }
         return runMan(args);
       }
-      case 'tutorial': {
-        if (args[0] === 'skip' || args[0] === 'off') {
-          const events: Step['events'] = [];
-          const text = applySkipTutorial(g, events);
-          return okStep(text ? `${text.replace(/\n?$/, '\n')}` : 'No tutorial running.\n', events);
-        }
-        const st = tutorialState(g);
-        if (!st) return okStep('No onboarding tutorial running in this sector. Type `hank` or `status` for objectives.\n');
-        return okStep(`[${st.agent.toUpperCase()}] ${st.prompt}\n  type: ${st.command}   (step ${st.step}/${st.total}; tutorial skip to skip)\n`);
-      }
+      case 'manual':
+        return dispatchManual(g, args);
+      case 'tutorial':
+        return dispatchTutorial(g, args);
       case 'hank':
         return cmdHank(g, args);
       case 'status':

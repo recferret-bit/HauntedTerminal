@@ -12,7 +12,7 @@ export interface ItemsStrip {
 const ICON_PX = 36;
 
 /**
- * Always-visible HUD strip: one slot per item (`lantern`, `terminal`, `laptop`).
+ * Always-visible HUD strip: one slot per item (`lantern`, `terminal`, `laptop`, `manual`).
  * Classes: `items-strip`, `item-slot` (`carried`, `held`, `pop`, `item-<id>`), `item-icon`, `item-label`.
  */
 export function mountItemsStrip(parent: HTMLElement, drawPortrait: DrawPortrait): ItemsStrip {

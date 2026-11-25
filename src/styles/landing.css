@@ -152,6 +152,41 @@
   color: var(--teal);
 }
 
+.tty-mini-link {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed #3b3058;
+  text-decoration: none;
+}
+
+.tty-mini-link em {
+  color: var(--yellow);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tty-mini-link:hover em {
+  color: var(--paper);
+}
+
+.tty-mini-link:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+@media (min-width: 720px) {
+  .door-card-wide {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+  }
+  .door-card-wide .door-go {
+    align-self: center;
+    flex: 0 0 auto;
+  }
+}
+
 /* ---- 3-Step Conversion Funnel & Startup Thesis ---- */
 .funnel-steps-grid {
   display: grid;

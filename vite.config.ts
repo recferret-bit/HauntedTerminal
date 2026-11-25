@@ -23,6 +23,7 @@ const playPaths = (): Connect.NextHandleFunction => (req, _res, next) => {
   if (path === '/comix-editor' || path.startsWith('/comix-editor/')) req.url = `/comix-editor.html${search}`;
   if (path === '/terminal-lab' || path.startsWith('/terminal-lab/')) req.url = `/terminal-lab.html${search}`;
   if (path === '/laptop-lab') req.url = `/laptop-lab.html${search}`;
+  if (path === '/manual' || path === '/manual/') req.url = `/manual.html${search}`;
   next();
 };
 
@@ -76,6 +77,7 @@ export default defineConfig({
         comixEditor: pages('comix-editor.html'),
         terminalLab: pages('terminal-lab.html'),
         laptopLab: pages('laptop-lab.html'),
+        manual: pages('manual.html'),
       },
     },
   },

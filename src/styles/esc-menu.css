@@ -1,42 +1,7 @@
-/* Esc menu, level block, hidden stage caption. Spec: .kiro/specs/esc-menu-hud-rework/. Loaded after game.css. */
+/* Esc menu, hidden stage caption. Spec: .kiro/specs/esc-menu-hud-rework/. Loaded after game.css. */
 
-/* The floor title card text moved to the level block and the Esc menu; the node stays for boot.ts and the harnesses. */
+/* The floor title card text moved to the Esc menu; the node stays for boot.ts and the harnesses. */
 #stage-caption { display: none; }
-
-/* ---- Level block, under HP and turn in the avatar card ---- */
-.level-block {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  width: 156px;
-  align-self: center;
-  min-width: 0;
-  box-sizing: border-box;
-  padding: 4px 6px;
-  background: var(--yellow);
-  color: var(--ink);
-  border: 2px solid var(--ink);
-  font-family: var(--display);
-  line-height: 1.2;
-}
-.level-block[hidden] { display: none; }
-.level-block-title {
-  font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.03em;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-.level-block-objective {
-  font-family: var(--mono);
-  font-size: 10px;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
 
 /* ---- Esc menu ---- */
 .esc-menu-backdrop {

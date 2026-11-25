@@ -85,6 +85,7 @@ try {
     'comix-editor.html',
     'terminal-lab.html',
     'laptop-lab.html',
+    'manual.html',
   ]) {
     writeFileSync(join(fakeDist, page), '<!doctype html><html><head><link rel="stylesheet" href="/assets/app.css"></head><body>ok</body></html>');
   }
@@ -108,6 +109,7 @@ try {
     'comix-editor/intro',
     'terminal-lab',
     'laptop-lab',
+    'manual',
   ]) {
     assert.ok(existsSync(join(fakeDist, studioRoute, 'index.html')), `Missing static route dist/${studioRoute}/index.html`);
   }

@@ -285,7 +285,8 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       }
     ],
     "startItems": [
-      "terminal"
+      "terminal",
+      "manual"
     ],
     "grants": [
       {

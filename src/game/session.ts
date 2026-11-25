@@ -12,7 +12,7 @@ import { KiroCompanion } from './kiro.js';
 import { observeLab } from './lab-checks.js';
 import { applyLabInjection, buildLabInspect } from './lab-support.js';
 import { freshLabLevelState, type LabConfig, type LabInjection, type LabInspect, type LabSession } from './lab-types.js';
-import { helpText, runMan } from './manual.js';
+import { helpText, runMan, runManual } from './manual.js';
 import { brace, empty, out, thisPlaceholder, type HeroAction, type Run } from './play.js';
 import { cmdKiro, puzzleHint, statusText, stepKiroCrack, threatHint } from './puzzle.js';
 import {
@@ -46,6 +46,8 @@ export interface Session {
   setPaused(paused: boolean): void;
   /** End the intro state without running a command (the intro cinematic finished or was skipped). */
   skipIntro(): void;
+  /** Consume a pending `manual [query]` UI open request from the last command. */
+  consumeManualRequest?(): string | null;
 }
 
 export interface ClassicSessionOptions {
@@ -71,6 +73,7 @@ class Game implements LabSession, Host {
   deathText = '';
   act: { action: HeroAction; target?: string } = { action: 'type' };
   private lineArgs: string[][] = [];
+  private pendingManual: string | null = null;
   paused = false;
   pausedAt: number | null = null;
   readonly host: WorldHost = {
@@ -144,6 +147,12 @@ class Game implements LabSession, Host {
 
   skipIntro(): void {
     this.run.intro = false;
+  }
+
+  consumeManualRequest(): string | null {
+    const q = this.pendingManual;
+    this.pendingManual = null;
+    return q;
   }
 
   private quietSkip(): { text: string; events: KernelEvent[] } {
@@ -443,6 +452,11 @@ class Game implements LabSession, Host {
       case 'man': return this.cmdMan(args);
       case 'restart-level':
       case 'retry': return this.cmdRestartLevel(args);
+      case 'manual': {
+        const m = runManual(args);
+        this.pendingManual = m.query;
+        return m.step;
+      }
       case 'status': return out(statusText(this));
       case 'tutorial': {
         if (args[0] === 'skip' || args[0] === 'off') {

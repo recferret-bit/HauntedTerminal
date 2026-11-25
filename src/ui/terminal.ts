@@ -1,6 +1,6 @@
 import { FitAddon } from '@xterm/addon-fit';
 import { Terminal } from '@xterm/xterm';
-import { createLineState, drain, enqueue, newPrompt, printAbove, type LineState } from './terminal-draw.js';
+import { createLineState, drain, enqueue, newPrompt, printAbove, setBuffer, type LineState } from './terminal-draw.js';
 import { handleKey } from './terminal-keys.js';
 import type { Shell, ShellHooks } from './terminal-types.js';
 
@@ -128,6 +128,14 @@ function shellApi(st: LineState, fitAddon: FitAddon): Shell {
       st.pendingTail = null;
       if (banner) st.term.write(banner.replace(/\r?\n/g, '\r\n') + '\r\n');
       if (!st.blocked) newPrompt(st);
+    },
+    setInput(text: string) {
+      if (!st.blocked && st.queue.length === 0 && !st.draining) {
+        if (!st.promptShown) newPrompt(st);
+        setBuffer(st, text);
+      } else {
+        st.pendingTail = text;
+      }
     },
     fit() {
       try {

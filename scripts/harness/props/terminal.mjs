@@ -202,6 +202,15 @@ function playMenu(actions, { mountEscMenu, LEAVE_CONFIRM_TEXT, onRestart }) {
 export default async function terminalSuite({ load }) {
   const { openLabSession } = await load('/src/terminal-lab/node-driver.ts');
   const { newLabScript } = await load('/src/terminal-lab/lab-pack.ts');
+  const { COMMANDS } = await load('/src/game/manual.ts');
+  const { CHAPTER_COMMANDS } = await load('/src/chapters/session-state.ts');
+  const {
+    BOOK_PAGES,
+    findCommandDoc,
+    formatChmodPreview,
+    resolveManualPageIndex,
+    searchManual,
+  } = await load('/src/game/manual-catalog.ts');
 
   /** A fresh session on `kind` holding `files` (`{ name: oneLineContent }`), each file's content being `<line>\n`. */
   const room = (kind, files = {}) => {
@@ -296,7 +305,6 @@ export default async function terminalSuite({ load }) {
   };
 
   const { mountEscMenu, LEAVE_CONFIRM_TEXT } = await load('/src/ui/esc-menu.ts');
-  const { mountLevelBlock } = await load('/src/ui/level-block.ts');
   const { readSoundPref, writeSoundPref } = await load('/src/ui/sound-pref.ts');
   const brand = await load('/src/contracts/brand.ts');
   const { renamedKey } = await load('/src/contracts/legacy-keys.ts');
@@ -509,22 +517,32 @@ export default async function terminalSuite({ load }) {
       },
     },
     {
-      name: 'level block: hidden without a level, shows its title and objective with one',
-      check: () => {
-        const dom = fakeDom();
-        dom.install();
-        try {
-          const col = dom.doc.body.appendChild(dom.make('div'));
-          const block = mountLevelBlock(col);
-          expect(block.root.hidden && block.root.parentNode === col, 'a new block should be hidden under its column');
-          block.update({ title: 'T', objective: 'O', checklist: [], bugsLeft: 0, bugsTotal: 0 });
-          expect(!block.root.hidden && dom.find('level-block-title').textContent === 'T' && dom.find('level-block-objective').textContent === 'O', 'level block text');
-          block.update(undefined);
-          expect(block.root.hidden, 'a missing level should hide the block');
-        } finally {
-          dom.uninstall();
-        }
+      name: '`searchManual` never throws on arbitrary queries/filters and returns bounded page indices',
+      build: () => {
+        const filters = ['all', 'beginner', 'flags-numbers', 'combat', 'files', 'text', 'procs', 'code-docker', 'game'];
+        return fc.property(fc.string({ maxLength: 32 }), fc.constantFrom(...filters), (q, flt) => {
+          const hits = searchManual(q, flt);
+          for (const h of hits) {
+            expect(h.pageIndex >= 0 && h.pageIndex < BOOK_PAGES.length, `hit pageIndex out of range: ${h.pageIndex}`);
+          }
+          const idx = resolveManualPageIndex(q);
+          expect(idx >= 0 && idx < BOOK_PAGES.length, `resolveManualPageIndex out of range: ${idx}`);
+        });
       },
+    },
+    {
+      name: 'every command and flag documented resolves cleanly and `formatChmodPreview` matches POSIX mode bits for all 000..777',
+      build: () =>
+        fc.property(
+          fc.integer({ min: 0, max: 0o777 }),
+          fc.constantFrom(...COMMANDS, ...CHAPTER_COMMANDS),
+          (mode, cmdName) => {
+            const p = formatChmodPreview(mode);
+            expect(p.modeText === modeText(p.octal), `mode ${mode}: ${p.modeText} !== ${modeText(p.octal)}`);
+            const doc = findCommandDoc(cmdName);
+            expect(Boolean(doc && doc.syntax && doc.examples.length >= 1), `missing doc for ${cmdName}`);
+          },
+        ),
     },
   ];
 }

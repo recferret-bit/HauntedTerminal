@@ -82,6 +82,7 @@ export function materializePlayStaticRoutes(distDir) {
     ['comix-editor.html', 'comix-editor'],
     ['terminal-lab.html', 'terminal-lab'],
     ['laptop-lab.html', 'laptop-lab'],
+    ['manual.html', 'manual'],
   ]) {
     copyRoute(join(distDir, pageFile), join(distDir, routeDir, 'index.html'));
   }

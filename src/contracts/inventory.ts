@@ -2,7 +2,7 @@
  * Item types and descriptors for the developer's inventory.
  * Pure data and contracts shared across procgen (3D models, hero variants) and game (inventory state, shell).
  */
-export const ITEM_IDS = ['lantern', 'terminal', 'laptop'] as const;
+export const ITEM_IDS = ['lantern', 'terminal', 'laptop', 'manual'] as const;
 export type ItemId = (typeof ITEM_IDS)[number];
 
 export interface ItemDef {
@@ -58,6 +58,16 @@ export const ITEMS: Readonly<Record<ItemId, ItemDef>> = {
     lore: 'An old clamshell laptop with a carry handle. Opened, it runs a tiny desktop with code editors: the tool for coding tasks.',
     heroLore: 'The developer carrying his old clamshell laptop by its handle: the held item when a coding task needs it.',
     use: 'an old clamshell with code editors, for coding tasks.',
+  },
+  manual: {
+    id: 'manual',
+    label: 'manual',
+    model: 'item.manual',
+    heroModel: 'vibecoder.dev_manual',
+    heroLabel: 'The developer (manual)',
+    lore: 'A dog-eared hardcover unix field manual with a ribbon bookmark and phosphor reference badge: the pocket guide to every command and flag.',
+    heroLore: 'The developer holding his hardcover Unix Field Manual by its spine strap: ready to flip to any command, flag, or chmod octal mask.',
+    use: 'a hardcover unix field manual with command, flag, and chmod references.',
   },
 };
 

@@ -1300,17 +1300,15 @@ await withProcgen(async (_p, vite) => {
       assert.equal(orch.stats().maxConcurrent, 1);
       assert.equal(orch.stats().maxRightConcurrent, 1);
 
-      // 2. TUTORIAL_STEP updates silent bottom-right tutorial card without queueing a top-right dialog
+      // 2. TUTORIAL_STEP updates silent left-side tutorial card without queueing a top-right dialog
       orch.handleEvent({ type: 'TUTORIAL_STEP', step: 1, total: 5, prompt: 'Look around', command: 'ls', agent: 'kiro', done: false });
       assert.equal(tutorialSteps.length, 1);
       assert.equal(orch.box.pending(), 1, 'TUTORIAL_STEP must not spawn a second right-side dialog');
 
-      // 3. onHintOpened dismisses active/queued right-side dialogs cleanly
-      orch.handleEvent({ type: 'AGENT_TAUNT', agent: 'clod', model: 'agent.clod', text: 'Haha!', mood: 'laugh' });
-      assert.equal(orch.box.pending(), 2);
-      orch.onHintOpened();
+      // 3. Clear resets pending & active dialogs
+      orch.clear();
       assert.equal(orch.box.activeSide(), null);
-      assert.equal(orch.box.pending(), 0, 'opening hint dismisses right-side dialogs');
+      assert.equal(orch.box.pending(), 0);
 
       // 4. Chatter queue cap (<= 3 queued) & priority preemption by DIALOG_BOX
       for (let i = 0; i < 6; i++) {
