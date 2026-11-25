@@ -6,8 +6,8 @@ import { avoidOffset, CHROME_IDS, hudBottom, tailOffset, type Box } from './stag
 import './stage-overlay.css';
 
 /**
- * The stage's DOM overlay: dialogue, lettering, cards, plates, pips, padlocks, PS_XRAY links and the
- * neighbour column, drawn crisp over the canvas instead of inside the WebGL scene (so the pixel-art and
+ * The stage's DOM overlay: dialogue, lettering, cards, plates, pips, padlocks and PS_XRAY links,
+ * drawn crisp over the canvas instead of inside the WebGL scene (so the pixel-art and
  * CRT passes never touch interface text). Everything is placed at the projected screen position of a
  * world point, re-projected every stage step, so it follows camera shake, zoom and resize.
  * Transient items are driven by the stage clock (not CSS timers), so `__stage.advance()` and the
@@ -77,7 +77,6 @@ const stepped = (t: number, n: number) => (t >= 1 ? 1 : Math.floor(Math.max(0, t
 
 export class StageOverlay {
   readonly root: HTMLDivElement;
-  private readonly column: HTMLDivElement;
   private readonly badgeLayer: HTMLDivElement;
   private readonly svg: SVGSVGElement;
   private readonly transient: HTMLDivElement;
@@ -97,9 +96,6 @@ export class StageOverlay {
     const d = this.dialogue;
     return !!d && !d.done && d.t < d.life && this.items.includes(d);
   }
-  private colKey = '';
-  private colRectKey = '';
-  private colWorld: OverlayPanel | null = null;
   private readonly v = new THREE.Vector3();
   private clock = 0;
 
@@ -112,7 +108,6 @@ export class StageOverlay {
       this.root.appendChild(d);
       return d;
     };
-    this.column = layer('column');
     this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.svg.setAttribute('class', 'st-links');
     this.root.appendChild(this.svg);
@@ -145,7 +140,6 @@ export class StageOverlay {
     const b = this.project(new THREE.Vector3(panel.right, panel.bottom, 0));
     this.panelRect = { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(b.x - a.x), h: Math.abs(b.y - a.y) };
     this.svg.setAttribute('viewBox', `0 0 ${this.w} ${this.h}`);
-    if (this.colWorld) this.layoutColumn();
   }
 
   project(p: THREE.Vector3): { x: number; y: number } {
@@ -496,7 +490,11 @@ export class StageOverlay {
       }
       const lp = this.project(s.lock);
       d.lock.style.display = '';
-      d.lock.style.left = `${lp.x.toFixed(1)}px`;
+      // Keep the badge inside the stage panel: a door at the panel edge must not push LOCKED out of the stage.
+      const r = this.panelRect;
+      const half = (d.lock.offsetWidth || 0) / 2 + 4;
+      const lx = r.w > half * 2 ? Math.min(r.x + r.w - half, Math.max(r.x + half, lp.x)) : lp.x;
+      d.lock.style.left = `${lx.toFixed(1)}px`;
       d.lock.style.top = `${lp.y.toFixed(1)}px`;
     } else if (d.lock) {
       d.lock.remove();
@@ -539,59 +537,18 @@ export class StageOverlay {
     });
   }
 
-  /** The neighbour column: crisp comic panels (.. / NEXT / DOWN / LOCKED + directory name). */
-  neighbors(cards: { mark: string; label: string; kind: string }[], column: OverlayPanel): void {
-    const key = JSON.stringify(cards);
-    this.colWorld = column;
-    if (key !== this.colKey) {
-      this.colKey = key;
-      this.colRectKey = '';
-      this.column.replaceChildren(...cards.map((c) => {
-        const d = document.createElement('div');
-        d.className = `st-ncard ${c.kind}`;
-        d.innerHTML = `<span class="mk">${esc(c.mark)}</span><span class="lb">${esc(c.label)}</span>`;
-        return d;
-      }));
-    }
-    this.layoutColumn();
-  }
-
-  private layoutColumn(): void {
-    const c = this.colWorld;
-    if (!c) return;
-    const a = this.project(new THREE.Vector3(c.left, c.top, 0));
-    const b = this.project(new THREE.Vector3(c.right, c.bottom, 0));
-    const x = Math.min(a.x, b.x);
-    const y = Math.min(a.y, b.y);
-    const w = Math.abs(b.x - a.x);
-    const h = Math.abs(b.y - a.y);
-    const key = `${x.toFixed(0)},${y.toFixed(0)},${w.toFixed(0)},${h.toFixed(0)}`;
-    if (key === this.colRectKey) return;
-    this.colRectKey = key;
-    const kids = [...this.column.children] as HTMLElement[];
-    const gap = 8;
-    const ch = (h - gap * Math.max(0, kids.length - 1)) / Math.max(1, kids.length);
-    kids.forEach((k, i) => {
-      k.style.left = `${x}px`;
-      k.style.top = `${y + i * (ch + gap)}px`;
-      k.style.width = `${w}px`;
-      k.style.height = `${ch}px`;
-    });
-  }
-
   clearTransient(): void {
     for (const it of this.items) this.kill(it);
     this.items.length = 0;
   }
 
   /** Live DOM counts (the self-check asserts transient nodes drain back to zero). */
-  counts(): { transient: number; cards: number; badges: number; links: number; column: number } {
+  counts(): { transient: number; cards: number; badges: number; links: number } {
     return {
       transient: this.transient.childElementCount,
       cards: this.cardLayer.childElementCount,
       badges: this.badges.size,
       links: this.linkEls.length,
-      column: this.column.childElementCount,
     };
   }
 }

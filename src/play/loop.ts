@@ -12,11 +12,14 @@ function syncPause(play: Play): void {
   play.session.setPaused(play.reasons.size > 0);
   const blocking = [...play.reasons].some((r) => r !== 'hidden');
   play.shell.setBlocked(blocking);
+  // A card, cinematic or the end of the run takes the screen: the Esc menu steps aside.
+  if (play.menu?.isOpen() && [...play.reasons].some((r) => r !== 'hidden' && r !== 'intro')) play.menu.close();
   play.hud?.update(play.session.snapshot());
 }
 
 function paint(play: Play, snap: GameSnapshot): void {
   play.hud?.update(snap);
+  play.menu?.update(snap);
   play.tutorial.sync(play.phase === 'play' || play.phase === 'intro' ? (snap.tutorial ?? null) : null);
   play.dom.captionEl.textContent = snap.room.title;
   play.dom.captionEl.title = snap.cwd;
@@ -165,6 +168,11 @@ function exposePlayHooks(play: Play): void {
   (window as unknown as { __editor?: unknown }).__editor = {
     isOpen: () => play.codeEditor?.isOpen() ?? false,
     close: () => play.codeEditor?.close(),
+  };
+  (window as unknown as { __menu?: unknown }).__menu = {
+    open: () => play.menu?.open(play.session.snapshot()),
+    close: () => play.menu?.close(),
+    isOpen: () => play.menu?.isOpen() ?? false,
   };
   (window as unknown as { __term?: unknown }).__term = {
     /** Exactly what Enter does: echo, run, print; queued while input is blocked. */

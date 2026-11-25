@@ -180,6 +180,58 @@ function lockAndTimedProps(world) {
   ];
 }
 
+/** Exit doors (spec .kiro/specs/esc-menu-hud-rework/, R11-R14): the exit is a `door.ethernet` actor, locked iff a win rule fails. */
+function exitDoorProps(world) {
+  const parentOf = (p) => p.slice(0, p.lastIndexOf('/')) || '/';
+  const nameOf = (p) => p.slice(p.lastIndexOf('/') + 1);
+  const ethernet = (room) => room.actors.filter((a) => a.model === 'door.ethernet');
+  const exitLevels = world.levels.map((l, i) => ({ l, i })).filter((x) => x.l.exitDir);
+  const exitless = world.levels.map((l, i) => ({ l, i })).filter((x) => !x.l.exitDir);
+  const steps = fc.array(fc.constantFrom(...world.levels.flatMap((l) => l.solutionCommands ?? []), 'ls', 'pwd', 'cat *'), { maxLength: 12 });
+  return [
+    {
+      name: 'standing in the exit\'s parent room, the exit is a `door.ethernet` actor, locked (neighbour `locked`, no gold prompt) iff a win rule fails',
+      build: () =>
+        fc.property(fc.constantFrom(...exitLevels.keys()), steps, fc.boolean(), (k, play, solve) => {
+          const { l, i } = exitLevels[k];
+          const session = world.open(i);
+          // Half the runs play the solution first (minus any line naming the exit), so the open side is reached too.
+          if (solve) world.drive(session, (l.solutionCommands ?? []).filter((c) => !c.includes(nameOf(l.exitDir))));
+          world.drive(session, play);
+          if (session.snapshot().ended || session.snapshot().room.kind === 'outro') return;
+          const parent = parentOf(l.exitDir);
+          session.exec(`cd ${parent}`);
+          const snap = session.snapshot();
+          // A death reboot, a level change or a refused cd leaves the hero elsewhere: nothing to assert then.
+          if (snap.cwd !== parent || snap.level?.title !== l.title) return;
+          const name = nameOf(l.exitDir);
+          const doors = ethernet(snap.room).filter((a) => a.target === name);
+          expect(doors.length === 1, `${l.id}: ${doors.length} door.ethernet actors for exit ${name} in ${parent} (${JSON.stringify(snap.room.actors.map((a) => [a.id, a.model]))})`);
+          expect(doors[0].kind === 'door', `${l.id}: exit door kind is ${doors[0].kind}`);
+          const lockedByView = snap.room.neighbors.some((n) => n.label === name && n.relation === 'locked');
+          expect(lockedByView === !snap.promptGold, `${l.id}: the view says locked=${lockedByView} but the exit is ${snap.promptGold ? 'open' : 'closed'} after ${JSON.stringify(play)}`);
+        }),
+    },
+    {
+      name: 'a level with only an `exitCommand` shows no `door.ethernet` actor, anywhere it can be walked to',
+      build: () =>
+        fc.property(fc.constantFrom(...exitless.keys()), steps, (k, play) => {
+          const { l, i } = exitless[k];
+          const session = world.open(i);
+          const seen = (label) => {
+            const snap = session.snapshot();
+            expect(ethernet(snap.room).length === 0, `${l.id}: a door.ethernet actor in ${snap.cwd} ${label}`);
+          };
+          seen('on arrival');
+          for (const s of play) {
+            session.exec(s);
+            seen(`after ${JSON.stringify(s)}`);
+          }
+        }),
+    },
+  ];
+}
+
 export default async function chaptersSuite(ctx) {
   const { checkPack } = await ctx.load('/src/chapter-editor/check.ts');
   const { readAchievements, unlockAchievement } = await ctx.load('/src/chapters/achievements.ts');
@@ -295,6 +347,7 @@ export default async function chaptersSuite(ctx) {
         }),
     },
     ...lockAndTimedProps(world),
+    ...exitDoorProps(world),
     ...portableSaveAndPreviewProps({
       world,
       readAchievements,

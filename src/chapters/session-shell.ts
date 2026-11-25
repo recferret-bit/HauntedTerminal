@@ -1,4 +1,7 @@
 import { runInventory } from '../game/inventory.js';
+import { armMessage, decideRestart, parseRestartArgs } from '../game/commands-proc.js';
+import type { KernelEvent } from '../contracts/events.js';
+import { rebootLevel } from './session-level.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
 import { helpText, manPage, runMan } from '../game/manual.js';
 import type { Step, Word } from '../game/shell.js';
@@ -101,6 +104,21 @@ export function expand(g: ChapterState, word: Word): string[] {
     return out.length > 0 ? out.sort() : [text];
   }
 
+/** `restart-level [--yes]` / `retry`: the first run arms a confirm, the next line (within the tick window) or `--yes` reloads the level. */
+function cmdRestartLevel(g: ChapterState, args: string[]): Step {
+  const parsed = parseRestartArgs(args);
+  if ('error' in parsed) return emptyStep(2, parsed.error);
+  const now = { commands: g.rt.levelCommands, ticks: g.rt.levelTicks };
+  if (decideRestart(g.rt.restartPending, now, parsed.yes) === 'arm') {
+    g.rt.restartPending = { armedAtCommand: now.commands, armedAtTick: now.ticks };
+    return okStep(armMessage(g.rt.spec.title));
+  }
+  const events: KernelEvent[] = [];
+  const arrival = rebootLevel(g, events);
+  g.reloadedNow = true;
+  return okStep(`[RETRY] Reloaded ${g.rt.spec.title}.\n${arrival}`, events);
+}
+
 /** A `script.locks` entry refuses the command before it runs (`ls`, `ls -a`, `ls -la`: the first word decides). */
 export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
     const locked = lockMessage(g, argv[0] ?? '');
@@ -126,7 +144,7 @@ function dispatchCommand(g: ChapterState, argv: string[], stdin: string): Step {
         return { stdout: '', stderr: '', code: 0, events: [], clear: true };
       case 'help':
         return okStep(
-          `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack] local .gguf Ghost companion (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 12 local trophies & Steamworks ACH_* payload\n`,
+          `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack] local .gguf Ghost companion (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 12 local trophies & Steamworks ACH_* payload\n  restart-level [--yes]  reload this level (asks twice; alias: retry)\n`,
         );
       case 'man': {
         const ally = allyCommand(g);
@@ -229,6 +247,9 @@ function dispatchCommand(g: ChapterState, argv: string[], stdin: string): Step {
       case 'exit':
       case 'logout':
         return cmdExit(g);
+      case 'restart-level':
+      case 'retry':
+        return cmdRestartLevel(g, args);
       default:
         if (cmd === allyCommand(g)) return cmdHank(g, args);
         return emptyStep(127, `bash: ${cmd}: command not found (try 'help' or 'hank')\n`);

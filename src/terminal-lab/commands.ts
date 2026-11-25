@@ -18,7 +18,7 @@ const GROUPS: Record<CommandGroup, readonly string[]> = {
   Fight: ['ps', 'top', 'kill', 'pkill'],
   'Loot & Ghost': ['source', '.', 'kiro'],
   Code: ['edit', 'nano', 'docker'],
-  'Help & game': ['help', 'man', 'tutorial', 'clear', 'exit', 'logout', 'hank', 'grimoire', 'bestiary', 'workshop', 'achievements'],
+  'Help & game': ['help', 'man', 'tutorial', 'clear', 'exit', 'logout', 'hank', 'grimoire', 'bestiary', 'workshop', 'achievements', 'restart-level', 'retry'],
 };
 
 /** A line that runs when the command's Run button is clicked in the default lab room (it has `/lab/readme.txt`). */
@@ -30,6 +30,7 @@ const EXAMPLES: Record<string, string> = {
   kill: 'kill -l', pkill: 'pkill nothing', source: 'source readme.txt', '.': '. readme.txt', kiro: 'kiro', help: 'help', man: 'man ls',
   status: 'status', whoami: 'whoami', inventory: 'inventory', inv: 'inv', hold: 'hold lantern', tutorial: 'tutorial', clear: 'clear', exit: 'exit', logout: 'logout', edit: 'edit readme.txt',
   nano: 'nano readme.txt', docker: 'docker images', hank: 'hank', grimoire: 'grimoire', bestiary: 'bestiary', workshop: 'workshop', achievements: 'achievements',
+  'restart-level': 'restart-level --yes', retry: 'restart-level --yes',
 };
 
 /** One-line usage for commands that have no `man` page of their own. */
@@ -41,6 +42,8 @@ const USAGE: Record<string, string> = {
   grimoire: 'grimoire: the command book of what you have practiced.',
   bestiary: 'bestiary: the malware dossier.',
   workshop: 'workshop [perk-id]: Silicon Scrap and rig perks.',
+  'restart-level': 'restart-level [--yes]: reload this level; run it twice to confirm, or add --yes.',
+  retry: 'retry [--yes]: same as restart-level.',
 };
 
 export interface CommandEntry {

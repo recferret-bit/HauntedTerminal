@@ -58,8 +58,10 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   endedAt: number | null = null;
   paused = false;
   muted = false;
+  volume = 1;
   intro = true;
   ended = false;
+  reloadedNow = false;
   fullRun = true;
   deadNow = false;
   deathText = '';
@@ -190,6 +192,10 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
 
   toggleMute(): boolean {
     return flow.toggleMute(this);
+  }
+
+  setVolume(volume: number): void {
+    flow.setVolume(this, volume);
   }
 
   restart(): TickResult {

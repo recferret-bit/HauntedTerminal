@@ -1,4 +1,5 @@
 import type { BattleHold, BattleState } from '../game/battle.js';
+import type { RestartPending } from '../game/commands-proc.js';
 import type { World, WorldHost } from '../game/entities.js';
 import type { Inventory } from '../game/inventory.js';
 import type { KiroCompanion } from '../game/kiro.js';
@@ -133,6 +134,8 @@ export interface LevelRuntime {
   levelTicks: number;
   /** Indexes of `script.timed` entries that already fired. */
   timedFired: Set<number>;
+  /** Armed `restart-level` confirm; dies with the level runtime (a load or reboot builds a new one). */
+  restartPending: RestartPending | null;
   /** Lab session state for this level (absorbed damage, solved riddles, latched checks). Empty in the game. */
   lab: LabLevelState;
 }
@@ -164,8 +167,12 @@ export interface ChapterState {
   endedAt: number | null;
   paused: boolean;
   muted: boolean;
+  /** Master volume of the in-game sounds, 0 to 1. */
+  volume: number;
   intro: boolean;
   ended: boolean;
+  /** Set by `restart-level` when it reloaded the level during this line; `exec` then skips the post-command block. */
+  reloadedNow: boolean;
   /** True when the run started on Level 1 and never teleported via `jumpToLevel`. */
   fullRun: boolean;
   deadNow: boolean;

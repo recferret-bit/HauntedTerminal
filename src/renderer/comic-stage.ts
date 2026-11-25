@@ -86,7 +86,7 @@ export class ComicStage {
   cursor = 0;
   clockMs = 0;
   xrayProcs: { pid: number; ppid: number; name: string; cpu: number }[] = [];
-  /** Every interface element (text, balloons, cards, plates, pips, links, the neighbour column) in crisp DOM. */
+  /** Every interface element (text, balloons, cards, plates, pips, links) in crisp DOM. */
   readonly overlay: StageOverlay;
   revealArmed = 0;
   lastAttack: { id: string; at: number } | null = null;
@@ -103,12 +103,10 @@ export class ComicStage {
   backdrop: THREE.Mesh | null = null;
   frameMesh: THREE.Mesh | null = null;
   plinthMesh: THREE.Mesh | null = null;
-  readonly neighbors = new THREE.Group();
   panelLeft = DESIGN_LEFT;
   panelRight = DESIGN_RIGHT;
   feetY = FEET_Y;
   viewTop = 4.9;
-  column = { left: -1.6, right: -4.5, top: 4.85, bottom: 0.15 };
   stormOn = true;
   stormIntensity = 0.65;
   stormIn = 1.4;

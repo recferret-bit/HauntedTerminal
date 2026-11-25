@@ -5,6 +5,7 @@ import type { Session } from '../game/session.js';
 import type { GameSnapshot, TickResult } from '../game/types.js';
 import type { ComicStage } from '../renderer/comic-stage.js';
 import type { CodeEditor } from '../ui/code-editor.js';
+import type { EscMenu } from '../ui/esc-menu.js';
 import type { EndStats, Hud } from '../ui/hud.js';
 import type { DialogBox } from '../ui/dialog-box.js';
 import type { DialogOrchestrator } from '../ui/dialog-orchestrator.js';
@@ -96,6 +97,8 @@ export class Play {
   /** The corner dialog box owned by `dialogs`; mounted with the HUD. */
   dialogBox: DialogBox | null = null;
   codeEditor: CodeEditor | null = null;
+  /** The Esc menu (`src/play/menu.ts`). It never adds a pause reason and never holds the turn timer. */
+  menu: EscMenu | null = null;
   /** Every event the session produced, newest last (capped). The chapter editor reads it through `__game.events()`. */
   eventLog: KernelEvent[] = [];
   /** The lab's config in a Terminal Lab game (`?lab=1` on a draft), else null. */

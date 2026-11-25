@@ -9,6 +9,7 @@ import { powerOff, powerOn } from '../ui/screen.js';
 import { colourise, mountShell } from '../ui/terminal.js';
 import { mountVisualLab } from '../ui/visual-lab.js';
 import { recordExec } from './lab.js';
+import { mountPlayMenu } from './menu.js';
 import { statsFrom } from './outro.js';
 import { FLOOR_NAMES, writeSkipPref, type Play } from './state.js';
 
@@ -103,26 +104,13 @@ export function mountPlayHud(play: Play): void {
   const chapter = isChapterSession(play.session) ? play.session : null;
   play.dialogs = mountDialogOrchestrator(play.dom.stageWrap, drawPortrait, {
     tutorial: play.tutorial,
-    onRightDialogOpen: () => play.hud?.hideHint(),
-    onClear: () => play.hud?.hideHint(),
   });
   play.dialogBox = play.dialogs.box;
   play.hud = mountHud(play.dom.hudEl, play.dom.stageWrap, play.dom.statsEl, {
     drawPortrait,
     maxFloors: chapter ? chapter.getLevels().length : 5,
-    onHintShow: () => play.dialogs?.onHintOpened(),
     onHint: () => {
       if (play.phase === 'play') play.hud?.showHint(play.session.hint());
-    },
-    onMute: () => {
-      play.session.toggleMute();
-      play.hud?.update(play.session.snapshot());
-    },
-    onRestartFloor: () => {
-      if (play.phase !== 'play' || play.reasons.has('card')) return;
-      const res = play.session.restartFloor();
-      play.shell.printAbove(colourise(res.output));
-      play.apply(res.events, res.snapshot);
     },
     onPlayAgain: (skip) => playAgain(play, skip),
   });
@@ -175,7 +163,7 @@ export function bindPlayInput(play: Play): void {
   document.addEventListener('click', (e) => {
     const el = e.target as Element | null;
     if (!el?.closest('button, .hint-note') || el.closest('#outro, #cinematic, #code-editor-pane')) return;
-    if (play.phase === 'play' && !play.codeEditor?.isOpen()) window.setTimeout(() => play.shell.focus(), 0);
+    if (play.phase === 'play' && !play.codeEditor?.isOpen() && !play.menu?.isOpen()) window.setTimeout(() => play.shell.focus(), 0);
   });
 
   document.addEventListener('visibilitychange', () => {
@@ -183,6 +171,7 @@ export function bindPlayInput(play: Play): void {
     else play.reasons.delete('hidden');
     play.syncPause();
   });
+  mountPlayMenu(play);
 }
 
 async function devCinematic(play: Play, role: ComixRole): Promise<void> {

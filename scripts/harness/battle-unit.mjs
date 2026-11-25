@@ -199,6 +199,34 @@ await withProcgen(async (_p, vite) => {
     assert.deepEqual(of(s.exec('kill -9 4001').events, 'BATTLE_ENDED').map((e) => e.reason), ['cleared']);
   });
 
+  await test('session: restart-level in a battle: arming is one action with one enemy turn, the confirm ends the battle as level with no enemy turn', () => {
+    const s = fighting([VIRUS]);
+    const arm = s.exec('restart-level');
+    assert.equal(arm.code, 0);
+    assert.doesNotMatch(arm.output, /\[RETRY\]/, 'the first run only arms');
+    assert.deepEqual(of(arm.events, 'BATTLE_TURN').map((t) => [t.actor, t.reason]), [['enemy', 'action'], ['player', 'action']], 'arming costs exactly one enemy turn');
+    const sure = s.exec('restart-level');
+    assert.match(sure.output, /\[RETRY\] Reloaded/);
+    assert.deepEqual(of(sure.events, 'BATTLE_ENDED').map((e) => e.reason), ['level']);
+    assert.ok(!of(sure.events, 'BATTLE_TURN').some((t) => t.actor === 'enemy'), 'the confirming run gets no enemy turn');
+    assert.ok(!types(sure.events).includes('PLAYER_DAMAGED') && of(sure.events, 'ENEMY_ATTACK').length === 0, 'and nobody hits the hero');
+    // `retry --yes` skips the arming step and behaves the same way.
+    const direct = fighting([VIRUS]).exec('retry --yes');
+    assert.deepEqual(of(direct.events, 'BATTLE_ENDED').map((e) => e.reason), ['level']);
+    assert.ok(!of(direct.events, 'BATTLE_TURN').some((t) => t.actor === 'enemy'));
+  });
+
+  await test('session: restart-level works normally right after a reboot (D8): it arms again, then restarts', () => {
+    const s = fighting([VIRUS]);
+    s.exec('restart-level'); // armed ...
+    s.restartFloor(); // ... then a reboot builds a new level runtime: the pending confirm is gone
+    s.skipBattleIntro();
+    const first = s.exec('restart-level');
+    assert.doesNotMatch(first.output, /\[RETRY\]/, 'a confirm armed before a reboot does not survive it');
+    assert.equal(first.code, 0);
+    assert.match(s.exec('restart-level').output, /\[RETRY\] Reloaded/);
+  });
+
   await test('session: the same run picks the same agents; tactical mode is gone', () => {
     const agents = () => {
       const s = session([VIRUS]);

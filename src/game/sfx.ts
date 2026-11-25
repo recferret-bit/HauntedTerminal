@@ -4,16 +4,25 @@ export type SfxCue =
 export interface Sfx {
   play(cue: SfxCue): void;
   setMuted(muted: boolean): void;
+  /** Master volume 0 to 1 (default 1, the loudness the cues were tuned at). */
+  setVolume(volume: number): void;
 }
 
 export function createSfx(): Sfx {
   let muted = false;
+  let volume = 1;
   let ctx: AudioContext | null = null;
+  let master: GainNode | null = null;
 
   const context = (): AudioContext | null => {
     if (muted) return null;
     if (typeof window === 'undefined' || typeof window.AudioContext === 'undefined') return null;
-    if (!ctx) ctx = new window.AudioContext();
+    if (!ctx) {
+      ctx = new window.AudioContext();
+      master = ctx.createGain();
+      master.gain.value = volume;
+      master.connect(ctx.destination);
+    }
     if (ctx.state === 'suspended') void ctx.resume();
     return ctx;
   };
@@ -29,13 +38,17 @@ export function createSfx(): Sfx {
     amp.gain.setValueAtTime(gain, audio.currentTime);
     amp.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + dur);
     osc.connect(amp);
-    amp.connect(audio.destination);
+    amp.connect(master ?? audio.destination);
     osc.start();
     osc.stop(audio.currentTime + dur + 0.02);
   };
 
   return {
     setMuted(next) { muted = next; },
+    setVolume(next) {
+      volume = Math.min(1, Math.max(0, Number.isFinite(next) ? next : 1));
+      if (master) master.gain.value = volume;
+    },
     play(cue) {
       if (cue === 'hop') tone(520, 0.12, 'square', 0.05, 180);
       else if (cue === 'page') tone(180, 0.18, 'sawtooth', 0.04, -80);
