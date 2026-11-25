@@ -98,8 +98,8 @@ const TEAM = {
   },
   'terminal-designer': {
     description: 'Designs and tunes the terminal: the shell, its commands, the virtual file system, man pages, terminal UI and the Terminal Lab (src/game shell files, src/ui, src/terminal-lab, lab scripts).',
-    writes: ['src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,tree,tree-links,manual,lab-checks,lab-riddle,lab-support,lab-types}.ts', 'src/ui/**', 'src/terminal-lab/**', 'scripts/harness/terminal-lab/**', 'scripts/harness/props/terminal.mjs'],
-    resources: [steer('terminal-lab-rules'), 'file://.kiro/specs/inventory/items/terminal/requirements.md', 'file://.kiro/specs/inventory/items/terminal/design.md'],
+    writes: ['src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts', 'src/ui/**', 'src/terminal-lab/**', 'scripts/harness/terminal-lab/**', 'scripts/harness/props/terminal.mjs'],
+    resources: [steer('terminal-lab-rules'), 'file://.kiro/specs/inventory/items/terminal/requirements.md', 'file://.kiro/specs/inventory/items/terminal/design.md', 'file://.kiro/specs/inventory/items/manual/requirements.md', 'file://.kiro/specs/inventory/items/manual/design.md'],
     skills: ['chapter-level-generator'],
     welcome: 'terminal-designer: which command, output or terminal behaviour should change?',
   },

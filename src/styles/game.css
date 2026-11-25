@@ -714,9 +714,11 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
 }
 
 @media (max-width: 1180px) {
-  /* narrow stage: tighter HUD cells so the strip wraps into fewer rows */
-  #hud { gap: 4px; }
-  .hud-cell { padding: 3px 6px; gap: 4px; }
+  /* narrow stage: tighter HUD cells and buttons so the bar stays single-row above neighbor doors */
+  #hud { gap: 3px; }
+  .hud-cell { padding: 2px 5px; gap: 3px; }
+  .hud-btns { gap: 3px; }
+  #hud button { padding: 3px 6px; font-size: 11px; }
 }
 
 #sandbox-toggle-btn {
@@ -754,6 +756,29 @@ body.stage-drop #stage-wrapper { animation: stage-drop 0.62s cubic-bezier(.3, 1.
   letter-spacing: 0.16em;
   color: var(--steel);
   padding: 2px 2px 4px;
+}
+
+.tty-bar-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#tty-manual-btn {
+  font-family: var(--display);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border: 1.5px solid #e6a73c;
+  background: #23191e;
+  color: #ffd166;
+  cursor: pointer;
+}
+
+#tty-manual-btn:hover {
+  background: #ffd166;
+  color: #140f12;
 }
 
 #tty-bar i {

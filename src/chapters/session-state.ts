@@ -33,6 +33,7 @@ export interface ChapterSession extends Session {
   ): ({ ok: true } & EditorOpenPayload) | { ok: false; error: string };
   saveEditableFile(nameOrPath: string, content: string): CommandResult;
   consumeEditorRequest(): EditorOpenPayload | null;
+  consumeManualRequest(): string | null;
   getChecklist(): Array<{ description: string; done: boolean }>;
   arriveLevel(): TickResult;
   /** Read-only view of the whole level for tools (the Terminal Lab). Never changes the game. */
@@ -177,6 +178,7 @@ export interface ChapterState {
   /** What he carried when this level was entered; a floor restart puts it back. */
   entryInventory: Inventory;
   pendingEditor: EditorOpenPayload | null;
+  pendingManual: string | null;
   currentRedirectTarget: string;
   rt: LevelRuntime;
 }

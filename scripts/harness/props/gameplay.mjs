@@ -268,7 +268,7 @@ export default async function gameplaySuite(ctx) {
             expect(new Set(items).size === items.length, `an item is in the inventory twice: ${JSON.stringify(items)} (startItems ${JSON.stringify(startItems)}, grants ${JSON.stringify(grants)})`);
             expect(items.includes(held), `holds ${held}, owns ${JSON.stringify(items)}`);
             for (const id of startItems ?? []) expect(items.includes(id), `startItems ${id} is missing from ${JSON.stringify(items)}`);
-            const allowed = new Set([...(startItems ?? ['lantern', 'terminal']), ...grants.flatMap((g) => g.items ?? [])]);
+            const allowed = new Set([...(startItems ?? inv.starterInventory().items), ...grants.flatMap((g) => g.items ?? [])]);
             expect(items.every((i) => allowed.has(i)), `an item nobody named appeared: ${JSON.stringify(items)}`);
           },
         ),

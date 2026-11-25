@@ -9,12 +9,14 @@ import { ModelCatalog } from '../core/catalog.js';
 import type { ModelSpec } from '../core/types.js';
 import { buildLantern } from './items/lantern.js';
 import { buildLaptop } from './items/laptop.js';
+import { buildManual } from './items/manual.js';
 import { buildTerminal } from './items/terminal.js';
 
 export const ITEM_BUILDERS: Record<ItemId, (seed: number) => ModelSpec> = {
   lantern: buildLantern,
   terminal: buildTerminal,
   laptop: buildLaptop,
+  manual: buildManual,
 };
 
 for (const def of Object.values(ITEMS)) {

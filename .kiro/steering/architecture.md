@@ -22,7 +22,7 @@ editor-core/          shared workstation framework for spec editors: schema form
 comix-editor/         /comix-editor. editor-core, cinematic, procgen. Player runs in an iframe.
 ui/                   terminal, HUD, editor, shader dock. No three import of its own.
 sandbox/              dev inspector. Talks to the stage through its public methods.
-pages/                chapter select and comic reader scripts.
+pages/                chapter select, comic reader, and field manual scripts (may import ui/).
 chapter-editor/       /editor. contracts, editor-core, game, chapters, procgen. No game rules of its own; the game runs in an iframe.
 terminal-lab/         /terminal-lab. contracts, editor-core, chapter-editor (field tables, suggest), game, chapters, procgen. Builds a throwaway pack from a lab script (or imports a chapter level read-only) and plays it in the game iframe with in-page session swaps; no game rules of its own. What it needs from the game is one generic session option, `lab?: LabConfig` on `ChapterSession` and classic `createSession`, plus read-only `inspect()`, `labTick()` and `inject()` (`src/game/lab-*.ts`, `src/chapters/session-lab*.ts`).
 laptop/               /laptop-lab. domain/ (pure: lifecycle state machine, desktop reducer, tasks and checks, keyboard, boot, geometry, progress) <- runtime/ (Worker and sandboxed-iframe runner, loop guard, WebAudio) <- ui/ (editor-core, procgen/core palette) <- lab/. No three; no game rules. Player code never runs in the page's own realm.

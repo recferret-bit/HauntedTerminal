@@ -356,10 +356,10 @@ export const MANIFEST: Field[] = [
     optional: true,
     item: {
       title: (g) => `after level ${String(g.afterLevel)}: ${[g.ram ? `+${String(g.ram)}GB RAM` : '', g.ssd ? `+${String(g.ssd)}GB SSD` : '', g.core ? `core ${String(g.core)}` : ''].filter(Boolean).join(', ')}`,
-      fields: [n('afterLevel', 'After level'), opt(n('ram', 'RAM GB')), opt(n('ssd', 'SSD GB')), opt(t('core', 'Kiro core', { suggest: 'cores' })), opt({ type: 'strings', key: 'items', label: 'Items (lantern, terminal, laptop; one per line)' })],
+      fields: [n('afterLevel', 'After level'), opt(n('ram', 'RAM GB')), opt(n('ssd', 'SSD GB')), opt(t('core', 'Kiro core', { suggest: 'cores' })), opt({ type: 'strings', key: 'items', label: 'Items (lantern, terminal, laptop, manual; one per line)' })],
     },
   },
-  opt({ type: 'strings', key: 'startItems', label: 'Items he carries at the start (default lantern, terminal; one per line)' }),
+  opt({ type: 'strings', key: 'startItems', label: 'Items he carries at the start (default lantern, terminal, manual; one per line)' }),
   {
     type: 'array',
     key: 'dossier',

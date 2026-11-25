@@ -2,6 +2,7 @@ import { forwardSteamAchievement } from '../chapters/steam-bridge.js';
 import type { KernelEvent } from '../contracts/events.js';
 import type { GameSnapshot, TickResult } from '../game/types.js';
 import { colourise } from '../ui/terminal.js';
+import { openManualModal } from './input.js';
 import { exposeLabHooks } from './lab.js';
 import { mountTutorial, taunt } from '../ui/tutorial.js';
 import { CARD_MS, type Play } from './state.js';
@@ -10,7 +11,7 @@ const EVENT_LOG_CAP = 400;
 
 function syncPause(play: Play): void {
   play.session.setPaused(play.reasons.size > 0);
-  const blocking = [...play.reasons].some((r) => r !== 'hidden');
+  const blocking = [...play.reasons].some((r) => r !== 'hidden') || Boolean(play.manualBook?.isOpen());
   play.shell.setBlocked(blocking);
   play.hud?.update(play.session.snapshot());
 }
@@ -165,6 +166,11 @@ function exposePlayHooks(play: Play): void {
   (window as unknown as { __editor?: unknown }).__editor = {
     isOpen: () => play.codeEditor?.isOpen() ?? false,
     close: () => play.codeEditor?.close(),
+  };
+  (window as unknown as { __manual?: unknown }).__manual = {
+    isOpen: () => play.manualBook?.isOpen() ?? false,
+    open: (queryOrPage?: string | number) => openManualModal(play, queryOrPage),
+    close: () => play.manualBook?.close(),
   };
   (window as unknown as { __term?: unknown }).__term = {
     /** Exactly what Enter does: echo, run, print; queued while input is blocked. */

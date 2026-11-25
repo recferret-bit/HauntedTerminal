@@ -23,6 +23,8 @@
     "file://.kiro/steering/terminal-lab-rules.md",
     "file://.kiro/specs/inventory/items/terminal/requirements.md",
     "file://.kiro/specs/inventory/items/terminal/design.md",
+    "file://.kiro/specs/inventory/items/manual/requirements.md",
+    "file://.kiro/specs/inventory/items/manual/design.md",
     "skill://.kiro/skills/chapter-level-generator/SKILL.md"
   ],
   "hooks": [
@@ -60,7 +62,7 @@
           "**"
         ],
         "exclude": [
-          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,tree,tree-links,manual,lab-checks,lab-riddle,lab-support,lab-types}.ts",
+          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts",
           "src/ui/**",
           "src/terminal-lab/**",
           "scripts/harness/terminal-lab/**",
@@ -71,7 +73,7 @@
       {
         "capability": "fs_write",
         "match": [
-          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,tree,tree-links,manual,lab-checks,lab-riddle,lab-support,lab-types}.ts",
+          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts",
           "src/ui/**",
           "src/terminal-lab/**",
           "scripts/harness/terminal-lab/**",

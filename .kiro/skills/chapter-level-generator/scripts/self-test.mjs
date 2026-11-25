@@ -139,7 +139,7 @@ await withProcgen(async (_p, vite) => {
   assert.ok(arrival.output.includes('pitch black'), 'Level 1 must open in the dark');
   assert.ok(arrival.events.some((e) => e.type === 'VIBECODER_EMOTE' && e.emote === 'shock'));
   assert.equal(arrival.snapshot.room.dark, true, 'Without the lantern the room is dark');
-  assert.deepEqual(arrival.snapshot.inventory, { items: ['terminal'], held: 'terminal' }, 'He starts with the terminal only');
+  assert.deepEqual(arrival.snapshot.inventory, { items: ['terminal', 'manual'], held: 'terminal' }, 'He starts with the terminal and manual');
   assert.equal(arrival.snapshot.tutorial?.agent, 'kiro');
   assert.equal(arrival.snapshot.tutorial?.step, 1);
   assert.equal(arrival.snapshot.tutorial?.command, 'mv lantern ~');
@@ -236,7 +236,7 @@ await withProcgen(async (_p, vite) => {
   assert.equal(earlyEvents.some((e) => e.type === 'TUTORIAL_STEP' && e.step === 1 && !e.done), false, 'No stale step-1 card after the lantern');
   assert.equal(earlyEvents.some((e) => isBox(e, 'vibecoder') && /No lantern/.test(e.text)), false, 'He does not say he has no lantern after taking it');
   const restarted = early.restartFloor();
-  assert.deepEqual(restarted.snapshot.inventory, { items: ['terminal'], held: 'terminal' }, 'A floor restart puts the dark start back');
+  assert.deepEqual(restarted.snapshot.inventory, { items: ['terminal', 'manual'], held: 'terminal' }, 'A floor restart puts the dark start back');
   assert.equal(restarted.snapshot.room.dark, true);
   assert.ok(early.exec('ls').output.includes('too dark'), 'ls is locked again after the restart');
 

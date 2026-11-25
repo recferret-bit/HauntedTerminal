@@ -60,7 +60,7 @@ export interface Run {
 
 export type HeroAction = Extract<KernelEvent, { type: 'VIBECODER_ACTION' }>['action'];
 export const ACTION_RANK: Record<HeroAction, number> = { type: 0, read: 1, write: 2, lantern: 3, cast: 4, collect: 5 };
-export const READERS = new Set(['cat', 'grep', 'head', 'tail', 'wc', 'cut', 'rev', 'find', 'readlink', 'ps', 'top', 'ls', 'man', 'help', 'status', 'pwd', 'whoami']);
+export const READERS = new Set(['cat', 'grep', 'head', 'tail', 'wc', 'cut', 'rev', 'find', 'readlink', 'ps', 'top', 'ls', 'man', 'manual', 'help', 'status', 'pwd', 'whoami']);
 export const WRITERS = new Set(['touch', 'cp', 'ln', 'mv', 'rm', 'chmod', 'sed', 'echo']);
 export const SHELL_PID = 4242;
 /** Rooms the floors cannot be finished without (cron_restorer only restores files). */

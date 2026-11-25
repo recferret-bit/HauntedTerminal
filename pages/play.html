@@ -23,11 +23,12 @@
       <div id="terminal-dock">
         <section id="code-editor-pane" class="hidden" aria-label="Split Code Mini-Editor"></section>
         <div id="terminal-bezel">
-          <div id="tty-bar"><span><i></i>TTY0</span><span>SHELL</span></div>
+          <div id="tty-bar"><span><i></i>TTY0</span><span class="tty-bar-right"><button type="button" id="tty-manual-btn" title="Open Interactive Terminal Field Manual (F1)">MANUAL (F1)</button><span>SHELL</span></span></div>
           <div id="terminal-panel"></div>
         </div>
       </div>
     </div>
+    <div id="manual-book-modal" class="mb-modal hidden" role="dialog" aria-modal="true" aria-label="Interactive Terminal Field Manual"></div>
     <div id="cinematic"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

@@ -20,6 +20,8 @@ What he carries. Each stands on the floor with a `grip` socket; the developer ho
 | `item.lantern` | The oil lantern from his desk: brown cap, handle ring and foot around a glowing `lantern` glass. `ls -a` lights it. Held by `vibecoder.dev` |
 | `item.laptop` | His old clamshell, shut and carried like a briefcase: beige `plastic` with a brown handle and hinge, a `>_` sticker and one `powerAmber` sleep light. Opened, it is the Laptop Lab emulator. Held by `vibecoder.dev_laptop` |
 | `vibecoder.dev_laptop` | The developer with the laptop in his screen-right hand instead of the lantern |
+| `item.manual` | His dog-eared hardcover Unix Field Manual, carried by a leather handle: `pcb` teal boards, brown `hair` spine and strap, creamy `paper` page block, orange `hoodie` bookmark ribbon, and a `phosphor` `>_` emblem. Held by `vibecoder.dev_manual` |
+| `vibecoder.dev_manual` | The developer holding the hardcover Unix Field Manual in his screen-right hand instead of the lantern |
 
 ## Malware bestiary
 

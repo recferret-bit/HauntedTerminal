@@ -31,13 +31,15 @@ function requirePlayDom(): PlayDom {
   const captionEl = document.getElementById('stage-caption');
   const cineEl = document.getElementById('cinematic');
   const mastheadSubEl = document.getElementById('masthead-sub');
+  const manualBtnEl = document.getElementById('tty-manual-btn');
+  const manualModalEl = document.getElementById('manual-book-modal');
   // The terminal stays dark until the intro is over and it powers on.
   document.body.classList.add('term-off');
   if (!mount || !stageWrap || !termEl || !inspectorEl || !toggleBtn || !hudEl || !statsEl || !captionEl || !cineEl) {
     throw new Error('Missing shell nodes');
   }
   return {
-    mount, stageWrap, termDockEl, editorPaneEl, termEl, inspectorEl, toggleBtn, hudEl, statsEl, captionEl, cineEl, mastheadSubEl,
+    mount, stageWrap, termDockEl, editorPaneEl, termEl, inspectorEl, toggleBtn, hudEl, statsEl, captionEl, cineEl, mastheadSubEl, manualBtnEl, manualModalEl,
   };
 }
 

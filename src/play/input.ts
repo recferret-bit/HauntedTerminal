@@ -1,7 +1,9 @@
+import '../styles/manual-book.css';
 import { isChapterSession } from '../chapters/chapter-session.js';
 import { findComixByRole, playComix, type ComixRole } from '../cinematic/index.js';
 import { mountDevInspector } from '../sandbox/dev-inspector.js';
 import { mountCodeEditor } from '../ui/code-editor.js';
+import { mountManualBook } from '../ui/manual-book.js';
 import { mountDialogOrchestrator } from '../ui/dialog-orchestrator.js';
 import { drawPortrait } from '../renderer/portrait.js';
 import { mountHud } from '../ui/hud.js';
@@ -37,6 +39,8 @@ function runShellLine(play: Play, line: string): { output: string; clear?: boole
         play.codeEditor.open(edReq);
       }
     }
+    const manualReq = session.consumeManualRequest?.();
+    if (manualReq !== null && manualReq !== undefined && !play.terminalLab) openManualModal(play, manualReq);
   } finally {
     const extra = play.execTaunts ?? [];
     play.execTaunts = null;
@@ -82,6 +86,36 @@ export function mountPlayShell(play: Play): void {
       },
     });
   }
+  if (play.dom.manualModalEl) {
+    play.manualBook = mountManualBook(play.dom.manualModalEl, {
+      modal: true,
+      onInsertCommand: (cmd) => {
+        play.manualBook?.close();
+        play.shell.setInput(cmd);
+        window.setTimeout(() => play.shell.focus(), 0);
+      },
+      onClose: () => {
+        play.syncPause();
+        if (play.phase === 'play' && !play.codeEditor?.isOpen()) window.setTimeout(() => play.shell.focus(), 0);
+      },
+    });
+  }
+}
+
+function canOpenManual(play: Play): boolean {
+  return (play.phase === 'play' && !play.endingStarted) || play.phase === 'stats';
+}
+
+export function openManualModal(play: Play, queryOrPage?: string | number): void {
+  if (!play.manualBook || !canOpenManual(play)) return;
+  play.manualBook.open(queryOrPage);
+  play.syncPause();
+}
+
+function toggleManualModal(play: Play): void {
+  if (!canOpenManual(play)) return;
+  if (play.manualBook?.isOpen()) play.manualBook.close();
+  else openManualModal(play);
 }
 
 function playAgain(play: Play, skip: boolean): void {
@@ -149,12 +183,14 @@ export function bindPlayInput(play: Play): void {
 
   const toggleInspector = () => play.dom.inspectorEl.classList.toggle('hidden');
   play.dom.toggleBtn.onclick = toggleInspector;
+  play.dom.manualBtnEl?.addEventListener('click', () => toggleManualModal(play));
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'F2' || e.key === 'F8' || e.key === 'F9' || e.key === 'F10') {
+    if (e.key === 'F1' || e.key === 'F2' || e.key === 'F8' || e.key === 'F9' || e.key === 'F10') {
       e.preventDefault();
       e.stopPropagation();
     }
-    if (e.key === 'F2') toggleInspector();
+    if (e.key === 'F1') toggleManualModal(play);
+    else if (e.key === 'F2') toggleInspector();
     else if (e.key === 'F8') play.lab.toggle();
     else if (e.key === 'F9') play.lab.toggleCrt();
     else if (e.key === 'F10') play.lab.togglePixel();
@@ -174,8 +210,8 @@ export function bindPlayInput(play: Play): void {
   // A clicked HUD / dev-panel button takes keyboard focus; hand it back to the shell so typing keeps working.
   document.addEventListener('click', (e) => {
     const el = e.target as Element | null;
-    if (!el?.closest('button, .hint-note') || el.closest('#outro, #cinematic, #code-editor-pane')) return;
-    if (play.phase === 'play' && !play.codeEditor?.isOpen()) window.setTimeout(() => play.shell.focus(), 0);
+    if (!el?.closest('button, .hint-note') || el.closest('#outro, #cinematic, #code-editor-pane, #manual-book-modal')) return;
+    if (play.phase === 'play' && !play.codeEditor?.isOpen() && !play.manualBook?.isOpen()) window.setTimeout(() => play.shell.focus(), 0);
   });
 
   document.addEventListener('visibilitychange', () => {

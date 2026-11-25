@@ -1,6 +1,7 @@
 # Netlify SPA route rewrites (mirrors playPaths in vite.config.ts and materializePlayStaticRoutes in scripts/desktop/).
 /play            /play.html            200
 /play/*          /play.html            200
+/manual          /manual.html          200
 /laptop-lab      /laptop-lab.html      200
 /editor          /chapter-editor.html  200
 /editor/*        /chapter-editor.html  200

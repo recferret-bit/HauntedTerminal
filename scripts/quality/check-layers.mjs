@@ -38,7 +38,7 @@ const LAYERS = [
   { area: 'cinematic/', may: ['contracts/', 'procgen/', 'shaders/'], three: true },
   { area: 'ui/', may: ['contracts/', 'game/', 'chapters/', 'shaders/', 'renderer/'], three: false },
   { area: 'sandbox/', may: ['contracts/', 'game/', 'renderer/', 'ui/'], three: false },
-  { area: 'pages/', may: ['contracts/', 'game/', 'chapters/'], three: false },
+  { area: 'pages/', may: ['contracts/', 'game/', 'chapters/', 'ui/'], three: false },
   // Shared workstation UI toolkit (schema forms, dock layout, workspace toggles, viewport stage, HTTP helpers); no three.
   { area: 'editor-core/', may: ['contracts/'], three: false },
   // Chapter editor: edits chapter specs with forms driven by its own schema, previews through the game in an iframe.

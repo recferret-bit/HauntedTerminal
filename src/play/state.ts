@@ -6,6 +6,7 @@ import type { GameSnapshot, TickResult } from '../game/types.js';
 import type { ComicStage } from '../renderer/comic-stage.js';
 import type { CodeEditor } from '../ui/code-editor.js';
 import type { EndStats, Hud } from '../ui/hud.js';
+import type { ManualBook } from '../ui/manual-book.js';
 import type { DialogBox } from '../ui/dialog-box.js';
 import type { DialogOrchestrator } from '../ui/dialog-orchestrator.js';
 import type { Shell } from '../ui/terminal.js';
@@ -65,6 +66,8 @@ export interface PlayDom {
   captionEl: HTMLElement;
   cineEl: HTMLElement;
   mastheadSubEl: HTMLElement | null;
+  manualBtnEl: HTMLElement | null;
+  manualModalEl: HTMLElement | null;
 }
 
 export function readSkipPref(): boolean {
@@ -96,6 +99,7 @@ export class Play {
   /** The corner dialog box owned by `dialogs`; mounted with the HUD. */
   dialogBox: DialogBox | null = null;
   codeEditor: CodeEditor | null = null;
+  manualBook: ManualBook | null = null;
   /** Every event the session produced, newest last (capped). The chapter editor reads it through `__game.events()`. */
   eventLog: KernelEvent[] = [];
   /** The lab's config in a Terminal Lab game (`?lab=1` on a draft), else null. */

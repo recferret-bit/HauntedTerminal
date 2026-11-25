@@ -48,6 +48,10 @@
           location.replace('/laptop-lab.html' + location.search + location.hash);
           return;
         }
+        if (p === '/manual' || p === '/manual/') {
+          location.replace('/manual.html' + location.search + location.hash);
+          return;
+        }
         if (p === '/play' || p.indexOf('/play/') === 0) {
           var segs = p.split('/').filter(Boolean);
           if (segs[1] === 'floor' && segs[2]) params.set('floor', segs[2]);
@@ -113,6 +117,7 @@
             <span class="tty-mini-line"><b>$ ls -la</b> -&gt; <em>Lantern sweeps room, exposing hidden .spycam</em></span>
             <span class="tty-mini-line"><b>$ chmod -x price_skimmer.bin</b> -&gt; <em>Trojan petrified to stone!</em></span>
             <span class="tty-mini-line"><b>$ kiro load qwen</b> -&gt; <em>Air-gapped .gguf silences Anti-Gravy!</em></span>
+            <a class="tty-mini-line tty-mini-link" href="/manual.html"><b>$ manual -9</b> -&gt; <em>Open Field Manual Book (flags, chmod, search)</em></a>
           </div>
         </div>
       </section>
@@ -172,6 +177,7 @@
           <div class="hero-cta-row">
             <a class="comic-btn primary" href="/play/chapter-01-kiroween">Play Chapter 1 Demo</a>
             <a class="comic-btn paper" href="/comic.html?chapter=chapter-01-kiroween">Read 6-Page Issue</a>
+            <a class="comic-btn teal" href="/manual.html">Field Manual</a>
           </div>
         </article>
 
@@ -326,6 +332,23 @@
             </p>
           </div>
           <span class="door-go">Inspect Creator Tools</span>
+        </a>
+
+        <a class="door-card door-card-wide" href="/manual.html">
+          <div>
+            <div class="door-card-top">
+              <span class="door-kicker teal">FIELD MANUAL // F1</span>
+              <span>Page-Flipping Book</span>
+            </div>
+            <h3>Interactive Unix Terminal Field Manual</h3>
+            <p>
+              Flip through every command, flag (<code>kill -9</code>, <code>rm -rf</code>), live <code>chmod</code>
+              octal/symbolic calculator (<code>755</code>/<code>644</code>/<code>000</code>), regex pattern helper, and
+              instant search — also carried in-game as your <code>manual</code> inventory item (<code>hold manual</code>
+              or press <code>F1</code>).
+            </p>
+          </div>
+          <span class="door-go">Open Field Manual Book</span>
         </a>
       </section>
     </main>

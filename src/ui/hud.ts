@@ -438,7 +438,7 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     achQueue: [],
     achTimer: 0,
     skipBox,
-    items: handlers.drawPortrait ? mountItemsStrip(root, handlers.drawPortrait) : null,
+    items: handlers.drawPortrait ? mountItemsStrip(stageWrap.querySelector<HTMLElement>('#titleblock') ?? root, handlers.drawPortrait) : null,
     drawPortrait: handlers.drawPortrait,
     heroModelId: DEFAULT_HERO_MODEL,
     heroFrame: 0,

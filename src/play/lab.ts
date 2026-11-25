@@ -68,6 +68,7 @@ function swapLabSession(play: Play, packId: string, levelId: string): boolean {
   play.execCount = 0;
   play.execTaunts = null;
   play.codeEditor?.close();
+  play.manualBook?.close();
   play.tutorial.hide();
   play.hud?.hideStats();
   resetScreen();

@@ -1,12 +1,13 @@
 /** `help` and `man` text. Short, because the player reads it mid-fight. */
 import { BESTIARY, type EnemyType } from './bestiary.js';
+import { formatManualTerminalReply } from './manual-catalog.js';
 import { empty, out } from './play.js';
 import type { Step } from './shell.js';
 
 export const COMMANDS = [
   'pwd', 'ls', 'cd', 'cat', 'readlink', 'find', 'touch', 'rm', 'mv', 'cp', 'chmod', 'ln',
   'echo', 'grep', 'wc', 'cut', 'rev', 'sed', 'head', 'tail', 'ps', 'top', 'kill', 'pkill',
-  'source', '.', 'kiro', 'help', 'man', 'status', 'whoami', 'tutorial', 'clear', 'exit', 'logout',
+  'source', '.', 'kiro', 'help', 'man', 'manual', 'status', 'whoami', 'tutorial', 'clear', 'exit', 'logout',
   'inventory', 'inv', 'hold',
 ];
 
@@ -23,6 +24,7 @@ export function helpText(hint: string): string {
     '  shell  ;  &&  ||  |  >  >>   globs *.log   braces {a,b,c}.rune   Tab completes',
     '  carry  inventory (inv)   hold <item>   (ls -a raises the lantern)',
     '  tutorial  the agents\' current prompt   (tutorial skip skips the onboarding)',
+    '  manual [query]   interactive Field Manual book (F1) — flags, -9 signals, chmod math & search',
     '  man <command>, or man <malware>: virus worm trojan bug exploit crack ransomware spyware rootkit zombie forkbomb kernel',
     `\x1b[1;96mHint:\x1b[0m ${hint}`,
   ].join('\n');
@@ -111,11 +113,15 @@ const MAN: Record<string, string[]> = {
   ],
   help: ['help: the cheat sheet and a hint for this room.'],
   man: ['man <command> | man <malware>: the manual.'],
+  manual: [
+    'manual [command|flag|number]: open the interactive comic-book Field Manual (F1).',
+    '  Covers every command, all flags (-9, -rf, -i), chmod numbers (755/644/444/000), and search.',
+  ],
   status: ['status: HP, RAM, SSD backups, malware left on this floor, where you are.'],
   whoami: ['whoami: who you are in here.'],
   inventory: ['inventory (inv): what you carry; * marks the item in your hand.'],
   inv: ['inv: short for inventory.'],
-  hold: ['hold <item>: take an item you carry in your hand (hold lantern, hold laptop).'],
+  hold: ['hold <item>: take an item you carry in your hand (hold lantern, hold terminal, hold manual, hold laptop).'],
   tutorial: ['tutorial: show the agents\' current prompt.   tutorial skip: skip the onboarding.'],
   clear: ['clear: wipe the terminal (Ctrl+L).'],
   exit: ['exit / logout: leave the machine. Only works once the kernel lets go of you.'],
@@ -173,6 +179,19 @@ export function runMan(args: string[]): Step {
   const page = manPage(topic);
   if (!page) return empty(16, `No manual entry for ${topic}\n`);
   return out(`${page}\n`);
+}
+
+export function manualTopics(prefix: string): string[] {
+  const pool = [...COMMANDS, ...Object.keys(BESTIARY), 'signals', 'permissions', 'operators', 'malware'];
+  return [...new Set(pool.filter((name) => name.startsWith(prefix)))].sort();
+}
+
+export function runManual(args: string[]): { query: string; step: Step } {
+  const query = args.join(' ').trim();
+  return {
+    query,
+    step: out(formatManualTerminalReply(query), [{ type: 'VIBECODER_ACTION', action: 'read', command: query ? `manual ${query}` : 'manual' }]),
+  };
 }
 
 export const SIGNAL_LIST = ' 9) SIGKILL  15) SIGTERM  19) SIGSTOP  18) SIGCONT';
