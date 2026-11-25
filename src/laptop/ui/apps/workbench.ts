@@ -145,7 +145,7 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
       strip.results(results);
       if (allPassed(results)) {
         ctx.setProgress(markDone(ctx.progress(), current.id));
-        ctx.sound.beep();
+        ctx.sound.note('solved');
         ctx.pow('SOLVED!');
       } else {
         ctx.sound.note('check-fail');

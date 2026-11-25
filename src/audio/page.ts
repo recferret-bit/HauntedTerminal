@@ -64,6 +64,7 @@ export function bindPointerEvents(root: ParentNode, bus: AppBus, surface: string
   const onClick = (ev: Event): void => {
     const target = ev.target;
     if (!(target instanceof Element)) return;
+    if (target.closest('.lt-scene')) return;
     const ctrl = target.closest(CONTROL_SEL);
     if (!ctrl || isDisabledControl(ctrl) || isLabelForwardClick(target, ctrl)) return;
     if (ctrl.classList.contains('xterm-helper-textarea')) return;

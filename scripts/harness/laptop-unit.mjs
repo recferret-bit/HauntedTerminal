@@ -48,6 +48,7 @@ await withProcgen(async (_p, vite) => {
   const progress = await load('/src/laptop/domain/progress.ts');
   const run = await load('/src/laptop/domain/run.ts');
   const inv = await load('/src/game/inventory.ts');
+  const sound = await load('/src/laptop/runtime/sound.ts');
   const { guardLoops, guardHtmlScripts } = await load('/src/laptop/runtime/loop-guard.ts');
 
   // ---- state machine ----
@@ -129,10 +130,25 @@ await withProcgen(async (_p, vite) => {
     s = desktop.reduceDesktop(s, { type: 'close', app: 'weaver' });
     assert.equal(s.focus, null, 'only a minimised window is left');
     assert.equal(desktop.reduceDesktop(s, { type: 'close', app: 'quests' }), s, 'closing a closed app changes nothing');
+    s = desktop.reduceDesktop(s, { type: 'move-icon', app: 'jspad', x: 9999, y: -40 });
+    assert.deepEqual(s.icons.jspad, { x: desktop.SCREEN.w - desktop.ICON.w, y: 0 }, 'moved icons clamp inside the desktop');
+    s = desktop.reduceDesktop(s, { type: 'arrange-icons' });
+    assert.deepEqual(s.icons.jspad, desktop.defaultIcons().jspad, 'arrange-icons resets icon positions');
   });
-  await test('every app has a title, an icon and a window that fits the screen', () => {
+  await test('every app has a title, a non-redundant icon glyph, and a window that fits the screen', () => {
     assert.deepEqual([...APP_ORDER].sort(), Object.keys(APPS).sort());
     for (const a of Object.values(APPS)) assert.ok(a.title && a.glyph && a.size[0] <= desktop.SCREEN.w && a.size[1] <= desktop.SCREEN.h, a.id);
+    assert.equal(APPS.jspad.glyph, '{}');
+    const q = desktop.reduceDesktop(desktop.emptyDesktop(), { type: 'open', app: 'quests' });
+    assert.ok(q.windows[0].x >= 96, 'initial window opens clear of the desktop icon column');
+  });
+  await test('laptop keyboard sounds distinguish Enter, Backspace/Delete, Tab, and regular keys', () => {
+    assert.equal(sound.keyActionFor('Enter'), 'key-enter');
+    assert.equal(sound.keyActionFor('NumpadEnter'), 'key-enter');
+    assert.equal(sound.keyActionFor('Backspace'), 'key-backspace');
+    assert.equal(sound.keyActionFor('Delete'), 'key-backspace');
+    assert.equal(sound.keyActionFor('Tab'), 'key-tab');
+    assert.equal(sound.keyActionFor('KeyA'), 'key');
   });
 
   // ---- checks ----

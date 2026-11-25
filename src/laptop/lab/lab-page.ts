@@ -96,7 +96,15 @@ function soundBox(lt: LaptopHandle, onMute: (muted: boolean) => void, onUnmuted:
 
 const LAPTOP_ACTIONS: readonly LaptopAction[] = [
   'open', 'close', 'post', 'disk', 'ready', 'trackpad', 'run', 'loop-guard', 'shutdown', 'key',
+  'solved', 'check-fail', 'win-open', 'win-min', 'win-close',
 ];
+
+const KEY_ACTIONS: Readonly<Record<string, 'press' | 'enter' | 'backspace' | 'tab'>> = {
+  key: 'press',
+  'key-enter': 'enter',
+  'key-backspace': 'backspace',
+  'key-tab': 'tab',
+};
 
 function laptopAction(action: string): LaptopAction | null {
   return LAPTOP_ACTIONS.some((name) => name === action) ? action as LaptopAction : null;
@@ -116,7 +124,7 @@ export function startLaptopLab(root: HTMLElement): LaptopHandle {
   const hear = (action: string): void => {
     if (action === 'fan-on') page.bus.emit({ kind: 'loop', cue: 'lap_fan', on: true });
     else if (action === 'fan-off') page.bus.emit({ kind: 'loop', cue: 'lap_fan', on: false });
-    else if (action === 'check-fail') page.bus.emit({ kind: 'command', result: 'fail' });
+    else if (KEY_ACTIONS[action]) page.bus.emit({ kind: 'key', key: KEY_ACTIONS[action] });
     else {
       const name = laptopAction(action);
       if (name) page.bus.emit({ kind: 'laptop', action: name });
@@ -132,7 +140,7 @@ export function startLaptopLab(root: HTMLElement): LaptopHandle {
     machineBox(lt),
     inputBox(lt),
     questBox(lt),
-    soundBox(lt, (next) => page.setMuted(next), () => page.bus.emit({ kind: 'menu', action: 'move' })),
+    soundBox(lt, (next) => page.setMuted(next), () => page.bus.emit({ kind: 'laptop', action: 'trackpad' })),
   );
   const say = (s: LaptopState): void => { caption.textContent = CAPTION[s]; };
   say(lt.machine.state);

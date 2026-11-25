@@ -58,6 +58,8 @@ export default async function laptopSuite({ load }) {
   const action = fc.oneof(
     fc.record({ type: fc.constantFrom('open', 'close', 'focus', 'minimize'), app }),
     fc.record({ type: fc.constant('move'), app, x: fc.integer({ min: -2000, max: 2000 }), y: fc.integer({ min: -2000, max: 2000 }) }),
+    fc.record({ type: fc.constant('move-icon'), app, x: fc.integer({ min: -2000, max: 2000 }), y: fc.integer({ min: -2000, max: 2000 }) }),
+    fc.record({ type: fc.constant('arrange-icons') }),
   );
 
   return [
@@ -110,6 +112,11 @@ export default async function laptopSuite({ load }) {
             for (const w of s.windows) {
               const ok = w.x >= 40 - w.w && w.x <= desktop.SCREEN.w - 40 && w.y >= 0 && w.y <= desktop.SCREEN.h - 24;
               expect(ok, `${w.app} title bar off screen at ${w.x},${w.y}`);
+            }
+            for (const id of APP_ORDER) {
+              const pos = s.icons[id];
+              const ok = pos.x >= 0 && pos.x <= desktop.SCREEN.w - desktop.ICON.w && pos.y >= 0 && pos.y <= desktop.SCREEN.h - desktop.ICON.h;
+              expect(ok, `${id} icon off screen at ${pos.x},${pos.y}`);
             }
           }
         }),

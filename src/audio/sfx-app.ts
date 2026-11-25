@@ -31,6 +31,11 @@ const LAPTOP: Record<Extract<AppEvent, { kind: 'laptop' }>['action'], SfxId> = {
   'loop-guard': 'lap_loop_guard',
   shutdown: 'lap_shutdown',
   key: 'key_press',
+  solved: 'puzzle_solved',
+  'check-fail': 'gate_locked',
+  'win-open': 'file_create',
+  'win-min': 'file_move',
+  'win-close': 'file_remove',
 };
 
 const CINE: Record<Extract<AppEvent, { kind: 'cine' }>['cue'], SfxId> = {
@@ -67,7 +72,7 @@ const SILENT_POINTER_IDS = new Set([
   'chapters-export-save-btn', 'waitlist-export-btn', 'waitlist-submit-btn', 'll-sound',
 ]);
 
-function pointerCues(id: string): SfxId[] {
+function pointerCues(id: string, surface?: string): SfxId[] {
   const low = id.toLowerCase();
   if (!low || SILENT_POINTER_IDS.has(low) || low.startsWith('dev-ev:') || low.startsWith('dev-give:')) return [];
   if (low === 'btn-heal') return ['pickup_energy'];
@@ -78,6 +83,7 @@ function pointerCues(id: string): SfxId[] {
     return ['cmd_ok'];
   }
   if (low === 'outro-again') return ['level_restart'];
+  if (surface === 'laptop') return ['lap_trackpad'];
   return ['menu_move'];
 }
 
@@ -105,7 +111,7 @@ export function appCues(event: AppEvent): SfxId[] {
     case 'page':
       return ['page_turn'];
     case 'pointer':
-      return pointerCues(event.id);
+      return pointerCues(event.id, event.surface);
     default:
       return [];
   }

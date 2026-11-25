@@ -105,7 +105,7 @@ function renderPage(req: RunRequest, slot: PreviewSlot, onLog: ((line: LogLine) 
     cancel();
   };
   window.addEventListener('message', listen);
-  frame.setAttribute('sandbox', 'allow-scripts');
+  if (frame.getAttribute('sandbox') !== 'allow-scripts') frame.setAttribute('sandbox', 'allow-scripts');
   frame.srcdoc = pageSource(req, token);
   return result;
 }

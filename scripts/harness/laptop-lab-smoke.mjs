@@ -71,6 +71,18 @@ try {
   await key('keyUp', 'KeyA', 'a');
   await key('keyUp', 'ShiftLeft', 'Shift');
   check(await $(`document.querySelectorAll('.lt-key.down').length`) === 0, 'released keys come back up');
+  const capsBox = await $(`(() => { const r = document.querySelector('.lt-key[data-code="CapsLock"]').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+  await mouse('mouseMoved', capsBox.x, capsBox.y);
+  await mouse('mousePressed', capsBox.x, capsBox.y, { button: 'left', clickCount: 1 });
+  await mouse('mouseReleased', capsBox.x, capsBox.y, { button: 'left', clickCount: 1 });
+  check(await $(`document.querySelector('.lt-led[data-led="caps"]').dataset.mode`) === 'on', 'clicking CapsLock lights the A indicator');
+  await sleep(180);
+  check(!(await $(`document.querySelector('.lt-key[data-code="CapsLock"]').classList.contains('down')`)), 'CapsLock releases right after click while A indicator stays on');
+  check(await $(`document.querySelector('.lt-led[data-led="caps"]').dataset.mode`) === 'on', 'A indicator stays on after CapsLock releases');
+  await mouse('mousePressed', capsBox.x, capsBox.y, { button: 'left', clickCount: 1 });
+  await mouse('mouseReleased', capsBox.x, capsBox.y, { button: 'left', clickCount: 1 });
+  await sleep(180);
+  check(await $(`document.querySelector('.lt-led[data-led="caps"]').dataset.mode`) === 'off', 'clicking CapsLock again toggles the A indicator off');
 
   // ---- real pointer on the trackpad ----
   const box = await $(`(() => { const r = document.querySelector('.lt-screen').getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; })()`);
@@ -82,13 +94,37 @@ try {
   await mouse('mouseReleased', box.x + box.w * 0.75, box.y + box.h * 0.25, { button: 'left', clickCount: 1 });
   check(!(await $(`document.querySelector('.lt-btn').classList.contains('down')`)), 'and lets it go');
 
-  // ---- desktop windows ----
-  await $(`document.querySelector('.lt-icon[data-app="jspad"]').dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))`);
-  check(await $(`${L}.desktop.state().focus`) === 'jspad', 'a double click on JSPAD.EXE opens and focuses JS Pad');
+  // ---- desktop icons & windows ----
+  const beforePos = await $(`${L}.desktop.state().icons.jspad`);
+  const iconBox = await $(`(() => { const r = document.querySelector('.lt-icon[data-app="jspad"]').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+  await mouse('mouseMoved', iconBox.x, iconBox.y);
+  await mouse('mousePressed', iconBox.x, iconBox.y, { button: 'left', clickCount: 1 });
+  await mouse('mouseMoved', box.x + box.w * 0.72, box.y + box.h * 0.55);
+  await mouse('mouseReleased', box.x + box.w * 0.72, box.y + box.h * 0.55, { button: 'left', clickCount: 1 });
+  const afterPos = await $(`${L}.desktop.state().icons.jspad`);
+  check(afterPos.x > beforePos.x + 100 && afterPos.y > beforePos.y, `dragging JSPAD.EXE moves it on the desktop (${beforePos.x},${beforePos.y} -> ${afterPos.x},${afterPos.y})`);
+  const movedBox = await $(`(() => { const r = document.querySelector('.lt-icon[data-app="jspad"]').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+  await mouse('mouseMoved', movedBox.x, movedBox.y);
+  await mouse('mousePressed', movedBox.x, movedBox.y, { button: 'left', clickCount: 1 });
+  await mouse('mouseReleased', movedBox.x, movedBox.y, { button: 'left', clickCount: 1 });
+  await mouse('mousePressed', movedBox.x, movedBox.y, { button: 'left', clickCount: 2 });
+  await mouse('mouseReleased', movedBox.x, movedBox.y, { button: 'left', clickCount: 2 });
+  check(await $(`${L}.desktop.state().focus`) === 'jspad', 'a real double click on moved JSPAD.EXE opens and focuses JS Pad');
   await $(`document.querySelector('.lt-window[data-app="jspad"] [aria-label^="Minimise"]').click()`);
-  check(await $(`document.querySelector('.lt-window[data-app="jspad"]').hidden`), 'minimise hides the window');
+  check(await $(`document.querySelector('.lt-window[data-app="jspad"]').hidden && getComputedStyle(document.querySelector('.lt-window[data-app="jspad"]')).display === 'none'`), 'minimise visually hides the window');
   await $(`document.querySelector('.lt-taskbtn[data-app="jspad"]').click()`);
-  check(!(await $(`document.querySelector('.lt-window[data-app="jspad"]').hidden`)), 'its taskbar button brings it back');
+  check(!(await $(`document.querySelector('.lt-window[data-app="jspad"]').hidden`)) && await $(`getComputedStyle(document.querySelector('.lt-window[data-app="jspad"]')).display !== 'none'`), 'its taskbar button brings it back');
+
+  // ---- right-click desktop context menu ----
+  await $(`document.querySelector('.lt-window[data-app="jspad"] [aria-label^="Minimise"]').click()`);
+  await mouse('mouseMoved', box.x + box.w * 0.85, box.y + box.h * 0.85);
+  await mouse('mousePressed', box.x + box.w * 0.85, box.y + box.h * 0.85, { button: 'right', clickCount: 1 });
+  await mouse('mouseReleased', box.x + box.w * 0.85, box.y + box.h * 0.85, { button: 'right', clickCount: 1 });
+  check(!(await $(`document.querySelector('.lt-ctxmenu').hidden`)), 'right-clicking the desktop opens the context menu');
+  await $(`document.querySelector('.lt-ctxmenu [data-app="sysinfo"]').click()`);
+  check(await $(`${L}.desktop.state().focus`) === 'sysinfo', 'clicking an app in the desktop context menu opens it');
+  await $(`document.querySelector('.lt-window[data-app="sysinfo"] [aria-label^="Close"]').click()`);
+  await $(`document.querySelector('.lt-taskbtn[data-app="jspad"]').click()`);
 
   // ---- the runners: plain runs, errors, an endless loop ----
   const run = (app, files) => $(`(async () => { const v = ${L}.desktop.view(${JSON.stringify(app)}); v.setFiles(${JSON.stringify(files)}); return v.run(); })()`, 15000);

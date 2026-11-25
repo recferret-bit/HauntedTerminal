@@ -55,7 +55,7 @@ function frontY(tilt: number): number {
  * Share of the view the subject may fill, per framing: height (lid top to front edge) and width.
  * Perspective makes the near deck edge larger, hence the height margin; near may fill the width edge to edge.
  */
-const FILL = { far: { h: 0.8, w: 0.82 }, near: { h: 0.86, w: 1 } } as const;
+const FILL = { far: { h: 0.88, w: 0.9 }, near: { h: 0.93, w: 1 } } as const;
 
 /**
  * Where the camera goes for a look, so the subject fills `vw` x `vh`. `far` frames the whole laptop
@@ -69,7 +69,7 @@ export function framing(look: Pick<StageLook, 'camera' | 'lid'>, vw: number, vh:
   const openTop = lidPointY(L.lidH, tilt);
   const fill = FILL[look.camera];
   const zoom = Math.min((fill.h * vh) / (bottom - openTop), (fill.w * vw) / L.deckW);
-  const top = look.lid === 'up' ? openTop : lidPointY(0, tilt);
+  const top = look.lid === 'up' ? openTop + 44 : lidPointY(0, tilt);
   return { tilt, zoom, shiftY: -zoom * ((top + bottom) / 2) };
 }
 

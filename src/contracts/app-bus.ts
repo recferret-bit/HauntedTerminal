@@ -33,7 +33,8 @@ export interface MusicScene {
 
 export type LaptopAction =
   | 'open' | 'close' | 'post' | 'disk' | 'ready' | 'trackpad'
-  | 'run' | 'loop-guard' | 'shutdown' | 'key';
+  | 'run' | 'loop-guard' | 'shutdown' | 'key'
+  | 'solved' | 'check-fail' | 'win-open' | 'win-min' | 'win-close';
 
 export type LoopCue = 'rain_loop' | 'low_hp_loop' | 'lap_fan';
 

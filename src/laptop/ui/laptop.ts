@@ -53,14 +53,28 @@ function store(key: string | null): { load(): Progress; save(p: Progress): void 
   };
 }
 
+interface InputHooks {
+  onClick(): void;
+  caps(): boolean;
+  onCapsKey(next?: boolean): void;
+  syncCaps(next: boolean): void;
+}
+
 /** Real keyboard and pointer to the deck: keys press, the finger follows the pointer over the screen. */
-function wireInput(view: LaptopView): () => void {
+function wireInput(view: LaptopView, hooks: InputHooks): () => void {
   const onKeyDown = (ev: KeyboardEvent): void => {
-    view.led('caps', ev.getModifierState?.('CapsLock') ? 'on' : 'off');
+    if (ev.code === 'CapsLock') {
+      if (!ev.repeat) hooks.onCapsKey();
+      return;
+    }
+    if (ev.getModifierState?.('CapsLock') && !hooks.caps()) hooks.syncCaps(true);
     view.keyboard.press(ev.code);
   };
   const onKeyUp = (ev: KeyboardEvent): void => {
-    view.led('caps', ev.getModifierState?.('CapsLock') ? 'on' : 'off');
+    if (ev.code === 'CapsLock') {
+      if (ev.getModifierState?.('CapsLock') === false && hooks.caps()) hooks.onCapsKey(false);
+      return;
+    }
     view.keyboard.release(ev.code);
   };
   const onBlur = (): void => {
@@ -74,13 +88,18 @@ function wireInput(view: LaptopView): () => void {
     if (r.width) view.trackpad.touch({ u: (ev.clientX - r.left) / r.width, v: (ev.clientY - r.top) / r.height });
   };
   const onPointerLeave = (): void => view.trackpad.touch(null);
-  const onPointerDown = (ev: PointerEvent): void => view.trackpad.button(ev.button, true);
+  const onPointerDown = (ev: PointerEvent): void => {
+    view.trackpad.button(ev.button, true);
+    const t = ev.target;
+    if (t instanceof Element && view.el.contains(t) && !t.closest('.lt-key')) hooks.onClick();
+  };
   const onPointerUp = (ev: PointerEvent): void => view.trackpad.button(ev.button, false);
   const onPointerCancel = (ev: PointerEvent): void => {
     view.trackpad.button(ev.button, false);
     view.trackpad.touch(null);
   };
   const onWheel = (ev: WheelEvent): void => view.trackpad.scroll(ev.deltaY);
+  const onContextMenu = (ev: MouseEvent): void => ev.preventDefault();
 
   window.addEventListener('keydown', onKeyDown, true);
   window.addEventListener('keyup', onKeyUp, true);
@@ -91,6 +110,7 @@ function wireInput(view: LaptopView): () => void {
   window.addEventListener('pointerup', onPointerUp, true);
   window.addEventListener('pointercancel', onPointerCancel, true);
   window.addEventListener('wheel', onWheel, { passive: true, capture: true });
+  view.el.addEventListener('contextmenu', onContextMenu);
 
   return () => {
     window.removeEventListener('keydown', onKeyDown, true);
@@ -102,6 +122,41 @@ function wireInput(view: LaptopView): () => void {
     window.removeEventListener('pointerup', onPointerUp, true);
     window.removeEventListener('pointercancel', onPointerCancel, true);
     window.removeEventListener('wheel', onWheel, { capture: true } as EventListenerOptions);
+    view.el.removeEventListener('contextmenu', onContextMenu);
+  };
+}
+
+function createCapsController(
+  view: () => LaptopView,
+): {
+  caps(): boolean;
+  trigger(): void;
+  onCapsKey(next?: boolean): void;
+  sync(next: boolean): void;
+  clear(): void;
+} {
+  let caps = false;
+  let timer = 0;
+  let nextCaps: boolean | undefined;
+  return {
+    caps: () => caps,
+    trigger() {
+      caps = nextCaps ?? !caps;
+      nextCaps = undefined;
+      view().led('caps', caps ? 'on' : 'off');
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => view().keyboard.release('CapsLock'), 120);
+    },
+    onCapsKey(next) {
+      view().keyboard.release('CapsLock');
+      nextCaps = next;
+      if (!view().keyboard.press('CapsLock')) nextCaps = undefined;
+    },
+    sync(next) {
+      caps = next;
+      view().led('caps', caps ? 'on' : 'off');
+    },
+    clear: () => window.clearTimeout(timer),
   };
 }
 
@@ -112,11 +167,19 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
   let progress = saved.load();
   const progressFns: ((p: Progress) => void)[] = [];
   const stateFns: ((s: LaptopState, e: LaptopEvent) => void)[] = [];
+  const capsCtrl = createCapsController(() => view);
 
-  const view = createLaptopView((_code, down) => sound.key(down));
+  const view = createLaptopView((code, down) => {
+    sound.key(down, code);
+    if (code === 'CapsLock' && down) capsCtrl.trigger();
+  });
   host.append(view.el);
-  const unhookInput = wireInput(view);
-  view.trackpad.el.addEventListener('pointerdown', () => sound.button());
+  const unhookInput = wireInput(view, {
+    onClick: () => sound.button(),
+    caps: capsCtrl.caps,
+    onCapsKey: capsCtrl.onCapsKey,
+    syncCaps: capsCtrl.sync,
+  });
   // The device answers clicks too: the shut lid opens, the dark screen powers on.
   view.el.addEventListener('click', (ev) => {
     const on = (ev.target as HTMLElement).closest('.lt-lid');
@@ -158,15 +221,19 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
     view.led('disk', state === 'booting' ? 'blink' : 'off');
     if (state === 'booting') {
       view.boot.play(machine.speed);
-      sound.beep();
-      sound.disk(2400 * machine.speed);
+      if (!quiet) {
+        sound.beep();
+        sound.disk(2400 * machine.speed);
+      }
       sound.note('fan-on');
     } else view.boot.stop();
-    if (state === 'opening') sound.note('open');
-    if (state === 'closing') sound.note('close');
-    if (state === 'desktop') sound.note('ready');
+    if (!quiet) {
+      if (state === 'opening') sound.note('open');
+      if (state === 'closing') sound.note('close');
+      if (state === 'desktop') sound.note('ready');
+      if (state === 'shutting') sound.note('shutdown');
+    }
     if (state !== 'booting') sound.note('fan-off');
-    if (state === 'shutting') sound.note('shutdown');
     if (state === 'shutting') desktop.reset();
     if (state === 'desktop') ctx.open('quests');
     stateFns.forEach((fn) => fn(state, event));
@@ -203,6 +270,7 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
     },
     resetProgress: () => ctx.setProgress(emptyProgress()),
     dispose() {
+      capsCtrl.clear();
       unhookInput();
       ro.disconnect();
       view.boot.stop();

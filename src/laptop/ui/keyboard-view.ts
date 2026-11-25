@@ -48,10 +48,19 @@ export function createKeyboard(onKey: (code: string, down: boolean) => void): Ke
     pressed: () => [...down],
   };
 
+  let capsTimer = 0;
+
   el.addEventListener('pointerdown', (ev) => {
     const code = (ev.target as HTMLElement).closest<HTMLElement>('.lt-key')?.dataset.code;
     if (!code) return;
     ev.preventDefault();
+    if (code === 'CapsLock') {
+      view.release('CapsLock');
+      view.press('CapsLock');
+      window.clearTimeout(capsTimer);
+      capsTimer = window.setTimeout(() => view.release('CapsLock'), 120);
+      return;
+    }
     view.press(code);
     const up = (): void => { view.release(code); window.removeEventListener('pointerup', up); };
     window.addEventListener('pointerup', up);
