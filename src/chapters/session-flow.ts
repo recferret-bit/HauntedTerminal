@@ -86,6 +86,12 @@ export function arriveLevel(g: ChapterState): TickResult {
     return { output, events, snapshot: snapshot(g) };
   }
 
+/** Copies every VIBECODER_ACTION with `failed: true` on a non-zero exit; a success leaves the events untouched. */
+function markFailedActions(events: KernelEvent[], code: number | undefined): KernelEvent[] {
+  if (!code) return events;
+  return events.map((e) => (e.type === 'VIBECODER_ACTION' ? { ...e, failed: true } : e));
+}
+
 export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     g.deadNow = false;
     g.deathText = '';
@@ -125,8 +131,8 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
 
     const step = runLine(typed, host);
     const actionEvents: KernelEvent[] = step.events.some((e) => e.type === 'VIBECODER_ACTION')
-      ? step.events
-      : [{ type: 'VIBECODER_ACTION', action: 'type', command: typed }, ...step.events];
+      ? markFailedActions(step.events, step.code)
+      : markFailedActions([{ type: 'VIBECODER_ACTION', action: 'type', command: typed }, ...step.events], step.code);
     const events = [...arrivalEvents, ...actionEvents];
     let combinedOutput = arrivalOut + step.output;
     let combinedStderr = step.stderr;

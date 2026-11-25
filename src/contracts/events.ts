@@ -226,6 +226,8 @@ export type KernelEvent =
       action: 'type' | 'read' | 'write' | 'cast' | 'lantern' | 'collect';
       command: string;
       targetEntityId?: string;
+      /** Set (true) only when the command exited with a non-zero status. Absent means success. */
+      failed?: boolean;
     }
   | {
       type: 'GAME_ENDED';

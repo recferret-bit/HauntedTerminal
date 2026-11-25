@@ -4,7 +4,8 @@ import {
   fxBlock, fxBolt, fxCrystal, fxDisc, fxDrop, fxGlyph, fxMatrixGlyph, fxMatrixGlyphSet, fxPuff, fxRing, fxShard, fxSpark,
   fxSparkle, fxSpeedLine, fxSplat, fxStarburst, fxTornStrip, FX_MATRIX_GLYPHS,
 } from './shapes.js';
-import type { FxKey, FxPreset } from './types.js';
+import type { ZoneId } from '../core/palette.js';
+import type { FxKey, FxLayer, FxPreset } from './types.js';
 
 /**
  * The shipped comic effects, one per game moment (FX_MOMENT_WORDS in catalog.ts).
@@ -28,6 +29,30 @@ const PUFF: FxKey[] = [[0, 1], [0.3, 1.25], [0.7, 0.8]];
 const RING: FxKey[] = [[0, 1], [0.34, 1.35], [0.67, 1.7]];
 /** A glint: on, dim, on, off. */
 const TWINKLE: FxKey[] = [[0, 1.2], [0.3, 0.7], [0.55, 1.1], [0.8, 0.5]];
+
+/** The three orbiting glyph streams of a terminal-command swirl; only the colours differ between success and fault. */
+function matrixSwirlLayers(zones: { stream: ZoneId; trail: ZoneId; head: ZoneId }): FxLayer[] {
+  return [
+    {
+      name: 'stream', role: 'primary', zone: zones.stream, shape: fxMatrixGlyph('fu', 0.25), shapes: fxMatrixGlyphSet(FX_MATRIX_GLYPHS, 0.25),
+      count: 12, emit: 'orbit', origin: [0, -0.14], spawn: { radius: [0.72, 0.92], height: 0.34 }, orbitDepth: 0.5, orbitSweep: [250, 320],
+      orbitRise: [0.72, 1.05], orbitTilt: 20, orbitStreams: 3, orbitLag: 26, orbitTrailY: -0.06, glyphSwapSteps: 2,
+      delayMs: [0, 70], lifeMs: [440, 580], size: [0.88, 1.12], scale: [[0, 1.15], [0.4, 1], [0.75, 0.75], [0.9, 0.45]],
+    },
+    {
+      name: 'trail', role: 'secondary', zone: zones.trail, shape: fxMatrixGlyph('ko', 0.21), shapes: fxMatrixGlyphSet(FX_MATRIX_GLYPHS, 0.21),
+      count: 12, emit: 'orbit', origin: [0, -0.22], spawn: { radius: [0.8, 0.98], height: 0.36 }, orbitDepth: 0.54, orbitSweep: [230, 300],
+      orbitRise: [0.65, 0.98], orbitTilt: 20, orbitStreams: 3, orbitLag: 78, orbitTrailY: -0.16, glyphSwapSteps: 3,
+      delayMs: [40, 130], lifeMs: [380, 520], size: [0.85, 1.1], scale: [[0, 1], [0.5, 0.8], [0.8, 0.5]],
+    },
+    {
+      name: 'head', role: 'accent', zone: zones.head, shape: fxMatrixGlyph('yo', 0.22), shapes: fxMatrixGlyphSet(['fu', 'te', 'hi', 'yo', 're', 'one'], 0.22),
+      count: 3, emit: 'orbit', origin: [0, -0.04], spawn: { radius: [0.7, 0.86], height: 0.24 }, orbitDepth: 0.5, orbitSweep: [270, 330],
+      orbitRise: [0.8, 1.12], orbitTilt: 20, orbitStreams: 3, orbitLag: 0, orbitTrailY: 0.04, glyphSwapSteps: 2,
+      delayMs: [0, 30], lifeMs: [360, 480], size: [0.95, 1.1], scale: [[0, 1.25], [0.35, 1], [0.75, 0.65]],
+    },
+  ];
+}
 
 const presets: FxPreset[] = [
   {
@@ -396,25 +421,20 @@ const presets: FxPreset[] = [
     wrapActor: true,
     durationMs: 680,
     stepFps: 15,
+    layers: matrixSwirlLayers({ stream: 'matrixBright', trail: 'matrixDark', head: 'matrixGlow' }),
+  },
+  {
+    id: 'fx.matrix-fault',
+    label: 'Terminal Matrix red fault swirl',
+    family: 'system',
+    trigger: { event: 'VIBECODER_ACTION', moment: 'matrix-fault', when: 'a command exits non-zero: the Matrix streams swirl red around the vibecoder and glitch blocks tear off' },
+    anchor: 'center',
+    wrapActor: true,
+    durationMs: 680,
+    stepFps: 15,
     layers: [
-      {
-        name: 'stream', role: 'primary', zone: 'matrixBright', shape: fxMatrixGlyph('fu', 0.25), shapes: fxMatrixGlyphSet(FX_MATRIX_GLYPHS, 0.25),
-        count: 12, emit: 'orbit', origin: [0, -0.14], spawn: { radius: [0.72, 0.92], height: 0.34 }, orbitDepth: 0.5, orbitSweep: [250, 320],
-        orbitRise: [0.72, 1.05], orbitTilt: 20, orbitStreams: 3, orbitLag: 26, orbitTrailY: -0.06, glyphSwapSteps: 2,
-        delayMs: [0, 70], lifeMs: [440, 580], size: [0.88, 1.12], scale: [[0, 1.15], [0.4, 1], [0.75, 0.75], [0.9, 0.45]],
-      },
-      {
-        name: 'trail', role: 'secondary', zone: 'matrixDark', shape: fxMatrixGlyph('ko', 0.21), shapes: fxMatrixGlyphSet(FX_MATRIX_GLYPHS, 0.21),
-        count: 12, emit: 'orbit', origin: [0, -0.22], spawn: { radius: [0.8, 0.98], height: 0.36 }, orbitDepth: 0.54, orbitSweep: [230, 300],
-        orbitRise: [0.65, 0.98], orbitTilt: 20, orbitStreams: 3, orbitLag: 78, orbitTrailY: -0.16, glyphSwapSteps: 3,
-        delayMs: [40, 130], lifeMs: [380, 520], size: [0.85, 1.1], scale: [[0, 1], [0.5, 0.8], [0.8, 0.5]],
-      },
-      {
-        name: 'head', role: 'accent', zone: 'matrixGlow', shape: fxMatrixGlyph('yo', 0.22), shapes: fxMatrixGlyphSet(['fu', 'te', 'hi', 'yo', 're', 'one'], 0.22),
-        count: 3, emit: 'orbit', origin: [0, -0.04], spawn: { radius: [0.7, 0.86], height: 0.24 }, orbitDepth: 0.5, orbitSweep: [270, 330],
-        orbitRise: [0.8, 1.12], orbitTilt: 20, orbitStreams: 3, orbitLag: 0, orbitTrailY: 0.04, glyphSwapSteps: 2,
-        delayMs: [0, 30], lifeMs: [360, 480], size: [0.95, 1.1], scale: [[0, 1.25], [0.35, 1], [0.75, 0.65]],
-      },
+      ...matrixSwirlLayers({ stream: 'faultBright', trail: 'faultDark', head: 'faultGlow' }),
+      { name: 'glitch', role: 'accent', zone: 'faultGlow', shape: fxBlock(0.3, 0.09), emit: 'line', spawn: { width: 1.6, height: 1.6 }, angle: [0, 0], speed: [0.5, 2], drag: 6, delayMs: [0, 320], lifeMs: [120, 260], size: [0.6, 1], scale: [[0, 1], [0.5, 0.6]], count: 3 },
     ],
   },
 ];

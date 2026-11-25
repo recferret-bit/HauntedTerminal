@@ -45,7 +45,7 @@ function agentTauntFx(agent: unknown): FxId | null {
 }
 
 /**
- * The event -> FX table. Every KernelEvent variant that has an effect, and every one of the 28 presets.
+ * The event -> FX table. Every KernelEvent variant that has an effect, and every preset in FxCatalog.
  * Beats follow ANIM_EVENT_MAP (src/procgen/anim/events.ts) and the death beats of the malware sheets
  * (`collapse` at 250 ms). Storm strikes and the intro play `fx.lightning-strike` from the stage clock.
  */
@@ -127,7 +127,7 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
     case 'FLOOR_ENTERED':
       return [];
     case 'VIBECODER_ACTION':
-      return [cue('fx.matrix-cast', 'vibecoder-body', 0)];
+      return [cue(ev.failed ? 'fx.matrix-fault' : 'fx.matrix-cast', 'vibecoder-body', 0)];
     case 'AGENT_TAUNT': {
       if (typeof ev.text !== 'string' || !ev.text.trim()) return [];
       const id = agentTauntFx(ev.agent);
@@ -159,6 +159,8 @@ export function eventEntityIds(ev: KernelEvent): string[] {
 export function eventLeadMs(ev: KernelEvent, heroWalkMs: number): number {
   switch (ev.type) {
     case 'VIBECODER_ACTION':
+      // A failed command does not walk to its target (it flinches in place), so nothing waits for a walk.
+      if (ev.failed) return 0;
       return ev.targetEntityId ? heroWalkMs + 160 : ev.action === 'type' ? 0 : 120;
     case 'ENEMY_ATTACK':
       // A tell, one enemy turn ahead of its PLAYER_DAMAGED (a player turn lies between): holding the batch would only delay unrelated events.

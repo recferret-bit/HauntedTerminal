@@ -16,6 +16,8 @@ Capability: When the player runs any non-empty command in the terminal, the vibe
 
 ## Out of scope
 
+- Failed commands play a red variant: see `.kiro/specs/terminal-command-animations/`.
+
 - Adding an onomatopoeia text popup on every command.
 - Changing specific event effects (`fx.hop`, `fx.reveal`, `fx.sigkill`, `fx.gate-open`, etc.) or their words.
 - New terminal commands, level specs, or comix sequences.

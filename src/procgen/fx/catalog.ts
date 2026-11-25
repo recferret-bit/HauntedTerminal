@@ -34,6 +34,7 @@ export const FX_MOMENT_WORDS: Record<FxMoment, string | null> = {
   'agent-coffee': null,
   'agent-gork': null,
   'agent-codec': null,
+  'matrix-fault': null,
 };
 
 export const FX_MOMENTS = Object.keys(FX_MOMENT_WORDS) as FxMoment[];

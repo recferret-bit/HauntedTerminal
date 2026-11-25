@@ -56,7 +56,8 @@ export type FxMoment =
   | 'agent-clod'
   | 'agent-coffee'
   | 'agent-gork'
-  | 'agent-codec';
+  | 'agent-codec'
+  | 'matrix-fault';
 
 /** A KernelEvent type, or a moment the kernel does not announce yet. */
 export type FxEventName = KernelEvent['type'] | 'COMMAND' | 'GAME_TICK' | 'INTRO';

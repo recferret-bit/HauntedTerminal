@@ -1,0 +1,20 @@
+{
+  "seed": 1995,
+  "sizes": ["1280x820"],
+  "frameSize": "1280x820",
+  "fonts": ["Chakra Petch", "IBM Plex Mono"],
+  "pages": {
+    "play": {
+      "selectors": ["#hero-hud", "#hud", "#tutorial-card", ".st-ncard", "#terminal-dock"],
+      "ignoreOverflow": [".xterm", "#dev-inspector"],
+      "allowOverlap": []
+    }
+  },
+  "levels": { "page": "play", "ready": "play", "settle": 1500, "animates": true },
+  "screens": [
+    { "id": "cmd-lock", "page": "play", "ready": "play", "url": "/play/{chapter}/{level:1}?nointro=1", "steps": ["ls"], "settle": 300 },
+    { "id": "cmd-good", "page": "play", "ready": "play", "url": "/play/{chapter}/{level:1}?nointro=1", "steps": ["pwd"], "settle": 300 },
+    { "id": "cmd-unknown", "page": "play", "ready": "play", "url": "/play/{chapter}/{level:1}?nointro=1", "steps": ["id"], "settle": 300 },
+    { "id": "cmd-good-lit", "page": "play", "ready": "play", "url": "/play/{chapter}/{level:2}?nointro=1", "steps": ["pwd", "cat nothing_here.txt"], "settle": 300 }
+  ]
+}

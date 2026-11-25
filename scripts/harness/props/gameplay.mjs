@@ -59,7 +59,30 @@ export default async function gameplaySuite(ctx) {
   /** Events that put a level back in its starting state, so its enemies and pickups may legitimately return. */
   const resets = (events) => events.some((e) => e.type === 'PLAYER_RESPAWNED' || e.type === 'FLOOR_ENTERED');
 
+  const actionsOf = (r) => r.events.filter((x) => x.type === 'VIBECODER_ACTION');
+  /** The lines that always exit non-zero on level 1: a refused lock (`ls` before the lantern), a wrong riddle answer, an unknown command, a syntax error. */
+  const FAILING = ['ls', 'echo wrong > dad.tty.sock', 'frobnicate --now', 'echo "unterminated', 'ls | | cat'];
+
   return [
+    {
+      // Spec: .kiro/specs/terminal-command-animations/. The stage tints a failed command red from this one field.
+      name: 'every VIBECODER_ACTION of a command carries failed:true exactly when the command exits non-zero',
+      build: () =>
+        fc.property(deepPlay, ([levelIdx, steps]) => {
+          let nonZero = 0;
+          const check = (_s, _b, r, step) => {
+            if (typeof step !== 'string') return;
+            const failed = r.code !== undefined && r.code !== 0;
+            if (failed) nonZero += 1;
+            for (const e of actionsOf(r)) {
+              if (failed) expect(e.failed === true, `exit ${r.code} on ${JSON.stringify(step)}: action ${e.action} not marked failed`);
+              else expect(!('failed' in e), `exit ${r.code} on ${JSON.stringify(step)}: action ${e.action} has a failed field`);
+            }
+          };
+          watch(levelIdx, [...FAILING, ...steps], check);
+          expect(nonZero > 0, 'no command exited non-zero, so the property proved nothing');
+        }),
+    },
     {
       name: 'HP stays between 0 and max HP after every command and tick',
       build: () =>

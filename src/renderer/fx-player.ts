@@ -32,6 +32,7 @@ export const FX_IDS = [
   'fx.agent-coffee',
   'fx.agent-gork',
   'fx.agent-codec',
+  'fx.matrix-fault',
 ] as const;
 
 export type FxId = (typeof FX_IDS)[number];

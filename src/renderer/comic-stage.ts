@@ -10,6 +10,7 @@ import type { BuiltModel, ModelAnimator } from '../procgen/index.js';
 import type { RoomKind, RoomView } from './room-view.js';
 import { StageLight, type LightMode } from './stage-light.js';
 import { TweenManager } from './tween.js';
+import { watchReducedMotion, type ReducedMotion } from './reduced-motion.js';
 import { FxPlayer } from './fx-player.js';
 import type { StageActor } from './stage-cast.js';
 import type { PanelBounds } from './stage-cards.js';
@@ -36,6 +37,8 @@ export interface SandboxRenderConfig {
 
 export class ComicStage {
   readonly tweens = new TweenManager();
+  /** The reduce-motion setting: swirl, glitch and flinch give way to a short tint while `on`. */
+  readonly reducedMotion: ReducedMotion = watchReducedMotion();
   readonly config: SandboxRenderConfig = {
     shakeIntensity: 10,
     transitionMs: 420,
