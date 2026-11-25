@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { createComicMaterial, createFloodMaterial, isComic } from '../shaders/comic-material.js';
 import { buildModel, createAnimator, disposeModel, ModelCatalog } from '../procgen/index.js';
 import { roomIdForKind, ROOM } from '../procgen/archetypes/rooms.js';
-import type { RoomKind, RoomView } from './room-view.js';
+import type { RoomKind } from './room-view.js';
 import type { ComicStage } from './comic-stage.js';
 import { ACTOR_Z, defaultRoom, DESIGN_LEFT, DESIGN_RIGHT, disposeTree, LOOK_HOME, themeFor } from './stage-const.js';
 import { removeActor } from './stage-actor.js';
@@ -20,13 +20,10 @@ export function layoutFill(stage: ComicStage, halfW: number, halfH: number): voi
   const midX = (viewLeft + viewRight) / 2;
   const midY = (viewTop + viewBottom) / 2;
   resizePlane(stage.backdrop, viewW, viewH, midX, midY, 1.7);
-  const colW = Math.min(2.8, Math.max(1.7, viewW * 0.2));
-  const gutter = 0.14;
   stage.panelLeft = viewLeft;
-  stage.panelRight = viewRight + colW + gutter;
+  stage.panelRight = viewRight;
   stage.feetY = viewBottom + 0.5;
   stage.viewTop = viewTop;
-  stage.column = { left: viewRight + colW, right: viewRight, top: viewTop - 0.7, bottom: viewBottom + 0.15 };
   const mainW = Math.max(0.4, stage.panelLeft - stage.panelRight);
   const mainCx = (stage.panelLeft + stage.panelRight) / 2;
   stage.plinthMesh.scale.set(mainW, 1, 1);
@@ -87,16 +84,6 @@ export function syncRoomModel(stage: ComicStage, kind: RoomKind): void {
   stage.applyInk(model.group);
 }
 
-/** The neighbour column: crisp DOM comic panels over the column area (no canvas text). */
-export function drawNeighbors(stage: ComicStage, view: RoomView): void {
-  const cards = (view.neighbors ?? []).slice(0, 3).map((n) => ({
-    mark: n.relation === 'parent' ? '..' : n.relation === 'down' ? 'DOWN' : n.relation === 'locked' ? 'LOCKED' : 'NEXT',
-    label: n.label,
-    kind: n.relation === 'locked' ? 'locked' : n.relation === 'down' ? 'down' : '',
-  }));
-  stage.overlay.neighbors(cards, stage.column);
-}
-
 export function buildStageScene(stage: ComicStage): void {
   stage.tweens.clear();
   stage.fxPlayer.clear();
@@ -150,9 +137,6 @@ export function buildStageScene(stage: ComicStage): void {
   stage.flood.position.set(0, 0.7, 0.5);
   stage.flood.visible = false;
   stage.world.add(stage.flood);
-  stage.neighbors.position.set(0, 0, 0);
-  stage.world.add(stage.neighbors);
-  stage.neighbors.clear();
 
   const caption = document.getElementById('stage-caption');
   if (caption) caption.textContent = `${theme.title}   ${theme.path}`;

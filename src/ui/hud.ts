@@ -8,16 +8,14 @@ import {
   el, heroFaceTierForHp, PORTRAIT_FRAMES, type DrawPortrait, type HeroFaceTier,
 } from './dom-lite.js';
 import { mountItemsStrip, type ItemsStrip } from './items-strip.js';
+import { mountLevelBlock, type LevelBlock } from './level-block.js';
 
 export interface HudHandlers {
   onHint(): void;
-  onMute(): void;
-  onRestartFloor(): void;
   onPlayAgain(skipIntroNextTime: boolean): void;
   maxFloors?: number;
   /** Draws the item icons of the strip (the renderer's `drawPortrait`, passed in by `src/play`: `src/ui` imports no three). Without it the strip is not mounted. */
   drawPortrait?: DrawPortrait;
-  onHintShow?: () => void;
 }
 
 export interface EndStats {
@@ -95,8 +93,6 @@ const HUD_HTML = (maxFloors: number) => `
     </div>
     <div class="hud-btns">
       <button type="button" id="hud-hint" title="A nudge for this room">? Hint</button>
-      <button type="button" id="hud-mute" title="Toggle sound">Sound</button>
-      <button type="button" id="hud-restart" title="Restart this floor">Restart floor</button>
     </div>
   `;
 
@@ -139,7 +135,7 @@ interface HudView {
   cmd: HTMLElement;
   time: HTMLElement;
   pause: HTMLElement;
-  mute: HTMLButtonElement;
+  levelBlock: LevelBlock;
   flash: HTMLElement;
   hint: HTMLElement;
   backup: HTMLElement;
@@ -158,7 +154,6 @@ interface HudView {
   lastHp: number;
   lastPips: string;
   hintTimer: number;
-  onHintShow?: () => void;
 }
 
 function renderHeroAvatar(view: HudView): void {
@@ -175,7 +170,7 @@ function renderHeroAvatar(view: HudView): void {
 function mountHeroHud(
   stageWrap: HTMLElement,
   drawPortrait?: DrawPortrait,
-): { root: HTMLElement; avatar: HTMLElement; hpCell: HTMLElement; hpText: HTMLElement; hpBar: HTMLElement; turn: HTMLElement } {
+): { root: HTMLElement; avatar: HTMLElement; hpCell: HTMLElement; hpText: HTMLElement; hpBar: HTMLElement; turn: HTMLElement; levelBlock: LevelBlock } {
   stageWrap.querySelector('#hero-hud')?.remove();
   const avatar = el('div', 'hero-avatar');
   avatar.id = 'hero-avatar';
@@ -209,7 +204,9 @@ function mountHeroHud(
   turn.hidden = true;
   turn.setAttribute('aria-live', 'polite');
 
-  const root = el('div', 'hero-hud', [el('div', 'hero-status-col', [avatar, hpCell, turn]), drawer]);
+  const statusCol = el('div', 'hero-status-col', [avatar, hpCell, turn]);
+  const levelBlock = mountLevelBlock(statusCol);
+  const root = el('div', 'hero-hud', [statusCol, drawer]);
   root.id = 'hero-hud';
   root.dataset.tier = '0';
   root.dataset.frame = '0';
@@ -217,7 +214,7 @@ function mountHeroHud(
   const host = stageWrap.querySelector<HTMLElement>('#titleblock') ?? stageWrap;
   if (typeof host.prepend === 'function') host.prepend(root);
   else host.appendChild(root);
-  return { root, avatar, hpCell, hpText, hpBar, turn };
+  return { root, avatar, hpCell, hpText, hpBar, turn, levelBlock };
 }
 
 function pop(anchor: HTMLElement, text: string, cls: string): void {
@@ -261,8 +258,7 @@ function updateHud(view: HudView, snap: GameSnapshot): void {
   view.cmd.textContent = String(snap.commands);
   view.time.textContent = clock(snap.timeSec);
   view.pause.classList.toggle('on', !!snap.paused);
-  view.mute.textContent = snap.muted ? 'Muted' : 'Sound';
-  view.mute.classList.toggle('off', snap.muted);
+  view.levelBlock.update(snap.level);
   if (snap.inventory) view.items?.update(snap.inventory);
   updateTurn(view, snap.battle);
 }
@@ -336,7 +332,6 @@ function hudApi(view: HudView): Hud {
       showNext();
     },
     showHint(text) {
-      view.onHintShow?.();
       q('p', view.hint).innerHTML = esc(text).replace(/\n/g, '<br>');
       replay(view.hint, 'open');
       globalThis.clearTimeout(view.hintTimer);
@@ -364,14 +359,21 @@ function hudApi(view: HudView): Hud {
   };
 }
 
-function bindHud(root: HTMLElement, fx: HTMLElement, handlers: HudHandlers): void {
+function bindHud(root: HTMLElement, hint: HTMLElement, handlers: HudHandlers): void {
   q<HTMLButtonElement>('#hud-hint', root).onclick = () => handlers.onHint();
-  q<HTMLButtonElement>('#hud-mute', root).onclick = () => handlers.onMute();
-  q<HTMLButtonElement>('#hud-restart', root).onclick = () => handlers.onRestartFloor();
-  q('#fx-hint', fx).onclick = () => q('#fx-hint', fx).classList.remove('open');
+  hint.onclick = () => hint.classList.remove('open');
+}
+
+/** The tips box is not a dialog: it lives in `#titleblock` (left column, under the level block), outside the orchestrator. */
+function mountHintNote(stageWrap: HTMLElement, fx: HTMLElement): HTMLElement {
+  const hint = q('#fx-hint', fx);
+  const host = stageWrap.querySelector<HTMLElement>('#titleblock');
+  if (host) host.appendChild(hint);
+  return hint;
 }
 
 function mountFx(stageWrap: HTMLElement): HTMLElement {
+  stageWrap.querySelector<HTMLElement>('#titleblock > #fx-hint')?.remove();
   stageWrap.querySelector<HTMLElement>('.hud-fx-layer')?.remove();
   const fx = document.createElement('div');
   fx.className = 'hud-fx-layer';
@@ -397,7 +399,8 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
   root.innerHTML = HUD_HTML(handlers.maxFloors ?? 5);
   const hero = mountHeroHud(stageWrap, handlers.drawPortrait);
   const fx = mountFx(stageWrap);
-  bindHud(root, fx, handlers);
+  const hint = mountHintNote(stageWrap, fx);
+  bindHud(root, hint, handlers);
   stats.innerHTML = STATS_HTML;
   const skipBox = q<HTMLInputElement>('#outro-skip', stats);
   q<HTMLButtonElement>('#outro-again', stats).onclick = () => handlers.onPlayAgain(skipBox.checked);
@@ -411,7 +414,6 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
       exportBtn.textContent = 'Export Save (.json)';
     }, 2400);
   };
-  const hint = q('#fx-hint', fx);
   const view: HudView = {
     root,
     stats,
@@ -430,7 +432,7 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     cmd: q('#hud-cmd', root),
     time: q('#hud-time', root),
     pause: q('#hud-pause', root),
-    mute: q<HTMLButtonElement>('#hud-mute', root),
+    levelBlock: hero.levelBlock,
     flash: q('#fx-damage', fx),
     hint,
     backup: q('#fx-backup', fx),
@@ -449,7 +451,6 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     lastHp: -1,
     lastPips: '',
     hintTimer: 0,
-    onHintShow: handlers.onHintShow,
   };
   if (handlers.drawPortrait) {
     view.heroTimer = unrefTimer(globalThis.setInterval(() => {

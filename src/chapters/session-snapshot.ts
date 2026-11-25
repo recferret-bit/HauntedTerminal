@@ -1,17 +1,34 @@
 import { SSD_PER_BACKUP, maxHpFor } from '../game/bestiary.js';
 import { battleView } from '../game/battle.js';
 import { absPath } from '../game/tree.js';
-import type { GameSnapshot, RoomActor, RoomView } from '../game/types.js';
+import type { GameSnapshot, LevelInfo, RoomActor, RoomView } from '../game/types.js';
 import { buildRoom, type SceneFacts, type ViewThing } from '../game/view.js';
 import { computeRunRank, splitParentAndName, type ChapterState } from './session-state.js';
 import { hiddenEnemyId, isNodeHidden, kiroStage, tutorialState } from './script.js';
-import { allWinRulesMet, computeBossPhase } from './session-rules.js';
+import { allWinRulesMet, computeBossPhase, getChecklist } from './session-rules.js';
+
+/** `LOCKED: <first missing> (+N more)`, only in the room that holds the exit door while the exit is locked (D7). */
+function lockedCaption(g: ChapterState, cwdPath: string, exitOpen: boolean): string | null {
+  const exitDir = g.rt.spec.exitDir;
+  if (exitOpen || !exitDir || splitParentAndName(exitDir).parentPath !== cwdPath) return null;
+  const missing = getChecklist(g).filter((c) => !c.done);
+  if (missing.length === 0) return null;
+  const more = missing.length > 1 ? ` (+${missing.length - 1} more)` : '';
+  return `LOCKED: ${missing[0]!.description}${more}`;
+}
+
+/** Title, objective (first unfinished win rule, else the summary, else a default), checklist and bug counts for the HUD level block. */
+function levelInfo(g: ChapterState, counts: { left: number; total: number }): LevelInfo {
+  const checklist = getChecklist(g);
+  const objective = checklist.find((c) => !c.done)?.description || g.rt.spec.summary || 'Open the exit.';
+  return { title: g.rt.spec.title, objective, checklist, bugsLeft: counts.left, bugsTotal: counts.total };
+}
 
 function kiroStageActor(g: ChapterState, cwdPath: string, exitOpen: boolean) {
   return kiroStage(g, g.kiro.stageActorProps(cwdPath, 2.4), cwdPath, exitOpen);
 }
 
-function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, exitBase: string, exitOpen: boolean): void {
+function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, exitBase: string, exitOpen: boolean, lockedCaption: string | null): void {
     // The HUD floor is the level index, also on the ended (stats) room.
     room.floor = g.rt.spec.index;
     if (!g.ended) {
@@ -24,12 +41,7 @@ function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, 
       const dEntry = g.pack.dialogs?.levels[g.rt.spec.id];
       room.caption = exitOpen
         ? `SECTOR CLEAR — ${exitBase ? `cd ${exitBase}` : `run ${g.rt.spec.exitCommand ?? 'exit'}`} to advance!`
-        : dEntry?.banner ?? g.rt.spec.summary;
-
-      // Enforce level chroot visually: hide synthetic `..` parent panel when standing at the level's chroot root `spec.cwd`.
-      if (cwdPath === g.rt.spec.cwd) {
-        room.neighbors = room.neighbors.filter((n) => n.relation !== 'parent');
-      }
+        : lockedCaption ?? dEntry?.banner ?? g.rt.spec.summary;
 
       // Materialize running Docker containers as physical 3D crates on the stage without overlapping existing ground actors!
       const containerNames =
@@ -146,7 +158,7 @@ export function snapshot(g: ChapterState): GameSnapshot {
     };
 
     const room = buildRoom(facts);
-    decorateSnapshotRoom(g, room, cwdPath, exitBase, exitOpen);
+    decorateSnapshotRoom(g, room, cwdPath, exitBase, exitOpen, lockedCaption(g, cwdPath, exitOpen));
 
     const rank = g.ended ? computeRunRank(g.commands, g.deaths, g.levels.length) : null;
     const shortcuts: string[] = [];
@@ -176,5 +188,7 @@ export function snapshot(g: ChapterState): GameSnapshot {
       tutorial: tutorialState(g),
       inventory: { items: [...g.inventory.items], held: g.inventory.held },
       battle: battleView(g.battle),
+      volume: g.volume,
+      level: levelInfo(g, effectiveCounts),
     };
   }

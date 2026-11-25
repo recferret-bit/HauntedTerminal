@@ -3,9 +3,10 @@ import { AgentDirector } from './agents.js';
 import { PICKUP_INFO, type PickupType } from './bestiary.js';
 import { cmdChmod, cmdCp, cmdLn, cmdMv, cmdRm, cmdTouch, redirect } from './commands-fs.js';
 import { cmdCd, cmdFind, cmdLs, cmdReadlink } from './commands-move.js';
-import { cmdKill, cmdPkill, cmdPs, cmdSource } from './commands-proc.js';
+import { cmdKill, cmdPkill, cmdPs, cmdSource, armMessage, decideRestart, parseRestartArgs, type RestartPending } from './commands-proc.js';
 import { cmdCat, cmdCut, cmdEcho, cmdGrep, cmdHeadTail, cmdRev, cmdSed, cmdWc } from './commands-text.js';
 import { World, type WorldHost } from './entities.js';
+import { FLOOR_TITLES } from './floors.js';
 import { runInventory, starterInventory } from './inventory.js';
 import { KiroCompanion } from './kiro.js';
 import { observeLab } from './lab-checks.js';
@@ -31,6 +32,8 @@ export interface Session {
   complete(line: string): { line: string; matches: string[] };
   hint(): string;
   toggleMute(): boolean;
+  /** Master volume of the in-game sounds, 0 to 1. */
+  setVolume(volume: number): void;
   restart(): TickResult;
   restartFloor(): TickResult;
   debugTeleport(floor: FloorId): TickResult;
@@ -56,10 +59,15 @@ export function createSession(options?: ClassicSessionOptions): LabSession {
 
 class Game implements LabSession, Host {
   readonly sfx: Sfx = createSfx();
+  private volume = 1;
   readonly kiro = new KiroCompanion();
   readonly agents = new AgentDirector(this.kiro);
   readonly lab: LabConfig | null;
   deadNow = false;
+  /** Set by a confirmed `restart-level`: the confirming line is not answered by an enemy turn. */
+  private reloadedNow = false;
+  private restartPending: RestartPending | null = null;
+  private ticks = 0;
   deathText = '';
   act: { action: HeroAction; target?: string } = { action: 'type' };
   private lineArgs: string[][] = [];
@@ -84,6 +92,7 @@ class Game implements LabSession, Host {
 
   exec(line: string): CommandResult {
     this.deadNow = false;
+    this.reloadedNow = false;
     const typed = line.trim();
     if (typed) {
       this.run.commands += 1;
@@ -109,7 +118,7 @@ class Game implements LabSession, Host {
         output += stepKiroCrack(this, events);
       }
       // Turn-based: the world (quests, enemies) steps once per command, never in real time.
-      if (!this.run.ended) output += this.stepEnemies(events);
+      if (!this.run.ended && !this.reloadedNow) output += this.stepEnemies(events);
       this.agents.cool();
       const tutoring = this.agents.active();
       const progress = this.agents.observe(this.lineArgs, { failed: ran.code !== 0, leftDesk: this.leftDesk() });
@@ -163,6 +172,7 @@ class Game implements LabSession, Host {
     if (this.run.ended || this.paused || (this.lab !== null && (this.run.intro || this.lab.clock === 'manual'))) {
       return { output: '', events: [], snapshot: this.snapshot() };
     }
+    this.ticks += 1;
     return this.stepWorld(false);
   }
 
@@ -239,6 +249,14 @@ class Game implements LabSession, Host {
       prompt: `dev@haunted:${cwd}$ `,
       promptGold: this.run.ended || portal(this),
       muted: this.run.muted,
+      volume: this.volume,
+      level: {
+        title: FLOOR_TITLES[this.run.floor] ?? `Floor ${this.run.floor}`,
+        objective: 'Find the way down.',
+        checklist: [],
+        bugsLeft: counts.left,
+        bugsTotal: counts.total,
+      },
       ended: this.run.ended,
       rank: this.run.ended ? rank(this) : null,
       timeSec: elapsedSec(this),
@@ -288,7 +306,13 @@ class Game implements LabSession, Host {
     return this.run.muted;
   }
 
+  setVolume(volume: number): void {
+    this.volume = Math.min(1, Math.max(0, Number.isFinite(volume) ? volume : 1));
+    this.sfx.setVolume(this.volume);
+  }
+
   restart(): TickResult {
+    this.restartPending = null;
     const muted = this.run.muted;
     this.run = this.blank(muted);
     const events: KernelEvent[] = [];
@@ -297,6 +321,7 @@ class Game implements LabSession, Host {
   }
 
   private openedFloor(floor: FloorId, output: string): TickResult {
+    this.restartPending = null;
     load(this, floor);
     this.run.hp = maxHp(this);
     const events: KernelEvent[] = [];
@@ -309,6 +334,20 @@ class Game implements LabSession, Host {
     this.run.ram = this.run.entryRam;
     this.run.ssd = this.run.entrySsd;
     return this.openedFloor(this.run.floor, 'Floor restarted.\n');
+  }
+
+  /** `restart-level` / `retry`: arm, then confirm on the next line (or `--yes`). Same rule as the chapter shell. */
+  private cmdRestartLevel(args: string[]): Step {
+    const parsed = parseRestartArgs(args);
+    if ('error' in parsed) return empty(2, parsed.error);
+    const now = { commands: this.run.commands, ticks: this.ticks };
+    if (decideRestart(this.restartPending, now, parsed.yes) === 'arm') {
+      this.restartPending = { armedAtCommand: now.commands, armedAtTick: now.ticks };
+      return out(armMessage(FLOOR_TITLES[this.run.floor] ?? `Floor ${this.run.floor}`));
+    }
+    const res = this.restartFloor();
+    this.reloadedNow = true;
+    return { stdout: res.output, stderr: '', code: 0, events: res.events };
   }
 
   debugTeleport(floor: FloorId): TickResult {
@@ -402,6 +441,8 @@ class Game implements LabSession, Host {
       case 'kiro': return cmdKiro(this, args, stdin);
       case 'help': return out(`${helpText(this.hint())}\n`);
       case 'man': return this.cmdMan(args);
+      case 'restart-level':
+      case 'retry': return this.cmdRestartLevel(args);
       case 'status': return out(statusText(this));
       case 'tutorial': {
         if (args[0] === 'skip' || args[0] === 'off') {

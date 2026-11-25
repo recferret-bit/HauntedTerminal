@@ -119,7 +119,7 @@ export function roomSocket(stage: ComicStage, name: string): THREE.Vector3 | nul
 }
 
 export function floodHeight(stage: ComicStage): number {
-  return 0.02 + (stage.floodPercent / 100) * Math.max(1.2, stage.column.top - stage.column.bottom);
+  return 0.02 + (stage.floodPercent / 100) * Math.max(1.2, stage.viewTop - stage.feetY - 0.35);
 }
 
 export function anchorPoint(stage: ComicStage, anchor: FxAnchor, subject: StageActor | null): THREE.Vector3 {

@@ -18,11 +18,11 @@ A line per property: `ok` or `FAIL`, the time, the name, the runs. Exit code 0 i
 
 | Feature | Examples of what must always hold |
 |---|---|
-| terminal (both shells) | the shell never throws on any line; `cp`, `mv`, `chmod`, `rm` keep their unix meaning; an unreadable file cannot be copied; `sed` with an empty pattern is refused |
+| terminal (both shells) | the shell never throws on any line; `cp`, `mv`, `chmod`, `rm` keep their unix meaning; an unreadable file cannot be copied; `sed` with an empty pattern is refused; `restart-level` arms on a bare run and restarts only on the very next line or `--yes` within 20 ticks; the Esc menu traps keys, never touches the turn timer and keeps a pending restart unchanged |
 | laptop | the state machine stays in known states with timers firing at any moment; one window per app and a sane focus; the loop guard leaves loop-free code alone and still compiles guarded code; saved progress never throws |
 | comix | the shipped comixes simulate after random tuning; the Check tab reports eight kinds of breakage; the canonical writer reproduces every file; cue arithmetic |
 | chapters | random play never throws on any of the 11 levels; the same play gives the same transcript; the Check tab reports ten kinds of breakage; the canonical writer; preview sessions never leak `ACH_*` unlocks; portable save import rejects prototype keys and merges monotonically |
-| gameplay | HP stays in range; dead enemies stay dead; a pickup is collected once; the inventory; a level is left only when its win rules hold; a Kiro hub refuses the wrong core; random play still reaches kills, pickups, attacks and exits |
+| gameplay | HP stays in range; dead enemies stay dead; a pickup is collected once; the inventory; a level is left only when its win rules hold; a Kiro hub refuses the wrong core; every exit door is a `door.ethernet`, locked exactly when the win rules fail; random play still reaches kills, pickups, attacks and exits |
 
 ## Reading a failure
 

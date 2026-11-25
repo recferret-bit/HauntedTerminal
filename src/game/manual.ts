@@ -7,7 +7,7 @@ export const COMMANDS = [
   'pwd', 'ls', 'cd', 'cat', 'readlink', 'find', 'touch', 'rm', 'mv', 'cp', 'chmod', 'ln',
   'echo', 'grep', 'wc', 'cut', 'rev', 'sed', 'head', 'tail', 'ps', 'top', 'kill', 'pkill',
   'source', '.', 'kiro', 'help', 'man', 'status', 'whoami', 'tutorial', 'clear', 'exit', 'logout',
-  'inventory', 'inv', 'hold',
+  'inventory', 'inv', 'hold', 'restart-level', 'retry',
 ];
 
 export function helpText(hint: string): string {
@@ -22,6 +22,7 @@ export function helpText(hint: string): string {
     '  ghost  kiro [scan | load <qwen|mistral|deepseek|llama> | crack <lock>]   cat <file> | kiro',
     '  shell  ;  &&  ||  |  >  >>   globs *.log   braces {a,b,c}.rune   Tab completes',
     '  carry  inventory (inv)   hold <item>   (ls -a raises the lantern)',
+    '  level  restart-level (retry) [--yes]   reload this level; run it twice to confirm',
     '  tutorial  the agents\' current prompt   (tutorial skip skips the onboarding)',
     '  man <command>, or man <malware>: virus worm trojan bug exploit crack ransomware spyware rootkit zombie forkbomb kernel',
     `\x1b[1;96mHint:\x1b[0m ${hint}`,
@@ -118,7 +119,18 @@ const MAN: Record<string, string[]> = {
   hold: ['hold <item>: take an item you carry in your hand (hold lantern, hold laptop).'],
   tutorial: ['tutorial: show the agents\' current prompt.   tutorial skip: skip the onboarding.'],
   clear: ['clear: wipe the terminal (Ctrl+L).'],
-  exit: ['exit / logout: leave the machine. Only works once the kernel lets go of you.'],
+  exit: [
+    'exit / logout: leave the machine. Only works once the kernel lets go of you.',
+    '  On the last level (the boss) there is no door: exit is the way out, and it ends the chapter.',
+  ],
+  'restart-level': [
+    'restart-level [--yes]  (alias: retry): reload the level you are on and drop its progress.',
+    '  First run     arms a confirm and prints what it will do; nothing is reloaded yet.',
+    '  Second run    run restart-level (or retry) again right away to confirm.',
+    '  --yes         restart in one step, at any time (for scripts).',
+    '  The confirm expires on any other command, a level change, or after 20 seconds.',
+    '  restart (no -level) is different: after the last level it plays the whole chapter again.',
+  ],
   mkdir: ['mkdir [-p] <dir>...: create directories. -p creates parent rooms too.'],
   edit: ['edit <file>  (aliases: nano, vim, code): open the Split Code Mini-Editor (Ctrl+S saves).'],
   docker: [
@@ -141,6 +153,8 @@ const MAN: Record<string, string[]> = {
 };
 MAN['.'] = MAN.source ?? [];
 MAN.logout = MAN.exit ?? [];
+MAN.retry = MAN['restart-level'] ?? [];
+MAN.restart = MAN['restart-level'] ?? [];
 MAN.nano = MAN.edit ?? [];
 MAN.vim = MAN.edit ?? [];
 MAN.code = MAN.edit ?? [];

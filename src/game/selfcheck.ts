@@ -450,6 +450,12 @@ const CASES: Case[] = [
   { name: 'man cmd', cmd: 'man kill', expect: '-STOP' },
   { name: 'man malware', cmd: 'man virus', expect: 'kill -9' },
   { name: 'man missing', cmd: 'man frobnicate', expect: 'No manual entry' },
+  { name: 'restart-level arms', cmd: 'restart-level', expect: 'drops its progress', absent: 'Floor restarted' },
+  { name: 'restart-level confirms', setup: ['restart-level'], cmd: 'restart-level', expect: 'Floor restarted' },
+  { name: 'restart-level expires', setup: ['restart-level', 'pwd'], cmd: 'restart-level', expect: 'drops its progress', absent: 'Floor restarted' },
+  { name: 'retry --yes', cmd: 'retry --yes', expect: 'Floor restarted' },
+  { name: 'restart-level bad arg', cmd: 'restart-level now', expect: 'unknown argument' },
+  { name: 'man restart-level', cmd: 'man restart-level', expect: '--yes' },
   { name: 'status', cmd: 'status', expect: /HP 100\/100\s+RAM 0 GB\s+SSD 0 GB \(0 backups\)[\s\S]*malware left 3\/3/ },
   { name: 'whoami', cmd: 'whoami', expect: 'dev' },
   { name: 'inventory', cmd: 'inventory', expect: /\* lantern/ },
@@ -515,6 +521,7 @@ export function runCommandConformance(): string {
   complete('cat ../dr', 'cat ../drive_bay/');
   complete('cd ../c', 'cd ../cellar_hatch/');
   complete('man vir', 'man virus ');
+  complete('restart-l', 'restart-level ');
   complete('ls -la; so', 'ls -la; source ');
   if (!tab.complete('cat ').matches.includes('todo.note') || tab.complete('cat ').matches.includes('cat')) failures.push('complete: argument position lists paths, not commands');
 

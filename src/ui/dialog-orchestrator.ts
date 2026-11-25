@@ -40,7 +40,6 @@ export interface DialogOrchestrator {
   readonly box: DialogBox;
   handleEvent(ev: KernelEvent): void;
   enqueue(line: DialogLine): void;
-  onHintOpened(): void;
   clear(): void;
   stats(): DialogOrchestratorStats;
 }
@@ -89,7 +88,7 @@ function countOpenDialogs(parent: HTMLElement, selector: string): number {
 
 /**
  * Single orchestrator for all in-game corner dialogs (`DIALOG_BOX`, `AGENT_TAUNT`), coordinating left/right
- * turn-taking (`maxConcurrent <= 1`), right-side exclusivity with `.hint-note`, `#tutorial-card` pass-through,
+ * turn-taking (`maxConcurrent <= 1`), `#tutorial-card` pass-through,
  * and chatter yielding while an in-room 3D socket speech balloon is open.
  */
 export function mountDialogOrchestrator(
@@ -155,9 +154,6 @@ export function mountDialogOrchestrator(
   return {
     box,
     enqueue,
-    onHintOpened() {
-      box.dismissSide('right');
-    },
     clear,
     handleEvent(ev) {
       switch (ev.type) {

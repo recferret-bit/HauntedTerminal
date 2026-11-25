@@ -1,0 +1,135 @@
+{
+  "id": "restart-level",
+  "title": "restart-level: arm, confirm, --yes, expiry, retry",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Restart",
+    "summary": "A bare restart-level only arms; the next line confirms."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "file",
+      "path": "/lab/readme.txt",
+      "content": "restart lab\n"
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "touch /lab/mark.txt",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "run",
+      "line": "restart-level",
+      "note": "A bare run only arms: nothing is reloaded.",
+      "expect": {
+        "code": 0,
+        "stdout": "[RESTART]",
+        "file": {
+          "path": "/lab/mark.txt"
+        }
+      }
+    },
+    {
+      "op": "run",
+      "line": "restart-level",
+      "note": "The very next line confirms and reloads the level.",
+      "expect": {
+        "code": 0,
+        "stdout": "[RETRY]",
+        "file": {
+          "path": "/lab/mark.txt",
+          "absent": true
+        }
+      }
+    },
+    {
+      "op": "run",
+      "line": "touch /lab/mark.txt",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "run",
+      "line": "restart-level --yes",
+      "note": "--yes restarts in one step.",
+      "expect": {
+        "code": 0,
+        "stdout": "[RETRY]",
+        "file": {
+          "path": "/lab/mark.txt",
+          "absent": true
+        }
+      }
+    },
+    {
+      "op": "run",
+      "line": "touch /lab/mark.txt",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "run",
+      "line": "restart-level",
+      "expect": {
+        "stdout": "[RESTART]"
+      }
+    },
+    {
+      "op": "run",
+      "line": "pwd",
+      "note": "Any other line in between expires the confirm.",
+      "expect": {
+        "code": 0
+      }
+    },
+    {
+      "op": "run",
+      "line": "restart-level",
+      "note": "Expired: this run arms again and reloads nothing.",
+      "expect": {
+        "code": 0,
+        "stdout": "[RESTART]",
+        "file": {
+          "path": "/lab/mark.txt"
+        }
+      }
+    },
+    {
+      "op": "run",
+      "line": "retry",
+      "note": "retry is the same command: it confirms the armed restart.",
+      "expect": {
+        "code": 0,
+        "stdout": "[RETRY]",
+        "file": {
+          "path": "/lab/mark.txt",
+          "absent": true
+        }
+      }
+    },
+    {
+      "op": "run",
+      "line": "retry --yes",
+      "expect": {
+        "code": 0,
+        "stdout": "[RETRY]"
+      }
+    }
+  ]
+}

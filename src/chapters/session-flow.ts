@@ -94,6 +94,7 @@ function markFailedActions(events: KernelEvent[], code: number | undefined): Ker
 
 export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     g.deadNow = false;
+    g.reloadedNow = false;
     g.deathText = '';
     const typed = line.trim();
     if (g.intro) g.intro = false;
@@ -138,7 +139,9 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     let combinedStderr = step.stderr;
     const levelChanged = g.levelIdx !== prevLevelIdx;
 
-    if (!g.deadNow && !g.ended && !levelChanged) {
+    if (g.reloadedNow) {
+      // `restart-level` reloaded the level: the fresh level gets no world step and no enemy turn for this line.
+    } else if (!g.deadNow && !g.ended && !levelChanged) {
       syncValidatedCodeBugs(g);
       g.rt.world.sync(events);
       refreshExitGates(g, events);
@@ -239,6 +242,11 @@ export function toggleMute(g: ChapterState): boolean {
     g.muted = !g.muted;
     g.sfx.setMuted(g.muted);
     return g.muted;
+  }
+
+export function setVolume(g: ChapterState, volume: number): void {
+    g.volume = Math.min(1, Math.max(0, Number.isFinite(volume) ? volume : 1));
+    g.sfx.setVolume(g.volume);
   }
 
 export function restart(g: ChapterState): TickResult {

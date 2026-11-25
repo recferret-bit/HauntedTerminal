@@ -17,7 +17,7 @@ export interface StageLike {
   devNoStorm?: boolean;
   debugState(): {
     actors: { id: string; visible: boolean; exiting: boolean; dead: boolean }[]; queued: number; fx: number; played: string[]; errors: string[];
-    overlay?: { transient: number; cards: number; badges: number; links: number; column: number };
+    overlay?: { transient: number; cards: number; badges: number; links: number };
   };
 }
 

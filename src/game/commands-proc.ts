@@ -205,3 +205,46 @@ export function cmdSource(g: Play, args: string[]): Step {
   }
   return collectStep(g, pickup, node, path);
 }
+
+/** Game-clock ticks a pending `restart-level` confirm stays valid (Req 17). */
+export const RESTART_CONFIRM_TICKS = 20;
+
+/** Counters stored when a confirm was armed. */
+export interface RestartPending {
+  armedAtCommand: number;
+  armedAtTick: number;
+}
+
+/** Counters of the line being run now: `commands` already counts this line. */
+export interface RestartNow {
+  commands: number;
+  ticks: number;
+}
+
+/**
+ * Pure rule shared by both shells. Caller contract: build `now` from the level
+ * command and tick counters when the command runs; on 'arm' store
+ * `{ armedAtCommand: now.commands, armedAtTick: now.ticks }` and print
+ * `armMessage(title)` with exit code 0; on 'restart' clear the pending state and
+ * reload the level. Keep the state on the level runtime so a level load drops it.
+ */
+export function parseRestartArgs(args: string[]): { yes: boolean } | { error: string } {
+  let yes = false;
+  for (const a of args) {
+    if (a !== '--yes') return { error: `restart-level: unknown argument '${a}' (usage: restart-level [--yes])\n` };
+    yes = true;
+  }
+  return { yes };
+}
+
+export function decideRestart(pending: RestartPending | null, now: RestartNow, yes: boolean): 'arm' | 'restart' {
+  if (yes) return 'restart';
+  if (pending && now.commands === pending.armedAtCommand + 1 && now.ticks - pending.armedAtTick <= RESTART_CONFIRM_TICKS) {
+    return 'restart';
+  }
+  return 'arm';
+}
+
+export function armMessage(title: string): string {
+  return `[RESTART] This reloads "${title}" and drops its progress. Run restart-level again, or restart-level --yes, to confirm.\n`;
+}

@@ -15,6 +15,10 @@ export interface GameSnapshot {
   prompt: string;
   promptGold: boolean;
   muted: boolean;
+  /** Master volume of the in-game sounds, 0 to 1 (absent: 1). */
+  volume?: number;
+  /** The level the hero is in, for the HUD level block and the Esc menu. */
+  level?: LevelInfo;
   ended: boolean;
   rank: 'C' | 'B' | 'A' | 'S' | null;
   timeSec: number;
@@ -38,6 +42,15 @@ export interface GameSnapshot {
   inventory: { items: ItemId[]; held: ItemId };
   /** The running battle (turn-based combat), or null outside one. Classic floors never have one. */
   battle: BattleView | null;
+}
+
+/** Name, objective and win-rule checklist of the current level. Classic floors have an empty checklist. */
+export interface LevelInfo {
+  title: string;
+  objective: string;
+  checklist: { description: string; done: boolean }[];
+  bugsLeft: number;
+  bugsTotal: number;
 }
 
 /** What the HUD and tools see of a battle (`src/game/battle.ts`). */

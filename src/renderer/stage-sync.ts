@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { ModelCatalog } from '../procgen/index.js';
-import { isComic } from '../shaders/comic-material.js';
+import { ModelCatalog, ZONES } from '../procgen/index.js';
+import { isComic, type ComicMaterial } from '../shaders/comic-material.js';
 import { eventEntityIds } from './event-fx.js';
 import type { RoomActor, RoomView } from './room-view.js';
 import { heroFaceTierForHp, type HeroFaceTier } from './portrait.js';
@@ -10,7 +10,7 @@ import {
 import { ACTOR_Z, lockedNames, themeFor } from './stage-const.js';
 import { doorLocked, fade, pendingQueuedSpawn, queuedFor, removeActor, setRest } from './stage-actor.js';
 import { clearBubble, playFx, say } from './stage-fx.js';
-import { applyLantern, drawNeighbors, placeX, syncFlood, syncRoomModel } from './stage-layout.js';
+import { applyLantern, placeX, syncFlood, syncRoomModel } from './stage-layout.js';
 import { closeDoor, kill, openDoor, playEntrance } from './stage-motion.js';
 import { anchorPoint, roomSocket } from './stage-resolve.js';
 import type { ComicStage } from './comic-stage.js';
@@ -77,7 +77,6 @@ export function syncRoomInner(stage: ComicStage, view: RoomView): void {
   syncFlood(stage);
   if (!roomChanged && stage.floodPercent > stage.lastFlood + 4) playFx(stage, 'fx.flood-splash', anchorPoint(stage, 'flood', null), {}, 'flood');
   stage.lastFlood = stage.floodPercent;
-  drawNeighbors(stage, view);
   stage.lastPath = view.path;
   stage.xrayOn = !!view.xray || stage.xrayProcs.length > 0;
   if (!view.xray && stage.xrayProcs.length === 0) stage.xrayOn = false;
@@ -176,6 +175,29 @@ export function applyActor(stage: ComicStage, a: StageActor, ra: RoomActor, inde
   }
 }
 
+/**
+ * The door's status lamp (`led`) shows the lock: lockRed while locked, phosphor otherwise. It is a runtime
+ * tint (no model change). The lamp gets its own material and colour once, so the zone's other parts and the
+ * animator's zone-wide tint never repaint it; every other uniform stays shared (blink, flash, time).
+ */
+function tintDoorLed(a: StageActor, locked: boolean): void {
+  const mesh = a.model.parts.get('led');
+  if (!mesh || Array.isArray(mesh.material)) return;
+  let mat = mesh.material as ComicMaterial;
+  if (!mat.userData.ledOwn) {
+    const own = mat.clone() as ComicMaterial;
+    for (const key of Object.keys(mat.uniforms)) own.uniforms[key] = mat.uniforms[key]!;
+    own.uniforms.uColor = { value: (mat.uniforms.uColor!.value as THREE.Color).clone() };
+    own.userData.comic = true;
+    own.userData.ledOwn = true;
+    mesh.material = own;
+    a.model.allMaterials.push(own);
+    a.all.push(own);
+    mat = own;
+  }
+  (mat.uniforms.uColor!.value as THREE.Color).setHex(ZONES[locked ? 'lockRed' : 'phosphor'].color);
+}
+
 /** Pips, PS_XRAY plates and lock plates for every actor. */
 export function syncOverlays(stage: ComicStage): void {
   const procs = new Map(stage.xrayProcs.map((p) => [p.pid, p]));
@@ -202,6 +224,7 @@ export function syncOverlays(stage: ComicStage): void {
       }
       shown.lockedShown = locked;
       b.badge.locked = locked;
+      tintDoorLed(a, locked);
     }
   }
 }

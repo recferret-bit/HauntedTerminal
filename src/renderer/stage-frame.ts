@@ -95,7 +95,7 @@ function lightFrame(stage: ComicStage, dt: number): void {
     feetY: stage.feetY,
     panelLeft: stage.panelLeft,
     panelRight: stage.panelRight,
-    panelTop: stage.column.top + 0.7,
+    panelTop: stage.viewTop,
     dark: !!stage.view?.dark,
     heroGlow: h && !h.disposed && h.group.visible ? new THREE.Vector3(h.group.position.x, stage.feetY + 0.85, 0) : null,
     flash: stage.lightning.flashStrength,

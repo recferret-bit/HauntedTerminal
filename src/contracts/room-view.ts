@@ -52,6 +52,7 @@ export interface RoomView {
   dark?: boolean;
   xray: boolean;
   actors: RoomActor[];
+  /** Feeds door locks only (a `locked` relation locks the door of that name); the stage no longer draws these panels. */
   neighbors: NeighborPanel[];
   caption: string;
 }

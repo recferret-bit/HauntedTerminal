@@ -18,6 +18,9 @@ Use these words exactly; do not invent synonyms.
 - **Lock** (`script.locks`): `{ command, until, message }`; the command is refused with `message` until the condition `until` holds. Level 1 locks `ls` until `has_item lantern`.
 - **Items strip**: the HUD row with one slot per inventory item (`src/ui/items-strip.ts`): dim = not carried, highlighted = held. `GameSnapshot.inventory` feeds it.
 - **Dark** (`RoomView.dark`): true while the developer does not carry the lantern; the stage then lights him only with his terminal's glow.
+- **Esc menu**: the modal menu Esc opens during play (`src/ui/esc-menu.ts`, wired in `src/play/menu.ts`): level details, sound (mute and volume, saved under `SOUND_PREF_KEY`), Restart level (two steps) and Back to main menu (one confirm line). It is not a pause: it adds no pause reason, never holds the turn timer, and a battle turn timer keeps running under it. Spec: `.kiro/specs/esc-menu-hud-rework/`.
+- **Level block**: the small card under HP and turn in the HUD avatar card (`src/ui/level-block.ts`): level name and the one-line objective. `GameSnapshot.level` feeds it.
+- **`restart-level`** (alias `retry`): reloads the current level. A bare run arms a confirm; the next line being `restart-level` again, or `--yes` at once, restarts; any other line, a level change or more than 20 ticks expires it. Not `restart` (Play Again after the chapter ends). Rule in `src/game/commands-proc.ts`, used by both shells.
 - **Interpreter**: `src/chapters/script.ts`, the only code that acts on a script.
 - **Win rule**: a condition on the world that must hold for the exit gate to open. Not a script condition.
 - **Grant**: hardware or a Kiro core a player already owns when entering a late level directly (`manifest.grants`).
