@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { FxCatalog } from '../../procgen/fx/catalog.js';
+import { resolveFxLight } from '../../procgen/fx/simulate.js';
 import type { FxPreset } from '../../procgen/fx/types.js';
-import { createFxEmitter, type FxEmitter } from '../../procgen/runtime/fx-emitter/index.js';
+import { createFxEmitter, fxEmitterWorldLight, type FxEmitter } from '../../procgen/runtime/fx-emitter/index.js';
 import type { Bounds } from '../domain/framing.js';
 import type { PartAnimator } from './part-animator.js';
 import type { Subject, SubjectOptions } from './types.js';
@@ -42,7 +43,13 @@ function replayAnimator(emitter: FxEmitter, preset: FxPreset): PartAnimator {
 }
 
 function fxLore(preset: FxPreset): string {
-  return [preset.trigger?.moment ? `moment: ${preset.trigger.moment}` : '', `anchor: ${preset.anchor}`, preset.flash ? `flash ${preset.flash}` : '']
+  const light = resolveFxLight(preset);
+  return [
+    preset.trigger?.moment ? `moment: ${preset.trigger.moment}` : '',
+    `anchor: ${preset.anchor}`,
+    `light: ${light.zone} r=${light.radius} p=${light.power}`,
+    preset.flash ? `flash ${preset.flash}` : '',
+  ]
     .filter(Boolean)
     .join(' · ');
 }
@@ -59,6 +66,12 @@ export function buildFxSubject(id: string, opts: SubjectOptions): Subject {
   const animator = replayAnimator(emitter, preset);
   animator.apply(0, 'normal', 'rest');
 
+  const glow: THREE.Mesh[] = [];
+  emitter.group.traverse((obj) => {
+    const mesh = obj as THREE.Mesh;
+    if (mesh.isMesh && !mesh.userData.outline && mesh.userData.zone !== 'ink') glow.push(mesh);
+  });
+
   return {
     kind: 'fx',
     id,
@@ -69,12 +82,13 @@ export function buildFxSubject(id: string, opts: SubjectOptions): Subject {
     // The emitter's own array: materials made later (per alpha step) are fed too.
     materials: emitter.materials,
     bounds,
-    glow: [],
+    glow,
     built: null,
     spec: null,
     animator,
     sockets: {},
     info: null,
+    fxLight: () => fxEmitterWorldLight(emitter),
     dispose: () => emitter.dispose(),
   };
 }

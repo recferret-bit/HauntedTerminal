@@ -4,8 +4,8 @@ import { anyWithinRadius, celBand, rasterTriangle, type PixelWindow } from '../c
 import type { PixelBuffer } from '../core/types.js';
 import { FX_WORD_DEFAULT_SIZE, fxLayoutWord, fxWordSoup } from './lettering.js';
 import { fxShapeSoup, type FxSoup } from './shapes.js';
-import { fxSimulate, fxWordState } from './simulate.js';
-import type { FxPreset } from './types.js';
+import { FX_ROLE_EMISSIVE_FLOOR, fxLightState, fxSimulate, fxWordState } from './simulate.js';
+import type { FxLightState, FxPreset } from './types.js';
 
 /**
  * Software preview of one frame of an effect, as the game camera sees it: page plane, flat cel
@@ -148,6 +148,36 @@ export function fxKeylineColor(zoneId: keyof typeof ZONES, outline = true): numb
   return zoneId === 'ink' ? PAPER : INK;
 }
 
+/** Stepped 3-ring Ben-Day light pool on the preview backdrop, mirroring comicFxLight() in comic-material.ts. */
+function drawLightPool(buf: PixelBuffer, light: FxLightState | null, ox: number, oy: number, ppu: number): void {
+  if (!light || light.power <= 0.001) return;
+  const cx = ox + light.x * ppu;
+  const cy = oy - light.y * ppu;
+  const radPx = Math.max(1, light.radius * ppu);
+  const [lr, lg, lb] = hexToRgb(light.color);
+  const x0 = Math.max(0, Math.floor(cx - radPx));
+  const y0 = Math.max(0, Math.floor(cy - radPx));
+  const x1 = Math.min(buf.width - 1, Math.ceil(cx + radPx));
+  const y1 = Math.min(buf.height - 1, Math.ceil(cy + radPx));
+  for (let y = y0; y <= y1; y++) {
+    for (let x = x0; x <= x1; x++) {
+      const dist = Math.hypot(x - cx, y - cy);
+      const cellX = Math.floor(x / 3);
+      const cellY = Math.floor(y / 3);
+      const dth = (((cellX + cellY * 2) % 4) / 4 - 0.375) * 0.16;
+      const fall = 1 - dist / radPx + dth;
+      const ring = fall > 0.64 ? 1 : fall > 0.34 ? 0.58 : fall > 0 ? 0.26 : 0;
+      if (ring <= 0) continue;
+      const lit = Math.min(1.4, ring * light.power);
+      const i = (y * buf.width + x) * 4;
+      const br = buf.data[i]!, bg = buf.data[i + 1]!, bb = buf.data[i + 2]!;
+      buf.data[i] = Math.min(255, Math.round(br + (br * (lr / 255) * 0.45 + lr * 0.16) * lit));
+      buf.data[i + 1] = Math.min(255, Math.round(bg + (bg * (lg / 255) * 0.45 + lg * 0.16) * lit));
+      buf.data[i + 2] = Math.min(255, Math.round(bb + (bb * (lb / 255) * 0.45 + lb * 0.16) * lit));
+    }
+  }
+}
+
 /** Draw the effect at `tMs`. Pure and deterministic. */
 export function fxRenderFrame(preset: FxPreset, tMs: number, opts: FxFrameOptions = {}): PixelBuffer {
   const ppu = opts.pxPerUnit ?? 58;
@@ -158,6 +188,7 @@ export function fxRenderFrame(preset: FxPreset, tMs: number, opts: FxFrameOption
   const originY = preset.anchor === 'feet' ? 0.72 : preset.anchor === 'top' ? 0.42 : 0.56;
   const [ox, oy] = opts.origin ?? [Math.round(width / 2), Math.round(height * originY)];
   const outlinePx = opts.outlinePx ?? Math.max(1, Math.round(0.028 * ppu));
+  const light = bg === null ? null : fxLightState(preset, tMs);
 
   const drawGhost = (): void => {
     if (opts.reference === false || bg === null) return;
@@ -175,6 +206,7 @@ export function fxRenderFrame(preset: FxPreset, tMs: number, opts: FxFrameOption
       const layer = preset.layers[p.layer]!;
       const zone = ZONES[layer.zone] as { color: number; emissive?: number; opacity?: number };
       const shape = (p.shapeIndex !== undefined ? layer.shapes?.[p.shapeIndex] : undefined) ?? layer.shape;
+      const emissive = zone.color === INK ? 0 : Math.max(zone.emissive ?? 0, FX_ROLE_EMISSIVE_FLOOR[layer.role]);
       stamp(buf, {
         soup: fxShapeSoup(shape),
         px: ox + p.x * ppu,
@@ -183,7 +215,7 @@ export function fxRenderFrame(preset: FxPreset, tMs: number, opts: FxFrameOption
         rotY: p.rotY,
         scale: p.scale * ppu,
         color: zone.color,
-        emissive: zone.emissive ?? 0,
+        emissive,
         alpha: p.alpha * (zone.opacity ?? 1),
         outline: fxKeylineColor(layer.zone, layer.outline !== false),
         outlinePx,
@@ -191,17 +223,20 @@ export function fxRenderFrame(preset: FxPreset, tMs: number, opts: FxFrameOption
     }
   };
   if (preset.wrapActor) {
+    drawLightPool(buf, light, ox, oy, ppu);
     drawParticles(states.filter((p) => p.z < 0));
     drawGhost();
     drawParticles(states.filter((p) => p.z >= 0));
   } else {
     drawGhost();
+    drawLightPool(buf, light, ox, oy, ppu);
     drawParticles(states);
   }
 
   const word = fxWordState(preset, tMs, opts.text);
   if (word && preset.onomatopoeia) {
     const zone = ZONES[preset.onomatopoeia.zone] as { color: number; emissive?: number };
+    const wordEmissive = zone.color === INK ? 0 : Math.max(zone.emissive ?? 0, FX_ROLE_EMISSIVE_FLOOR.primary);
     stamp(buf, {
       soup: fxWordSoup(fxLayoutWord(word.text, preset.onomatopoeia.size ?? FX_WORD_DEFAULT_SIZE)),
       px: ox + word.x * ppu,
@@ -209,7 +244,7 @@ export function fxRenderFrame(preset: FxPreset, tMs: number, opts: FxFrameOption
       rot: word.rot,
       scale: word.scale * ppu,
       color: zone.color,
-      emissive: zone.emissive ?? 0,
+      emissive: wordEmissive,
       alpha: word.alpha,
       outline: preset.onomatopoeia.zone === 'ink' ? PAPER : INK,
       outlinePx: Math.max(2, outlinePx),

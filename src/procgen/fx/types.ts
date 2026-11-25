@@ -179,6 +179,20 @@ export interface FxOnomatopoeia {
   size?: number;
 }
 
+/** Stepped comic light pool cast onto the room and nearby actors while an effect is alive. */
+export interface FxLightSpec {
+  /** Palette zone that tints the emitted light pool (must match the preset's palette family). */
+  zone: ZoneId;
+  /** Page-space light radius in world units (0..8). */
+  radius: number;
+  /** Peak stepped intensity (0..2.5). */
+  power: number;
+  /** Stepped intensity envelope over [0, 1) of durationMs. Default: pops on frame 1 and steps down. */
+  envelope?: FxKey[];
+  /** Optional offset from the effect origin in page space `[x, y]`. */
+  offset?: Vec2;
+}
+
 export interface FxPreset {
   /** `fx.<name>` */
   id: string;
@@ -195,6 +209,8 @@ export interface FxPreset {
   stepFps?: number;
   layers: FxLayer[];
   onomatopoeia?: FxOnomatopoeia;
+  /** Comic light source emitted by this effect. When omitted, derived from the preset's layers. */
+  light?: FxLightSpec;
   /** Screen shake multiplier, the argument of ComicStage.triggerShake (0.8 light, 1.6 heavy). */
   shake?: number;
   /** Peak `uFlash` for every comic material (5.5 is a lightning strike). */
@@ -239,4 +255,17 @@ export interface FxWordState {
   rot: number;
   scale: number;
   alpha: number;
+}
+
+/** Evaluated stepped light pool emitted by an active FX at `tMs`. */
+export interface FxLightState {
+  zone: ZoneId;
+  color: number;
+  /** Page-space offset from effect origin. */
+  x: number;
+  y: number;
+  /** Page-space light radius in world units. */
+  radius: number;
+  /** Active stepped intensity (> 0). */
+  power: number;
 }

@@ -4,6 +4,7 @@ import { FX_WORD_DEFAULT_SIZE, FX_WORD_MAX_CHARS, fxLayoutWord, fxWordUnsupporte
 import { fxShapeSoup } from './shapes.js';
 import { fxEvaluate, fxSpawn, fxStepMs } from './simulate.js';
 import { FX_LIMITS, fxDeltaE, type FxAdd, type FxIssue } from './validate-core.js';
+import { keyProblems } from './validate-layers.js';
 import type { FxLayer, FxPreset } from './types.js';
 
 const L = FX_LIMITS;
@@ -147,7 +148,29 @@ export function checkWord(preset: FxPreset, checkZone: (zoneId: string, where: s
   }
 }
 
-export function checkImpact(preset: FxPreset, add: FxAdd): void {
+export function checkImpact(preset: FxPreset, checkZone: (zoneId: string, where: string) => boolean, add: FxAdd): void {
   if ((preset.shake ?? 0) < 0 || (preset.shake ?? 0) > L.maxShake) add('error', 'FX_IMPACT', `shake ${preset.shake} is outside 0..${L.maxShake}`);
   if ((preset.flash ?? 0) < 0 || (preset.flash ?? 0) > L.maxFlash) add('error', 'FX_IMPACT', `flash ${preset.flash} is outside 0..${L.maxFlash}`);
+  const light = preset.light;
+  if (!light) return;
+  checkZone(light.zone, 'light');
+  if (light.zone === 'ink') {
+    add('error', 'FX_IMPACT', 'light zone cannot be `ink`: a comic light source must emit visible colour');
+  }
+  if (!(light.radius > 0 && light.radius <= L.maxLightRadius)) {
+    add('error', 'FX_IMPACT', `light radius ${light.radius} is outside (0..${L.maxLightRadius}]`);
+  }
+  if (!(light.power > 0 && light.power <= L.maxLightPower)) {
+    add('error', 'FX_IMPACT', `light power ${light.power} is outside (0..${L.maxLightPower}]`);
+  }
+  if (light.offset) {
+    const [ox, oy] = light.offset;
+    if (!Number.isFinite(ox) || !Number.isFinite(oy) || Math.abs(ox) > 4 || Math.abs(oy) > 4) {
+      add('error', 'FX_IMPACT', `light offset [${ox}, ${oy}] must be finite within [-4, 4]`);
+    }
+  }
+  if (light.envelope) {
+    const envErr = keyProblems(light.envelope, 2);
+    if (envErr) add('error', 'FX_KEYS', `light envelope ${envErr}`);
+  }
 }

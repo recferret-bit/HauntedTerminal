@@ -33,7 +33,7 @@ export function buildWord(preset: FxPreset, text: string | undefined, inkWeight:
   const face = soupGeometry(fxWordSoup(layout));
   const back = soupGeometry(fxWordSoup(layout, Math.max(inkWeight, layout.cell * 0.45)));
   parts.geometries.push(face, back);
-  const material = zoneMaterial(zone, 1);
+  const material = zoneMaterial(zone, 1, 'primary');
   material.side = THREE.DoubleSide;
   parts.materials.push(material);
   const backMat = new THREE.MeshBasicMaterial({ color: zoneId === 'ink' ? 0xf4f1ea : 0x110e1b, side: THREE.DoubleSide });
@@ -43,7 +43,9 @@ export function buildWord(preset: FxPreset, text: string | undefined, inkWeight:
   const backMesh = new THREE.Mesh(back, backMat);
   backMesh.position.z = 0.012;
   backMesh.userData.outline = true;
-  group.add(backMesh, new THREE.Mesh(face, material));
+  const faceMesh = new THREE.Mesh(face, material);
+  faceMesh.userData.zone = zoneId;
+  group.add(backMesh, faceMesh);
   group.visible = false;
   group.renderOrder = 4;
   page.add(group);

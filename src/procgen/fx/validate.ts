@@ -22,7 +22,7 @@ export function validateFxPreset(preset: FxPreset): FxReport {
   checkTime(preset, stats.lastParticleMs, add);
   const bounds = checkSimulation(preset, issues, add);
   checkWord(preset, checkZone, add);
-  checkImpact(preset, add);
+  checkImpact(preset, checkZone, add);
 
   const errors = issues.filter((i) => i.severity === 'error').length;
   return {

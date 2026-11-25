@@ -24,7 +24,7 @@ function alphaMaterials(layer: FxLayer, zone: ZoneDef, parts: EmitterParts): Map
   const byAlpha = new Map<number, ComicMaterial>();
   for (const a of new Set([1, ...(layer.alpha ?? []).map((k) => k[1])])) {
     if (a <= 0) continue;
-    const mat = zoneMaterial(zone, a);
+    const mat = zoneMaterial(zone, a, layer.role);
     byAlpha.set(a, mat);
     parts.materials.push(mat);
   }

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { createFxEmitter, FxCatalog, type FxEmitter, type FxPreset } from '../procgen/index.js';
+import { collectTopFxLights, createFxEmitter, FxCatalog, type FxEmitter, type FxPreset } from '../procgen/index.js';
+import { MAX_COMIC_FX_LIGHTS, type ComicFxLight } from '../shaders/comic-material.js';
 
 /** Every shipped FX preset, as literals (the asset-usage harness counts quoted ids). */
 export const FX_IDS = [
@@ -60,6 +61,8 @@ export interface FxPlayOptions {
   scale?: number;
   /** Multiplies the preset's flash (storm strikes are dimmer than the intro). 0 = no flash. */
   flashMul?: number;
+  /** Multiplies the preset's emitted comic light intensity (ambient bursts can stay subtle). 0 = no light. */
+  lightMul?: number;
   /** Optional 3D object whose position this emission follows while alive (e.g. hero during a hop/walk). */
   follow?: THREE.Object3D;
   /** Vertical offset above `follow.position.y`. */
@@ -88,6 +91,7 @@ interface LiveFx {
   follow?: THREE.Object3D;
   followY: number;
   zOffset: number;
+  lightMul: number;
 }
 
 /** A pool of live `createFxEmitter` emissions, stepped and lit by the stage. */
@@ -135,7 +139,7 @@ export class FxPlayer {
     fx.group.scale.set(opts.mirror ? -s : s, s, s);
     fx.group.renderOrder = 4;
     this.host.layer.add(fx.group);
-    this.live.push({ fx, follow: opts.follow, followY: opts.followY ?? 0, zOffset });
+    this.live.push({ fx, follow: opts.follow, followY: opts.followY ?? 0, zOffset, lightMul: opts.lightMul ?? 1 });
     this.played.add(id);
     this.counts.set(id, (this.counts.get(id) ?? 0) + 1);
     if (preset.shake && !opts.noShake) this.host.shake(preset.shake);
@@ -146,6 +150,11 @@ export class FxPlayer {
 
   get count(): number {
     return this.live.length;
+  }
+
+  /** Up to 4 strongest active FX lights in world space for the comic light shader and FX halos. */
+  activeLights(): ComicFxLight[] {
+    return collectTopFxLights(this.live, MAX_COMIC_FX_LIGHTS);
   }
 
   update(dtMs: number, flashStrength: number, flashPos: THREE.Vector3): void {

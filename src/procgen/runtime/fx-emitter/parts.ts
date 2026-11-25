@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { createComicMaterial, type ComicMaterial } from '../../../shaders/comic-material.js';
-import type { ZoneDef } from '../../core/palette.js';
+import { INK, type ZoneDef } from '../../core/palette.js';
+import { FX_ROLE_EMISSIVE_FLOOR } from '../../fx/simulate.js';
+import type { FxRole } from '../../fx/types.js';
 
 /** Everything an emission owns and must dispose, collected while the pieces are built. */
 export interface EmitterParts {
@@ -23,9 +25,11 @@ export function keylineMaterial(parts: EmitterParts, color: number): THREE.MeshB
   return mat;
 }
 
-export function zoneMaterial(zone: ZoneDef, alpha: number): ComicMaterial {
-  // Effects are flat pops: no halftone or stripes, they would shimmer on spinning chunks.
-  return createComicMaterial(zone.color, { emissive: zone.emissive, opacity: (zone.opacity ?? 1) * alpha, ghost: zone.ghost });
+export function zoneMaterial(zone: ZoneDef, alpha: number, role?: FxRole): ComicMaterial {
+  // Effects are self-lit comic pops: keep non-ink layers luminous in dark rooms while preserving ink silhouettes.
+  const floor = role && zone.color !== INK ? FX_ROLE_EMISSIVE_FLOOR[role] : 0;
+  const emissive = zone.color === INK ? 0 : Math.max(zone.emissive ?? 0, floor);
+  return createComicMaterial(zone.color, { emissive, opacity: (zone.opacity ?? 1) * alpha, ghost: zone.ghost });
 }
 
 export function disposeParts(parts: EmitterParts): void {

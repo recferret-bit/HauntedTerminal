@@ -23,7 +23,7 @@ export function clearBubble(stage: ComicStage): void {
   stage.bubble = null;
 }
 
-export function playFx(stage: ComicStage, id: FxId, at: THREE.Vector3, opts: { text?: string; scale?: number; noShake?: boolean; mirror?: boolean; flashMul?: number; follow?: THREE.Object3D; followY?: number } = {}, key?: string): void {
+export function playFx(stage: ComicStage, id: FxId, at: THREE.Vector3, opts: { text?: string; scale?: number; noShake?: boolean; mirror?: boolean; flashMul?: number; lightMul?: number; follow?: THREE.Object3D; followY?: number } = {}, key?: string): void {
   try {
     // Lettering must stay on the page: pull worded effects in from the panel edges.
     const preset = stage.fxPlayer.preset(id);

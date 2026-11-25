@@ -5,6 +5,7 @@ import type { GameSnapshot, LevelInfo, RoomActor, RoomView } from '../game/types
 import { buildRoom, type SceneFacts, type ViewThing } from '../game/view.js';
 import { computeRunRank, splitParentAndName, type ChapterState } from './session-state.js';
 import { hiddenEnemyId, isNodeHidden, kiroStage, tutorialState } from './script.js';
+import { chapterHintGoals } from './session-hints.js';
 import { allWinRulesMet, computeBossPhase, getChecklist } from './session-rules.js';
 
 /** `LOCKED: <first missing> (+N more)`, only in the room that holds the exit door while the exit is locked (D7). */
@@ -190,5 +191,6 @@ export function snapshot(g: ChapterState): GameSnapshot {
       battle: battleView(g.battle),
       volume: g.volume,
       level: levelInfo(g, effectiveCounts),
+      hintGoals: chapterHintGoals(g),
     };
   }

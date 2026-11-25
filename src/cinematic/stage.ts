@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { createComicComposer, frameOrtho, type ComicPost } from '../shaders/comic-composer.js';
+import { clearComicFxLights, MAX_COMIC_FX_LIGHTS, setComicFxLights } from '../shaders/comic-material.js';
 import { setCrtSize, setCrtTime } from '../shaders/crt-pass.js';
 import { LightningStrikeSystem } from '../shaders/lightning.js';
 import { DEFAULT_PIXEL_PARAMS, setPixelArtParams, setPixelArtSize } from '../shaders/pixel-art.js';
 import {
-  animActingOptions, buildModel, createAnimator, createFxEmitter, disposeModel, FxCatalog, ModelCatalog,
+  animActingOptions, buildModel, collectTopFxLights, createAnimator, createFxEmitter, disposeModel, FxCatalog, ModelCatalog,
   type AnimatorOptions, type BuiltModel, type FxEmitter, type FxEmitterOptions, type ModelAnimator,
 } from '../procgen/index.js';
 
@@ -169,6 +170,7 @@ export class CinematicStage {
   clearEffects(): void {
     for (const live of this.fxs) live.fx.dispose();
     this.fxs.length = 0;
+    clearComicFxLights();
     this.lightning.update(10);
     this.lightning.flashStrength = 0;
     this.canvas.style.filter = '';
@@ -268,6 +270,7 @@ export class CinematicStage {
     // allMaterials is read live: the animator appends split-emissive clones after createAnimator.
     for (const a of this.actors) a.model.allMaterials.forEach(feed);
     for (const live of this.fxs) live.fx.materials.forEach(feed);
+    setComicFxLights(collectTopFxLights(this.fxs.map((live) => live.fx), MAX_COMIC_FX_LIGHTS));
     this.extraMaterials.forEach(feed);
     this.composer.render();
   }
@@ -276,6 +279,7 @@ export class CinematicStage {
     this.renderer.setAnimationLoop(null);
     for (const live of this.fxs) live.fx.dispose();
     this.fxs.length = 0;
+    clearComicFxLights();
     for (const a of this.actors) {
       a.animator.dispose();
       disposeModel(a.model);

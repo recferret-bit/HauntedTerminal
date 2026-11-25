@@ -62,6 +62,11 @@ await withProcgen(async (p) => {
     ['word flashes by', 'FX_WORD_HOLD', (x) => { x.onomatopoeia.holdMs = 90; }],
     ['word too small to read', 'FX_WORD_SIZE', (x) => { x.onomatopoeia.size = 0.1; }],
     ['shake off the scale', 'FX_IMPACT', (x) => { x.shake = 9; }],
+    ['light zone outside effect family', 'FX_FAMILY', (x) => { x.light = { zone: 'corruptMagenta', radius: 3, power: 1 }; }],
+    ['light zone is ink', 'FX_IMPACT', (x) => { x.light = { zone: 'ink', radius: 3, power: 1 }; }],
+    ['light radius off the scale', 'FX_IMPACT', (x) => { x.light = { zone: 'powerAmber', radius: 20, power: 1 }; }],
+    ['light offset out of range', 'FX_IMPACT', (x) => { x.light = { zone: 'powerAmber', radius: 3, power: 1, offset: [9, 0] }; }],
+    ['light envelope not starting at 0', 'FX_KEYS', (x) => { x.light = { zone: 'powerAmber', radius: 3, power: 1, envelope: [[0.2, 1]] }; }],
   ];
 
   let failed = 0;
@@ -93,15 +98,19 @@ await withProcgen(async (p) => {
   check(p.fxSimulate(preset, 7, 0).length > 0, 'fxSimulate shows the hit on frame 1');
   check(p.fxSimulate(preset, 7, 420).length === 0, 'fxSimulate is empty after durationMs');
   check(p.fxWordState(preset, 0)?.scale > 1 && p.fxWordState(preset, 200)?.scale === 1 && p.fxWordState(preset, 400) === null, 'word pops, holds, cuts');
+  const l0 = p.fxLightState(preset, 0);
+  check(l0 !== null && l0.power > 0 && p.fxLightState(preset, 420) === null, 'fxLightState pops on frame 1 and turns off after durationMs');
+  check(JSON.stringify(p.fxLightState(preset, 90)) === JSON.stringify(p.fxLightState(preset, 160)), 'fxLightState steps on 12 fps grid');
 
   // Emitter: builds in node, mirrors the simulator, finishes, disposes.
   const fx = p.createFxEmitter(preset, { seed: 7 });
   const visible = () => fx.group.getObjectByName('page').children.filter((c) => c.name !== 'word' && c.visible).length;
   check(visible() === p.fxSimulate(preset, 7, 0).length, 'createFxEmitter shows the simulated particles at t = 0');
+  check(fx.lightState() !== null && fx.lightState().power > 0, 'createFxEmitter exposes active lightState at t = 0');
   fx.update(130);
   check(visible() === p.fxSimulate(preset, 7, 130).length && !fx.done, 'createFxEmitter follows the simulator');
   fx.update(400);
-  check(visible() === 0 && fx.done, 'createFxEmitter is done and empty after the effect');
+  check(visible() === 0 && fx.done && fx.lightState() === null, 'createFxEmitter is done, empty, and light is off after the effect');
   fx.dispose();
 
   // Preview: draws something, and the same thing twice.

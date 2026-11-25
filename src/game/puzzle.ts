@@ -7,11 +7,12 @@ import { labRiddleRead, labRiddleWrite } from './lab-riddle.js';
 import type { EntityView, ProcRow } from './entities.js';
 import { empty, out, type Play } from './play.js';
 import {
-  backups, boss, bump, cut, cue, ensure, find, gargoyleNeutral, gateOpen, maxHp, phase1, plankBridged, portal, push,
+  anchorFree, backups, boss, bump, cut, cue, ensure, find, gargoyleNeutral, gateOpen, maxHp, phase1, plankBridged, portal, push,
 } from './runtime.js';
 import type { Step } from './shell.js';
 import { absPath, hasExec, makeNode, modeString, resolve, type VNode } from './tree.js';
 import { FLOOR_TITLES } from './floors.js';
+import type { HintGoals, HintTask } from './types.js';
 
 export function readSocket(g: Play, node: VNode): Step {
   const labStep = labRiddleRead(g.lab, node);
@@ -228,6 +229,162 @@ export function threatHint(g: Play): string {
   if (!near) return '';
   const who = near.revealed ? `${near.name}${near.pid !== null ? ` (PID ${near.pid})` : ''}` : 'something unseen (try ls -a or ps)';
   return `Threat: ${who}. ${BESTIARY[near.type].weakness}.`;
+}
+
+const CMD_WORD = '(?:ls|cd|pwd|cat|mv|cp|rm|mkdir|touch|chmod|chown|grep|find|sed|awk|cut|rev|echo|ps|kill|pkill|edit|docker|kiro|hank|dad|man|manual|help|exit|source|readlink|ln|head|tail|wc|sort|uniq)';
+const BACKTICK_CMD = new RegExp(`^(?:${CMD_WORD})(?=$|\\s)|[|>&]|\\s-[a-z0-9]+\\b`, 'i');
+const PAREN_CMD = new RegExp(`(?:^|[^\\w./-])(?:${CMD_WORD})(?=$|\\s)`, 'i');
+const PLAIN_CMD_PHRASE = new RegExp(
+  `\\b(?:(?:run|type|use|try)\\s+)?(?:${CMD_WORD})\\s+(?:-[a-z0-9+-]+(?:\\s+[^,.;:!?()]+)?|compose\\s+[^,.;:!?()]+|(?:build|run|up|load|crack|scan)\\s+[^,.;:!?()]+|[\\w./~'"-]+\\s+(?:~|[>]|[/]\\S+)|(?:~|/)[\\w./-]+|\\d{2,})`,
+  'gi',
+);
+const REDIRECT_PHRASE = /\s*>\s*\/dev\/null\b/gi;
+
+function isCommandSnippet(code: string): boolean {
+  const s = code.trim();
+  if (!s) return false;
+  // Filenames like `cat.log`, `edit-config.json`, `docker-compose.yml` are targets, not commands.
+  if (/^[\w./-]+\.[a-z0-9]+$/i.test(s) && !/\s/.test(s)) return false;
+  return BACKTICK_CMD.test(s);
+}
+
+/** Removes exact shell commands from free-form text while preserving filenames and minimal goal prose. */
+export function stripCommandsFromText(raw: string): string {
+  const trimmed = raw.replace(/^\s*\[[ xX]\]\s*/, '').trim();
+  if (!trimmed) return '';
+  let cleaned = trimmed
+    .replace(/\(([^()]*`[^()`]+`[^()]*)\)/g, (_, inner: string) => {
+      const hasCmd = [...inner.matchAll(/`([^`]+)`/g)].some((m) => isCommandSnippet(m[1] ?? ''));
+      return hasCmd ? '' : `(${inner.replace(/`/g, '')})`;
+    })
+    .replace(/\(([^()]*)\)/g, (m, inner: string) => (PAREN_CMD.test(inner) && /[~/\-|>]|\s/.test(inner) ? '' : m))
+    .replace(/\bpractice\s+`([^`]+)`\s+by\s+/gi, (_, code: string) => (isCommandSnippet(code) ? 'Practice ' : `Practice ${code} by `))
+    .replace(/\b(?:run|type|use|try)\s+`([^`]+)`(?:\s+to\s+)?/gi, (m, code: string) => {
+      if (!isCommandSnippet(code)) return m.replace(/`/g, '');
+      return /\bto\s+$/i.test(m) ? '' : ' ';
+    })
+    .replace(/`([^`]+)`/g, (_, code: string) => (isCommandSnippet(code) ? '' : code))
+    .replace(PLAIN_CMD_PHRASE, '')
+    .replace(REDIRECT_PHRASE, '')
+    .replace(/\band\s+(?:run|type|use)\s*$/i, '')
+    .replace(/^\s*(?:run|type|use|try)\s+to\s+/i, '')
+    .replace(/^\s*to\s+/i, '')
+    .replace(/\s+([,.;:!?])/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/^[,.;:\s-]+|[:;,\s]+$/g, '')
+    .trim();
+  if (!cleaned) return 'Complete the objective';
+  return cleaned[0]!.toUpperCase() + cleaned.slice(1);
+}
+
+function classicFloorTasks(g: Play): { tasks: HintTask[]; exitLabel: string; exitReady: boolean } {
+  const path = absPath(g.run.cwd);
+  const f = g.run.floor;
+  if (f === 1 && path.endsWith('/desk')) {
+    const readNote = g.run.filesRead.has('/home/dev/nightmare_workspace/desk/todo.note');
+    return {
+      tasks: [{ label: 'Inspect todo.note on the desk', done: readNote }],
+      exitLabel: 'Return to the workspace',
+      exitReady: readNote,
+    };
+  }
+  if (f === 1) {
+    const lockGone = !find(g, '/home/dev/nightmare_workspace/.poltergeist.lock');
+    const powered = Boolean(find(g, '/home/dev/nightmare_workspace/cellar_hatch/.power_on'));
+    return {
+      tasks: [
+        { label: 'Find and remove the hidden lock (.poltergeist.lock)', done: lockGone },
+        { label: 'Power up cellar_hatch (.power_on)', done: powered },
+      ],
+      exitLabel: 'Enter cellar_hatch',
+      exitReady: lockGone && powered,
+    };
+  }
+  if (f === 2 && !path.includes('/iron_gate')) {
+    const open = gateOpen(g);
+    return {
+      tasks: [{ label: 'Unlock iron_gate or solve archivist_gate.sock', done: open }],
+      exitLabel: 'Enter iron_gate',
+      exitReady: open,
+    };
+  }
+  if (f === 2) {
+    const bridged = plankBridged(g);
+    const safe = gargoyleNeutral(g);
+    return {
+      tasks: [
+        { label: 'Bridge chasm with heavy_plank.tar', done: bridged },
+        { label: 'Silence stone_gargoyle.bin', done: safe },
+      ],
+      exitLabel: 'Descend into crypt_stairs',
+      exitReady: bridged && safe,
+    };
+  }
+  if (f === 3 && path.startsWith('/usr/local/labyrinth/wing_a')) {
+    return {
+      tasks: [{ label: 'Break upward out of the looping mirror wing', done: false }],
+      exitLabel: 'Return to the labyrinth hub',
+      exitReady: false,
+    };
+  }
+  if (f === 3) {
+    const shaftOpen = Boolean(find(g, '/usr/local/labyrinth/hidden_wing/boiler_shaft'));
+    const pedestal = find(g, '/usr/local/labyrinth/pedestal');
+    const noMimic = !pedestal?.children.get('.mimic');
+    const runes = pedestal ? [...pedestal.children.values()].filter((c) => c.name.endsWith('.rune')).length : 0;
+    const pedestalReady = shaftOpen || (Boolean(pedestal) && noMimic && runes === 3);
+    return {
+      tasks: [
+        { label: 'Clear the hidden mimic on pedestal and place three runes', done: pedestalReady },
+        { label: 'Align pressure_plate.sock to reveal the hidden wing', done: shaftOpen },
+      ],
+      exitLabel: 'Find and enter boiler_shaft',
+      exitReady: shaftOpen,
+    };
+  }
+  if (f === 4 && !path.includes('/furnace_hall')) {
+    const open = Boolean(find(g, '/proc_mansion/boiler_room/furnace_hall') && hasExec(find(g, '/proc_mansion/boiler_room/furnace_hall')!));
+    return {
+      tasks: [{ label: 'Recover the reversed password for valve_lock.sock', done: open }],
+      exitLabel: 'Enter furnace_hall',
+      exitReady: open,
+    };
+  }
+  if (f === 4) {
+    const necromancer = boss(g);
+    const down = necromancer.dead || necromancer.frozen;
+    return {
+      tasks: [{ label: 'Stop the furnace boss process', done: down }],
+      exitLabel: 'Enter core_elevator',
+      exitReady: down,
+    };
+  }
+  const p1 = phase1(g);
+  const p2 = g.run.tokenOk;
+  const p3 = anchorFree(g);
+  return {
+    tasks: [
+      { label: 'Drain chaos.stream into the void', done: p1 },
+      { label: 'Send the wakeup token to wakeup.sock', done: p2 },
+      { label: 'Release the anchor lock in reality_anchor.conf', done: p3 },
+    ],
+    exitLabel: 'Escape the system',
+    exitReady: portal(g),
+  };
+}
+
+/** Command-free minimal tasks and goals for classic floors (used by the centered `? Hint` dialog). */
+export function classicHintGoals(g: Play): HintGoals {
+  const title = FLOOR_TITLES[g.run.floor] ?? `Floor ${g.run.floor}`;
+  const here = absPath(g.run.cwd);
+  const { tasks, exitLabel, exitReady } = classicFloorTasks(g);
+  const near = g.run.world.enemies.find((e) => !e.dead && !e.minion && !g.run.world.petrified(e) && e.type !== 'kernel' && e.type !== 'forkbomb'
+    && g.run.world.zone(e).includes(here) && (e.revealed || e.type === 'spyware'));
+  const allTasks: HintTask[] = [...tasks];
+  if (near) allTasks.push({ label: near.revealed ? `Neutralize active threat: ${near.name}` : 'Watch for an unseen threat in this room', done: false });
+  allTasks.push({ label: exitLabel, done: false, kind: 'exit' });
+  const goal = exitReady ? `Path clear — ${exitLabel.toLowerCase()}.` : `Complete the tasks below to ${exitLabel.toLowerCase()}.`;
+  return { title, goal, tasks: allTasks, exitReady };
 }
 
 export function statusText(g: Play): string {

@@ -1394,6 +1394,269 @@ await withProcgen(async (_p, vite) => {
       box.clear();
     });
   });
+
+  await test('hintGoals: every chapter level and classic floor lists minimal tasks & goals with zero exact shell commands and tracks live completion', async () => {
+    const { CHAPTER_MANIFESTS } = await load('/src/chapters/catalog.ts');
+    const { createSession } = await load('/src/game/session.ts');
+    const { stripCommandsFromText } = await load('/src/game/puzzle.ts');
+    const EXACT_CMD_RX = /(?:`[^`]+`|\b(?:mv|ls|cat|rm|sed|chmod|kill|ps|grep|cd|touch|rev|cut|echo)\s+[\w./~'"-]+|\bdocker\s+(?:build|run|compose)\b|\bkiro\s+load\b|>\s*\/dev\/null)/i;
+
+    assert.equal(stripCommandsFromText('[ ] Practice `mv` by pocketing RAM (`mv starter_ram_8gb.dimm ~`)'), 'Practice pocketing RAM');
+    assert.equal(stripCommandsFromText('   '), '');
+    assert.equal(stripCommandsFromText('[x] Keep plain prose'), 'Keep plain prose');
+    assert.equal(stripCommandsFromText('`ls -la`'), 'Complete the objective');
+    assert.equal(stripCommandsFromText('Read `cat.log`'), 'Read cat.log');
+    assert.equal(stripCommandsFromText('Edit `edit-config.json`'), 'Edit edit-config.json');
+    assert.equal(EXACT_CMD_RX.test(stripCommandsFromText('Run ls -la to inspect the room')), false);
+    assert.equal(EXACT_CMD_RX.test(stripCommandsFromText('Fix docker-compose.yml and run docker compose up -d')), false);
+    assert.equal(EXACT_CMD_RX.test(stripCommandsFromText('Use cat /var/log/auth.log to read logs')), false);
+    assert.equal(stripCommandsFromText('Run `kill -9 1011` to stop the bug'), 'Stop the bug');
+
+    // Terminal Lab with empty winRules + unfinished check/riddle must NOT mark exitReady.
+    const { buildLabPack, newLabScript } = await load('/src/terminal-lab/lab-pack.ts');
+    const labDoc = newLabScript('hint-probe', 'Hint Probe');
+    labDoc.setup.push(
+      { op: 'check', id: 'c1', description: 'Run `ls -la` in the room', when: { kind: 'output', pattern: 'readme.txt' } },
+      { op: 'riddle', id: 'r1', path: '/lab/gate.sock', prompt: 'hi', answer: '42', hints: ['h1'] },
+    );
+    const builtLab = buildLabPack(labDoc);
+    const labSess = createChapterSession({ pack: builtLab.pack, preview: true, lab: builtLab.config });
+    const labBefore = labSess.snapshot().hintGoals;
+    assert.equal(labBefore.exitReady, false, 'empty winRules + unfinished lab tasks must not be exitReady');
+    assert.equal(EXACT_CMD_RX.test(labBefore.tasks[0].label), false, 'lab check label must be command-free');
+    labSess.exec('ls');
+    labSess.exec('echo 42 > gate.sock');
+    assert.equal(labSess.snapshot().hintGoals.exitReady, true, 'all lab checks/riddles complete flips exitReady');
+
+    // Lantern pickup covered by a file_absent winRule must not duplicate the lantern task.
+    const lanternDoc = newLabScript('lantern-dedupe', 'Lantern Dedupe');
+    lanternDoc.setup.push(
+      { op: 'pickup', id: 'p_lan', type: 'lantern', path: '/lab/lantern' },
+      { op: 'task', id: 't_lan', rule: { kind: 'file_absent', path: '/lab/lantern', description: 'Pick up lantern' } },
+    );
+    const builtLantern = buildLabPack(lanternDoc);
+    const lanternSess = createChapterSession({ pack: builtLantern.pack, preview: true, lab: builtLantern.config });
+    const lanternTasks = lanternSess.snapshot().hintGoals.tasks.filter((t) => /lantern/i.test(t.label));
+    assert.equal(lanternTasks.length, 1, 'lantern pickup + file_absent winRule must produce exactly one lantern task');
+
+    const chap = createChapterSession({ chapterId: CHAPTER_MANIFESTS[0].id, preview: true });
+    for (const lvl of chap.getLevels()) {
+      chap.jumpToLevel(lvl.id);
+      const hg = chap.snapshot().hintGoals;
+      assert.ok(hg && hg.title && hg.goal && hg.tasks.length >= 2, `${lvl.id}: missing hintGoals`);
+      assert.equal(EXACT_CMD_RX.test(hg.goal), false, `${lvl.id}: goal leaked exact command: ${hg.goal}`);
+      for (const task of hg.tasks) {
+        assert.equal(EXACT_CMD_RX.test(task.label), false, `${lvl.id}: task leaked exact command: ${task.label}`);
+      }
+    }
+
+    // Live progress tracking on Level 1: completing tasks ticks them off and marks exitReady.
+    chap.jumpToLevel(chap.getLevels()[0].id);
+    const before = chap.snapshot().hintGoals;
+    assert.equal(before.exitReady, false);
+    assert.equal(before.tasks[0].done, false);
+    for (const cmd of chap.getCurrentLevel().solutionCommands.slice(0, -1)) chap.exec(cmd);
+    const after = chap.snapshot().hintGoals;
+    assert.equal(after.exitReady, true, 'hintGoals must mark exitReady once all win rules pass');
+    assert.equal(after.tasks.filter((t) => t.kind !== 'exit').every((t) => t.done), true);
+
+    // Classic floors 1..5 produce command-free hintGoals and live progress for F1 /desk & F3 pedestal.
+    const classic = createSession();
+    classic.skipIntro();
+    assert.equal(classic.snapshot().hintGoals.exitReady, false);
+    classic.exec('cat todo.note');
+    assert.equal(classic.snapshot().hintGoals.exitReady, true, 'classic F1 /desk becomes exitReady after reading todo.note');
+    for (const floor of [1, 2, 3, 4, 5]) {
+      classic.debugTeleport(floor);
+      const hg = classic.snapshot().hintGoals;
+      assert.ok(hg && hg.tasks.length >= 2, `classic floor ${floor}: missing hintGoals`);
+      assert.equal(EXACT_CMD_RX.test(hg.goal), false, `classic floor ${floor}: goal leaked exact command: ${hg.goal}`);
+      for (const task of hg.tasks) {
+        assert.equal(EXACT_CMD_RX.test(task.label), false, `classic floor ${floor}: task leaked exact command: ${task.label}`);
+      }
+    }
+    classic.debugTeleport(3);
+    classic.exec('cd ../../../');
+    classic.exec('rm pedestal/.mimic');
+    classic.exec('touch pedestal/a.rune pedestal/b.rune pedestal/c.rune');
+    const f3Hg = classic.snapshot().hintGoals;
+    assert.equal(f3Hg.tasks[0].done, true, 'classic F3 pedestal task ticks done before echoing align');
+    assert.equal(f3Hg.tasks[1].done, false, 'classic F3 pressure_plate task stays undone until aligned');
+  });
+
+  await test('centered hint dialog: native <dialog>, closedby="any", Safari fallback, close/reopen sync, live task updates', async () => {
+    const { mountHintDialog, wireLightDismissFallback } = await load('/src/ui/hint-dialog.ts');
+    await withFakeDom(async (makeEl) => {
+      const host = makeEl('div');
+      let closes = 0;
+      const dialogApi = mountHintDialog(host, { onClose: () => { closes += 1; } });
+      const dlg = host.querySelector('.hint-dialog');
+      assert.ok(dlg, 'mounted .hint-dialog');
+      assert.equal(dlg.id, 'hint-dialog');
+      assert.equal(dlg.tagName, 'DIALOG');
+      assert.equal(dlg.getAttribute('closedby'), 'any');
+      assert.equal(dlg.getAttribute('aria-labelledby'), 'hint-dialog-title');
+      assert.equal(dlg.getAttribute('aria-describedby'), 'hint-dialog-goal');
+      assert.equal(dlg.getAttribute('role'), null, 'native <dialog> must not carry redundant role="dialog"');
+      assert.equal(dlg.getAttribute('aria-modal'), null, 'native <dialog> must not carry redundant aria-modal');
+
+      const snap1 = {
+        cwd: '/lab', floor: 1, hp: 100, maxHp: 100, commands: 0, prompt: '$ ', promptGold: false, muted: false, ended: false, rank: null, timeSec: 0, shortcuts: [], room: { title: 'Lab' }, intro: false, ram: 0, ssd: 0, backups: 0, paused: false, enemiesLeft: 1, enemiesTotal: 1, tutorial: null, inventory: { items: ['terminal'], held: 'terminal' }, battle: null,
+        hintGoals: {
+          title: 'Test Sector',
+          goal: 'Complete the tasks below to unlock gate.',
+          exitReady: false,
+          tasks: [
+            { label: 'Read briefing.txt', done: false },
+            { label: 'Collect RAM stick (ram.dimm)', done: true },
+            { label: 'Advance through gate', done: false, kind: 'exit' },
+          ],
+        },
+      };
+      dialogApi.open(snap1);
+      assert.equal(dialogApi.isOpen(), true);
+      assert.equal(host.querySelector('.hint-dialog-sector').textContent, 'Test Sector');
+      assert.equal(host.querySelector('.hint-dialog-badge').textContent, '1/2 DONE');
+      assert.equal(host.querySelector('.hint-dialog-list').children.length, 3);
+
+      // Live update while open flips badge to EXIT READY.
+      dialogApi.update({
+        ...snap1,
+        hintGoals: {
+          ...snap1.hintGoals,
+          goal: 'All tasks done — gate is open.',
+          exitReady: true,
+          tasks: [
+            { label: 'Read briefing.txt', done: true },
+            { label: 'Collect RAM stick (ram.dimm)', done: true },
+            { label: 'Advance through gate', done: false, kind: 'exit' },
+          ],
+        },
+      });
+      assert.equal(host.querySelector('.hint-dialog-badge').textContent, 'EXIT READY');
+      assert.equal(host.querySelector('.hint-dialog-badge').classList.contains('ready'), true);
+
+      // Close is idempotent and notifies onClose once.
+      dialogApi.close();
+      dialogApi.close();
+      assert.equal(dialogApi.isOpen(), false);
+      assert.equal(closes, 1);
+
+      // Native showModal/close desync test: if native dialog closes before async `close` event, isOpen() is false and open() reopens.
+      const prevCreate = globalThis.document.createElement;
+      globalThis.document.createElement = (tag) => {
+        const node = prevCreate(tag);
+        if (String(tag).toLowerCase() === 'dialog') {
+          node.open = false;
+          node.showModal = () => { node.open = true; };
+          node.close = () => { node.open = false; };
+        }
+        return node;
+      };
+      try {
+        const syncedHost = makeEl('div');
+        const syncedApi = mountHintDialog(syncedHost);
+        const syncedDlg = syncedHost.querySelector('.hint-dialog');
+        syncedApi.open(snap1);
+        assert.equal(syncedApi.isOpen(), true);
+        syncedDlg.close();
+        assert.equal(syncedApi.isOpen(), false, 'isOpen stays synced after native dialog.close()');
+        syncedApi.open(snap1);
+        assert.equal(syncedApi.isOpen(), true, 'immediate open() after native close reopens dialog');
+        assert.equal(syncedDlg.open, true);
+      } finally {
+        globalThis.document.createElement = prevCreate;
+      }
+
+      // Safari light-dismiss fallback: outside press+release dismisses; inside->outside drag & pointercancel do not.
+      const listeners = new Map();
+      const fakeDlg = {
+        getBoundingClientRect: () => ({ left: 100, right: 500, top: 100, bottom: 400, width: 400, height: 300 }),
+        addEventListener: (type, fn) => listeners.set(type, fn),
+      };
+      let dismissed = 0;
+      wireLightDismissFallback(fakeDlg, () => { dismissed += 1; }, true);
+      listeners.get('pointerdown')({ target: fakeDlg, clientX: 200, clientY: 200 });
+      listeners.get('pointerup')({ target: fakeDlg, clientX: 20, clientY: 20 });
+      assert.equal(dismissed, 0, 'dragging from inside to outside must not dismiss');
+      listeners.get('pointerdown')({ target: fakeDlg, clientX: 20, clientY: 20 });
+      listeners.get('pointercancel')({ target: fakeDlg });
+      listeners.get('pointerup')({ target: fakeDlg, clientX: 20, clientY: 20 });
+      assert.equal(dismissed, 0, 'pointercancel clears outside-press state');
+      listeners.get('pointerdown')({ target: fakeDlg, clientX: 20, clientY: 20 });
+      listeners.get('pointerup')({ target: fakeDlg, clientX: 25, clientY: 25 });
+      assert.equal(dismissed, 1, 'outside pointerdown + outside pointerup dismisses');
+    });
+  });
+
+  await test('FX light sources: every preset emits stepped light, parent transforms/visibility/top-4/glow & variants stay synced', async () => {
+    const THREE = await import('three');
+    const { FxPlayer, FX_IDS } = await load('/src/renderer/fx-player.ts');
+    const { COMIC_FX_LIGHTS, COMIC_LIGHT, MAX_COMIC_FX_LIGHTS, clearComicFxLights, createComicMaterial, setComicFxLights } = await load('/src/shaders/comic-material.ts');
+    const { createSurfaceVariant } = await load('/src/shaders/comic-variants.ts');
+    const { buildFxSubject } = await load('/src/storybook/subjects/fx-subject.ts');
+
+    // Every single shipped FX preset emits a valid non-zero light on frame 1 and turns off after durationMs.
+    for (const id of FX_IDS) {
+      const preset = _p.FxCatalog.get(id);
+      assert.ok(preset.light, `${id} must declare a light spec`);
+      const l0 = _p.fxLightState(preset, 0);
+      assert.ok(l0 && l0.power > 0 && l0.radius > 0, `${id} must emit light on frame 1`);
+      if (!preset.loop) assert.equal(_p.fxLightState(preset, preset.durationMs), null, `${id} light must turn off after durationMs`);
+    }
+
+    // Parent transform, mirroring, visibility, and lightMul handling on fxEmitterWorldLight.
+    const parent = new THREE.Group();
+    parent.position.set(3.5, 1.2, 0);
+    parent.scale.set(2, 2, 2);
+    const mountedFx = _p.createFxEmitter(_p.FxCatalog.get('fx.sigkill'), { seed: 1 });
+    mountedFx.group.position.set(0.5, 0.25, 0);
+    parent.add(mountedFx.group);
+    const wl = _p.fxEmitterWorldLight(mountedFx);
+    assert.ok(wl && Math.abs(wl.x - 4.5) < 1e-4 && Math.abs(wl.y - 1.7) < 1e-4 && Math.abs(wl.radius - 10) < 1e-4, 'fxEmitterWorldLight applies parent world transform');
+    const dimmed = _p.fxEmitterWorldLight(mountedFx, 0.5);
+    assert.ok(dimmed && Math.abs(dimmed.power - wl.power * 0.5) < 1e-4, 'lightMul scales emitted power');
+    parent.visible = false;
+    assert.equal(_p.fxEmitterWorldLight(mountedFx), null, 'hidden ancestor suppresses FX light');
+    parent.visible = true;
+    mountedFx.group.visible = false;
+    assert.equal(_p.fxEmitterWorldLight(mountedFx), null, 'hidden emitter suppresses FX light');
+    mountedFx.dispose();
+
+    // Storybook FX subject lifts luminous non-ink meshes into `glow` so Lantern dark mode keeps FX bright.
+    const subj = buildFxSubject('fx.sigkill', { seed: 1, ink: true });
+    assert.ok(subj.glow.length > 0, 'FX subject must expose glowing meshes for Storybook Lantern dark mode');
+    subj.dispose();
+
+    // FxPlayer.activeLights respects mirroring, scale, top-4 power*radius priority cap, and disposal.
+    const layer = new THREE.Group();
+    const player = new FxPlayer({ layer, shake() {}, flash() {} });
+    player.play('fx.hop', new THREE.Vector3(1, 0, 0), { scale: 1 });
+    player.play('fx.lightning-strike', new THREE.Vector3(-2, 0, 0), { mirror: true, scale: 1.5 });
+    player.play('fx.sigkill', new THREE.Vector3(0, 1, 0));
+    player.play('fx.reveal', new THREE.Vector3(2, 1, 0));
+    player.play('fx.mv-dust', new THREE.Vector3(-1, 0, 0));
+    const lights = player.activeLights();
+    assert.equal(lights.length, MAX_COMIC_FX_LIGHTS, 'activeLights caps at MAX_COMIC_FX_LIGHTS (4)');
+    assert.ok(lights[0].power * lights[0].radius >= lights[lights.length - 1].power * lights[lights.length - 1].radius, 'activeLights ranks by power * radius');
+    const mirroredBolt = lights.find((l) => l.radius > 8);
+    assert.ok(mirroredBolt && mirroredBolt.x > -2, 'mirrored page +x offset maps to world +x');
+    player.clear();
+    assert.equal(player.activeLights().length, 0, 'clearing player clears active lights');
+
+    // setComicFxLights / clearComicFxLights update shared uniforms, including cloned surface variants.
+    const base = createComicMaterial(0x1f7a5c);
+    const variant = createSurfaceVariant(base, 'clay_cracks', { accentA: 0xef476f, accentB: 0xc8763a, hot: 0xfff07c, deep: 0x3c096c });
+    assert.equal(variant.uniforms.uLampPower, COMIC_LIGHT.uLampPower, 'variant shares live COMIC_LIGHT');
+    assert.equal(variant.uniforms.uFxPos0, COMIC_FX_LIGHTS.uFxPos0, 'variant shares live COMIC_FX_LIGHTS');
+    setComicFxLights([{ x: 1.5, y: 2.2, radius: 3.4, power: 1.25, color: 0x39ff88 }]);
+    assert.equal(COMIC_FX_LIGHTS.uFxPos0.value.w, 1.25);
+    assert.equal(COMIC_FX_LIGHTS.uFxPos1.value.w, 0);
+    clearComicFxLights();
+    assert.equal(COMIC_FX_LIGHTS.uFxPos0.value.w, 0);
+    base.dispose();
+    variant.dispose();
+  });
 });
 
 console.log(`terminal-lab-unit: ${count()} checks passed`);

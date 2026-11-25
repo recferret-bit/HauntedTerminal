@@ -60,8 +60,8 @@ export function mountPlayMenu(play: Play): void {
       menu.close();
       return;
     }
-    // The code editor and field manual handle Esc themselves; leave the key to them.
-    if (blocked(play) || play.codeEditor?.isOpen() || play.manualBook?.isOpen()) return;
+    // The code editor, field manual and native hint dialog handle Esc themselves; leave the key to them.
+    if (blocked(play) || play.codeEditor?.isOpen() || play.manualBook?.isOpen() || play.hintDialog?.isOpen()) return;
     e.preventDefault();
     e.stopPropagation();
     menu.open(play.session.snapshot());

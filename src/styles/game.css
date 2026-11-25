@@ -448,62 +448,6 @@ body {
   100% { opacity: 0; }
 }
 
-.hint-note {
-  position: absolute;
-  /* Anchored on the left below the hero HUD and inventory strip inside #titleblock. */
-  top: 184px;
-  left: 0;
-  margin-top: 6px;
-  z-index: 30;
-  width: 300px;
-  max-width: calc(100vw - 24px);
-  max-height: 200px;
-  overflow-y: auto;
-  padding: 14px 14px 8px;
-  background: #fff7d6;
-  color: var(--ink);
-  border: 3px solid var(--ink);
-  box-shadow: 5px 5px 0 var(--ink);
-  font-family: var(--mono);
-  font-size: 13px;
-  line-height: 1.4;
-  transform: rotate(1.5deg) scale(0.6);
-  transform-origin: top left;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.15s, transform 0.2s cubic-bezier(.3, 1.6, .5, 1), visibility 0s 0.2s;
-  pointer-events: auto;
-  cursor: pointer;
-}
-#titleblock:has(.hero-turn:not([hidden])) .hint-note {
-  top: 206px;
-  max-height: 180px;
-}
-
-.hint-note.open {
-  opacity: 1;
-  visibility: visible;
-  transform: rotate(1.5deg) scale(1);
-  transition: opacity 0.15s, transform 0.2s cubic-bezier(.3, 1.6, .5, 1);
-}
-
-.hint-note::before {
-  content: "HINT!";
-  position: absolute;
-  top: -14px;
-  left: 10px;
-  background: var(--orange);
-  color: var(--ink);
-  border: 3px solid var(--ink);
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  padding: 1px 6px;
-}
-
-.hint-note small { display: block; text-align: right; color: #8a7f6c; font-size: 10px; margin-top: 6px; }
-
 .backup-banner {
   position: absolute;
   right: 18px;
@@ -553,6 +497,17 @@ body.cine #page { visibility: hidden; }
 
 #terminal-bezel { position: relative; transform-origin: 50% 50%; }
 #terminal-panel { position: relative; }
+
+/* ---- No terminal in his inventory (tutorial start): the panel is gone until it is given (src/ui/terminal.ts setAvailable) ---- */
+#terminal-bezel.tty-unavailable { visibility: hidden; }
+#terminal-bezel.tty-popin { animation: tty-popin 0.32s steps(4) both; }
+@keyframes tty-popin {
+  from { transform: scale(0.94); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #terminal-bezel.tty-popin { animation: none; }
+}
 
 body.term-on #terminal-bezel { animation: crt-on 0.76s cubic-bezier(.2, .7, .2, 1) both; }
 body.term-on #terminal-panel::after,

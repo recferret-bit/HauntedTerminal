@@ -19,6 +19,8 @@ export interface GameSnapshot {
   volume?: number;
   /** The level the hero is in, for the HUD level block and the Esc menu. */
   level?: LevelInfo;
+  /** Minimal command-free tasks and goals for the centered `? Hint` dialog. */
+  hintGoals?: HintGoals;
   ended: boolean;
   rank: 'C' | 'B' | 'A' | 'S' | null;
   timeSec: number;
@@ -39,7 +41,7 @@ export interface GameSnapshot {
   /** The current tutorial prompt (floor 1 arrival), or null once it is finished or skipped. */
   tutorial: TutorialState | null;
   /** Items he carries and the one in his hand (drives the HUD items strip). */
-  inventory: { items: ItemId[]; held: ItemId };
+  inventory: { items: ItemId[]; held: ItemId | null };
   /** The running battle (turn-based combat), or null outside one. Classic floors never have one. */
   battle: BattleView | null;
 }
@@ -51,6 +53,21 @@ export interface LevelInfo {
   checklist: { description: string; done: boolean }[];
   bugsLeft: number;
   bugsTotal: number;
+}
+
+/** One minimal task row inside the centered Hint dialog (never includes exact shell commands). */
+export interface HintTask {
+  label: string;
+  done: boolean;
+  kind?: 'task' | 'exit';
+}
+
+/** Command-free tasks and goal summary for the centered `? Hint` dialog. */
+export interface HintGoals {
+  title: string;
+  goal: string;
+  tasks: HintTask[];
+  exitReady: boolean;
 }
 
 /** What the HUD and tools see of a battle (`src/game/battle.ts`). */

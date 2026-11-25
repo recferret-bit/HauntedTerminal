@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { BARE_HERO_MODEL } from '../contracts/inventory.js';
 import { setCrtTime } from '../shaders/crt-pass.js';
 import type { RoomActor } from './room-view.js';
 import type { StageActor } from './stage-cast.js';
@@ -33,18 +34,18 @@ export function stepStage(stage: ComicStage, dt: number): void {
   stepActors(stage, dt);
   stepAgentAmbientFx(stage, dt);
   heroFidget(stage, dt);
-  lightFrame(stage, dt);
-  applyShake(stage);
   if (stage.stormOn && !stage.devNoStorm) {
     stage.stormIn -= dt;
     if (stage.stormIn <= 0) {
       stage.stormIn = 7 / Math.max(0.35, stage.stormIntensity);
       const x = stage.panelRight + Math.random() * (stage.panelLeft - stage.panelRight);
-      playFx(stage, 'fx.lightning-strike', new THREE.Vector3(x, stage.feetY, ACTOR_Z + 0.4), { text: ' ', noShake: true, flashMul: 0.18 * stage.stormIntensity, scale: 0.85 });
+      playFx(stage, 'fx.lightning-strike', new THREE.Vector3(x, stage.feetY, ACTOR_Z + 0.4), { text: ' ', noShake: true, flashMul: 0.18 * stage.stormIntensity, lightMul: 0.55 * stage.stormIntensity, scale: 0.85 });
     }
   }
   stage.lightning.update(dt);
   stage.fxPlayer.update(dtMs, stage.lightning.flashStrength, stage.lightning.flashPos);
+  lightFrame(stage, dt);
+  applyShake(stage);
   setCrtTime(stage.crtPass, stage.elapsed);
   feedComics(stage, dt);
   syncOverlayFrame(stage);
@@ -98,7 +99,9 @@ function lightFrame(stage: ComicStage, dt: number): void {
     panelTop: stage.viewTop,
     dark: !!stage.view?.dark,
     heroGlow: h && !h.disposed && h.group.visible ? new THREE.Vector3(h.group.position.x, stage.feetY + 0.85, 0) : null,
+    heroBare: h?.modelId === BARE_HERO_MODEL,
     flash: stage.lightning.flashStrength,
+    fxLights: stage.fxPlayer.activeLights(),
   });
   // The bulb itself burns brighter while the light is boosted.
   const glow = h?.glow;
@@ -169,7 +172,7 @@ function stepAgentAmbientFx(stage: ComicStage, dt: number): void {
     slot.agentFxIn = (slot.agentFxIn ?? (1.6 + (a.id.length % 4) * 0.45)) - dt;
     if (slot.agentFxIn <= 0) {
       slot.agentFxIn = a.modelId === 'agent.antigravy' ? 2.2 : 3.0;
-      playFx(stage, fxId, actorSocket(a, 'fx'), { text: ' ', noShake: true, scale: 0.68 });
+      playFx(stage, fxId, actorSocket(a, 'fx'), { text: ' ', noShake: true, scale: 0.68, lightMul: 0.6 });
     }
   }
 }

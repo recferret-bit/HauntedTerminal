@@ -5,6 +5,7 @@ import { mountDevInspector } from '../sandbox/dev-inspector.js';
 import { mountCodeEditor } from '../ui/code-editor.js';
 import { mountManualBook } from '../ui/manual-book.js';
 import { mountDialogOrchestrator } from '../ui/dialog-orchestrator.js';
+import { mountHintDialog } from '../ui/hint-dialog.js';
 import { drawPortrait } from '../renderer/portrait.js';
 import { mountHud } from '../ui/hud.js';
 import { powerOff, powerOn } from '../ui/screen.js';
@@ -13,7 +14,7 @@ import { mountVisualLab } from '../ui/visual-lab.js';
 import { recordExec } from './lab.js';
 import { mountPlayMenu } from './menu.js';
 import { statsFrom } from './outro.js';
-import { FLOOR_NAMES, writeSkipPref, type Play } from './state.js';
+import { FLOOR_NAMES, writeSkipPref, type PauseReason, type Play } from './state.js';
 
 /** Enter during the battle intro skips it; the typed line stays on the prompt and does not run (Req 12). */
 function skipBattleIntroOnEnter(play: Play): boolean {
@@ -97,19 +98,48 @@ export function mountPlayShell(play: Play): void {
       },
       onClose: () => {
         play.syncPause();
-        if (play.phase === 'play' && !play.codeEditor?.isOpen()) window.setTimeout(() => play.shell.focus(), 0);
+        window.setTimeout(() => {
+          if (play.phase === 'play' && !play.codeEditor?.isOpen() && !play.menu?.isOpen() && !play.hintDialog?.isOpen() && !play.manualBook?.isOpen()) {
+            play.shell.focus();
+          }
+        }, 0);
       },
     });
   }
 }
 
+const HINT_BLOCKERS: readonly PauseReason[] = ['intro', 'card', 'outro', 'ended', 'cinematic', 'reveal'];
+
 function canOpenManual(play: Play): boolean {
   return (play.phase === 'play' && !play.endingStarted) || play.phase === 'stats';
+}
+
+function canOpenHint(play: Play): boolean {
+  return (
+    play.phase === 'play' &&
+    !play.endingStarted &&
+    !play.dom.statsEl.classList.contains('open') &&
+    !HINT_BLOCKERS.some((r) => play.reasons.has(r))
+  );
+}
+
+export function openHintDialog(play: Play): void {
+  if (!play.hintDialog || !canOpenHint(play)) return;
+  if (play.menu?.isOpen()) play.menu.close();
+  if (play.manualBook?.isOpen()) play.manualBook.close();
+  play.hintDialog.open(play.session.snapshot());
+}
+
+function toggleHintDialog(play: Play): void {
+  if (!play.hintDialog) return;
+  if (play.hintDialog.isOpen()) play.hintDialog.close();
+  else openHintDialog(play);
 }
 
 export function openManualModal(play: Play, queryOrPage?: string | number): void {
   if (!play.manualBook || !canOpenManual(play)) return;
   if (play.menu?.isOpen()) play.menu.close();
+  if (play.hintDialog?.isOpen()) play.hintDialog.close();
   play.manualBook.open(queryOrPage);
   play.syncPause();
 }
@@ -141,12 +171,25 @@ export function mountPlayHud(play: Play): void {
     tutorial: play.tutorial,
   });
   play.dialogBox = play.dialogs.box;
+  play.hintDialog = mountHintDialog(play.dom.stageWrap, {
+    onClose: (returnFocus) => {
+      window.setTimeout(() => {
+        if (play.menu?.isOpen() || play.manualBook?.isOpen() || play.hintDialog?.isOpen()) return;
+        if (play.codeEditor?.isOpen()) {
+          const editorTarget = returnFocus?.isConnected && returnFocus.closest('#code-editor-pane')
+            ? returnFocus
+            : play.dom.editorPaneEl?.querySelector<HTMLElement>('#ce-textarea, textarea');
+          editorTarget?.focus({ preventScroll: true });
+          return;
+        }
+        if (play.phase === 'play') play.shell.focus();
+      }, 0);
+    },
+  });
   play.hud = mountHud(play.dom.hudEl, play.dom.stageWrap, play.dom.statsEl, {
     drawPortrait,
     maxFloors: chapter ? chapter.getLevels().length : 5,
-    onHint: () => {
-      if (play.phase === 'play') play.hud?.showHint(play.session.hint());
-    },
+    onHint: () => toggleHintDialog(play),
     onPlayAgain: (skip) => playAgain(play, skip),
   });
   play.paint(play.session.snapshot());
@@ -199,8 +242,8 @@ export function bindPlayInput(play: Play): void {
   // A clicked HUD / dev-panel button takes keyboard focus; hand it back to the shell so typing keeps working.
   document.addEventListener('click', (e) => {
     const el = e.target as Element | null;
-    if (!el?.closest('button, .hint-note') || el.closest('#outro, #cinematic, #code-editor-pane, #manual-book-modal, #esc-menu')) return;
-    if (play.phase === 'play' && !play.codeEditor?.isOpen() && !play.menu?.isOpen() && !play.manualBook?.isOpen()) {
+    if (!el?.closest('button') || el.closest('#outro, #cinematic, #code-editor-pane, #manual-book-modal, #esc-menu, #hint-dialog, #hud-hint')) return;
+    if (play.phase === 'play' && !play.codeEditor?.isOpen() && !play.menu?.isOpen() && !play.manualBook?.isOpen() && !play.hintDialog?.isOpen()) {
       window.setTimeout(() => play.shell.focus(), 0);
     }
   });

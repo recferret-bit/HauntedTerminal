@@ -1,8 +1,17 @@
+import { ZONES, zone, type ZoneId } from '../core/palette.js';
 import { hashSeed, makeRng } from '../core/rng.js';
 import { FX_WORD_DEFAULT_OFFSET } from './lettering.js';
-import type { FxKey, FxLayer, FxParticleState, FxPreset, FxWordState } from './types.js';
+import type { FxKey, FxLayer, FxLightSpec, FxLightState, FxParticleState, FxPreset, FxRole, FxWordState } from './types.js';
 
 export const FX_DEFAULT_STEP_FPS = 12;
+/** Default stepped light envelope: pops full brightness on frame 1, steps down on twos, cuts off at durationMs. */
+export const DEFAULT_FX_LIGHT_ENVELOPE: readonly FxKey[] = [[0, 1], [0.34, 0.72], [0.68, 0.35]];
+/** Minimum emissive floor per FX role so non-ink effect shapes stay self-lit in dark rooms and previews. */
+export const FX_ROLE_EMISSIVE_FLOOR: Record<FxRole, number> = {
+  primary: 0.32,
+  secondary: 0.18,
+  accent: 0.4,
+};
 /** Depth between consecutive layers, toward the camera, so later layers draw on top. */
 export const FX_LAYER_Z = 0.02;
 
@@ -300,4 +309,43 @@ export function fxWordState(preset: FxPreset, tMs: number, text?: string): FxWor
       break;
   }
   return state;
+}
+
+/** Resolve the effective light spec of any preset, falling back to its primary/emissive layer when `light` is omitted. */
+export function resolveFxLight(preset: FxPreset): FxLightSpec {
+  if (preset.light) return preset.light;
+  const emissive = preset.layers.find((l) => (l.zone in ZONES ? (zone(l.zone).emissive ?? 0) : 0) >= 0.3);
+  const primary = preset.layers.find((l) => l.role === 'primary' && l.zone !== 'ink');
+  const nonInk = preset.layers.find((l) => l.zone !== 'ink');
+  const lightZone: ZoneId = emissive?.zone ?? primary?.zone ?? nonInk?.zone ?? 'paper';
+  return {
+    zone: lightZone,
+    radius: preset.fullPanel ? 5.2 : 2.8,
+    power: preset.flash ? Math.min(1.8, 0.95 + preset.flash * 0.16) : 1.0,
+  };
+}
+
+/** Pure, stepped comic light emitted by `preset` at `tMs`, or null once the effect ends. */
+export function fxLightState(preset: FxPreset, tMs: number): FxLightState | null {
+  if (preset.durationMs <= 0) return null;
+  let t = Math.max(0, tMs);
+  if (preset.loop) t %= preset.durationMs;
+  else if (t >= preset.durationMs) return null;
+  const spec = resolveFxLight(preset);
+  if (!(spec.radius > 0) || !(spec.power > 0)) return null;
+  const step = fxStepMs(preset);
+  const tq = Math.floor(t / step + 1e-6) * step;
+  const u = Math.min(0.9999, Math.max(0, tq / preset.durationMs));
+  const k = fxKeyValue(spec.envelope ?? DEFAULT_FX_LIGHT_ENVELOPE, u, 1);
+  const power = spec.power * k;
+  if (power <= 0.001) return null;
+  const z = ZONES[spec.zone];
+  return {
+    zone: spec.zone,
+    color: z ? z.color : ZONES.paper.color,
+    x: spec.offset?.[0] ?? 0,
+    y: spec.offset?.[1] ?? 0,
+    radius: spec.radius,
+    power,
+  };
 }

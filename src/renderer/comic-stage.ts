@@ -140,7 +140,7 @@ export class ComicStage {
     this.camera.lookAt(LOOK_HOME);
 
     this.scene.add(this.world, this.fx, this.fxLayer, this.pageLayer);
-    this.scene.add(this.light.halo);
+    this.scene.add(this.light.halo, this.light.fxHalos);
     const w = this.mount.clientWidth || 800;
     const h = this.mount.clientHeight || 450;
     const post = createComicComposer({

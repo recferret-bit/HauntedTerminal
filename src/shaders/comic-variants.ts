@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COMIC_FRAG, type ComicMaterial } from './comic-material.js';
+import { COMIC_FRAG, COMIC_FX_LIGHTS, COMIC_LIGHT, type ComicMaterial } from './comic-material.js';
 
 /**
  * Stepped 12 fps comic surface variants patched onto COMIC_FRAG without forking it.
@@ -68,7 +68,7 @@ export function comicVariant(
 ): ComicMaterial {
   const mat = base.clone();
   mat.fragmentShader = patchComicFragment(patch);
-  Object.assign(mat.uniforms, uniforms);
+  Object.assign(mat.uniforms, COMIC_LIGHT, COMIC_FX_LIGHTS, uniforms);
   mat.userData.comic = true;
   mat.needsUpdate = true;
   return mat;

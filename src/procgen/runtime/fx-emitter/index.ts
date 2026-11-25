@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import type { ComicMaterial } from '../../../shaders/comic-material.js';
-import { fxEvaluate, fxSpawn, fxTotalMs, fxWordState } from '../../fx/simulate.js';
-import type { FxPreset } from '../../fx/types.js';
+import type { ComicFxLight, ComicMaterial } from '../../../shaders/comic-material.js';
+import { fxEvaluate, fxLightState, fxSpawn, fxTotalMs, fxWordState } from '../../fx/simulate.js';
+import type { FxLightState, FxPreset } from '../../fx/types.js';
 import { DEFAULT_INK_WEIGHT } from '../build.js';
 import { buildPools, hideAll, poseParticle } from './layers.js';
 import { createParts, disposeParts } from './parts.js';
@@ -28,6 +28,8 @@ export interface FxEmitter {
   readonly timeMs: number;
   /** True once particles and the word are gone (never for looping presets). */
   readonly done: boolean;
+  /** Active stepped comic light emitted at `timeMs`, or null once the light turns off. */
+  lightState(): FxLightState | null;
   update(dtMs: number): void;
   /** Jump to an absolute time (storybook scrubbing, tests). */
   seek(tMs: number): void;
@@ -77,6 +79,9 @@ export function createFxEmitter(preset: FxPreset, opts: FxEmitterOptions = {}): 
     get done() {
       return timeMs >= total;
     },
+    lightState(): FxLightState | null {
+      return fxLightState(preset, timeMs);
+    },
     update(dtMs: number): void {
       timeMs += Math.max(0, dtMs);
       apply();
@@ -90,4 +95,44 @@ export function createFxEmitter(preset: FxPreset, opts: FxEmitterOptions = {}): 
       disposeParts(parts);
     },
   };
+}
+
+const LIGHT_TMP = new THREE.Vector3();
+
+function isVisibleInHierarchy(obj: THREE.Object3D): boolean {
+  for (let cur: THREE.Object3D | null = obj; cur; cur = cur.parent) {
+    if (!cur.visible) return false;
+  }
+  return true;
+}
+
+/** Active world-space comic light of one mounted emitter, respecting full parent transforms, mirroring, and visibility. */
+export function fxEmitterWorldLight(fx: FxEmitter, lightMul = 1): ComicFxLight | null {
+  if (!(lightMul > 0) || !isVisibleInHierarchy(fx.group)) return null;
+  const l = fx.lightState();
+  if (!l) return null;
+  fx.group.updateWorldMatrix(true, false);
+  const m = fx.group.matrixWorld;
+  const e = m.elements;
+  const sy = Math.hypot(e[4]!, e[5]!, e[6]!) || 1;
+  // Page +x is mirrored onto local -x of fx.group by the `page` child (`page.scale.x = -1`).
+  LIGHT_TMP.set(-l.x, l.y, 0).applyMatrix4(m);
+  const scalePower = sy < 1 ? 0.55 + 0.45 * sy : 1;
+  const power = l.power * scalePower * lightMul;
+  if (power <= 0.001) return null;
+  return { x: LIGHT_TMP.x, y: LIGHT_TMP.y, radius: l.radius * sy, power, color: l.color };
+}
+
+export type FxLightEntry = FxEmitter | { fx: FxEmitter; lightMul?: number };
+
+/** Collect the strongest active world-space FX lights (ranked by power * radius, newest-first tiebreak) up to `max`. */
+export function collectTopFxLights(emitters: readonly FxLightEntry[], max = 4): ComicFxLight[] {
+  const out: ComicFxLight[] = [];
+  for (let i = emitters.length - 1; i >= 0; i--) {
+    const item = emitters[i]!;
+    const l = 'fx' in item ? fxEmitterWorldLight(item.fx, item.lightMul ?? 1) : fxEmitterWorldLight(item);
+    if (l) out.push(l);
+  }
+  if (out.length <= max) return out;
+  return out.sort((a, b) => b.power * b.radius - a.power * a.radius).slice(0, max);
 }

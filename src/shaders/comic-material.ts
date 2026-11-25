@@ -44,9 +44,31 @@ uniform float uLampUv;
 uniform float uPingR;
 uniform float uPingPower;
 uniform float uUvReact;
+// Dynamic comic FX lights (shared by every comic material, see COMIC_FX_LIGHTS). w = power (0 = off).
+uniform vec4 uFxPos0;
+uniform vec3 uFxCol0;
+uniform vec4 uFxPos1;
+uniform vec3 uFxCol1;
+uniform vec4 uFxPos2;
+uniform vec3 uFxCol2;
+uniform vec4 uFxPos3;
+uniform vec3 uFxCol3;
 varying vec3 vNormal;
 varying vec3 vWorld;
 varying vec2 vUv;
+
+vec3 comicFxLight(vec4 lp, vec3 lc, vec3 baseCol, vec3 n, float dth, float darkBoost) {
+  if (lp.w <= 0.001) return vec3(0.0);
+  vec2 toFx = lp.xy - vWorld.xy;
+  float dist = length(toFx);
+  float fall = 1.0 - dist / max(lp.z, 0.001) + dth;
+  float ring = fall > 0.64 ? 1.0 : fall > 0.34 ? 0.56 : fall > 0.0 ? 0.24 : 0.0;
+  if (ring <= 0.0) return vec3(0.0);
+  vec3 fxDir = normalize(vec3(toFx, -0.65));
+  float facing = dot(n, fxDir) > 0.2 ? 1.0 : 0.62;
+  float lit = min(ring * facing * lp.w, 1.25);
+  return baseCol * lc * lit * darkBoost + lc * lit * (0.06 + 0.08 * darkBoost);
+}
 
 void main() {
   vec3 n = normalize(vNormal);
@@ -70,6 +92,7 @@ void main() {
   vec3 viewDir = normalize(cameraPosition - vWorld);
   float fres = pow(1.0 - max(dot(n, viewDir), 0.0), 2.6);
   col = mix(col, uInk, smoothstep(0.55, 0.92, fres) * 0.55);
+  vec3 baseCol = col;
   if (uLampDark > 0.001 || uLampPower > 0.001 || uPingPower > 0.001) {
     // A comic light on the page plane: distance is measured in xy, so it reads as a drawn pool of light.
     vec2 toLamp = uLampPos.xy - vWorld.xy;
@@ -94,6 +117,20 @@ void main() {
     float band = abs(dist - uPingR);
     float pingEdge = step(band, 0.09) + 0.45 * step(band, 0.3) * step(dist, uPingR);
     col += lampCol * pingEdge * uPingPower * (0.55 + 0.45 * facing);
+  }
+  if (uFxPos0.w > 0.001 || uFxPos1.w > 0.001 || uFxPos2.w > 0.001 || uFxPos3.w > 0.001) {
+    vec2 fxCell = floor(gl_FragCoord.xy / 3.0);
+    float fxDth = (mod(fxCell.x + fxCell.y * 2.0, 4.0) / 4.0 - 0.375) * 0.16;
+    float darkBoost = mix(0.32, 0.85, clamp(uLampDark, 0.0, 1.0));
+    vec3 fxAdd = comicFxLight(uFxPos0, uFxCol0, baseCol, n, fxDth, darkBoost)
+      + comicFxLight(uFxPos1, uFxCol1, baseCol, n, fxDth, darkBoost)
+      + comicFxLight(uFxPos2, uFxCol2, baseCol, n, fxDth, darkBoost)
+      + comicFxLight(uFxPos3, uFxCol3, baseCol, n, fxDth, darkBoost);
+    // Hue-preserving soft knee prevents multi-FX whiteout and keeps self-emissive FX geometry crisp.
+    float fxPeak = max(max(fxAdd.r, fxAdd.g), fxAdd.b);
+    float fxCap = mix(0.72, 1.12, clamp(uLampDark, 0.0, 1.0));
+    if (fxPeak > 0.001) fxAdd *= fxCap / (fxCap + fxPeak);
+    col += fxAdd * (1.0 - min(uEmissive, 0.78));
   }
   col += uColor * uEmissive;
   vec3 toFlash = uFlashPos - vWorld;
@@ -150,6 +187,53 @@ export const COMIC_LIGHT = {
   uPingPower: { value: 0 },
 };
 
+/** One live FX light source in world xy. */
+export interface ComicFxLight {
+  x: number;
+  y: number;
+  radius: number;
+  power: number;
+  color: number;
+}
+
+export const MAX_COMIC_FX_LIGHTS = 4;
+
+export const COMIC_FX_LIGHTS = {
+  uFxPos0: { value: new THREE.Vector4(0, 0, 1, 0) },
+  uFxCol0: { value: new THREE.Color(1, 1, 1) },
+  uFxPos1: { value: new THREE.Vector4(0, 0, 1, 0) },
+  uFxCol1: { value: new THREE.Color(1, 1, 1) },
+  uFxPos2: { value: new THREE.Vector4(0, 0, 1, 0) },
+  uFxCol2: { value: new THREE.Color(1, 1, 1) },
+  uFxPos3: { value: new THREE.Vector4(0, 0, 1, 0) },
+  uFxCol3: { value: new THREE.Color(1, 1, 1) },
+};
+
+const FX_LIGHT_SLOTS: ReadonlyArray<{ pos: { value: THREE.Vector4 }; col: { value: THREE.Color } }> = [
+  { pos: COMIC_FX_LIGHTS.uFxPos0, col: COMIC_FX_LIGHTS.uFxCol0 },
+  { pos: COMIC_FX_LIGHTS.uFxPos1, col: COMIC_FX_LIGHTS.uFxCol1 },
+  { pos: COMIC_FX_LIGHTS.uFxPos2, col: COMIC_FX_LIGHTS.uFxCol2 },
+  { pos: COMIC_FX_LIGHTS.uFxPos3, col: COMIC_FX_LIGHTS.uFxCol3 },
+];
+
+/** Push up to 4 active FX lights into the shared comic shader uniforms (unused slots zeroed). */
+export function setComicFxLights(lights: readonly ComicFxLight[]): void {
+  for (let i = 0; i < FX_LIGHT_SLOTS.length; i++) {
+    const slot = FX_LIGHT_SLOTS[i]!;
+    const l = lights[i];
+    if (l && l.power > 0.001 && l.radius > 0.001) {
+      slot.pos.value.set(l.x, l.y, l.radius, l.power);
+      slot.col.value.setHex(l.color);
+    } else {
+      slot.pos.value.set(0, 0, 1, 0);
+    }
+  }
+}
+
+export function clearComicFxLights(): void {
+  setComicFxLights([]);
+}
+
 export function createComicMaterial(color: number, opts: ComicOptions = {}): ComicMaterial {
   const mat = new THREE.ShaderMaterial({
     uniforms: {
@@ -168,6 +252,7 @@ export function createComicMaterial(color: number, opts: ComicOptions = {}): Com
       uTime: { value: 0 },
       uUvReact: { value: opts.uvReact ?? 0 },
       ...COMIC_LIGHT,
+      ...COMIC_FX_LIGHTS,
     },
     vertexShader: COMIC_VERT,
     fragmentShader: COMIC_FRAG,

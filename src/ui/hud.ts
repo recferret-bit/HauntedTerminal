@@ -3,7 +3,6 @@ import { downloadPortableSaveFile } from '../chapters/portable-save.js';
 import { wireExternalLinksForDesktop, wireSteamWishlistLink } from '../chapters/steam-bridge.js';
 import { heroModel } from '../game/inventory.js';
 import type { GameSnapshot } from '../game/types.js';
-import { escHtml as esc } from '../renderer/html-escape.js';
 import {
   el, heroFaceTierForHp, PORTRAIT_FRAMES, type DrawPortrait, type HeroFaceTier,
 } from './dom-lite.js';
@@ -34,9 +33,6 @@ export interface Hud {
   backupUsed(hp: number): void;
   /** Non-blocking comic stamp when a local achievement unlocks. */
   achievement(item: { icon: string; title: string; steamApiName: string; description: string }): void;
-  /** Paper note under the Hint button. */
-  showHint(text: string): void;
-  hideHint(): void;
   showStats(stats: EndStats, skipIntro: boolean): void;
   hideStats(): void;
 }
@@ -91,7 +87,7 @@ const HUD_HTML = (maxFloors: number) => `
       <b id="hud-time">0:00</b><span class="hud-pause" id="hud-pause">II</span>
     </div>
     <div class="hud-btns">
-      <button type="button" id="hud-hint" title="A nudge for this room">? Hint</button>
+      <button type="button" id="hud-hint" title="Tasks & goals for this room">? Hint</button>
     </div>
   `;
 
@@ -135,7 +131,6 @@ interface HudView {
   time: HTMLElement;
   pause: HTMLElement;
   flash: HTMLElement;
-  hint: HTMLElement;
   backup: HTMLElement;
   achToast: HTMLElement;
   achQueue: Array<{ icon: string; title: string; steamApiName: string; description: string }>;
@@ -151,7 +146,6 @@ interface HudView {
   ouchTimer: number;
   lastHp: number;
   lastPips: string;
-  hintTimer: number;
 }
 
 function renderHeroAvatar(view: HudView): void {
@@ -327,17 +321,6 @@ function hudApi(view: HudView): Hud {
       };
       showNext();
     },
-    showHint(text) {
-      q('p', view.hint).innerHTML = esc(text).replace(/\n/g, '<br>');
-      replay(view.hint, 'open');
-      globalThis.clearTimeout(view.hintTimer);
-      view.hintTimer = globalThis.setTimeout(() => view.hint.classList.remove('open'), 9000) as unknown as number;
-    },
-    hideHint() {
-      globalThis.clearTimeout(view.hintTimer);
-      view.hintTimer = 0;
-      view.hint.classList.remove('open');
-    },
     showStats(s, skipIntro) {
       q('#outro-rank', view.stats).textContent = s.rank;
       q('#outro-time', view.stats).textContent = clock(s.timeSec);
@@ -355,17 +338,8 @@ function hudApi(view: HudView): Hud {
   };
 }
 
-function bindHud(root: HTMLElement, hint: HTMLElement, handlers: HudHandlers): void {
+function bindHud(root: HTMLElement, handlers: HudHandlers): void {
   q<HTMLButtonElement>('#hud-hint', root).onclick = () => handlers.onHint();
-  hint.onclick = () => hint.classList.remove('open');
-}
-
-/** The tips box is not a dialog: it lives in `#titleblock` (left column, below the inventory), outside the orchestrator. */
-function mountHintNote(stageWrap: HTMLElement, fx: HTMLElement): HTMLElement {
-  const hint = q('#fx-hint', fx);
-  const host = stageWrap.querySelector<HTMLElement>('#titleblock');
-  if (host) host.appendChild(hint);
-  return hint;
 }
 
 function mountLeftItemsStrip(
@@ -389,7 +363,6 @@ function mountFx(stageWrap: HTMLElement): HTMLElement {
   fx.className = 'hud-fx-layer';
   fx.innerHTML = `
     <div class="damage-flash" id="fx-damage"></div>
-    <div class="hint-note" id="fx-hint" role="status"><span class="hint-pin"></span><p></p><small>click to close</small></div>
     <div class="backup-banner" id="fx-backup"><b>BACKUP RESTORED!</b><span></span></div>
     <div class="achievement-toast" id="fx-achievement" aria-live="polite">
       <span class="ach-icon"></span>
@@ -409,8 +382,7 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
   root.innerHTML = HUD_HTML(handlers.maxFloors ?? 5);
   const hero = mountHeroHud(stageWrap, handlers.drawPortrait);
   const fx = mountFx(stageWrap);
-  const hint = mountHintNote(stageWrap, fx);
-  bindHud(root, hint, handlers);
+  bindHud(root, handlers);
   stats.innerHTML = STATS_HTML;
   const skipBox = q<HTMLInputElement>('#outro-skip', stats);
   q<HTMLButtonElement>('#outro-again', stats).onclick = () => handlers.onPlayAgain(skipBox.checked);
@@ -443,7 +415,6 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     time: q('#hud-time', root),
     pause: q('#hud-pause', root),
     flash: q('#fx-damage', fx),
-    hint,
     backup: q('#fx-backup', fx),
     achToast: q('#fx-achievement', fx),
     achQueue: [],
@@ -459,7 +430,6 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     ouchTimer: 0,
     lastHp: -1,
     lastPips: '',
-    hintTimer: 0,
   };
   if (handlers.drawPortrait) {
     view.heroTimer = unrefTimer(globalThis.setInterval(() => {

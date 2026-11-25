@@ -14,7 +14,7 @@ import { applyLabInjection, buildLabInspect } from './lab-support.js';
 import { freshLabLevelState, type LabConfig, type LabInjection, type LabInspect, type LabSession } from './lab-types.js';
 import { helpText, runMan, runManual } from './manual.js';
 import { brace, empty, out, thisPlaceholder, type HeroAction, type Run } from './play.js';
-import { cmdKiro, puzzleHint, statusText, stepKiroCrack, threatHint } from './puzzle.js';
+import { classicHintGoals, cmdKiro, puzzleHint, statusText, stepKiroCrack, threatHint } from './puzzle.js';
 import {
   applyPickup, backups, bossDown, bump, causeOf, completions, elapsedSec, enterFloorEvents, facts, find, glob, hurt,
   kernelPhase, load, maxHp, noteAction, portal, push, rank, restoreQuests,
@@ -266,6 +266,7 @@ class Game implements LabSession, Host {
         bugsLeft: counts.left,
         bugsTotal: counts.total,
       },
+      hintGoals: classicHintGoals(this),
       ended: this.run.ended,
       rank: this.run.ended ? rank(this) : null,
       timeSec: elapsedSec(this),

@@ -13,7 +13,7 @@ function peak(keys: readonly FxKey[] | undefined, fallback = 1): number {
   return keys && keys.length ? Math.max(...keys.map((k) => k[1])) : fallback;
 }
 
-function keyProblems(keys: readonly FxKey[], maxValue: number): string | null {
+export function keyProblems(keys: readonly FxKey[], maxValue: number): string | null {
   if (keys.length === 0) return 'has no keys';
   if (keys.length > L.maxKeys) return `has ${keys.length} keys (max ${L.maxKeys}): that many steps reads as a smooth tween`;
   if (keys[0]![0] !== 0) return `starts at t = ${keys[0]![0]}, not 0: the particle would be invisible when it spawns`;

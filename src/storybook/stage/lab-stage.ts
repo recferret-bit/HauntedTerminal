@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { INK, PAPER } from '../../procgen/core/palette.js';
 import { createComicComposer, frameOrtho, type ComicPost } from '../../shaders/comic-composer.js';
-import { createComicMaterial, type ComicMaterial } from '../../shaders/comic-material.js';
+import { clearComicFxLights, createComicMaterial, setComicFxLights, type ComicMaterial } from '../../shaders/comic-material.js';
 import { setCrtSize, setCrtTime } from '../../shaders/crt-pass.js';
 import { LightningStrikeSystem } from '../../shaders/lightning.js';
 import { DEFAULT_PIXEL_PARAMS, setPixelArtParams, setPixelArtSize } from '../../shaders/pixel-art.js';
@@ -201,6 +201,9 @@ export class LabStage {
     req.subject.materials.forEach(feed);
     feed(this.backdropMat);
     feed(this.plinthMat);
+    const fxLight = !req.silhouette ? req.subject.fxLight?.() ?? null : null;
+    if (fxLight) setComicFxLights([fxLight]);
+    else clearComicFxLights();
     setCrtTime(this.crtPass, req.time);
   }
 

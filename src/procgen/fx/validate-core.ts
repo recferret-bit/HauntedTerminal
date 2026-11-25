@@ -30,6 +30,8 @@ export const FX_LIMITS = {
   maxWordWidth: 3.6,
   maxShake: 2,
   maxFlash: 6,
+  maxLightRadius: 8,
+  maxLightPower: 2.5,
 } as const;
 
 /** Which palette families a family of effect may draw with. */

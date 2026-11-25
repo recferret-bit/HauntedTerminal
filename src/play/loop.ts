@@ -3,7 +3,7 @@ import type { KernelEvent } from '../contracts/events.js';
 import type { GameSnapshot, TickResult } from '../game/types.js';
 import { setHudHidden } from '../ui/screen.js';
 import { colourise } from '../ui/terminal.js';
-import { openManualModal } from './input.js';
+import { openHintDialog, openManualModal } from './input.js';
 import { exposeLabHooks } from './lab.js';
 import { mountTutorial, taunt } from '../ui/tutorial.js';
 import { CARD_MS, type Play } from './state.js';
@@ -14,8 +14,9 @@ function syncPause(play: Play): void {
   play.session.setPaused(play.reasons.size > 0);
   const blocking = [...play.reasons].some((r) => r !== 'hidden') || Boolean(play.manualBook?.isOpen());
   play.shell.setBlocked(blocking);
-  // A card, cinematic or the end of the run takes the screen: the Esc menu steps aside.
+  // A card, cinematic or the end of the run takes the screen: overlays step aside.
   if (play.menu?.isOpen() && [...play.reasons].some((r) => r !== 'hidden' && r !== 'intro')) play.menu.close();
+  if (play.hintDialog?.isOpen() && [...play.reasons].some((r) => r !== 'hidden' && r !== 'intro')) play.hintDialog.close();
   if (play.manualBook?.isOpen() && [...play.reasons].some((r) => r === 'cinematic' || r === 'outro' || r === 'ended')) {
     play.manualBook.close();
   }
@@ -30,8 +31,11 @@ function syncPause(play: Play): void {
 }
 
 function paint(play: Play, snap: GameSnapshot): void {
+  // No terminal in his inventory (the tutorial start): no terminal panel and no typing until it is given.
+  play.shell.setAvailable(snap.inventory.items.includes('terminal'));
   play.hud?.update(snap);
   play.menu?.update(snap);
+  play.hintDialog?.update(snap);
   play.tutorial.sync(play.phase === 'play' || play.phase === 'intro' ? (snap.tutorial ?? null) : null);
   play.dom.captionEl.textContent = snap.room.title;
   play.dom.captionEl.title = snap.cwd;
@@ -186,6 +190,11 @@ function exposePlayHooks(play: Play): void {
     open: () => play.menu?.open(play.session.snapshot()),
     close: () => play.menu?.close(),
     isOpen: () => play.menu?.isOpen() ?? false,
+  };
+  (window as unknown as { __hint?: unknown }).__hint = {
+    open: () => openHintDialog(play),
+    close: () => play.hintDialog?.close(),
+    isOpen: () => play.hintDialog?.isOpen() ?? false,
   };
   (window as unknown as { __manual?: unknown }).__manual = {
     isOpen: () => play.manualBook?.isOpen() ?? false,

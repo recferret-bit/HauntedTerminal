@@ -1,7 +1,7 @@
 import type * as THREE from 'three';
 import type { BuiltModel } from '../../procgen/runtime/build.js';
 import type { ModelSpec, Vec3 } from '../../procgen/core/types.js';
-import type { ComicMaterial } from '../../shaders/comic-material.js';
+import type { ComicFxLight, ComicMaterial } from '../../shaders/comic-material.js';
 import type { Bounds } from '../domain/framing.js';
 import type { PartAnimator } from './part-animator.js';
 
@@ -39,6 +39,8 @@ export interface Subject {
   animator: PartAnimator | null;
   sockets: Record<string, Vec3>;
   info: SubjectInfo | null;
+  /** Optional live comic light source emitted by an FX subject. */
+  fxLight?: () => ComicFxLight | null;
   dispose(): void;
 }
 

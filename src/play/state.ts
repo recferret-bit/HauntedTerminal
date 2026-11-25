@@ -6,6 +6,7 @@ import type { GameSnapshot, TickResult } from '../game/types.js';
 import type { ComicStage } from '../renderer/comic-stage.js';
 import type { CodeEditor } from '../ui/code-editor.js';
 import type { EscMenu } from '../ui/esc-menu.js';
+import type { HintDialog } from '../ui/hint-dialog.js';
 import type { EndStats, Hud } from '../ui/hud.js';
 import type { ManualBook } from '../ui/manual-book.js';
 import type { DialogBox } from '../ui/dialog-box.js';
@@ -95,10 +96,12 @@ export class Play {
   /** FLOOR_ENTERED that arrived while the intro was running; shown once it ends. */
   stashedFloorCard: Extract<KernelEvent, { type: 'FLOOR_ENTERED' }> | null = null;
   hud: Hud | null = null;
-  /** Unified corner dialog orchestrator (`DIALOG_BOX`, `AGENT_TAUNT`, `.hint-note` coordination). */
+  /** Unified corner dialog orchestrator (`DIALOG_BOX`, `AGENT_TAUNT`). */
   dialogs: DialogOrchestrator | null = null;
   /** The corner dialog box owned by `dialogs`; mounted with the HUD. */
   dialogBox: DialogBox | null = null;
+  /** Centered Tasks & Goals hint popup (`src/ui/hint-dialog.ts`). */
+  hintDialog: HintDialog | null = null;
   codeEditor: CodeEditor | null = null;
   /** The Esc menu (`src/play/menu.ts`). It never adds a pause reason and never holds the turn timer. */
   menu: EscMenu | null = null;
