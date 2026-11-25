@@ -131,23 +131,19 @@ export const COFFEE_HEAT_PATCH: ComicPatch = {
   col = mix(col, uCvHot * band, cvCrema * cvHeat * (1.0 - uCvFreeze));`,
 };
 
-/** Concentric planetary accretion rings framing the separated event-horizon core (`agent.gork`). */
+/** Concentric planetary accretion ring circles framing the separated event-horizon core (`agent.gork`). */
 export const ACCRETION_HALO_PATCH: ComicPatch = {
   decl: SHARED_DECL,
   begin: /* glsl */ `
   float cvTick = uCvFreeze > 0.5 ? 0.0 : floor(uTime * 12.0);`,
   surface: /* glsl */ `
-  vec2 cvUnrot = vec2(-vUv.x * 0.9659 + vUv.y * 0.2588, vUv.x * 0.2588 + vUv.y * 0.9659);
-  vec2 cvQ = floor((cvUnrot / max(uCvScale, vec2(0.05))) * 24.0) / 24.0;
-  float cvR = length(cvQ);
-  float cvAng = atan(cvQ.y, cvQ.x);
-  float cvSpin = cvTick * 0.26;
-  float cvArc = fract((cvAng - cvSpin) / 6.2831853 * 3.0);
-  float cvInnerRim = step(cvR, 0.77);
-  float cvCassini = step(0.83, cvR) * step(cvR, 0.89);
-  float cvOuter = step(0.89, cvR);
-  vec3 cvRingCol = mix(uCvAccentA, uCvAccentB, cvOuter * step(0.42, cvArc));
-  cvRingCol = mix(cvRingCol, uCvHot, cvInnerRim * step(0.28, cvArc));
+  float cvRad = floor((cos(vUv.y * 6.2831853) * 0.5 + 0.5) * 12.0) / 12.0;
+  float cvArc = fract((floor(vUv.x * 24.0) / 24.0 + (1.0 - uCvScale.x) * 0.0) * 3.0 - cvTick * 0.04);
+  float cvInnerRim = step(cvRad, 0.26);
+  float cvCassini = step(0.52, cvRad) * step(cvRad, 0.70);
+  float cvOuter = step(0.70, cvRad);
+  vec3 cvRingCol = mix(uCvAccentA, uCvAccentB, cvOuter);
+  cvRingCol = mix(cvRingCol, uCvHot, cvInnerRim * (0.65 + 0.35 * step(0.35, cvArc)));
   cvRingCol = mix(cvRingCol, uCvDeep, cvCassini);
   col = mix(col, cvRingCol * band, 0.92 * (1.0 - uCvFreeze * 0.55));`,
 };

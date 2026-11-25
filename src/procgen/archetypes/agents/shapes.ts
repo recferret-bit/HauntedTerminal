@@ -110,28 +110,6 @@ export function coffeeDrop(r: number): Vec2[] {
   ];
 }
 
-/** Half of a tilted elliptical ring (`a0..a1` = `0..pi` far half, `pi..2pi` near half). */
-export function diskHalf(
-  inner: Vec2,
-  outer: Vec2,
-  a0: number,
-  a1: number,
-  tilt: number,
-  steps = 16,
-): Vec2[] {
-  const ct = Math.cos(tilt);
-  const st = Math.sin(tilt);
-  const at = (r: Vec2, a: number): Vec2 => {
-    const u = r[0] * Math.cos(a);
-    const v = r[1] * Math.sin(a);
-    return [u * ct - v * st, u * st + v * ct];
-  };
-  const pts: Vec2[] = [];
-  for (let i = 0; i <= steps; i++) pts.push(at(outer, a0 + ((a1 - a0) * i) / steps));
-  for (let i = steps; i >= 0; i--) pts.push(at(inner, a0 + ((a1 - a0) * i) / steps));
-  return pts;
-}
-
 /** Point on a tilted orbit ellipse around `c`. */
 export function diskPoint(c: Vec2, radii: Vec2, tilt: number, t: number): Vec2 {
   const u = radii[0] * Math.cos(t);
@@ -142,18 +120,19 @@ export function diskPoint(c: Vec2, radii: Vec2, tilt: number, t: number): Vec2 {
   ];
 }
 
-/** Bold upturned comic smile with thick blunt corners so the full curve survives 3.5px pixel-art cells. */
-export function comicSmile(halfW: number, rise: number, width: number): Vec2[] {
+/** Bold upturned U-curved comic smile with flat bottom and open interior hollow for 3.5px pixel-art cells. */
+export function comicSmile(halfW: number, dip: number, width: number): Vec2[] {
   return stroke(
     [
-      [-halfW, rise],
-      [-halfW * 0.58, -rise * 0.42],
-      [0, -rise * 0.78],
-      [halfW * 0.58, -rise * 0.42],
-      [halfW, rise],
+      [-halfW, dip * 0.44],
+      [-halfW * 0.66, -dip * 0.36],
+      [-halfW * 0.26, -dip * 0.68],
+      [halfW * 0.26, -dip * 0.68],
+      [halfW * 0.66, -dip * 0.36],
+      [halfW, dip * 0.44],
     ],
     width,
-    0.92,
+    0.9,
   );
 }
 

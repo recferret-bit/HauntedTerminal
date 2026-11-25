@@ -1,138 +1,117 @@
 /**
- * `agent.gork` — GORK: event-horizon black-hole planet head (`gorkBlack` core) separated by a wide
- * open gap from its tilted `accretion_halo` planetary rings, wearing chunky silver-rimmed comic
- * goggles (`malwareEye` lenses) and a wide high-contrast `paper` grin, with orbiting ring shards
- * and Hawking-flare `jitter`.
+ * `agent.gork` — GORK: event-horizon black-hole planet head (`gorkBlack` core) surrounded by a
+ * clearly separated seamless tilted `accretion_halo` planetary ring, wearing high-contrast comic
+ * goggles (`O-O` dark lenses) and an upturned `paper` grin, with orbiting shards & quasar core.
  */
 import type { AnimTag, PartSpec, Vec2 } from '../../core/types.js';
 import { deg, defineMalware, ngon, plate, rect } from '../malware/parts.js';
-import { comicSmile, diskHalf, diskPoint, facing } from './shapes.js';
+import { comicSmile, diskPoint, facing } from './shapes.js';
 
 defineMalware({
   id: 'agent.gork',
   seedKey: 'malware.agent_gork',
   label: 'Gork (parody agent)',
-  lore: 'An event-horizon black-hole planet head in chunky glowing goggles and a wide grin, surrounded by separated accretion rings.',
+  lore: 'An event-horizon black-hole planet head in chunky comic goggles and a wide grin, framed by separated planetary ring circles.',
   build: (rng) => {
     const c: Vec2 = [0, 0.92];
-    const r = 0.37;
-    const tilt = deg(16);
+    const r = 0.312;
+    const tilt = deg(14);
     const parts: PartSpec[] = [];
 
-    // Separated planetary ring circles with a wide readable gap outside the black-hole body (`r = 0.37` vs `inner = [0.59, 0.33]`).
-    const inner: Vec2 = [0.59, 0.33];
-    const outer: Vec2 = [0.82, 0.45];
-    const ringBob: AnimTag = { type: 'bob', axis: 'y', speed: 0.75, amp: 0.02 };
+    // Seamless tilted 3D planetary ring with wide 360-degree negative-space gap around the planet body (`r = 0.312` vs inner `[0.63, 0.45]`).
     parts.push(
-      plate('haloFar', 'corruptMagenta', diskHalf(inner, outer, -0.08, Math.PI + 0.08, tilt, 18), {
-        at: c,
-        z: 0.1,
-        depth: 0.07,
+      {
+        name: 'haloRing',
+        shape: { kind: 'torus', radius: 0.725, tube: 0.095 },
+        zone: 'corruptMagenta',
+        pos: [c[0], c[1], 0],
+        rot: [0.339, 0.083, 0.23],
+        scale: [1, 0.76, 0.24],
         texture: 'tex.accretion_halo',
         shader: 'accretion_halo',
-        anim: ringBob,
-      }),
-      { name: 'coreHead', shape: { kind: 'sphere', radius: r }, zone: 'gorkBlack', pos: [c[0], c[1], 0], scale: [1, 1, 0.64] },
-      plate('haloNear', 'corruptMagenta', diskHalf(inner, outer, Math.PI, Math.PI * 2, tilt, 18), {
-        at: c,
-        z: -0.32,
-        depth: 0.09,
-        texture: 'tex.accretion_halo',
-        shader: 'accretion_halo',
-        anim: ringBob,
-      }),
+        anim: { type: 'bob', axis: 'y', speed: 0.6, amp: 0.006 },
+      },
+      { name: 'coreHead', shape: { kind: 'sphere', radius: r }, zone: 'gorkBlack', pos: [c[0], c[1], 0], scale: [1, 1, 0.72] },
     );
 
-    const goggleY = c[1] + 0.13;
-    const cupX = 0.195;
-    const goggleFront = -0.265;
-    const eyePulse: AnimTag = { type: 'pulse', speed: 1.1, amp: 0.08 };
-    // Chunky comic goggles: dark violet strap & bridge separating two bright silver rims, dark lens wells, and glowing cores.
+    const goggleY = c[1] + 0.095;
+    const cupX = 0.154;
+    const goggleFront = -0.25;
+    // High-contrast 2-layer comic goggles (`O-O`): bright frames + bridge over deep dark lenses so both cups read crisply under 3.5px quantization.
     parts.push(
-      plate('goggleStrapL', 'corruptViolet', rect(0.13, 0.085), { at: [c[0] + 0.36, goggleY], z: -0.1, depth: 0.15 }),
-      plate('goggleStrapR', 'corruptViolet', rect(0.13, 0.085), { at: [c[0] - 0.36, goggleY], z: -0.1, depth: 0.15 }),
-      plate('goggleBridge', 'corruptViolet', rect(0.14, 0.068), { at: [c[0], goggleY + 0.008], z: -0.13, depth: 0.19 }),
-      plate('goggleFrameL', 'solder', ngon(12, 0.16, deg(15)), { at: [c[0] + cupX, goggleY], z: -0.16, depth: 0.21 }),
-      plate('goggleFrameR', 'solder', ngon(12, 0.16, deg(15)), { at: [c[0] - cupX, goggleY], z: -0.16, depth: 0.21 }),
-      plate('goggleLensL', 'ink', ngon(12, 0.118, deg(15)), {
+      plate('goggleStrapL', 'corruptViolet', rect(0.065, 0.066), { at: [c[0] + 0.28, goggleY], z: -0.09, depth: 0.14 }),
+      plate('goggleStrapR', 'corruptViolet', rect(0.065, 0.066), { at: [c[0] - 0.28, goggleY], z: -0.09, depth: 0.14 }),
+      plate('goggleBridge', 'paper', rect(0.12, 0.054), { at: [c[0], goggleY + 0.006], z: -0.14, depth: 0.18, ink: false }),
+      plate('goggleFrameL', 'paper', ngon(12, 0.124, deg(15)), { at: [c[0] + cupX, goggleY], z: -0.15, depth: 0.2, ink: false }),
+      plate('goggleFrameR', 'paper', ngon(12, 0.124, deg(15)), { at: [c[0] - cupX, goggleY], z: -0.15, depth: 0.2, ink: false }),
+      plate('goggleLensL', 'ink', ngon(12, 0.069, deg(15)), {
         at: [c[0] + cupX, goggleY],
         onto: goggleFront,
-        depth: 0.026,
+        depth: 0.028,
         ink: false,
       }),
-      plate('goggleLensR', 'ink', ngon(12, 0.118, deg(15)), {
+      plate('goggleLensR', 'ink', ngon(12, 0.069, deg(15)), {
         at: [c[0] - cupX, goggleY],
         onto: goggleFront,
-        depth: 0.026,
+        depth: 0.028,
         ink: false,
-      }),
-      plate('goggleCoreL', 'malwareEye', ngon(12, 0.1, deg(15)), {
-        at: [c[0] + cupX, goggleY],
-        onto: goggleFront - 0.018,
-        depth: 0.03,
-        ink: false,
-        anim: eyePulse,
-      }),
-      plate('goggleCoreR', 'malwareEye', ngon(12, 0.1, deg(15)), {
-        at: [c[0] - cupX, goggleY],
-        onto: goggleFront - 0.018,
-        depth: 0.03,
-        ink: false,
-        anim: eyePulse,
       }),
     );
 
-    // Wide upturned paper-white comic smile clearly separated below the goggles on the dark face.
+    // Wide upturned U-curved `paper` comic smile separated by >1.2 macro-pixels below the goggles at every grid phase.
     parts.push(
-      plate('smile', 'paper', comicSmile(0.195, 0.056, 0.078), {
-        at: [c[0], c[1] - 0.175],
-        z: -0.205,
-        depth: 0.12,
+      plate('smile', 'paper', comicSmile(0.155, 0.085, 0.06), {
+        at: [c[0], c[1] - 0.165],
+        z: -0.18,
+        depth: 0.13,
         ink: false,
       }),
     );
 
-    // Orbiting & spinning asteroid shards riding along the outer ring track so the body-ring gap stays clean.
-    const orbitR: Vec2 = [0.71, 0.38];
+    // Orbiting asteroid shards & blazing `malwareEye` quasar star riding along the separated ring track.
+    const orbitR: Vec2 = [0.725, 0.515];
     const squash = orbitR[1] / orbitR[0];
-    const sway = 0.14;
-    const zc = -0.1;
+    const sway = 0.19;
+    const zc = -0.06;
     const speed = rng.range(0.28, 0.36);
-    const start = rng.range(0, 0.5);
-    [0.35, 2.45, 4.55].forEach((a0, i) => {
+    const start = rng.range(0, 0.45);
+    const orbitAnim: AnimTag = { type: 'orbit', speed, squash, tilt, sway, pivot: [c[0], c[1], zc] };
+    [2.35, 4.45].forEach((a0, i) => {
       const t = a0 + start;
       parts.push(
-        plate(`orbitShard${i}`, i === 1 ? 'corruptViolet' : 'solder', ngon(5 + (i % 2), 0.06 - i * 0.005, t), {
+        plate(`orbitShard${i}`, i === 0 ? 'solder' : 'corruptViolet', ngon(5 + i, 0.058, t), {
           at: diskPoint(c, orbitR, tilt, t),
           z: zc + sway * Math.sin(t),
           depth: 0.05,
-          anim: { type: 'orbit', speed, squash, tilt, sway, pivot: [c[0], c[1], zc] },
+          anim: orbitAnim,
         }),
       );
     });
+    const quasarT = 0.42;
+    const quasarAt = diskPoint(c, orbitR, tilt, quasarT);
     parts.push(
-      plate('satelliteQuasar', 'solder', ngon(4, 0.062), {
-        at: [c[0] + 0.6, c[1] + 0.41],
-        z: -0.08,
-        depth: 0.05,
+      plate('quasarCore', 'malwareEye', ngon(4, 0.082), {
+        at: quasarAt,
+        z: -0.14,
+        depth: 0.055,
         anim: { type: 'spin', axis: 'z', speed: 1.2 },
       }),
     );
 
-    // Hawking-radiation glitch flare erupting from the top pole of the black-hole head.
+    // Compact Hawking-glitch macroblock on the outer goggle strap (stays inside body bounds so the 360-degree ring gap stays open).
     parts.push(
-      plate('glitchFlare', 'corruptViolet', [[-0.075, -0.04], [0.075, -0.04], [0.105, 0.12], [-0.01, 0.21], [-0.095, 0.09]], {
-        at: [c[0] - 0.07, c[1] + 0.39],
-        z: -0.04,
-        depth: 0.08,
-        anim: { type: 'jitter', amp: 0.03, speed: 9 },
+      plate('glitchFlare', 'corruptViolet', rect(0.068, 0.052), {
+        at: [c[0] - 0.295, goggleY + 0.052],
+        z: -0.08,
+        depth: 0.11,
+        anim: { type: 'jitter', amp: 0.022, speed: 9 },
       }),
     );
 
     return facing(parts, 1, ['hover', 'detached'], {
-      bubble: [0, 1.66, 0],
-      eye: [c[0] - cupX, goggleY, goggleFront - 0.04],
-      fx: [0, c[1], -0.34],
+      bubble: [0, 1.62, 0],
+      eye: [quasarAt[0], quasarAt[1], -0.18],
+      fx: [0, c[1], -0.28],
     });
   },
 });
