@@ -20,7 +20,8 @@ export const SFX_IDS = [
   'lap_open', 'lap_close', 'lap_post_beep', 'lap_fan', 'lap_disk', 'lap_ready', 'lap_trackpad', 'lap_run',
   'lap_loop_guard', 'lap_shutdown', 'cine_panel_flash', 'cine_glitch_text', 'cine_pixelate', 'cine_invert',
   'cine_shake', 'cine_sfx_slam', 'cine_caption_in', 'cine_bubble_pop', 'sting_clear', 'sting_kiro',
-  'sting_lantern', 'sting_taunt',
+  'sting_lantern', 'sting_taunt', 'dialog_hero', 'dialog_npc',
+  'key_press_2', 'key_press_3', 'key_backspace_2', 'term_boot',
 ] as const;
 
 export type SfxId = (typeof SFX_IDS)[number];
@@ -35,18 +36,8 @@ export type MusicId = (typeof MUSIC_IDS)[number];
 
 const MUSIC_ONCE = new Set<MusicId>(['rank_card', 'cine_intro', 'cine_outro']);
 
-/**
- * The full `floor_attic.mp3` stays as the long take. Play uses a five-second
- * intro once, then the tune on its own so the lead-in does not repeat.
- */
-export const MUSIC_SPLIT: Partial<Record<MusicId, { bed: string; intro: string }>> = {
-  floor_attic: { bed: 'floor_attic_loop', intro: 'floor_attic_intro' },
-};
-
-const MUSIC_PATH: Record<string, string> = {
-  floor_attic_intro: '/music/floor_attic_intro.m4a',
-  floor_attic_loop: '/music/floor_attic_loop.m4a',
-};
+/** No bed is split. Each looping cue is one file, crossfaded at the join by the player. */
+export const MUSIC_SPLIT: Partial<Record<MusicId, { bed: string; intro: string }>> = {};
 
 export function musicLoops(id: MusicId): boolean {
   return !MUSIC_ONCE.has(id);
@@ -58,6 +49,5 @@ export function musicAsset(id: MusicId): { bed: string; intro?: string } {
 
 export function sampleUrl(group: 'sfx' | 'music', id: string): string | null {
   if (!/^[a-z0-9_]+$/.test(id)) return null;
-  if (group === 'music' && MUSIC_PATH[id]) return MUSIC_PATH[id];
   return `/${group}/${id}.mp3`;
 }

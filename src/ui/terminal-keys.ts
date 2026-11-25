@@ -56,7 +56,11 @@ function complete(st: LineState): void {
   setBuffer(st, line + after, line.length);
 }
 
-function historyMove(st: LineState, dir: -1 | 1): void {
+function audible(st: LineState, key: 'press' | 'enter' | 'backspace' | 'tab', repeat: boolean): void {
+  if (!repeat) st.hooks.onAudibleKey?.(key);
+}
+
+function historyMove(st: LineState, dir: -1 | 1, repeat: boolean): void {
   if (st.history.length === 0) return;
   if (dir < 0) {
     if (st.historyAt === -1) {
@@ -64,12 +68,12 @@ function historyMove(st: LineState, dir: -1 | 1): void {
       st.historyAt = st.history.length - 1;
     } else if (st.historyAt > 0) st.historyAt -= 1;
     else return;
-    st.hooks.onAudibleKey?.('press');
+    audible(st, 'press', repeat);
     setBuffer(st, st.history[st.historyAt] ?? '');
     return;
   }
   if (st.historyAt === -1) return;
-  st.hooks.onAudibleKey?.('press');
+  audible(st, 'press', repeat);
   if (st.historyAt < st.history.length - 1) {
     st.historyAt += 1;
     setBuffer(st, st.history[st.historyAt] ?? '');
@@ -83,11 +87,11 @@ function strip(text: string): string {
   return text.replace(/\x1b\[20[01]~/g, '').replace(/\t/g, ' ').replace(/[\x00-\x1f\x7f]/g, '');
 }
 
-function insertText(st: LineState, data: string): void {
+function insertText(st: LineState, data: string, repeat: boolean): void {
   if (data.startsWith('\x1b') && !data.startsWith('\x1b[200~')) {
     // Several keys in one chunk (key repeat, automation): split into single sequences.
     const keys = data.match(/\x1b\[[0-9;]*[A-Za-z~]|\x1bO[A-Za-z]|\x1b[bf]|[^\x1b]+/g);
-    if (keys && keys.length > 1) keys.forEach((k) => handleKey(st, k));
+    if (keys && keys.length > 1) keys.forEach((k) => handleKey(st, k, repeat));
     return;
   }
   // Paste (or fast typing) may hold several lines: each complete line runs, the tail stays in the input.
@@ -107,14 +111,14 @@ function insertText(st: LineState, data: string): void {
   const clean = strip(data);
   if (clean) {
     setBuffer(st, st.buffer.slice(0, st.cursor) + clean + st.buffer.slice(st.cursor), st.cursor + clean.length);
-    st.hooks.onAudibleKey?.('press');
+    audible(st, 'press', repeat);
   }
 }
 
-export function handleKey(st: LineState, data: string): void {
+export function handleKey(st: LineState, data: string, repeat = false): void {
   switch (data) {
     case '\r': {
-      st.hooks.onAudibleKey?.('enter');
+      audible(st, 'enter', repeat);
       if (st.hooks.onEnter?.()) return;
       const line = st.buffer;
       commitInputLine(st);
@@ -125,22 +129,22 @@ export function handleKey(st: LineState, data: string): void {
     }
     case '\x7f':
     case '\b':
-      st.hooks.onAudibleKey?.('backspace');
+      audible(st, 'backspace', repeat);
       if (st.cursor > 0) setBuffer(st, st.buffer.slice(0, st.cursor - 1) + st.buffer.slice(st.cursor), st.cursor - 1);
       return;
     case '\x1b[3~':
     case '\x04':
       if (st.cursor < st.buffer.length) {
-        st.hooks.onAudibleKey?.('backspace');
+        audible(st, 'backspace', repeat);
         setBuffer(st, st.buffer.slice(0, st.cursor) + st.buffer.slice(st.cursor + 1), st.cursor);
       }
       return;
     case '\t':
-      st.hooks.onAudibleKey?.('tab');
+      audible(st, 'tab', repeat);
       complete(st);
       return;
     case '\x03':
-      st.hooks.onAudibleKey?.('press');
+      audible(st, 'press', repeat);
       st.cursor = st.buffer.length;
       st.term.write(`${eraseInput(st)}${drawInput(st)}\x1b[0m^C\r\n`);
       st.promptShown = false;
@@ -150,7 +154,7 @@ export function handleKey(st: LineState, data: string): void {
       newPrompt(st);
       return;
     case '\x0c':
-      st.hooks.onAudibleKey?.('press');
+      audible(st, 'press', repeat);
       st.term.write(eraseInput(st) + CLEAR);
       st.promptShown = false;
       newPrompt(st);
@@ -169,19 +173,19 @@ export function handleKey(st: LineState, data: string): void {
       return;
     case '\x15':
       if (st.cursor > 0) {
-        st.hooks.onAudibleKey?.('backspace');
+        audible(st, 'backspace', repeat);
         setBuffer(st, st.buffer.slice(st.cursor), 0);
       }
       return;
     case '\x0b':
       if (st.cursor < st.buffer.length) {
-        st.hooks.onAudibleKey?.('backspace');
+        audible(st, 'backspace', repeat);
         setBuffer(st, st.buffer.slice(0, st.cursor), st.cursor);
       }
       return;
     case '\x17': {
       const from = wordStart(st, st.cursor);
-      if (from < st.cursor) st.hooks.onAudibleKey?.('backspace');
+      if (from < st.cursor) audible(st, 'backspace', repeat);
       setBuffer(st, st.buffer.slice(0, from) + st.buffer.slice(st.cursor), from);
       return;
     }
@@ -202,13 +206,13 @@ export function handleKey(st: LineState, data: string): void {
       setBuffer(st, st.buffer, wordEnd(st, st.cursor));
       return;
     case '\x1b[A':
-      historyMove(st, -1);
+      historyMove(st, -1, repeat);
       return;
     case '\x1b[B':
-      historyMove(st, 1);
+      historyMove(st, 1, repeat);
       return;
     default:
       break;
   }
-  insertText(st, data);
+  insertText(st, data, repeat);
 }

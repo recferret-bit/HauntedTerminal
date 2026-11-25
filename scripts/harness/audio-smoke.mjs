@@ -161,7 +161,7 @@ async function realClick(sel, waitMs = 280) {
   await sleep(waitMs);
 }
 
-async function pressKey(key, code, keyCode, text, modifiers = 0) {
+async function sendKeyDown(key, code, keyCode, text, modifiers = 0, autoRepeat = false) {
   await browser.send('Input.dispatchKeyEvent', {
     type: 'keyDown',
     key,
@@ -170,7 +170,11 @@ async function pressKey(key, code, keyCode, text, modifiers = 0) {
     nativeVirtualKeyCode: keyCode,
     ...(modifiers ? { modifiers } : {}),
     ...(text ? { text } : {}),
+    ...(autoRepeat ? { autoRepeat: true } : {}),
   });
+}
+
+async function sendKeyUp(key, code, keyCode, modifiers = 0) {
   await browser.send('Input.dispatchKeyEvent', {
     type: 'keyUp',
     key,
@@ -179,6 +183,11 @@ async function pressKey(key, code, keyCode, text, modifiers = 0) {
     nativeVirtualKeyCode: keyCode,
     ...(modifiers ? { modifiers } : {}),
   });
+}
+
+async function pressKey(key, code, keyCode, text, modifiers = 0) {
+  await sendKeyDown(key, code, keyCode, text, modifiers, false);
+  await sendKeyUp(key, code, keyCode, modifiers);
 }
 
 async function checkClickCue(label, sel, expectedCue) {
@@ -225,10 +234,10 @@ try {
   );
 
   await browser.waitFor('window.__term.phase() === "play" && !window.__term.busy()', 12000, 'play phase unbusy');
-  await waitCue('music/floor_attic_intro', 6000);
+  await waitCue('music/floor_attic', 6000);
   const arrivalCues = await cues();
   check(arrivalCues.includes('sfx/lightning') && arrivalCues.includes('sfx/thunder_close'), `level intro lightning plays lightning + thunder_close (got ${JSON.stringify(arrivalCues)})`);
-  check(arrivalCues.includes('music/floor_attic_intro') && arrivalCues.includes('music/floor_attic_loop'), `Level 1 starts floor_attic_intro + floor_attic_loop (${JSON.stringify(arrivalCues)})`);
+  check(arrivalCues.includes('music/floor_attic'), `Level 1 starts floor_attic (${JSON.stringify(arrivalCues)})`);
   check((await failedFetches()).length === 0, `Level 1 audio loads with zero HTTP 404s (${JSON.stringify(await failedFetches())})`);
 
   // Item strip click + Hint dialog open/close on Level 1
@@ -272,18 +281,23 @@ try {
   await clearSpy();
   await realClick('.xterm', 150);
   check(!(await cues()).includes('sfx/menu_move'), 'Clicking .xterm background does not play button click SFX');
+  const isKeyPress = (c) => c === 'sfx/key_press' || c === 'sfx/key_press_2' || c === 'sfx/key_press_3';
+  const isKeyBack = (c) => c === 'sfx/key_backspace' || c === 'sfx/key_backspace_2';
   await $('document.querySelector(".xterm-helper-textarea")?.focus()');
   await clearSpy();
   await pressKey('h', 'KeyH', 72, 'h');
+  await sleep(120);
   await pressKey('Backspace', 'Backspace', 8);
+  await sleep(120);
   await pressKey('a', 'KeyA', 65, 'a');
   await pressKey('ArrowLeft', 'ArrowLeft', 37);
+  await sleep(120);
   await pressKey('Delete', 'Delete', 46);
   await pressKey('Tab', 'Tab', 9);
   await sleep(300);
   const keyCues = await cues();
   check(
-    keyCues.includes('sfx/key_press') && keyCues.filter((c) => c === 'sfx/key_backspace').length >= 2 && keyCues.includes('sfx/tab_complete'),
+    keyCues.some(isKeyPress) && keyCues.filter(isKeyBack).length >= 2 && keyCues.includes('sfx/tab_complete'),
     `terminal key press/backspace/delete/tab play SFX (${JSON.stringify(keyCues)})`,
   );
 
@@ -307,8 +321,101 @@ try {
   await clearSpy();
   await pressKey('ArrowUp', 'ArrowUp', 38);
   await sleep(250);
-  check((await cues()).includes('sfx/key_press'), 'ArrowUp history navigation plays sfx/key_press');
+  check((await cues()).some(isKeyPress), 'ArrowUp history navigation plays key_press variant');
   await pressKey('u', 'KeyU', 85, undefined, 2); // Ctrl+U clears drafted history line
+
+  // Holding a key repeats input without retriggering key SFX
+  await $('document.querySelector(".xterm-helper-textarea")?.focus()');
+  await sleep(120);
+  await clearSpy();
+  await sendKeyDown('a', 'KeyA', 65, 'a', 0, false);
+  for (let i = 0; i < 5; i += 1) await sendKeyDown('a', 'KeyA', 65, 'a', 0, true);
+  await sendKeyUp('a', 'KeyA', 65);
+  await sleep(120);
+  const heldPressCues = await cues();
+  const rowsWithHeld = await $('document.querySelector(".xterm-rows")?.textContent || ""');
+  check(
+    rowsWithHeld.includes('$ aaaaaa') && heldPressCues.filter(isKeyPress).length === 1,
+    `Holding a key repeats text and plays key_press once (${JSON.stringify(heldPressCues)})`,
+  );
+
+  await sleep(120);
+  await clearSpy();
+  await sendKeyDown('Backspace', 'Backspace', 8, undefined, 0, false);
+  for (let i = 0; i < 5; i += 1) await sendKeyDown('Backspace', 'Backspace', 8, undefined, 0, true);
+  await sendKeyUp('Backspace', 'Backspace', 8);
+  await sleep(120);
+  const heldBackCues = await cues();
+  const rowsAfterHeldBack = await $('document.querySelector(".xterm-rows")?.textContent || ""');
+  check(
+    !rowsAfterHeldBack.includes('$ aaaaaa') && heldBackCues.filter(isKeyBack).length === 1,
+    `Holding Backspace deletes text and plays key_backspace once (${JSON.stringify(heldBackCues)})`,
+  );
+  await pressKey('u', 'KeyU', 85, undefined, 2); // Ctrl+U ensures prompt buffer is empty
+  await sleep(150); // Let 100ms typing cooldown clear
+
+  // Rapid burst of 8 keys types all characters while rate-limiting key_press (~120 WPM / 100ms)
+  await clearSpy();
+  for (const [ch, code, vk] of [
+    ['q', 'KeyQ', 81],
+    ['w', 'KeyW', 87],
+    ['e', 'KeyE', 69],
+    ['r', 'KeyR', 82],
+    ['t', 'KeyT', 84],
+    ['y', 'KeyY', 89],
+    ['u', 'KeyU', 85],
+    ['i', 'KeyI', 73],
+  ]) {
+    await pressKey(ch, code, vk, ch);
+  }
+  await sleep(60);
+  const burstRows = await $('document.querySelector(".xterm-rows")?.textContent || ""');
+  const burstPressCount = (await cues()).filter(isKeyPress).length;
+  check(
+    burstRows.includes('$ qwertyui') && burstPressCount >= 1 && burstPressCount <= 3,
+    `Fast 8-key burst keeps all text and limits key_press to 1-3 (got ${burstPressCount})`,
+  );
+  await pressKey('u', 'KeyU', 85, undefined, 2); // Ctrl+U clears the burst line
+
+  // Sustained fast typing (10 keys at 60ms spacing) paces ~10/sec, cycles all 3 key_press variants, and keeps active <= 3
+  await sleep(150);
+  await clearSpy();
+  for (const [ch, code, vk] of [
+    ['a', 'KeyA', 65], ['b', 'KeyB', 66], ['c', 'KeyC', 67], ['d', 'KeyD', 68], ['e', 'KeyE', 69],
+    ['f', 'KeyF', 70], ['g', 'KeyG', 71], ['h', 'KeyH', 72], ['i', 'KeyI', 73], ['j', 'KeyJ', 74],
+  ]) {
+    await pressKey(ch, code, vk, ch);
+    await sleep(60);
+  }
+  const typingSet = new Set([
+    'sfx/key_press', 'sfx/key_press_2', 'sfx/key_press_3',
+    'sfx/key_backspace', 'sfx/key_backspace_2', 'sfx/key_enter', 'sfx/tab_complete',
+  ]);
+  const sustainedPresses = (await cues()).filter(isKeyPress);
+  const activeTyping = (await activeCues()).filter((c) => typingSet.has(c));
+  check(
+    sustainedPresses.length >= 4 && sustainedPresses.length <= 8 && new Set(sustainedPresses).size >= 3 && activeTyping.length <= 3,
+    `Sustained fast typing paces key_press at ~10/sec with >=3 variants and active <= 3 (count=${sustainedPresses.length}, variants=${JSON.stringify([...new Set(sustainedPresses)])}, active=${JSON.stringify(activeTyping)})`,
+  );
+  await pressKey('u', 'KeyU', 85, undefined, 2); // Ctrl+U clears the sustained line
+
+  // Pressing Enter on a successful command plays key_enter (unthrottled) + cmd_ok without hero_type
+  await sleep(150);
+  await clearSpy();
+  for (const [ch, code, vk] of [
+    ['e', 'KeyE', 69], ['c', 'KeyC', 67], ['h', 'KeyH', 72], ['o', 'KeyO', 79],
+    [' ', 'Space', 32], ['o', 'KeyO', 79], ['k', 'KeyK', 75],
+  ]) {
+    await pressKey(ch, code, vk, ch);
+  }
+  await pressKey('Enter', 'Enter', 13);
+  await waitCue('sfx/cmd_ok', 4000);
+  await sleep(150);
+  const enterOkCues = await cues();
+  check(
+    enterOkCues.includes('sfx/key_enter') && enterOkCues.includes('sfx/cmd_ok') && !enterOkCues.includes('sfx/hero_type'),
+    `Enter + successful command plays key_enter + cmd_ok without hero_type (${JSON.stringify(enterOkCues)})`,
+  );
 
   // Chapter PERMISSION_DENIED_RATTLE restored in session-fs/code/kiro + file ops + top toggle xray_on / xray_off
   await browser.waitFor('!window.__term.busy()', 5000, 'term unbusy before chmod');
@@ -350,10 +457,10 @@ try {
   check(top2Cues.includes('sfx/xray_off'), `Second \`top\` toggles X-Ray off with sfx/xray_off (${JSON.stringify(top2Cues)})`);
 
   await clearSpy();
-  await $('window.__term.submit("hold lantern")');
+  await $('window.__term.submit("hold manual")');
   await sleep(400);
   const holdCues = await cues();
-  check(holdCues.includes('sfx/cmd_ok') && holdCues.includes('sfx/item_lit'), `hold lantern plays cmd_ok + item_lit (${JSON.stringify(holdCues)})`);
+  check(holdCues.includes('sfx/cmd_ok') && holdCues.includes('sfx/item_lit'), `hold manual plays cmd_ok + item_lit (${JSON.stringify(holdCues)})`);
 
   // `manual ls` command opens manual without false initial page_turn
   await clearSpy();
@@ -688,7 +795,7 @@ try {
     '/cinematic.html Escape skip plays menu_close and stops rain_loop + cine_intro',
   );
 
-  // 8. /laptop-lab audio checks (mid-boot fan-off, #ll-sound mute/unmute ordering, failed check -> cmd_fail, icon Enter)
+  // 8. /laptop-lab audio checks (mid-boot fan-off, #ll-sound mute/unmute ordering, failed check -> gate_locked, icon Enter)
   await browser.open(`${base}/laptop-lab`);
   await browser.waitFor("!!window.__laptop && !!document.querySelector('.lt-lid')", 15000, 'laptop lab');
   await checkClickCue('Laptop Lab lid click', '.lt-lid', 'sfx/lap_open');
@@ -708,9 +815,9 @@ try {
   await realClick('#ll-sound', 250);
   const llMuteGain = await masterGain();
   const llMuteCues = await cues();
-  check(llMuteGain === 0 && !llMuteCues.includes('sfx/menu_move'), `Laptop #ll-sound mute leaks zero click (gain=${llMuteGain}, cues=${JSON.stringify(llMuteCues)})`);
-  const llUnmuteCues = await checkClickCue('Laptop #ll-sound unmute', '#ll-sound', 'sfx/menu_move');
-  check((await masterGain()) > 0 && llUnmuteCues.includes('sfx/menu_move'), `Laptop #ll-sound unmute restores gain + plays menu_move (${JSON.stringify(llUnmuteCues)})`);
+  check(llMuteGain === 0 && !llMuteCues.includes('sfx/lap_trackpad'), `Laptop #ll-sound mute leaks zero click (gain=${llMuteGain}, cues=${JSON.stringify(llMuteCues)})`);
+  const llUnmuteCues = await checkClickCue('Laptop #ll-sound unmute', '#ll-sound', 'sfx/lap_trackpad');
+  check((await masterGain()) > 0 && llUnmuteCues.includes('sfx/lap_trackpad'), `Laptop #ll-sound unmute restores gain + plays lap_trackpad (${JSON.stringify(llUnmuteCues)})`);
 
   await clearSpy();
   await $('document.querySelector(".lt-icon")?.focus()');
@@ -722,8 +829,8 @@ try {
   await browser.waitFor("!!document.querySelector('.lt-toolbar .lt-btn95[title=\"Check the quest\"]')", 5000, 'laptop workbench check btn');
   await clearSpy();
   await realClick('.lt-toolbar .lt-btn95[title="Check the quest"]', 700);
-  await waitCue('sfx/cmd_fail', 5000);
-  check((await cues()).includes('sfx/cmd_fail'), 'Laptop failed quest Check emits sfx/cmd_fail');
+  await waitCue('sfx/gate_locked', 5000);
+  check((await cues()).includes('sfx/gate_locked'), 'Laptop failed quest Check emits sfx/gate_locked');
 
   // 9. /terminal-lab + live session swap audio check!
   await browser.open(`${base}/terminal-lab`);
@@ -896,7 +1003,7 @@ try {
   const againPhase = await $('window.__term.phase()');
   check(againPhase === 'intro', `Stats #outro-again starts intro phase (got ${againPhase})`);
   check(againCues.includes('sfx/level_restart'), `Stats #outro-again plays level_restart (${JSON.stringify(againCues)})`);
-  for (const leaked of ['sfx/title_card', 'sfx/emote_shock', 'sfx/agent_taunt', 'sfx/enemy_spawn', 'music/floor_attic_intro', 'sfx/thunder_far']) {
+  for (const leaked of ['sfx/title_card', 'sfx/emote_shock', 'sfx/agent_taunt', 'sfx/enemy_spawn', 'music/floor_attic', 'sfx/thunder_far']) {
     check(!againCues.includes(leaked), `Stats #outro-again does not emit premature ${leaked} during intro (${JSON.stringify(againCues)})`);
   }
   await waitCue('music/cine_intro', 8000);
@@ -904,10 +1011,10 @@ try {
   await clearSpy();
   await pressKey('Escape', 'Escape', 27);
   await browser.waitFor('window.__term.phase() === "play" && !window.__term.busy()', 12000, 'post-again Level 1 ready');
-  await waitCue('music/floor_attic_intro', 6000);
+  await waitCue('music/floor_attic', 6000);
   const postAgainCues = await cues();
   check(
-    postAgainCues.includes('sfx/lightning') && postAgainCues.includes('sfx/thunder_close') && postAgainCues.includes('sfx/title_card') && postAgainCues.includes('music/floor_attic_intro'),
+    postAgainCues.includes('sfx/lightning') && postAgainCues.includes('sfx/thunder_close') && postAgainCues.includes('sfx/title_card') && postAgainCues.includes('music/floor_attic'),
     `Post-PlayAgain intro skip plays Level 1 arrival cues (${JSON.stringify(postAgainCues)})`,
   );
   const postAgainCaption = await $('document.querySelector("#stage-caption")?.textContent || ""');

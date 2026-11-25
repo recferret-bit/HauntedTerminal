@@ -1,11 +1,15 @@
 import type { AppBus, SoundSink } from '../contracts/app-bus.js';
 import { createGraph } from './engine.js';
-import { SOUND_SOURCES } from './limits.js';
+import { SOUND_SOURCES, TYPING_MIN_INTERVAL_MS, TYPING_SOUND_SOURCES } from './limits.js';
 import { attachOrchestrators } from './orchestrators.js';
 
 export interface AudioOptions {
   /** One-shot voices. Default `SOUND_SOURCES` (10). */
   sources?: number;
+  /** Simultaneous typing one-shot voices. Default `TYPING_SOUND_SOURCES` (3). */
+  typingSources?: number;
+  /** Minimum ms between rapid typing sounds. Default `TYPING_MIN_INTERVAL_MS` (100). */
+  typingMinIntervalMs?: number;
   muted?: boolean;
   volume?: number;
 }
@@ -16,7 +20,11 @@ export interface AudioHandle extends SoundSink {
 
 /** Subscribe both orchestrators to `bus`. No-ops when the browser has no audio device. */
 export function attachAudio(bus: AppBus, opts: AudioOptions = {}): AudioHandle {
-  const graph = createGraph(opts.sources ?? SOUND_SOURCES);
+  const graph = createGraph(
+    opts.sources ?? SOUND_SOURCES,
+    opts.typingSources ?? TYPING_SOUND_SOURCES,
+    opts.typingMinIntervalMs ?? TYPING_MIN_INTERVAL_MS,
+  );
   if (opts.volume !== undefined) graph.setVolume(opts.volume);
   if (opts.muted) graph.setMuted(true);
   const unsubscribe = attachOrchestrators(bus, graph);

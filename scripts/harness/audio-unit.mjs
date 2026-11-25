@@ -42,6 +42,8 @@ await withProcgen(async (_procgen, vite) => {
     assert.deepEqual([...catalog.SFX_IDS], sfxNames);
     assert.deepEqual([...catalog.MUSIC_IDS], musicNames);
     assert.equal(limits.SOUND_SOURCES, 10);
+    assert.equal(limits.TYPING_SOUND_SOURCES, 3);
+    assert.equal(limits.TYPING_MIN_INTERVAL_MS, 100);
     assert.equal(busMod.SOUND_SOURCES, undefined);
     for (const id of catalog.SFX_IDS) {
       const url = catalog.sampleUrl('sfx', id);
@@ -131,6 +133,28 @@ await withProcgen(async (_procgen, vite) => {
     assert.equal(voices.pickSlot([-1, 5, 4]), 0);
   });
 
+  await test('pickCappedSlot caps typing voices at 3 without blocking or evicting other voices', () => {
+    const started = Array.from({ length: 10 }, () => -1);
+    const tagged = Array.from({ length: 10 }, () => false);
+    for (let i = 0; i < 3; i += 1) {
+      const slot = voices.pickCappedSlot(started, tagged, true, 3);
+      assert.equal(slot, i);
+      started[slot] = i + 1;
+      tagged[slot] = true;
+    }
+    assert.equal(voices.pickCappedSlot(started, tagged, true, 3), 0);
+    started[0] = 4;
+    assert.equal(voices.pickCappedSlot(started, tagged, true, 3), 1);
+    started[1] = 5;
+    const nonTypingSlot = voices.pickCappedSlot(started, tagged, false, 3);
+    assert.equal(nonTypingSlot, 3);
+    started[nonTypingSlot] = 6;
+    tagged[nonTypingSlot] = false;
+    started[2] = -1;
+    tagged[2] = false;
+    assert.equal(voices.pickCappedSlot(started, tagged, true, 3), 2);
+  });
+
   await test('a classic command publishes the command and its kernel events once', async () => {
     const sessionMod = await vite.ssrLoadModule('/src/game/session.ts');
     const session = sessionMod.createSession();
@@ -213,11 +237,15 @@ await withProcgen(async (_procgen, vite) => {
     );
     assert.deepEqual(
       sfxMod.sfxFor({ kind: 'kernel', event: { type: 'DIALOG_BOX', id: 'd1', speaker: 'kiro', text: 'hi' } }),
-      ['kiro_advice'],
+      ['dialog_npc'],
+    );
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'DIALOG_BOX', id: 'd3', speaker: 'clod', text: 'ha' } }),
+      ['dialog_npc'],
     );
     assert.deepEqual(
       sfxMod.sfxFor({ kind: 'kernel', event: { type: 'DIALOG_BOX', id: 'd2', speaker: 'vibecoder', text: 'uh' } }),
-      ['cine_bubble_pop'],
+      ['dialog_hero'],
     );
     assert.deepEqual(
       sfxMod.sfxFor({ kind: 'kernel', event: { type: 'TUTORIAL_STEP', step: 1, total: 5, agent: 'kiro', prompt: 'hi' } }),
@@ -234,8 +262,13 @@ await withProcgen(async (_procgen, vite) => {
     );
     assert.deepEqual(
       sfxMod.sfxFor({ kind: 'kernel', event: { type: 'ITEM_GIVEN', item: 'terminal', model: 'item.terminal' } }),
+      ['term_boot'],
+    );
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'ITEM_GIVEN', item: 'lantern', model: 'item.lantern' } }),
       ['item_lit'],
     );
+    assert.deepEqual(sfxMod.sfxFor({ kind: 'cine', cue: 'boot' }), ['term_boot']);
   });
 
   await test('every chapter and classic directory resolves to a door cue while unknown rooms fall back to hop', () => {
@@ -279,7 +312,7 @@ await withProcgen(async (_procgen, vite) => {
       { kind: 'timer', secondsLeft: 3 },
       { kind: 'page' },
       ...['thunder', 'thunder-far', 'zap', 'burst', 'shatter', 'lightning'].map((cue) => ({ kind: 'cine', cue })),
-      ...['open', 'close', 'post', 'disk', 'ready', 'trackpad', 'run', 'loop-guard', 'shutdown', 'key'].map((action) => ({ kind: 'laptop', action })),
+      ...['open', 'close', 'post', 'disk', 'ready', 'trackpad', 'run', 'loop-guard', 'shutdown', 'key', 'solved', 'check-fail', 'win-open', 'win-min', 'win-close'].map((action) => ({ kind: 'laptop', action })),
       ...['flash', 'glitch', 'pixel', 'invert', 'shake', 'slam', 'caption', 'bubble'].map((letter) => ({ kind: 'letter', letter })),
     ];
     for (const ev of appEvents) {
@@ -312,6 +345,12 @@ await withProcgen(async (_procgen, vite) => {
     assert.deepEqual(sfxMod.sfxFor({ kind: 'pointer', surface: 'play', id: 'export-save-btn' }), ['cmd_ok']);
     assert.deepEqual(sfxMod.sfxFor({ kind: 'pointer', surface: 'play', id: 'outro-again' }), ['level_restart']);
     assert.deepEqual(sfxMod.sfxFor({ kind: 'pointer', surface: 'play', id: 'btn-heal' }), ['pickup_energy']);
+    assert.deepEqual(sfxMod.sfxFor({ kind: 'pointer', surface: 'laptop', id: 'button' }), ['lap_trackpad']);
+    assert.deepEqual(sfxMod.sfxFor({ kind: 'laptop', action: 'check-fail' }), ['gate_locked']);
+    assert.deepEqual(sfxMod.sfxFor({ kind: 'laptop', action: 'solved' }), ['puzzle_solved']);
+    assert.deepEqual(sfxMod.sfxFor({ kind: 'laptop', action: 'win-open' }), ['file_create']);
+    assert.deepEqual(sfxMod.sfxFor({ kind: 'laptop', action: 'win-min' }), ['file_move']);
+    assert.deepEqual(sfxMod.sfxFor({ kind: 'laptop', action: 'win-close' }), ['file_remove']);
     for (const silentId of [
       'esc-close', 'esc-mute', 'mb-close-btn', 'mb-nav-btn', 'mb-cover-chip', 'comix-prev', 'lt-key',
       'btn-lightning', 'sandbox-toggle-btn', 'hint-dialog-close', 'hint-dialog-x', 'ce-save', 'ce-close', 'ce-chip',
@@ -384,7 +423,8 @@ await withProcgen(async (_procgen, vite) => {
 
   const withFakeWindow = async (fn, search = '') => {
     let stopped = 0, resumes = 0, now = 0;
-    const activeSources = [], starts = [], gains = [], listeners = new Map(), storage = new Map();
+    const activeSources = [], stoppedNodes = [], starts = [], gains = [], listeners = new Map(), storage = new Map();
+    const abUrls = new WeakMap();
     class FakeAudioContext {
       constructor() { this.state = 'suspended'; this.destination = {}; }
       get currentTime() { return now; }
@@ -395,13 +435,16 @@ await withProcgen(async (_procgen, vite) => {
       }
       createBufferSource() {
         const node = {
-          buffer: null, loop: false, onended: null, connect() { return { connect() {} }; },
-          start(_w = 0, offset = 0) { activeSources.push(node); starts.push({ loop: node.loop, offset }); },
-          stop() { stopped += 1; },
+          buffer: null, loop: false, playbackRate: { value: 1 }, onended: null, connect() { return { connect() {} }; },
+          start(_w = 0, offset = 0, duration) {
+            activeSources.push(node);
+            starts.push({ url: node.buffer?.url ?? '', loop: node.loop, offset, duration, rate: node.playbackRate.value });
+          },
+          stop() { stopped += 1; stoppedNodes.push(node); },
         };
         return node;
       }
-      async decodeAudioData() { return { duration: 10 }; }
+      async decodeAudioData(raw) { return { duration: 10, url: abUrls.get(raw) ?? '' }; }
       async resume() { resumes += 1; this.state = 'running'; }
       async suspend() { this.state = 'suspended'; }
       async close() { this.state = 'closed'; }
@@ -419,10 +462,17 @@ await withProcgen(async (_procgen, vite) => {
       addEventListener(type, fn2) { listeners.set(type, fn2); },
       removeEventListener(type, fn2) { if (listeners.get(type) === fn2) listeners.delete(type); },
     };
-    globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) });
+    globalThis.fetch = async (url) => ({
+      ok: true,
+      arrayBuffer: async () => {
+        const ab = new ArrayBuffer(8);
+        abUrls.set(ab, String(url));
+        return ab;
+      },
+    });
     try {
       await fn({
-        state: () => ({ stopped, resumes, activeSources, starts, gains, listeners }),
+        state: () => ({ stopped, stoppedNodes, resumes, activeSources, starts, gains, listeners }),
         advance: (sec) => { now += sec; },
         setSearch: (s) => { globalThis.window.location.search = s; },
       });
@@ -650,6 +700,201 @@ await withProcgen(async (_procgen, vite) => {
       stopOrch();
       graph.dispose();
     });
+  });
+
+  await test('WebAudio typing cues cap at 3 simultaneous voices without evicting other SFX', async () => {
+    const engineMod = await vite.ssrLoadModule('/src/audio/engine.ts');
+    await withFakeWindow(async (env) => {
+      const eng = engineMod.createGraph(10, 3);
+      for (const id of ['key_press', 'key_backspace', 'key_enter', 'tab_complete', 'key_press', 'key_press', 'key_backspace']) {
+        eng.play(id);
+        env.advance(0.11);
+      }
+      await new Promise((r) => setTimeout(r, 25));
+      assert.equal(env.state().activeSources.length, 7);
+      assert.equal(env.state().stopped, 4, '7 spaced typing sounds evict 4 older typing voices to stay at 3 active');
+      const startOf = (url) => env.state().starts.find((s) => s.url === url);
+      assert.ok(Math.abs((startOf('/sfx/key_press.mp3')?.offset ?? -1) - 0.105) < 1e-6, 'key_press trims leading silence');
+      assert.ok(Math.abs((startOf('/sfx/key_press.mp3')?.duration ?? -1) - 0.215) < 1e-6, 'key_press trims tail');
+      assert.ok(Math.abs((startOf('/sfx/key_press_2.mp3')?.offset ?? -1) - 0.098) < 1e-6, 'key_press_2 rotates and trims leading silence');
+      assert.ok(Math.abs((startOf('/sfx/key_press_2.mp3')?.duration ?? -1) - 0.185) < 1e-6, 'key_press_2 trims tail');
+      assert.ok(Math.abs((startOf('/sfx/key_press_3.mp3')?.offset ?? -1) - 0.045) < 1e-6, 'key_press_3 rotates and trims leading silence');
+      assert.ok(Math.abs((startOf('/sfx/key_press_3.mp3')?.duration ?? -1) - 0.28) < 1e-6, 'key_press_3 trims tail');
+      assert.ok(Math.abs((startOf('/sfx/key_backspace.mp3')?.offset ?? -1) - 0.085) < 1e-6, 'key_backspace trims leading silence');
+      assert.ok(Math.abs((startOf('/sfx/key_backspace.mp3')?.duration ?? -1) - 0.22) < 1e-6, 'key_backspace trims tail');
+      assert.ok(Math.abs((startOf('/sfx/key_backspace_2.mp3')?.offset ?? -1) - 0.085) < 1e-6, 'key_backspace_2 rotates and trims leading silence');
+      assert.ok(Math.abs((startOf('/sfx/key_backspace_2.mp3')?.duration ?? -1) - 0.15) < 1e-6, 'key_backspace_2 trims tail');
+      assert.equal(startOf('/sfx/key_enter.mp3')?.offset, 0, 'key_enter starts at 0');
+      assert.equal(startOf('/sfx/tab_complete.mp3')?.offset, 0, 'tab_complete starts at 0');
+      assert.notEqual(startOf('/sfx/key_press.mp3')?.rate, startOf('/sfx/key_press_2.mp3')?.rate, 'typing applies subtle pitch variation');
+
+      for (const id of ['cmd_ok', 'menu_move', 'hop', 'door_usb']) eng.play(id);
+      await new Promise((r) => setTimeout(r, 25));
+      assert.equal(env.state().stopped, 4, 'non-typing SFX take free slots without triggering eviction');
+
+      eng.play('key_press');
+      env.advance(0.11);
+      eng.play('key_press');
+      await new Promise((r) => setTimeout(r, 25));
+      assert.equal(env.state().stopped, 6, 'further typing evicts only older typing voices');
+      const nonTypingUrls = new Set(['/sfx/cmd_ok.mp3', '/sfx/menu_move.mp3', '/sfx/hop.mp3', '/sfx/door_usb.mp3']);
+      const evictedNonTyping = env.state().stoppedNodes.filter((n) => nonTypingUrls.has(n.buffer?.url));
+      assert.deepEqual(evictedNonTyping, [], 'typing cap never evicts active non-typing SFX');
+      eng.dispose();
+
+      const tiny = engineMod.createGraph(2);
+      const stoppedBeforeTiny = env.state().stopped;
+      tiny.play('key_press');
+      env.advance(0.11);
+      tiny.play('key_press');
+      env.advance(0.11);
+      tiny.play('key_press');
+      await new Promise((r) => setTimeout(r, 25));
+      assert.equal(env.state().stopped, stoppedBeforeTiny + 1, 'typing cap clamps to pool size when sources < TYPING_SOUND_SOURCES');
+      tiny.dispose();
+    });
+  });
+
+  await test('WebAudio rapid typing sounds are rate-limited to 100ms while Enter and Tab always play', async () => {
+    const engineMod = await vite.ssrLoadModule('/src/audio/engine.ts');
+    await withFakeWindow(async (env) => {
+      const eng = engineMod.createGraph(10, 3, 100);
+      const before = env.state().activeSources.length;
+      const startLen = env.state().starts.length;
+      for (let i = 0; i < 6; i += 1) eng.play('key_press');
+      await new Promise((r) => setTimeout(r, 25));
+      assert.equal(env.state().activeSources.length - before, 1, 'rapid burst at t=0 plays key_press once');
+      assert.equal(env.state().starts[startLen]?.url, '/sfx/key_press.mp3');
+
+      env.advance(0.05);
+      eng.play('key_backspace');
+      await new Promise((r) => setTimeout(r, 25));
+      assert.equal(env.state().activeSources.length - before, 1, 'key_backspace inside 100ms cooldown is skipped');
+
+      eng.play('key_enter');
+      eng.play('tab_complete');
+      await new Promise((r) => setTimeout(r, 25));
+      assert.equal(env.state().activeSources.length - before, 3, 'key_enter and tab_complete never wait on typing cooldown');
+
+      env.advance(0.06);
+      eng.play('key_press');
+      await new Promise((r) => setTimeout(r, 25));
+      assert.equal(env.state().activeSources.length - before, 4, 'key_press plays again once 100ms has elapsed');
+
+      env.advance(0.11);
+      eng.play('key_press');
+      await new Promise((r) => setTimeout(r, 25));
+      assert.equal(env.state().activeSources.length - before, 5, 'subsequent key_press rotates to third variant');
+      const playedPressUrls = env.state().starts.slice(startLen).map((s) => s.url).filter((u) => u.includes('key_press'));
+      assert.deepEqual(playedPressUrls.sort(), ['/sfx/key_press.mp3', '/sfx/key_press_2.mp3', '/sfx/key_press_3.mp3']);
+      eng.dispose();
+    });
+  });
+
+  await test('attachOrchestrators drops hero_type after a successful command while keeping standalone type cues', async () => {
+    const orchMod = await vite.ssrLoadModule('/src/audio/orchestrators.ts');
+    const { createChapterSession } = await vite.ssrLoadModule('/src/chapters/chapter-session.ts');
+    const { createSession } = await vite.ssrLoadModule('/src/game/session.ts');
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'VIBECODER_ACTION', action: 'type', command: 'echo hi' } }),
+      ['hero_type'],
+    );
+    const makeFakeGraph = (played) => ({
+      live: true,
+      setMuted() {},
+      setVolume() {},
+      play(id) { played.push(id); },
+      loop() {},
+      bed() {},
+      hold() {},
+      dispose() {},
+    });
+
+    const chSlug = listChapterSlugs()[0];
+    const chSess = createChapterSession({ chapterId: chSlug, preview: true });
+    chSess.skipIntro();
+    const chPlayed = [];
+    const chOff = orchMod.attachOrchestrators(chSess.bus, makeFakeGraph(chPlayed));
+    chSess.exec('echo hi');
+    await Promise.resolve();
+    chOff();
+    assert.ok(chPlayed.includes('cmd_ok'), 'ChapterSession echo emits cmd_ok');
+    assert.ok(!chPlayed.includes('hero_type'), 'ChapterSession echo suppresses redundant hero_type');
+
+    const clSess = createSession();
+    clSess.skipIntro();
+    const clPlayed = [];
+    const clOff = orchMod.attachOrchestrators(clSess.bus, makeFakeGraph(clPlayed));
+    clSess.exec('echo hi');
+    await Promise.resolve();
+    clOff();
+    assert.ok(clPlayed.includes('cmd_ok'), 'ClassicSession echo emits cmd_ok');
+    assert.ok(!clPlayed.includes('hero_type'), 'ClassicSession echo suppresses redundant hero_type');
+
+    const bareBus = busMod.createAppBus();
+    const barePlayed = [];
+    const bareOff = orchMod.attachOrchestrators(bareBus, makeFakeGraph(barePlayed));
+    bareBus.emit({ kind: 'kernel', event: { type: 'VIBECODER_ACTION', action: 'type', command: 'echo hi' } });
+    bareOff();
+    assert.deepEqual(barePlayed, ['hero_type'], 'standalone VIBECODER_ACTION type without command ok still plays hero_type');
+  });
+
+  await test('terminal handleKey suppresses audible key sounds when repeat is true while still editing', async () => {
+    const keysMod = await vite.ssrLoadModule('/src/ui/terminal-keys.ts');
+    const drawMod = await vite.ssrLoadModule('/src/ui/terminal-draw.ts');
+    const heard = [];
+    const ran = [];
+    const st = drawMod.createLineState(
+      { cols: 80, write() {} },
+      {
+        run(line) { ran.push(line); return { output: '' }; },
+        complete(before) { return { line: `${before}x`, matches: [`${before}x`] }; },
+        prompt() { return { cwd: '/home/dev', gold: false }; },
+        onAudibleKey(k) { heard.push(k); },
+      },
+    );
+
+    keysMod.handleKey(st, 'a', false);
+    assert.equal(st.buffer, 'a');
+    assert.deepEqual(heard, ['press']);
+
+    keysMod.handleKey(st, 'a', true);
+    assert.equal(st.buffer, 'aa');
+    assert.deepEqual(heard, ['press'], 'held printable key does not re-emit press');
+
+    keysMod.handleKey(st, '\t', true);
+    assert.equal(st.buffer, 'aax ');
+    assert.deepEqual(heard, ['press'], 'held Tab does not emit tab');
+
+    keysMod.handleKey(st, '\t', false);
+    assert.deepEqual(heard, ['press', 'tab']);
+
+    const lenBeforeDel = st.buffer.length;
+    keysMod.handleKey(st, '\x7f', true);
+    assert.equal(st.buffer.length, lenBeforeDel - 1);
+    assert.deepEqual(heard, ['press', 'tab'], 'held Backspace edits without emitting backspace');
+
+    keysMod.handleKey(st, '\x7f', false);
+    assert.deepEqual(heard, ['press', 'tab', 'backspace']);
+
+    keysMod.handleKey(st, '\x1b[D', false);
+    keysMod.handleKey(st, '\x1b[3~', true);
+    assert.deepEqual(heard, ['press', 'tab', 'backspace'], 'held Delete edits without emitting backspace');
+
+    keysMod.handleKey(st, '\r', true);
+    assert.equal(ran.length, 1);
+    assert.deepEqual(heard, ['press', 'tab', 'backspace'], 'held Enter runs without emitting enter');
+
+    keysMod.handleKey(st, 'ls', false);
+    keysMod.handleKey(st, '\r', false);
+    assert.deepEqual(heard, ['press', 'tab', 'backspace', 'press', 'enter']);
+
+    keysMod.handleKey(st, '\x1b[A', true);
+    assert.equal(st.buffer, 'ls');
+    assert.deepEqual(heard, ['press', 'tab', 'backspace', 'press', 'enter'], 'held ArrowUp recalls history silently');
+
+    keysMod.handleKey(st, '\x1b[A', false);
+    assert.deepEqual(heard, ['press', 'tab', 'backspace', 'press', 'enter', 'press']);
   });
 }, '/src/audio/sfx-for.ts');
 

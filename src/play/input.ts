@@ -1,10 +1,11 @@
 import '../styles/manual-book.css';
 import { publishKernel } from '../contracts/app-bus.js';
 import type { KernelEvent } from '../contracts/events.js';
-import { getChapterPack } from '../chapters/catalog.js';
+import { buildPlayUrl, getChapterPack } from '../chapters/catalog.js';
 import { isChapterSession } from '../chapters/chapter-session.js';
 import { findComixByRole, playComix, type ComixRole } from '../cinematic/index.js';
 import { mountDevInspector } from '../sandbox/dev-inspector.js';
+import { mountChapterMap } from '../ui/chapter-map.js';
 import { mountCodeEditor } from '../ui/code-editor.js';
 import { mountManualBook } from '../ui/manual-book.js';
 import { mountDialogOrchestrator } from '../ui/dialog-orchestrator.js';
@@ -49,6 +50,8 @@ function runShellLine(play: Play, line: string): { output: string; clear?: boole
     }
     const manualReq = session.consumeManualRequest?.();
     if (manualReq !== null && manualReq !== undefined && !play.terminalLab) openManualModal(play, manualReq);
+    const mapReq = session.consumeMapRequest?.();
+    if (mapReq !== null && mapReq !== undefined && !play.terminalLab) openChapterMap(play, mapReq);
   } finally {
     const extra = play.execTaunts ?? [];
     play.execTaunts = null;
@@ -59,6 +62,16 @@ function runShellLine(play: Play, line: string): { output: string; clear?: boole
     }
   }
   return { output: res.output, clear: res.clear, stderr: res.stderr };
+}
+
+function handleNonPausingModalClose(play: Play): void {
+  play.syncPause();
+  syncPlayAudio(play);
+  window.setTimeout(() => {
+    if (play.phase === 'play' && !play.codeEditor?.isOpen() && !play.menu?.isOpen() && !play.hintDialog?.isOpen() && !play.manualBook?.isOpen() && !play.chapterMap?.isOpen()) {
+      play.shell.focus();
+    }
+  }, 0);
 }
 
 export function mountPlayShell(play: Play): void {
@@ -111,15 +124,7 @@ export function mountPlayShell(play: Play): void {
         play.shell.setInput(cmd);
         window.setTimeout(() => play.shell.focus(), 0);
       },
-      onClose: () => {
-        play.syncPause();
-        syncPlayAudio(play);
-        window.setTimeout(() => {
-          if (play.phase === 'play' && !play.codeEditor?.isOpen() && !play.menu?.isOpen() && !play.hintDialog?.isOpen() && !play.manualBook?.isOpen()) {
-            play.shell.focus();
-          }
-        }, 0);
-      },
+      onClose: () => handleNonPausingModalClose(play),
     });
   }
 }
@@ -143,6 +148,7 @@ export function openHintDialog(play: Play): void {
   if (!play.hintDialog || !canOpenHint(play)) return;
   if (play.menu?.isOpen()) play.menu.close();
   if (play.manualBook?.isOpen()) play.manualBook.close();
+  if (play.chapterMap?.isOpen()) play.chapterMap.close();
   play.hintDialog.open(play.session.snapshot());
 }
 
@@ -156,6 +162,7 @@ export function openManualModal(play: Play, queryOrPage?: string | number): void
   if (!play.manualBook || !canOpenManual(play)) return;
   if (play.menu?.isOpen()) play.menu.close();
   if (play.hintDialog?.isOpen()) play.hintDialog.close();
+  if (play.chapterMap?.isOpen()) play.chapterMap.close();
   play.manualBook.open(queryOrPage);
   play.syncPause();
   syncPlayAudio(play);
@@ -167,6 +174,24 @@ function toggleManualModal(play: Play): void {
     play.manualBook.close();
     syncPlayAudio(play);
   } else openManualModal(play);
+}
+
+export function openChapterMap(play: Play, queryOrIndex?: string | number): void {
+  if (!play.chapterMap || !canOpenManual(play)) return;
+  if (play.menu?.isOpen()) play.menu.close();
+  if (play.hintDialog?.isOpen()) play.hintDialog.close();
+  if (play.manualBook?.isOpen()) play.manualBook.close();
+  play.chapterMap.open(queryOrIndex);
+  play.syncPause();
+  syncPlayAudio(play);
+}
+
+function toggleChapterMap(play: Play): void {
+  if (!canOpenManual(play)) return;
+  if (play.chapterMap?.isOpen()) {
+    play.chapterMap.close();
+    syncPlayAudio(play);
+  } else openChapterMap(play);
 }
 
 function playAgain(play: Play, skip: boolean): void {
@@ -202,7 +227,7 @@ export function mountPlayHud(play: Play): void {
     onClose: (returnFocus) => {
       play.session.bus?.emit({ kind: 'menu', action: 'move' });
       window.setTimeout(() => {
-        if (play.menu?.isOpen() || play.manualBook?.isOpen() || play.hintDialog?.isOpen()) return;
+        if (play.menu?.isOpen() || play.manualBook?.isOpen() || play.hintDialog?.isOpen() || play.chapterMap?.isOpen()) return;
         if (play.codeEditor?.isOpen()) {
           const editorTarget = returnFocus?.isConnected && returnFocus.closest('#code-editor-pane')
             ? returnFocus
@@ -214,10 +239,42 @@ export function mountPlayHud(play: Play): void {
       }, 0);
     },
   });
+  play.chapterMap = mountChapterMap(play.dom.stageWrap, {
+    getManifest: () => (chapter ? getChapterPack(chapter.chapterId)?.manifest : undefined),
+    getCurrentLevelId: () => (chapter ? chapter.getCurrentLevel().id : null),
+    hasUnsavedLevelProgress: () => play.session.snapshot().commands > play.levelEntryCommands,
+    onMove: () => play.session.bus?.emit({ kind: 'menu', action: 'move' }),
+    onOpen: () => play.session.bus?.emit({ kind: 'menu', action: 'open' }),
+    onDeploy: (level, chapterId) => {
+      if (isChapterSession(play.session)) {
+        const res = play.session.jumpToLevel(level.id);
+        const arr = play.session.arriveLevel();
+        play.activeBanner = chapterBanner(play.session, getChapterPack(play.session.chapterId)?.manifest);
+        play.levelEntryCommands = arr.snapshot.commands;
+        const printed = [res.output, arr.output].filter(Boolean).join('');
+        if (printed) play.shell.printAbove(colourise(printed, arr.stderr ?? res.stderr));
+        play.apply([...res.events, ...arr.events], arr.snapshot, printed);
+        const params = new URLSearchParams(location.search);
+        const nextUrl = buildPlayUrl(play.session.chapterId, level.id, true, {
+          chaos: params.get('chaos') === '1',
+          seed: params.get('seed') ?? undefined,
+          dev: params.get('dev') === '1',
+        });
+        window.history.replaceState(null, '', nextUrl);
+        window.setTimeout(() => {
+          if (play.phase === 'play') play.shell.focus();
+        }, 0);
+      } else {
+        window.location.assign(buildPlayUrl(chapterId, level.id, true));
+      }
+    },
+    onClose: () => handleNonPausingModalClose(play),
+  });
   play.hud = mountHud(play.dom.hudEl, play.dom.stageWrap, play.dom.statsEl, {
     drawPortrait,
     maxFloors: chapter ? chapter.getLevels().length : 5,
     onHint: () => toggleHintDialog(play),
+    onMap: () => toggleChapterMap(play),
     onPlayAgain: (skip) => playAgain(play, skip),
   });
   play.paint(play.session.snapshot());
@@ -248,12 +305,14 @@ export function bindPlayInput(play: Play): void {
   play.dom.toggleBtn.onclick = toggleInspector;
   play.dom.manualBtnEl?.addEventListener('click', () => toggleManualModal(play));
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'F1' || e.key === 'F2' || e.key === 'F8' || e.key === 'F9' || e.key === 'F10') {
+    if (e.key === 'F1' || e.key === 'F2' || e.key === 'F3' || e.key === 'F8' || e.key === 'F9' || e.key === 'F10') {
       e.preventDefault();
       e.stopPropagation();
+      if (e.repeat) return;
     }
     if (e.key === 'F1') toggleManualModal(play);
     else if (e.key === 'F2') toggleInspector();
+    else if (e.key === 'F3') toggleChapterMap(play);
     else if (e.key === 'F8') {
       play.lab.toggle();
       play.session.bus?.emit({ kind: 'menu', action: 'move' });
@@ -280,8 +339,8 @@ export function bindPlayInput(play: Play): void {
   // A clicked HUD / dev-panel button takes keyboard focus; hand it back to the shell so typing keeps working.
   document.addEventListener('click', (e) => {
     const el = e.target as Element | null;
-    if (!el?.closest('button') || el.closest('#outro, #cinematic, #code-editor-pane, #manual-book-modal, #esc-menu, #hint-dialog, #hud-hint')) return;
-    if (play.phase === 'play' && !play.codeEditor?.isOpen() && !play.menu?.isOpen() && !play.manualBook?.isOpen() && !play.hintDialog?.isOpen()) {
+    if (!el?.closest('button, .item-slot.clickable') || el.closest('#outro, #cinematic, #code-editor-pane, #manual-book-modal, #esc-menu, #hint-dialog, #hud-hint, #chapter-map-dialog, #hud-map, .item-slot.item-map')) return;
+    if (play.phase === 'play' && !play.codeEditor?.isOpen() && !play.menu?.isOpen() && !play.manualBook?.isOpen() && !play.hintDialog?.isOpen() && !play.chapterMap?.isOpen()) {
       window.setTimeout(() => play.shell.focus(), 0);
     }
   });

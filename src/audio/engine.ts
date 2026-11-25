@@ -1,7 +1,45 @@
+import { playBed, type BedHandle } from './bed-loop.js';
 import type { MusicId, SfxId } from './catalog.js';
 import { musicAsset, musicLoops, sampleUrl } from './catalog.js';
-import { SOUND_SOURCES } from './limits.js';
-import { pickSlot } from './voices.js';
+import { SOUND_SOURCES, TYPING_MIN_INTERVAL_MS, TYPING_SOUND_SOURCES } from './limits.js';
+import { pickCappedSlot } from './voices.js';
+
+/** One-shot cues capped to `TYPING_SOUND_SOURCES` simultaneous voices. */
+export const TYPING_SFX: ReadonlySet<SfxId> = new Set<SfxId>([
+  'key_press',
+  'key_press_2',
+  'key_press_3',
+  'key_backspace',
+  'key_backspace_2',
+  'key_enter',
+  'tab_complete',
+]);
+
+/** Rapid-typing cues rate-limited to `TYPING_MIN_INTERVAL_MS`. `key_enter` and `tab_complete` always play. */
+const THROTTLED_TYPING_SFX: ReadonlySet<SfxId> = new Set<SfxId>([
+  'key_press',
+  'key_press_2',
+  'key_press_3',
+  'key_backspace',
+  'key_backspace_2',
+]);
+
+const KEY_VARIANTS: Partial<Record<SfxId, readonly SfxId[]>> = {
+  key_press: ['key_press', 'key_press_2', 'key_press_3'],
+  key_backspace: ['key_backspace', 'key_backspace_2'],
+};
+
+const KEY_RATES = [1.0, 1.045, 0.96, 1.02, 0.975, 1.06, 0.945] as const;
+const KEY_GAINS = [0.9, 0.84, 0.94, 0.87, 0.92] as const;
+
+/** Active windows (seconds) trimmed from leading and trailing silence so keystrokes feel instant and free slots cleanly. */
+const SFX_TRIM: Partial<Record<SfxId, { offset: number; duration: number }>> = {
+  key_press: { offset: 0.105, duration: 0.215 },
+  key_press_2: { offset: 0.098, duration: 0.185 },
+  key_press_3: { offset: 0.045, duration: 0.28 },
+  key_backspace: { offset: 0.085, duration: 0.22 },
+  key_backspace_2: { offset: 0.085, duration: 0.15 },
+};
 
 export interface AudioGraph {
   readonly live: boolean;
@@ -58,23 +96,42 @@ function makeLoader(ctx: AudioContext): Loader {
   };
 }
 
-function spawn(
+interface VoiceSlot {
+  node: AudioBufferSourceNode;
+  amp: GainNode;
+}
+
+function spawnVoice(
   ctx: AudioContext,
   master: GainNode,
   buffer: AudioBuffer,
   gain: number,
   loop: boolean,
   offset = 0,
-): AudioBufferSourceNode {
-  const src = ctx.createBufferSource();
+  duration?: number,
+  rate = 1,
+): VoiceSlot {
+  const node = ctx.createBufferSource();
   const amp = ctx.createGain();
   amp.gain.value = gain;
-  src.buffer = buffer;
-  src.loop = loop;
-  src.connect(amp).connect(master);
-  if (offset > 0) src.start(0, offset);
-  else src.start();
-  return src;
+  node.buffer = buffer;
+  node.loop = loop;
+  if (rate !== 1 && node.playbackRate) node.playbackRate.value = rate;
+  node.connect(amp).connect(master);
+  if (!loop && duration !== undefined) node.start(0, offset, duration);
+  else if (offset > 0) node.start(0, offset);
+  else node.start();
+  return { node, amp };
+}
+
+function nextKeyStyle(id: SfxId, step: number): { cue: SfxId; rate: number; gain: number } {
+  const variants = KEY_VARIANTS[id];
+  if (!variants) return { cue: id, rate: 1, gain: 0.9 };
+  return {
+    cue: variants[step % variants.length] ?? id,
+    rate: KEY_RATES[step % KEY_RATES.length] ?? 1,
+    gain: KEY_GAINS[step % KEY_GAINS.length] ?? 0.9,
+  };
 }
 
 function stopAt(node: AudioBufferSourceNode | null | undefined, when?: number): void {
@@ -85,6 +142,23 @@ function stopAt(node: AudioBufferSourceNode | null | undefined, when?: number): 
   } catch {
     // The node already ended.
   }
+}
+
+function rampOut(amp: GainNode, at: number, sec: number): void {
+  amp.gain.cancelScheduledValues(at);
+  amp.gain.setValueAtTime(Math.max(0.0001, amp.gain.value), at);
+  amp.gain.linearRampToValueAtTime(0.0001, at + sec);
+}
+
+function stopVoice(ctx: AudioContext, voice: VoiceSlot | null | undefined, fadeSec = 0): void {
+  if (!voice) return;
+  if (fadeSec > 0 && ctx.state === 'running') {
+    const t = ctx.currentTime;
+    rampOut(voice.amp, t, fadeSec);
+    stopAt(voice.node, t + fadeSec + 0.005);
+    return;
+  }
+  stopAt(voice.node);
 }
 
 interface LoopEntry {
@@ -101,11 +175,23 @@ interface Slots {
   stopAll(): void;
 }
 
-function makeSlots(ctx: AudioContext, master: GainNode, count: number, load: Loader, alive: () => boolean): Slots {
+function makeSlots(
+  ctx: AudioContext,
+  master: GainNode,
+  count: number,
+  typingCap: number,
+  typingMinIntervalSec: number,
+  load: Loader,
+  alive: () => boolean,
+): Slots {
   let seq = 0;
   let held = false;
+  let lastTypingAt = -Infinity;
+  let pressStep = 0;
+  let backStep = 0;
   const order = Array.from({ length: count }, () => -1);
-  const voices: (AudioBufferSourceNode | null)[] = Array.from({ length: count }, () => null);
+  const typingSlots = Array.from({ length: count }, () => false);
+  const voices: (VoiceSlot | null)[] = Array.from({ length: count }, () => null);
   const loops = new Map<string, LoopEntry>();
   const loopOn = new Set<string>();
   const loopPos = new Map<string, number>();
@@ -115,24 +201,37 @@ function makeSlots(ctx: AudioContext, master: GainNode, count: number, load: Loa
       if (!buffer || !alive() || ctx.state === 'closed' || held || !loopOn.has(id) || loops.has(id)) return;
       const gain = id === 'rain_loop' ? 0.22 : id === 'lap_fan' ? 0.28 : 0.35;
       const offset = buffer.duration > 0 ? (loopPos.get(id) ?? 0) % buffer.duration : 0;
-      const node = spawn(ctx, master, buffer, gain, true, offset);
+      const { node } = spawnVoice(ctx, master, buffer, gain, true, offset);
       loops.set(id, { node, buffer, startedAt: ctx.currentTime, pos: offset });
     });
   };
 
   return {
     play(id) {
-      void load('sfx', id).then((buffer) => {
+      if (typingMinIntervalSec > 0 && THROTTLED_TYPING_SFX.has(id)) {
+        const now = ctx.currentTime;
+        if (now - lastTypingAt < typingMinIntervalSec) return;
+        lastTypingAt = now;
+      }
+      const step = id === 'key_press' ? pressStep++ : id === 'key_backspace' ? backStep++ : 0;
+      const { cue, rate, gain } = nextKeyStyle(id, step);
+      void load('sfx', cue).then((buffer) => {
         if (!buffer || !alive() || ctx.state === 'closed') return;
-        const slot = pickSlot(order);
-        stopAt(voices[slot]);
-        const src = spawn(ctx, master, buffer, 0.9, false);
-        voices[slot] = src;
+        const isTyping = TYPING_SFX.has(cue);
+        const slot = pickCappedSlot(order, typingSlots, isTyping, typingCap);
+        stopVoice(ctx, voices[slot], 0.012);
+        const trim = SFX_TRIM[cue];
+        const offset = trim && buffer.duration > trim.offset + 0.05 ? trim.offset : 0;
+        const duration = trim && buffer.duration > offset + trim.duration ? trim.duration : undefined;
+        const voice = spawnVoice(ctx, master, buffer, gain, false, offset, duration, rate);
+        voices[slot] = voice;
         order[slot] = ++seq;
-        src.onended = () => {
-          if (voices[slot] !== src) return;
+        typingSlots[slot] = isTyping;
+        voice.node.onended = () => {
+          if (voices[slot] !== voice) return;
           voices[slot] = null;
           order[slot] = -1;
+          typingSlots[slot] = false;
         };
       });
     },
@@ -164,14 +263,18 @@ function makeSlots(ctx: AudioContext, master: GainNode, count: number, load: Loa
       for (const id of loopOn) startLoop(id);
     },
     stopAll() {
+      lastTypingAt = -Infinity;
+      pressStep = 0;
+      backStep = 0;
       loopOn.clear();
       loopPos.clear();
       for (const entry of loops.values()) stopAt(entry.node);
       loops.clear();
       for (let i = 0; i < voices.length; i += 1) {
-        stopAt(voices[i]);
+        stopVoice(ctx, voices[i]);
         voices[i] = null;
         order[i] = -1;
+        typingSlots[i] = false;
       }
     },
   };
@@ -192,19 +295,11 @@ interface Bed {
   stopAll(): void;
 }
 
-function fadeOutGain(
-  ctx: AudioContext,
-  fading: GainNode | null,
-  old: AudioBufferSourceNode | null,
-  oldIntro: AudioBufferSourceNode | null,
-): void {
-  if (!fading) return;
+function fadeOutGain(ctx: AudioContext, fading: GainNode | null, handle: BedHandle | null): void {
+  if (!fading && !handle) return;
   const t = ctx.currentTime;
-  fading.gain.cancelScheduledValues(t);
-  fading.gain.setValueAtTime(Math.max(0.0001, fading.gain.value), t);
-  fading.gain.linearRampToValueAtTime(0.0001, t + 0.25);
-  stopAt(old, t + 0.26);
-  stopAt(oldIntro, t + 0.26);
+  if (fading) rampOut(fading, t, 0.25);
+  handle?.stop(t + 0.26);
 }
 
 function makeBed(ctx: AudioContext, master: GainNode, load: Loader, alive: () => boolean): Bed {
@@ -212,8 +307,7 @@ function makeBed(ctx: AudioContext, master: GainNode, load: Loader, alive: () =>
   let held = false;
   let active: BedRun | null = null;
   let bedGain: GainNode | null = null;
-  let bedSrc: AudioBufferSourceNode | null = null;
-  let introSrc: AudioBufferSourceNode | null = null;
+  let handle: BedHandle | null = null;
 
   const startRun = (run: BedRun, fadeSec: number): void => {
     if (!alive() || ctx.state === 'closed' || held || bedId !== run.id) return;
@@ -224,26 +318,17 @@ function makeBed(ctx: AudioContext, master: GainNode, load: Loader, alive: () =>
     amp.gain.setValueAtTime(0.0001, t);
     amp.gain.linearRampToValueAtTime(0.55, t + fadeSec);
     amp.connect(master);
-    const src = ctx.createBufferSource();
-    src.buffer = run.bedBuffer;
-    src.loop = run.looping;
-    src.connect(amp);
-    let lead: AudioBufferSourceNode | null = null;
-    if (run.introBuffer && run.startPos < introDur) {
-      lead = ctx.createBufferSource();
-      lead.buffer = run.introBuffer;
-      lead.connect(amp);
-      lead.start(t, run.startPos);
-      src.start(t + Math.max(0, introDur - run.startPos));
-    } else {
-      let offset = Math.max(0, run.startPos - introDur);
-      if (run.looping && run.bedBuffer.duration > 0) offset %= run.bedBuffer.duration;
-      src.start(t, offset);
-    }
+    handle = playBed({
+      ctx,
+      dest: amp,
+      bed: run.bedBuffer,
+      intro: run.introBuffer,
+      startPos: run.startPos,
+      looping: run.looping,
+      still: () => alive() && !held && bedId === run.id,
+    });
     run.startedAt = t;
     bedGain = amp;
-    bedSrc = src;
-    introSrc = lead;
   };
 
   return {
@@ -252,13 +337,11 @@ function makeBed(ctx: AudioContext, master: GainNode, load: Loader, alive: () =>
       bedId = id;
       active = null;
       const fading = bedGain;
-      const old = bedSrc;
-      const oldIntro = introSrc;
+      const old = handle;
       bedGain = null;
-      bedSrc = null;
-      introSrc = null;
+      handle = null;
       if (ctx.state === 'closed' || !alive()) return;
-      fadeOutGain(ctx, fading, old, oldIntro);
+      fadeOutGain(ctx, fading, old);
       if (!id) return;
       const wanted = id;
       const asset = musicAsset(wanted);
@@ -282,19 +365,15 @@ function makeBed(ctx: AudioContext, master: GainNode, load: Loader, alive: () =>
       if (paused === held) return;
       held = paused;
       if (paused) {
-        if (active && (bedSrc || introSrc)) {
-          active.startPos += Math.max(0, ctx.currentTime - active.startedAt);
-        }
-        stopAt(bedSrc);
-        stopAt(introSrc);
+        if (active && handle) active.startPos = handle.position(ctx.currentTime);
+        handle?.stop();
+        handle = null;
         if (bedGain) {
           const t = ctx.currentTime;
           bedGain.gain.cancelScheduledValues(t);
           bedGain.gain.setValueAtTime(0, t);
         }
         bedGain = null;
-        bedSrc = null;
-        introSrc = null;
         return;
       }
       if (active && active.id === bedId && alive() && ctx.state !== 'closed') {
@@ -304,17 +383,19 @@ function makeBed(ctx: AudioContext, master: GainNode, load: Loader, alive: () =>
     stopAll() {
       bedId = null;
       active = null;
-      stopAt(bedSrc);
-      stopAt(introSrc);
+      handle?.stop();
+      handle = null;
       bedGain = null;
-      bedSrc = null;
-      introSrc = null;
     },
   };
 }
 
 /** One context, a pool of one-shot voices, loop slots, and a crossfaded music bed. */
-export function createGraph(sources = SOUND_SOURCES): AudioGraph {
+export function createGraph(
+  sources = SOUND_SOURCES,
+  typingSources = TYPING_SOUND_SOURCES,
+  typingMinIntervalMs = TYPING_MIN_INTERVAL_MS,
+): AudioGraph {
   const ctx = context();
   if (!ctx) return SILENT;
   const master = ctx.createGain();
@@ -325,7 +406,10 @@ export function createGraph(sources = SOUND_SOURCES): AudioGraph {
   let held = false;
   const alive = (): boolean => !closed;
   const load = makeLoader(ctx);
-  const slots = makeSlots(ctx, master, Math.max(1, Math.floor(sources)), load, alive);
+  const poolSize = Math.max(1, Math.floor(sources));
+  const typingCap = Math.min(poolSize, Math.max(1, Math.floor(typingSources)));
+  const typingMinIntervalSec = Math.max(0, typingMinIntervalMs) / 1000;
+  const slots = makeSlots(ctx, master, poolSize, typingCap, typingMinIntervalSec, load, alive);
   const bed = makeBed(ctx, master, load, alive);
   const apply = (): void => {
     master.gain.value = muted ? 0 : volume;

@@ -142,7 +142,7 @@ function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: {
         fitAddon.fit();
       } catch { /* host hidden */ }
     },
-    setAvailable(on: boolean) {
+    setAvailable(on: boolean, pop = true) {
       if (on === gate.available) return;
       gate.available = on;
       panel.classList.toggle('tty-unavailable', !on);
@@ -150,9 +150,11 @@ function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: {
         st.term.blur();
         return;
       }
-      panel.classList.remove('tty-popin');
-      void panel.offsetWidth;
-      panel.classList.add('tty-popin');
+      if (pop) {
+        panel.classList.remove('tty-popin');
+        void panel.offsetWidth;
+        panel.classList.add('tty-popin');
+      }
       try { fitAddon.fit(); } catch { /* host hidden */ }
       st.term.focus();
     },
@@ -164,13 +166,29 @@ function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: {
   };
 }
 
+const MODIFIER_KEYS = new Set(['Shift', 'Control', 'Alt', 'Meta', 'AltGraph', 'CapsLock', 'NumLock', 'ScrollLock']);
+
 export function mountShell(host: HTMLElement, hooks: ShellHooks): Shell {
   const { term, fitAddon } = openTerm(host);
   const st = createLineState(term, hooks);
   const gate = { available: true };
+  let keyRepeat = false;
+  term.attachCustomKeyEventHandler((ev) => {
+    // Track keydown/keyup repeat; skip keypress so WebKit's keypress.repeat=false never masks a held key.
+    if (!MODIFIER_KEYS.has(ev.key)) {
+      if (ev.type === 'keydown') keyRepeat = ev.repeat;
+      else if (ev.type === 'keyup') keyRepeat = false;
+    }
+    return true;
+  });
+  if (term.textarea) {
+    const clearRepeat = (): void => { keyRepeat = false; };
+    term.textarea.addEventListener('blur', clearRepeat);
+    term.textarea.addEventListener('paste', clearRepeat);
+  }
   term.onData((data) => {
     if (st.blocked || !gate.available) return;
-    handleKey(st, data);
+    handleKey(st, data, keyRepeat);
   });
   return shellApi(st, fitAddon, host.closest<HTMLElement>('#terminal-bezel') ?? host, gate);
 }

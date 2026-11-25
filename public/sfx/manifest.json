@@ -351,7 +351,7 @@
       "files": [
         {
           "file": "lightning.mp3",
-          "bytes": 37032
+          "bytes": 34524
         }
       ]
     },
@@ -365,7 +365,7 @@
       "files": [
         {
           "file": "thunder_close.mp3",
-          "bytes": 85306
+          "bytes": 54586
         }
       ]
     },
@@ -379,7 +379,7 @@
       "files": [
         {
           "file": "thunder_far.mp3",
-          "bytes": 97845
+          "bytes": 62736
         }
       ]
     },
@@ -1892,6 +1892,84 @@
         {
           "file": "sting_taunt.mp3",
           "bytes": 121043
+        }
+      ]
+    },
+    {
+      "name": "dialog_hero",
+      "effect": "Vibecoder dialog box appearing",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "dialog_hero.mp3",
+          "bytes": 15716
+        }
+      ]
+    },
+    {
+      "name": "dialog_npc",
+      "effect": "NPC dialog box appearing",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "dialog_npc.mp3",
+          "bytes": 15716
+        }
+      ]
+    },
+    {
+      "name": "key_press_2",
+      "effect": "Key press variant 2 (`type`, fast typing variety)",
+      "listed_seconds": 0.1,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "key_press_2.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "name": "key_press_3",
+      "effect": "Key press variant 3 (`type`, fast typing variety)",
+      "listed_seconds": 0.1,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "key_press_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "name": "key_backspace_2",
+      "effect": "Backspace variant 2 (`backspace`, typing variety)",
+      "listed_seconds": 0.15,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "key_backspace_2.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "name": "term_boot",
+      "effect": "Terminal visor powers on the first time it appears",
+      "listed_seconds": 1.5,
+      "duration_seconds": 1.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "term_boot.mp3",
+          "bytes": 37032
         }
       ]
     }
