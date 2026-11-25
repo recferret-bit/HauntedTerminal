@@ -1,0 +1,93 @@
+{
+  "name": "low_hp_bed",
+  "listed_seconds": 20.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 20000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 10000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "144 BPM",
+          "4/4",
+          "A minor with flat second color",
+          "early 1990s tracker style",
+          "bass drone on A",
+          "thin single-channel pulse",
+          "bitcrushed tick accents",
+          "dry close-mic texture",
+          "narrow stereo image",
+          "quiet low-health warning bed",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "melody",
+          "fills",
+          "heartbeat",
+          "medical beep",
+          "pitch wobble",
+          "fade-out",
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Loop A]"
+      },
+      {
+        "duration_ms": 10000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "144 BPM",
+          "4/4",
+          "A minor with flat second color",
+          "early 1990s tracker style",
+          "sustained bass drone on A",
+          "thin pulse continuation",
+          "bitcrushed tick on the grid",
+          "very quiet 60 Hz hum",
+          "dry and close production",
+          "loop-ready ending matching the opening bar",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "melody",
+          "fills",
+          "heartbeat",
+          "medical beep",
+          "pitch wobble",
+          "fade-out",
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Loop B]"
+      }
+    ]
+  }
+}

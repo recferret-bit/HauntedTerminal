@@ -1,0 +1,48 @@
+{
+  "name": "sting_lantern",
+  "listed_seconds": 5.0,
+  "loop": false,
+  "model": "music_v2_5",
+  "plan_ms": 5000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 5000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "two-bar phrase",
+          "early 1990s tracker sequencing",
+          "soft synth wave rising fifth from C5 to G5",
+          "quiet triangle reply on the same interval",
+          "warm close-mic feel",
+          "dry intimate mix",
+          "narrow stereo image",
+          "no reverb tail",
+          "single melodic idea",
+          "ends in silence",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser",
+          "pitch wobble"
+        ],
+        "text": "[Main Motif]"
+      }
+    ]
+  }
+}

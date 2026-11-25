@@ -1,0 +1,536 @@
+{
+  "model": "music_v2_5",
+  "output_format": "mp3_44100_192",
+  "variants": 3,
+  "style_note": "Each cue has one composition plan. All three files for that cue were composed from that same plan.",
+  "cues": [
+    {
+      "name": "title_theme",
+      "where": "Home, the comic masthead, before Play",
+      "listed_seconds": 48.0,
+      "plan_ms": 48000,
+      "loop": true,
+      "plan": "plans/title_theme.json",
+      "files": [
+        {
+          "file": "title_theme_1.mp3",
+          "bytes": 1152984
+        },
+        {
+          "file": "title_theme_2.mp3",
+          "bytes": 1152984
+        },
+        {
+          "file": "title_theme_3.mp3",
+          "bytes": 1152984
+        }
+      ]
+    },
+    {
+      "name": "menu_bed",
+      "where": "Esc menu during play. The turn timer is paused",
+      "listed_seconds": 24.0,
+      "plan_ms": 24000,
+      "loop": true,
+      "plan": "plans/menu_bed.json",
+      "files": [
+        {
+          "file": "menu_bed_1.mp3",
+          "bytes": 576827
+        },
+        {
+          "file": "menu_bed_2.mp3",
+          "bytes": 576827
+        },
+        {
+          "file": "menu_bed_3.mp3",
+          "bytes": 576827
+        }
+      ]
+    },
+    {
+      "name": "level_select",
+      "where": "Level select and the chapter front door",
+      "listed_seconds": 36.0,
+      "plan_ms": 36000,
+      "loop": true,
+      "plan": "plans/level_select.json",
+      "files": [
+        {
+          "file": "level_select_1.mp3",
+          "bytes": 865219
+        },
+        {
+          "file": "level_select_2.mp3",
+          "bytes": 865219
+        },
+        {
+          "file": "level_select_3.mp3",
+          "bytes": 865219
+        }
+      ]
+    },
+    {
+      "name": "manual_bed",
+      "where": "Field manual (`/manual`), the book open on the desk",
+      "listed_seconds": 48.0,
+      "plan_ms": 48000,
+      "loop": true,
+      "plan": "plans/manual_bed.json",
+      "files": [
+        {
+          "file": "manual_bed_1.mp3",
+          "bytes": 1152984
+        },
+        {
+          "file": "manual_bed_2.mp3",
+          "bytes": 1152984
+        },
+        {
+          "file": "manual_bed_3.mp3",
+          "bytes": 1152984
+        }
+      ]
+    },
+    {
+      "name": "achievements_bed",
+      "where": "Achievements page, the shelf of finished work",
+      "listed_seconds": 20.0,
+      "plan_ms": 20000,
+      "loop": true,
+      "plan": "plans/achievements_bed.json",
+      "files": [
+        {
+          "file": "achievements_bed_1.mp3",
+          "bytes": 480906
+        },
+        {
+          "file": "achievements_bed_2.mp3",
+          "bytes": 480906
+        },
+        {
+          "file": "achievements_bed_3.mp3",
+          "bytes": 480906
+        }
+      ]
+    },
+    {
+      "name": "comic_reader",
+      "where": "The six-page issue and the comic reader",
+      "listed_seconds": 48.0,
+      "plan_ms": 48000,
+      "loop": true,
+      "plan": "plans/comic_reader.json",
+      "files": [
+        {
+          "file": "comic_reader_1.mp3",
+          "bytes": 1152984
+        },
+        {
+          "file": "comic_reader_2.mp3",
+          "bytes": 1152984
+        },
+        {
+          "file": "comic_reader_3.mp3",
+          "bytes": 1152984
+        }
+      ]
+    },
+    {
+      "name": "rank_card",
+      "where": "End-of-game rank, under the rank-reveal hit",
+      "listed_seconds": 10.0,
+      "plan_ms": 10000,
+      "loop": false,
+      "plan": "plans/rank_card.json",
+      "files": [
+        {
+          "file": "rank_card_1.mp3",
+          "bytes": 240788
+        },
+        {
+          "file": "rank_card_2.mp3",
+          "bytes": 240788
+        },
+        {
+          "file": "rank_card_3.mp3",
+          "bytes": 240788
+        }
+      ]
+    },
+    {
+      "name": "floor_attic",
+      "where": "Level 01 \"Wires, Chips & The Kiro Ghost\", and any attic room that is not the hub. He starts in the dark, before the lantern",
+      "listed_seconds": 40.0,
+      "plan_ms": 40000,
+      "loop": true,
+      "plan": "plans/floor_attic.json",
+      "files": [
+        {
+          "file": "floor_attic_1.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "floor_attic_2.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "floor_attic_3.mp3",
+          "bytes": 961141
+        }
+      ]
+    },
+    {
+      "name": "floor_crypt",
+      "where": "Floor theme 2. Level 02 \"Cache Vault\" and level 03 \"GPU Alley\"",
+      "listed_seconds": 40.0,
+      "plan_ms": 40000,
+      "loop": true,
+      "plan": "plans/floor_crypt.json",
+      "files": [
+        {
+          "file": "floor_crypt_1.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "floor_crypt_2.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "floor_crypt_3.mp3",
+          "bytes": 961141
+        }
+      ]
+    },
+    {
+      "name": "floor_maze",
+      "where": "Floor theme 3. Level 05 \"UI Grid\" and level 06 \"Logic Cell\"",
+      "listed_seconds": 40.0,
+      "plan_ms": 40000,
+      "loop": true,
+      "plan": "plans/floor_maze.json",
+      "files": [
+        {
+          "file": "floor_maze_1.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "floor_maze_2.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "floor_maze_3.mp3",
+          "bytes": 961141
+        }
+      ]
+    },
+    {
+      "name": "floor_furnace",
+      "where": "Floor theme 4. Level 08 \"Docker Forge\" and level 09 \"Compose Furnace\"",
+      "listed_seconds": 40.0,
+      "plan_ms": 40000,
+      "loop": true,
+      "plan": "plans/floor_furnace.json",
+      "files": [
+        {
+          "file": "floor_furnace_1.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "floor_furnace_2.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "floor_furnace_3.mp3",
+          "bytes": 961141
+        }
+      ]
+    },
+    {
+      "name": "floor_core",
+      "where": "Floor theme 5, the puzzle half of level 11, before the boss fight starts. A cracked CPU die in a cellar storm",
+      "listed_seconds": 40.0,
+      "plan_ms": 40000,
+      "loop": true,
+      "plan": "plans/floor_core.json",
+      "files": [
+        {
+          "file": "floor_core_1.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "floor_core_2.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "floor_core_3.mp3",
+          "bytes": 961141
+        }
+      ]
+    },
+    {
+      "name": "hub_matrix",
+      "where": "Levels 04, 07 and 10, \"The Matrix Hub\". The old coder at the CRT, Kiro loads the next open-weight model",
+      "listed_seconds": 60.0,
+      "plan_ms": 60000,
+      "loop": true,
+      "plan": "plans/hub_matrix.json",
+      "files": [
+        {
+          "file": "hub_matrix_1.mp3",
+          "bytes": 1440749
+        },
+        {
+          "file": "hub_matrix_2.mp3",
+          "bytes": 1440749
+        },
+        {
+          "file": "hub_matrix_3.mp3",
+          "bytes": 1440749
+        }
+      ]
+    },
+    {
+      "name": "battle_loop",
+      "where": "Every non-boss fight, from the battle intro until the fight is won",
+      "listed_seconds": 40.0,
+      "plan_ms": 40000,
+      "loop": true,
+      "plan": "plans/battle_loop.json",
+      "files": [
+        {
+          "file": "battle_loop_1.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "battle_loop_2.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "battle_loop_3.mp3",
+          "bytes": 961141
+        }
+      ]
+    },
+    {
+      "name": "battle_boss",
+      "where": "Level 11 boss, Clod's kernel, once the fight starts. Same tempo as `battle_loop`, heavier arrangement",
+      "listed_seconds": 40.0,
+      "plan_ms": 40000,
+      "loop": true,
+      "plan": "plans/battle_boss.json",
+      "files": [
+        {
+          "file": "battle_boss_1.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "battle_boss_2.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "battle_boss_3.mp3",
+          "bytes": 961141
+        }
+      ]
+    },
+    {
+      "name": "low_hp_bed",
+      "where": "Replaces `battle_loop` or `battle_boss` while the player is one hit from falling. Swap, do not layer",
+      "listed_seconds": 20.0,
+      "plan_ms": 20000,
+      "loop": true,
+      "plan": "plans/low_hp_bed.json",
+      "files": [
+        {
+          "file": "low_hp_bed_1.mp3",
+          "bytes": 480906
+        },
+        {
+          "file": "low_hp_bed_2.mp3",
+          "bytes": 480906
+        },
+        {
+          "file": "low_hp_bed_3.mp3",
+          "bytes": 480906
+        }
+      ]
+    },
+    {
+      "name": "sting_lantern",
+      "where": "Lantern taken, a dark room lighting, the human motif stated alone",
+      "listed_seconds": 5.0,
+      "plan_ms": 5000,
+      "loop": false,
+      "plan": "plans/sting_lantern.json",
+      "files": [
+        {
+          "file": "sting_lantern_1.mp3",
+          "bytes": 121043
+        },
+        {
+          "file": "sting_lantern_2.mp3",
+          "bytes": 121043
+        },
+        {
+          "file": "sting_lantern_3.mp3",
+          "bytes": 121043
+        }
+      ]
+    },
+    {
+      "name": "sting_kiro",
+      "where": "Kiro Ghost arrives or gives advice. Friendlier and slower than the lantern figure",
+      "listed_seconds": 5.0,
+      "plan_ms": 5000,
+      "loop": false,
+      "plan": "plans/sting_kiro.json",
+      "files": [
+        {
+          "file": "sting_kiro_1.mp3",
+          "bytes": 121043
+        },
+        {
+          "file": "sting_kiro_2.mp3",
+          "bytes": 121043
+        },
+        {
+          "file": "sting_kiro_3.mp3",
+          "bytes": 121043
+        }
+      ]
+    },
+    {
+      "name": "sting_taunt",
+      "where": "An agent of the big four taunts (Anti-Gravy, Codec, Gork, Clod)",
+      "listed_seconds": 5.0,
+      "plan_ms": 5000,
+      "loop": false,
+      "plan": "plans/sting_taunt.json",
+      "files": [
+        {
+          "file": "sting_taunt_1.mp3",
+          "bytes": 121043
+        },
+        {
+          "file": "sting_taunt_2.mp3",
+          "bytes": 121043
+        },
+        {
+          "file": "sting_taunt_3.mp3",
+          "bytes": 121043
+        }
+      ]
+    },
+    {
+      "name": "sting_clear",
+      "where": "Level cleared, a two-bar button under the level-clear sound effect",
+      "listed_seconds": 5.0,
+      "plan_ms": 6000,
+      "loop": false,
+      "plan": "plans/sting_clear.json",
+      "files": [
+        {
+          "file": "sting_clear_1.mp3",
+          "bytes": 144866
+        },
+        {
+          "file": "sting_clear_2.mp3",
+          "bytes": 144866
+        },
+        {
+          "file": "sting_clear_3.mp3",
+          "bytes": 144866
+        }
+      ]
+    },
+    {
+      "name": "laptop_bed",
+      "where": "The laptop item and Laptop Lab (`/laptop-lab`), writing code on a small machine",
+      "listed_seconds": 20.0,
+      "plan_ms": 20000,
+      "loop": true,
+      "plan": "plans/laptop_bed.json",
+      "files": [
+        {
+          "file": "laptop_bed_1.mp3",
+          "bytes": 480906
+        },
+        {
+          "file": "laptop_bed_2.mp3",
+          "bytes": 480906
+        },
+        {
+          "file": "laptop_bed_3.mp3",
+          "bytes": 480906
+        }
+      ]
+    },
+    {
+      "name": "lab_bed",
+      "where": "Terminal Lab only (`/terminal-lab`), a test bench, not the campaign",
+      "listed_seconds": 20.0,
+      "plan_ms": 20000,
+      "loop": true,
+      "plan": "plans/lab_bed.json",
+      "files": [
+        {
+          "file": "lab_bed_1.mp3",
+          "bytes": 480906
+        },
+        {
+          "file": "lab_bed_2.mp3",
+          "bytes": 480906
+        },
+        {
+          "file": "lab_bed_3.mp3",
+          "bytes": 480906
+        }
+      ]
+    },
+    {
+      "name": "cine_intro",
+      "where": "Intro cinematic \"Day 847 \u2014 New Management\", the whole 40 seconds",
+      "listed_seconds": 40.0,
+      "plan_ms": 40000,
+      "loop": false,
+      "plan": "plans/cine_intro.json",
+      "files": [
+        {
+          "file": "cine_intro_1.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "cine_intro_2.mp3",
+          "bytes": 961141
+        },
+        {
+          "file": "cine_intro_3.mp3",
+          "bytes": 961141
+        }
+      ]
+    },
+    {
+      "name": "cine_outro",
+      "where": "Outro cinematic \"Exit Code 0 \u2014 Dawn Return\"",
+      "listed_seconds": 10.0,
+      "plan_ms": 11000,
+      "loop": false,
+      "plan": "plans/cine_outro.json",
+      "files": [
+        {
+          "file": "cine_outro_1.mp3",
+          "bytes": 265239
+        },
+        {
+          "file": "cine_outro_2.mp3",
+          "bytes": 265239
+        },
+        {
+          "file": "cine_outro_3.mp3",
+          "bytes": 265239
+        }
+      ]
+    }
+  ]
+}

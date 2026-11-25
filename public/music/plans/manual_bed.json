@@ -1,0 +1,87 @@
+{
+  "name": "manual_bed",
+  "listed_seconds": 48.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 48000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 24000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "80 BPM",
+          "A minor",
+          "4/4 time",
+          "early 1990s tracker style",
+          "three-channel arrangement",
+          "music-box lead with sparse rising fifth C5 to G5 and A4 pattern",
+          "quiet triangle underlay",
+          "dry close-miked sound",
+          "narrow stereo image",
+          "very quiet 60 Hz hum",
+          "dusty warm minimal texture",
+          "loopable first-pass phrase",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser",
+          "pitch wobble"
+        ],
+        "text": "[Main Loop A]"
+      },
+      {
+        "duration_ms": 24000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "80 BPM",
+          "A minor",
+          "4/4 time",
+          "early 1990s tracker style",
+          "three-channel arrangement",
+          "music-box lead with the same C5 to G5 and A4 figure",
+          "long gaps between notes",
+          "quiet triangle underlay",
+          "dry close-miked sound",
+          "narrow stereo image",
+          "very quiet 60 Hz hum",
+          "final bar returns to the first-bar figure for seamless looping",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser",
+          "pitch wobble"
+        ],
+        "text": "[Main Loop B]"
+      }
+    ]
+  }
+}

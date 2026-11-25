@@ -1,0 +1,96 @@
+{
+  "name": "floor_maze",
+  "listed_seconds": 40.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 40000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "A minor",
+          "4/4",
+          "early 1990s tracker composition",
+          "five-channel arrangement",
+          "tight square-wave lead figure",
+          "quiet copy delayed by one eighth note",
+          "steady A bass drone",
+          "dry close-miked mix",
+          "narrow stereo field",
+          "uneasy looped motif",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "shepard tone",
+          "filter howl",
+          "speeding up",
+          "pitch wobble",
+          "thunder",
+          "vocal harmonies",
+          "fade out",
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Part 1]"
+      },
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "A minor",
+          "4/4",
+          "early 1990s tracker composition",
+          "five-channel arrangement",
+          "square-wave motif variation",
+          "quiet mirrored answer figure",
+          "held A bass tone",
+          "typed-command rest every two bars",
+          "dry close-miked mix",
+          "narrow stereo field",
+          "loop-ready ending on the opening figure",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "shepard tone",
+          "filter howl",
+          "speeding up",
+          "pitch wobble",
+          "thunder",
+          "vocal harmonies",
+          "fade out",
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Part 2]"
+      }
+    ]
+  }
+}

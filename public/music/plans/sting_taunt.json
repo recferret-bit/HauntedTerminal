@@ -1,0 +1,49 @@
+{
+  "name": "sting_taunt",
+  "listed_seconds": 5.0,
+  "loop": false,
+  "model": "music_v2_5",
+  "plan_ms": 5000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 5000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "144 BPM",
+          "early 1990s tracker aesthetic",
+          "A minor with a flat second",
+          "three-bar phrase",
+          "two bitcrushed square stabs",
+          "short dry mocking motif",
+          "narrow stereo image",
+          "no reverb",
+          "hard stop ending into silence",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "vocals",
+          "voice",
+          "laugh",
+          "whisper",
+          "humming",
+          "choir",
+          "lyrics",
+          "singing",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser",
+          "pitch wobble"
+        ],
+        "text": "[Main Phrase]"
+      }
+    ]
+  }
+}

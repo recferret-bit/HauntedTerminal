@@ -57,6 +57,8 @@ chapters/<chapter-slug>/     # LEVEL GEN data, one chapter for Kiroween
   levels/level-XX-<slug>/level.spec.json, LEVEL.md
 pages/                       # HTML entry pages: index.html (player front door: Home), desktop.html, achievements.html and comix.html (the landing's tab pages), play.html (game at /play/...), manual.html (/manual, interactive terminal field manual), hub.html (redirect to /), chapter-editor.html (/editor, /editor/<chapter>/<level>), comix-editor.html (/comix-editor, /comix-editor/<slug>/<target>), terminal-lab.html (/terminal-lab, /terminal-lab/<lab-id>), laptop-lab.html (/laptop-lab), dev.html (level select, jumps, QA labs), chapters.html, comic.html, cinematic.html, storybook.html
 public/assets/               # external sprites/meshes (ai-mesh-pipeline)
+public/sfx/                  # ElevenLabs SFX v3 variants, three files per cue (`name_1.mp3`), plus manifest.json
+public/music/                # ElevenLabs Music v2.5 beds, three takes per cue from one locked plan, plus plans/ and manifest.json
 public/comix/<chapter-id>/   # rendered comic pages
 public/fonts/                # self-hosted SIL OFL 1.1 Chakra Petch & IBM Plex Mono .woff2 runtime fonts
 scripts/desktop/             # Tauri v2 + Steamworks desktop generator, icon synthesizer, offline verifier & unit tests

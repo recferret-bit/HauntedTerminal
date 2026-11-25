@@ -1,0 +1,102 @@
+{
+  "name": "menu_bed",
+  "listed_seconds": 24.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 24000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 16000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "80 BPM",
+          "A minor",
+          "4/4",
+          "early 1990s tracker arrangement",
+          "triangle pad only",
+          "quiet FM bass",
+          "three-channel writing",
+          "dry close mix",
+          "narrow stereo",
+          "pause menu underscore",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "no drums",
+          "no lead melody",
+          "no vocals",
+          "no humming",
+          "no choir",
+          "no tick",
+          "no pitch wobble",
+          "no thunder",
+          "no fade-out",
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser",
+          "pitch wobble"
+        ],
+        "text": "[Menu Bed A]"
+      },
+      {
+        "duration_ms": 8000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "80 BPM",
+          "A minor",
+          "4/4",
+          "early 1990s tracker continuation",
+          "triangle pad only",
+          "quiet FM bass",
+          "one soft rising fifth from C5 to G5",
+          "three-channel writing",
+          "dry close mix",
+          "narrow stereo",
+          "loop-ready final bar",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "no drums",
+          "no lead melody",
+          "no vocals",
+          "no humming",
+          "no choir",
+          "no tick",
+          "no pitch wobble",
+          "no thunder",
+          "no fade-out",
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser",
+          "pitch wobble"
+        ],
+        "text": "[Menu Bed B]"
+      }
+    ]
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "name": "rank_card",
+  "listed_seconds": 10.0,
+  "loop": false,
+  "model": "music_v2_5",
+  "plan_ms": 10000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 10000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "4/4 time",
+          "early 1990s tracker sequencing",
+          "five-channel arrangement",
+          "low A minor pulse",
+          "square-wave arpeggio",
+          "C major final chord",
+          "narrow stereo image",
+          "dry close-miked mix",
+          "very quiet 60 Hz hum",
+          "instrumental only",
+          "clean stop at the end"
+        ],
+        "negative_styles": [
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser",
+          "pitch wobble"
+        ],
+        "text": "[Tracker Loop]"
+      }
+    ]
+  }
+}

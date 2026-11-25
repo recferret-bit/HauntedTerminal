@@ -1,0 +1,3199 @@
+{
+  "model": "eleven_text_to_sound_v3",
+  "prompt_influence": 0.8,
+  "output_format": "mp3_44100_192",
+  "variants": 3,
+  "duration_note": "The sound-generation API rejects durations under 0.5 seconds. Cues listed shorter were requested at 0.5 seconds. The prompt still states the shorter event and ends in silence.",
+  "sounds": [
+    {
+      "row": 1,
+      "name": "key_press",
+      "effect": "Key press (`type`, each keystroke)",
+      "listed_seconds": 0.1,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "key_press_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "key_press_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "key_press_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 2,
+      "name": "key_release",
+      "effect": "Key release",
+      "listed_seconds": 0.1,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "key_release_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "key_release_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "key_release_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 3,
+      "name": "key_enter",
+      "effect": "Enter / submit command",
+      "listed_seconds": 0.3,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "key_enter_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "key_enter_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "key_enter_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 4,
+      "name": "key_backspace",
+      "effect": "Backspace",
+      "listed_seconds": 0.15,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "key_backspace_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "key_backspace_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "key_backspace_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 5,
+      "name": "cmd_ok",
+      "effect": "Command accepted",
+      "listed_seconds": 0.3,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "cmd_ok_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cmd_ok_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cmd_ok_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 6,
+      "name": "cmd_fail",
+      "effect": "Command failed / not found",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "cmd_fail_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cmd_fail_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cmd_fail_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 7,
+      "name": "perm_denied",
+      "effect": "Permission denied (`PERMISSION_DENIED_RATTLE`)",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "perm_denied_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "perm_denied_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "perm_denied_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 8,
+      "name": "cmd_locked",
+      "effect": "Locked command refused (`script.locks`)",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "cmd_locked_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cmd_locked_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cmd_locked_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 9,
+      "name": "tab_complete",
+      "effect": "Tab autocomplete",
+      "listed_seconds": 0.2,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "tab_complete_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "tab_complete_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "tab_complete_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 10,
+      "name": "dialog_open",
+      "effect": "Dialog box appears",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "dialog_open_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "dialog_open_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "dialog_open_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 11,
+      "name": "dialog_close",
+      "effect": "Dialog box dismisses",
+      "listed_seconds": 0.3,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "dialog_close_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "dialog_close_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "dialog_close_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 12,
+      "name": "dialog_tick",
+      "effect": "Dialog text tick (per character)",
+      "listed_seconds": 0.05,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "dialog_tick_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "dialog_tick_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "dialog_tick_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "agent_taunt",
+      "effect": "Agent taunt pops in (Clod, Gork, Codec, Anti-Gravy)",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "agent_taunt_1.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "agent_taunt_2.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "agent_taunt_3.mp3",
+          "bytes": 15716
+        }
+      ]
+    },
+    {
+      "row": 14,
+      "name": "kiro_advice",
+      "effect": "Kiro Ghost advice",
+      "listed_seconds": 0.7,
+      "duration_seconds": 0.7,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_advice_1.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "kiro_advice_2.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "kiro_advice_3.mp3",
+          "bytes": 18224
+        }
+      ]
+    },
+    {
+      "row": 15,
+      "name": "timer_tick",
+      "effect": "Turn timer tick (last 5 seconds)",
+      "listed_seconds": 0.25,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "timer_tick_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "timer_tick_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "timer_tick_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 16,
+      "name": "timer_expired",
+      "effect": "Turn timer expired",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "timer_expired_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "timer_expired_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "timer_expired_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 17,
+      "name": "menu_open",
+      "effect": "Esc menu open",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "menu_open_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "menu_open_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "menu_open_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 18,
+      "name": "menu_close",
+      "effect": "Esc menu close",
+      "listed_seconds": 0.3,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "menu_close_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "menu_close_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "menu_close_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 19,
+      "name": "menu_confirm",
+      "effect": "Menu item select / confirm",
+      "listed_seconds": 0.2,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "menu_confirm_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "menu_confirm_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "menu_confirm_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 20,
+      "name": "menu_move",
+      "effect": "Menu cursor move",
+      "listed_seconds": 0.1,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "menu_move_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "menu_move_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "menu_move_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 21,
+      "name": "achievement",
+      "effect": "Achievement toast",
+      "listed_seconds": 1.5,
+      "duration_seconds": 1.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "achievement_1.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "achievement_2.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "achievement_3.mp3",
+          "bytes": 37032
+        }
+      ]
+    },
+    {
+      "row": 22,
+      "name": "item_lit",
+      "effect": "Item lights up in items strip",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "item_lit_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "item_lit_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "item_lit_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 23,
+      "name": "item_hold",
+      "effect": "`hold <item>` (take in hand)",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "item_hold_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "item_hold_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "item_hold_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 24,
+      "name": "manual_open",
+      "effect": "Manual book opens",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "manual_open_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "manual_open_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "manual_open_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 25,
+      "name": "manual_page",
+      "effect": "Manual page flip",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "manual_page_1.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "manual_page_2.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "manual_page_3.mp3",
+          "bytes": 15716
+        }
+      ]
+    },
+    {
+      "row": 26,
+      "name": "manual_close",
+      "effect": "Manual book closes",
+      "listed_seconds": 0.7,
+      "duration_seconds": 0.7,
+      "loop": false,
+      "files": [
+        {
+          "file": "manual_close_1.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "manual_close_2.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "manual_close_3.mp3",
+          "bytes": 18224
+        }
+      ]
+    },
+    {
+      "row": 27,
+      "name": "title_card",
+      "effect": "Level title card (`FLOOR_ENTERED`)",
+      "listed_seconds": 1.5,
+      "duration_seconds": 1.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "title_card_1.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "title_card_2.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "title_card_3.mp3",
+          "bytes": 37032
+        }
+      ]
+    },
+    {
+      "row": 28,
+      "name": "level_clear",
+      "effect": "Level cleared (`FLOOR_CLEARED`)",
+      "listed_seconds": 2.0,
+      "duration_seconds": 2.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "level_clear_1.mp3",
+          "bytes": 49571
+        },
+        {
+          "file": "level_clear_2.mp3",
+          "bytes": 49571
+        },
+        {
+          "file": "level_clear_3.mp3",
+          "bytes": 49571
+        }
+      ]
+    },
+    {
+      "row": 29,
+      "name": "rank_reveal",
+      "effect": "Game end rank reveal (S/A/B/C)",
+      "listed_seconds": 2.5,
+      "duration_seconds": 2.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "rank_reveal_1.mp3",
+          "bytes": 60856
+        },
+        {
+          "file": "rank_reveal_2.mp3",
+          "bytes": 60856
+        },
+        {
+          "file": "rank_reveal_3.mp3",
+          "bytes": 60856
+        }
+      ]
+    },
+    {
+      "row": 30,
+      "name": "restart_arm",
+      "effect": "`restart-level` confirm armed",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "restart_arm_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "restart_arm_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "restart_arm_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 31,
+      "name": "level_restart",
+      "effect": "Level restart",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "level_restart_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "level_restart_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "level_restart_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 32,
+      "name": "lightning",
+      "effect": "Lightning strike (opening and flashes)",
+      "listed_seconds": 1.5,
+      "duration_seconds": 1.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "lightning_1.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "lightning_2.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "lightning_3.mp3",
+          "bytes": 37032
+        }
+      ]
+    },
+    {
+      "row": 33,
+      "name": "thunder_close",
+      "effect": "Thunder, close",
+      "listed_seconds": 3.5,
+      "duration_seconds": 3.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "thunder_close_1.mp3",
+          "bytes": 85306
+        },
+        {
+          "file": "thunder_close_2.mp3",
+          "bytes": 85306
+        },
+        {
+          "file": "thunder_close_3.mp3",
+          "bytes": 85306
+        }
+      ]
+    },
+    {
+      "row": 34,
+      "name": "thunder_far",
+      "effect": "Thunder, distant",
+      "listed_seconds": 4.0,
+      "duration_seconds": 4.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "thunder_far_1.mp3",
+          "bytes": 97845
+        },
+        {
+          "file": "thunder_far_2.mp3",
+          "bytes": 97845
+        },
+        {
+          "file": "thunder_far_3.mp3",
+          "bytes": 97845
+        }
+      ]
+    },
+    {
+      "row": 35,
+      "name": "rain_loop",
+      "effect": "Rain loop (storm ambience)",
+      "listed_seconds": 10.0,
+      "duration_seconds": 10.0,
+      "loop": true,
+      "files": [
+        {
+          "file": "rain_loop_1.mp3",
+          "bytes": 241414
+        },
+        {
+          "file": "rain_loop_2.mp3",
+          "bytes": 241414
+        },
+        {
+          "file": "rain_loop_3.mp3",
+          "bytes": 241414
+        }
+      ]
+    },
+    {
+      "row": 36,
+      "name": "glass_burst",
+      "effect": "Glass burst",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "glass_burst_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "glass_burst_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "glass_burst_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 37,
+      "name": "teleport_zap",
+      "effect": "Teleport zap (pulled into the computer)",
+      "listed_seconds": 1.5,
+      "duration_seconds": 1.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "teleport_zap_1.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "teleport_zap_2.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "teleport_zap_3.mp3",
+          "bytes": 37032
+        }
+      ]
+    },
+    {
+      "row": 38,
+      "name": "shatter",
+      "effect": "Shatter (reality breaks)",
+      "listed_seconds": 1.5,
+      "duration_seconds": 1.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "shatter_1.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "shatter_2.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "shatter_3.mp3",
+          "bytes": 37032
+        }
+      ]
+    },
+    {
+      "row": 39,
+      "name": "hop",
+      "effect": "Hop / `cd` room transition (`ROOM_TRANSITION`, `hop`)",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "hop_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "hop_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "hop_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 40,
+      "name": "panels_smash",
+      "effect": "Upward panels smashed (`upwardPanelsSmashed`)",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "panels_smash_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "panels_smash_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "panels_smash_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 41,
+      "name": "symlink_loop",
+      "effect": "Symlink loop transition",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "symlink_loop_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "symlink_loop_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "symlink_loop_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 42,
+      "name": "page_turn",
+      "effect": "Comic page turn (`page`)",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "page_turn_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "page_turn_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "page_turn_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 43,
+      "name": "lantern_on",
+      "effect": "Lantern turns on (`LANTERN_REVEAL`)",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "lantern_on_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "lantern_on_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "lantern_on_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 44,
+      "name": "reveal",
+      "effect": "Reveal (`ls`, `ls -a`, hidden things appear)",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "reveal_1.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "reveal_2.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "reveal_3.mp3",
+          "bytes": 15716
+        }
+      ]
+    },
+    {
+      "row": 45,
+      "name": "gate_open",
+      "effect": "Gate opens (`gate`)",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "gate_open_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "gate_open_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "gate_open_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 46,
+      "name": "gate_locked",
+      "effect": "Gate locked / will not open",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "gate_locked_1.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "gate_locked_2.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "gate_locked_3.mp3",
+          "bytes": 15716
+        }
+      ]
+    },
+    {
+      "row": 47,
+      "name": "petrify",
+      "effect": "Petrify (`chmod -x`, `stone`)",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "petrify_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "petrify_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "petrify_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 48,
+      "name": "chmod",
+      "effect": "`chmod` permission change",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "chmod_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "chmod_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "chmod_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 49,
+      "name": "file_create",
+      "effect": "File created (`touch`, `FILE_CREATED`)",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "file_create_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "file_create_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "file_create_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 50,
+      "name": "file_remove",
+      "effect": "File removed (`rm`, `FILE_REMOVED`)",
+      "listed_seconds": 0.7,
+      "duration_seconds": 0.7,
+      "loop": false,
+      "files": [
+        {
+          "file": "file_remove_1.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "file_remove_2.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "file_remove_3.mp3",
+          "bytes": 18224
+        }
+      ]
+    },
+    {
+      "row": 51,
+      "name": "file_move",
+      "effect": "File moved (`mv`, `OBJECT_MOVED`)",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "file_move_1.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "file_move_2.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "file_move_3.mp3",
+          "bytes": 15716
+        }
+      ]
+    },
+    {
+      "row": 52,
+      "name": "crate_bridge",
+      "effect": "Crate forms a bridge (`formedBridge`)",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "crate_bridge_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "crate_bridge_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "crate_bridge_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 53,
+      "name": "null_suck",
+      "effect": "Sucked into `/dev/null`",
+      "listed_seconds": 1.5,
+      "duration_seconds": 1.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "null_suck_1.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "null_suck_2.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "null_suck_3.mp3",
+          "bytes": 37032
+        }
+      ]
+    },
+    {
+      "row": 54,
+      "name": "data_flood",
+      "effect": "Data flood (`flood`)",
+      "listed_seconds": 2.0,
+      "duration_seconds": 2.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "data_flood_1.mp3",
+          "bytes": 49571
+        },
+        {
+          "file": "data_flood_2.mp3",
+          "bytes": 49571
+        },
+        {
+          "file": "data_flood_3.mp3",
+          "bytes": 49571
+        }
+      ]
+    },
+    {
+      "row": 55,
+      "name": "xray_on",
+      "effect": "`ps` X-ray overlay on",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "xray_on_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "xray_on_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "xray_on_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 56,
+      "name": "xray_off",
+      "effect": "`ps` X-ray overlay off",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "xray_off_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "xray_off_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "xray_off_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 57,
+      "name": "hand_spawn",
+      "effect": "System Hand spawns",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "hand_spawn_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "hand_spawn_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "hand_spawn_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 58,
+      "name": "cron_restore",
+      "effect": "Cron restore (file respawns)",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "cron_restore_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "cron_restore_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "cron_restore_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 59,
+      "name": "puzzle_solved",
+      "effect": "Puzzle door solved (`PUZZLE_DOOR_RESOLVED`)",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "puzzle_solved_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "puzzle_solved_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "puzzle_solved_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 60,
+      "name": "socket_crackle",
+      "effect": "Talking socket crackle",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "socket_crackle_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "socket_crackle_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "socket_crackle_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 61,
+      "name": "door_usb",
+      "effect": "USB door opens",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "door_usb_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "door_usb_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "door_usb_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 62,
+      "name": "door_ethernet",
+      "effect": "Ethernet door opens",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "door_ethernet_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "door_ethernet_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "door_ethernet_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 63,
+      "name": "door_hdmi",
+      "effect": "HDMI door opens",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "door_hdmi_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "door_hdmi_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "door_hdmi_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 64,
+      "name": "door_serial",
+      "effect": "Serial port door opens",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "door_serial_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "door_serial_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "door_serial_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 65,
+      "name": "door_firewall",
+      "effect": "Firewall gate",
+      "listed_seconds": 1.5,
+      "duration_seconds": 1.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "door_firewall_1.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "door_firewall_2.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "door_firewall_3.mp3",
+          "bytes": 37032
+        }
+      ]
+    },
+    {
+      "row": 66,
+      "name": "door_loopback",
+      "effect": "Loopback mirror door",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "door_loopback_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "door_loopback_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "door_loopback_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 67,
+      "name": "door_null",
+      "effect": "`/dev/null` door",
+      "listed_seconds": 1.5,
+      "duration_seconds": 1.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "door_null_1.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "door_null_2.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "door_null_3.mp3",
+          "bytes": 37032
+        }
+      ]
+    },
+    {
+      "row": 68,
+      "name": "battle_start",
+      "effect": "Battle start stinger (`BATTLE_STARTED`)",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "battle_start_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "battle_start_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "battle_start_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 69,
+      "name": "fight",
+      "effect": "FIGHT! flash (`fx.fight`)",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "fight_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "fight_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "fight_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 70,
+      "name": "turn_player",
+      "effect": "Turn goes to player",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "turn_player_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "turn_player_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "turn_player_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 71,
+      "name": "turn_enemy",
+      "effect": "Turn goes to enemy",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "turn_enemy_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "turn_enemy_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "turn_enemy_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 72,
+      "name": "battle_won",
+      "effect": "Battle won / cleared (`BATTLE_ENDED` cleared)",
+      "listed_seconds": 1.5,
+      "duration_seconds": 1.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "battle_won_1.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "battle_won_2.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "battle_won_3.mp3",
+          "bytes": 37032
+        }
+      ]
+    },
+    {
+      "row": 73,
+      "name": "respawn",
+      "effect": "Player respawns from SSD backup (`PLAYER_RESPAWNED`)",
+      "listed_seconds": 1.5,
+      "duration_seconds": 1.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "respawn_1.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "respawn_2.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "respawn_3.mp3",
+          "bytes": 37032
+        }
+      ]
+    },
+    {
+      "row": 74,
+      "name": "atk_bug",
+      "effect": "Bug, \"nip\"",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "atk_bug_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "atk_bug_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "atk_bug_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 75,
+      "name": "atk_spyware",
+      "effect": "Spyware, \"flash\"",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "atk_spyware_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "atk_spyware_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "atk_spyware_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 76,
+      "name": "atk_rootkit",
+      "effect": "Rootkit, strike",
+      "listed_seconds": 0.7,
+      "duration_seconds": 0.7,
+      "loop": false,
+      "files": [
+        {
+          "file": "atk_rootkit_1.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "atk_rootkit_2.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "atk_rootkit_3.mp3",
+          "bytes": 18224
+        }
+      ]
+    },
+    {
+      "row": 77,
+      "name": "atk_worm",
+      "effect": "Worm, \"burrow strike\"",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "atk_worm_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "atk_worm_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "atk_worm_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 78,
+      "name": "atk_crack",
+      "effect": "Crack, strike",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "atk_crack_1.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "atk_crack_2.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "atk_crack_3.mp3",
+          "bytes": 15716
+        }
+      ]
+    },
+    {
+      "row": 79,
+      "name": "atk_trojan",
+      "effect": "Trojan, \"bite\"",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "atk_trojan_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "atk_trojan_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "atk_trojan_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 80,
+      "name": "atk_virus",
+      "effect": "Virus, \"spike burst\"",
+      "listed_seconds": 0.7,
+      "duration_seconds": 0.7,
+      "loop": false,
+      "files": [
+        {
+          "file": "atk_virus_1.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "atk_virus_2.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "atk_virus_3.mp3",
+          "bytes": 18224
+        }
+      ]
+    },
+    {
+      "row": 81,
+      "name": "atk_exploit",
+      "effect": "Exploit, \"overflow lunge\"",
+      "listed_seconds": 0.9,
+      "duration_seconds": 0.9,
+      "loop": false,
+      "files": [
+        {
+          "file": "atk_exploit_1.mp3",
+          "bytes": 22612
+        },
+        {
+          "file": "atk_exploit_2.mp3",
+          "bytes": 22612
+        },
+        {
+          "file": "atk_exploit_3.mp3",
+          "bytes": 22612
+        }
+      ]
+    },
+    {
+      "row": 82,
+      "name": "atk_ransomware",
+      "effect": "Ransomware, strike",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "atk_ransomware_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "atk_ransomware_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "atk_ransomware_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 83,
+      "name": "atk_zombie",
+      "effect": "Zombie process, \"swipe\"",
+      "listed_seconds": 0.7,
+      "duration_seconds": 0.7,
+      "loop": false,
+      "files": [
+        {
+          "file": "atk_zombie_1.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "atk_zombie_2.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "atk_zombie_3.mp3",
+          "bytes": 18224
+        }
+      ]
+    },
+    {
+      "row": 84,
+      "name": "boss_forkbomb",
+      "effect": "Fork bomb boss, fork",
+      "listed_seconds": 1.5,
+      "duration_seconds": 1.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "boss_forkbomb_1.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "boss_forkbomb_2.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "boss_forkbomb_3.mp3",
+          "bytes": 37032
+        }
+      ]
+    },
+    {
+      "row": 85,
+      "name": "boss_kernel_panic",
+      "effect": "Kernel panic boss, attack",
+      "listed_seconds": 1.8,
+      "duration_seconds": 1.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "boss_kernel_panic_1.mp3",
+          "bytes": 43928
+        },
+        {
+          "file": "boss_kernel_panic_2.mp3",
+          "bytes": 43928
+        },
+        {
+          "file": "boss_kernel_panic_3.mp3",
+          "bytes": 43928
+        }
+      ]
+    },
+    {
+      "row": 86,
+      "name": "enemy_tell",
+      "effect": "Enemy tell (wind-up before a hit)",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "enemy_tell_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "enemy_tell_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "enemy_tell_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 87,
+      "name": "enemy_miss",
+      "effect": "Enemy attack misses",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "enemy_miss_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "enemy_miss_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "enemy_miss_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 88,
+      "name": "enemy_spawn",
+      "effect": "Enemy spawn (`ENTITY_SPAWNED`)",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "enemy_spawn_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "enemy_spawn_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "enemy_spawn_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 89,
+      "name": "virus_split",
+      "effect": "Virus split (`virus_split`)",
+      "listed_seconds": 0.7,
+      "duration_seconds": 0.7,
+      "loop": false,
+      "files": [
+        {
+          "file": "virus_split_1.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "virus_split_2.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "virus_split_3.mp3",
+          "bytes": 18224
+        }
+      ]
+    },
+    {
+      "row": 90,
+      "name": "enemy_enraged",
+      "effect": "Enemy enraged",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "enemy_enraged_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "enemy_enraged_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "enemy_enraged_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 91,
+      "name": "player_hit",
+      "effect": "Player damaged (`PLAYER_DAMAGED`)",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "player_hit_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "player_hit_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "player_hit_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 92,
+      "name": "player_hit_heavy",
+      "effect": "Player heavy damage",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "player_hit_heavy_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "player_hit_heavy_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "player_hit_heavy_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 93,
+      "name": "low_hp_loop",
+      "effect": "Low HP warning (loop)",
+      "listed_seconds": 3.0,
+      "duration_seconds": 3.0,
+      "loop": true,
+      "files": [
+        {
+          "file": "low_hp_loop_1.mp3",
+          "bytes": 73394
+        },
+        {
+          "file": "low_hp_loop_2.mp3",
+          "bytes": 73394
+        },
+        {
+          "file": "low_hp_loop_3.mp3",
+          "bytes": 73394
+        }
+      ]
+    },
+    {
+      "row": 94,
+      "name": "hp_tier_drop",
+      "effect": "HP face tier drops",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "hp_tier_drop_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "hp_tier_drop_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "hp_tier_drop_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 95,
+      "name": "enemy_hit",
+      "effect": "Enemy hit (`ENEMY_HIT`)",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "enemy_hit_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "enemy_hit_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "enemy_hit_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 96,
+      "name": "kill",
+      "effect": "SIGKILL (`fx.sigkill`, `kill -9`)",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "kill_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "kill_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "kill_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 97,
+      "name": "sigterm",
+      "effect": "SIGTERM (`kill -15`)",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "sigterm_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "sigterm_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "sigterm_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 98,
+      "name": "sigstop",
+      "effect": "SIGSTOP freeze",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "sigstop_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "sigstop_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "sigstop_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 99,
+      "name": "sigcont",
+      "effect": "SIGCONT thaw",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "sigcont_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "sigcont_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "sigcont_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 100,
+      "name": "kill_rm",
+      "effect": "Enemy killed by `rm`",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "kill_rm_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "kill_rm_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "kill_rm_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 101,
+      "name": "kill_null",
+      "effect": "Enemy killed by `/dev/null`",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "kill_null_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "kill_null_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "kill_null_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 102,
+      "name": "core_dump",
+      "effect": "Core dump (`fx.coredump`)",
+      "listed_seconds": 1.5,
+      "duration_seconds": 1.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "core_dump_1.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "core_dump_2.mp3",
+          "bytes": 37032
+        },
+        {
+          "file": "core_dump_3.mp3",
+          "bytes": 37032
+        }
+      ]
+    },
+    {
+      "row": 103,
+      "name": "boss_defeated",
+      "effect": "Boss defeated",
+      "listed_seconds": 3.0,
+      "duration_seconds": 3.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "boss_defeated_1.mp3",
+          "bytes": 73394
+        },
+        {
+          "file": "boss_defeated_2.mp3",
+          "bytes": 73394
+        },
+        {
+          "file": "boss_defeated_3.mp3",
+          "bytes": 73394
+        }
+      ]
+    },
+    {
+      "row": 104,
+      "name": "pickup_energy",
+      "effect": "Energy pickup (`+25HP`)",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "pickup_energy_1.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "pickup_energy_2.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "pickup_energy_3.mp3",
+          "bytes": 15716
+        }
+      ]
+    },
+    {
+      "row": 105,
+      "name": "pickup_ram",
+      "effect": "RAM pickup (`+16GB RAM`)",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "pickup_ram_1.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "pickup_ram_2.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "pickup_ram_3.mp3",
+          "bytes": 15716
+        }
+      ]
+    },
+    {
+      "row": 106,
+      "name": "pickup_ssd",
+      "effect": "SSD pickup (`+256GB`)",
+      "listed_seconds": 0.7,
+      "duration_seconds": 0.7,
+      "loop": false,
+      "files": [
+        {
+          "file": "pickup_ssd_1.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "pickup_ssd_2.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "pickup_ssd_3.mp3",
+          "bytes": 18224
+        }
+      ]
+    },
+    {
+      "row": 107,
+      "name": "pickup_lantern",
+      "effect": "Lantern pickup",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "pickup_lantern_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "pickup_lantern_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "pickup_lantern_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 108,
+      "name": "pickup_hover",
+      "effect": "Item pickup bob (idle hover, optional)",
+      "listed_seconds": 2.0,
+      "duration_seconds": 2.0,
+      "loop": true,
+      "files": [
+        {
+          "file": "pickup_hover_1.mp3",
+          "bytes": 49571
+        },
+        {
+          "file": "pickup_hover_2.mp3",
+          "bytes": 49571
+        },
+        {
+          "file": "pickup_hover_3.mp3",
+          "bytes": 49571
+        }
+      ]
+    },
+    {
+      "row": 109,
+      "name": "hero_type",
+      "effect": "Vibecoder typing at his terminal (`VIBECODER_ACTION type`)",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "hero_type_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "hero_type_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "hero_type_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 110,
+      "name": "hero_cast",
+      "effect": "Cast at a target (`cast`)",
+      "listed_seconds": 0.7,
+      "duration_seconds": 0.7,
+      "loop": false,
+      "files": [
+        {
+          "file": "hero_cast_1.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "hero_cast_2.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "hero_cast_3.mp3",
+          "bytes": 18224
+        }
+      ]
+    },
+    {
+      "row": 111,
+      "name": "hero_collect",
+      "effect": "Collect action (`collect`)",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "hero_collect_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "hero_collect_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "hero_collect_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 112,
+      "name": "emote_shock",
+      "effect": "Shock emote",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "emote_shock_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "emote_shock_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "emote_shock_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 113,
+      "name": "emote_panic",
+      "effect": "Panic at low HP",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "emote_panic_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "emote_panic_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "emote_panic_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 114,
+      "name": "emote_relief",
+      "effect": "Relief emote",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "emote_relief_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "emote_relief_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "emote_relief_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 115,
+      "name": "emote_shout",
+      "effect": "Shout emote (big lettering with shake)",
+      "listed_seconds": 0.9,
+      "duration_seconds": 0.9,
+      "loop": false,
+      "files": [
+        {
+          "file": "emote_shout_1.mp3",
+          "bytes": 22612
+        },
+        {
+          "file": "emote_shout_2.mp3",
+          "bytes": 22612
+        },
+        {
+          "file": "emote_shout_3.mp3",
+          "bytes": 22612
+        }
+      ]
+    },
+    {
+      "row": 116,
+      "name": "kiro_scan",
+      "effect": "Kiro scan (`KIRO_ACTION scan`)",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_scan_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "kiro_scan_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "kiro_scan_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 117,
+      "name": "kiro_load",
+      "effect": "Kiro load (GGUF weight swap)",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_load_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "kiro_load_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "kiro_load_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 118,
+      "name": "kiro_crack_start",
+      "effect": "Kiro crack start",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_crack_start_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "kiro_crack_start_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "kiro_crack_start_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 119,
+      "name": "kiro_crack_step",
+      "effect": "Kiro crack step",
+      "listed_seconds": 0.3,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_crack_step_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "kiro_crack_step_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "kiro_crack_step_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 120,
+      "name": "kiro_crack_done",
+      "effect": "Kiro crack done",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_crack_done_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "kiro_crack_done_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "kiro_crack_done_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 121,
+      "name": "lap_open",
+      "effect": "Laptop lid opens",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_open_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "lap_open_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "lap_open_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 122,
+      "name": "lap_close",
+      "effect": "Laptop lid closes",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_close_1.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "lap_close_2.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "lap_close_3.mp3",
+          "bytes": 15716
+        }
+      ]
+    },
+    {
+      "row": 123,
+      "name": "lap_post_beep",
+      "effect": "Boot POST beep",
+      "listed_seconds": 0.3,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_post_beep_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_post_beep_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_post_beep_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 124,
+      "name": "lap_fan",
+      "effect": "Boot fan spin-up",
+      "listed_seconds": 3.0,
+      "duration_seconds": 3.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_fan_1.mp3",
+          "bytes": 73394
+        },
+        {
+          "file": "lap_fan_2.mp3",
+          "bytes": 73394
+        },
+        {
+          "file": "lap_fan_3.mp3",
+          "bytes": 73394
+        }
+      ]
+    },
+    {
+      "row": 125,
+      "name": "lap_disk",
+      "effect": "Disk chatter (boot)",
+      "listed_seconds": 2.0,
+      "duration_seconds": 2.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_disk_1.mp3",
+          "bytes": 49571
+        },
+        {
+          "file": "lap_disk_2.mp3",
+          "bytes": 49571
+        },
+        {
+          "file": "lap_disk_3.mp3",
+          "bytes": 49571
+        }
+      ]
+    },
+    {
+      "row": 126,
+      "name": "lap_ready",
+      "effect": "Desktop ready chime",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_ready_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "lap_ready_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "lap_ready_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 127,
+      "name": "lap_key_down",
+      "effect": "Laptop key down",
+      "listed_seconds": 0.1,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_key_down_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_key_down_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_key_down_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 128,
+      "name": "lap_key_up",
+      "effect": "Laptop key up",
+      "listed_seconds": 0.1,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_key_up_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_key_up_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_key_up_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 129,
+      "name": "lap_trackpad",
+      "effect": "Trackpad click",
+      "listed_seconds": 0.15,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_trackpad_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_trackpad_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_trackpad_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 130,
+      "name": "lap_win_open",
+      "effect": "Window opens",
+      "listed_seconds": 0.3,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_win_open_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_win_open_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_win_open_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 131,
+      "name": "lap_win_close",
+      "effect": "Window closes",
+      "listed_seconds": 0.3,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_win_close_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_win_close_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_win_close_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 132,
+      "name": "lap_run",
+      "effect": "Code run (JS Pad)",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_run_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_run_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "lap_run_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 133,
+      "name": "lap_check_pass",
+      "effect": "Task check passes",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_check_pass_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "lap_check_pass_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "lap_check_pass_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 134,
+      "name": "lap_check_fail",
+      "effect": "Task check fails",
+      "listed_seconds": 0.7,
+      "duration_seconds": 0.7,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_check_fail_1.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "lap_check_fail_2.mp3",
+          "bytes": 18224
+        },
+        {
+          "file": "lap_check_fail_3.mp3",
+          "bytes": 18224
+        }
+      ]
+    },
+    {
+      "row": 135,
+      "name": "lap_loop_guard",
+      "effect": "Infinite loop guard trips",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_loop_guard_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "lap_loop_guard_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "lap_loop_guard_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 136,
+      "name": "lap_shutdown",
+      "effect": "Laptop shuts down",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "lap_shutdown_1.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "lap_shutdown_2.mp3",
+          "bytes": 30136
+        },
+        {
+          "file": "lap_shutdown_3.mp3",
+          "bytes": 30136
+        }
+      ]
+    },
+    {
+      "row": 137,
+      "name": "cine_key_clatter",
+      "effect": "Key clatter (`key_clicks` beat)",
+      "listed_seconds": 2.0,
+      "duration_seconds": 2.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "cine_key_clatter_1.mp3",
+          "bytes": 49571
+        },
+        {
+          "file": "cine_key_clatter_2.mp3",
+          "bytes": 49571
+        },
+        {
+          "file": "cine_key_clatter_3.mp3",
+          "bytes": 49571
+        }
+      ]
+    },
+    {
+      "row": 138,
+      "name": "cine_panel_flash",
+      "effect": "Panel flash (`panel_flash`)",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "cine_panel_flash_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cine_panel_flash_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cine_panel_flash_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 139,
+      "name": "cine_glitch_text",
+      "effect": "Glitch text (`glitch_text`)",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "cine_glitch_text_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "cine_glitch_text_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "cine_glitch_text_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 140,
+      "name": "cine_pixelate",
+      "effect": "Pixelate transition (`pixelate`)",
+      "listed_seconds": 0.8,
+      "duration_seconds": 0.8,
+      "loop": false,
+      "files": [
+        {
+          "file": "cine_pixelate_1.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "cine_pixelate_2.mp3",
+          "bytes": 20732
+        },
+        {
+          "file": "cine_pixelate_3.mp3",
+          "bytes": 20732
+        }
+      ]
+    },
+    {
+      "row": 141,
+      "name": "cine_invert",
+      "effect": "Invert flash (`invert`)",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "cine_invert_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cine_invert_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cine_invert_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 142,
+      "name": "cine_shake",
+      "effect": "Camera shake rumble (`camera_shake`)",
+      "listed_seconds": 1.0,
+      "duration_seconds": 1.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "cine_shake_1.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "cine_shake_2.mp3",
+          "bytes": 25747
+        },
+        {
+          "file": "cine_shake_3.mp3",
+          "bytes": 25747
+        }
+      ]
+    },
+    {
+      "row": 143,
+      "name": "cine_sfx_slam",
+      "effect": "Comic SFX word slam (`sfx` lettering)",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "cine_sfx_slam_1.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "cine_sfx_slam_2.mp3",
+          "bytes": 15716
+        },
+        {
+          "file": "cine_sfx_slam_3.mp3",
+          "bytes": 15716
+        }
+      ]
+    },
+    {
+      "row": 144,
+      "name": "cine_caption_in",
+      "effect": "Banner / caption slide-in",
+      "listed_seconds": 0.4,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "cine_caption_in_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cine_caption_in_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cine_caption_in_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    },
+    {
+      "row": 145,
+      "name": "cine_bubble_pop",
+      "effect": "Speech bubble pop",
+      "listed_seconds": 0.3,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "cine_bubble_pop_1.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cine_bubble_pop_2.mp3",
+          "bytes": 13208
+        },
+        {
+          "file": "cine_bubble_pop_3.mp3",
+          "bytes": 13208
+        }
+      ]
+    }
+  ]
+}

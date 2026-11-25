@@ -1,0 +1,52 @@
+{
+  "name": "title_theme",
+  "listed_seconds": 48.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 48000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 48000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "80 BPM",
+          "A minor",
+          "4/4",
+          "early 1990s tracker style",
+          "sixteen-bar loop",
+          "soft pulse-wave lead",
+          "short FM bass line",
+          "paper-dry tick percussion",
+          "quiet triangle pad breathing every eight seconds",
+          "very quiet 60 Hz hum",
+          "light tape hiss",
+          "narrow stereo",
+          "dry close mix",
+          "bar 8 lead rises from C5 to G5 only",
+          "final bar mirrors the first bar for seamless looping",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "orchestra",
+          "brass fanfare",
+          "EDM drop",
+          "vocals",
+          "humming",
+          "choir",
+          "pitch wobble",
+          "thunder",
+          "rain",
+          "fade out",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer"
+        ],
+        "text": "[Main Loop]"
+      }
+    ]
+  }
+}

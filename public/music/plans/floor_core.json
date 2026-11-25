@@ -1,0 +1,93 @@
+{
+  "name": "floor_core",
+  "listed_seconds": 40.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 40000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "A minor",
+          "4/4 meter",
+          "early 1990s tracker aesthetic",
+          "three-channel chip arrangement",
+          "dry close-miked mono-like mix",
+          "narrow stereo image",
+          "sub-bass note on A once per bar",
+          "two high square-wave ticks as sparking accents",
+          "very quiet 60 Hz hum bed",
+          "dark pre-fight tension",
+          "loopable eight-bar phrase",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "explosions",
+          "thunder",
+          "alarm",
+          "choir",
+          "vocals",
+          "humming",
+          "fade-out",
+          "pitch wobble",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Opening Loop]"
+      },
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "A minor",
+          "4/4 meter",
+          "early 1990s tracker aesthetic",
+          "three-channel chip arrangement",
+          "dry close-miked mono-like mix",
+          "narrow stereo image",
+          "sub-bass note on A once per bar",
+          "two high square-wave ticks as sparking accents",
+          "very quiet 60 Hz hum bed",
+          "bar eight contains a barely audible C5 to G5 rise",
+          "ending figure matches the first bar for seamless looping",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "explosions",
+          "thunder",
+          "alarm",
+          "choir",
+          "vocals",
+          "humming",
+          "fade-out",
+          "pitch wobble",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Loop Return]"
+      }
+    ]
+  }
+}

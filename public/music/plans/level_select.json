@@ -1,0 +1,131 @@
+{
+  "name": "level_select",
+  "listed_seconds": 36.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 36000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 12000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "80 BPM",
+          "A minor",
+          "4/4",
+          "four-on-the-floorless tracker pulse",
+          "four-channel early 1990s game music",
+          "pulse-wave fifth walking figure on C5 to G5",
+          "soft square tick on each bar",
+          "dry close-mic'd mono-centered mix",
+          "very quiet 60 Hz hum bed",
+          "curious and restrained opening phrase",
+          "no drum kit",
+          "loopable four-bar structure",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "combat drums",
+          "fade out",
+          "vocals",
+          "choir",
+          "humming",
+          "pitch wobble",
+          "thunder",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Loop 1]"
+      },
+      {
+        "duration_ms": 12000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "80 BPM",
+          "A minor",
+          "4/4",
+          "repeating four-bar tracker pattern",
+          "pulse-wave fifth walking figure on C5 to G5",
+          "soft square tick on each bar",
+          "slightly denser countermotion in the lower channel",
+          "dry and narrow stereo field",
+          "close and understated chip textures",
+          "quiet 60 Hz hum bed",
+          "curious, not heroic",
+          "steady loop continuation",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "combat drums",
+          "fade out",
+          "vocals",
+          "choir",
+          "humming",
+          "pitch wobble",
+          "thunder",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Loop 2]"
+      },
+      {
+        "duration_ms": 12000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "80 BPM",
+          "A minor",
+          "4/4",
+          "final four-bar tracker phrase",
+          "pulse-wave fifth walking figure on C5 to G5",
+          "soft square tick on each bar",
+          "bar twelve mirrors bar one for seamless looping",
+          "dry close texture",
+          "narrow stereo image",
+          "very quiet 60 Hz hum bed",
+          "slightly brighter ending contour without resolve",
+          "clean restart point",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "combat drums",
+          "fade out",
+          "vocals",
+          "choir",
+          "humming",
+          "pitch wobble",
+          "thunder",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Loop 3]"
+      }
+    ]
+  }
+}

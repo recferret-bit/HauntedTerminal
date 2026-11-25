@@ -1,0 +1,107 @@
+{
+  "name": "cine_outro",
+  "listed_seconds": 10.0,
+  "loop": false,
+  "model": "music_v2_5",
+  "plan_ms": 11000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 5000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "early 1990s tracker style",
+          "four-on-the-floor implied by sequencing",
+          "square-wave lead sweep descending A5 to A3",
+          "A minor tonality",
+          "one-shot opening passage",
+          "dry close-miked synthesis",
+          "narrow stereo image",
+          "instrumental intro",
+          "clean sequencer precision",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "thunder sounds",
+          "brass fanfare",
+          "choir",
+          "vocals",
+          "humming",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain"
+        ],
+        "text": "[Opening Run]"
+      },
+      {
+        "duration_ms": 3000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "early 1990s tracker style",
+          "one-bar harmonic warm-up",
+          "soft pulse motif",
+          "rising fifth from C5 to G5",
+          "subtle pad bloom",
+          "dry and close production",
+          "narrow stereo image",
+          "instrumental middle phrase",
+          "intimate desk-side atmosphere",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "thunder sounds",
+          "brass fanfare",
+          "choir",
+          "vocals",
+          "humming",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain"
+        ],
+        "text": "[Warm Lantern Bar]"
+      },
+      {
+        "duration_ms": 3000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "final bar silence",
+          "complete stop",
+          "instrumental ending",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "thunder sounds",
+          "brass fanfare",
+          "choir",
+          "vocals",
+          "humming",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain"
+        ],
+        "text": "[Silence]"
+      }
+    ]
+  }
+}

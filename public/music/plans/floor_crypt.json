@@ -1,0 +1,89 @@
+{
+  "name": "floor_crypt",
+  "listed_seconds": 40.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 40000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "4/4 time",
+          "A minor",
+          "eight-bar tracker intro",
+          "muted square bass on the offbeat",
+          "slow monophonic lead line using the minor pentatonic scale",
+          "small metal latch tick as the hi-hat texture",
+          "dry close-mic mix",
+          "narrow stereo field",
+          "very quiet 60 Hz hum bed",
+          "tight five-channel chip-style arrangement",
+          "locked, watchful groove",
+          "full beat of rest at the end of every two-bar phrase",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "battle snare",
+          "siren",
+          "vocals",
+          "humming",
+          "choir",
+          "lyrics",
+          "fade-out",
+          "pitch wobble",
+          "thunder",
+          "singing",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "rain"
+        ],
+        "text": "[Main Loop]"
+      },
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "4/4 time",
+          "A minor",
+          "eight-bar tracker variation",
+          "muted square bass on the offbeat",
+          "slow monophonic lead line using the minor pentatonic scale",
+          "small metal latch tick as the hi-hat texture",
+          "dry close-mic mix",
+          "narrow stereo field",
+          "very quiet 60 Hz hum bed",
+          "tight five-channel chip-style arrangement",
+          "low, watchful reprise",
+          "return to the opening figure in the final bar for seamless looping",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "battle snare",
+          "siren",
+          "vocals",
+          "humming",
+          "choir",
+          "lyrics",
+          "fade-out",
+          "pitch wobble",
+          "thunder",
+          "singing",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "rain"
+        ],
+        "text": "[Loop Return]"
+      }
+    ]
+  }
+}

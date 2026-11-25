@@ -1,0 +1,87 @@
+{
+  "name": "comic_reader",
+  "listed_seconds": 48.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 48000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 24000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "80 BPM",
+          "A minor",
+          "4/4 tracker groove",
+          "sixteen-bar modular phrase",
+          "pulse-wave lead with rests at the end of each bar",
+          "quiet FM bass under the melody",
+          "narrow stereo image",
+          "dry close-mic'd production",
+          "very quiet 60 Hz hum",
+          "storytelling pace",
+          "one-time rising fifth figure from C5 to G5 in bar eight",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "vocals",
+          "humming",
+          "choir",
+          "paper rustle",
+          "pitch wobble",
+          "thunder",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Part A]"
+      },
+      {
+        "duration_ms": 24000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "80 BPM",
+          "A minor",
+          "4/4 tracker groove",
+          "closing eight bars with loop-ready phrasing",
+          "pulse-wave lead returning to the opening figure",
+          "quiet FM bass with steady low-end weight",
+          "narrow stereo image",
+          "dry close-mic'd production",
+          "very quiet 60 Hz hum",
+          "storytelling pace",
+          "last bar repeats the first-bar figure for seamless looping",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "vocals",
+          "humming",
+          "choir",
+          "paper rustle",
+          "pitch wobble",
+          "thunder",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Part B]"
+      }
+    ]
+  }
+}

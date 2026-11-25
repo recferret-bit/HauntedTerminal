@@ -1,0 +1,115 @@
+{
+  "name": "hub_matrix",
+  "listed_seconds": 60.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 60000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "A minor",
+          "4/4",
+          "early 1990s tracker style",
+          "five-channel chiptune arrangement",
+          "steady sixteenth-note triangle arpeggio",
+          "very quiet pulse-wave answer",
+          "dry close-mic feel",
+          "narrow stereo image",
+          "soft 60 Hz hum",
+          "light tape hiss",
+          "loopable eight-bar opening",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain"
+        ],
+        "text": "[Opening Loop]"
+      },
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "A minor",
+          "4/4",
+          "early 1990s tracker style",
+          "five-channel minimalist sequencing",
+          "steady sixteenth-note triangle arpeggio",
+          "calm pulse-wave answer",
+          "rising fifth motif C5 to G5",
+          "dry and intimate mix",
+          "narrow stereo image",
+          "soft 60 Hz hum",
+          "light tape hiss",
+          "focused middle variation",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain"
+        ],
+        "text": "[Reboot Passage]"
+      },
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "A minor",
+          "4/4",
+          "early 1990s tracker style",
+          "five-channel tracker texture",
+          "steady sixteenth-note triangle arpeggio",
+          "calm pulse-wave answer",
+          "final bar matches the first bar",
+          "dry close perspective",
+          "narrow stereo image",
+          "soft 60 Hz hum",
+          "light tape hiss",
+          "loop-ready closing figure",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain"
+        ],
+        "text": "[Return Loop]"
+      }
+    ]
+  }
+}

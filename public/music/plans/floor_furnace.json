@@ -1,0 +1,97 @@
+{
+  "name": "floor_furnace",
+  "listed_seconds": 40.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 40000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "A minor",
+          "4/4",
+          "8 bars",
+          "early 1990s tracker sequencing",
+          "five-channel arrangement",
+          "tight piston-like kick on every beat",
+          "warm pulse bass with short decay",
+          "gated triangle pad",
+          "dry close-mic texture",
+          "narrow stereo field",
+          "very quiet 60 Hz hum",
+          "rest at the end of each phrase",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "vocals",
+          "humming",
+          "choir",
+          "fire crackle",
+          "alarm",
+          "siren",
+          "pitch wobble",
+          "thunder",
+          "fade-out",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Loop A]"
+      },
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "A minor",
+          "4/4",
+          "8 bars",
+          "early 1990s tracker sequencing",
+          "five-channel arrangement",
+          "slightly denser variation of the core motif",
+          "warm pulse bass with a firmer accent pattern",
+          "gated triangle pad",
+          "dry close-mic texture",
+          "narrow stereo field",
+          "very quiet 60 Hz hum",
+          "final bar returns to the opening figure for seamless looping",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "vocals",
+          "humming",
+          "choir",
+          "fire crackle",
+          "alarm",
+          "siren",
+          "pitch wobble",
+          "thunder",
+          "fade-out",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Loop B]"
+      }
+    ]
+  }
+}

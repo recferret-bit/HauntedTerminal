@@ -1,0 +1,54 @@
+{
+  "name": "laptop_bed",
+  "listed_seconds": 20.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 20000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "A minor",
+          "4/4",
+          "eight-bar tracker loop",
+          "three-channel early 1990s chiptune arrangement",
+          "quiet triangle arpeggio with one-bar rests",
+          "short FM bass on beat one",
+          "dry tick percussion",
+          "soft C5 to G5 rise in bar four",
+          "narrow stereo image",
+          "dry close mix",
+          "very quiet 60 Hz hum",
+          "loop-ready ending matching the opening bar",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "fan whirr",
+          "hard-drive click",
+          "vocal",
+          "humming",
+          "choir",
+          "fade-out",
+          "pitch wobble",
+          "vocals",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Loop]"
+      }
+    ]
+  }
+}

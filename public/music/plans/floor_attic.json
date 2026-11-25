@@ -1,0 +1,81 @@
+{
+  "name": "floor_attic",
+  "listed_seconds": 40.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 40000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "A minor",
+          "4/4",
+          "early 1990s tracker arrangement",
+          "four-channel sequencing",
+          "sparse FM bass stabs on beat one",
+          "soft pulse note every other bar",
+          "quiet noise hat pattern",
+          "dry close-mic texture",
+          "narrow stereo field",
+          "very quiet 60 Hz hum",
+          "light tape hiss",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain"
+        ],
+        "text": "[Section 1]"
+      },
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "A minor",
+          "4/4",
+          "early 1990s tracker arrangement",
+          "four-channel sequencing",
+          "sparse FM bass stabs on beat one",
+          "soft pulse note every other bar",
+          "quiet noise hat pattern",
+          "single rising fifth motif from C5 to G5 in bar fourteen",
+          "dry close-mic texture",
+          "narrow stereo field",
+          "very quiet 60 Hz hum",
+          "light tape hiss",
+          "loopable ending returning to the opening figure",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain"
+        ],
+        "text": "[Section 2]"
+      }
+    ]
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "name": "battle_loop",
+  "listed_seconds": 40.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 40000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "144 BPM",
+          "A minor",
+          "4/4",
+          "six-channel tracker arrangement",
+          "dry square bass ostinato",
+          "paper-stamp snare on the backbeat",
+          "short pulse lead motif",
+          "tight two-bar phrasing with a one-beat rest at phrase end",
+          "narrow stereo field",
+          "dry close-miked mix",
+          "very quiet 60 Hz hum",
+          "loop-ready tracker texture",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "dubstep bass",
+          "screaming lead",
+          "continuous blast",
+          "orchestra hit",
+          "vocals",
+          "humming",
+          "choir",
+          "lyrics",
+          "fade-out",
+          "singing",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain"
+        ],
+        "text": "[Battle Grid]"
+      },
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "144 BPM",
+          "A minor",
+          "4/4",
+          "six-channel tracker arrangement",
+          "dry square bass variation",
+          "paper-stamp snare backbeat",
+          "short pulse lead answer phrase",
+          "readable turn-based tension",
+          "tight two-bar phrasing with a one-beat rest at phrase end",
+          "narrow stereo field",
+          "dry close-miked mix",
+          "very quiet 60 Hz hum",
+          "final bar mirrors the opening figure for seamless looping",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "dubstep bass",
+          "screaming lead",
+          "continuous blast",
+          "orchestra hit",
+          "vocals",
+          "humming",
+          "choir",
+          "lyrics",
+          "fade-out",
+          "singing",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain"
+        ],
+        "text": "[Command Reply]"
+      }
+    ]
+  }
+}

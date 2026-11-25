@@ -1,0 +1,50 @@
+{
+  "name": "sting_kiro",
+  "listed_seconds": 5.0,
+  "loop": false,
+  "model": "music_v2_5",
+  "plan_ms": 5000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 5000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "160 BPM",
+          "early 1990s tracker style",
+          "triangle wave lead",
+          "rising fifth motif from C5 to G5",
+          "gentle pitch wobble",
+          "faint two-note high sparkle",
+          "dry narrow stereo",
+          "very short tail on final note",
+          "calm and kind",
+          "instrumental opening phrase",
+          "instrumental only",
+          "silence",
+          "final decay",
+          "ending rest"
+        ],
+        "negative_styles": [
+          "vocals",
+          "singing",
+          "lyrics",
+          "choir",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser",
+          "pitch wobble"
+        ],
+        "text": "[Main Motif]"
+      }
+    ]
+  }
+}

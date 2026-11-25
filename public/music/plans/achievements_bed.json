@@ -1,0 +1,51 @@
+{
+  "name": "achievements_bed",
+  "listed_seconds": 20.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 20000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 20000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "96 BPM",
+          "early 1990s tracker sequencing",
+          "4/4 time",
+          "eight-bar loop form",
+          "soft lead synth melody",
+          "short FM bass notes",
+          "dry tick percussion",
+          "very quiet 60 Hz hum",
+          "narrow stereo image",
+          "dry close mix",
+          "loopable ending figure",
+          "modest upbeat mood",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "cymbal shower",
+          "fade-out",
+          "vocals",
+          "choir",
+          "pitch wobble",
+          "singing",
+          "lyrics",
+          "humming",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain",
+          "noise burst",
+          "bitcrush wash",
+          "smooth riser"
+        ],
+        "text": "[Main Loop]"
+      }
+    ]
+  }
+}

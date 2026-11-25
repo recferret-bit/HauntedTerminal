@@ -1,0 +1,125 @@
+{
+  "name": "battle_boss",
+  "listed_seconds": 40.0,
+  "loop": true,
+  "model": "music_v2_5",
+  "plan_ms": 40000,
+  "plan": {
+    "chunks": [
+      {
+        "duration_ms": 16000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "144 BPM",
+          "4/4",
+          "early 1990s tracker aesthetic",
+          "half-time kick pattern",
+          "low distorted FM bassline",
+          "bitcrushed square stab answering the lead on Bb",
+          "tight chiptune lead in A minor with flattened second color",
+          "dry close-mic feel",
+          "narrow stereo field",
+          "very quiet 60 Hz hum bed",
+          "instrumental boss battle energy",
+          "loop-friendly phrase ending with a one-beat rest",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "orchestra hit",
+          "choir",
+          "trailer impact",
+          "siren",
+          "fade-out",
+          "vocals",
+          "humming",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain"
+        ],
+        "text": "[Main Loop A]"
+      },
+      {
+        "duration_ms": 12000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "144 BPM",
+          "4/4",
+          "early 1990s tracker aesthetic",
+          "half-time kick with denser syncopation",
+          "low distorted FM bassline pushed harder",
+          "bitcrushed square stab on Bb as response figure",
+          "more aggressive A minor lead variation",
+          "dry and close percussion programming",
+          "narrow stereo field",
+          "very quiet 60 Hz hum bed",
+          "instrumental boss tension",
+          "same one-beat rest at phrase ends for typing space",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "orchestra hit",
+          "choir",
+          "trailer impact",
+          "siren",
+          "fade-out",
+          "vocals",
+          "humming",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain"
+        ],
+        "text": "[Escalation B]"
+      },
+      {
+        "duration_ms": 12000,
+        "context_adherence": "high",
+        "positive_styles": [
+          "144 BPM",
+          "4/4",
+          "early 1990s tracker aesthetic",
+          "half-time kick returning to the opening pattern",
+          "low distorted FM bassline",
+          "bitcrushed square stab answering the lead on Bb",
+          "opening motif restored exactly for seamless looping",
+          "dry close production",
+          "narrow stereo field",
+          "very quiet 60 Hz hum bed",
+          "instrumental boss battle cadence",
+          "final bar identical to the first bar for file loop",
+          "instrumental only"
+        ],
+        "negative_styles": [
+          "orchestra hit",
+          "choir",
+          "trailer impact",
+          "siren",
+          "fade-out",
+          "vocals",
+          "humming",
+          "singing",
+          "lyrics",
+          "whistling",
+          "spoken word",
+          "rap",
+          "orchestral trailer",
+          "EDM drop",
+          "thunder",
+          "rain"
+        ],
+        "text": "[Loop Return]"
+      }
+    ]
+  }
+}
