@@ -1,4 +1,5 @@
 import type { KernelEvent } from '../contracts/events.js';
+import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import { createBattle, type BattleHold, type BattleState } from '../game/battle.js';
 import type { WorldHost } from '../game/entities.js';
 import { starterInventory } from '../game/inventory.js';
@@ -80,6 +81,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   pendingEditor: EditorOpenPayload | null = null;
   pendingManual: string | null = null;
   pendingMap: string | null = null;
+  pendingSkin: TerminalSkinId | null = null;
   currentRedirectTarget = '';
   rt!: LevelRuntime;
 
@@ -155,6 +157,10 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
 
   consumeMapRequest(): string | null {
     return flow.consumeMapRequest(this);
+  }
+
+  consumeSkinRequest(): TerminalSkinId | null {
+    return flow.consumeSkinRequest(this);
   }
 
   getChecklist(): Array<{ description: string; done: boolean }> {

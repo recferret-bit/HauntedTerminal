@@ -1,0 +1,71 @@
+{
+  "id": "skin",
+  "title": "skin: list, switch, refuse",
+  "room": {
+    "roomKind": "lab_hall",
+    "floorTheme": 2,
+    "mechanic": "terminal",
+    "cwd": "/lab",
+    "title": "Skins",
+    "summary": "skin lists the terminal skins; skin <id> switches; an unknown id is refused."
+  },
+  "player": {
+    "ram": 0,
+    "ssd": 0,
+    "core": ""
+  },
+  "clock": "manual",
+  "enemyFire": "live",
+  "setup": [
+    {
+      "op": "file",
+      "path": "/lab/readme.txt",
+      "content": "skin lab\n"
+    }
+  ],
+  "steps": [
+    {
+      "op": "run",
+      "line": "skin",
+      "note": "A bare skin lists every id.",
+      "expect": {
+        "code": 0,
+        "stdout": "windows-terminal"
+      }
+    },
+    {
+      "op": "run",
+      "line": "skin putty",
+      "note": "A known id switches; the page applies it after the line.",
+      "expect": {
+        "code": 0,
+        "stdout": "Terminal skin: PuTTY."
+      }
+    },
+    {
+      "op": "run",
+      "line": "skin vt100",
+      "expect": {
+        "code": 0,
+        "stdout": "Terminal skin: VT100."
+      }
+    },
+    {
+      "op": "run",
+      "line": "skin nope",
+      "note": "An unknown id is refused with the valid ids and changes nothing.",
+      "expect": {
+        "code": 1,
+        "stdout": "unknown skin"
+      }
+    },
+    {
+      "op": "run",
+      "line": "man skin",
+      "expect": {
+        "code": 0,
+        "stdout": "skin <id>"
+      }
+    }
+  ]
+}

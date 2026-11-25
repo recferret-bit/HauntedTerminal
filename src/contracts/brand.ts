@@ -5,6 +5,8 @@ export const PROJECT_NAME_CAPS = 'OUT OF CREDITS';
 export const PROJECT_SLUG = 'out-of-credits';
 /** Sound preference (`{"muted":boolean,"volume":number}`). Spec: .kiro/specs/esc-menu-hud-rework/. */
 export const SOUND_PREF_KEY = `${PROJECT_SLUG}:sound:v1`;
+/** Terminal skin preference (a skin id as a JSON string). Spec: .kiro/specs/terminal-skins/. */
+export const TERMINAL_SKIN_KEY = `${PROJECT_SLUG}:terminal-skin:v1`;
 /** Prefix of the editor, lab and laptop keys: `credits.<area>.<key>`. */
 export const DEV_KEY_PREFIX = 'credits.';
 /** What the keys, save files and save `format` were called before the rename. Read only to migrate and import. */

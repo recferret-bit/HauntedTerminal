@@ -456,6 +456,7 @@ const CASES: Case[] = [
   { name: 'retry --yes', cmd: 'retry --yes', expect: 'Floor restarted' },
   { name: 'restart-level bad arg', cmd: 'restart-level now', expect: 'unknown argument' },
   { name: 'man restart-level', cmd: 'man restart-level', expect: '--yes' },
+  { name: 'skin switches', cmd: 'skin putty', expect: 'PuTTY' }, { name: 'skin refuses', cmd: 'skin nope', expect: 'unknown skin' },
   { name: 'status', cmd: 'status', expect: /HP 100\/100\s+RAM 0 GB\s+SSD 0 GB \(0 backups\)[\s\S]*malware left 3\/3/ },
   { name: 'whoami', cmd: 'whoami', expect: 'dev' },
   { name: 'inventory', cmd: 'inventory', expect: /\* lantern/ },
@@ -522,6 +523,7 @@ export function runCommandConformance(): string {
   complete('cd ../c', 'cd ../cellar_hatch/');
   complete('man vir', 'man virus ');
   complete('restart-l', 'restart-level ');
+  complete('skin pu', 'skin putty ');
   complete('ls -la; so', 'ls -la; source ');
   if (!tab.complete('cat ').matches.includes('todo.note') || tab.complete('cat ').matches.includes('cat')) failures.push('complete: argument position lists paths, not commands');
 

@@ -1,4 +1,5 @@
 import type { KernelEvent, PosixSignal } from '../contracts/events.js';
+import { TERMINAL_SKINS, isSkinId, skinById, type TerminalSkinId } from '../contracts/terminal-skins.js';
 import { SOURCE_MALWARE_DAMAGE } from './bestiary.js';
 import { SIGNAL_LIST } from './manual.js';
 import { SHELL_PID, empty, out, type Play } from './play.js';
@@ -247,4 +248,20 @@ export function decideRestart(pending: RestartPending | null, now: RestartNow, y
 
 export function armMessage(title: string): string {
   return `[RESTART] This reloads "${title}" and drops its progress. Run restart-level again, or restart-level --yes, to confirm.\n`;
+}
+
+/**
+ * `skin` / `skin <id>` (spec .kiro/specs/terminal-skins/). Pure and shared by both shells: it never touches the page.
+ * On success `request` is the skin id; the shell stores it and `src/play` applies it after the line (like `manual`).
+ */
+export function runSkin(args: string[]): { request: TerminalSkinId | null; step: Step } {
+  const list = TERMINAL_SKINS.map((s) => `  ${s.id.padEnd(18)}${s.label}`).join('\n');
+  if (args.length === 0) {
+    return { request: null, step: out(`Terminal skins (skin <id> switches; the Esc menu has the same list):\n${list}\n`) };
+  }
+  const want = args[0] ?? '';
+  if (args.length > 1 || !isSkinId(want)) {
+    return { request: null, step: empty(1, `skin: unknown skin '${args.join(' ')}'. Pick one of:\n${list}\n`) };
+  }
+  return { request: want, step: out(`Terminal skin: ${skinById(want).label}.\n`) };
 }

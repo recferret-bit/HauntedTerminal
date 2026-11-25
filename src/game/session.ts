@@ -3,7 +3,8 @@ import { AgentDirector } from './agents.js';
 import { PICKUP_INFO, type PickupType } from './bestiary.js';
 import { cmdChmod, cmdCp, cmdLn, cmdMv, cmdRm, cmdTouch, redirect } from './commands-fs.js';
 import { cmdCd, cmdFind, cmdLs, cmdReadlink } from './commands-move.js';
-import { cmdKill, cmdPkill, cmdPs, cmdSource, armMessage, decideRestart, parseRestartArgs, type RestartPending } from './commands-proc.js';
+import { cmdKill, cmdPkill, cmdPs, cmdSource, armMessage, decideRestart, parseRestartArgs, runSkin, type RestartPending } from './commands-proc.js';
+import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import { cmdCat, cmdCut, cmdEcho, cmdGrep, cmdHeadTail, cmdRev, cmdSed, cmdWc } from './commands-text.js';
 import { World, type WorldHost } from './entities.js';
 import { FLOOR_TITLES } from './floors.js';
@@ -51,6 +52,8 @@ export interface Session {
   consumeManualRequest?(): string | null;
   /** Consume a pending `map [level]` UI open request from the last command. */
   consumeMapRequest?(): string | null;
+  /** Consume a pending `skin <id>` request from the last command (the page applies it). */
+  consumeSkinRequest?(): TerminalSkinId | null;
   /** App bus. Pages subscribe; headless tests can read `recent()`. */
   readonly bus?: AppBus;
   readonly sfx?: Sfx;
@@ -82,6 +85,7 @@ class Game implements LabSession, Host {
   private lineArgs: string[][] = [];
   private pendingManual: string | null = null;
   private pendingMap: string | null = null;
+  private pendingSkin: TerminalSkinId | null = null;
   paused = false;
   pausedAt: number | null = null;
   readonly host: WorldHost = {
@@ -181,6 +185,10 @@ class Game implements LabSession, Host {
     const q = this.pendingMap;
     this.pendingMap = null;
     return q;
+  }
+
+  consumeSkinRequest(): TerminalSkinId | null {
+    const id = this.pendingSkin; this.pendingSkin = null; return id;
   }
 
   private quietSkip(): { text: string; events: KernelEvent[] } {
@@ -503,6 +511,7 @@ class Game implements LabSession, Host {
         this.pendingMap = m.query;
         return m.step;
       }
+      case 'skin': { const r = runSkin(args); if (r.request) this.pendingSkin = r.request; return r.step; }
       case 'status': return out(statusText(this));
       case 'tutorial': {
         if (args[0] === 'skip' || args[0] === 'off') {

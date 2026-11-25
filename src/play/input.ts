@@ -18,7 +18,7 @@ import { mountVisualLab } from '../ui/visual-lab.js';
 import { recordExec } from './lab.js';
 import { holdForComix, mountPlayAudio, syncPlayAudio } from './audio-sync.js';
 import { chapterBanner } from './boot.js';
-import { mountPlayMenu } from './menu.js';
+import { mountPlayMenu, setPlaySkin } from './menu.js';
 import { statsFrom } from './outro.js';
 import { FLOOR_NAMES, STORY, writeSkipPref, type PauseReason, type Play } from './state.js';
 
@@ -48,6 +48,8 @@ function runShellLine(play: Play, line: string): { output: string; clear?: boole
         play.session.bus?.emit({ kind: 'menu', action: 'open' });
       }
     }
+    const skinReq = session.consumeSkinRequest?.();
+    if (skinReq) setPlaySkin(play, skinReq);
     const manualReq = session.consumeManualRequest?.();
     if (manualReq !== null && manualReq !== undefined && !play.terminalLab) openManualModal(play, manualReq);
     const mapReq = session.consumeMapRequest?.();

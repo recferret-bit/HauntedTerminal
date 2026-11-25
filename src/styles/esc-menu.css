@@ -85,3 +85,27 @@
 .esc-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
 .esc-btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 .esc-btn.esc-danger { background: var(--fault); color: var(--paper); }
+
+/* Terminal skin picker (spec .kiro/specs/terminal-skins/), next to the Fullscreen toggle. */
+.esc-menu-display { gap: 8px; }
+.esc-skin-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+.esc-skin {
+  flex: 1;
+  padding: 3px 6px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+}
+.esc-skin:focus-visible { background: var(--yellow); outline: 2px solid var(--ink); outline-offset: 2px; }

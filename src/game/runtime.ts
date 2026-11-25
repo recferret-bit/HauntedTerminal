@@ -1,3 +1,4 @@
+import { SKIN_IDS } from '../contracts/terminal-skins.js';
 import type { KernelEvent } from '../contracts/events.js';
 import { BESTIARY, PICKUP_INFO, RAM_PER_STEP, SSD_PER_BACKUP, maxHpFor, type PickupType } from './bestiary.js';
 import { World, type KillHow, type Pickup } from './entities.js';
@@ -413,6 +414,9 @@ export function completions(g: Play, token: string, command: boolean, first: str
   }
   if (first === 'map' && !token.includes('/')) {
     return mapTopics(token, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']).sort();
+  }
+  if (first === 'skin' && !token.includes('/')) {
+    return SKIN_IDS.filter((name) => name.startsWith(token));
   }
   if (first === 'hold' && !token.includes('/')) {
     return g.run.inventory.items.filter((name) => name.startsWith(token)).sort();

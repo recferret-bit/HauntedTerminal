@@ -18,7 +18,7 @@ const GROUPS: Record<CommandGroup, readonly string[]> = {
   Fight: ['ps', 'top', 'kill', 'pkill'],
   'Loot & Ghost': ['source', '.', 'kiro'],
   Code: ['edit', 'nano', 'docker'],
-  'Help & game': ['help', 'man', 'manual', 'map', 'tutorial', 'clear', 'exit', 'logout', 'hank', 'grimoire', 'bestiary', 'workshop', 'achievements', 'restart-level', 'retry'],
+  'Help & game': ['help', 'man', 'manual', 'map', 'tutorial', 'clear', 'exit', 'logout', 'hank', 'grimoire', 'bestiary', 'workshop', 'achievements', 'restart-level', 'retry', 'skin'],
 };
 
 /** A line that runs when the command's Run button is clicked in the default lab room (it has `/lab/readme.txt`). */
@@ -30,7 +30,7 @@ const EXAMPLES: Record<string, string> = {
   kill: 'kill -l', pkill: 'pkill nothing', source: 'source readme.txt', '.': '. readme.txt', kiro: 'kiro', help: 'help', man: 'man ls', manual: 'manual chmod', map: 'map',
   status: 'status', whoami: 'whoami', inventory: 'inventory', inv: 'inv', hold: 'hold lantern', tutorial: 'tutorial', clear: 'clear', exit: 'exit', logout: 'logout', edit: 'edit readme.txt',
   nano: 'nano readme.txt', docker: 'docker images', hank: 'hank', grimoire: 'grimoire', bestiary: 'bestiary', workshop: 'workshop', achievements: 'achievements',
-  'restart-level': 'restart-level --yes', retry: 'restart-level --yes',
+  'restart-level': 'restart-level --yes', retry: 'restart-level --yes', skin: 'skin',
 };
 
 /** One-line usage for commands that have no `man` page of their own. */

@@ -20,9 +20,12 @@
  *   onFullscreen(): void     toggle full screen (`toggleFullscreen()`, spec .kiro/specs/fullscreen-mode/); the button
  *                            label follows `isFullscreen()` on the next `update`.
  *   isFullscreen(): boolean  the current full-screen state, read on every render while open.
+ *   onSkin(id): void         put terminal skin `id` on (spec .kiro/specs/terminal-skins/); the caller applies and saves it.
+ *   currentSkin(): id        the skin on screen, read on every render while open (a `skin <id>` command moves it too).
  * Return: `{ open(snap: GameSnapshot): void; close(): void; isOpen(): boolean; update(snap: GameSnapshot): void }`.
  * `update` is cheap and does nothing while closed; call it with every snapshot.
  */
+import { TERMINAL_SKINS, isSkinId, type TerminalSkinId } from '../contracts/terminal-skins.js';
 import type { GameSnapshot } from '../game/types.js';
 import { clampVolume } from './sound-pref.js';
 import { el } from './dom-lite.js';
@@ -38,6 +41,8 @@ export interface EscMenuHandlers {
   onLeave(): void;
   onFullscreen(): void;
   isFullscreen(): boolean;
+  onSkin(id: TerminalSkinId): void;
+  currentSkin(): TerminalSkinId;
 }
 
 export interface EscMenu {
@@ -86,6 +91,7 @@ interface Parts {
   volume: HTMLInputElement;
   volumeValue: HTMLElement;
   fullscreen: HTMLButtonElement;
+  skin: HTMLSelectElement;
   close: HTMLButtonElement;
   restart: HTMLButtonElement;
   restartConfirm: HTMLElement;
@@ -136,7 +142,16 @@ function build(): Parts {
   const sound = buildSoundSection();
   const fullscreen = button('esc-fullscreen', 'Fullscreen: off (F11)');
   fullscreen.setAttribute('aria-pressed', 'false');
-  const display = el('section', 'esc-menu-section esc-menu-display', [fullscreen]);
+  const skin = el('select', 'esc-skin');
+  skin.id = 'esc-skin';
+  skin.setAttribute('aria-label', 'Terminal skin');
+  for (const s of TERMINAL_SKINS) {
+    const opt = el('option', '', [s.label]);
+    opt.value = s.id;
+    skin.appendChild(opt);
+  }
+  const skinRow = el('label', 'esc-skin-row', ['Terminal skin', skin]);
+  const display = el('section', 'esc-menu-section esc-menu-display', [fullscreen, skinRow]);
   const title = el('h2', 'esc-menu-title', ['MENU']);
   title.id = 'esc-menu-title';
   const close = button('esc-close', 'Back to game (Esc)');
@@ -163,8 +178,8 @@ function build(): Parts {
   backdrop.setAttribute('aria-hidden', 'true');
   restartConfirm.hidden = true;
   leaveConfirm.hidden = true;
-  const controls = [sound.mute, sound.volume, fullscreen, restart, restartYes, restartNo, leave, leaveYes, leaveNo, close];
-  return { backdrop, card, ...level, ...sound, fullscreen, close, restart, restartConfirm, restartYes, restartNo, leave, leaveConfirm, leaveYes, leaveNo, controls };
+  const controls = [sound.mute, sound.volume, fullscreen, skin, restart, restartYes, restartNo, leave, leaveYes, leaveNo, close];
+  return { backdrop, card, ...level, ...sound, fullscreen, skin, close, restart, restartConfirm, restartYes, restartNo, leave, leaveConfirm, leaveYes, leaveNo, controls };
 }
 
 /** A description may carry its own `[ ] ` / `[x] ` marker; the CSS `::before` of `.esc-check` draws the only one. */
@@ -226,6 +241,10 @@ function wireControls(p: Parts, handlers: EscMenuHandlers, close: () => void): v
     handlers.onFullscreen();
     handlers.onMove?.();
   };
+  p.skin.addEventListener('change', () => {
+    if (isSkinId(p.skin.value)) handlers.onSkin(p.skin.value);
+    handlers.onMove?.();
+  });
   p.mute.onclick = () => {
     const nowMuted = p.mute.getAttribute('aria-pressed') !== 'true';
     setText(p.mute, nowMuted ? 'Sound: muted' : 'Sound: on');
@@ -289,6 +308,8 @@ export function mountEscMenu(host: HTMLElement, handlers: EscMenuHandlers): EscM
     if (!open) return;
     renderSnapshot(p, snap);
     renderFullscreen(p, handlers.isFullscreen());
+    const id = handlers.currentSkin();
+    if (p.skin.value !== id) p.skin.value = id;
   };
   const strayFocus = (ev: Event): void => {
     if (!open || inside(p.card, ev.target as Node | null)) return;

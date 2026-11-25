@@ -1,3 +1,4 @@
+import { DEFAULT_SKIN, type TerminalSkinId } from '../contracts/terminal-skins.js';
 import type { LabConfig } from '../chapters/session-lab-types.js';
 import type { ExecRecord } from '../contracts/exec-record.js';
 import type { KernelEvent } from '../contracts/events.js';
@@ -118,6 +119,10 @@ export class Play {
   eventLog: KernelEvent[] = [];
   /** The lab's config in a Terminal Lab game (`?lab=1` on a draft), else null. */
   terminalLab: LabConfig | null = null;
+  /** A chapter editor preview (`?draft=1` or `?preview=1`): it records nothing, not even the terminal skin. */
+  preview = false;
+  /** The terminal skin on screen (spec .kiro/specs/terminal-skins/). */
+  skin: TerminalSkinId = DEFAULT_SKIN;
   /** Lab games only: the newest lines the terminal ran with what the session answered (capped), and how many ran in all. */
   execLog: ExecRecord[] = [];
   execCount = 0;

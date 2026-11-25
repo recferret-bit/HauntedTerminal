@@ -92,7 +92,7 @@ function fakeDom() {
 }
 
 const MENU_ACTIONS = fc.oneof(
-  fc.constantFrom('open', 'close', 'typeOutside', 'escapeOutside', 'tab', 'shiftTab', 'mute', 'restartStart', 'restartNo', 'restartYes', 'leaveStart', 'leaveNo', 'leaveYes', 'focusTerm', 'update', 'fullscreen'),
+  fc.constantFrom('open', 'close', 'typeOutside', 'escapeOutside', 'tab', 'shiftTab', 'mute', 'restartStart', 'restartNo', 'restartYes', 'leaveStart', 'leaveNo', 'leaveYes', 'focusTerm', 'update', 'fullscreen', 'skin'),
   fc.integer({ min: 0, max: 100 }),
 );
 
@@ -114,7 +114,10 @@ function playMenu(actions, { mountEscMenu, LEAVE_CONFIRM_TEXT, onRestart }) {
     term.focus();
     const calls = { mute: 0, restart: 0, leave: 0, volume: [], fullscreen: 0 };
     let fullOn = false;
+    let skinOn = 'iterm2';
     const menu = mountEscMenu(host, {
+      onSkin: (id) => { calls.skin = (calls.skin ?? 0) + 1; skinOn = id; },
+      currentSkin: () => skinOn,
       onFullscreen: () => { calls.fullscreen += 1; fullOn = !fullOn; },
       isFullscreen: () => fullOn,
       onMute: () => { calls.mute += 1; },
@@ -166,6 +169,18 @@ function playMenu(actions, { mountEscMenu, LEAVE_CONFIRM_TEXT, onRestart }) {
           const b = dom.find('esc-fullscreen');
           expect(b.getAttribute('aria-pressed') === String(fullOn) && b.textContent.includes(fullOn ? 'on' : 'off'), 'the Fullscreen toggle does not show the state');
         }
+      } else if (a === 'skin') {
+        if (m.open) {
+          const picker = dom.find('esc-skin');
+          const next = skinOn === 'putty' ? 'vt100' : 'putty';
+          picker.value = next;
+          dom.fire(picker, { type: 'change' });
+          m.skin = (m.skin ?? 0) + 1;
+          expect(skinOn === next, `the skin picker did not hand ${next} to onSkin`);
+          skinOn = 'gnome-terminal';
+          menu.update(menuSnap(3));
+          expect(picker.value === 'gnome-terminal', 'the picker does not follow currentSkin() on update (a `skin <id>` command)');
+        }
       } else if (a === 'restartStart') {
         if (m.open && !m.restart) { click('esc-restart'); m.restart = true; m.leave = false; expect(dom.doc.activeElement === dom.find('esc-restart-no'), 'restart step 2 did not focus Cancel'); }
       } else if (a === 'restartNo') {
@@ -204,6 +219,7 @@ function playMenu(actions, { mountEscMenu, LEAVE_CONFIRM_TEXT, onRestart }) {
     }
     expect(typed.length === m.typed, `terminal got ${typed.length} keys, want ${m.typed}`);
     expect(calls.fullscreen === (m.fullscreen ?? 0), 'Fullscreen toggle clicks and handler calls differ');
+    expect((calls.skin ?? 0) === (m.skin ?? 0), 'skin picker changes and onSkin calls differ');
     expect(calls.mute === m.mute && calls.restart === m.restartCalls && calls.leave === m.leaveCalls, 'handler call counts differ from the confirmed actions');
     return calls.restart;
   } finally {
@@ -318,6 +334,8 @@ export default async function terminalSuite({ load }) {
 
   const { mountEscMenu, LEAVE_CONFIRM_TEXT } = await load('/src/ui/esc-menu.ts');
   const { readSoundPref, writeSoundPref } = await load('/src/ui/sound-pref.ts');
+  const { readSkinPref, writeSkinPref, defaultSkinFor, initialSkin } = await load('/src/ui/terminal-skin.ts');
+  const { SKIN_IDS } = await load('/src/contracts/terminal-skins.ts');
   const brand = await load('/src/contracts/brand.ts');
   const { renamedKey } = await load('/src/contracts/legacy-keys.ts');
 
@@ -527,6 +545,45 @@ export default async function terminalSuite({ load }) {
         const old = `${brand.LEGACY_SLUG}:sound:v1`;
         expect(renamedKey(old) === brand.SOUND_PREF_KEY, `${old} migrates to ${renamedKey(old)}`);
       },
+    },
+    {
+      name: '`skin <id>` switches for every skin id and hands the id to the page once; anything else exits 1 and asks for nothing (both shells)',
+      examples: [['chapter', 'putty'], ['classic', 'vt100'], ['chapter', 'nope'], ['classic', 'iterm2 extra'], ['chapter', '']],
+      build: () =>
+        fc.property(shellKind, fc.oneof(fc.constantFrom(...SKIN_IDS), fc.stringMatching(/^[a-z0-9-]{0,12}( [a-z]{1,4})?$/)), (kind, word) => {
+          const session = room(kind);
+          const r = session.exec(word ? `skin ${word}` : 'skin');
+          const ok = SKIN_IDS.includes(word);
+          if (ok) {
+            expect(r.code === 0 && /Terminal skin: /.test(r.output), `${kind}: skin ${word} gave ${JSON.stringify(r.output)} code ${r.code}`);
+            expect(session.consumeSkinRequest() === word && session.consumeSkinRequest() === null, `${kind}: skin ${word} did not hand the id over exactly once`);
+          } else if (!word) {
+            expect(r.code === 0 && SKIN_IDS.every((id) => r.output.includes(id)), `${kind}: bare skin did not list every id`);
+            expect(session.consumeSkinRequest() === null, `${kind}: bare skin asked the page to switch`);
+          } else {
+            expect(r.code === 1 && /unknown skin/.test(r.output) && SKIN_IDS.every((id) => r.output.includes(id)), `${kind}: skin ${word} gave ${JSON.stringify(r.output)} code ${r.code}`);
+            expect(session.consumeSkinRequest() === null, `${kind}: a refused skin asked the page to switch`);
+          }
+        }),
+    },
+    {
+      name: 'skin pref: every id round-trips under `<slug>:terminal-skin:v1`; junk or a throwing store reads null; the default follows the OS',
+      examples: [['putty', '{"x":1}'], ['vt100', '"putty2"'], ['iterm2', 'not json']],
+      build: () =>
+        fc.property(fc.constantFrom(...SKIN_IDS), fc.oneof(fc.string(), fc.json()), (id, junk) => {
+          const kept = new Map();
+          const store = { getItem: (k) => kept.get(k) ?? null, setItem: (k, v) => void kept.set(k, v) };
+          expect(writeSkinPref(id, store) && kept.size === 1 && kept.has(brand.TERMINAL_SKIN_KEY), 'write did not store one entry under TERMINAL_SKIN_KEY');
+          expect(readSkinPref(store) === id && initialSkin(store, 'Windows') === id, 'a saved skin did not win over the OS default');
+          const r = readSkinPref({ getItem: () => junk, setItem: () => {} });
+          expect(r === null || SKIN_IDS.includes(r), `junk ${JSON.stringify(junk)} read as ${JSON.stringify(r)}`);
+          const bad = { getItem: () => { throw new Error('blocked'); }, setItem: () => { throw new Error('full'); } };
+          expect(readSkinPref(bad) === null && writeSkinPref(id, bad) === false && readSkinPref(null) === null, 'a broken store did not degrade quietly');
+          expect(brand.TERMINAL_SKIN_KEY === `${brand.PROJECT_SLUG}:terminal-skin:v1`, `key is ${brand.TERMINAL_SKIN_KEY}`);
+          const empty = { getItem: () => null, setItem: () => {} };
+          expect(initialSkin(empty, 'MacIntel') === 'iterm2' && initialSkin(empty, 'Win32') === 'windows-terminal'
+            && initialSkin(empty, 'Linux x86_64') === 'gnome-terminal' && defaultSkinFor('') === 'iterm2', 'the OS default is wrong');
+        }),
     },
     {
       name: '`searchManual` never throws on arbitrary queries/filters and returns bounded page indices',
