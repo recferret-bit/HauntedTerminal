@@ -34,6 +34,7 @@ export function applyInitialLoadout(g: ChapterState, startIdx: number): void {
     }
     // A grant that gives the lantern also puts it in his hand.
     if (hasItem(g.inventory, 'lantern')) g.inventory = holdItem(g.inventory, 'lantern');
+    else if (g.inventory.held === null && hasItem(g.inventory, 'terminal')) g.inventory = holdItem(g.inventory, 'terminal');
     if (core) g.kiro.loadCore(core);
 
     g.ram = bonusRam;

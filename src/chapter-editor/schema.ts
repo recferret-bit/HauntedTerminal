@@ -23,7 +23,7 @@ export { b, n, opt, sel, t, type ArrayItem, type Field, type Option, type Sugges
 
 export const AGENTS = ['kiro', 'clod', 'gork', 'codec', 'antigravy'] as const;
 export const MOODS = ['laugh', 'order', 'smug', 'annoyed'] as const;
-const EMOTES = ['shock', 'confused', 'determined', 'relief', 'panic'] as const;
+const EMOTES = ['shock', 'confused', 'determined', 'relief', 'panic', 'shout'] as const;
 const KIRO_ACTIONS = ['scan', 'load', 'crack_start', 'crack_step', 'crack_done'] as const;
 
 // ---- conditions and script steps ---------------------------------------------------------------------------------
@@ -78,6 +78,8 @@ export const STEP_VARIANTS = (): Variants<ScriptStep['kind']> => ({
     t('banner', 'Terminal banner'),
   ],
   tutorial_step: [n('step', 'Tutorial step (1-based)')],
+  carry_item: [t('entityId', 'Carrier (kiro or a spawned entity id)'), sel('item', 'Item', ITEM_IDS)],
+  give_item: [sel('item', 'Item', ITEM_IDS), opt(t('from', 'Giver (kiro or a spawned entity id)'))],
   dialog_box: [
     sel('speaker', 'Speaker', ['vibecoder', ...AGENTS]),
     t('text', 'Line', { rows: TEXT_ROWS }),

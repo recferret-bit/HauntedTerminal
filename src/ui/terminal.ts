@@ -67,7 +67,7 @@ function openTerm(host: HTMLElement): { term: Terminal; fitAddon: FitAddon } {
   return { term, fitAddon };
 }
 
-function shellApi(st: LineState, fitAddon: FitAddon): Shell {
+function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: { available: boolean }): Shell {
   return {
     term: st.term,
     submit: (line: string) => enqueue(st, line),
@@ -142,6 +142,23 @@ function shellApi(st: LineState, fitAddon: FitAddon): Shell {
         fitAddon.fit();
       } catch { /* host hidden */ }
     },
+    setAvailable(on: boolean) {
+      if (on === gate.available) return;
+      gate.available = on;
+      panel.classList.toggle('tty-unavailable', !on);
+      if (!on) {
+        st.term.blur();
+        return;
+      }
+      panel.classList.remove('tty-popin');
+      void panel.offsetWidth;
+      panel.classList.add('tty-popin');
+      try { fitAddon.fit(); } catch { /* host hidden */ }
+      st.term.focus();
+    },
+    get available() {
+      return gate.available;
+    },
     focus: () => st.term.focus(),
     blur: () => st.term.blur(),
   };
@@ -150,9 +167,10 @@ function shellApi(st: LineState, fitAddon: FitAddon): Shell {
 export function mountShell(host: HTMLElement, hooks: ShellHooks): Shell {
   const { term, fitAddon } = openTerm(host);
   const st = createLineState(term, hooks);
+  const gate = { available: true };
   term.onData((data) => {
-    if (st.blocked) return;
+    if (st.blocked || !gate.available) return;
     handleKey(st, data);
   });
-  return shellApi(st, fitAddon);
+  return shellApi(st, fitAddon, host.closest<HTMLElement>('#terminal-bezel') ?? host, gate);
 }

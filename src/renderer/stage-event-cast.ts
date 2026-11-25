@@ -4,7 +4,9 @@ import type { FxCue } from './event-fx.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
 import { setRest } from './stage-actor.js';
 import { clearBubble, playCues, playFx, say } from './stage-fx.js';
-import { claim, flashActor, heroAction, heroEmote, heroFlinch, hopInPlace, owns, playEntrance, playHand, playSpawn, release } from './stage-motion.js';
+import { claim, flashActor, heroAction, heroFlinch, hopInPlace, owns, playEntrance, playHand, playSpawn, release } from './stage-motion.js';
+import { heroEmote } from './stage-emote.js';
+import { itemCarried, itemGiven } from './stage-carry.js';
 import { anchorPoint, findByKey, firstOfKind } from './stage-resolve.js';
 import { syncOverlays } from './stage-sync.js';
 import { stepped } from './tween.js';
@@ -47,6 +49,12 @@ export function handleCastEvent(stage: ComicStage, ev: KernelEvent, subject: Sta
       return true;
     case 'VIBECODER_EMOTE':
       onEmote(stage, ev);
+      return true;
+    case 'ITEM_CARRIED':
+      itemCarried(stage, ev);
+      return true;
+    case 'ITEM_GIVEN':
+      itemGiven(stage, ev);
       return true;
     default:
       return false;

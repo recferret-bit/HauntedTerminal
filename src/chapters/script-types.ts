@@ -41,7 +41,7 @@ export type ScriptCond =
 /** One beat of an arrival / reaction script. Steps run in order; `print` text goes to the terminal. */
 export type ScriptStep =
   | { kind: 'print'; text: string }
-  | { kind: 'emote'; emote: 'shock' | 'confused' | 'determined' | 'relief' | 'panic'; text?: string }
+  | { kind: 'emote'; emote: 'shock' | 'confused' | 'determined' | 'relief' | 'panic' | 'shout'; text?: string }
   | { kind: 'spawn'; entityId: string; model: string; /** How the stage brings it in (default `appear`). */ entrance?: 'appear' | 'glide' }
   | { kind: 'kiro_action'; action: 'scan' | 'load' | 'crack_start' | 'crack_step' | 'crack_done'; core: string; message: string }
   | { kind: 'say'; agent: ScriptAgent; model: string; text: string; mood: ScriptMood; print?: string }
@@ -61,7 +61,11 @@ export type ScriptStep =
   /** One line in the dialog box in the screen corner, with the speaker's avatar. `speaker` is `vibecoder` or a `ScriptAgent`; it also prints to the terminal. */
   | { kind: 'dialog_box'; speaker: DialogSpeaker; text: string; holdSec?: number }
   /** Show tutorial card `step` (1-based) of `script.tutorial`. */
-  | { kind: 'tutorial_step'; step: number };
+  | { kind: 'tutorial_step'; step: number }
+  /** An actor (`kiro` or a spawned entity) picks `item` up and flies it to the hero. Stage only: the inventory does not change. */
+  | { kind: 'carry_item'; entityId: string; item: ItemId }
+  /** The hero receives `item` (added to the inventory, held when his hands are empty), flown in by `from`. */
+  | { kind: 'give_item'; item: ItemId; from?: string };
 
 export interface TutorialStepSpec {
   prompt: string;

@@ -3,7 +3,7 @@ import { el, replayClass, type DrawPortrait } from './dom-lite.js';
 
 export interface ItemsStrip {
   /** Redraw from `snapshot.inventory`: dim what he does not carry, highlight the held one. */
-  update(inventory: { items: readonly ItemId[]; held: ItemId }): void;
+  update(inventory: { items: readonly ItemId[]; held: ItemId | null }): void;
   /** Short pop on a slot (a pickup). */
   pop(item: ItemId): void;
 }

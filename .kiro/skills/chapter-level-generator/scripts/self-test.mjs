@@ -135,14 +135,11 @@ await withProcgen(async (_p, vite) => {
   );
   assert.equal(kiroRealtime.snapshot().enemiesLeft, 0, 'At Level 1 spawn, HUD enemiesLeft must be 0');
   const arrival = kiroRealtime.arriveLevel();
-  // Level 1 opens in the dark: no lantern in the pocket, the terminal in his hand, the monologue on the clock.
+  // Level 1 opens in the dark: no lantern in the pocket, empty hands and no terminal (Kiro brings it at 25 s), the monologue on the clock.
   assert.ok(arrival.output.includes('pitch black'), 'Level 1 must open in the dark');
   assert.ok(arrival.events.some((e) => e.type === 'VIBECODER_EMOTE' && e.emote === 'shock'));
   assert.equal(arrival.snapshot.room.dark, true, 'Without the lantern the room is dark');
-  assert.deepEqual(arrival.snapshot.inventory, { items: ['terminal', 'manual'], held: 'terminal' }, 'He starts with the terminal and manual');
-  assert.equal(arrival.snapshot.tutorial?.agent, 'kiro');
-  assert.equal(arrival.snapshot.tutorial?.step, 1);
-  assert.equal(arrival.snapshot.tutorial?.command, 'mv lantern ~');
+  assert.deepEqual(arrival.snapshot.inventory, { items: ['manual'], held: null }, 'He starts with the manual only and empty hands');
   const isBox = (e, speaker) => e.type === 'DIALOG_BOX' && e.speaker === speaker;
   const timeline = [];
   const kiroSeen = [];
@@ -232,11 +229,11 @@ await withProcgen(async (_p, vite) => {
   assert.ok(early.exec('mv lantern ~').output.includes('[COLLECTED]'));
   for (let t = 0; t < 19; t++) earlyEvents.push(...early.tick().events);
   assert.ok(earlyEvents.some((e) => isBox(e, 'kiro')), 'Kiro still arrives when the lantern was taken early');
-  assert.equal(earlyEvents.filter((e) => isBox(e, 'kiro')).length, 1, 'Kiro does not repeat the lantern reminders once it is taken');
+  assert.equal(earlyEvents.filter((e) => isBox(e, 'kiro')).length, 2, 'Kiro says only his arrival and delivery lines, no lantern reminders once it is taken');
   assert.equal(earlyEvents.some((e) => e.type === 'TUTORIAL_STEP' && e.step === 1 && !e.done), false, 'No stale step-1 card after the lantern');
   assert.equal(earlyEvents.some((e) => isBox(e, 'vibecoder') && /No lantern/.test(e.text)), false, 'He does not say he has no lantern after taking it');
   const restarted = early.restartFloor();
-  assert.deepEqual(restarted.snapshot.inventory, { items: ['terminal', 'manual'], held: 'terminal' }, 'A floor restart puts the dark start back');
+  assert.deepEqual(restarted.snapshot.inventory, { items: ['manual'], held: null }, 'A floor restart puts the dark start back (empty hands, no terminal)');
   assert.equal(restarted.snapshot.room.dark, true);
   assert.ok(early.exec('ls').output.includes('too dark'), 'ls is locked again after the restart');
 

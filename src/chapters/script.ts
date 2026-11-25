@@ -1,6 +1,6 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { dialogueEvent } from '../game/dialogue.js';
-import { heroModel } from '../game/inventory.js';
+import { giveItem, heroModel, holdItem, ITEMS } from '../game/inventory.js';
 import { lookup, type VNode } from '../game/tree.js';
 import type { TutorialState } from '../game/types.js';
 import { resolveTauntAgent, type ChapterState } from './session-state.js';
@@ -62,6 +62,8 @@ export interface StepEnv {
   vars?: Record<string, string>;
   /** Avatar of the vibecoder in a `dialog_box` (the hero model for what he holds). */
   heroModel?: string;
+  /** For `give_item`: whether the hero took the item in hand (the interpreter sets it; the editor preview assumes true). */
+  itemHeld?: boolean;
 }
 
 /** The events and terminal text of one step. Pure: no game state, so the editor can play a single step. */
@@ -117,6 +119,10 @@ export function stepOutput(s: ScriptStep, env: StepEnv): { events: KernelEvent[]
     }
     case 'tutorial_step':
       return tutorialCard(env.tutorial, s.step, false);
+    case 'carry_item':
+      return { events: [{ type: 'ITEM_CARRIED', entityId: s.entityId, item: s.item, model: ITEMS[s.item].model }], print: '' };
+    case 'give_item':
+      return { events: [{ type: 'ITEM_GIVEN', item: s.item, model: ITEMS[s.item].model, from: s.from, held: env.itemHeld ?? true }], print: '' };
   }
 }
 
@@ -149,6 +155,13 @@ export function runSteps(g: ChapterState, steps: ScriptStep[], events: KernelEve
   };
   let out = '';
   for (const s of steps) {
+    if (s.kind === 'give_item') {
+      const wasEmpty = g.inventory.held === null;
+      g.inventory = giveItem(g.inventory, s.item);
+      if (wasEmpty) g.inventory = holdItem(g.inventory, s.item);
+      env.itemHeld = wasEmpty;
+      env.heroModel = heroModel(g.inventory.held);
+    }
     const r = stepOutput(s, env);
     if (s.kind === 'spawn') g.rt.spawned.add(s.entityId);
     events.push(...r.events);

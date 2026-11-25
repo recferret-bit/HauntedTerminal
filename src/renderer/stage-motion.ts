@@ -89,99 +89,6 @@ export function flashActor(stage: ComicStage, a: StageActor, hex: number, ms: nu
   });
 }
 
-/**
- * Hero acting for VIBECODER_EMOTE, all short (under a second) and additive on `offset` / the body group,
- * so they never fight a walk: shock (jumps back, eyes-wide stretch, ?! and sweat), confused (head
- * tilt, ???), determined (wind-up lean), relief (sag and PHEW), panic (shaking, sweat, AAAH).
- */
-export function heroEmote(stage: ComicStage, hero: StageActor, emote: string, text?: string): void {
-  const head = () => actorSocket(hero, 'fx').add(new THREE.Vector3(0, 0.55, 0));
-  const word = (fallback: string, color: string, big = false) => say(stage, text?.trim() || fallback, head(), color, 0.35, big ? 1.5 : 1);
-  const body = hero.body;
-  const base = body.scale.x;
-  switch (emote) {
-    case 'shock':
-      hero.animator.setState('hit');
-      word('?!', '#ffd166', true);
-      sweat(stage, hero, 3);
-      stage.tweens.add(520, (t) => {
-        if (hero.disposed) return;
-        const k = stepped(t, 6);
-        hero.offset.x = 0.32 * (t < 0.5 ? stepped(t / 0.5, 3) : 1 - stepped((t - 0.5) / 0.5, 3));
-        hero.offset.y = Math.sin(Math.min(1, k * 1.6) * Math.PI) * 0.26;
-        // Eyes-wide beat: a two-pose stretch.
-        body.scale.set(base * (k < 0.34 ? 0.94 : 1), base * (k < 0.34 ? 1.12 : 1), base);
-      }, () => {
-        if (hero.disposed) return;
-        hero.offset.set(0, 0, 0);
-        body.scale.setScalar(base);
-      });
-      break;
-    case 'confused':
-      word('???', '#4cc9f0', true);
-      stage.tweens.add(700, (t) => {
-        if (!hero.disposed) body.rotation.z = (Math.floor(t * 6) % 2 ? 0.07 : -0.05);
-      }, () => {
-        if (!hero.disposed) body.rotation.z = 0;
-      });
-      break;
-    case 'determined':
-      hero.animator.setState('windup');
-      word('LET\'S GO.', '#ffd166');
-      stage.tweens.add(420, (t) => {
-        if (!hero.disposed) body.rotation.z = t < 0.7 ? -0.08 : 0;
-      }, () => {
-        if (hero.disposed) return;
-        body.rotation.z = 0;
-        setRest(hero);
-      });
-      break;
-    case 'relief':
-      word('PHEW...', '#06d6a0');
-      stage.tweens.add(600, (t) => {
-        if (!hero.disposed) body.scale.set(base * (t < 0.6 ? 1.04 : 1), base * (t < 0.6 ? 0.92 : 1), base);
-      }, () => {
-        if (!hero.disposed) body.scale.setScalar(base);
-      });
-      break;
-    case 'panic':
-      hero.animator.setState('hit');
-      word('AAAH!', '#ef476f', true);
-      sweat(stage, hero, 4);
-      stage.tweens.add(720, (t) => {
-        if (!hero.disposed) hero.offset.x = (Math.floor(t * 18) % 2 ? 0.05 : -0.05) * (1 - t * 0.5);
-      }, () => {
-        if (!hero.disposed) hero.offset.x = 0;
-      });
-      break;
-    default:
-      break;
-  }
-}
-
-/** Sweat drops flung off the hero's head in stepped arcs. */
-function sweat(stage: ComicStage, hero: StageActor, n: number): void {
-  const from = actorSocket(hero, 'fx').add(new THREE.Vector3(0, 0.6, -0.7));
-  for (let i = 0; i < n; i++) {
-    const mat = new THREE.SpriteMaterial({ map: dropTexture(), transparent: true, depthTest: false, toneMapped: false });
-    const drop = new THREE.Sprite(mat);
-    drop.scale.set(0.13, 0.17, 1);
-    drop.renderOrder = 6;
-    drop.position.copy(from);
-    stage.fx.add(drop);
-    const dir = (i % 2 ? 1 : -1) * (0.35 + 0.15 * i);
-    stage.tweens.add(520, (t) => {
-      const k = stepped(t, 5);
-      drop.position.set(from.x + dir * k, from.y + Math.sin(k * Math.PI) * 0.35 - k * 0.25, from.z);
-      mat.opacity = t > 0.7 ? 0.5 : 1;
-    }, () => {
-      drop.removeFromParent();
-      mat.map?.dispose();
-      mat.dispose();
-    });
-  }
-}
-
 /** The hero acts out the command: walks (stepped) up to the target, strikes / reaches, walks back. */
 export function heroAction(stage: ComicStage, hero: StageActor, action: string, targetId?: string): void {
   const target = targetId ? stage.actors.get(targetId) : undefined;
@@ -460,17 +367,71 @@ export function playEntrance(stage: ComicStage, a: StageActor, reason: string, e
   const g = claim(a);
   const fromX = Math.min(stage.panelRight - 0.45, a.home.x - 1.2);
   a.awaitingSpawn = false;
-  a.base.x = fromX;
+  a.base.set(fromX, a.home.y + 0.9, a.home.z);
   a.animator.setState('walk');
-  stage.tweens.add(1400, (t) => {
-    if (owns(a, g)) a.base.x = fromX + (a.home.x - fromX) * stepped(t, 11);
+  flyTo(stage, a, a.home.clone(), 1500, () => setRest(a), g);
+}
+
+/** Natural facing of every model: screen-right (-x). A negative `scale.x` on the body mirrors it to face screen-left (+x). */
+function faceDir(a: StageActor, dir: number): void {
+  if (dir !== 0) a.body.scale.x = Math.abs(a.body.scale.x) * (dir > 0 ? -1 : 1);
+}
+
+/** Turn to look at the hero (the way he is from here); keeps the facing when there is no hero. */
+export function faceHeroNow(stage: ComicStage, a: StageActor): void {
+  const hero = stage.hero();
+  if (hero && hero !== a) faceDir(a, Math.sign(hero.base.x - a.base.x));
+}
+
+const FLY_FPS = 8;
+
+/**
+ * Flight: a quadratic Bezier arc from where `a` is to `to` (the control point sits above the midpoint and
+ * pulled back, so the path swoops and settles), eased in and out, sampled at 8 fps through `stepped` like
+ * every comic motion. A small bob rides on top, the body leans into the flight and mirrors to face the way
+ * it travels (models face screen-right at rest), then turns to the hero on arrival. It takes the actor's
+ * motion (`claim`), or continues claim `gen` when the caller already holds it, and lets go on arrival
+ * unless `hold` (a hovering carrier keeps the claim). A newer motion on the actor cancels it quietly.
+ */
+export function flyTo(stage: ComicStage, a: StageActor, to: THREE.Vector3, ms: number, then?: () => void, gen?: number, hold = false): void {
+  if (a.disposed) return;
+  const g = gen ?? claim(a);
+  const from = a.base.clone();
+  const dx = to.x - from.x;
+  const dir = Math.sign(dx);
+  faceDir(a, dir);
+  const run = Math.hypot(dx, to.y - from.y);
+  const lift = Math.min(1.5, 0.5 + run * 0.28);
+  const ctrl = new THREE.Vector3((from.x + to.x) / 2 - dir * Math.min(0.5, run * 0.18), Math.max(from.y, to.y) + lift, (from.z + to.z) / 2);
+  const frames = Math.max(2, Math.round((ms / 1000) * FLY_FPS));
+  const baseScale = Math.abs(a.body.scale.x);
+  stage.tweens.add(ms, (t) => {
+    if (!owns(a, g)) return;
+    const s = stepped(t, frames);
+    const k = s * s * (3 - 2 * s);
+    const u = 1 - k;
+    a.base.set(
+      u * u * from.x + 2 * u * k * ctrl.x + k * k * to.x,
+      u * u * from.y + 2 * u * k * ctrl.y + k * k * to.y,
+      u * u * from.z + 2 * u * k * ctrl.z + k * k * to.z,
+    );
+    const frame = Math.floor(t * frames);
+    const mid = Math.sin(s * Math.PI);
+    a.offset.y = s >= 1 ? 0 : (frame % 2 ? 0.045 : -0.02) * (0.4 + mid);
+    a.body.rotation.z = -dir * 0.16 * mid;
+    a.body.scale.y = baseScale * (1 + 0.04 * mid);
   }, () => {
     if (!owns(a, g)) return;
-    a.base.x = a.home.x;
-    release(a, g);
-    setRest(a);
+    a.base.copy(to);
+    a.offset.y = 0;
+    a.body.rotation.z = 0;
+    a.body.scale.y = baseScale;
+    faceHeroNow(stage, a);
+    if (!hold) release(a, g);
+    then?.();
   });
 }
+
 
 /** Spawn performance: the System Hand draws it in (fork / cron / split), or it materialises (script / touch). */
 export function playSpawn(stage: ComicStage, a: StageActor, reason: string): void {
@@ -532,27 +493,4 @@ export function playHand(stage: ComicStage, spawned: StageActor | null, at: THRE
       disposeModel(hand.model);
     });
   });
-}
-
-/** A sweat drop (emote art, stays in the canvas): cyan teardrop with an ink outline. */
-function dropTexture(): THREE.CanvasTexture {
-  const c = document.createElement('canvas');
-  c.width = 48;
-  c.height = 64;
-  const ctx = c.getContext('2d');
-  if (ctx) {
-    ctx.beginPath();
-    ctx.moveTo(24, 4);
-    ctx.quadraticCurveTo(44, 36, 40, 46);
-    ctx.arc(24, 44, 16, 0, Math.PI);
-    ctx.quadraticCurveTo(4, 36, 24, 4);
-    ctx.fillStyle = '#9be7ff';
-    ctx.fill();
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = '#110e1b';
-    ctx.stroke();
-  }
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
 }

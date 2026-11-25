@@ -11,12 +11,13 @@ import {
   animateParts, kitDisc, kitPlate, offsetParts, outlineEllipse, outlineRoundRect, outlineStroke, outlineSymmetric,
   outlineTransform, prefixParts, SCREEN_LEFT, SCREEN_RIGHT,
 } from '../kit/greebles.js';
-import { ITEMS } from '../../contracts/inventory.js';
+import { BARE_HERO_MODEL, ITEMS } from '../../contracts/inventory.js';
 import { ITEM_BUILDERS } from './items.js';
 
 // ---------------------------------------------------------------- vibecoder.dev
 
-function buildDev(id: string, label: string, item: ModelSpec): ModelSpec {
+/** `item` null: empty hands, the right hand open and held out (`vibecoder.dev_bare`). */
+function buildDev(id: string, label: string, item: ModelSpec | null): ModelSpec {
   const parts: PartSpec[] = [];
   const HIP_Y = 0.62;
   const SHOULDER_Y = 1.04;
@@ -55,7 +56,7 @@ function buildDev(id: string, label: string, item: ModelSpec): ModelSpec {
   const hold: AnimTag = { type: 'armSwing', axis: 'x', amp: 0.08, phase: 0.5, pivot: [0.28 * R, SHOULDER_Y, 0] };
   const armPath: Vec2[] = [[0.2 * R, 1.01], [0.36 * R, 0.93], [0.52 * R, 0.9]];
   const hand = kitDisc('hand.r', 0.075, 0.14, 'skin', [0.55 * R, 0.9, -0.08], { anim: hold });
-  const held = holdItem(item, [0.57 * R, 0.84, -0.07], hand, hold);
+  const held = item ? holdItem(item, [0.57 * R, 0.84, -0.07], hand, hold) : { parts: openHand(hand, hold), sockets: {} };
   parts.push(kitPlate('arm.r', outlineStroke(armPath, 0.15), 0.17, 'hoodie', [0, 0, -0.05], { bevel: 0.02, anim: hold }), ...held.parts);
 
   // Head: the hood is up, so the head silhouette is the hood and the face sits inside it.
@@ -93,6 +94,24 @@ function holdItem(item: ModelSpec, anchor: Vec3, hand: PartSpec, anim: AnimTag):
     parts: [...moved.filter(isHandle), hand, ...moved.filter((p) => !isHandle(p))],
     sockets: light ? { lantern: [light[0] + by[0], light[1] + by[1], light[2] + by[2]] } : {},
   };
+}
+
+/**
+ * The empty right hand: the palm disc plus three fanned fingers reaching out (toward screen-right) and a
+ * thumb, all moving with the holding arm. Where the handed item will land: the `hand` socket stays on the palm.
+ */
+function openHand(palm: PartSpec, anim: AnimTag): PartSpec[] {
+  const R = SCREEN_RIGHT;
+  const [px, py, pz] = palm.pos;
+  const finger = (name: string, dy: number, rot: number, len: number): PartSpec =>
+    kitPlate(name, outlineRoundRect(len, 0.058, 0.025, 2), 0.1, 'skin', [px + (0.04 + len / 2) * R, py + dy, pz], { rot: [0, 0, rot * R], bevel: 0.01, anim });
+  return [
+    palm,
+    finger('finger.up', 0.05, -0.28, 0.15),
+    finger('finger.mid', 0.0, 0, 0.17),
+    finger('finger.low', -0.05, 0.28, 0.14),
+    kitPlate('thumb.r', outlineRoundRect(0.06, 0.12, 0.028, 2), 0.1, 'skin', [px + 0.01 * R, py + 0.09, pz], { rot: [0, 0, 0.3 * R], bevel: 0.01, anim }),
+  ];
 }
 
 // ---------------------------------------------------------------- vibecoder.hand
@@ -139,6 +158,14 @@ for (const def of Object.values(ITEMS)) {
     build: (seed) => buildDev(def.heroModel, def.heroLabel, ITEM_BUILDERS[def.id](seed)),
   });
 }
+
+ModelCatalog.register({
+  id: BARE_HERO_MODEL,
+  category: 'vibecoder',
+  label: 'The developer (bare hands)',
+  lore: 'The developer with nothing in his hands: his right hand open and held out. He has lost his terminal in the dark and waits to be handed something.',
+  build: () => buildDev(BARE_HERO_MODEL, 'The developer (bare hands)', null),
+});
 
 ModelCatalog.register({
   id: 'vibecoder.hand', category: 'vibecoder', label: 'The System Hand', gameKey: 'system_hand',

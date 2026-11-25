@@ -142,6 +142,11 @@ export function allEvents(): KernelEvent[] {
     { type: 'VIBECODER_EMOTE', emote: 'determined' },
     { type: 'VIBECODER_EMOTE', emote: 'relief', text: 'PHEW.' },
     { type: 'VIBECODER_EMOTE', emote: 'panic' },
+    // The tutorial hand-over: the shout, then a ghost carries the terminal and gives it (twice: with and without a carrier).
+    { type: 'VIBECODER_EMOTE', emote: 'shout', text: 'HELLOOOO??' },
+    { type: 'ITEM_CARRIED', entityId: 'socket', item: 'terminal', model: 'item.terminal' },
+    { type: 'ITEM_GIVEN', item: 'terminal', model: 'item.terminal', from: 'socket', held: true },
+    { type: 'ITEM_GIVEN', item: 'terminal', model: 'item.terminal', held: true },
   ];
 }
 
@@ -173,6 +178,11 @@ function bogusEvents(): KernelEvent[] {
     { type: 'TUTORIAL_STEP', step: NaN, total: undefined, prompt: null, command: undefined, agent: 'nobody', done: false },
     { type: 'TUTORIAL_STEP', step: 9, total: 5, prompt: 'done twice', command: 'ls', agent: 'gork', done: true },
     { type: 'VIBECODER_EMOTE', emote: 'yodel' },
+    { type: 'ITEM_CARRIED', entityId: 'nobody', item: 'terminal', model: 'item.terminal' },
+    { type: 'ITEM_CARRIED', entityId: 'socket', item: 'terminal', model: 'not.a.model' },
+    { type: 'ITEM_GIVEN', item: 'terminal', model: 'item.terminal', from: 'nobody', held: false },
+    { type: 'ITEM_GIVEN' },
+    { type: 'VIBECODER_EMOTE', emote: 'shout' },
     { type: 'VIBECODER_EMOTE' },
   ];
   return junk as KernelEvent[];

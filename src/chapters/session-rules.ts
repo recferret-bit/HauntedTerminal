@@ -192,6 +192,14 @@ export function playEventsSfx(g: ChapterState, events: KernelEvent[]): void {
         g.sfx.play(ev.action === 'crack_done' || ev.action === 'scan' ? 'reveal' : 'hop');
         return;
       }
+      if (ev.type === 'VIBECODER_EMOTE' && ev.emote === 'shout') {
+        g.sfx.play('lightning');
+        return;
+      }
+      if (ev.type === 'ITEM_GIVEN') {
+        g.sfx.play('reveal');
+        return;
+      }
       if (ev.type === 'PICKUP_COLLECTED') {
         g.sfx.play('hop');
         return;

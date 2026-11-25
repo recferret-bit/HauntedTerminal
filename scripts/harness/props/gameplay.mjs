@@ -149,7 +149,7 @@ export default async function gameplaySuite(ctx) {
             else if (op === 'hold' && inv.isItemId(id)) state = inv.holdItem(state, id);
             else if (op === 'cmd') state = inv.inventoryCommand(state, 'hold', id ? [id] : []).inv;
             expect(state.items.every((i) => given.has(i)) && new Set(state.items).size === state.items.length, `items ${state.items} after ${op} ${id}`);
-            expect(state.items.includes(state.held), `holds ${state.held}, owns ${state.items}`);
+            expect(state.held === null || state.items.includes(state.held), `holds ${state.held}, owns ${state.items}`);
             if (!before.items.includes(id)) expect(state.held === before.held, `hold ${JSON.stringify(id)} changed the held item without owning it`);
           }
         }),
@@ -159,7 +159,8 @@ export default async function gameplaySuite(ctx) {
       build: () =>
         fc.property(deepPlay, ([levelIdx, steps]) =>
           watch(levelIdx, steps, (s, _b, _r, step) => {
-            expect(s.inventory.items.includes(s.inventory.held), `holds ${s.inventory.held}, owns ${s.inventory.items} after ${JSON.stringify(step)}`);
+            const h = s.inventory.held;
+            expect(h === null || s.inventory.items.includes(h), `holds ${h}, owns ${s.inventory.items} after ${JSON.stringify(step)}`);
           }),
         ),
     },
@@ -266,7 +267,9 @@ export default async function gameplaySuite(ctx) {
             });
             const { items, held } = session.snapshot().inventory;
             expect(new Set(items).size === items.length, `an item is in the inventory twice: ${JSON.stringify(items)} (startItems ${JSON.stringify(startItems)}, grants ${JSON.stringify(grants)})`);
-            expect(items.includes(held), `holds ${held}, owns ${JSON.stringify(items)}`);
+            expect(held === null || items.includes(held), `holds ${held}, owns ${JSON.stringify(items)}`);
+            const wantHeld = items.includes('lantern') ? 'lantern' : items.includes('terminal') ? 'terminal' : null;
+            expect(held === wantHeld, `holds ${held}, expected ${wantHeld} from ${JSON.stringify(items)}`);
             for (const id of startItems ?? []) expect(items.includes(id), `startItems ${id} is missing from ${JSON.stringify(items)}`);
             const allowed = new Set([...(startItems ?? inv.starterInventory().items), ...grants.flatMap((g) => g.items ?? [])]);
             expect(items.every((i) => allowed.has(i)), `an item nobody named appeared: ${JSON.stringify(items)}`);
@@ -292,8 +295,30 @@ export default async function gameplaySuite(ctx) {
         fc.property(fc.integer({ min: 1, max: world.levels.length - 1 }), (levelIdx) => {
           const { items, held } = world.open(levelIdx).snapshot().inventory;
           expect(items.includes('lantern') && held === 'lantern', `a jump to level ${levelIdx + 1} holds ${held} and owns ${JSON.stringify(items)}`);
+          expect(items.includes('terminal'), `a jump to level ${levelIdx + 1} does not carry the terminal: ${JSON.stringify(items)}`);
           expect(items.filter((i) => i === 'lantern').length === 1, `the lantern is in the inventory ${items.filter((i) => i === 'lantern').length} times`);
         }),
+    },
+    {
+      // Spec: .kiro/specs/tutorial-kiro-delivers-terminal/. Level 1 starts with empty hands; Kiro carries the terminal in.
+      name: 'level 1 without commands: shout, Kiro spawns, carries the terminal, gives it (held), and the inventory then holds it',
+      check: () => {
+        const session = world.open(0);
+        const start = session.snapshot().inventory;
+        expect(start.held === null && !start.items.includes('terminal'), `level 1 starts with held ${start.held}, items ${JSON.stringify(start.items)}`);
+        const seq = [];
+        for (let i = 0; i < 26; i++) {
+          for (const e of session.tick().events) {
+            if (e.type === 'VIBECODER_EMOTE' && e.emote === 'shout') seq.push('shout');
+            else if (e.type === 'ENTITY_SPAWNED' && e.entityId === 'kiro') seq.push('spawn');
+            else if (e.type === 'ITEM_CARRIED' && e.item === 'terminal') seq.push('carried');
+            else if (e.type === 'ITEM_GIVEN' && e.item === 'terminal' && e.held === true) seq.push('given');
+          }
+        }
+        expect(seq.join() === 'shout,spawn,carried,given', `event order ${seq.join()}`);
+        const end = session.snapshot().inventory;
+        expect(end.held === 'terminal' && end.items.includes('terminal'), `after 26 s he holds ${end.held}, owns ${JSON.stringify(end.items)}`);
+      },
     },
     {
       name: 'every non-empty terminal command in play emits a VIBECODER_ACTION event',

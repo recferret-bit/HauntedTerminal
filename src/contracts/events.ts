@@ -1,3 +1,5 @@
+import type { ItemId } from './inventory.js';
+
 export type InodeId = number;
 export type PosixSignal = 'SIGTERM' | 'SIGKILL' | 'SIGSTOP' | 'SIGCONT';
 export type ProcState = 'RUNNING' | 'STOPPED' | 'ZOMBIE' | 'DEAD';
@@ -254,10 +256,26 @@ export type KernelEvent =
       message: string;
     }
   | {
-      /** The vibecoder reacts emotionally (shock on arrival, relief, panic at low HP). */
+      /** The vibecoder reacts emotionally (shock on arrival, relief, panic at low HP; `shout` is big lettering with a shake). */
       type: 'VIBECODER_EMOTE';
-      emote: 'shock' | 'confused' | 'determined' | 'relief' | 'panic';
+      emote: 'shock' | 'confused' | 'determined' | 'relief' | 'panic' | 'shout';
       text?: string;
+    }
+  | {
+      /** A chapter script `carry_item`: the item pops into the actor's hands and the actor flies next to the hero. */
+      type: 'ITEM_CARRIED';
+      entityId: string;
+      item: ItemId;
+      /** procgen model id of the item (`item.terminal`). */
+      model: string;
+    }
+  | {
+      /** A chapter script `give_item`: the item joined the inventory (`held`: it went into his hand). `from` hands it over on the stage. */
+      type: 'ITEM_GIVEN';
+      item: ItemId;
+      model: string;
+      from?: string;
+      held: boolean;
     }
   | {
       /** Tutorial progress on floor 1. `done` is true when this step was just completed. */

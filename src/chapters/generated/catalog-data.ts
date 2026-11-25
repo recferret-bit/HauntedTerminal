@@ -285,7 +285,6 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       }
     ],
     "startItems": [
-      "terminal",
       "manual"
     ],
     "grants": [
@@ -296,7 +295,8 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       {
         "afterLevel": 1,
         "items": [
-          "lantern"
+          "lantern",
+          "terminal"
         ]
       },
       {
@@ -472,7 +472,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "arrival": [
           {
             "kind": "print",
-            "text": "\n[DARK WIRES & CHIPS — /mnt/wires_and_chips]\nIt is pitch black. Only the faint glow of your terminal screen shows the tangle of wires and chips around you.\n"
+            "text": "\n[DARK WIRES & CHIPS — /mnt/wires_and_chips]\nIt is pitch black. A faint glow around you is all there is: a tangle of wires and chips.\n"
           },
           {
             "kind": "emote",
@@ -509,7 +509,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "It is so dark. No lantern, nothing. Only my terminal's glow.",
+                "text": "It is so dark. No lantern, no terminal, nothing.",
                 "holdSec": 2
               }
             ],
@@ -582,6 +582,22 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "afterSec": 17,
             "steps": [
               {
+                "kind": "emote",
+                "emote": "shout",
+                "text": "HELLOOOO??"
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "HELLOOOO?? Is anybody out there?!",
+                "holdSec": 2
+              }
+            ]
+          },
+          {
+            "afterSec": 19,
+            "steps": [
+              {
                 "kind": "spawn",
                 "entityId": "kiro",
                 "model": "npc.kiro_ghost",
@@ -602,7 +618,39 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             ]
           },
           {
-            "afterSec": 17,
+            "afterSec": 22,
+            "steps": [
+              {
+                "kind": "carry_item",
+                "entityId": "kiro",
+                "item": "terminal"
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "You dropped your terminal in the dark. Here, take it: down here you will type everything.",
+                "holdSec": 3
+              }
+            ]
+          },
+          {
+            "afterSec": 25,
+            "steps": [
+              {
+                "kind": "give_item",
+                "item": "terminal",
+                "from": "kiro"
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "My terminal! Okay... I can type again.",
+                "holdSec": 2
+              }
+            ]
+          },
+          {
+            "afterSec": 25,
             "unless": {
               "kind": "has_item",
               "item": "lantern"
@@ -615,7 +663,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             ]
           },
           {
-            "afterSec": 20,
+            "afterSec": 28,
             "steps": [
               {
                 "kind": "dialog_box",
@@ -630,7 +678,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             }
           },
           {
-            "afterSec": 23,
+            "afterSec": 31,
             "steps": [
               {
                 "kind": "dialog_box",

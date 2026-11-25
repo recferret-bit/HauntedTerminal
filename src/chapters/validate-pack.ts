@@ -56,6 +56,13 @@ class LevelCheck {
     else if (kind && found !== kind) this.add('error', tab, `${what}: "${path}" is a ${found}, expected a ${kind}`);
   }
 
+  /** Entity ids any `spawn` step of this level's script creates. */
+  spawnedIds(): Set<string> {
+    const sc = this.spec.script;
+    const all = [...(sc?.arrival ?? []), ...(sc?.timed ?? []).flatMap((t) => t.steps), ...(sc?.onBossKill ?? [])];
+    return new Set(all.flatMap((s) => (s.kind === 'spawn' ? [s.entityId] : [])));
+  }
+
   needEnemy(tab: string, what: string, id: string): void {
     if (!this.enemies.has(id)) this.add('error', tab, `${what}: enemy "${id}" is not in enemies[]`);
   }
@@ -98,6 +105,13 @@ class LevelCheck {
       }
       if (s.kind === 'spawn' && s.entrance !== undefined && s.entrance !== 'appear' && s.entrance !== 'glide') {
         this.add('error', 'script', `${what}: spawn entrance "${String(s.entrance)}" must be appear or glide`);
+      }
+      if (s.kind === 'carry_item' || s.kind === 'give_item') {
+        if (!isItemId(s.item)) this.add('error', 'script', `${what}: unknown item "${String(s.item)}" (${ITEM_IDS.join(', ')})`);
+        const who = s.kind === 'carry_item' ? s.entityId : s.from;
+        if (who !== undefined && who !== 'kiro' && !this.spawnedIds().has(who)) {
+          this.add('warn', 'script', `${what}: "${who}" is not kiro and no spawn step in this level creates it`);
+        }
       }
       if (s.kind === 'taunt' && !s.fallback && !this.pack.dialogs?.levels[this.spec.id]?.agentTaunt) {
         this.add('warn', 'script', `${what}: taunt step has no dialog agentTaunt and no fallback, so it says nothing`);

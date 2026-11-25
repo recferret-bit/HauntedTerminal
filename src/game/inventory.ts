@@ -10,6 +10,7 @@ import {
   type ItemDef,
   ITEMS,
   isItemId,
+  heroModelFor,
 } from '../contracts/inventory.js';
 import { empty, out } from './play.js';
 import type { Step } from './shell.js';
@@ -19,13 +20,15 @@ export { ITEM_IDS, type ItemId, type ItemDef, ITEMS, isItemId };
 export interface Inventory {
   /** In the order they were picked up. */
   readonly items: readonly ItemId[];
-  readonly held: ItemId;
+  /** The item in his hand; `null` = empty hands. */
+  readonly held: ItemId | null;
 }
 
 /** He walks in with what the chapter's `startItems` name (default: the lantern, terminal, and field manual); the lantern is held when he has it. */
 export function starterInventory(items: readonly ItemId[] = ['lantern', 'terminal', 'manual']): Inventory {
   const unique = items.filter((id, i) => items.indexOf(id) === i);
-  return { items: unique, held: unique.includes('lantern') ? 'lantern' : (unique[0] ?? 'terminal') };
+  const held = unique.includes('lantern') ? 'lantern' : unique.includes('terminal') ? 'terminal' : null;
+  return { items: unique, held };
 }
 
 export function hasItem(inv: Inventory, id: ItemId): boolean {
@@ -42,9 +45,9 @@ export function holdItem(inv: Inventory, id: ItemId): Inventory {
   return hasItem(inv, id) ? { ...inv, held: id } : inv;
 }
 
-/** The hero model for the item in his hand (the lantern when nothing says otherwise). */
-export function heroModel(held: ItemId | undefined): string {
-  return ITEMS[held ?? 'lantern']?.heroModel ?? 'vibecoder.dev';
+/** The hero model for the item in his hand (`null`: the bare hero). */
+export function heroModel(held: ItemId | null | undefined): string {
+  return heroModelFor(held);
 }
 
 function listing(inv: Inventory): string {

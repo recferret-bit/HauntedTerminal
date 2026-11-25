@@ -18,8 +18,8 @@ export interface SceneFacts {
   lantern: boolean;
   /** True while he does not hold the lantern: the room is almost black (set by the chapter session). */
   dark?: boolean;
-  /** The item in his hand: picks the hero model. Default: the lantern. */
-  held?: ItemId;
+  /** The item in his hand: picks the hero model. `null` is empty hands; default: the lantern. */
+  held?: ItemId | null;
   hp?: number;
   maxHp?: number;
   xray: boolean;

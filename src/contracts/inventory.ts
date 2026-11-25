@@ -72,3 +72,12 @@ export const ITEMS: Readonly<Record<ItemId, ItemDef>> = {
 };
 
 export const isItemId = (v: string): v is ItemId => Object.prototype.hasOwnProperty.call(ITEMS, v);
+
+/** The developer with empty hands (ModelCatalog id): what he looks like while he holds nothing. */
+export const BARE_HERO_MODEL = 'vibecoder.dev_bare';
+
+/** The hero model for the item in his hand: `null` is empty hands; `undefined` (no inventory) is the lantern. */
+export function heroModelFor(held: ItemId | null | undefined): string {
+  if (held === null) return BARE_HERO_MODEL;
+  return ITEMS[held ?? 'lantern']?.heroModel ?? 'vibecoder.dev';
+}
