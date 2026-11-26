@@ -1,0 +1,429 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 780" width="1200" height="780" role="img" aria-labelledby="title desc">
+  <title id="title">Out Of Credits — Declarative .kiro Multi-Agent Orchestration</title>
+  <desc id="desc">Animated diagram showing how a scenario typed into kiro-cli --agent lead-dev is routed declaratively via agents-build.mjs and .kiro/agents/ to the nine Kiro Crew specialists, verified by qa and 16 deterministic quality gates, and pushed to an agent branch.</desc>
+
+  <defs>
+    <pattern id="comic-dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.1" fill="#231d36"/>
+    </pattern>
+
+    <filter id="ink-shadow" x="-5%" y="-5%" width="115%" height="120%">
+      <feDropShadow dx="4" dy="4" stdDeviation="0" flood-color="#050409" flood-opacity="1"/>
+    </filter>
+
+    <clipPath id="prompt-reveal">
+      <rect x="275" y="76" width="820" height="32">
+        <animate attributeName="width" values="0;0;820;820;0" keyTimes="0;0.03;0.17;0.96;1" dur="16s" repeatCount="indefinite"/>
+      </rect>
+    </clipPath>
+
+    <style>
+      .mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace; }
+      .sans { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      .cap { font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+
+      .wire-base { fill: none; stroke: #2c2544; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      .wire-standby { fill: none; stroke: #241e38; stroke-width: 1.8; stroke-dasharray: 4 6; }
+
+      .pulse-down {
+        fill: none;
+        stroke-width: 3.5;
+        stroke-linecap: round;
+        stroke-dasharray: 14 220;
+        opacity: 0;
+        animation: flow-down 16s linear infinite;
+      }
+      .pulse-qa {
+        fill: none;
+        stroke: #4ade80;
+        stroke-width: 3.5;
+        stroke-linecap: round;
+        stroke-dasharray: 14 260;
+        opacity: 0;
+        animation: flow-qa 16s linear infinite;
+      }
+
+      @keyframes flow-down {
+        0%, 19% { stroke-dashoffset: 240; opacity: 0; }
+        22% { opacity: 1; }
+        40% { stroke-dashoffset: -120; opacity: 1; }
+        44%, 100% { stroke-dashoffset: -120; opacity: 0; }
+      }
+
+      @keyframes flow-qa {
+        0%, 58% { stroke-dashoffset: 260; opacity: 0; }
+        62% { opacity: 1; }
+        76% { stroke-dashoffset: -140; opacity: 1; }
+        80%, 100% { stroke-dashoffset: -140; opacity: 0; }
+      }
+
+      .lead-card { animation: lead-glow 16s ease-in-out infinite; }
+      @keyframes lead-glow {
+        0%, 14% { stroke: #38bdf8; stroke-width: 2; }
+        20%, 36% { stroke: #ffd166; stroke-width: 3.2; }
+        42%, 82% { stroke: #38bdf8; stroke-width: 2.2; }
+        86%, 97% { stroke: #4ade80; stroke-width: 3.2; }
+        100% { stroke: #38bdf8; stroke-width: 2; }
+      }
+
+      .w1-card { animation: active-amber 16s ease-in-out infinite; }
+      .w2-card { animation: active-cyan 16s ease-in-out infinite; }
+      .w3-card { animation: active-purple 16s ease-in-out infinite; }
+      @keyframes active-amber {
+        0%, 30% { stroke: #2e2648; stroke-width: 2; }
+        36%, 62% { stroke: #fbbf24; stroke-width: 3; }
+        66%, 100% { stroke: #22c55e; stroke-width: 2.2; }
+      }
+      @keyframes active-cyan {
+        0%, 32% { stroke: #2e2648; stroke-width: 2; }
+        38%, 64% { stroke: #38bdf8; stroke-width: 3; }
+        68%, 100% { stroke: #22c55e; stroke-width: 2.2; }
+      }
+      @keyframes active-purple {
+        0%, 34% { stroke: #2e2648; stroke-width: 2; }
+        40%, 64% { stroke: #c084fc; stroke-width: 3; }
+        68%, 100% { stroke: #22c55e; stroke-width: 2.2; }
+      }
+
+      .qa-card { animation: qa-glow 16s ease-in-out infinite; }
+      @keyframes qa-glow {
+        0%, 62% { stroke: #2e2648; stroke-width: 2; }
+        67%, 84% { stroke: #38bdf8; stroke-width: 3.2; }
+        86%, 98% { stroke: #4ade80; stroke-width: 3.2; }
+        100% { stroke: #2e2648; stroke-width: 2; }
+      }
+
+      .badge-working { animation: show-working 16s steps(1, end) infinite; }
+      .badge-done { animation: show-done 16s steps(1, end) infinite; }
+      .badge-idle { animation: show-idle 16s steps(1, end) infinite; }
+      @keyframes show-idle {
+        0%, 33% { opacity: 1; }
+        34%, 98% { opacity: 0; }
+        100% { opacity: 1; }
+      }
+      @keyframes show-working {
+        0%, 33% { opacity: 0; }
+        34%, 63% { opacity: 1; }
+        64%, 100% { opacity: 0; }
+      }
+      @keyframes show-done {
+        0%, 63% { opacity: 0; }
+        64%, 98% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+
+      .qa-wait { animation: qa-wait-anim 16s steps(1, end) infinite; }
+      .qa-run { animation: qa-run-anim 16s steps(1, end) infinite; }
+      .qa-pass { animation: qa-pass-anim 16s steps(1, end) infinite; }
+      @keyframes qa-wait-anim {
+        0%, 63% { opacity: 1; }
+        64%, 98% { opacity: 0; }
+        100% { opacity: 1; }
+      }
+      @keyframes qa-run-anim {
+        0%, 63% { opacity: 0; }
+        64%, 81% { opacity: 1; }
+        82%, 100% { opacity: 0; }
+      }
+      @keyframes qa-pass-anim {
+        0%, 81% { opacity: 0; }
+        82%, 98% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+
+      .stamp-pop {
+        transform-origin: 997px 693px;
+        animation: stamp-anim 16s cubic-bezier(0.22, 1.35, 0.36, 1) infinite;
+      }
+      @keyframes stamp-anim {
+        0%, 81% { opacity: 0; transform: scale(1.35) rotate(-5deg); }
+        84%, 97% { opacity: 1; transform: scale(1) rotate(-2deg); }
+        100% { opacity: 0; transform: scale(1) rotate(-2deg); }
+      }
+
+      .cursor-blink { animation: blink 0.9s steps(2, start) infinite; }
+      @keyframes blink { to { opacity: 0; } }
+
+      .gate-bar { animation: gate-glow 16s ease-in-out infinite; }
+      @keyframes gate-glow {
+        0%, 70% { stroke: #2e2648; }
+        74%, 97% { stroke: #4ade80; }
+        100% { stroke: #2e2648; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; }
+        .badge-idle, .badge-working, .qa-wait, .qa-run { opacity: 0 !important; }
+        .badge-done, .qa-pass, .stamp-pop { opacity: 1 !important; transform: rotate(-2deg); }
+        .pulse-down, .pulse-qa { opacity: 0.7; stroke-dasharray: none; }
+      }
+    </style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect width="1200" height="780" rx="14" fill="#0d0b14"/>
+  <rect width="1200" height="780" rx="14" fill="url(#comic-dots)"/>
+  <rect x="6" y="6" width="1188" height="768" rx="11" fill="none" stroke="#2d2546" stroke-width="2"/>
+
+  <!-- Top Comic Banner -->
+  <rect x="28" y="20" width="430" height="28" rx="4" fill="#ffd166" filter="url(#ink-shadow)"/>
+  <text x="42" y="39" fill="#0d0b14" font-size="13" class="sans cap">DECLARATIVE .KIRO ORCHESTRATION · 1 FILE = 1 OWNER</text>
+
+  <rect x="752" y="20" width="420" height="28" rx="4" fill="#1b162b" stroke="#3b315b" stroke-width="1.5"/>
+  <text x="768" y="38" fill="#cbd5e1" font-size="11.5" class="mono">scripts/harness/agents-build.mjs -&gt; .kiro/agents/*.json</text>
+
+  <!-- Step 1: User Scenario Prompt -->
+  <g filter="url(#ink-shadow)">
+    <rect x="28" y="60" width="1144" height="60" rx="8" fill="#151122" stroke="#38bdf8" stroke-width="2"/>
+    <rect x="44" y="75" width="218" height="30" rx="5" fill="#1e293b" stroke="#38bdf8" stroke-width="1.2"/>
+    <text x="54" y="94" fill="#38bdf8" font-size="12.5" font-weight="700" class="mono">$ kiro-cli --agent lead-dev</text>
+
+    <g clip-path="url(#prompt-reveal)">
+      <text x="278" y="95" fill="#f8fafc" font-size="14" font-weight="600" class="mono">"Rework Esc menu &amp; HUD, keep Level 9 badge in stage, update SFX &amp; run QA"</text>
+    </g>
+    <rect x="896" y="79" width="9" height="20" rx="1" fill="#ffd166" class="cursor-blink"/>
+    <rect x="1114" y="76" width="44" height="26" rx="4" fill="#231c38" stroke="#4c3f74"/>
+    <text x="1123" y="93" fill="#ffd166" font-size="11" font-weight="700" class="mono">auto</text>
+  </g>
+
+  <!-- Connector: Prompt -> Lead Dev -->
+  <line x1="600" y1="120" x2="600" y2="150" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="5 4"/>
+  <polygon points="594,146 606,146 600,154" fill="#38bdf8"/>
+
+  <!-- Step 2: Lead Dev Orchestrator Hub -->
+  <g filter="url(#ink-shadow)">
+    <rect x="190" y="154" width="820" height="92" rx="9" fill="#181328" class="lead-card" stroke="#38bdf8" stroke-width="2.2"/>
+    <rect x="206" y="166" width="114" height="22" rx="4" fill="#38bdf8"/>
+    <text x="215" y="181" fill="#0d0b14" font-size="12" class="sans cap">1 · lead-dev</text>
+
+    <text x="334" y="182" fill="#f8fafc" font-size="14" font-weight="700" class="sans">Orchestrator &amp; Branch Owner (Kiro CLI + Kiro Crew)</text>
+    <text x="206" y="206" fill="#94a3b8" font-size="11.5" class="mono">Owns: .kiro/specs/**, .kiro/steering/**, src/{contracts,play,pages,hub,styles}/**, docs/*.md</text>
+    <text x="206" y="228" fill="#ffd166" font-size="11.5" class="mono">1. Verify approved spec -&gt; 2. git switch -c agent/esc-menu-hud -&gt; 3. Fan out by fs_write table</text>
+
+    <rect x="794" y="166" width="202" height="22" rx="4" fill="#231c38" stroke="#f43f5e" stroke-width="1"/>
+    <text x="803" y="181" fill="#fda4af" font-size="10.5" font-weight="700" class="mono">NO main · NO force · NO deploy</text>
+  </g>
+
+  <!-- Declarative Routing Wires: Lead -> Specialists -->
+  <!-- Targets in Row 1: x = 160, 453, 747, 1040 (top y = 304) -->
+  <path id="w-term" d="M 410 246 C 410 278, 160 270, 160 304" class="wire-base"/>
+  <path id="w-chap" d="M 540 246 C 540 278, 453 272, 453 304" class="wire-base"/>
+  <path id="w-art"  d="M 660 246 C 660 278, 747 272, 747 304" class="wire-base"/>
+  <path id="w-snd"  d="M 790 246 C 790 278, 1040 270, 1040 304" class="wire-base"/>
+
+  <!-- Standby faint wires -->
+  <path d="M 320 246 L 320 282 L 42 282 L 42 464" class="wire-standby"/>
+  <path d="M 880 246 L 880 282 L 1158 282 L 1158 464" class="wire-standby"/>
+
+  <!-- Animated Routing Pulses -->
+  <path d="M 410 246 C 410 278, 160 270, 160 304" stroke="#38bdf8" class="pulse-down"/>
+  <path d="M 540 246 C 540 278, 453 272, 453 304" stroke="#ffd166" class="pulse-down"/>
+  <path d="M 660 246 C 660 278, 747 272, 747 304" stroke="#fbbf24" class="pulse-down"/>
+  <path d="M 790 246 C 790 278, 1040 270, 1040 304" stroke="#c084fc" class="pulse-down"/>
+
+  <!-- Row 1 Label -->
+  <rect x="34" y="274" width="232" height="20" rx="4" fill="#171324" stroke="#3b315b"/>
+  <text x="44" y="288" fill="#ffd166" font-size="10.5" class="sans cap">WAVE 1-3 · ASSIGNED BY PATH OWNERSHIP</text>
+
+  <!-- ==================== ROW 1: ACTIVE SPECIALISTS ==================== -->
+
+  <!-- 2. terminal-designer -->
+  <g filter="url(#ink-shadow)">
+    <rect x="28" y="304" width="268" height="132" rx="8" fill="#171324" class="w2-card" stroke="#2e2648" stroke-width="2"/>
+    <rect x="42" y="316" width="154" height="20" rx="4" fill="#38bdf8"/>
+    <text x="50" y="330" fill="#0d0b14" font-size="11" class="sans cap">2 · terminal-designer</text>
+
+    <text x="42" y="354" fill="#e2e8f0" font-size="11.5" font-weight="700" class="mono">src/ui/**, src/terminal-lab/**</text>
+    <text x="42" y="372" fill="#94a3b8" font-size="11" class="mono">shell, manual, tree, lab scripts</text>
+    <text x="42" y="390" fill="#94a3b8" font-size="11" class="mono">Skill: chapter-level-generator</text>
+
+    <g class="badge-idle">
+      <rect x="42" y="404" width="120" height="20" rx="4" fill="#231c38"/>
+      <text x="52" y="418" fill="#94a3b8" font-size="10.5" font-weight="700" class="mono">FENCED · READY</text>
+    </g>
+    <g class="badge-working">
+      <rect x="42" y="404" width="176" height="20" rx="4" fill="#0c4a6e" stroke="#38bdf8"/>
+      <text x="52" y="418" fill="#7dd3fc" font-size="10.5" font-weight="700" class="mono">EDITING HUD &amp; SHELL</text>
+    </g>
+    <g class="badge-done">
+      <rect x="42" y="404" width="160" height="20" rx="4" fill="#064e3b" stroke="#4ade80"/>
+      <text x="52" y="418" fill="#86efac" font-size="10.5" font-weight="700" class="mono">DONE · PROPS PASS</text>
+    </g>
+  </g>
+
+  <!-- 3. chapters-designer -->
+  <g filter="url(#ink-shadow)">
+    <rect x="321" y="304" width="268" height="132" rx="8" fill="#171324" class="w1-card" stroke="#2e2648" stroke-width="2"/>
+    <rect x="335" y="316" width="158" height="20" rx="4" fill="#ffd166"/>
+    <text x="343" y="330" fill="#0d0b14" font-size="11" class="sans cap">3 · chapters-designer</text>
+
+    <text x="335" y="354" fill="#e2e8f0" font-size="11.5" font-weight="700" class="mono">chapters/**, src/chapters/**</text>
+    <text x="335" y="372" fill="#94a3b8" font-size="11" class="mono">chapter-editor, battle, entities</text>
+    <text x="335" y="390" fill="#fbbf24" font-size="10.5" class="mono">MCP: @credits-forge/write_level</text>
+
+    <g class="badge-idle">
+      <rect x="335" y="404" width="120" height="20" rx="4" fill="#231c38"/>
+      <text x="345" y="418" fill="#94a3b8" font-size="10.5" font-weight="700" class="mono">FENCED · READY</text>
+    </g>
+    <g class="badge-working">
+      <rect x="335" y="404" width="186" height="20" rx="4" fill="#78350f" stroke="#ffd166"/>
+      <text x="345" y="418" fill="#fde68a" font-size="10.5" font-weight="700" class="mono">SOLVING 0-DEATH PACK</text>
+    </g>
+    <g class="badge-done">
+      <rect x="335" y="404" width="166" height="20" rx="4" fill="#064e3b" stroke="#4ade80"/>
+      <text x="345" y="418" fill="#86efac" font-size="10.5" font-weight="700" class="mono">DONE · 11/11 CLEAR</text>
+    </g>
+  </g>
+
+  <!-- 4. artist -->
+  <g filter="url(#ink-shadow)">
+    <rect x="614" y="304" width="268" height="132" rx="8" fill="#171324" class="w1-card" stroke="#2e2648" stroke-width="2"/>
+    <rect x="628" y="316" width="96" height="20" rx="4" fill="#fb923c"/>
+    <text x="637" y="330" fill="#0d0b14" font-size="11" class="sans cap">4 · artist</text>
+
+    <text x="628" y="354" fill="#e2e8f0" font-size="11.5" font-weight="700" class="mono">src/{procgen,renderer,shaders}</text>
+    <text x="628" y="372" fill="#94a3b8" font-size="11" class="mono">storybook, assets, cel &amp; ink</text>
+    <text x="628" y="390" fill="#94a3b8" font-size="11" class="mono">Skills: 14 [ASSET PCG] + val</text>
+
+    <g class="badge-idle">
+      <rect x="628" y="404" width="120" height="20" rx="4" fill="#231c38"/>
+      <text x="638" y="418" fill="#94a3b8" font-size="10.5" font-weight="700" class="mono">FENCED · READY</text>
+    </g>
+    <g class="badge-working">
+      <rect x="628" y="404" width="186" height="20" rx="4" fill="#7c2d12" stroke="#fb923c"/>
+      <text x="638" y="418" fill="#fed7aa" font-size="10.5" font-weight="700" class="mono">FIXING DOOR LED &amp; BADGE</text>
+    </g>
+    <g class="badge-done">
+      <rect x="628" y="404" width="174" height="20" rx="4" fill="#064e3b" stroke="#4ade80"/>
+      <text x="638" y="418" fill="#86efac" font-size="10.5" font-weight="700" class="mono">DONE · MODELS VALID</text>
+    </g>
+  </g>
+
+  <!-- 5. sound-designer -->
+  <g filter="url(#ink-shadow)">
+    <rect x="907" y="304" width="265" height="132" rx="8" fill="#171324" class="w3-card" stroke="#2e2648" stroke-width="2"/>
+    <rect x="921" y="316" width="144" height="20" rx="4" fill="#c084fc"/>
+    <text x="929" y="330" fill="#0d0b14" font-size="11" class="sans cap">5 · sound-designer</text>
+
+    <text x="921" y="354" fill="#e2e8f0" font-size="11.5" font-weight="700" class="mono">src/audio/**, public/{sfx,music}</text>
+    <text x="921" y="372" fill="#94a3b8" font-size="11" class="mono">AppBus SFX &amp; music beds</text>
+    <text x="921" y="390" fill="#d8b4fe" font-size="10.5" class="mono">Cap: audio-gen.mjs (&lt;=15k cr)</text>
+
+    <g class="badge-idle">
+      <rect x="921" y="404" width="120" height="20" rx="4" fill="#231c38"/>
+      <text x="931" y="418" fill="#94a3b8" font-size="10.5" font-weight="700" class="mono">FENCED · READY</text>
+    </g>
+    <g class="badge-working">
+      <rect x="921" y="404" width="178" height="20" rx="4" fill="#4c1d95" stroke="#c084fc"/>
+      <text x="931" y="418" fill="#e9d5ff" font-size="10.5" font-weight="700" class="mono">MAPPING BUS SOUND CUES</text>
+    </g>
+    <g class="badge-done">
+      <rect x="921" y="404" width="172" height="20" rx="4" fill="#064e3b" stroke="#4ade80"/>
+      <text x="931" y="418" fill="#86efac" font-size="10.5" font-weight="700" class="mono">DONE · AUDIO-UNIT OK</text>
+    </g>
+  </g>
+
+  <!-- ==================== ROW 2: REMAINING CREW + QA GATE ==================== -->
+
+  <!-- Row 2 Label -->
+  <rect x="34" y="446" width="290" height="20" rx="4" fill="#171324" stroke="#3b315b"/>
+  <text x="44" y="460" fill="#94a3b8" font-size="10.5" class="sans cap">STANDBY CREW SPECIALISTS + FINAL QA GATE</text>
+
+  <!-- 6. laptop-designer -->
+  <g filter="url(#ink-shadow)">
+    <rect x="28" y="474" width="268" height="122" rx="8" fill="#130f1e" stroke="#2c2544" stroke-width="1.8"/>
+    <rect x="42" y="486" width="144" height="20" rx="4" fill="#334155"/>
+    <text x="50" y="500" fill="#e2e8f0" font-size="11" class="sans cap">6 · laptop-designer</text>
+    <text x="42" y="522" fill="#cbd5e1" font-size="11.5" font-weight="700" class="mono">src/laptop/**, props/laptop.mjs</text>
+    <text x="42" y="540" fill="#94a3b8" font-size="11" class="mono">3D laptop, Worker + iframe</text>
+    <rect x="42" y="560" width="136" height="20" rx="4" fill="#1e1930" stroke="#3b315b"/>
+    <text x="50" y="574" fill="#94a3b8" font-size="10.5" font-weight="700" class="mono">FENCED · STANDBY</text>
+  </g>
+
+  <!-- 7. comix-designer -->
+  <g filter="url(#ink-shadow)">
+    <rect x="321" y="474" width="268" height="122" rx="8" fill="#130f1e" stroke="#2c2544" stroke-width="1.8"/>
+    <rect x="335" y="486" width="140" height="20" rx="4" fill="#334155"/>
+    <text x="343" y="500" fill="#e2e8f0" font-size="11" class="sans cap">7 · comix-designer</text>
+    <text x="335" y="522" fill="#cbd5e1" font-size="11.5" font-weight="700" class="mono">comix/**, src/cinematic/**</text>
+    <text x="335" y="540" fill="#94a3b8" font-size="11" class="mono">comix-editor + 60fps verifier</text>
+    <rect x="335" y="560" width="136" height="20" rx="4" fill="#1e1930" stroke="#3b315b"/>
+    <text x="343" y="574" fill="#94a3b8" font-size="10.5" font-weight="700" class="mono">FENCED · STANDBY</text>
+  </g>
+
+  <!-- 8. smm-agent -->
+  <g filter="url(#ink-shadow)">
+    <rect x="614" y="474" width="268" height="122" rx="8" fill="#130f1e" stroke="#2c2544" stroke-width="1.8"/>
+    <rect x="628" y="486" width="120" height="20" rx="4" fill="#334155"/>
+    <text x="636" y="500" fill="#e2e8f0" font-size="11" class="sans cap">8 · smm-agent</text>
+    <text x="628" y="522" fill="#cbd5e1" font-size="11.5" font-weight="700" class="mono">social/**, docs/marketing/**</text>
+    <text x="628" y="540" fill="#94a3b8" font-size="11" class="mono">social-media.mjs + Steam funnel</text>
+    <rect x="628" y="560" width="136" height="20" rx="4" fill="#1e1930" stroke="#3b315b"/>
+    <text x="636" y="574" fill="#94a3b8" font-size="10.5" font-weight="700" class="mono">FENCED · STANDBY</text>
+  </g>
+
+  <!-- Wires from Active Agents -> QA Gate -->
+  <path d="M 160 436 L 160 456 L 1040 456 L 1040 474" class="wire-base"/>
+  <path d="M 453 436 L 453 456 L 1040 456 L 1040 474" class="wire-base"/>
+  <path d="M 747 436 L 747 456 L 1040 456 L 1040 474" class="wire-base"/>
+  <path d="M 1040 436 L 1040 474" class="wire-base"/>
+
+  <path d="M 160 436 L 160 456 L 1040 456 L 1040 474" class="pulse-qa"/>
+  <path d="M 453 436 L 453 456 L 1040 456 L 1040 474" class="pulse-qa"/>
+  <path d="M 747 436 L 747 456 L 1040 456 L 1040 474" class="pulse-qa"/>
+  <path d="M 1040 436 L 1040 474" class="pulse-qa"/>
+
+  <!-- 9. qa -->
+  <g filter="url(#ink-shadow)">
+    <rect x="907" y="474" width="265" height="122" rx="8" fill="#171324" class="qa-card" stroke="#2e2648" stroke-width="2"/>
+    <rect x="921" y="486" width="84" height="20" rx="4" fill="#4ade80"/>
+    <text x="930" y="500" fill="#0d0b14" font-size="11" class="sans cap">9 · qa</text>
+
+    <text x="921" y="522" fill="#e2e8f0" font-size="11.5" font-weight="700" class="mono">docs/qa/** (zero src/ writes)</text>
+    <text x="921" y="540" fill="#7dd3fc" font-size="10.5" class="mono">MCP: @chrome-devtools + forge</text>
+
+    <g class="qa-wait">
+      <rect x="921" y="560" width="150" height="20" rx="4" fill="#231c38"/>
+      <text x="931" y="574" fill="#94a3b8" font-size="10.5" font-weight="700" class="mono">AWAITING WAVES...</text>
+    </g>
+    <g class="qa-run">
+      <rect x="921" y="560" width="194" height="20" rx="4" fill="#0c4a6e" stroke="#38bdf8"/>
+      <text x="931" y="574" fill="#7dd3fc" font-size="10.5" font-weight="700" class="mono">AUDITING REAL CHROME</text>
+    </g>
+    <g class="qa-pass">
+      <rect x="921" y="560" width="184" height="20" rx="4" fill="#064e3b" stroke="#4ade80"/>
+      <text x="931" y="574" fill="#86efac" font-size="10.5" font-weight="700" class="mono">REPORT WRITTEN · PASS</text>
+    </g>
+  </g>
+
+  <!-- Connector: QA -> Deterministic Gate Bar -->
+  <line x1="1040" y1="596" x2="1040" y2="626" stroke="#4ade80" stroke-width="2.5" stroke-dasharray="5 4"/>
+  <polygon points="1034,622 1046,622 1040,630" fill="#4ade80"/>
+
+  <!-- Step 4: Deterministic Hooks, Quality Gates & Branch Delivery -->
+  <g filter="url(#ink-shadow)">
+    <rect x="28" y="630" width="1144" height="122" rx="9" fill="#151122" class="gate-bar" stroke="#2e2648" stroke-width="2.2"/>
+    <rect x="44" y="642" width="268" height="20" rx="4" fill="#231c38" stroke="#4ade80" stroke-width="1"/>
+    <text x="54" y="656" fill="#86efac" font-size="10.5" class="sans cap">HOOKS + DETERMINISTIC QUALITY GATES</text>
+
+    <!-- Gate pills -->
+    <rect x="44" y="674" width="250" height="28" rx="5" fill="#1b162b" stroke="#3b315b"/>
+    <text x="56" y="692" fill="#e2e8f0" font-size="11.5" class="mono">fs_write fence + shell-guard</text>
+
+    <rect x="306" y="674" width="264" height="28" rx="5" fill="#1b162b" stroke="#3b315b"/>
+    <text x="318" y="692" fill="#e2e8f0" font-size="11.5" class="mono">npm run quality (16 gates)</text>
+
+    <rect x="582" y="674" width="244" height="28" rx="5" fill="#1b162b" stroke="#3b315b"/>
+    <text x="594" y="692" fill="#e2e8f0" font-size="11.5" class="mono">87 fast-check properties</text>
+
+    <rect x="44" y="712" width="782" height="28" rx="5" fill="#181328" stroke="#38bdf8" stroke-width="1.2"/>
+    <text x="56" y="730" fill="#7dd3fc" font-size="11.5" font-weight="700" class="mono">lead-dev pushes: git push -u origin agent/esc-menu-hud  (main protected · human powers: ship / release / tauri)</text>
+
+    <!-- Comic Stamp -->
+    <g class="stamp-pop">
+      <rect x="844" y="652" width="306" height="82" rx="8" fill="#064e3b" stroke="#4ade80" stroke-width="3.5"/>
+      <text x="866" y="688" fill="#4ade80" font-size="25" font-weight="900" class="sans cap">QA PASS · 0 DEATHS</text>
+      <text x="868" y="716" fill="#bbf7d0" font-size="12.5" font-weight="700" class="mono">11/11 sectors · fingerprint OK</text>
+    </g>
+  </g>
+</svg>

@@ -6,11 +6,13 @@
 src/game/
   kiro.ts             formatDisclaimer() on KiroCompanion; 1-line parody footer + kiro disclaimer hint in formatStatus()
   puzzle.ts           cmdKiro: dispatches kiro disclaimer | legal | brands in classic session
+                      (2026-11-26: both cmdKiro now delegate to runKiroCommand in src/game/kiro-commands.ts)
   manual.ts           man kiro: documents kiro disclaimer (kiro legal)
 src/chapters/
   session-kiro.ts     cmdKiro: dispatches kiro disclaimer | legal | brands in chapter session
   session-meta.ts     cmdBestiary: prints 1-line parody & non-affiliation header in bestiary output
   catalog.ts          GRIMOIRE_ENTRIES (kiro syntax) and BESTIARY_DOSSIER (parody cast note)
+                      (2026-11-26: both now defined in metagame-data.ts, re-exported by catalog.ts)
 src/pages/
   chapters-binder.ts  renderBinder: renders parody & non-affiliation banner above Bestiary Dossier cards
 pages/
@@ -24,10 +26,10 @@ package.json          adds quality:brands script and includes it in npm run qual
 
 ## Decisions
 
-- **Shared `KiroCompanion.formatDisclaimer()` in `src/game/kiro.ts`.** Both the chapter shell (`src/chapters/session-kiro.ts`) and the classic/lab shell (`src/game/puzzle.ts`) delegate to `g.kiro.formatDisclaimer()`, returning the formatted terminal block plus a `KIRO_ACTION` (`action: 'scan'`) and `AGENT_TAUNT` (`agent: 'kiro'`) event so the stage and terminal behave identically in both shells. Rejected duplicating text in `session-kiro.ts` and `puzzle.ts`. Follows Decision 1 & Decision 2 in `requirements.md`.
+- **Shared `KiroCompanion.formatDisclaimer()` in `src/game/kiro.ts`.** Both the chapter shell (`src/chapters/session-kiro.ts`) and the classic/lab shell (`src/game/puzzle.ts`) delegate to `g.kiro.formatDisclaimer()` (since 2026-11-26 through the shared `runKiroCommand` in `src/game/kiro-commands.ts`), returning the formatted terminal block plus a `KIRO_ACTION` (`action: 'scan'`) and `AGENT_TAUNT` (`agent: 'kiro'`) event so the stage and terminal behave identically in both shells. Rejected duplicating text in `session-kiro.ts` and `puzzle.ts`. Follows Decision 1 & Decision 2 in `requirements.md`.
 - **Dual in-game visibility (terminal + UI).** Players and judges who stay in the terminal see the parody notice in `kiro` / `kiro status`, `kiro disclaimer` (`kiro legal` / `kiro brands`), `man kiro`, and `bestiary`; visitors on `/` (`pages/index.html`) and `/chapters.html?tab=bestiary` (`src/pages/chapters-binder.ts`) see a visible parody & non-affiliation notice without needing to type a command. Follows Decision 2 in `requirements.md`.
 - **Preserve open-weight core IDs (`qwen`, `mistral`, `deepseek`, `llama`).** Keeping the 4 `KiroCoreId` identifiers avoids breaking any of the 11 chapter `solutionCommands` or existing hub `kiro_loaded` win rules, while `formatDisclaimer()` explicitly states that open-weight model, hardware, and POSIX terms are used strictly for educational gameplay. Follows Decision 3 in `requirements.md`.
-- **Deterministic `scripts/quality/check-brands.mjs` gate + `.kiro/hooks/check-brands-on-save.json`.** Scans `git ls-files` (excluding compiled/binary files) with word-boundary regexes for forbidden Big Four AI brand tokens (`AGY`, `AGY-9`, `Antigravity`, `Codex`, `C0D3X`, `Code-X`, `Grok`, `GR0NK`, `Claude`, `CLAWD`, `OpenAI`, `Anthropic`, `xAI`, `ChatGPT`, `Gemini`) and whitelists only the documented non-character cases (`CLAUDE.md` filename/references, `Claude Code` tool docs, and the common noun `codex` in `codex cards`). Wired into `npm run quality` (`quality:brands`) and `.kiro/hooks/check-brands-on-save.json`. Follows Decision 4 in `requirements.md`.
+- **Deterministic `scripts/quality/check-brands.mjs` gate + `.kiro/hooks/check-brands-on-save.json`.** Scans `git ls-files` (excluding compiled/binary files) with word-boundary regexes for forbidden Big Four AI brand tokens (`AGY`, `AGY-9`, `Antigravity`, `Codex`, `C0D3X`, `Code-X`, `Grok`, `GR0NK`, `Claude`, `CLAWD`, `OpenAI`, `Anthropic`, `xAI`, `ChatGPT`, `Gemini`) and whitelists only the documented non-character cases (`CLAUDE.md` filename/references, `Claude Code` tool docs, `Google AGY` tool-origin disclosure in `README.md` / `docs/KIRO_USAGE.md`, and the common noun `codex` in `codex cards`). Wired into `npm run quality` (`quality:brands`) and `.kiro/hooks/check-brands-on-save.json`. Follows Decision 4 in `requirements.md`.
 
 ## Layers and gates
 

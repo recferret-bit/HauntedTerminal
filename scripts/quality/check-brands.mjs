@@ -11,6 +11,7 @@ import { join } from 'node:path';
 const BINARY_EXT = /\.(png|jpe?g|webp|gif|ico|glb|gltf|woff2?|ttf|otf|bin|mp3|wav|ogg)$/i;
 const SKIP_PREFIXES = ['scripts/quality/check-brands.mjs', '.kiro/specs/parody-brand-guard/'];
 const CLAUDE_CODE_DOCS = new Set(['AGENTS.md', 'CLAUDE.md', '.kiro/steering/team.md']);
+const TOOL_ORIGIN_DOCS = new Set(['README.md', 'docs/KIRO_USAGE.md']);
 
 const WORD_BRAND_RX =
   /\b(?:agy|agy-9|antigravity|codex|c0d3x|code-x|grok|gr0nk|g0rk|claude|clawd|cl0d|openai|anthropic|xai|chatgpt|gemini)\b/i;
@@ -24,6 +25,9 @@ function scrubAllowed(line, relPath) {
     .replace(/\bread the codex from\b/gi, '');
   if (CLAUDE_CODE_DOCS.has(relPath)) {
     clean = clean.replace(/\bClaude Code(?:'s)?\b/g, '').replace(/\.claude\/settings\.json/g, '');
+  }
+  if (TOOL_ORIGIN_DOCS.has(relPath)) {
+    clean = clean.replace(/\bGoogle AGY\b/g, '');
   }
   return clean;
 }
@@ -46,6 +50,8 @@ function runSelfTest() {
   assert.ok(findBrandMatch('claude_overlord.ko', 'chapters/x.json'));
   assert.equal(findBrandMatch('Edit CLAUDE.md and AGENTS.md', 'docs/x.md'), null);
   assert.equal(findBrandMatch('Instructions for Claude Code working here', 'CLAUDE.md'), null);
+  assert.equal(findBrandMatch('Used Google AGY for initial project generation', 'README.md'), null);
+  assert.ok(findBrandMatch('Google AGY should not appear in story', 'chapters/x.json'));
   assert.equal(findBrandMatch('Chapter-declared codex cards come from manifest', 'src/chapters/types.ts'), null);
   assert.ok(findBrandMatch('Claude Code should not appear in story', 'chapters/x.json'));
 }
