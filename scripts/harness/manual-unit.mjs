@@ -12,8 +12,10 @@ await withProcgen(async (_p, vite) => {
   const load = (path) => vite.ssrLoadModule(path);
   const { COMMANDS, helpText, runMan } = await load('/src/game/manual.ts');
   const { ITEMS, ITEM_IDS } = await load('/src/contracts/inventory.ts');
-  const { starterInventory } = await load('/src/game/inventory.ts');
+  const { giveItem, starterInventory } = await load('/src/game/inventory.ts');
   const { CHAPTER_COMMANDS } = await load('/src/chapters/session-state.ts');
+  const { getChapterPack, isFieldManualAvailable, recordLevelClear, resetInMemoryStoresForTest } = await load('/src/chapters/catalog.ts');
+  const { ACHIEVEMENT_SPECS, isManualUnlocked } = await load('/src/chapters/achievements.ts');
   const { createSession } = await load('/src/game/session.ts');
   const { createChapterSession } = await load('/src/chapters/chapter-session.ts');
   const { modeText } = await import('./props/terminal.mjs');
@@ -21,6 +23,18 @@ await withProcgen(async (_p, vite) => {
     buildMotherboardTopology,
     resolveLevelByQuery,
   } = await load('/src/ui/chapter-map-model.ts');
+  const { chapterMapTopologyKey } = await load('/src/ui/chapter-map.ts');
+  const {
+    MAP_SPARK_STATES,
+    MAP_SPARK_TIME_WRAP_S,
+    buildMapSparkFragmentShader,
+    buildMapSparkVertexShader,
+  } = await load('/src/shaders/map-sparks.ts');
+  const {
+    buildSparkRibbonData,
+    patchSparkRibbonStates,
+    toBoardLocalBox,
+  } = await load('/src/ui/chapter-map-sparks.ts');
   const {
     BOOK_PAGES,
     BOOK_SECTIONS,
@@ -162,10 +176,14 @@ await withProcgen(async (_p, vite) => {
     assert.equal(resolveManualPageIndex(''), 0);
   });
 
-  test('classic session runs manual, queues modal request, completes topics, preserves man/help', () => {
+  test('classic session gates manual until carried, then queues modal request, completes topics, preserves man/help', () => {
     const game = createSession();
     assert.match(helpText('hint'), /\bmanual\b/);
     assert.equal(runMan(['manual']).code, 0);
+
+    assert.equal(game.exec('manual').code, 1, 'classic manual command is locked before carrying manual');
+    assert.equal(game.consumeManualRequest(), null);
+    game.run.inventory = giveItem(game.run.inventory, 'manual');
 
     const openEmpty = game.exec('manual');
     assert.equal(openEmpty.code, 0);
@@ -182,22 +200,42 @@ await withProcgen(async (_p, vite) => {
     assert.equal(game.exec('man chmod').code, 0);
   });
 
-  test('chapter session runs manual, carries manual inventory item, keeps non-paused battle clock on manual cmd', () => {
+  test('chapter session gates manual until Hub #1 gift, unlocks ACH_FIELD_MANUAL, and keeps non-paused battle clock on manual cmd', () => {
     assert.ok(ITEM_IDS.includes('manual'), 'manual is registered in ITEM_IDS');
     assert.equal(ITEMS.manual.model, 'item.manual');
     assert.equal(ITEMS.manual.heroModel, 'vibecoder.dev_manual');
-    assert.ok(starterInventory().items.includes('manual'), 'starterInventory carries manual by default');
+    assert.equal(starterInventory().items.includes('manual'), false, 'starterInventory does NOT carry manual by default');
+    assert.ok(ACHIEVEMENT_SPECS.some((a) => a.id === 'field_manual' && a.steamApiName === 'ACH_FIELD_MANUAL'), 'ACH_FIELD_MANUAL exists');
     assert.match(findCommandDoc('hold')?.inGame ?? '', /manual/);
     assert.match(findCommandDoc('inventory')?.summary ?? '', /manual/);
     assert.doesNotMatch(findCommandDoc('manual')?.summary ?? '', /pauses battle timer/i);
     assert.match(findCommandDoc('manual')?.inGame ?? '', /keeps the 30s battle turn timer live/i);
 
     const chapterManifest = readChapter(slug).manifest;
-    assert.ok(chapterManifest.startItems?.includes('manual'), 'chapter 1 startItems carries manual');
+    assert.equal(chapterManifest.startItems?.includes('manual') ?? false, false, 'chapter 1 startItems omits manual');
 
-    const session = createChapterSession({ chapterId: slug, preview: true });
-    session.skipTutorial();
-    assert.ok(session.snapshot().inventory.items.includes('manual'), 'chapter session starts carrying manual');
+    resetInMemoryStoresForTest();
+    assert.equal(isManualUnlocked(), false, 'Field Manual starts locked on landing/standalone');
+    assert.equal(isFieldManualAvailable(), false, 'isFieldManualAvailable starts false');
+    const liveSession = createChapterSession({ chapterId: slug });
+    liveSession.skipTutorial();
+    assert.equal(liveSession.snapshot().inventory.items.includes('manual'), false, 'Level 1 does not carry manual');
+    assert.equal(liveSession.exec('manual').code, 1, 'manual command is locked before Hub #1');
+    liveSession.jumpToLevel('level-04-hub-model-one');
+    liveSession.arriveLevel();
+    const hubGift = liveSession.skipOpeningDialog();
+    assert.ok(hubGift.events.some((e) => e.type === 'ACHIEVEMENT_UNLOCKED' && e.id === 'field_manual'), 'Hub #1 unlocks ACH_FIELD_MANUAL');
+    assert.equal(isManualUnlocked(), true, 'Field Manual unlocks once obtained from Old Coder');
+    assert.equal(isFieldManualAvailable(), true, 'isFieldManualAvailable unlocks via ACH_FIELD_MANUAL');
+    resetInMemoryStoresForTest();
+    recordLevelClear(slug, 'level-04-hub-model-one', 'A', 4, 20);
+    assert.equal(isFieldManualAvailable(), true, 'isFieldManualAvailable also unlocks for legacy saves that cleared Hub #1');
+    resetInMemoryStoresForTest();
+
+    const session = createChapterSession({ chapterId: slug, startLevelId: 'level-05-task-ui-grid', preview: true });
+    session.arriveLevel();
+    session.skipOpeningDialog();
+    assert.ok(session.snapshot().inventory.items.includes('manual'), 'levels after Hub #1 carry manual via grants');
     assert.equal(session.exec('hold manual').code, 0);
     assert.equal(session.snapshot().inventory.held, 'manual');
     assert.ok(session.complete('hold m').matches.includes('manual'));
@@ -219,11 +257,13 @@ await withProcgen(async (_p, vite) => {
     assert.ok(comp.matches.includes('kill') && comp.matches.includes('kiro'), `expected kill & kiro in ${JSON.stringify(comp)}`);
 
     const chapter = readChapter(slug);
-    const battleLevel = chapter.levels.map((l) => l.spec).find((l) => l.enemies.length > 0 && !l.script?.safe);
-    assert.ok(battleLevel, 'expected at least one non-safe combat level in chapter');
+    const battleLevel = chapter.levels.map((l) => l.spec).find((l) => l.index >= 5 && l.enemies.length > 0 && !l.script?.safe);
+    assert.ok(battleLevel, 'expected at least one post-Hub combat level in chapter');
     if (battleLevel) {
       session.jumpToLevel(battleLevel.id);
-      session.exec('ls');
+      session.arriveLevel();
+      session.skipOpeningDialog();
+      assert.equal(session.snapshot().battle?.phase, 'intro', 'battle begins immediately once opening dialog finishes');
       session.skipBattleIntro();
       const b1 = session.snapshot().battle;
       assert.equal(b1?.phase, 'player');
@@ -260,11 +300,11 @@ await withProcgen(async (_p, vite) => {
     assert.ok(ITEM_IDS.includes('map'), 'map is registered in ITEM_IDS');
     assert.equal(ITEMS.map.model, 'item.map');
     assert.equal(ITEMS.map.heroModel, 'vibecoder.dev_map');
-    assert.ok(starterInventory().items.includes('map'), 'starterInventory carries map by default');
+    assert.equal(starterInventory().items.includes('map'), false, 'starterInventory does NOT carry map by default');
     assert.ok(findCommandDoc('map'), 'map command is documented in Field Manual');
 
     const chapterManifest = readChapter(slug).manifest;
-    assert.ok(chapterManifest.startItems?.includes('map'), 'chapter 1 startItems carries map');
+    assert.equal(chapterManifest.startItems?.includes('map') ?? false, false, 'chapter 1 startItems omits map');
 
     const topo = buildMotherboardTopology(chapterManifest, {}, chapterManifest.levels[0].id);
     assert.equal(topo.totalCount, chapterManifest.levels.length);
@@ -306,14 +346,29 @@ await withProcgen(async (_p, vite) => {
     assert.equal(resolveLevelByQuery(chapterManifest, 'deepseek').index, 7);
 
     const classic = createSession();
+    classic.run.inventory = starterInventory(['terminal']);
+    const classicDarkLs = classic.exec('ls');
+    assert.equal(classicDarkLs.code, 1, 'classic ls is refused without lantern');
+    assert.match(classicDarkLs.stderr ?? '', /lantern/i);
+    classic.run.inventory = giveItem(classic.run.inventory, 'lantern');
+    assert.equal(classic.exec('ls').code, 0, 'classic ls works once lantern is carried');
+    assert.equal(classic.exec('map 2').code, 1, 'classic map command is locked before carrying map');
+    assert.equal(classic.consumeMapRequest(), null);
+    classic.run.inventory = giveItem(classic.run.inventory, 'map');
     assert.equal(classic.exec('map 2').code, 0);
     assert.equal(classic.consumeMapRequest(), '2');
     assert.equal(classic.consumeMapRequest(), null);
     assert.ok(classic.complete('map ').matches.includes('boot'));
 
-    const session = createChapterSession({ chapterId: slug, preview: true });
-    session.skipTutorial();
-    assert.ok(session.snapshot().inventory.items.includes('map'), 'chapter session starts carrying map');
+    const earlySession = createChapterSession({ chapterId: slug, preview: true });
+    earlySession.skipTutorial();
+    assert.equal(earlySession.snapshot().inventory.items.includes('map'), false, 'Level 1 does not carry map');
+    assert.equal(earlySession.exec('map 4').code, 1, 'map command is locked before Hub #1');
+
+    const session = createChapterSession({ chapterId: slug, startLevelId: 'level-05-task-ui-grid', preview: true });
+    session.arriveLevel();
+    session.skipOpeningDialog();
+    assert.ok(session.snapshot().inventory.items.includes('map'), 'levels after Hub #1 carry map via grants');
     assert.equal(session.exec('hold map').code, 0);
     assert.equal(session.snapshot().inventory.held, 'map');
     assert.ok(session.complete('hold m').matches.includes('map'));
@@ -337,8 +392,13 @@ await withProcgen(async (_p, vite) => {
 
     assert.equal(session.exec('kiro.d disclaimer').code, 0);
     assert.ok(session.complete('kiro.d ').matches.includes('scan'));
-    const lockedA = createChapterSession({ chapterId: slug, startLevelId: 'level-03-task-gpu-salvage', pidSeed: 42, preview: true });
-    const lockedB = createChapterSession({ chapterId: slug, startLevelId: 'level-03-task-gpu-salvage', pidSeed: 42, preview: true });
+    const lockPack = structuredClone(getChapterPack(slug));
+    lockPack.levels[1].script = {
+      ...lockPack.levels[1].script,
+      locks: [{ command: 'kiro', until: { kind: 'has_item', item: 'lantern' }, message: 'kiro: locked in the dark!' }],
+    };
+    const lockedA = createChapterSession({ chapterId: slug, pack: structuredClone(lockPack), startLevelId: lockPack.levels[1].id, pidSeed: 42, preview: true });
+    const lockedB = createChapterSession({ chapterId: slug, pack: structuredClone(lockPack), startLevelId: lockPack.levels[1].id, pidSeed: 42, preview: true });
     lockedA.arriveLevel();
     lockedB.arriveLevel();
     const kiroLock = lockedA.exec('kiro scan');
@@ -346,6 +406,75 @@ await withProcgen(async (_p, vite) => {
     assert.equal(kiroLock.code, 1);
     assert.equal(kirodLock.code, 1);
     assert.equal(kirodLock.output, kiroLock.output, 'kiro.d must respect script.locks for kiro identically');
+  });
+
+  test('chapter map topology key stability and WebGL electricity spark shader + ribbon geometry', () => {
+    const chapterManifest = readChapter(slug).manifest;
+    const topoA = buildMotherboardTopology(chapterManifest, {}, chapterManifest.levels[0].id);
+    const topoB = buildMotherboardTopology(chapterManifest, {}, chapterManifest.levels[0].id);
+    const topoC = buildMotherboardTopology(chapterManifest, {}, chapterManifest.levels[1].id);
+    assert.equal(chapterMapTopologyKey(topoA), chapterMapTopologyKey(topoB), 'identical state produces identical board key');
+    assert.notEqual(chapterMapTopologyKey(topoA), chapterMapTopologyKey(topoC), 'changing current level invalidates board key');
+
+    const vs = buildMapSparkVertexShader();
+    const fs = buildMapSparkFragmentShader();
+    for (const sym of ['arcHash', 'arcPacket', 'sparkEnergy', 'uTime', 'uResolution', 'aPos', 'aPerp', 'aCross', 'aWire']) {
+      assert.ok(vs.includes(sym), `map spark vertex shader missing ${sym}`);
+    }
+    for (const sym of ['arcPacket', 'sparkEnergy', 'boltNode', 'sdSeg', 'outerYellow', 'brightYellow', 'hotCore', 'gl_FragColor']) {
+      assert.ok(fs.includes(sym), `map spark fragment shader missing ${sym}`);
+    }
+    for (const [name, cfg] of Object.entries(MAP_SPARK_STATES)) {
+      assert.equal((cfg.speed * MAP_SPARK_TIME_WRAP_S) % cfg.spacing, 0, `${name} primary spark wrap must be an exact integer cycle`);
+      assert.equal((cfg.speed * MAP_SPARK_TIME_WRAP_S) % (cfg.spacing * 0.5), 0, `${name} short-wire primary wrap must be an exact integer cycle`);
+      assert.ok(vs.includes(`${cfg.speed}.0`), `${name} primary speed must stay synced with shader GLSL`);
+      if (cfg.speed2 > 0) {
+        assert.equal((cfg.speed2 * MAP_SPARK_TIME_WRAP_S) % cfg.spacing2, 0, `${name} secondary spark wrap must be an exact integer cycle`);
+        assert.equal((cfg.speed2 * MAP_SPARK_TIME_WRAP_S) % (cfg.spacing2 * 0.5), 0, `${name} short-wire secondary wrap must be an exact integer cycle`);
+        assert.ok(vs.includes(`${cfg.speed2}.0`), `${name} secondary speed must stay synced with shader GLSL`);
+      }
+    }
+
+    // CSS transform + border normalization (e.g. cm-dialog-pop scale(0.96) + 4px board border) recovers exact padding-box coords
+    const scaledBox = toBoardLocalBox(
+      { left: 100 + (4 + 900) * 0.96, right: 100 + (4 + 904) * 0.96, top: 50 + (4 + 600) * 0.96, bottom: 50 + (4 + 604) * 0.96 },
+      { left: 100, top: 50, width: 1008 * 0.96, height: 708 * 0.96 },
+      1008,
+      708,
+      4,
+      4,
+    );
+    assert.equal(Math.round(scaledBox.left), 900);
+    assert.equal(Math.round(scaledBox.right), 904);
+    assert.equal(Math.round(scaledBox.top), 600);
+    assert.equal(Math.round(scaledBox.bottom), 604);
+
+    const empty = buildSparkRibbonData([]);
+    assert.equal(empty.geom.length, 0);
+    assert.equal(empty.indices.length, 0);
+    assert.equal(empty.ranges.length, 0);
+
+    const ribbon = buildSparkRibbonData([
+      { x1: 10, y1: 20, x2: 490, y2: 20, state: 'active', seed: 0.1 },
+      { x1: 50, y1: 50, x2: 50, y2: 50, state: 'powered', seed: 0.2 }, // degenerate zero-length span
+      { x1: 20, y1: 30, x2: 20, y2: 180, state: 'standby', seed: 0.7 },
+    ]);
+    assert.equal(ribbon.ranges.length, 3);
+    // Long 480px rail must sample <= 3px per segment so micro-bolts never alias or collapse
+    const longRailSegs = ribbon.ranges[0].count / 2 - 1;
+    assert.ok(480 / longRailSegs <= 3, `expected <= 3px/seg on 480px rail, got ${(480 / longRailSegs).toFixed(2)}px/seg`);
+    assert.equal(ribbon.ranges[1].count, 0, 'degenerate span emits 0 vertices while preserving range index');
+    assert.ok(ribbon.ranges[2].count > 0);
+    assert.equal(ribbon.wire[ribbon.ranges[0].start * 4 + 3], MAP_SPARK_STATES.active.code);
+    assert.equal(ribbon.wire[ribbon.ranges[2].start * 4 + 3], MAP_SPARK_STATES.standby.code);
+    // Horizontal span perpendicular should be unit vertical (0, 1)
+    assert.equal(Math.round(ribbon.geom[2] * 1000), 0);
+    assert.equal(Math.round(ribbon.geom[3] * 1000), 1000);
+
+    assert.equal(patchSparkRibbonStates(ribbon.wire, ribbon.ranges, ['active', 'powered', 'standby']), false, 'no-op state patch returns false');
+    assert.equal(patchSparkRibbonStates(ribbon.wire, ribbon.ranges, ['powered', 'off', 'active']), true, 'state change patch returns true');
+    assert.equal(ribbon.wire[ribbon.ranges[0].start * 4 + 3], MAP_SPARK_STATES.powered.code);
+    assert.equal(ribbon.wire[ribbon.ranges[2].start * 4 + 3], MAP_SPARK_STATES.active.code);
   });
 });
 

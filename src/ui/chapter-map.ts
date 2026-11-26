@@ -2,22 +2,15 @@ import { readChapterProgress } from '../chapters/catalog.js';
 import type { ChapterLevelSummary, ChapterManifest } from '../chapters/types.js';
 import { createStateMachine, type StateMachine, type TransitionTable } from '../contracts/state-machine.js';
 import type { GameSnapshot } from '../game/types.js';
-import {
-  buildCurrentBeacon,
-  buildDimmPostBay,
-  buildFanDipBay,
-  buildPcbBackdropDecor,
-  buildPciStorageBay,
-  buildVrmPowerBay,
-} from './chapter-map-hardware.js';
+import { buildBoardNodes, syncBoardSelection } from './chapter-map-hardware.js';
 import {
   buildMotherboardTopology,
   resolveLevelByQuery,
   resolveMapManifest,
   type MotherboardBlock,
-  type MotherboardChannel,
   type MotherboardTopology,
 } from './chapter-map-model.js';
+import { mountMapSparkOverlay } from './chapter-map-sparks.js';
 import { el, setText } from './dom-lite.js';
 import { createNativeModal } from './modal-dialog.js';
 
@@ -51,11 +44,20 @@ export function createChapterMapMachine(): StateMachine<ChapterMapMode, ChapterM
   return createStateMachine({ initial: 'closed', transitions: CHAPTER_MAP_TRANSITIONS });
 }
 
+/** Stable structural key for board DOM caching: unchanged clock ticks never rebuild the PCB DOM. */
+export function chapterMapTopologyKey(topo: MotherboardTopology): string {
+  const parts = topo.orderedBlocks.map(
+    (b) => `${b.level.id}:${b.status}:${b.record?.bestRank ?? ''}:${b.record?.bestCommands ?? ''}:${b.record?.bestTimeSec ?? ''}:${b.record?.chaosCleared ? 1 : 0}`,
+  );
+  return `${topo.manifest.id}|${topo.clearedCount}/${topo.totalCount}|${parts.join(',')}`;
+}
+
 interface MapParts {
   dialog: HTMLDialogElement;
-  issueBadge: HTMLElement;
+  progLeds: HTMLElement;
   progressBadge: HTMLElement;
   board: HTMLElement;
+  boardInner: HTMLElement;
   inspector: HTMLElement;
   inspBadge: HTMLElement;
   inspStatus: HTMLElement;
@@ -70,118 +72,16 @@ interface MapParts {
   confirmNote: HTMLElement;
   confirmYes: HTMLButtonElement;
   confirmNo: HTMLButtonElement;
-  closeBtn: HTMLButtonElement;
   xBtn: HTMLButtonElement;
 }
 
-function buildBlockButton(
-  block: MotherboardBlock,
-  selectedId: string,
-  onSelect: (id: string) => void,
-  onQuickDeploy: (id: string) => void,
-): HTMLButtonElement {
-  const { level, status, chipPackage, record, grants } = block;
-  const selected = level.id === selectedId;
-  const cls = `cm-block pkg-${level.mechanic} status-${status}${selected ? ' selected' : ''}`;
-  const numText = `LVL ${String(level.index).padStart(2, '0')}`;
-  const threatLabel =
-    level.enemies.length > 0
-      ? `${level.enemies.length} THREAT${level.enemies.length > 1 ? 'S' : ''}`
-      : 'SAFE';
-  const stateTag =
-    status === 'current'
-      ? '◉ ACTIVE // HERE'
-      : status === 'cleared'
-        ? `RANK ${record?.bestRank ?? 'S'}`
-        : status === 'ready'
-          ? `OPENED · ${threatLabel}`
-          : 'LOCKED // UNKNOWN';
-
-  const top = el('div', 'cm-block-top', [
-    el('span', 'cm-led'),
-    el('span', 'cm-block-num', [numText]),
-    el('span', 'cm-block-pkg', [chipPackage]),
-  ]);
-  const title = el('strong', 'cm-block-title', [level.title]);
-  const cwd = el('code', 'cm-block-cwd', [level.cwd]);
-  const footChildren: (Node | string)[] = [el('span', `cm-block-state ${status}`, [stateTag])];
-  if (grants.length > 0) footChildren.push(el('span', 'cm-block-grant', [grants[0]!]));
-  const foot = el('div', 'cm-block-foot', footChildren);
-
-  const btn = el('button', cls, [
-    el('span', 'cm-pins-l'),
-    el('span', 'cm-pins-r'),
-    ...(status === 'current' ? [buildCurrentBeacon()] : []),
-    top,
-    title,
-    cwd,
-    foot,
-  ]) as HTMLButtonElement;
-  btn.type = 'button';
-  btn.dataset.levelId = level.id;
-  btn.dataset.levelIndex = String(level.index);
-  btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
-  btn.setAttribute('aria-label', `${numText}: ${level.title} (${status})`);
-  btn.onclick = () => onSelect(level.id);
-  btn.ondblclick = () => onQuickDeploy(level.id);
-  return btn;
-}
-
-function buildWire(label: string, powered: boolean, toHub = false, activeFlow = false): HTMLElement {
-  const cls = `cm-wire${powered ? ' powered' : ''}${toHub ? ' to-hub' : ''}${activeFlow ? ' active-flow' : ''}`;
-  return el('div', cls, [
-    el('span', 'cm-wire-line', powered || activeFlow ? [el('span', 'cm-wire-pulse')] : []),
-    el('span', 'cm-wire-tag', [label]),
-    el('span', 'cm-wire-arrow', ['>']),
-  ]);
-}
-
-function buildChannelRow(
-  channel: MotherboardChannel,
-  selectedId: string,
-  onSelect: (id: string) => void,
-  onQuickDeploy: (id: string) => void,
-): HTMLElement {
-  const chState = channel.hasCurrent ? '◉ ACTIVE BUS' : channel.powered ? 'ONLINE' : 'OFFLINE // UNPROBED';
-  const chCls = channel.hasCurrent ? ' active' : channel.powered ? ' online' : ' offline';
-  const head = el('div', 'cm-channel-head', [
-    el('span', 'cm-channel-code', [channel.code]),
-    el('span', 'cm-channel-bus', [channel.busLabel]),
-    el('span', `cm-channel-state${chCls}`, [chState]),
-  ]);
-  const trackNodes: HTMLElement[] = [];
-  channel.taskBlocks.forEach((b, i) => {
-    if (i > 0) {
-      const prev = channel.taskBlocks[i - 1]!;
-      const wirePowered = b.status !== 'unknown' && prev.status !== 'unknown';
-      const wireFlow = b.status === 'current' || prev.status === 'current';
-      trackNodes.push(buildWire('BUS', wirePowered, false, wireFlow));
-    }
-    trackNodes.push(buildBlockButton(b, selectedId, onSelect, onQuickDeploy));
-  });
-  if (channel.hubBlock) {
-    if (channel.taskBlocks.length > 0) {
-      const grantText = channel.hubBlock.coreGrant ?? 'UPGRADE';
-      const lastTask = channel.taskBlocks[channel.taskBlocks.length - 1]!;
-      const hubPowered = channel.hubBlock.status !== 'unknown' && lastTask.status !== 'unknown';
-      const hubFlow = channel.hubBlock.status === 'current' || lastTask.status === 'current';
-      trackNodes.push(buildWire(grantText, hubPowered, true, hubFlow));
-    }
-    trackNodes.push(buildBlockButton(channel.hubBlock, selectedId, onSelect, onQuickDeploy));
-  }
-  const track = el('div', 'cm-channel-track', trackNodes);
-  return el('section', `cm-channel${channel.powered ? ' powered' : ' unpowered'}${channel.hasCurrent ? ' has-current' : ''}`, [
-    head,
-    track,
-  ]);
-}
+const DISPOSERS = new WeakMap<Element, () => void>();
 
 function buildDialogParts(): MapParts {
-  const badge = el('span', 'cm-kicker', ['MOTHERBOARD SCHEMATIC // REV 1.1']);
   const title = el('h2', 'cm-title', ['CHAPTER CIRCUIT MAP']);
   title.id = 'cm-title';
-  const issueBadge = el('span', 'cm-issue-badge');
-  issueBadge.id = 'cm-issue-badge';
+  const progLeds = el('div', 'cm-prog-leds');
+  progLeds.setAttribute('aria-hidden', 'true');
   const progressBadge = el('span', 'cm-progress-badge');
   progressBadge.id = 'cm-progress-badge';
 
@@ -191,11 +91,13 @@ function buildDialogParts(): MapParts {
   xBtn.id = 'cm-close-x';
   xBtn.setAttribute('aria-label', 'Close chapter motherboard map');
 
-  const headLeft = el('div', 'cm-head-left', [badge, title, issueBadge]);
-  const headRight = el('div', 'cm-head-right', [progressBadge, xBtn]);
-  const head = el('header', 'cm-head', [headLeft, headRight]);
+  const head = el('header', 'cm-head', [
+    el('div', 'cm-head-left', [title]),
+    el('div', 'cm-head-right', [progLeds, progressBadge, xBtn]),
+  ]);
 
-  const board = el('div', 'cm-board');
+  const boardInner = el('div', 'cm-board-inner');
+  const board = el('div', 'cm-board', [boardInner]);
   board.id = 'cm-board';
   board.setAttribute('role', 'region');
   board.setAttribute('aria-label', 'Motherboard circuit layout');
@@ -213,7 +115,7 @@ function buildDialogParts(): MapParts {
   const deployBtn = el('button', 'cm-deploy-btn', ['Deploy to Level']) as HTMLButtonElement;
   deployBtn.type = 'button';
   deployBtn.id = 'cm-deploy-btn';
-  const confirmNote = el('p', 'cm-confirm-note', ['Current sector commands will be dropped. Deploy anyway?']);
+  const confirmNote = el('p', 'cm-confirm-note', ['Drop current sector progress and deploy?']);
   const confirmYes = el('button', 'cm-confirm-yes', ['Confirm Deploy']) as HTMLButtonElement;
   confirmYes.type = 'button';
   confirmYes.id = 'cm-confirm-yes';
@@ -229,29 +131,15 @@ function buildDialogParts(): MapParts {
     inspSummary,
     inspBest,
     inspMeta,
-    el('div', 'cm-insp-group', [el('div', 'cm-insp-label', ['TEACHES / SHELL BUS']), inspTeaches]),
-    el('div', 'cm-insp-group', [el('div', 'cm-insp-label', ['ACTIVE THREATS']), inspThreats]),
+    el('div', 'cm-insp-group', [el('div', 'cm-insp-label', ['SHELL BUS']), inspTeaches]),
+    el('div', 'cm-insp-group', [el('div', 'cm-insp-label', ['THREATS']), inspThreats]),
     el('div', 'cm-insp-actions', [deployBtn, confirmRow]),
   ]);
   inspector.id = 'cm-inspector';
   inspector.setAttribute('aria-live', 'polite');
 
   const workspace = el('div', 'cm-workspace', [board, inspector]);
-
-  const legend = el('div', 'cm-legend', [
-    el('span', 'cm-leg-item active', ['ACTIVE (HERE)']),
-    el('span', 'cm-leg-item cleared', ['CLEARED']),
-    el('span', 'cm-leg-item ready', ['OPENED']),
-    el('span', 'cm-leg-item unknown', ['UNKNOWN']),
-    el('span', 'cm-leg-hint', ['Arrows: select · F3 / Esc: close']),
-  ]);
-  const closeBtn = el('button', 'cm-close-btn', ['Close']) as HTMLButtonElement;
-  closeBtn.type = 'submit';
-  closeBtn.value = 'close';
-  closeBtn.id = 'cm-close-btn';
-  const foot = el('footer', 'cm-foot', [legend, closeBtn]);
-
-  const form = el('form', 'cm-form', [head, workspace, foot]) as HTMLFormElement;
+  const form = el('form', 'cm-form', [head, workspace]) as HTMLFormElement;
   form.setAttribute('method', 'dialog');
   const dialog = el('dialog', 'chapter-map-dialog', [form]) as HTMLDialogElement;
   dialog.id = 'chapter-map-dialog';
@@ -260,9 +148,10 @@ function buildDialogParts(): MapParts {
 
   return {
     dialog,
-    issueBadge,
+    progLeds,
     progressBadge,
     board,
+    boardInner,
     inspector,
     inspBadge,
     inspStatus,
@@ -277,121 +166,61 @@ function buildDialogParts(): MapParts {
     confirmNote,
     confirmYes,
     confirmNo,
-    closeBtn,
     xBtn,
   };
 }
 
-function renderBoard(
-  p: MapParts,
-  topo: MotherboardTopology,
-  selectedId: string,
-  onSelect: (id: string) => void,
-  onQuickDeploy: (id: string) => void,
-): void {
-  const { manifest, bootBlock, channels, coreBlocks, clearedCount, totalCount } = topo;
-  const selectedBlock = topo.orderedBlocks.find((b) => b.level.id === selectedId) ?? topo.orderedBlocks[0]!;
-  setText(p.issueBadge, `${manifest.badge} // ${totalCount} SECTORS`);
-  setText(p.progressBadge, `${clearedCount}/${totalCount} CLEARED`);
+function renderProgressHeader(p: MapParts, topo: MotherboardTopology): void {
+  setText(p.progressBadge, `${topo.clearedCount}/${topo.totalCount} CLEARED`);
+  p.progLeds.replaceChildren(...topo.orderedBlocks.map((b) => el('span', `cm-prog-seg ${b.status}`)));
+}
 
-  const nodes: HTMLElement[] = [
-    buildPcbBackdropDecor(),
-    el('span', 'cm-screw tl'),
-    el('span', 'cm-screw tr'),
-    el('span', 'cm-screw bl'),
-    el('span', 'cm-screw br'),
-    el('div', 'cm-pcb-header', [
-      el('span', 'cm-silk', [`PCB // ${manifest.id.toUpperCase()}`]),
-      el('span', 'cm-rails', ['+5V_VRAM · GGUF_BUS · PID1_IRQ · REV_1.1']),
-    ]),
-  ];
-
-  if (bootBlock) {
-    const bootStage = el('section', 'cm-stage cm-stage-boot', [
-      el('div', 'cm-socket-tag', ['SOCKET 00 // BOOT ROM']),
-      buildBlockButton(bootBlock, selectedId, onSelect, onQuickDeploy),
-    ]);
-    nodes.push(el('div', 'cm-top-deck', [buildVrmPowerBay(topo), bootStage, buildDimmPostBay(topo, selectedBlock)]));
-    if (channels.length > 0) {
-      const bridgeActive = bootBlock.status === 'current' || bootBlock.status === 'cleared';
-      nodes.push(
-        el('div', `cm-bus-bridge${bridgeActive ? ' active-flow' : ''}`, [
-          el('span', 'cm-bus-stem'),
-          el('span', 'cm-bus-label', ['3-CHANNEL DATA BUS']),
-          el('span', 'cm-bus-rail'),
-        ]),
-      );
-    }
+function renderSummaryWithCode(target: HTMLElement, text: string): void {
+  const parts = text.split(/`([^`]+)`/g);
+  const nodes: (Node | string)[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    const seg = parts[i]!;
+    if (!seg) continue;
+    nodes.push(i % 2 === 1 ? el('code', 'cm-inline-code', [seg]) : seg);
   }
-
-  if (channels.length > 0) {
-    nodes.push(
-      el(
-        'div',
-        'cm-channels',
-        channels.map((ch) => buildChannelRow(ch, selectedId, onSelect, onQuickDeploy)),
-      ),
-    );
-  }
-
-  if (coreBlocks.length > 0) {
-    const mergeActive = coreBlocks.some((b) => b.status === 'current' || b.status === 'cleared' || b.status === 'ready');
-    const coreStage = el('section', 'cm-stage cm-stage-core', [
-      el('div', 'cm-socket-tag core', [`CPU CORE SOCKET // PID ${manifest.boss.pid}`]),
-      el('span', 'cm-zif-lever'),
-      ...coreBlocks.map((b) => buildBlockButton(b, selectedId, onSelect, onQuickDeploy)),
-    ]);
-    nodes.push(
-      el('div', `cm-bus-bridge merge${mergeActive ? ' active-flow' : ''}`, [
-        el('span', 'cm-bus-rail'),
-        el('span', 'cm-bus-label', ['NORTHBRIDGE // KERNEL BUS']),
-        el('span', 'cm-bus-stem'),
-      ]),
-      el('div', 'cm-core-deck', [buildPciStorageBay(topo), coreStage, buildFanDipBay(topo)]),
-    );
-  }
-
-  p.board.replaceChildren(...nodes);
+  target.replaceChildren(...nodes);
 }
 
 function renderInspector(p: MapParts, topo: MotherboardTopology, block: MotherboardBlock, confirmOpen: boolean): void {
-  const { manifest } = topo;
   const { level, status, chipPackage, record, grants, summary } = block;
   const lvlPad = String(level.index).padStart(2, '0');
   setText(p.inspBadge, `${chipPackage} // LVL ${lvlPad}/${String(topo.totalCount).padStart(2, '0')}`);
   p.inspStatus.className = `cm-insp-status ${status}`;
   const inspLabel =
     status === 'current'
-      ? '◉ CURRENT SECTOR'
+      ? '◉ CURRENT'
       : record?.cleared
-        ? `CLEARED • RANK ${record.bestRank}`
+        ? `CLEARED • ${record.bestRank}`
         : status === 'ready'
-          ? 'OPENED • READY'
-          : 'UNKNOWN • UNPROBED';
+          ? 'OPENED'
+          : 'UNKNOWN';
   setText(p.inspStatus, inspLabel);
   setText(p.inspTitle, level.title);
-  setText(p.inspSummary, summary);
+  renderSummaryWithCode(p.inspSummary, summary);
 
   if (record?.cleared) {
     p.inspBest.classList.remove('hidden');
     setText(
       p.inspBest,
-      `BEST CLEAR: Rank ${record.bestRank} · ${record.bestCommands} cmd(s) · ${record.bestTimeSec}s${record.chaosCleared ? ' · Chaos' : ''}`,
+      `BEST: Rank ${record.bestRank} · ${record.bestCommands} cmd · ${record.bestTimeSec}s${record.chaosCleared ? ' · Chaos' : ''}`,
     );
   } else {
     p.inspBest.classList.add('hidden');
   }
 
   const metaPairs: Array<[string, string]> = [
-    ['Directory', level.cwd],
-    ['Room Set', `room.${level.roomKind}`],
-    ['Mechanic', level.mechanicLabel],
-    ['Difficulty', `${'*'.repeat(level.difficulty)}${'-'.repeat(5 - level.difficulty)} (${level.difficulty}/5)`],
-    ['Bus Grants', grants.length ? grants.join(' · ') : 'None (salvage sector)'],
-    [level.mechanic === 'boss' ? 'Boss' : 'Ally', level.mechanic === 'boss' ? manifest.boss.name : manifest.allyNpc.name],
+    ['Path', level.cwd],
+    ['Type', level.mechanicLabel],
+    ['Threat', `${'*'.repeat(level.difficulty)}${'-'.repeat(5 - level.difficulty)} (${level.difficulty}/5)`],
+    ['Grants', grants.length ? grants.join(' · ') : 'None'],
   ];
   p.inspMeta.replaceChildren(
-    ...metaPairs.flatMap(([k, v]) => [el('dt', '', [k]), el('dd', '', [k === 'Directory' || k === 'Room Set' ? el('code', '', [v]) : v])]),
+    ...metaPairs.flatMap(([k, v]) => [el('dt', '', [k]), el('dd', '', [k === 'Path' ? el('code', '', [v]) : v])]),
   );
 
   p.inspTeaches.replaceChildren(
@@ -400,11 +229,11 @@ function renderInspector(p: MapParts, topo: MotherboardTopology, block: Motherbo
   p.inspThreats.replaceChildren(
     ...(level.enemies.length
       ? level.enemies.map((e) => el('span', 'cm-chip enemy', [`malware.${e}`]))
-      : [el('span', 'cm-chip safe', ['0 hostiles (Safe Zone)'])]),
+      : [el('span', 'cm-chip safe', ['0 hostiles'])]),
   );
 
   setText(p.deployBtn, status === 'current' ? `Reload Level ${lvlPad} >` : `Deploy to Level ${lvlPad} >`);
-  setText(p.confirmYes, `Confirm Deploy to Level ${lvlPad}`);
+  setText(p.confirmYes, `Confirm Level ${lvlPad}`);
   p.confirmRow.classList.toggle('hidden', !confirmOpen);
   p.deployBtn.classList.toggle('hidden', confirmOpen);
 }
@@ -433,7 +262,7 @@ function wireMapControls(p: MapParts, d: MapWireDeps): void {
     const delta = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
     const next = blocks[(idx + delta + blocks.length) % blocks.length]!;
     d.selectLevel(next.level.id);
-    findBlockBtn(p.board, next.level.id)?.focus({ preventScroll: true });
+    findBlockBtn(p.boardInner, next.level.id)?.focus({ preventScroll: true });
   });
   p.deployBtn.onclick = () => d.triggerDeploy(false);
   p.confirmYes.onclick = () => d.triggerDeploy(true);
@@ -441,15 +270,23 @@ function wireMapControls(p: MapParts, d: MapWireDeps): void {
 }
 
 /**
- * Big motherboard-styled Chapter Map popup dialog (`#chapter-map-dialog`).
+ * Motherboard-styled Chapter Map popup dialog (`#chapter-map-dialog`) sized to viewport height.
  * Blocks terminal input while open without pausing the game clock or 30s battle turn timer.
  */
 export function mountChapterMap(host: HTMLElement, handlers: ChapterMapHandlers): ChapterMapDialog {
-  host.querySelector('#chapter-map-dialog')?.remove();
+  const prev = host.querySelector('#chapter-map-dialog');
+  if (prev) {
+    DISPOSERS.get(prev)?.();
+    prev.remove();
+  }
   const p = buildDialogParts();
   host.appendChild(p.dialog);
 
+  const sparks = mountMapSparkOverlay(p.board);
+  DISPOSERS.set(p.dialog, () => sparks.dispose());
+
   let selectedId = '';
+  let lastBoardKey = '';
   const fsm = createChapterMapMachine();
   let topology: MotherboardTopology | null = null;
 
@@ -461,42 +298,64 @@ export function mountChapterMap(host: HTMLElement, handlers: ChapterMapHandlers)
   const selectedBlock = (topo: MotherboardTopology): MotherboardBlock =>
     topo.orderedBlocks.find((b) => b.level.id === selectedId) ?? topo.orderedBlocks[0]!;
 
-  const modal = createNativeModal(p.dialog, [p.closeBtn, p.xBtn], (back) => {
+  const modal = createNativeModal(p.dialog, [p.xBtn], (back) => {
+    sparks.stop();
     fsm.send('CLOSE');
     handlers.onClose?.(back);
   });
 
-  const draw = (): void => {
+  const syncAll = (forceBoard: boolean): void => {
     const topo = currentTopology();
     const block = selectedBlock(topo);
     selectedId = block.level.id;
-    renderBoard(p, topo, selectedId, selectLevel, quickDeploy);
+    const key = chapterMapTopologyKey(topo);
+    if (forceBoard || key !== lastBoardKey) {
+      lastBoardKey = key;
+      renderProgressHeader(p, topo);
+      p.boardInner.replaceChildren(...buildBoardNodes(topo, selectedId, selectLevel, quickDeploy));
+      syncBoardSelection(p.boardInner, block);
+      sparks.syncWires();
+    } else {
+      syncBoardSelection(p.boardInner, block);
+      sparks.syncStates();
+    }
     renderInspector(p, topo, block, fsm.state === 'confirming');
   };
-  const selectLevel = (id: string): void => {
-    if (selectedId === id) return;
+
+  const applySelection = (id: string): void => {
     selectedId = id;
     fsm.send('SELECT');
-    handlers.onMove?.();
-    draw();
+    const topo = topology ?? currentTopology();
+    const block = selectedBlock(topo);
+    syncBoardSelection(p.boardInner, block);
+    sparks.syncStates();
+    renderInspector(p, topo, block, false);
   };
+
+  const selectLevel = (id: string): void => {
+    if (selectedId === id) return;
+    handlers.onMove?.();
+    applySelection(id);
+  };
+
   const triggerDeploy = (forceDirect = false): void => {
     const topo = topology ?? currentTopology();
     const block = selectedBlock(topo);
-    if (!forceDirect && handlers.hasUnsavedLevelProgress?.() && fsm.state === 'browsing') {
-      fsm.send('ARM_DEPLOY');
-      handlers.onMove?.();
-      renderInspector(p, topo, block, true);
+    if (!forceDirect && handlers.hasUnsavedLevelProgress?.()) {
+      if (fsm.state === 'browsing') {
+        fsm.send('ARM_DEPLOY');
+        handlers.onMove?.();
+        renderInspector(p, topo, block, true);
+      }
       p.confirmNo.focus?.({ preventScroll: true });
       return;
     }
     modal.close();
     handlers.onDeploy(block.level, topo.manifest.id);
   };
+
   const quickDeploy = (id: string): void => {
-    selectedId = id;
-    fsm.send('SELECT');
-    draw();
+    applySelection(id);
     triggerDeploy(false);
   };
 
@@ -509,7 +368,8 @@ export function mountChapterMap(host: HTMLElement, handlers: ChapterMapHandlers)
     cancelConfirm: () => {
       fsm.send('CANCEL_DEPLOY');
       handlers.onMove?.();
-      draw();
+      const topo = topology ?? currentTopology();
+      renderInspector(p, topo, selectedBlock(topo), false);
       p.deployBtn.focus?.({ preventScroll: true });
     },
   });
@@ -521,14 +381,22 @@ export function mountChapterMap(host: HTMLElement, handlers: ChapterMapHandlers)
       selectedId = resolveLevelByQuery(topo.manifest, queryOrIndex, handlers.getCurrentLevelId?.() ?? null).id;
       if (wasOpen) fsm.send('SELECT');
       else fsm.send('OPEN');
-      draw();
-      modal.open(findBlockBtn(p.board, selectedId) ?? p.closeBtn);
+      syncAll(!lastBoardKey);
+      modal.open(findBlockBtn(p.boardInner, selectedId) ?? p.xBtn);
+      sparks.start();
+      window.requestAnimationFrame?.(() => {
+        if (modal.isOpen()) sparks.syncWires();
+      });
       if (!wasOpen) handlers.onOpen?.();
     },
     close: modal.close,
     isOpen: modal.isOpen,
     update() {
-      if (modal.isOpen()) draw();
+      if (!modal.isOpen()) return;
+      const topo = currentTopology();
+      const key = chapterMapTopologyKey(topo);
+      if (key === lastBoardKey) return;
+      syncAll(true);
     },
   };
 }
