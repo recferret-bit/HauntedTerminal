@@ -4,13 +4,13 @@
     {
       "name": "Dry run: new character asset",
       "trigger": "PostFileCreate",
-      "description": "Dummy run when a character (vibecoder, npc, agent, malware) archetype file is created.",
+      "description": "Report-only: when a character (vibecoder, npc, agent, malware) archetype file is created, runs the model geometry validator and the anim tag check. Always exits 0.",
       "matcher": "src/procgen/archetypes/(vibecoder|npc|agents|malware)[^/]*(/[^/]*)?\\.ts$",
       "action": {
         "type": "command",
-        "command": "node scripts/hooks/asset-dryrun.mjs character",
-        "timeout": 20
-      }
+        "command": "node scripts/hooks/asset-dryrun.mjs character"
+      },
+      "timeout": 20
     }
   ]
 }

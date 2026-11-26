@@ -28,14 +28,19 @@ const MAX_SIDE = 1024; // an albedo map on a mesh shown ~100 px tall; anything b
 const MIN_SIDE = 32;
 const SPRITE_DIR = 'public/assets/sprites';
 
-// Keys that actually receive a texture: ComicStage.buildScene() binds registry.getTexture(mesh.userData.assetKey),
-// and procedural-cast.ts sets assetKey to the group name given to begin('<key>').
+// Keys a PNG could attach to: the stage stamps `userData.assetKey` on every actor group (`buildActorModel` in
+// src/renderer/stage-cast.ts): the LEGACY_CAST keys of src/renderer/procgen-cast.ts, plus the literal keys stage-cast.ts sets.
+// Note: nothing calls AssetRegistry.getTexture yet, so a PNG is loaded and listed in F2 but not put on a mesh.
 function castKeys() {
-  const file = resolve(root, 'src/renderer/procedural-cast.ts');
-  if (!existsSync(file)) return null;
-  const src = readFileSync(file, 'utf8');
-  const keys = new Set([...src.matchAll(/begin\('([\w-]+)'\)/g)].map((m) => m[1]));
-  for (const m of src.matchAll(/userData\.assetKey = '([\w-]+)'/g)) keys.add(m[1]);
+  const castFile = resolve(root, 'src/renderer/procgen-cast.ts');
+  const stageFile = resolve(root, 'src/renderer/stage-cast.ts');
+  if (!existsSync(castFile) || !existsSync(stageFile)) return null;
+  const cast = readFileSync(castFile, 'utf8');
+  const table = cast.slice(cast.indexOf('LEGACY_CAST'), cast.indexOf('};', cast.indexOf('LEGACY_CAST')));
+  const keys = new Set([...table.matchAll(/^\s*([a-z_]+):\s*\{/gm)].map((m) => m[1]));
+  for (const m of readFileSync(stageFile, 'utf8').matchAll(/userData\.assetKey = '([\w-]+)'/g)) keys.add(m[1]);
+  for (const m of cast.matchAll(/group\.name = '([\w-]+)'/g)) keys.add(m[1]);
+  keys.add('entity');
   return keys;
 }
 
@@ -94,7 +99,7 @@ if (manifest) {
     else if (!zones.some((z) => colorDistance(z.rgb, [1, 3, 5].map((i) => parseInt(tintFallback.slice(i, i + 2), 16))) < 40)) {
       notes.push(`${at}: tintFallback ${tintFallback} is not a palette colour (harmless today: nothing reads tintFallback)`);
     }
-    if (keys && !keys.has(key)) warn(`${at}: no mesh in src/renderer/procedural-cast.ts has this key, so its PNG would never be shown`);
+    if (keys && !keys.has(key)) warn(`${at}: no stage actor (LEGACY_CAST in src/renderer/procgen-cast.ts, stage-cast.ts) has this key, so its PNG would never be shown`);
 
     let status = 'procedural (no PNG)';
     if (typeof textureUrl !== 'string' || !/^\/assets\/sprites\/[\w.-]+\.png$/.test(textureUrl)) {

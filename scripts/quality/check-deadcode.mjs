@@ -15,6 +15,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const SRC = join(ROOT, 'src');
 const PAGES = join(ROOT, 'pages');
 
+// Public API allowlist: files whose exports are kept without an importer. Adding a file here needs a user
+// decision recorded in a Kiro spec (see .kiro/specs/architecture-hardening/); agents never extend it.
 const PUBLIC_API_FILES = new Set([
   'src/contracts/brand.ts',
   'src/procgen/index.ts',

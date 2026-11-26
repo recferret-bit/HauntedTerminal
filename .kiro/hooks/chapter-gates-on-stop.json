@@ -4,12 +4,12 @@
     {
       "name": "Declarative and catalog gate on stop",
       "trigger": "Stop",
-      "description": "Final gate when the agent stops: no chapter/level/comix page named in code, and compiled chapter & comix catalogs match disk. Under 1 s, report-only.",
+      "description": "Report-only final gate when the agent stops: no chapter/level/comix page named in code, and compiled chapter & comix catalogs match disk. Runs every step, prints a FAILED line per failing step, always exits 0. Under 1 s.",
       "action": {
         "type": "command",
-        "command": "node scripts/quality/check-declarative.mjs; node scripts/harness/generate-chapter.mjs --check; node scripts/harness/generate-comix.mjs --check",
-        "timeout": 30
-      }
+        "command": "f=0; for c in 'node scripts/quality/check-declarative.mjs' 'node scripts/harness/generate-chapter.mjs --check' 'node scripts/harness/generate-comix.mjs --check'; do sh -c \"$c\" 2>&1 || { f=$((f+1)); echo \"FAILED (report-only): run $c\"; }; done; if [ \"$f\" -eq 0 ]; then echo 'chapter gates: all steps passed'; else echo \"chapter gates: $f step(s) FAILED (report-only, see above)\"; fi; exit 0"
+      },
+      "timeout": 30
     }
   ]
 }

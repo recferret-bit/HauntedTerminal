@@ -6,7 +6,7 @@ Every texture registered in `TextureCatalog` (`src/procgen/textures/index.ts`). 
 node .kiro/skills/procedural-texture-synthesis/scripts/validate-textures.mjs --all --list
 ```
 
-and look at them all at once with `npm run procgen:textures` (sheet: `scripts/harness/out/textures.png`,
+and look at them all at once with `node .kiro/skills/procedural-texture-synthesis/scripts/validate-textures.mjs --all --sheet` (sheet: `scripts/harness/out/textures.png`,
 cell order printed to stdout).
 
 Columns: **zones** is the palette lock (ink, paper and the x0.68 / x0.4 cel shades of each zone are

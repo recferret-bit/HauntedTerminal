@@ -305,7 +305,7 @@ export const ANIM_MALWARE_ACTING: Record<string, AnimActingSheet> = {
       ] },
     },
     phases: [
-      { name: 'forking', state: 'idle', attackEveryTicks: 4, note: 'Forks a zombie every 4 s.' },
+      { name: 'forking', state: 'idle', attackEveryTicks: 4, note: 'Forks a zombie every 4 enemy turns.' },
       { name: 'frozen', state: 'frozen', attackEveryTicks: 0, note: 'kill -STOP: no forks, no damage. The opening to kill -9.' },
       { name: 'enraged', state: 'enraged', attackEveryTicks: 4, note: 'kill -15 was trapped: same cadence, louder.' },
     ],

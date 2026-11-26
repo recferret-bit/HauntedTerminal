@@ -140,7 +140,7 @@ src/procgen/
   fx/          comic particle / onomatopoeia presets
   validate/    model and texture validators
 src/shaders/   comic-material (cel + ink rim + halftone), pixel-art pass, crt pass, lightning
-src/renderer/  comic-stage (the page, panels, camera), procedural-cast (the game's current actors)
+src/renderer/  comic-stage (the page, panels, camera), stage-cast + procgen-cast (actors built from ModelCatalog)
 ```
 
 A model is **plain data** (`ModelSpec`): a list of named parts, each a shape, a zone, a transform and
@@ -160,15 +160,15 @@ Run from the project root. Every script loads the TypeScript directly (Vite SSR)
 
 | Command | What it does |
 |---|---|
-| `npm run procgen:sheet` | Renders every model to `scripts/harness/out/models.png` as the game camera sees it, with an in-game-scale thumbnail in each cell. **Open the PNG and look at it.** `node scripts/harness/render-sheet.mjs <id>... [--views] [--category c] [--bg paper]` for a subset. |
-| `npm run procgen:validate` | Model validator: geometry, grounding, palette families, 60/30/10, front readability. |
-| `npm run procgen:textures` | Texture validator and texture contact sheet. |
-| `npm run procgen:fx` | FX preset validator; `--sheet` writes a filmstrip to `scripts/harness/out/fx.png`. |
-| `npm run procgen:anim` | Checks every model's AnimTags and steps every animator state (no NaN, no limb through the floor). |
-| `npm run procgen:selftest` | Proves the validators and the animator do what they claim, plus the harness smoke test. |
-| `npm run procgen:check` | tsc, self-tests, model / texture / FX validation and the sheet. Must be green before work is called done. |
+| `node scripts/harness/render-sheet.mjs --all` | Renders every model to `scripts/harness/out/models.png` as the game camera sees it, with an in-game-scale thumbnail in each cell. **Open the PNG and look at it.** `node scripts/harness/render-sheet.mjs <id>... [--views] [--category c] [--bg paper]` for a subset. |
+| `node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict` | Model validator: geometry, grounding, palette families, 60/30/10, front readability. |
+| `node .kiro/skills/procedural-texture-synthesis/scripts/validate-textures.mjs --all` | Texture validator; add `--sheet` for the contact sheet `scripts/harness/out/textures.png`. |
+| `node .kiro/skills/particle-effect-validator/scripts/validate-particles.mjs --all` | FX preset validator plus the catalog check; `--sheet` writes a filmstrip to `scripts/harness/out/fx.png`. |
+| `node .kiro/skills/procedural-animation-3d/scripts/check-tags.mjs --all` | Checks every model's AnimTags and plays every animator state on it (no NaN, `reset()` restores the pose). |
+| Self-tests | Prove the validators and the animator do what they claim: `node .kiro/skills/<skill>/scripts/self-test.mjs` for `model-geometry-validator`, `procedural-texture-synthesis`, `particle-effect-validator` and `procedural-animation-3d`, plus `node scripts/harness/smoke.mjs` (builds, rasterizes and renders a throwaway model). |
+| The asset gate | `npx tsc --noEmit`, the self-tests, the four validators above, the sheet, and `npm run quality:fingerprint` (byte-identical on refactors; diff and explain intended asset changes). Must be green before work is called done. |
 | `npm start` then `/storybook.html` | The real thing: models, textures (`?tab=textures`) and effects (`?tab=fx`) under the game's shaders, pixel-art and CRT passes. URL parameters: [storybook-url-params.md](../comic-panel-viewport-auditor/references/storybook-url-params.md). |
-| `node scripts/harness/screenshot-lab.mjs --query "inspect=<id>&scale=game" --name <n>` | Headless-Chrome screenshot of the storybook (real WebGL) to `scripts/harness/out/lab-<n>.png`. Read the PNG. `--page / --query nointro --eval "<js>"` shoots the game itself (drive it with `window.__term.submit(line)`). |
+| `node scripts/harness/screenshot-lab.mjs --query "inspect=<id>&scale=game" --name <n>` | Headless-Chrome screenshot of the storybook (real WebGL) to `scripts/harness/out/lab-<n>.png`. Read the PNG. `--page /play --query nointro --eval "<js>"` shoots the game itself (drive it with `window.__term.submit(line)`). |
 | `/cinematic.html?play=intro\|outro&t=<s>` | Preview the intro / outro cinematics (`src/cinematic`), frozen at a moment with `t`. |
 | `node scripts/harness/playthrough.mjs --ticks 3` | Plays the whole campaign through the game logic (`playthrough.script.json`), with idle world steps between commands (`labTick()`: combat is turn based, nothing hurts in real time). Must pass with 0 deaths. |
 | `node scripts/harness/play-browser.mjs` | The same script typed through the real terminal in headless Chrome; fails on any console, page or stage error. Screenshots per floor to `out/play-*.png`. |

@@ -41,7 +41,7 @@ Always inspect `chapters/<chapter-id>/story/out/contact-sheet.png` via `read_fil
    ```bash
    node scripts/harness/generate-chapter.mjs
    ```
-   Because `/chapters.html` (`src/pages/chapters-page.ts`), `/comic.html` (`src/pages/comic-page.ts`), and `/play.html` (`src/main.ts`) read directly from `CHAPTER_MANIFESTS` in `src/chapters/catalog.ts`, any compiled chapter with `"status": "playable"` automatically becomes selectable per-chapter and per-level in `/chapters.html`!
+   Because `/chapters.html` (`src/pages/chapters-page.ts`), `/comic.html` (`src/play/comix-read.ts`), and `/play` (`src/play/boot.ts`, started by `src/main.ts`) read directly from `CHAPTER_MANIFESTS` in `src/chapters/catalog.ts`, any compiled chapter with `"status": "playable"` automatically becomes selectable per-chapter and per-level in `/chapters.html`!
 
 ---
 
@@ -52,12 +52,16 @@ Run the single-command verification gate:
 node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs --chapter <chapter-id>
 ```
 
-This verifies:
+This verifies, in order (it stops at the first failure):
 1. All chapter JSON specs pass `validate-chapter-specs.mjs`.
-2. `src/chapters/generated/catalog-data.ts` is 100% in sync with `chapters/*` (`--check`).
-3. Rendered Comix PNG pages + `contact-sheet.png` exist in both `chapters/<id>/story/out/` and `public/comix/<id>/`.
-4. Every level in the chapter clears headlessly under `--ticks 3` enemy turn pressure (turn-based: one enemy turn per command plus 2 forced turn-timer runouts; `.kiro/specs/turn-based-battles/`) with **`deaths === 0`** and **`ended === true`**.
-5. All skill self-tests (`chapter-architect-intake`, `comix-story-drawer`, `chapter-level-generator`) pass.
+2. `src/chapters/generated/catalog-data.ts` is 100% in sync with `chapters/*` (`generate-chapter.mjs --check`).
+3. Every level in the chapter clears headlessly under `generate-chapter.mjs --verify --ticks 3 --chapter <id>` enemy turn pressure (turn-based: one enemy turn per command plus 2 forced turn-timer runouts; `.kiro/specs/turn-based-battles/`) with **`deaths === 0`** and **`ended === true`**.
+4. When the manifest has `comix`, all `comix.pageCount` rendered pages + `contact-sheet.png` exist in `chapters/<id>/story/out/`, and the pages in `public/comix/<id>/`.
+5. The declarative gate `scripts/quality/check-declarative.mjs` passes.
+6. The skill self-tests (`chapter-architect-intake`, `comix-story-drawer`, `chapter-level-generator`) pass.
+7. The editor and Terminal Lab suites pass: `editor-unit-test.mjs`, `terminal-lab-unit.mjs`, `terminal-lab-api-test.mjs` and `terminal-lab.mjs --all` (the lab plays the chapter session and reuses the editor's field tables).
+8. The Kiro specs `declarative-chapter-runtime`, `chapter-editor` and `inventory/items/terminal` each have `requirements.md`, `design.md` and `tasks.md`.
+9. The `guard-chapter-files` hook blocks a write to `src/chapters/generated/catalog-data.ts` (exit 2) and asks before an edit to `src/chapter-editor/schema.ts`.
 
 ---
 
@@ -66,4 +70,4 @@ Finish with:
 ```bash
 npm run build
 ```
-and inspect `/chapters.html`, `/comic.html?chapter=<chapter-id>`, and `/play.html?chapter=<chapter-id>&nointro=1` via `screenshot-lab.mjs` + `read_file`.
+and inspect `/chapters.html`, `/comic.html?chapter=<chapter-id>`, and `/play/<chapter-id>?nointro=1` (`/play/<chapter-id>/<level-id>?nointro=1` for one level; routes in `src/play/route.ts`) via `screenshot-lab.mjs --page` + `read_file`.

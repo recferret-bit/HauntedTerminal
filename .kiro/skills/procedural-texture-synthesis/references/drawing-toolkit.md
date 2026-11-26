@@ -115,5 +115,5 @@ brush-width inside the tile.
 
 Add it to `toolkit.ts` with a `tex` prefix (the module is re-exported from `src/procgen/index.ts`
 next to other agents' modules, so names must not collide), write through `setPixel`, take colours as
-arguments, and add a case to `scripts/self-test.mjs` if it can produce something the validator should
+arguments, and add a case to `../scripts/self-test.mjs` if it can produce something the validator should
 reject.

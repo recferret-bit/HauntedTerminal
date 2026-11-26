@@ -34,7 +34,7 @@ Each suite's default export is an async function of `ctx` (`ctx.load` loads a so
 | | `stringifyComixJson` round-trips every page and manifest file and random JSON | `scripts/harness/lib/comix-json.mjs` |
 | | `resolveTime` gives a finite number for any cue map and `CUE+offset` | `src/cinematic/expr.ts` |
 | Chapters | random command sequences (from all solution commands, generic commands and random names, up to 20) never throw on any of the 11 levels | `createChapterSession` on the compiled pack |
-| | the same sequence twice gives the same output, events and snapshot | fake `Date.now` (the trick `src/game/selfcheck.ts` uses), so the time fields match |
+| | the same sequence twice gives the same output, events and snapshot | fake `Date.now` (the trick `src/game/selfcheck.ts` used; that file was removed 2026-11-26 in commit 1905207, the helper is now `withFakeClock` in `scripts/harness/props/kit.mjs`), so the time fields match |
 | | `stringifyChapterJson` round-trips every spec file and random JSON | `scripts/harness/lib/chapter-json.mjs` |
 | | `validatePack` never throws on a mutated pack (removed fields, swapped ids, emptied lists) | `src/chapters/validate-pack.ts` |
 | Gameplay | after every step of a random sequence of commands and ticks: `0 <= hp <= maxHp` | session snapshot |

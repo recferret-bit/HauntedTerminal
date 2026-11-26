@@ -6,7 +6,7 @@
  * This file is an example and is not imported by the game. To ship it:
  *   1. add 'petrify' to FxMoment (src/procgen/fx/types.ts) and to FX_MOMENT_WORDS (catalog.ts),
  *   2. move the preset into src/procgen/fx/presets.ts,
- *   3. npm run procgen:fx, look at the filmstrip, npm run procgen:selftest.
+ *   3. node .kiro/skills/particle-effect-validator/scripts/validate-particles.mjs --all --sheet, look at the filmstrip, node .kiro/skills/particle-effect-validator/scripts/self-test.mjs.
  */
 import {
   createFxEmitter, formatFxReport, fxShard, fxSimulate, fxSpeedLine, fxStarburst, validateFxPreset,

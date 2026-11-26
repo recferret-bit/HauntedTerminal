@@ -1,7 +1,7 @@
 /**
  * The battle orchestrator: one turn-based state machine per session that says who is acting now.
  *
- *   idle ──threats appear──▶ intro ──4 s / Enter / a command──▶ player ──action / 30 s timeout──▶ enemy
+ *   idle ──threats appear──▶ intro ──10 s / Enter / a command──▶ player ──action / 30 s timeout──▶ enemy
  *     ▲                                                          ▲                                 │
  *     └──────── no threat left, hero left, respawn, new level ───┴──────── one world step ─────────┘
  *
@@ -19,7 +19,8 @@ import type { BattleView } from './types.js';
 /** Seconds the player has to act before the enemies take their turn anyway. */
 export const TURN_SEC = 30;
 /** Seconds of battle intro (agent taunt, Kiro advice, FIGHT!) before the player's first turn. */
-export const INTRO_SEC = 4;
+/** The intro holds both voiced lines (each line shows 4.8 s, `BATTLE_LINE_MS`; a voice clip is 2 to 4 s) before FIGHT!. */
+export const INTRO_SEC = 10;
 /** The agents that taunt before a battle, in seed order. */
 export const BIG_FOUR: readonly BattleAgent[] = ['clod', 'gork', 'codec', 'antigravy'];
 

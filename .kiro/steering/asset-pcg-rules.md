@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "src/{procgen,shaders,renderer}/**"
+fileMatchPattern: ["src/procgen/**", "src/shaders/**", "src/renderer/**"]
 ---
 
 # Asset PCG rules

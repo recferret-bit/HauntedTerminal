@@ -19,6 +19,8 @@ What he carries. Each stands on the floor with a `grip` socket; the developer ho
 | id | Brief |
 |---|---|
 | `item.lantern` | The oil lantern from his desk: brown cap, handle ring and foot around a glowing `lantern` glass. `ls -a` lights it. Held by `vibecoder.dev` |
+| `item.terminal` | His handheld field cyberdeck slate, stood on its edge: dark `silicon` shell, brown `hair` leather grip handle on top, a recessed `ink` bezel with a glowing `phosphor` `>_` prompt and block cursor, and a `silicon` keypad (`tex.grille`). No `light` socket: holding it casts no lantern light. Held by `vibecoder.dev_terminal` |
+| `vibecoder.dev_terminal` | The developer holding his field cyberdeck slate in his screen-right hand instead of the lantern |
 | `item.laptop` | His old clamshell, shut and carried like a briefcase: beige `plastic` with a brown handle and hinge, a `>_` sticker and one `powerAmber` sleep light. Opened, it is the Laptop Lab emulator. Held by `vibecoder.dev_laptop` |
 | `vibecoder.dev_laptop` | The developer with the laptop in his screen-right hand instead of the lantern |
 | `item.manual` | His dog-eared hardcover Unix Field Manual, carried by a leather handle: `pcb` teal boards, brown `hair` spine and strap, creamy `paper` page block, orange `hoodie` bookmark ribbon, and a `phosphor` `>_` emblem. Held by `vibecoder.dev_manual` |
@@ -37,7 +39,7 @@ vibecoder is the only round thing.
 |---|---|---|---|---|
 | `malware.virus` |  | Self-copying code | Spiky capsid: a faceted core with injector spikes, a smaller copy budding off one side | Splits when hit |
 | `malware.worm` |  | Network worm | Chain of packet segments rising out of a port in an S-curve, drill-bit head | Burrows between panels |
-| `malware.trojan` | `gargoyle` | Trojan horse binary (`stone_gargoyle.bin`) | A gift-wrapped install box, split open, a horned gargoyle head and claws coming out. `chmod -x` turns it to grey stone (`heatsink` tint) | Perches, bites every 3 s |
+| `malware.trojan` | `gargoyle` | Trojan horse binary (`stone_gargoyle.bin`) | A gift-wrapped install box, split open, a horned gargoyle head and claws coming out. `chmod -x` turns it to grey stone (`heatsink` tint) | Perches, bites every 3 enemy turns |
 | `malware.bug` |  | A software bug | Literal beetle made of a chip: DIP-package body, pin legs, antenna traces, one cracked eye | Scuttles, erratic |
 | `malware.exploit` |  | Buffer overflow / injection | A syringe-nosed dart with a payload sac that bulges past its own frame | Lunges in a straight line |
 | `malware.crack` |  | Keygen / crack | A skeleton key with teeth for a mouth and a skull bow, chiptune equaliser spine | Picks locks, opens doors for others |
@@ -45,7 +47,7 @@ vibecoder is the only round thing.
 | `malware.spyware` |  | Spyware | A webcam-eye drone: lens iris, two antenna ears, a dangling data cable tail | Hovers, reveals the vibecoder |
 | `malware.rootkit` | `poltergeist` | Rootkit hiding as a dotfile (`.poltergeist.lock`) | A ghost: translucent `ghostViolet` shroud over a hint of a chip, two hollow eyes, a padlock on a chain. Invisible until `ls -a` | Holds doors shut |
 | `malware.zombie` | `zombie_worker` | Zombie process | Small hunched bot, one arm, a `PID` tag on its chest, a cut cable where the parent link was | Swarms, re-forked by the boss |
-| `boss.forkbomb` | `necromancer_boss` | `necromancer_forkd`, PID 666, a fork bomb daemon | Tall, many-armed, each arm ends in a fork (the `:(){ :|:& };:` joke), furnace-core chest | Forks zombies every 4 s, ignores SIGTERM |
+| `boss.forkbomb` | `necromancer_boss` | `necromancer_forkd`, PID 666, a fork bomb daemon | Tall, many-armed, each arm ends in a fork (the `:(){ :|:& };:` joke), furnace-core chest | Forks zombies every 4 enemy turns, ignores SIGTERM |
 | `agent.clod` |  | CLOD, parody AI agent, intro / outro / boss supervisor | Sculpted `clayOrange` crab-golem fissured with stepped `clay_cracks` seams, breathing carapace, counter-phased snapping crab-pincer arms, and one heavy-lidded exhausted `malwareEye` | "BAG OF BONES." |
 | `agent.gork` |  | GORK, parody AI agent, intro / outro / taunts | `gorkBlack` event-horizon planet head separated by a 360-degree open gap from its seamless tilted `accretion_halo` planetary ring circles, high-contrast `paper` comic goggles (`O-O` dark `ink` lenses), wide `paper` U-curved grin, and orbiting asteroid shards + `malwareEye` quasar star | "MEAT-BASED PROMPT ENGINEER. LOL." |
 | `agent.codec` |  | CODEC, parody AI agent, intro / outro / taunts | Chunky `codecSteel` + `codecNavy` retro CRT terminal-head bot with a clean dark `crt_code` screen displaying only a `>_` face (blinking `malwareEye` cursor), swinging `{` and `}` curly-brace claw arms, and syntax glitch blocks | "CONTEXT WINDOW: FULL OF YOUR NONSENSE." |

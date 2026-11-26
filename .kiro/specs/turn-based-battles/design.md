@@ -8,7 +8,7 @@ One `Battle` value per session, owned by `src/game/battle.ts`. Pure functions ov
 
 ```
               threats appear (after a world step)
-   idle ───────────────────────────────────────────▶ intro (4 s, Enter skips)
+   idle ───────────────────────────────────────────▶ intro (10 s, Enter skips)
     ▲                                                    │ intro ends / skipped / exec() in intro
     │ no threat left, hero left the room,                ▼
     │ hero respawned, level changed            ┌───▶ player (timer 30 s) ──────────┐
@@ -18,7 +18,7 @@ One `Battle` value per session, owned by `src/game/battle.ts`. Pure functions ov
 ```
 
 - `idle`: no battle. Each player command is followed by one world step, with hurting enemies holding fire (there are none in the hero's room by definition, Req 4).
-- `intro`: the battle has begun; nobody acts. Lasts `INTRO_SEC = 4` clock seconds or until skipped (Req 9, 12).
+- `intro`: the battle has begun; nobody acts. Lasts `INTRO_SEC = 10` clock seconds or until skipped (Req 9, 12).
 - `player`: the player's turn. `secondsLeft` starts at `TURN_SEC = 30` (Req 16) and counts down on `clockSecond()` unless a hold is on (Req 17).
 - `enemy`: transient. The session runs one world step (the existing `World.tick`: tell or strike on each enemy's cadence, Req 18), then calls `observe()`, which returns to `player` with a fresh timer or ends the battle (Req 5).
 

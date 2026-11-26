@@ -25,6 +25,7 @@ User's words, 2026-11-25: "tweak how kiro ghost is floating to the player in the
     - WHILE the visor boot plays, THE SYSTEM SHALL draw the overlay through the stage pixel-art pass when that pass is on, and as a plain canvas when the pass is off or WebGL fails.
     - WHILE the user prefers reduced motion, THE SYSTEM SHALL show the panel without the rain or the boot animation.
     - WHEN the panel is shown again later in the same run, THE SYSTEM SHALL use the pop-in.
+13. WHILE the hero carries no terminal, THE SYSTEM SHALL show no tutorial card and no `TUTORIAL_STEP` prompt that asks him to type (`tutorialState` in `src/chapters/script.ts`); WHEN he receives the terminal, THE SYSTEM SHALL show the first card. *(added 2026-11-26 after QA finding 1 in `docs/qa/2026-11-26-tutorial-kiro-delivers-terminal.md`; fixed the same day; the user delegated: "go with your recommendations")*
 
 ## Out of scope
 

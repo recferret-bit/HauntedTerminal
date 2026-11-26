@@ -4,10 +4,10 @@ Out Of Credits is built around one idea: **Kiro works best when knowledge, proce
 
 | Role | Place | Count |
 |---|---|---|
-| People | `.kiro/agents/` | 7 custom agents (a lead, 4 feature designers, an artist, QA) |
+| People | `.kiro/agents/` | 8 custom agents (a lead, 4 feature designers, an artist, a sound designer, QA) |
 | Facts | `.kiro/steering/` | 15 files |
 | Capabilities | `.kiro/specs/<name>/` | 31 spec folders plus 5 inventory child specs (lantern, laptop, manual, map, terminal) |
-| Procedures | `.kiro/skills/` | 24 skills, each with validator scripts |
+| Procedures | `.kiro/skills/` | 61 skills (25 project skills with validator scripts, 36 ElevenLabs CLI skills) |
 | Enforcement | `.kiro/hooks/` + `scripts/quality/` | 18 hooks plus 3 per agent, 16 chained gates in `npm run quality` (types, dependencies, lint, root, size, layers, cycles, dead code, declarative, specs, duplicates, agents, legacy name, brands, MCP, and 81 properties) |
 
 ## Custom agents
@@ -66,7 +66,7 @@ Steering holds only short, non-overlapping facts and one exact vocabulary (`glos
 
 ## Skills
 
-24 skills in three categories: `[WORKFLOW]` (spec grill), `[ASSET PCG]` (art direction, models, malware, rooms, textures, shaders, lighting, animation, particles, validators, visual QA) and `[LEVEL GEN]` (chapter intake, comic drawer, compiler, implementer, editor, and the same chain for 3D comix). Each skill is paired with a deterministic script, so "done" means a validator passed.
+61 skills in four categories (`[AUDIO]`: `sfx-and-music-pipeline` and the 36 ElevenLabs CLI skills, used by `sound-designer`): `[WORKFLOW]` (spec grill), `[ASSET PCG]` (art direction, models, malware, rooms, textures, shaders, lighting, animation, particles, validators, visual QA) and `[LEVEL GEN]` (chapter intake, comic drawer, compiler, implementer, editor, and the same chain for 3D comix). Each skill is paired with a deterministic script, so "done" means a validator passed.
 
 ## Hooks
 
@@ -97,7 +97,7 @@ Steering holds only short, non-overlapping facts and one exact vocabulary (`glos
 
 | Feature | State | Plan |
 |---|---|---|
-| Custom agents | done: 7 agents in `.kiro/agents/` | TODO (you): note one real task you ran through `lead-dev` |
+| Custom agents | done: 8 agents in `.kiro/agents/` | TODO (you): note one real task you ran through `lead-dev` |
 | Property-based testing | done: 81 properties (seed 20261117), 7 bugs found | none |
 | MCP | `credits-forge` (ours: validate, solve and save levels through tools; a level that fails or dies is never written), Chrome DevTools MCP for `qa` (it looks at the real game), the Netlify MCP server in the `credits-ship` power. Per-agent exact tool lists; `.kiro/settings/mcp.json` stays empty | Probed in the real CLI (`mcp-probe.mjs`, 9/9). What MCP made possible: an agent cannot save a level that does not clear with 0 deaths, and QA claims about the screen come from screenshots the agent took. |
 | Powers | Three project powers in `.kiro/powers/`: `credits-ship` (plugin manifest, keywords, Netlify MCP, `ship` skill with a gated deploy script), `credits-release` (tag-driven release: checks, gates, tag push, GitHub Release, Netlify preview) and `credits-tauri-local` (local unversioned desktop build) | First real preview and production deploy on 2026-11-17 to https://out-of-credits.netlify.app, both played to the stats screen (`netlify-deploy-power` task 6) |

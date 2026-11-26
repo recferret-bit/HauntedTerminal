@@ -5,12 +5,12 @@
       "name": "Validate comix specs on save",
       "trigger": "PostFileSave",
       "description": "Report-only and fast: connected layout + static comix spec checks (schema, cues, timeline, catalog assets) and whether src/cinematic/generated is in sync. Rewrites nothing; run generate-comix.mjs to recompile.",
-      "matcher": "comix/.*\\.(json|md)$",
+      "matcher": "(^|/)comix/([^/]+/)?README\\.md$|(^|/)comix/[^/]+/(comix\\.manifest\\.json|pages/[^/]+/[^/]+\\.json)$",
       "action": {
         "type": "command",
-        "command": "node scripts/harness/validate-comix.mjs; node scripts/harness/generate-comix.mjs --validate; node scripts/harness/generate-comix.mjs --check",
-        "timeout": 60
-      }
+        "command": "node scripts/harness/validate-comix.mjs; node scripts/harness/generate-comix.mjs --validate; node scripts/harness/generate-comix.mjs --check"
+      },
+      "timeout": 60
     }
   ]
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// PreToolUse guard for the declarative chapter system. Reads the hook event JSON from stdin, looks at every string in it
-// that names a file, and decides:
+// PreToolUse guard for the declarative chapter system. Reads the hook event JSON from stdin, takes the target paths of
+// the write or delete tool (only the path fields of tool_input, never file content or replacement text), and decides:
 //
 //   src/chapters/generated/**       exit 2 (block): compiled output. Edit chapters/ and run generate-chapter.mjs.
 //   the chapter vocabulary          ask: a new spec field ripples to the interpreter, the editor schema and the validators.
@@ -13,7 +13,7 @@
 // Usage (see .kiro/hooks/guard-chapter-files.json):  node scripts/hooks/guard-chapter-files.mjs
 import { readFileSync } from 'node:fs';
 
-const GENERATED = /(^|\/)src\/(chapters|cinematic)\/generated\//;
+const GENERATED = /(^|\/)src\/(chapters|cinematic)\/generated(\/|$)/;
 const VOCABULARY = /(^|\/)src\/(chapters\/(types|script-types|script|validate-pack|session-lab-types)\.ts|terminal-lab\/(lab-types|schema|lab-check|store)\.ts|chapter-editor\/schema(-check)?\.ts|editor-core\/schema(-check)?\.ts|cinematic\/(spec-types|simulate)\.ts|comix-editor\/(schema(-fields|-letters|-tracks)?|check)\.ts)$/;
 
 let raw = '';
@@ -23,19 +23,20 @@ try {
   process.exit(0);
 }
 
-const paths = [];
+// Path fields of the write, append, str_replace and delete_file tools (Kiro CLI: path; other clients: file_path,
+// filePath, targetFile; batched forms: paths).
+const PATH_KEYS = ['path', 'file_path', 'filePath', 'targetFile', 'target_file'];
+
+let input;
 try {
-  (function walk(v) {
-    if (typeof v === 'string') {
-      // A path, not file content: one short line.
-      if (v.length < 400 && !v.includes('\n') && /\.(ts|mjs|json)$/.test(v)) paths.push(v.replace(/\\/g, '/'));
-    } else if (v && typeof v === 'object') {
-      Object.values(v).forEach(walk);
-    }
-  })(JSON.parse(raw));
+  input = JSON.parse(raw)?.tool_input;
 } catch {
   process.exit(0);
 }
+if (!input || typeof input !== 'object') process.exit(0);
+const paths = [...PATH_KEYS.map((k) => input[k]), ...(Array.isArray(input.paths) ? input.paths : [])]
+  .filter((p) => typeof p === 'string' && p)
+  .map((p) => p.replace(/\\/g, '/'));
 
 if (paths.some((p) => GENERATED.test(p))) {
   console.error(

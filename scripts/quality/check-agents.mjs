@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// Team-agent gate (npm run quality:agents). Checks what `kiro-cli agent validate` does not: the seven agents in
+// Team-agent gate (npm run quality:agents). Checks what `kiro-cli agent validate` does not: the nine agents in
 // .kiro/agents/ match the team table, use known capabilities and effects, load within the CLI limits, keep git writes
 // to the lead, and together give every source file exactly one owner. Spec: .kiro/specs/agent-team/.
 //   node scripts/quality/check-agents.mjs
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { GENERATED_PATHS, LEAD, PERSON_ONLY_PATHS, TEAM_NAMES, agentTexts, mcpTable, ownWrites } from '../harness/agents-build.mjs';
 import { violation } from '../hooks/agent-shell-guard.mjs';
@@ -19,10 +19,15 @@ const TRIGGERS = new Set(['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'Pos
 /** Kiro CLI 3.1+ limits on `file://` resources. */
 const MAX_FILES = 32;
 const MAX_CHARS = 100_000;
+/** The CLI truncates one file:// resource past this many characters, so a longer one silently loses its end. */
+const MAX_FILE_CHARS = 50_000;
+/** A NOTE (not a failure) when an agent's file:// total is this close to MAX_CHARS. */
+const NEAR_CHARS = 5_000;
+const notes = [];
 /** Paths that must have exactly one owner: source, content, assets, property suites, docs and the files agents keep current. */
-const OWNED = /^(src\/|chapters\/|comix\/|public\/assets\/|scripts\/harness\/props\/|scripts\/harness\/terminal-lab\/|scripts\/harness\/(?:battle-unit|manual-unit|manual-smoke|audio-unit|audio-smoke|hub-unit)\.mjs$|scripts\/harness\/property-tests\.mjs$|scripts\/harness\/visual-audit\.mjs$|scripts\/harness\/lib\/visual-[^/]+\.mjs$|scripts\/harness\/visual\/|docs\/|\.kiro\/specs\/|\.kiro\/steering\/|(AGENTS|CLAUDE|README)\.md$)/;
+const OWNED = /^(src\/|chapters\/|comix\/|public\/assets\/|public\/(?:music|sfx)\/|social\/(?:[^/]+\.md$|campaigns\/|research\/|media\/README\.md$|media\/specs\/)|scripts\/harness\/(?:audio|social)-[^/]+\.mjs$|scripts\/harness\/lib\/(?:audio-gen|social)-[^/]+\.mjs$|scripts\/harness\/props\/|scripts\/harness\/terminal-lab\/|scripts\/harness\/(?:battle-unit|manual-unit|manual-smoke|audio-unit|audio-smoke|hub-unit|classic-unit|architecture-unit)\.mjs$|scripts\/harness\/property-tests\.mjs$|scripts\/harness\/visual-audit\.mjs$|scripts\/harness\/lib\/visual-[^/]+\.mjs$|scripts\/harness\/visual\/|docs\/|\.kiro\/specs\/|\.kiro\/steering\/|(AGENTS|CLAUDE|README)\.md$)/;
 /** Infrastructure no agent writes (it holds their own fences, the harness and the build): a change is the user's. */
-const INFRA = /^(scripts\/|\.github\/|\.kiro\/(agents|hooks|skills|settings|powers)\/|pages\/|public\/_redirects$|public\/comix\/|public\/fonts\/|public\/(?:music|sfx)\/|package(-lock)?\.json$|tsconfig\.json$|vite\.config\.ts$|LICENSE$|\.gitignore$)/;
+const INFRA = /^(scripts\/|social\/media\/[^/]+\.mjs$|\.github\/|\.kiro\/(agents|hooks|skills|settings|powers)\/|pages\/|public\/_redirects$|public\/comix\/|public\/fonts\/|package(-lock)?\.json$|tsconfig\.json$|vite\.config\.ts$|LICENSE$|\.gitignore$)/;
 /** Compiled output: written by the compilers for whoever ran them, owned by nobody. */
 const UNOWNED = [/^src\/chapters\/generated\//, /^src\/cinematic\/generated\//, /^chapters\/[^/]+\/story\/out\//, /^docs\/qa\/baselines\//];
 
@@ -66,12 +71,15 @@ for (const { file, name, agent } of agents) {
       continue;
     }
     if (m[1] === 'file') {
+      const size = readFileSync(path, 'utf8').length;
       files += 1;
-      chars += readFileSync(path, 'utf8').length;
+      chars += size;
+      if (size > MAX_FILE_CHARS) problems.push(`${file}: resource ${res} has ${size} characters (the CLI truncates past ${MAX_FILE_CHARS})`);
     }
   }
   if (files > MAX_FILES) problems.push(`${file}: ${files} file:// resources (limit ${MAX_FILES})`);
   if (chars > MAX_CHARS) problems.push(`${file}: ${chars} characters of file:// resources (limit ${MAX_CHARS})`);
+  else if (chars > MAX_CHARS - NEAR_CHARS) notes.push(`${file}: ${chars} characters of file:// resources, ${MAX_CHARS - chars} left of ${MAX_CHARS}`);
   const hooks = Array.isArray(agent.hooks) ? agent.hooks : [];
   const hookCmd = (trigger) => hooks.filter((h) => h.trigger === trigger).map((h) => h.action?.command ?? '').join(' ');
   if (!hookCmd('Stop').includes(`agent-scope.mjs ${name}`) || hookCmd('Stop').includes('--snapshot')) problems.push(`${file}: needs the Stop hook "node scripts/hooks/agent-scope.mjs ${name}"`);
@@ -105,6 +113,8 @@ for (const { file, name, agent } of agents) {
     'cd .kiro/powers/credits-ship/skills/ship && node scripts/ship.mjs prod', 'cd .kiro/powers/credits-tauri-local/skills/tauri-local && node scripts/tauri-local.mjs',
     'node scripts/desktop/build-tauri-steam.mjs', 'node scripts/desktop/build-tauri-steam.mjs --steam --app-id 1', 'node scripts/harness/agents-install.mjs', 'node scripts/harness/agents-install.mjs --remove',
     'cd scripts/.. && ls', 'echo $(node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs prod)', 'echo `ls`', 'node scripts/harness/stack.mjs "$(cat x)"',
+    // mcp-probe spawns kiro-cli with --trust-all-tools and spends model credits: the user's.
+    'node scripts/harness/mcp-probe.mjs', 'node scripts/harness/mcp-probe.mjs --agent qa',
   ]) must(cmd, 'deny');
   // ...while every gate and the reads of a power's SKILL.md stay allowed.
   for (const cmd of [
@@ -113,7 +123,7 @@ for (const { file, name, agent } of agents) {
     'node scripts/quality/check-agents.mjs', 'npm run quality:fingerprint > scripts/harness/out/fp-before.txt', 'diff scripts/harness/out/fp-before.txt scripts/harness/out/fp-after.txt',
     'cat .kiro/powers/credits-ship/skills/ship/SKILL.md', 'grep -n prod .kiro/powers/credits-release/skills/release/SKILL.md',
   ]) must(cmd, 'allow');
-  for (const cmd of ['git status', 'git diff --stat', 'ls src', 'cat package.json', 'grep -rn x src', 'npm run quality 2>&1 | tail -20', 'node scripts/harness/property-tests.mjs --only terminal', 'cd src && ls', 'STACK_PORT=5174 npm start', 'STACK_PORT=5174 npm stop', 'npx tsc --noEmit']) must(cmd, 'allow');
+  for (const cmd of ['git status', 'git diff --stat', 'ls src', 'cat package.json', 'grep -rn x src', 'npm run quality 2>&1 | tail -20', 'node scripts/harness/property-tests.mjs --only terminal', 'cd src && ls', 'STACK_PORT=5174 npm start', 'STACK_PORT=5174 npm stop', 'npx tsc --noEmit', 'npm run test', 'npm run test 2>&1 | tail -20']) must(cmd, 'allow');
   // The power script names are denied after `node` only: reading them stays allowed (a commit message may name them too).
   for (const cmd of ['cat scripts/desktop/build-tauri-steam.mjs', 'git log -- .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs', 'grep -n yes .kiro/powers/credits-release/skills/release/scripts/release.mjs']) must(cmd, 'allow');
   // No other npx, and the credentials of the user's CLIs (netlify login, gh auth login, ~/.netrc) are never read.
@@ -133,6 +143,10 @@ for (const { file, name, agent } of agents) {
   // Visual-audit baselines are a person's (spec .kiro/specs/qa-visual-audit/, Q13): no agent updates or touches them.
   for (const cmd of ['node scripts/harness/visual-audit.mjs --update hub', 'node scripts/harness/visual-audit.mjs --screens hub --update hub@1600x950', 'node scripts/harness/visual-audit.mjs --out docs/qa/baselines', 'cp scripts/harness/out/visual/hub@1600x950.png docs/qa/baselines/hub@1600x950.png', 'cp scripts/harness/out/a.png docs/qa/media/../baselines/a.png']) must(cmd, 'deny');
   for (const cmd of ['node scripts/harness/visual-audit.mjs', 'node scripts/harness/visual-audit.mjs --screens hub,level-* --sizes 1280x820', 'node scripts/harness/visual-audit.mjs --selftest']) must(cmd, 'allow');
+  // ElevenLabs is reached only through the capped wrapper (spec .kiro/specs/audio-agent/): the raw CLI and --output are
+  // refused for everyone; a dry run is anyone's (--generate is held to sound-designer by the guard hook, agents-unit.mjs).
+  for (const cmd of ['elevenlabs music compose --prompt x', 'elevenlabs text-to-sound-effects convert --text x', '/opt/homebrew/bin/elevenlabs user get', 'elevenlabs --help', 'node scripts/harness/audio-gen.mjs plan key_press --output /tmp/x.mp3', 'node scripts/harness/social-media.mjs video social/media/specs/x-teaser.video.json --output /tmp/x.mp4', 'ffmpeg -i a.mp3 b.mp3']) must(cmd, 'deny');
+  for (const cmd of ['node scripts/harness/audio-gen.mjs plan key_press', 'node scripts/harness/audio-gen.mjs --check', 'node scripts/harness/audio-gen.mjs credits', 'node scripts/harness/social-media.mjs --check', 'node scripts/harness/social-media.mjs audio plan vo_tiktok_hook']) must(cmd, 'allow');
   // qa copies screenshots; the lead's session must allow that too (a sub-agent's command is checked against it).
   if (name === 'qa' || name === LEAD) for (const cmd of ['mkdir -p docs/qa/media', 'cp scripts/harness/out/play-1.png docs/qa/media/a.png']) must(cmd, 'allow');
   else must('cp scripts/harness/out/play-1.png docs/qa/media/a.png', 'deny');
@@ -154,7 +168,7 @@ for (const { file, name, agent } of agents) {
   if (sorted(allow) !== sorted(want)) problems.push(`${file}: fs_write allow must be its own paths${subs.length ? ' plus its sub-agents\' paths' : ''}`);
 }
 
-// 6. The lead may start exactly the other six agents, by name, and nothing generic.
+// 6. The lead may start exactly the other seven agents, by name, and nothing generic.
 const lead = byName.get(LEAD);
 if (lead) {
   const subs = (lead.tools ?? []).filter((t) => String(t).startsWith('subagent'));
@@ -195,6 +209,23 @@ problems.push(...mcpProblems({
   pinned: (({ dependencies = {}, devDependencies = {} }) => ({ ...dependencies, ...devDependencies }))(JSON.parse(readIfThere('package.json') || '{}')),
 }));
 
+// 10. Every workspace skill names itself and starts its description with a known category tag (skills-map.md), so an
+//     imported skill pack (the ElevenLabs CLI's, spec .kiro/specs/audio-agent/) cannot land untagged.
+const SKILL_TAGS = ['[WORKFLOW]', '[ASSET PCG]', '[LEVEL GEN]', '[AUDIO]', '[SOCIAL]'];
+const skillsDir = join(root, '.kiro/skills');
+for (const dir of existsSync(skillsDir) ? readdirSync(skillsDir).sort() : []) {
+  const rel = `.kiro/skills/${dir}/SKILL.md`;
+  if (!statSync(join(skillsDir, dir)).isDirectory()) continue;
+  const text = readIfThere(rel);
+  if (!text) { problems.push(`${rel} is missing`); continue; }
+  const head = /^---\n([\s\S]*?)\n---/.exec(text)?.[1] ?? '';
+  const name = /^name:\s*"?([^"\n]+)"?\s*$/m.exec(head)?.[1];
+  const desc = /^description:\s*"?(.*?)"?\s*$/m.exec(head)?.[1] ?? '';
+  if (name !== dir) problems.push(`${rel}: front matter name must be "${dir}"`);
+  if (!SKILL_TAGS.some((t) => desc.startsWith(t))) problems.push(`${rel}: description must start with one of ${SKILL_TAGS.join(', ')}`);
+}
+
+for (const n of notes) console.log(`NOTE: ${n}`);
 if (problems.length) {
   console.error(`agent gate FAILED (${problems.length}):`);
   for (const p of problems) console.error(`  - ${p}`);

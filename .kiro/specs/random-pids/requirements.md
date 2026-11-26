@@ -1,6 +1,6 @@
 # Random pids: requirements
 
-Status: approved (reopened 2026-11-26: the browser QA report of task 6 is not written yet)
+Status: done (reopened 2026-11-26 for the browser QA report; closed the same day, `docs/qa/2026-11-26-random-pids.md` PASS)
 
 Capability: every PID the player has to `kill` is random each time instead of fixed in the level spec. (User's words: "lets make all pids to kill to be random each time".)
 

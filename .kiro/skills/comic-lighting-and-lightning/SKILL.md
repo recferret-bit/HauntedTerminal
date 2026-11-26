@@ -36,7 +36,7 @@ Exact numbers and file locations: [lighting-model.md](./references/lighting-mode
 | Storm | `ComicStage.setStorm(on, intensity)` | Periodic distant strikes |
 | Lantern | `ComicStage.applyLantern(t)` | Reveals the hidden dotfile, raises the vibecoder's lantern glow |
 | Floor mood | `FLOORS` in `comic-stage.ts`, mirrored by `FLOOR_THEMES` in `src/procgen/core/palette.ts` | Backdrop colour and accent per floor |
-| PS_XRAY | `mountXray()` | Green process tags and a parent-child line |
+| PS_XRAY | `HUD_OVERLAY_TOGGLED` -> `stage.xrayProcs`, `syncOverlays()` (`stage-sync.ts`), `updateXrayLinks()` | DOM-overlay PID plates and dashed green parent -> child SVG links; no material change |
 | Flood | `createFloodMaterial`, `syncFlood()` | Translucent cyan slab rising from the floor |
 
 ### Why that light direction
@@ -113,19 +113,19 @@ Recipes with code for each of these: [extension-recipes.md](./references/extensi
 | Per-floor mood | Tint: multiply by a floor colour in the shadow and mid bands only; or nudge `uLightDir` per floor within ±15° | Change band thresholds per floor; move the light behind the camera-facing band |
 | Furnace heat (floor 4) | A second rim colour: replace the ink rim blend with `powerAmber`/`lockRed` on faces turned toward a `uRimDir` | A PointLight; emissive on every pipe |
 | Kernel-core storm (floor 5) | `setStorm(true, 1.2..1.5)`, strikes from `FLOOR_THEMES[5].accent` side, `fx.lightning-strike` per hit | Continuous flicker |
-| Real lantern darkness | A stepped multiply overlay centred on the lantern (lit / mid ring / dark), emissive meshes drawn over it. The storybook has a working stand-in in `src/storybook/stage/lab-stage.ts` | A SpotLight; a soft radial gradient |
+| Lantern darkness | Already the scene light below: `StageLight` (`src/renderer/stage-light.ts`) darkens the room through `COMIC_LIGHT` and lights a pool in stepped rings, and `RoomView.dark` switches it to the terminal-glow pool (`DARK_DEF`). Tune `MODES` / `DARK_DEF` there. The storybook's stand-in is `LanternLayer` (`src/storybook/stage/lantern-layer.ts`) | A SpotLight; a soft radial gradient |
 | New glowing thing | Give its zone `emissive` in `ZONES`, in the `signal` family | Raise `uEmissive` ad hoc in the stage |
 | A new flash source | Set `lightning.flashStrength` / `flashPos`, or `FxPreset.flash` | A second flash uniform per effect |
 
 ## Checklist for any lighting change
 
-1. `npm run procgen:sheet` and open `scripts/harness/out/models.png`: bands still three, fronts still lit.
-2. `npm run procgen:fx -- --sheet`: effects still read on the floor backdrop.
+1. `node scripts/harness/render-sheet.mjs --all` and open `scripts/harness/out/models.png`: bands still three, fronts still lit.
+2. `node .kiro/skills/particle-effect-validator/scripts/validate-particles.mjs --all --sheet`: effects still read on the floor backdrop.
 3. `npm start`: the game, then `/storybook.html` with the lantern and flash toggles. Check floor 1
    (darkest violet) and floor 4 (red).
 4. If you changed the vector or the bands: the three copies agree (`comic-material.ts`,
    `geometry/raster-shade.ts`, `fx/preview.ts`).
-5. `npm run procgen:check` is green.
+5. The asset gate in [credits-art-direction](../credits-art-direction/SKILL.md#the-harness) is green (`npx tsc --noEmit`, the four validators, the self-tests, `npm run quality:fingerprint`).
 
 ## The scene light (lantern, `ls` ping, light sources)
 

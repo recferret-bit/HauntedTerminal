@@ -5,7 +5,7 @@ Code follows clean architecture: dependencies point inward, and the rules are en
 ## Layers (inner to outer)
 
 ```
-contracts/            pure types, `createStateMachine` (`state-machine.ts`), `AppBus` (`app-bus.ts`), `brand.ts`, and saved-key migration (`legacy-keys.ts`)
+contracts/            pure types, `createStateMachine` (`state-machine.ts`), `AppBus` (`app-bus.ts`), `brand.ts`, and saved-key migration (`legacy-keys.ts`). `dom.ts` (`dom`, `el`, `setText`, `replayClass`) is the one documented exception: it touches `document`, and it stays here because `renderer/` and `ui/` both need it and `renderer/` may not import `ui/`
 audio/                sample playback. Imports contracts only. The SFX orchestrator and the music orchestrator subscribe to the app bus. One-shot voices default to 10 (`SOUND_SOURCES`). Game and chapters emit; they do not import this layer.
 procgen/core          domain: palette, rng, types, catalogs, pixel buffers. No three.
 procgen/geometry      shape -> geometry, software raster (three math only)
@@ -39,7 +39,7 @@ Exact allowed imports live in `scripts/quality/check-layers.mjs`. Change the rul
 - No source file over 600 lines. No function over 130 lines. Split by responsibility, not by line count. `src/chapters/generated/` and `src/cinematic/generated/` are compiled data and are outside the size gate; regenerate them, do not hand-edit them.
 - No duplicated blocks (`jscpd`, 4 lines / 35 tokens). Extract the shared helper into the innermost layer that both callers may import. `src/chapters/generated/` and `src/cinematic/generated/` are compiled data and are excluded.
 - KISS: plain functions and data tables before classes; no indirection that only exists to survive a missing module.
-- **Patterns & hygiene**: state machines via `createStateMachine` + declarative `TransitionTable` (`src/contracts/state-machine.ts`) across gameplay and UI/modal orchestrators (`battle`, `kiro`, `agents`, `lifecycle`, `esc-menu`, `code-editor`, `dialog-box`, `dialog-orchestrator`, `modal-dialog`, `manual-book`, `chapter-map`, `run-control`), typed events (`AppBus` / `PlayEventBus` modal routing via `routeModalAction`), shared services (`unix-applets.ts` / `kiro-commands.ts` / `tree.ts`), zero `any`, zero `innerHTML`, zero runtime cycles (`check-cycles.mjs`), zero dead exports/types/CSS/modules (`check-deadcode.mjs`), exact pinned deps across all sections + lockfile root (`check-deps.mjs`), and ESLint hygiene across `src` and `scripts` (`quality:lint`).
+- **Patterns & hygiene**: state machines via `createStateMachine` + declarative `TransitionTable` (`src/contracts/state-machine.ts`) across gameplay and UI/modal orchestrators (`battle`, `kiro`, `agents`, `lifecycle`, `esc-menu`, `code-editor`, `dialog-box`, `dialog-orchestrator`, `modal-dialog`, `manual-book`, `chapter-map`, `run-control`), typed events (`AppBus` / `PlayEventBus` modal routing via `routeModalAction`), shared services (`unix-applets.ts` / `kiro-commands.ts` / `tree.ts`), zero `any`, zero `innerHTML`, zero runtime cycles (`check-cycles.mjs`), zero dead exports/types/CSS/modules (`check-deadcode.mjs`), exact pinned deps across all sections + lockfile root (`check-deps.mjs`), and ESLint hygiene across `src` and `scripts` (`quality:lint`). `createStateMachine` + `TransitionTable` is a convention that no gate enforces; a machine that steps its table with `nextMachineState` (`battle.ts`) is compliant.
 
 ## Gates (run before saying a change is done)
 

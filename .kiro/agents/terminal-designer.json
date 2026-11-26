@@ -23,7 +23,6 @@
     "file://.kiro/steering/terminal-lab-rules.md",
     "file://.kiro/specs/inventory/items/terminal/requirements.md",
     "file://.kiro/specs/inventory/items/terminal/design.md",
-    "file://.kiro/specs/inventory/items/manual/requirements.md",
     "skill://.kiro/skills/chapter-level-generator/SKILL.md"
   ],
   "hooks": [
@@ -65,7 +64,7 @@
           "src/ui/**",
           "src/terminal-lab/**",
           "scripts/harness/terminal-lab/**",
-          "scripts/harness/props/terminal.mjs",
+          "scripts/harness/props/terminal*.mjs",
           "scripts/harness/{manual-unit,manual-smoke}.mjs"
         ],
         "effect": "deny"
@@ -77,7 +76,7 @@
           "src/ui/**",
           "src/terminal-lab/**",
           "scripts/harness/terminal-lab/**",
-          "scripts/harness/props/terminal.mjs",
+          "scripts/harness/props/terminal*.mjs",
           "scripts/harness/{manual-unit,manual-smoke}.mjs"
         ],
         "effect": "allow"
@@ -146,6 +145,7 @@
           "diff scripts/harness/out/*",
           "npm run quality",
           "npm run quality:*",
+          "npm run test",
           "npm run build",
           "npm start",
           "npm stop",
@@ -195,6 +195,7 @@
           "diff scripts/harness/out/*",
           "npm run quality",
           "npm run quality:*",
+          "npm run test",
           "npm run build",
           "npm start",
           "npm stop",
@@ -237,7 +238,8 @@
           "node *release.mjs*",
           "node *tauri-local.mjs*",
           "node *build-tauri-steam*",
-          "node *agents-install*"
+          "node *agents-install*",
+          "node *mcp-probe*"
         ],
         "effect": "deny"
       },

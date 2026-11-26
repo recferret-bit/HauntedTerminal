@@ -13,7 +13,7 @@ Capability: the developer carries a typed **Inventory** of tools (`lantern`, `te
 5. THE SYSTEM SHALL keep an `Inventory` (`items`, `held`) in both the classic session (`Run.inventory`) and the chapter session (`ChapterState.inventory`), starting every new run, chapter `restart()`, and `applyInitialLoadout()` with all starter items (`['lantern', 'terminal', 'manual', 'map']` default; Chapter 1 starts with `['manual', 'map']` and earns `terminal` in Level 1, `lantern` in Level 3, and `laptop` in Level 6 via progressive `grants`) and `held` defaulted to `'lantern'` when carried (else `'terminal'`, else `null`).
 6. WHEN the player runs `inventory` or `inv`, THE SYSTEM SHALL list carried items in pickup order with `*` marking `held`; WHEN the player runs `hold <item>`, THE SYSTEM SHALL put `<item>` in hand if carried and update `SceneFacts.held` / the stage's hero model, or exit `1` with a clear message if missing or unknown.
 7. WHEN the player presses Tab after `hold `, THE SYSTEM SHALL complete from `inventory.items` in both classic and chapter shells, and `grimoire` SHALL document `inventory` / `hold`.
-8. WHEN `npm run quality:specs` (or `guard-spec-first` / `scaffold-spec.mjs`) runs, THE SYSTEM SHALL discover and validate nested child specs under `.kiro/specs/<parent>/items/<child>/` alongside top-level `.kiro/specs/<name>/` folders, and the superseded `.kiro/specs/laptop-inventory/` and `.kiro/specs/terminal-lab/` folders SHALL be removed with all steering, skill, and `AGENTS.md` links updated.
+8. WHEN `npm run quality:specs` (or `guard-spec-first` / `scaffold-spec.mjs`) runs, THE SYSTEM SHALL discover and validate nested child specs under `.kiro/specs/<parent>/items/<child>/` alongside top-level `.kiro/specs/<name>/` folders, and the superseded `.kiro/specs/laptop-inventory/` (now `.kiro/specs/inventory/items/laptop/`) and `.kiro/specs/terminal-lab/` (now `.kiro/specs/inventory/items/terminal/`) folders SHALL be removed with all steering, skill, and `AGENTS.md` links updated.
 
 ## Out of scope
 
@@ -32,7 +32,7 @@ Capability: the developer carries a typed **Inventory** of tools (`lantern`, `te
   **A (user, 2026-11-17):** Start with `items: ['lantern', 'terminal']` and `held: 'lantern'` (`vibecoder.dev`); `hold <item>` switches explicitly and `ls -a` raises `lantern`.
 - **Q:** How should stage lighting behave when holding terminal or laptop instead of lantern?
   **A (user, 2026-11-17):** Only `item.lantern` carries a `light` socket: holding `terminal` or `laptop` hides the oil-lantern halo (fixing the chest glow fallback bug) while keeping dim room ambient readability.
-- **Q:** How should we handle the old `.kiro/specs/laptop-inventory/` and `.kiro/specs/terminal-lab/` folders?
+- **Q:** How should we handle the old `.kiro/specs/laptop-inventory/` (now `.kiro/specs/inventory/items/laptop/`) and `.kiro/specs/terminal-lab/` (now `.kiro/specs/inventory/items/terminal/`) folders?
   **A (user, 2026-11-17):** Remove old `.kiro/specs/laptop-inventory/` and `.kiro/specs/terminal-lab/` once migrated into `.kiro/specs/inventory/` + `items/{lantern,terminal,laptop}/`, and update all steering/skill/`AGENTS.md` links.
 - **Q:** Which findings from the Laptop & Inventory code review should become tasks in the refactored specs?
   **A (user, 2026-11-17):** Include all review fixes (B1-B6 bugs + `hold` Tab completion, `dispose()`, scratch initial run, per-task reset, palette/ARIA cleanup) as tasks in the refactored specs.

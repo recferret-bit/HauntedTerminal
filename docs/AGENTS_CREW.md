@@ -1,6 +1,6 @@
 # The agent team: Kiro CLI and the Kiro Crew app
 
-Seven Kiro custom agents tune Out Of Credits. They live in [`.kiro/agents/`](../.kiro/agents/), written from one table by `scripts/harness/agents-build.mjs` and checked by `npm run quality:agents`. Spec: [`.kiro/specs/agent-team/`](../.kiro/specs/agent-team/).
+Nine Kiro custom agents tune and grow Out Of Credits. They live in [`.kiro/agents/`](../.kiro/agents/), written from one table by `scripts/harness/agents-build.mjs` and checked by `npm run quality:agents`. Spec: [`.kiro/specs/agent-team/`](../.kiro/specs/agent-team/).
 
 | Agent | Tunes | Writes only |
 |---|---|---|
@@ -10,9 +10,11 @@ Seven Kiro custom agents tune Out Of Credits. They live in [`.kiro/agents/`](../
 | `comix-designer` | intro, outro and other 3D comixes, comix editor | `comix/`, `src/cinematic`, `src/comix-editor` |
 | `chapters-designer` | levels, story, dialog, comic issue, enemies, pickups, puzzles, inventory, Kiro cores, chapter editor | `chapters/`, `src/chapters`, `src/chapter-editor`, gameplay files in `src/game` |
 | `artist` | models, rooms, textures, shaders, lighting, animation, effects | `src/procgen`, `src/shaders`, `src/renderer`, `src/storybook`, `src/assets`, `public/assets` |
+| `sound-designer` | sound effects, music beds and robot voice lines, and which event plays which cue; generates with ElevenLabs only through `audio-gen.mjs` (dry run unless the brief says "generate", 15,000 credits a run at most) | `public/sfx`, `public/music`, `docs/audio`, `src/audio` |
+| `smm-agent` | X, YouTube & TikTok campaigns, Steam/social research, and declarative gameplay video, screenshot, infographic & ElevenLabs social audio specs (`social-media.mjs`) toward $1M Steam revenue | `social/`, `docs/marketing/` |
 | `qa` | plays and tests everything, writes a report | `docs/qa/` |
 
-Every agent loads `AGENTS.md`, the always-on steering (including [`team.md`](../.kiro/steering/team.md)) and [`team-rules.md`](../.kiro/agents/prompts/team-rules.md) (ownership, spec-first, report format), plus its own prompt, steering and skills. Property-test suites belong to the designer of their feature; `docs/*.md`, steering and `AGENTS.md` belong to `lead-dev`; `.kiro/agents/`, `.kiro/hooks/`, `scripts/` and `package.json` belong to you.
+Every agent loads `AGENTS.md`, six always-on steering files (`product`, `tech`, `structure`, `architecture`, `glossary`, `spec-first`; not [`team.md`](../.kiro/steering/team.md), which is for agents outside the team) and [`team-rules.md`](../.kiro/agents/prompts/team-rules.md) (ownership, spec-first, report format), plus its own prompt, steering and skills. Property-test suites belong to the designer of their feature; `docs/*.md`, steering and `AGENTS.md` belong to `lead-dev`; `.kiro/agents/`, `.kiro/hooks/`, `scripts/` and `package.json` belong to you.
 
 ## What keeps an agent in its lane
 
@@ -21,7 +23,7 @@ Probed on Kiro CLI 3.3.0, so the limits are stated as they are:
 | Layer | What it does | Limit |
 |---|---|---|
 | `fs_write` deny rule | an agent's write tool can write only its own paths, never compiled output (`generated/`) | does not see what a shell command writes |
-| shell allow-list | `ls`, `cat`, `grep`, reads of git, `npm run quality*`, `node scripts/*`, `node .kiro/skills/*`; everything else refused (`find`, `sed -i`, `rm`, `printf`, `node -e`) | `node scripts/*` runs any harness script |
+| shell allow-list | `ls`, `cat`, `grep`, reads of git, `diff scripts/harness/out/*`, `npm run quality*`, `npm run test`, `npm run build`, `npm start\|stop\|restart`, `npm run status`, `STACK_PORT=5174 npm start\|stop`, `STACK_PORT=5174 npm run status`, `npx tsc --noEmit`, `node scripts/*`, `node .kiro/skills/*`; everything else refused (`find`, `sed -i`, `rm`, `printf`, `node -e`) | `node scripts/*` runs any harness script |
 | guard hook (`agent-shell-guard`) | blocks a redirect outside the agent's paths; any git history write by anyone but `lead-dev`; commit, merge or push on `main`; `git add -A`; `--amend`; any push that is not `origin agent/<task>` | needs the agent's hooks to run (see "Not verified") |
 | scope hook (`agent-scope`) | at the end of a session lists files changed since it began outside the agent's paths, with their owners | advisory |
 | `fs_read` deny | no reads of `.env`, `*.pem`, `~/.ssh`, `~/.aws`, the Crew bot token | `cat` of such a file is also denied by name |
@@ -32,7 +34,7 @@ This is a guard against an agent's mistakes, not a sandbox against a hostile one
 ## From Kiro CLI (on the Mac)
 
 ```bash
-cd ~/work/kiroween/OutOfCredits
+cd <this repo>
 kiro-cli --agent lead-dev            # the usual entry point
 kiro-cli --agent chapters-designer   # or talk to one owner directly
 ```
@@ -96,13 +98,16 @@ Short, concrete requests work best. Ready to paste:
 - "The `ls -l` output should show the owner column the way real ls does." (terminal-designer)
 - "Give the intro comix a longer pause before the lightning strike." (comix-designer)
 - "The worm enemy should look slimier; keep its silhouette." (artist)
+- "Write a better prompt for `door_usb` and show me the dry run." (sound-designer, no credits spent)
+- "Generate two takes of `hop`." (sound-designer; spends credits under the cap, needs the Keychain login: `elevenlabs auth login`)
 - "qa: full pass, tell me the worst three problems." (qa; writes `docs/qa/`, changes nothing else)
 
 `lead-dev` answers in at most 12 lines: what changed, the branch `agent/<task>`, the QA verdict, any question. Review and merge the branch on GitHub. A request that is a new feature or a big refactor ends with a question instead of code (spec-first).
 
 ### What I verified, and what that means for you
 
-- **Verified, on Kiro Crew 0.12.1 with Kiro CLI 3.4.0:** all seven agents validate and load; the agent's permission rules are honoured by the gateway (a command outside the allow-list was refused with the profile's `deny shell *`; an allowed command ran with no prompt in the gateway path); the agent files, prompts and `AGENTS.md` load in the repo workspace.
+- **Verified, on Kiro Crew 0.12.1 with Kiro CLI 3.4.0:** the agents validate and load; the agent's permission rules are honoured by the gateway (a command outside the allow-list was refused with the profile's `deny shell *`; an allowed command ran with no prompt in the gateway path); the agent files, prompts and `AGENTS.md` load in the repo workspace.
+- **Re-validated on Kiro CLI 3.6.2:** `kiro-cli agent validate --path .kiro/agents/<name>.json` exits 0 for all nine agents in the table (the gateway checks above were not repeated).
 - **A gateway "spawned subagent" is not your repo.** `kirocrew spawn run` starts the agent in an empty scratch folder (`~/workplace/kirocrew-workspace/subagent_<id>`), so it cannot see the project. Use the member's chat in the app or dashboard, not `spawn`.
 - **`kirocrew chat -m "..."` cannot approve anything** (it has no one to ask), so it is only good for read-only questions.
 - **Edit Crew's config only while the gateway is stopped, or in the dashboard.** A running gateway rewrote the member's agent back to a default once (found while testing; fixed by setting it again while stopped).

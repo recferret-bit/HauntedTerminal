@@ -86,6 +86,24 @@ await test('guard: node runs from the repo root with a script path written out (
     assert.ok(violation(bad, ctx), `should block: ${bad}`);
 });
 
+await test('guard: only sound-designer runs audio-gen --generate, and only smm-agent or sound-designer runs social-media --generate', () => {
+  const gen = ['node scripts/harness/audio-gen.mjs plan key_press --generate', 'node scripts/harness/audio-gen.mjs plan title_theme --variants 2 --generate=1', 'ls && node ./scripts/harness/audio-gen.mjs plan cmd_ok --generate'];
+  const dry = ['node scripts/harness/audio-gen.mjs plan key_press', 'node scripts/harness/audio-gen.mjs credits', 'node scripts/harness/audio-gen.mjs --check'];
+  const socialGen = ['node scripts/harness/social-media.mjs audio plan vo_tiktok_hook --generate', 'node ./scripts/harness/social-media.mjs audio plan vo_x_teaser --generate=1'];
+  const socialDry = ['node scripts/harness/social-media.mjs --check', 'node scripts/harness/social-media.mjs audio plan vo_tiktok_hook', 'node scripts/harness/social-media.mjs video social/media/specs/x-teaser.video.json --preview'];
+  for (const agent of ['lead-dev', 'qa', 'artist', 'chapters-designer', '']) {
+    const ctx = { globs: ownWrites(agent) ?? [], branch: 'agent/x', isLead: agent === LEAD, agent };
+    for (const bad of gen) assert.match(violation(bad, ctx) ?? '', /only sound-designer/, `${agent || '(none)'}: ${bad}`);
+    for (const bad of socialGen) assert.match(violation(bad, ctx) ?? '', /only smm-agent or sound-designer/, `${agent || '(none)'}: ${bad}`);
+    for (const ok of [...dry, ...socialDry]) assert.equal(violation(ok, ctx), null, `${agent || '(none)'}: ${ok}`);
+  }
+  const sd = { globs: ownWrites('sound-designer') ?? [], branch: 'agent/x', isLead: false, agent: 'sound-designer' };
+  for (const ok of [...gen, ...dry, ...socialGen, ...socialDry]) assert.equal(violation(ok, sd), null, `sound-designer: ${ok}`);
+  const smm = { globs: ownWrites('smm-agent') ?? [], branch: 'agent/x', isLead: false, agent: 'smm-agent' };
+  for (const ok of [...socialGen, ...socialDry, ...dry]) assert.equal(violation(ok, smm), null, `smm-agent: ${ok}`);
+  for (const bad of gen) assert.match(violation(bad, smm) ?? '', /only sound-designer/, `smm-agent: ${bad}`);
+});
+
 await test('guard: git history is the lead\'s, only on agent/<task>, never on main, never forced or amended', () => {
   const lead = { globs: ownWrites(LEAD), branch: 'agent/tune', isLead: true };
   for (const ok of ['git switch -c agent/tune', 'git add -- src/a.ts docs/qa/r.md', 'git commit -m "x: y"', 'git push -u origin agent/tune', 'git push origin agent/maintenance-x', 'git status', 'git diff --stat'])
@@ -107,6 +125,7 @@ await test('shell rules: an allow-list that also refuses everything else, per ag
   assert.equal(shellVerdict(agents['artist'], 'cp scripts/harness/out/play-1.png docs/qa/media/a.png'), 'deny');
   // The user's commands stay out of reach through `..`, a cd into a power, or command substitution; SKILL.md reads do not.
   for (const name of TEAM_NAMES) {
+    assert.ok(agents[name], `.kiro/agents/${name}.json is missing (run node scripts/harness/agents-build.mjs)`);
     for (const c of ['node scripts/../.kiro/powers/credits-ship/skills/ship/scripts/ship.mjs prod', 'node .kiro/skills/../powers/credits-release/skills/release/scripts/release.mjs release 0.1.0 --yes', 'cd .kiro/powers/credits-ship/skills/ship && node scripts/ship.mjs prod', 'node scripts/desktop/build-tauri-steam.mjs', 'node scripts/harness/agents-install.mjs', 'echo $(node x)'])
       assert.equal(shellVerdict(agents[name], c), 'deny', `${name}: ${c}`);
     for (const c of ['node scripts/desktop/desktop-unit.mjs', 'diff scripts/harness/out/a.txt scripts/harness/out/b.txt', 'cat .kiro/powers/credits-ship/skills/ship/SKILL.md'])
@@ -128,10 +147,11 @@ await test('shell rules: an allow-list that also refuses everything else, per ag
 await test('ownership: one owner per path in the table, designers cannot write compiled output', () => {
   const owners = (p) => TEAM_NAMES.filter((n) => ownWrites(n).some((g) => globToRegExp(g).test(p)));
   for (const p of ['src/laptop/domain/tasks.ts', 'src/game/shell.ts', 'src/game/session.ts', 'src/chapters/session-fs.ts', 'comix/intro/comix.manifest.json', 'src/procgen/index.ts', 'docs/qa/README.md', 'docs/AGENTS_CREW.md', 'AGENTS.md', '.kiro/specs/agent-team/design.md', 'scripts/harness/props/laptop.mjs', 'scripts/harness/props/kit.mjs']) assert.equal(owners(p).length, 1, `${p}: ${owners(p)}`);
-  for (const [p, who] of [['scripts/harness/manual-unit.mjs', 'terminal-designer'], ['scripts/harness/manual-smoke.mjs', 'terminal-designer'], ['scripts/harness/audio-unit.mjs', LEAD], ['scripts/harness/audio-smoke.mjs', LEAD], ['scripts/harness/hub-unit.mjs', LEAD], ['scripts/harness/battle-unit.mjs', 'chapters-designer'], ['scripts/harness/terminal-lab/skin.lab.json', 'terminal-designer']])
+  for (const [p, who] of [['scripts/harness/manual-unit.mjs', 'terminal-designer'], ['scripts/harness/manual-smoke.mjs', 'terminal-designer'], ['scripts/harness/audio-unit.mjs', 'sound-designer'], ['scripts/harness/audio-smoke.mjs', 'sound-designer'], ['src/audio/engine.ts', 'sound-designer'], ['public/sfx/manifest.json', 'sound-designer'], ['public/music/plans/floor_crypt.json', 'sound-designer'], ['docs/audio/SFX_LIST.md', 'sound-designer'], ['scripts/harness/audio-gen.mjs', LEAD], ['scripts/harness/lib/audio-gen-cli.mjs', LEAD], ['scripts/harness/audio-gen-unit.mjs', LEAD], ['scripts/harness/social-media.mjs', LEAD], ['scripts/harness/social-unit.mjs', LEAD], ['scripts/harness/lib/social-spec.mjs', LEAD], ['social/README.md', 'smm-agent'], ['social/media/specs/x-teaser.video.json', 'smm-agent'], ['social/campaigns/x-launch-threads.md', 'smm-agent'], ['docs/marketing/MARKET_RESEARCH_1M_REVENUE.md', 'smm-agent'], ['scripts/harness/hub-unit.mjs', LEAD], ['scripts/harness/battle-unit.mjs', 'chapters-designer'], ['scripts/harness/terminal-lab/skin.lab.json', 'terminal-designer'], ['scripts/harness/props/terminal-ui.mjs', 'terminal-designer'], ['scripts/harness/props/gameplay-fsm.mjs', 'chapters-designer']])
     assert.deepEqual(owners(p), [who], p);
   for (const p of ['.kiro/agents/qa.json', '.kiro/hooks/x.json', 'package.json', 'scripts/hooks/agent-scope.mjs']) assert.equal(owners(p).length, 0, `${p} must be nobody's`);
   for (const name of TEAM_NAMES.filter((n) => n !== LEAD)) {
+    assert.ok(agents[name], `.kiro/agents/${name}.json is missing (run node scripts/harness/agents-build.mjs)`);
     const deny = agents[name].permissions.rules.find((r) => r.capability === 'fs_write' && r.effect === 'deny' && r.match.includes('src/chapters/generated/**'));
     assert.ok(deny, `${name} must deny the compiled output`);
   }

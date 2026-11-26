@@ -134,12 +134,12 @@ Wiring recipe for other hosts (the cinematics use it too): [emitter-usage.ts](./
 3. **Write the preset** in `presets.ts`, starting from the closest existing one. Reuse the key
    tracks at the top of the file (`POP`, `CHUNK`, `PUFF`, `RING`, `TWINKLE`). Worked example with the
    reasoning for every number: [worked-preset.ts](./examples/worked-preset.ts).
-4. **Validate**: `npm run procgen:fx`. Fix every error; read every warning.
+4. **Validate**: `node .kiro/skills/particle-effect-validator/scripts/validate-particles.mjs --all`. Fix every error; read every warning.
 5. **Render the filmstrip and look at it**:
    `node .kiro/skills/particle-effect-validator/scripts/validate-particles.mjs fx.your-id --sheet --cols 1`
    then open `scripts/harness/out/fx.png`. Frame 1 must already be the hit. If you squint and see a
    fountain, cut the count in half and double the chunk size.
-6. **Self-test and type-check**: `npm run procgen:selftest`, `npx tsc --noEmit`.
+6. **Self-test and type-check**: `node .kiro/skills/particle-effect-validator/scripts/self-test.mjs`, `npx tsc --noEmit`.
 7. **See it under the real shaders**: `npm start`, then `/storybook.html?tab=fx` plays every preset
    (`&inspect=fx.<name>` for one). Elsewhere, mount one with `createFxEmitter` and scrub it with `seek()`.
 8. Update [preset-catalog.md](./references/preset-catalog.md).

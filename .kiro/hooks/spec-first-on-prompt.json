@@ -7,9 +7,9 @@
       "description": "When a prompt reads like a new feature or a big refactor, adds a reminder to the agent's context: Kiro spec first, grill the user, no code before approval (spec-first.md). Lists specs still waiting for answers. Silent otherwise; never blocks.",
       "action": {
         "type": "command",
-        "command": "node scripts/hooks/spec-first-reminder.mjs",
-        "timeout": 10
-      }
+        "command": "node scripts/hooks/spec-first-reminder.mjs"
+      },
+      "timeout": 10
     }
   ]
 }

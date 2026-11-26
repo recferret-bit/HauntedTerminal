@@ -86,11 +86,14 @@ export default tseslint.config(
   },
   {
     files: [
+      'scripts/chapters/**/*.mjs',
       'scripts/quality/**/*.mjs',
       'scripts/hooks/**/*.mjs',
       'scripts/desktop/**/*.mjs',
       'scripts/mcp/**/*.mjs',
       'scripts/harness/**/*.mjs',
+      'social/media/**/*.mjs',
+      '.kiro/powers/**/scripts/*.mjs',
     ],
     languageOptions: {
       globals: NODE_GLOBALS,
@@ -107,6 +110,9 @@ export default tseslint.config(
   {
     files: [
       'scripts/harness/lib/visual-*.mjs',
+      'scripts/harness/lib/social-overlay.mjs',
+      'scripts/harness/lib/social-capture.mjs',
+      'scripts/harness/lib/social-infographics.mjs',
       'scripts/harness/*smoke*.mjs',
       'scripts/harness/play-browser.mjs',
       'scripts/harness/screenshot-lab.mjs',

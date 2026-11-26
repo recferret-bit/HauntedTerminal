@@ -63,9 +63,10 @@ Read these before "fixing" what looks like a bug in a model.
   material in the world when the HALFTONE slider is above 0.05 (the default is 0.85), including zones
   that do not declare `halftone`, and to 0 on all of them otherwise. The slider is an on/off switch.
 - **`setInk` scales shells.** It sets `scale = 1 + 0.045 * outline` on every object with
-  `userData.outline`. The game's current cast (`src/renderer/procedural-cast.ts`) uses scaled-copy
-  shells, where that is the outline. Procgen shells are already offset by `inkShellGeometry`; the
-  scale is added on top, so at OUTLINE 1 their line is slightly heavier on large parts.
+  `userData.outline` (`ComicStage.applyInk`). The game's actors are built with `buildModel`
+  (`src/renderer/stage-cast.ts`, models from `LEGACY_CAST` in `src/renderer/procgen-cast.ts` or the
+  level's model id), so their shells are already offset by `inkShellGeometry`; the scale is added on
+  top, so at OUTLINE 1 their line is slightly heavier on large parts.
 - **Map alpha is ignored.** Decal textures show ink where they are transparent.
 - **Emissive is the zone colour.** A texture on an emissive part does not change what glows.
 - **`uLightDir` is per material.** Changing the light means changing `LIGHT` in `comic-material.ts`

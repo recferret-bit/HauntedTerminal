@@ -8,3 +8,6 @@ src-tauri
 
 # qa agent finding screenshots (docs/qa/media): kept locally, not committed
 docs/qa/media/
+
+# generated social videos, screenshots, infographics & ElevenLabs voiceovers
+social/media/out/

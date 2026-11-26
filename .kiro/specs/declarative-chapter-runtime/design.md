@@ -30,7 +30,7 @@ ChapterPack --> createChapterSession({ pack, preview }) --> ChapterState.pack --
 - `LevelRuntime.commandsRun` (a set of first words) feeds `ran_command`; `ls` on the room and `ps` register themselves.
 - Semantic text stays in specs even when it repeats (a hub line in `dialogue` and in `print`): the player sees the bubble and the terminal line separately.
 - The chaos seed defaults to the manifest id, not a literal.
-- Engine-wide content that is not chapter-specific (malware codex cards, grimoire, perks) stays in `catalog.ts`.
+- Engine-wide content that is not chapter-specific (malware codex cards, grimoire, perks) stays in `catalog.ts` (since 2026-11-26 the data is in `src/chapters/metagame-data.ts`, re-exported by `catalog.ts`).
 
 ## Guards
 

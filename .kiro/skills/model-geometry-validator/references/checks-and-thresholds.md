@@ -1,7 +1,7 @@
 # Checks, thresholds and fixes
 
 Source of truth: `MODEL_RULES` in `src/procgen/validate/model/rules.ts`. This file mirrors it; change
-both together and add a case to `scripts/self-test.mjs`.
+both together and add a case to `../scripts/self-test.mjs`.
 
 Units: lengths are world units (the vibecoder is 1.6 tall). "px" is pixels at game scale, 58 px per world
 unit. Model space: y up, feet at `y = 0`, the model faces −z, the camera looks along +z.

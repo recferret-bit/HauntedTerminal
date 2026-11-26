@@ -87,7 +87,7 @@ export function cmdRm(g: Play, args: string[]): Step {
       }
       continue;
     }
-    if (node === g.run.root || node === g.run.cwd || !node.parent) {
+    if (node === g.run.root || !node.parent || isDescendantOrSelf(g.run.cwd, node)) {
       stderr += `rm: refusing to remove '${path}'\n`;
       code = 1;
       continue;
@@ -115,11 +115,6 @@ export function cmdRm(g: Play, args: string[]): Step {
     if (veto) {
       push(g, events, { type: 'PERMISSION_DENIED_RATTLE', targetId: node.id, command: `rm ${path}` });
       stderr += `rm: ${veto}\n`;
-      code = 1;
-      continue;
-    }
-    if (isDescendantOrSelf(g.run.cwd, node)) {
-      stderr += `rm: refusing to remove '${path}': you are standing in it\n`;
       code = 1;
       continue;
     }

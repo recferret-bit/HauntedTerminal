@@ -33,7 +33,7 @@ src/chapters/
                                         `desktop_export_json_file`, `desktop_open_external_url`,
                                         `steam_show_floating_keyboard`) + store/release URLs
   portable-save.ts                      monotonic JSON save bundle export/import + automatic Tauri `out-of-credits-save.json` sync
-  catalog.ts                            + `achievements` Grimoire entry; `resetInMemoryStoresForTest` also resets achievements;
+  catalog.ts                            + `achievements` Grimoire entry (the entry now lives in `metagame-data.ts`, 2026-11-26); `resetInMemoryStoresForTest` also resets achievements;
                                         `purchaseOrTogglePerk` notifies `achievements.ts` on perk unlock
   session-state.ts                      + `achievements`, `ach`, `trophies` in CHAPTER_COMMANDS
   session-shell.ts                      routes `achievements` / `ach` / `trophies` + updates `help`

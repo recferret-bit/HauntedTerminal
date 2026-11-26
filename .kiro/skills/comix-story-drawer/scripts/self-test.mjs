@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Self-test for comix-story-drawer:
-// Renders Chapter 1's 4-page Comix spec into a temp folder (--no-public), verifies PNG headers,
+// Renders Chapter 1's 6-page Comix spec into a temp folder (--no-public), verifies PNG headers,
 // exact dimensions, contact-sheet output, and non-flat pixel color diversity inside panels.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';

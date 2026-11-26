@@ -34,12 +34,14 @@ All numbers with sources: [references/camera-and-panel.md](./references/camera-a
 
 `RenderPass` → `OutputPass` (sRGB, ACES, exposure 1.05) → pixel-art → CRT. Defaults are what players see.
 
-- **Pixel-art** (`src/shaders/pixel-art.ts`): 2-device-px cells, **one sample per cell** (thin things
-  vanish or flicker), 20 levels, light Bayer dither, and the **COMIX palette**: luma picks a colour on an
-  ink → magenta → yellow → paper ramp and only 22% of the true hue survives. **Families separate by
-  brightness, not hue**: orange hoodie, magenta malware and green PCB all become pink-yellow-cream.
-- **CRT** (`src/shaders/crt-pass.ts`): scanline every 2 device px (up to ~16% darker), vignette (corners
-  ~20% darker), grain, roll, slight barrel. Thin horizontal lines and dark-on-dark lose the most.
+- **Pixel-art** (`src/shaders/pixel-art.ts`, `DEFAULT_PIXEL_PARAMS`): 3.5-CSS-px cells (scaled by the
+  pixel ratio), **one sample per cell** (thin things vanish or flicker), 16 levels, Bayer dither 0.85,
+  edge 0.65, saturation 1.16, contrast 1.05, a faint 0.05 cell grid, and palette mode 0 (full RGB: true
+  hue survives). The retro modes 1 to 5 are options; under COMIX (4) and MANSION (5) only 22% of the hue
+  survives and **families separate by brightness, not hue**.
+- **CRT** (`src/shaders/crt-pass.ts`, `DEFAULT_CRT_PARAMS`): a 1-px scanline every 3 CSS px (18% darker),
+  vignette (corners up to 50% darker), grain, roll band and flicker, `mix` 1, no barrel warp (`distort` 0).
+  Thin horizontal lines and dark-on-dark lose the most.
 - **Tone mapping** flattens strong emissives: two glows of different strength look alike.
 
 Parameters and a survives / does-not table: [references/post-chain.md](./references/post-chain.md).
@@ -48,7 +50,7 @@ Parameters and a survives / does-not table: [references/post-chain.md](./referen
 
 Numbers first, then eyes, in this order. Do not skip to the game.
 
-1. **Software sheet** (no browser): `npm run procgen:sheet` writes `scripts/harness/out/models.png`;
+1. **Software sheet** (no browser): `node scripts/harness/render-sheet.mjs --all` writes `scripts/harness/out/models.png`;
    `node scripts/harness/render-sheet.mjs <id> --views` adds side and top views to check depth.
    Open the PNG. Fix silhouette and proportions here; it is the fastest loop.
 2. **Storybook**, the real renderer: `npm start`, open `http://localhost:5400/storybook.html`.
@@ -58,15 +60,20 @@ Numbers first, then eyes, in this order. Do not skip to the game.
    Headless, one command: `node .kiro/skills/comic-panel-viewport-auditor/scripts/lab-qa.mjs <id>`
    shoots every test below to `scripts/harness/out/lab-<id>-<test>.png` (18 shots for an enemy, ~20 s).
    One shot: `node scripts/harness/screenshot-lab.mjs --query "inspect=<id>&scale=game" --name <stem>`.
-3. **In the game**: `npm start`, `http://localhost:5400/`. F2 opens the dev panel (level jump, kernel
+3. **In the game**: `npm start`, `http://localhost:5400/play`. F2 opens the dev panel (level jump, kernel
    events: `ls -la` lantern reveal, `chmod -x` petrify, `kill -STOP` freeze, intro flash, hitboxes);
    F8 opens the shader lab (CRT, PIXEL, INK, STORM, PROJECTION zoom); F9 / F10 toggle CRT / pixel-art.
-   **Today the game still draws its own actors from `src/renderer/procedural-cast.ts`; nothing in
-   `src/renderer`, `src/game` or `src/main.ts` imports `src/procgen`.** So a procgen model is only
-   visible in the lab until someone wires it into the stage. The in-game check is for shaders, post
-   passes, rooms and panel layout, and for comparing a lab shot against the live panel at the same zoom.
+   The stage builds every actor from `ModelCatalog` (`buildStageActor()` in `src/renderer/stage-cast.ts`:
+   the `RoomActor.model` id, else the `LEGACY_CAST` model of its key in `src/renderer/procgen-cast.ts`,
+   else `prop.file`). So a catalog model shows in the game once a level spec or room places it; check it
+   there at the live zoom, under the real room, lantern and battle states, and compare with the lab shot.
 
-Then `npm run procgen:check` must be green.
+Then the asset gate must be green: `npx tsc --noEmit`, the validators
+(`node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict`,
+`node .kiro/skills/procedural-texture-synthesis/scripts/validate-textures.mjs --all`,
+`node .kiro/skills/particle-effect-validator/scripts/validate-particles.mjs --all`,
+`node .kiro/skills/procedural-animation-3d/scripts/check-tags.mjs --all`), the self-tests and
+`npm run quality:fingerprint` (the full list is in [credits-art-direction](../credits-art-direction/SKILL.md#the-harness)).
 
 ## 4. The inspect checklist (pass / fail)
 
@@ -79,11 +86,11 @@ Run each with `scale=game` unless stated. A fail is a fail; write down which rul
 | 3 | `yaw=±30` (debug only) | Depth is shallow (info panel depth ratio ≤ 0.60); nothing important hides behind. | 3 shallow depth |
 | 4 | `ink=0` vs default | Ink is one even weight on every solid part; no doubled lines, no ink inside dark zones only. | 4 ink |
 | 5 | `post=0`, `fit` | Exactly three cel bands from one light; no smooth gradients, no noisy speckle. | 5 cel bands |
-| 6 | info panel zones, `palette=0` vs default | One zone ~60% of the front, one ~30%, ≤ 5 zones; under COMIX the two big zones still differ in **brightness**. | 6 60/30/10 |
+| 6 | info panel zones, default (`palette=0`) vs `palette=4` | One zone ~60% of the front, one ~30%, ≤ 5 zones; under COMIX the two big zones still differ in **brightness**. | 6 60/30/10 |
 | 7 | `tex=0` vs default | Detail is geometry or ink; textures add flat comic art, not noise. | 7 detail |
 | 8 | `lantern=1`, `flash=1` | Only lantern, signal and malware eyes/cores glow; in the dark the focal glow still reads, nothing else does. | 8 light means something |
 | 9 | `scale=game`, `dpr=1` | No important part thinner than ~2 px; the focal point survives the quantizer. | 9 readable small |
-| 10 | `bg=floor1`..`floor5`, `paper` | The actor separates from all five backdrops by luma at the silhouette. Under COMIX the dark floors quantize to almost one plum: also look with `palette=0`. | 9, mood |
+| 10 | `bg=floor1`..`floor5`, `paper` | The actor separates from all five backdrops by luma at the silhouette. Judge at the default `palette=0`; under COMIX (`palette=4`) the dark floors quantize to almost one plum. | 9, mood |
 | 11 | `state=hidden/petrified/frozen/enraged`, `attack` with `t` < 0.6 | Hidden barely shows; stone and ice change the read but keep the silhouette; enraged reads hotter. | enemies |
 | 12 | gallery, same category | Sizes match the art bible (vibecoder 1.6, minions 0.6-1.1, bosses 1.8-2.6, pickups 0.3-0.5). | sizes |
 

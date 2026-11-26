@@ -221,6 +221,8 @@ function tutorialStepNumber(g: ChapterState): number {
 export function tutorialState(g: ChapterState): TutorialState | null {
   const tut = levelScript(g).tutorial;
   if (!tut || g.intro || g.rt.tutorialSkipped || g.ended) return null;
+  // The card asks the player to type: it waits until he carries a terminal (level 1 starts bare-handed).
+  if (!g.inventory.items.includes('terminal')) return null;
   const def = tut.steps[tutorialStepNumber(g) - 1];
   if (!def) return null;
   return { step: tutorialStepNumber(g), total: tut.steps.length, agent: tut.agent, prompt: def.prompt, command: def.command };

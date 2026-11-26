@@ -30,7 +30,7 @@ Capability: `map` is the 5th typed **Inventory** tool under `.kiro/specs/invento
 ### Triggers, terminal command & non-pausing timer behavior
 
 10. THE SYSTEM SHALL open/toggle the Chapter Map dialog when the player clicks the small `#hud-map` (`Map`) button in `.hud-btns` next to `#hud-hint`, clicks the `.item-slot.item-map` inventory slot in `.items-strip`, presses `F3`, or runs `map [level|query]` in the terminal.
-11. THE SYSTEM SHALL register `'map'` in `COMMANDS` (`src/game/manual.ts`), `helpText`, `MAN`, `MANUAL_TOOLS_AND_META`, both shells (`src/game/session.ts`, `src/chapters/session-shell.ts`), Tab completion (`map <level|topic>`), `consumeMapRequest()`, and `src/terminal-lab/commands.ts` (`GROUPS['Help & game']`, `ungrouped()` stays empty).
+11. THE SYSTEM SHALL register `'map'` in `COMMANDS` (`src/game/manual.ts`), `helpText`, `MAN`, `MANUAL_TOOLS_AND_META`, both shells (`src/game/session.ts`, `src/chapters/session-shell.ts`; the classic dispatch is now `CLASSIC_HANDLERS` in `src/game/session-shell.ts`, 2026-11-26), Tab completion (`map <level|topic>`), `consumeMapRequest()`, and `src/terminal-lab/commands.ts` (`GROUPS['Help & game']`, `ungrouped()` stays empty).
 12. WHILE `#chapter-map-dialog` is open, THE SYSTEM SHALL block terminal keystrokes (`play.shell.setBlocked(true)`) and leave `Escape` to close the dialog (closing automatically on `beginEnding` / cinematic / title card / outro) WITHOUT adding a `PauseReason` or pausing the game clock or 30-second battle turn timer, and SHALL restore keyboard focus to the terminal on close.
 
 ## Out of scope

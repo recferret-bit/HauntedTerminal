@@ -6,7 +6,7 @@ Capability: a team of committed Kiro custom agents that tune each major part of 
 
 ## Requirements
 
-Agents: `lead-dev`, `terminal-designer`, `laptop-designer`, `comix-designer`, `chapters-designer`, `artist`, `qa`.
+Agents: `lead-dev`, `terminal-designer`, `laptop-designer`, `comix-designer`, `chapters-designer`, `artist`, `qa`; since 2026-11-28 also `sound-designer` (`.kiro/specs/audio-agent/`); since 2026-11-26 also `smm-agent` (`.kiro/specs/social-smm-agent/`).
 
 ### Agent files
 

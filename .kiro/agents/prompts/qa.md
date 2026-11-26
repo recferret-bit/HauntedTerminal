@@ -19,7 +19,8 @@ You play Out Of Credits and test every part of it, then write a report. You chan
 | battles, random PIDs | `chapters-designer` | `battle-unit.mjs`; `property-tests.mjs --only gameplay`; `playthrough.mjs --ticks 3` |
 | manual, chapter map | `terminal-designer` | `manual-unit.mjs`; `manual-smoke.mjs` |
 | terminal skins, Esc menu | `terminal-designer` | `terminal-lab.mjs --run scripts/harness/terminal-lab/skin.lab.json`; `terminal-lab-smoke.mjs` |
-| app bus, SFX, music | `lead-dev` | `audio-unit.mjs`; `audio-smoke.mjs` |
+| app bus, SFX, music, voice lines | `sound-designer` (the bus itself and `audio-gen.mjs`: `lead-dev`) | `audio-unit.mjs`; `audio-smoke.mjs`; `node scripts/harness/audio-gen.mjs --check`. Never judge a sound by ear: write "not judged: needs a person listening" and name the files |
+| social media, videos, screenshots, infographics | `smm-agent` (`social-media.mjs`: `lead-dev`) | `node scripts/harness/social-media.mjs --check`; `node scripts/harness/social-unit.mjs`; inspect rendered `contact.jpg` sheets when media was rendered |
 | landing, hub | `lead-dev` | `hub-unit.mjs`; `node scripts/desktop/landing-smoke.mjs` |
 | desktop shell | `lead-dev` | `node scripts/desktop/desktop-unit.mjs` |
 | assets | `artist` | `.kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict`; `.kiro/skills/procedural-animation-3d/scripts/check-tags.mjs --all`; `screenshot-lab.mjs --selftest`; `npm run quality:fingerprint` |

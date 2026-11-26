@@ -2,7 +2,7 @@
 
 Implemented in `validateFxPreset` and `validateFxCatalog` (`src/procgen/fx/validate.ts`).
 Numbers come from `FX_LIMITS` in the same file. Game scale is 58 px per world unit.
-Every check below has a failing case in `scripts/self-test.mjs`.
+Every check below has a failing case in `../scripts/self-test.mjs`.
 
 ## Structure
 

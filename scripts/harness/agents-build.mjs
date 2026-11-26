@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Writes the seven team agents (.kiro/agents/<name>.json) from one table, so their shape cannot drift.
+// Writes the nine team agents (.kiro/agents/<name>.json) from one table, so their shape cannot drift.
 //   node scripts/harness/agents-build.mjs           write the files (canonical JSON, 2-space indent)
 //   node scripts/harness/agents-build.mjs --check   exit 1 when a file differs from the table (part of check-agents.mjs)
 // The prompts are hand-written Markdown in .kiro/agents/prompts/. Spec: .kiro/specs/agent-team/.
@@ -31,8 +31,11 @@ const READ_SHELL = [
  * tools). Exact strings: a `STACK_PORT=*` pattern would also match `STACK_PORT=$(...) npm start`.
  */
 const ALT_STACK = ['STACK_PORT=5174 npm start', 'STACK_PORT=5174 npm stop', 'STACK_PORT=5174 npm run status'];
-/** `npx tsc --noEmit`, exactly: CLAUDE.md and the asset skills cite it after a TypeScript edit in src/. No other `npx`. */
-const GATE_SHELL = ['npm run quality', 'npm run quality:*', 'npm run build', 'npm start', 'npm stop', 'npm restart', 'npm run status', ...ALT_STACK, 'node scripts/*', 'node .kiro/skills/*', 'npx tsc --noEmit'];
+/**
+ * `npx tsc --noEmit`, exactly: CLAUDE.md and the asset skills cite it after a TypeScript edit in src/. No other `npx`.
+ * `npm run test` chains only `node scripts/...` suites (package.json), so it is the AGENTS.md gate in one command.
+ */
+const GATE_SHELL = ['npm run quality', 'npm run quality:*', 'npm run test', 'npm run build', 'npm start', 'npm stop', 'npm restart', 'npm run status', ...ALT_STACK, 'node scripts/*', 'node .kiro/skills/*', 'npx tsc --noEmit'];
 /** Only the lead writes git history, and only on agent/<task> branches (the guard hook enforces the branch). */
 const GIT_WRITES = ['git switch -c agent/*', 'git switch agent/*', 'git add -- *', 'git commit -m *', 'git push -u origin agent/*', 'git push origin agent/*'];
 /**
@@ -52,6 +55,8 @@ const PERSON_ONLY_SHELL = ['*visual-audit*--update*', '*docs/qa/baselines*', 'cp
 const USER_ONLY_SHELL = [
   'node *..*', 'cd *..*', 'node *.kiro/powers*', 'cd *.kiro/powers*', '*$(*', '*`*',
   'node *ship.mjs*', 'node *release.mjs*', 'node *tauri-local.mjs*', 'node *build-tauri-steam*', 'node *agents-install*',
+  // mcp-probe spawns kiro-cli with --trust-all-tools and spends model credits: the user runs it.
+  'node *mcp-probe*',
 ];
 const DENY_WORDS = ['*--output*', 'git reset*', 'git checkout*', 'git stash*', 'git clean*', 'git branch -D*', 'rm *', 'sudo *', 'npm install*', 'npm i *', 'npm uninstall*', 'npm publish*', ...PERSON_ONLY_SHELL, ...USER_ONLY_SHELL];
 /**
@@ -64,6 +69,13 @@ const SECRET_SHELL = ['*.env*', '*.pem*', '*/.ssh/*', '*/.aws/*', '*.kiro/crew/.
 const GENERATED = ['src/chapters/generated/**', 'src/cinematic/generated/**', 'chapters/*/story/out/**'];
 /** The visual audit of qa (spec .kiro/specs/qa-visual-audit/, Q11): the lead owns it, so qa cannot change its own checks. */
 const VISUAL_AUDIT = ['scripts/harness/visual-audit.mjs', 'scripts/harness/lib/visual-*.mjs', 'scripts/harness/visual/**'];
+/**
+ * The ElevenLabs wrapper and its credit cap (spec .kiro/specs/audio-agent/, Q11): the lead owns it, so the agent that
+ * spends credits (sound-designer) cannot raise its own cap.
+ */
+const AUDIO_GEN = ['scripts/harness/audio-gen.mjs', 'scripts/harness/audio-gen-unit.mjs', 'scripts/harness/lib/audio-gen-*.mjs'];
+/** The declarative social media harness and its ElevenLabs credit cap (spec .kiro/specs/social-smm-agent/): lead-dev owns it. */
+const SOCIAL_MEDIA = ['scripts/harness/social-media.mjs', 'scripts/harness/social-unit.mjs', 'scripts/harness/lib/social-*.mjs'];
 
 /**
  * MCP servers an agent may declare (spec .kiro/specs/mcp-devtools-and-forge/). Each agent lists the tools it may call in
@@ -106,19 +118,20 @@ const FORGE_READ = ['list_levels', 'get_level', 'validate_level', 'solve_level']
 const TEAM = {
   'lead-dev': {
     description: 'Lead game developer and orchestrator of the Out Of Credits team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here; also the member that Kiro Crew runs.',
-    writes: ['.kiro/specs/**', '.kiro/steering/**', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'docs/*.md', 'docs/media/**', 'docs/reviews/**', 'scripts/harness/property-tests.mjs', 'scripts/harness/props/{kit,arbitraries}.mjs', 'src/contracts/**', 'src/audio/**', 'src/editor-core/**', 'src/play/**', 'src/pages/**', 'src/hub/**', 'src/styles/**', 'src/sandbox/**', 'src/main.ts', 'src/style.css', 'src/game/{session,session-shell,play,runtime,types,floors,sfx,view,view-layouts}.ts', 'scripts/harness/{audio-unit,audio-smoke,hub-unit}.mjs', ...VISUAL_AUDIT],
-    // Not skills-map: AGENTS.md carries the same skill map, and the resources must stay under the CLI's 100,000 characters.
-    resources: ['file://.kiro/specs/agent-team/requirements.md', 'file://.kiro/specs/agent-team/design.md'],
+    writes: ['.kiro/specs/**', '.kiro/steering/**', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'docs/*.md', 'docs/media/**', 'docs/reviews/**', 'scripts/harness/property-tests.mjs', 'scripts/harness/props/{kit,arbitraries}.mjs', 'src/contracts/**', 'src/editor-core/**', 'src/play/**', 'src/pages/**', 'src/hub/**', 'src/styles/**', 'src/sandbox/**', 'src/main.ts', 'src/style.css', 'src/game/{session,session-shell,play,runtime,types,floors,sfx,view,view-layouts}.ts', 'scripts/harness/{hub-unit,classic-unit,architecture-unit}.mjs', ...VISUAL_AUDIT, ...AUDIO_GEN, ...SOCIAL_MEDIA],
+    // Not skills-map (AGENTS.md carries the same skill map) nor the agent-team design.md (read it when needed): the
+    // resources must keep >= 8,000 of the CLI's 100,000 characters free.
+    resources: ['file://.kiro/specs/agent-team/requirements.md'],
     skills: ['feature-spec-grill'],
-    subagents: ['terminal-designer', 'laptop-designer', 'comix-designer', 'chapters-designer', 'artist', 'qa'],
+    subagents: ['terminal-designer', 'laptop-designer', 'comix-designer', 'chapters-designer', 'artist', 'sound-designer', 'smm-agent', 'qa'],
     gitWrites: true,
     welcome: 'lead-dev: what should change in the game? I will route it to the team, have qa check it, and push a branch.',
   },
   'terminal-designer': {
     description: 'Designs and tunes the terminal: the shell, its commands, the virtual file system, man pages, terminal UI and the Terminal Lab (src/game shell files, src/ui, src/terminal-lab, lab scripts).',
-    writes: ['src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts', 'src/ui/**', 'src/terminal-lab/**', 'scripts/harness/terminal-lab/**', 'scripts/harness/props/terminal.mjs', 'scripts/harness/{manual-unit,manual-smoke}.mjs'],
-    // The manual's design.md is left out (its spec is done) to keep the resources under the CLI's 100,000 characters.
-    resources: [steer('terminal-lab-rules'), 'file://.kiro/specs/inventory/items/terminal/requirements.md', 'file://.kiro/specs/inventory/items/terminal/design.md', 'file://.kiro/specs/inventory/items/manual/requirements.md'],
+    writes: ['src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts', 'src/ui/**', 'src/terminal-lab/**', 'scripts/harness/terminal-lab/**', 'scripts/harness/props/terminal*.mjs', 'scripts/harness/{manual-unit,manual-smoke}.mjs'],
+    // The manual's spec (done) is left out, read it when needed: the resources must keep >= 8,000 of the CLI's 100,000 characters free.
+    resources: [steer('terminal-lab-rules'), 'file://.kiro/specs/inventory/items/terminal/requirements.md', 'file://.kiro/specs/inventory/items/terminal/design.md'],
     skills: ['chapter-level-generator'],
     welcome: 'terminal-designer: which command, output or terminal behaviour should change?',
   },
@@ -140,7 +153,7 @@ const TEAM = {
   },
   'chapters-designer': {
     description: 'Designs and tunes the Kiroween chapter: its levels, story, dialogs and comic issue (chapters/), the chapter runtime and editor, and the gameplay elements levels place (enemies, pickups, puzzles, inventory, Kiro cores). Uses the chapter LEVEL GEN skills.',
-    writes: ['chapters/**', 'src/chapters/**', 'src/chapter-editor/**', 'src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,dialogue,agents,battle}.ts', 'scripts/harness/props/{chapters,gameplay,sessions}.mjs', 'scripts/harness/battle-unit.mjs'],
+    writes: ['chapters/**', 'src/chapters/**', 'src/chapter-editor/**', 'src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,dialogue,agents,battle}.ts', 'scripts/harness/props/{chapters,gameplay,gameplay-fsm,sessions}.mjs', 'scripts/harness/battle-unit.mjs'],
     resources: [steer('level-gen-rules'), steer('declarative-chapters'), steer('chapter-editor-rules'), steer('skills-map')],
     skills: ['chapter-architect-intake', 'comix-story-drawer', 'chapter-level-generator', 'chapter-implementer', 'chapter-editor'],
     mcp: { 'credits-forge': ['list_assets', ...FORGE_READ, 'write_level'] },
@@ -158,12 +171,29 @@ const TEAM = {
     ],
     welcome: 'artist: which model, room, texture, effect or animation should I make or change?',
   },
+  'sound-designer': {
+    description: "Owns the game's sound: sound effects, music beds and robot voice lines in public/sfx and public/music, their prompt lists (docs/audio) and manifests, and which app event or scene plays which cue (src/audio). Generates with the ElevenLabs CLI only through audio-gen.mjs, under a credit cap.",
+    writes: ['public/sfx/**', 'public/music/**', 'docs/audio/*.md', 'src/audio/**', 'scripts/harness/{audio-unit,audio-smoke}.mjs'],
+    // Not skills-map (AGENTS.md carries the AUDIO pipeline) nor app-events-audio/design.md (spec done): read them when
+    // needed. Keeps >= 8,000 of the CLI's 100,000 characters free.
+    resources: ['file://.kiro/specs/app-events-audio/requirements.md', 'file://.kiro/specs/audio-agent/requirements.md'],
+    skills: ['sfx-and-music-pipeline', ...['shared', 'text-to-sound-effects', 'music', 'text-to-speech', 'voices', 'audio-effects', 'usage', 'models'].map((s) => `elevenlabs-${s}`)],
+    welcome: 'sound-designer: which sound effect, music bed or voice line should I write, generate or map?',
+  },
+  'smm-agent': {
+    description: 'Owns social media growth, Steam/social comparable research, campaigns for X, YouTube and TikTok, and declarative gameplay video, screenshot, infographic and ElevenLabs social audio specs (social/, docs/marketing/) targeting $1M gross revenue.',
+    writes: ['social/*.md', 'social/campaigns/**', 'social/research/**', 'social/media/README.md', 'social/media/specs/**', 'docs/marketing/**'],
+    resources: ['file://docs/STEAM_RELEASE_PLAYBOOK.md', 'file://.kiro/specs/social-smm-agent/requirements.md'],
+    skills: ['smm-revenue-playbook', 'social-video-harness', 'credits-art-direction', 'sfx-and-music-pipeline', ...['shared', 'text-to-speech', 'music', 'text-to-sound-effects', 'usage'].map((s) => `elevenlabs-${s}`)],
+    welcome: 'smm-agent: which X thread, YouTube trailer, TikTok vertical hook or Steam wishlist campaign should I build?',
+  },
   qa: {
     description: 'Plays Out Of Credits and tests every part of it: the chapter in real Chrome, the terminal, laptop, comixes, editors, labs and assets, through the harness suites and screenshots. Writes a report to docs/qa/ and changes no game file.',
     // Not docs/qa/baselines/: a person approves baselines (spec .kiro/specs/qa-visual-audit/, Q13).
     writes: ['docs/qa/*.md', 'docs/qa/media/**', 'docs/qa/labs/**'],
     shellExtra: ['mkdir -p docs/qa/media', 'cp scripts/harness/out/* docs/qa/media/*'],
-    resources: [steer('skills-map'), steer('declarative-chapters'), steer('declarative-comix'), steer('terminal-lab-rules')],
+    // Not skills-map (AGENTS.md carries the same map; read it when needed): keeps >= 8,000 of 100,000 characters free.
+    resources: [steer('declarative-chapters'), steer('declarative-comix'), steer('terminal-lab-rules')],
     skills: ['comic-panel-viewport-auditor', 'chapter-implementer', 'comix-implementer', 'model-geometry-validator', 'particle-effect-validator'],
     mcp: { 'chrome-devtools': DEVTOOLS_LOOK, 'credits-forge': ['list_assets', ...FORGE_READ] },
     mcpNames: ['chrome-devtools', 'take_screenshot', 'list_console_messages', 'credits-forge', 'validate_level'],

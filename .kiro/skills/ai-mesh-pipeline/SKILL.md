@@ -16,51 +16,59 @@ Read [credits-art-direction](../credits-art-direction/SKILL.md) first for the lo
 
 | You have | Path | Status in the game |
 |---|---|---|
-| A PNG for an existing actor | A. PNG albedo map | Works today, hot-reloadable |
+| A PNG for an existing actor | A. PNG albedo map | Loaded and listed in the F2 inspector; not yet applied to any mesh |
 | A concept image to generate | Prompts in [prompt-templates-and-providers.md](./references/prompt-templates-and-providers.md) | Feeds path A or B |
 | A `.glb` from an image-to-3D service or Blender | B. GLB to comic | Sanitizer works; the game has no GLB loader wired in yet |
 
-## Path A: PNG albedo maps (works today)
+## Path A: PNG albedo maps (loaded, not applied yet)
 
-How it really works, from `src/assets/asset-registry.ts` and `src/renderer/comic-stage.ts`:
+How it really works today, from `src/assets/asset-registry.ts`, `src/play/boot.ts` and `src/sandbox/dev-inspector.ts`:
 
-1. At boot (`src/main.ts`) and when you press **Hot-reload PNG assets** in the F2 inspector,
+1. At boot (`loadStage()` in `src/play/boot.ts`) and when you press **Hot-Reload Assets** in the F2 inspector,
    `AssetRegistry.reloadAll()` fetches `/assets/manifest.json` and, for each key, sends a `HEAD` request
    for its `textureUrl`. If the response is OK and its content type is an image, the PNG is loaded as an
-   sRGB texture; otherwise the key is marked `PROCEDURAL`. A missing file falls back cleanly, but on a static host (Netlify) the probe is a real 404 and Chrome logs a console error, so list a key only once its PNG exists (`manifest.json` is `{}` until then; the keys are in `README_ASSETS.md`).
-2. `ComicStage.buildScene()` then walks the scene. Every mesh whose `userData.assetKey` equals a
-   manifest key and that uses the comic material gets the texture as `uMap`.
-3. The comic shader mixes it in: `colour = mix(zoneColour × band, texture.rgb × band, 0.86)`. Cel bands,
-   ink and halftone still apply on top.
+   sRGB texture; otherwise the key is marked `PROCEDURAL`. A missing file falls back cleanly, but on a static host (Netlify) the probe is a real 404 and Chrome logs a console error, so list a key only once its PNG exists (`manifest.json` is `{}` until then).
+2. The F2 inspector lists every key with its `[PNG]` or `[PROCEDURAL]` badge (`registry.listStatuses()`).
+3. **Nothing applies the texture yet.** `AssetRegistry.getTexture(key)` has no caller in `src/`, and
+   `ComicStage.buildScene()` does not bind registry textures. A loaded PNG therefore changes nothing on
+   screen. Wiring it in is a renderer change: for each mesh whose `userData.assetKey` matches a manifest key,
+   set the comic material's `uMap` and `uHasMap = 1` (the same uniforms `stateTintHook` in
+   `src/renderer/stage-cast.ts` already swaps for the stone, ice and corruption tints).
+4. Once bound, the comic shader mixes it in: `colour = mix(zoneColour × band, texture.rgb × band, 0.86)`.
+   Cel bands, ink and halftone still apply on top.
 
 What follows from that (these surprise people):
 
-- **It is an albedo map on a 3D mesh, not a sprite.** The PNG is laid on each part of the actor through
+- **It is an albedo map on a 3D mesh, not a sprite.** The PNG would be laid on each part of the actor through
   that part's own UVs (a box shows the whole image on every face). It does not replace the silhouette.
-- **Alpha is ignored.** Only `.rgb` is read, so transparent pixels show as whatever RGB they hold,
-  usually black. Paint edge to edge. (The spec in `public/assets/README_ASSETS.md` asks for transparent
-  sprites; for the current renderer that is wrong.)
+- **Alpha is ignored.** The shader reads only `.rgb`, so transparent pixels show as whatever RGB they hold,
+  usually black. Paint edge to edge. (`public/assets/README_ASSETS.md` asks for transparent sprites; for
+  the comic material that is wrong.)
 - **`anchor`, `targetHeight` and `tintFallback` are not read by any code.** Keep them valid (the type
   `ManifestEntry` requires them) but do not expect them to move or scale anything.
-- **Keys are the cast group names** in `src/renderer/procedural-cast.ts`: `vibecoder`, `poltergeist`,
-  `crate_bridge`, `socket_guardian`, `gargoyle`, `locked_gate`, `necromancer_boss`, `zombie_worker`,
-  `black_hole`, `mirror_door`, `item_scroll`. `system_hand` is in the manifest but is built after the
-  texture pass, so its PNG is never applied.
-- Procgen models built with `buildModel()` carry `userData.assetKey = spec.id` (`vibecoder.dev`), not the
-  manifest key. When the stage adopts them, map through `ModelEntry.gameKey`.
+- **Keys the stage stamps on actors** (`group.userData.assetKey`, set in `buildActorModel()` in
+  `src/renderer/stage-cast.ts`) are the `RoomActor.key`: the `LEGACY_CAST` keys of
+  `src/renderer/procgen-cast.ts` (`vibecoder`, `ghost`, `crate`, `socket`, `gargoyle`, `gate`, `boss`,
+  `minion`, `hole`, `mirror`, `scroll`) or `entity` for catalog-only actors. The vortex mesh carries
+  `black_hole`, and the System Hand group is named `system_hand`. The key table in
+  `public/assets/README_ASSETS.md` still uses older names (`poltergeist`, `crate_bridge`, ...).
+- Procgen models built with `buildModel()` also carry `userData.assetKey = spec.id` (`vibecoder.dev`) on
+  each mesh (`src/procgen/runtime/build.ts`); the stage key above sits on the actor's group. When you wire
+  textures in, map through `ModelEntry.gameKey`.
 
 Workflow:
 
 1. Generate or paint the image with the palette and style in
    [prompt-templates-and-providers.md](./references/prompt-templates-and-providers.md) (use the
    "flat albedo sheet" template, not the sprite one, for path A).
-2. Save it as `public/assets/sprites/<key>.png`. The manifest entry already exists for the keys above;
-   a new entry is `{ "textureUrl": "/assets/sprites/<key>.png", "anchor": [0.5, 0.9], "targetHeight": 92, "tintFallback": "#rrggbb" }`.
+2. Save it as `public/assets/sprites/<key>.png` and add its manifest entry (the manifest is `{}` today);
+   an entry is `{ "textureUrl": "/assets/sprites/<key>.png", "anchor": [0.5, 0.9], "targetHeight": 92, "tintFallback": "#rrggbb" }`.
 3. Check it: `node .kiro/skills/ai-mesh-pipeline/scripts/check-manifest.mjs`
    (`--strict` makes warnings fail). It validates the JSON, every field, that each file is a readable
-   PNG of sane size, how much of it is transparent, how much is on-palette, keys no mesh uses, and
-   orphan files.
-4. `npm start`, press F2, **Hot-reload PNG assets**, and look at the actor in the panel.
+   PNG of sane size, how much of it is transparent, how much is on-palette, and orphan files. Its
+   "keys no mesh uses" check still looks for a renderer cast file that no longer exists, so it is skipped today.
+4. `npm start`, press F2, **Hot-Reload Assets**, and confirm the key shows `[PNG]`. It will not show on the
+   actor until the renderer binds registry textures (step 3 above).
 5. If it fights the cel shading or the pixel-art pass, the fix is nearly always fewer colours and
    bigger shapes in the PNG, not a shader change.
 
@@ -112,7 +120,7 @@ Choose `--families` by who the model is (the family rules are in the art bible):
 
 - **Per-part animation.** AnimTags drive named parts of a `ModelSpec`. A sanitized GLB is one mesh per
   zone; it can bob, spin or jitter as a whole, nothing else. Rigs and clips are dropped.
-- **Validator coverage.** `npm run procgen:validate` reads `ModelCatalog` only.
+- **Validator coverage.** `node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict` reads `ModelCatalog` only.
 - **Texture detail.** Colour is decided per triangle, so detail smaller than a triangle is lost. That is
   intended: detail here is geometry or ink, never a photo.
 

@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "{chapters/**,src/chapters/**,src/chapter-editor/**,src/editor-core/**,src/play/**,src/ui/**,src/pages/**}"
+fileMatchPattern: ["chapters/**", "src/chapters/**", "src/chapter-editor/**", "src/editor-core/**", "src/play/**", "src/ui/**", "src/pages/**"]
 ---
 
 # Declarative chapters

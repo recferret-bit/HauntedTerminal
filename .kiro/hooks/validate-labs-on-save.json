@@ -8,9 +8,9 @@
       "matcher": "scripts/harness/terminal-lab/.*\\.lab\\.json$",
       "action": {
         "type": "command",
-        "command": "node scripts/harness/terminal-lab.mjs --all",
-        "timeout": 120
-      }
+        "command": "node scripts/harness/terminal-lab.mjs --all"
+      },
+      "timeout": 120
     }
   ]
 }

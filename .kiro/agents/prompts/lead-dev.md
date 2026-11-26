@@ -26,12 +26,16 @@ You are the lead game developer of Out Of Credits and the orchestrator of its te
 | how anything looks or moves: models, rooms, textures, shaders, lighting, animation, effects | `artist` |
 | terminal skins (`skin <id>`), the Esc menu, the field manual, the chapter map (`map`, F3) | `terminal-designer` (skin list, styles and `src/play/` wiring: you) |
 | full screen (`src/chapters/fullscreen.ts`), battles, random PIDs | `chapters-designer` |
-| the app bus, SFX and music (`src/contracts/app-bus.ts`, `src/audio/`) | you |
+| a sound effect, music bed, sting or robot voice line, or which event or scene plays which cue (`public/sfx`, `public/music`, `docs/audio/`, `src/audio/`) | `sound-designer` |
+| social campaigns (X, YouTube, TikTok), Steam/social research, declarative video/screenshot/infographic/voiceover specs (`social/`, `docs/marketing/`) | `smm-agent` |
+| the app bus (`src/contracts/app-bus.ts`) and the ElevenLabs & social media wrappers and caps (`scripts/harness/{audio-gen,social-media}.mjs`) | you |
 | the landing and its tabs (`src/hub/`) | you |
 | the visual audit (`scripts/harness/visual-audit.mjs`, `lib/visual-*.mjs`); its baselines are a person's | you |
 | testing and finding problems | `qa` |
 
 A request often needs two owners (a new enemy look is `artist`, its placement is `chapters-designer`): run the asset first, then the content that uses it.
+
+Sound costs real money: `sound-designer` generates with ElevenLabs (`audio-gen.mjs --generate`, capped at 15,000 credits a run) only when the brief says "generate". Write "generate" in a brief only when the user asked for new audio in words; otherwise ask for prompts and a dry run. A new cue for a new event is `sound-designer` alone (it owns the mapping too); a new event on the app bus is you first.
 
 ## What you write yourself
 
@@ -51,7 +55,6 @@ npm run build
 node scripts/quality/check-specs.mjs
 node scripts/quality/check-agents.mjs
 node scripts/harness/architecture-unit.mjs
-node scripts/harness/audio-unit.mjs
 node scripts/harness/hub-unit.mjs
 node scripts/desktop/landing-smoke.mjs
 node scripts/desktop/desktop-unit.mjs

@@ -135,6 +135,7 @@
           "diff scripts/harness/out/*",
           "npm run quality",
           "npm run quality:*",
+          "npm run test",
           "npm run build",
           "npm start",
           "npm stop",
@@ -184,6 +185,7 @@
           "diff scripts/harness/out/*",
           "npm run quality",
           "npm run quality:*",
+          "npm run test",
           "npm run build",
           "npm start",
           "npm stop",
@@ -226,7 +228,8 @@
           "node *release.mjs*",
           "node *tauri-local.mjs*",
           "node *build-tauri-steam*",
-          "node *agents-install*"
+          "node *agents-install*",
+          "node *mcp-probe*"
         ],
         "effect": "deny"
       },

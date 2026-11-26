@@ -35,7 +35,7 @@ Capability: `item.laptop` is the developer's old clamshell laptop carried like a
   **A (user, 2026-11-17):** Only `item.lantern` carries a `light` socket: holding `terminal` or `laptop` hides the oil-lantern halo (no chest glow bug) while keeping dim room ambient readability.
 - **Q:** Which findings from the Laptop & Inventory code review should become tasks in the refactored specs?
   **A (user, 2026-11-17):** Include all review fixes (B1-B6 bugs + `hold` Tab completion, `dispose()`, scratch initial run, per-task reset, palette/ARIA cleanup) as tasks in the refactored specs.
-- **Q:** How should we handle the old `.kiro/specs/laptop-inventory/` and `.kiro/specs/terminal-lab/` folders?
+- **Q:** How should we handle the old `.kiro/specs/laptop-inventory/` (now `.kiro/specs/inventory/items/laptop/`) and `.kiro/specs/terminal-lab/` (now `.kiro/specs/inventory/items/terminal/`) folders?
   **A (user, 2026-11-17):** Remove old `.kiro/specs/laptop-inventory/` and `.kiro/specs/terminal-lab/` once migrated into `.kiro/specs/inventory/` + `items/{lantern,terminal,laptop}/`, and update all steering/skill/`AGENTS.md` links.
 
 ## Open questions

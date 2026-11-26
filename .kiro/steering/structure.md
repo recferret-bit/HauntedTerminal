@@ -9,10 +9,11 @@ Only these may sit at the root; `npm run quality:root` (`scripts/quality/check-r
 | `pages/` | Every HTML entry page. It is the Vite root, so `pages/storybook.html` is served at `/storybook.html`. |
 | `src/` | TypeScript source (pages load it as `<script type="module" src="/src/...">`; `vite.config.ts` maps `/src/` to it). |
 | `scripts/` | Node tooling: `harness/`, `hooks/`, `quality/`. |
+| `social/` | Declarative social media campaigns, research, video/screenshot/infographic/audio specs (`media/specs/`) & git-ignored renders (`media/out/`). |
 | `public/` | Static assets served as-is. |
 | `chapters/` | LEVEL GEN data, one folder per chapter. |
 | `comix/` | Declarative animated 3D comix sequences, one connected folder per sequence (`comix.manifest.json` + `pages/page-XX-<slug>/page.spec.json`). |
-| `docs/` | Long-form docs and notes; `docs/qa/` holds the `qa` agent's reports. |
+| `docs/` | Long-form docs and notes; `docs/qa/` holds the `qa` agent's reports; `docs/audio/` the audio prompt lists. |
 | `.github/` | GitHub Actions workflows (tagged desktop release builds on `v*`). |
 | `.kiro/` | Steering, skills, specs, hooks, settings, agents, powers. |
 | files | Only tool configs that must live at the root (`package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `.gitignore`) plus `AGENTS.md`, `CLAUDE.md`, `README.md` and `LICENSE` (the open source licence the Kiroween rules require; GitHub detects it at the root). |

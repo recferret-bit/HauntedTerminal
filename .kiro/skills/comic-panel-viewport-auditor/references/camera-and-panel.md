@@ -44,9 +44,10 @@ unit (the art bible's design number, the vibecoder ~93 px tall); a 1080 px tall 
 650 px of stage, ~120 px per unit. **58 is the small, worst case**: if it reads at 58 it reads everywhere.
 The storybook's `scale=game` is exactly 58.
 
-The pixel-art cell is `pixelSize` 2 **device** pixels. At pixel ratio 1 that is 2 CSS px (0.034 units at
-58 ppu); at 1.75 it is 1.14 CSS px. Pixel ratio 1 is the coarsest frame, so check at `dpr=1`.
-The ink shell (0.028 units) is 1.6 px at 58 ppu: thinner than one quantizer cell at dpr 1.
+The pixel-art cell is `pixelSize` 3.5 **CSS** pixels (`DEFAULT_PIXEL_PARAMS`); `setPixelArtParams`
+multiplies it by the pixel ratio, so the block is the same on screen at every ratio (0.06 units at
+58 ppu). Each cell takes one sample, so check thin parts at `dpr=1` and at game scale.
+The ink shell (0.028 units) is 1.6 px at 58 ppu: thinner than one quantizer cell.
 
 ## Depth layers (z grows away from the camera)
 

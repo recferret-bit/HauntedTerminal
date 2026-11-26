@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "{src/terminal-lab/**,src/game/lab-*.ts,src/chapters/session-lab*.ts,src/chapters/session-riddle.ts,src/chapters/lab-config.ts,src/play/lab.ts,scripts/harness/terminal-lab*,scripts/harness/terminal-lab/**,scripts/harness/lib/terminal-lab-api.mjs,scripts/harness/lib/lab-*.mjs,pages/terminal-lab.html,src/styles/terminal-lab.css}"
+fileMatchPattern: ["src/terminal-lab/**", "src/game/lab-*.ts", "src/chapters/session-lab*.ts", "src/chapters/session-riddle.ts", "src/chapters/lab-config.ts", "src/play/lab.ts", "scripts/harness/terminal-lab*", "scripts/harness/terminal-lab/**", "scripts/harness/lib/terminal-lab-api.mjs", "scripts/harness/lib/lab-*.mjs", "pages/terminal-lab.html", "src/styles/terminal-lab.css"]
 ---
 
 # Terminal Lab rules

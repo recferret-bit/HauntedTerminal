@@ -4,12 +4,12 @@
     {
       "name": "Property tests on stop",
       "trigger": "Stop",
-      "description": "Report-only: runs a light pass (25 runs per property, about 5 s) of the fast-check property suite when the agent stops, so a behaviour change that breaks an invariant is seen at once. The full gate is npm run quality.",
+      "description": "Report-only: runs a light pass (25 runs per property, about 2-5 s) of the fast-check property suite when the agent stops, so a behaviour change that breaks an invariant is seen at once. Prints a FAILED line on failure and always exits 0. The full gate is npm run quality.",
       "action": {
         "type": "command",
-        "command": "node scripts/harness/property-tests.mjs --runs 25",
-        "timeout": 60
-      }
+        "command": "node scripts/harness/property-tests.mjs --runs 25 2>&1 || echo 'FAILED (report-only): run node scripts/harness/property-tests.mjs --runs 25'; exit 0"
+      },
+      "timeout": 60
     }
   ]
 }

@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "{src/comix-editor/**,src/editor-core/**,src/cinematic/**,pages/comix-editor.html,src/styles/editor-workstation.css,src/styles/comix-editor.css,scripts/harness/lib/comix-*.mjs,scripts/harness/lib/editor-api-common.mjs}"
+fileMatchPattern: ["src/comix-editor/**", "src/editor-core/**", "src/cinematic/**", "pages/comix-editor.html", "src/styles/editor-workstation.css", "src/styles/comix-editor.css", "scripts/harness/lib/comix-*.mjs", "scripts/harness/lib/editor-api-common.mjs"]
 ---
 
 # Comix editor & runtime rules

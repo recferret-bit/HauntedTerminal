@@ -1,8 +1,8 @@
 # Skills map
 
-Skills live in `.kiro/skills/`. Every skill description starts with its category tag, `[ASSET PCG]`, `[LEVEL GEN]` or `[WORKFLOW]`. Activate the matching skill before working in its area; do not improvise rules the skill already defines.
+Skills live in `.kiro/skills/`. Every skill description starts with its category tag, `[ASSET PCG]`, `[LEVEL GEN]`, `[AUDIO]`, `[SOCIAL]` or `[WORKFLOW]` (`check-agents.mjs` fails on an untagged skill). Activate the matching skill before working in its area; do not improvise rules the skill already defines.
 
-## Before both: WORKFLOW
+## Before all: WORKFLOW
 
 `feature-spec-grill`: a new feature or a big refactor starts here, before any other skill (`spec-first.md`). It writes `.kiro/specs/<name>/`, grills the user until every open question is answered, and gets requirements, design and tasks approved. The approved tasks then name the ASSET PCG and LEVEL GEN skills that do the work.
 
@@ -49,9 +49,19 @@ The contract behind all four is `.kiro/steering/declarative-comix.md`, `.kiro/st
 
 Rules: specs reference existing asset IDs only (`ModelCatalog`, `RoomKind`, `FxCatalog`). Never put geometry, shader or particle definitions in a level or comix spec.
 
+## Category 3: AUDIO (sound effects, music, voice lines)
+
+`sfx-and-music-pipeline` is the house pipeline and wins over the CLI skills: a cue is a row in `docs/audio/SFX_LIST.md` or `MUSIC_LIST.md`, dry-run with `node scripts/harness/audio-gen.mjs plan <cue>`, generated with `--generate` only when the brief says so (cap 15,000 credits a run, reserve 30,000, Keychain login, `ffmpeg` post when installed), mapped in `src/audio/`, checked with `audio-gen.mjs --check` and `audio-unit.mjs`.
+
+The 36 `elevenlabs-*` skills are the ElevenLabs CLI's own (`elevenlabs generate-skills`), kept as generated except the `[AUDIO]` tag. Only `shared`, `text-to-sound-effects`, `music`, `text-to-speech`, `voices`, `audio-effects`, `usage` and `models` apply to this game; the rest (agents, dubbing, studio, webhooks, workspaces, reception, ...) are reference only. No agent runs `elevenlabs` directly: the shell refuses it and `--output`. Spec: `.kiro/specs/audio-agent/`.
+
+## Category 4: SOCIAL (campaigns, market research, declarative videos, screenshots & infographics)
+
+`smm-revenue-playbook` (X, YouTube/Shorts & TikTok playbooks + $1M Steam funnel grounded in `docs/marketing/MARKET_RESEARCH_1M_REVENUE.md`) and `social-video-harness` (`scripts/harness/social-media.mjs`: declarative `social/media/specs/*.json` video/screenshot/infographic capture, in-game audio mixing & capped ElevenLabs social voiceovers). Spec: `.kiro/specs/social-smm-agent/`.
+
 ## Who uses which skills (agent team)
 
-The team agents in `.kiro/agents/` split these skills by owner: `artist` uses every ASSET PCG skill; `chapters-designer` the chapter LEVEL GEN chain; `comix-designer` the comix LEVEL GEN chain; `lead-dev` the WORKFLOW skill; `qa` the validators and auditors. Kiro CLI 3.3 shows every workspace skill to every agent, so this split is each agent's focus, not a lock. See `docs/AGENTS_CREW.md`.
+The team agents in `.kiro/agents/` split these skills by owner: `artist` uses every ASSET PCG skill; `chapters-designer` the chapter LEVEL GEN chain; `comix-designer` the comix LEVEL GEN chain; `sound-designer` the AUDIO skills; `smm-agent` the SOCIAL skills; `lead-dev` the WORKFLOW skill; `qa` the validators and auditors. Kiro CLI 3.3 shows every workspace skill to every agent, so this split is each agent's focus, not a lock. See `docs/AGENTS_CREW.md`.
 
 ## Boundary
 

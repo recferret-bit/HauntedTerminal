@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "{chapters,src/chapters}/**"
+fileMatchPattern: ["chapters/**", "src/chapters/**"]
 ---
 
 # Level generation rules

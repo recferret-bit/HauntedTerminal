@@ -125,7 +125,7 @@ what it is (`gate`, `intercom`, `chasm`, `boss`, `pedestal`, `valve` ...). Compu
    add `--views` for side and top views to check the z layers.
 5. **Squint test** on the sheet: cover the top half; the bottom half must be nearly flat dark. Then
    imagine the vibecoder at x = 0.7 and a door at the right edge: nothing bright behind either.
-6. **Validate**: `npm run procgen:validate`, then `npm run procgen:check` before calling it done.
+6. **Validate**: `node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict`, then make sure the asset gate in [credits-art-direction](../credits-art-direction/SKILL.md#the-harness) is green (`npx tsc --noEmit`, the four validators, the self-tests, `npm run quality:fingerprint`) before calling it done.
 7. **Storybook**: `npm start`, open `/storybook.html`, look at the room under the real shaders,
    pixel-art and CRT passes, with and without textures.
 

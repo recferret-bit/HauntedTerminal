@@ -13,7 +13,7 @@ src/procgen/
 src/chapters/
   session-shell.ts     Tab completion on `hold ` using inventory.items; dispatch `inventory`/`inv`/`hold`
   session-flow.ts      restart(g) and applyInitialLoadout() reset g.inventory = starterInventory()
-  catalog.ts           GRIMOIRE_ENTRIES documentation for inventory and hold
+  catalog.ts           GRIMOIRE_ENTRIES documentation for inventory and hold (now in metagame-data.ts, 2026-11-26)
 scripts/quality/
   spec-status.mjs      recursive discovery of specs in .kiro/specs/ including items/<child>
 ```

@@ -79,22 +79,22 @@ the strength to 0 in three steps, not smoothly). Do not put it on the vibecoder:
 - Between strikes the room must stay readable from emissive alone: the boss eye (`malwareEye`, 1.1),
   the sockets' LEDs, the pickups.
 
-## 5. Real lantern darkness
+## 5. Lantern darkness
 
-The design doc asks for dark corners and a cone from the lantern; the game stage only reveals the
-dotfile today. To add the dark:
+The game already has the dark: `StageLight` (`src/renderer/stage-light.ts`) drives the shared
+`COMIC_LIGHT` uniforms: the comic shader darkens every surface by `uLampDark` (toward a cool tint),
+then adds the pool of light around `uLampPos` in three stepped rings with a dithered edge, all before
+emissive, so glowing things stay bright ("in the dark only emissive survives").
+While `RoomView.dark` is true (no lantern held) it uses `DARK_DEF`, a tight phosphor pool at the hero's
+terminal; `ls` cannot lift it. The storybook's `LanternLayer` (`src/storybook/stage/lantern-layer.ts`)
+is a separate multiply-plane stand-in for the lab only. To change the dark:
 
-1. A full-screen plane parented to the camera, in front of everything, `MultiplyBlending`-style
-   shader with **three hard steps**: inside the radius x1.0, a ring to 1.6x the radius x0.55, outside
-   x0.2 tinted toward the floor `bg`. Radius: `config.lanternRadius` px / 58 px per unit (2.4 units).
-   `src/storybook/stage/lab-stage.ts` has this as a working stand-in; lift it rather than rewriting it.
-2. Centre it on the vibecoder's lantern socket, projected to camera space every frame.
-3. Draw emissive meshes after it (`renderOrder` above the plane, `transparent = true` so they sort):
-   that is rule 5, "in the dark only emissive survives".
-4. Unlit (`lantern: false`) rooms: radius 0.6 of normal, so the vibecoder is a small island of light;
-   `ls -a` snaps it to full over three steps while `applyLantern` raises the dotfile.
-5. During a lightning flash, lift the dark step to x0.6 for the frames where `flashStrength > 2`: the
-   whole room shows for an instant. This is the haunted-mansion beat; use it.
+1. Tune a row of `MODES` or `DARK_DEF` (`color`, `dark`, `power`, `radius`, `halo`, `source`). A new
+   source is a new row in `MODES` and `LIGHT_MODES`; nothing else needs to change.
+2. Keep the steps hard: the ring thresholds and the dithered edge live in the light block of `COMIC_FRAG`.
+3. A lightning-flash lift of the dark (the haunted-mansion beat: the whole room shows for an instant
+   while `flashStrength > 2`) is not implemented; only the STORM source follows the flash today
+   (`f.flash` in `StageLight.update`). Add it there, as a stepped change of `uLampDark`.
 
 Never a `SpotLight`, never a smooth radial gradient: both wash out under the pixel-art quantizer.
 
@@ -118,6 +118,6 @@ calls it:
 Three files hold the light: `src/shaders/comic-material.ts` (truth), `src/procgen/geometry/raster-shade.ts`
 (model contact sheets, model validator) and `src/procgen/fx/preview.ts` (effect filmstrip). A change
 to the vector, the band thresholds (0.66 / 0.4), the band multipliers (1 / 0.68 / 0.4), the rim curve
-or the emissive add must land in all three in one commit, followed by `npm run procgen:sheet` and
-`npm run procgen:fx -- --sheet` to confirm the previews moved the way the game did. `preview.ts`
+or the emissive add must land in all three in one commit, followed by `node scripts/harness/render-sheet.mjs --all` and
+`node .kiro/skills/particle-effect-validator/scripts/validate-particles.mjs --all --sheet` to confirm the previews moved the way the game did. `preview.ts`
 mirrors x (page space); do not "fix" that.

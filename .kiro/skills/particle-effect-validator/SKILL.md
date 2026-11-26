@@ -1,6 +1,6 @@
 ---
 name: particle-effect-validator
-description: "[ASSET PCG] Validate and preview comic effects (`FxPreset`s in `src/procgen/fx`) without a browser: role balance 60/30/10, palette rules, colour separation, particle and triangle budgets, stepped timing, size at game scale, panel extent, lingering particles, onomatopoeia rules, plus a filmstrip PNG per effect. Use every time an FX preset, chunk shape, simulator, emitter or lettering changes, before calling effect work done, and when `npm run procgen:fx` or `procgen:check` fails on an `FX_*` code."
+description: "[ASSET PCG] Validate and preview comic effects (`FxPreset`s in `src/procgen/fx`) without a browser: role balance 60/30/10, palette rules, colour separation, particle and triangle budgets, stepped timing, size at game scale, panel extent, lingering particles, onomatopoeia rules, plus a filmstrip PNG per effect. Use every time an FX preset, chunk shape, simulator, emitter or lettering changes, before calling effect work done, and when `validate-particles.mjs --all` or the asset gate fails on an `FX_*` code."
 ---
 
 # Particle effect validator
@@ -21,11 +21,11 @@ Numbers first, then eyes. Never one without the other.
 From the project root:
 
 ```bash
-npm run procgen:fx                      # validate every preset + the catalog check
-npm run procgen:fx -- --sheet           # same, and write scripts/harness/out/fx.png
+node .kiro/skills/particle-effect-validator/scripts/validate-particles.mjs --all           # validate every preset + the catalog check
+node .kiro/skills/particle-effect-validator/scripts/validate-particles.mjs --all --sheet   # same, and write scripts/harness/out/fx.png
 node .kiro/skills/particle-effect-validator/scripts/validate-particles.mjs fx.sigkill fx.hop --sheet --cols 1
 node .kiro/skills/particle-effect-validator/scripts/validate-particles.mjs --all --json
-node .kiro/skills/particle-effect-validator/scripts/self-test.mjs     # also part of npm run procgen:selftest
+node .kiro/skills/particle-effect-validator/scripts/self-test.mjs     # proves the checks themselves
 ```
 
 | Flag | Meaning |

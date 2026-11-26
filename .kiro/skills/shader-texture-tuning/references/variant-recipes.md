@@ -1,7 +1,7 @@
 # Material variants: glitch, ice, stone, and how to add another
 
 Working code: [comic-variants.ts](../examples/comic-variants.ts). The three patched shaders were
-compiled and linked in Chrome's WebGL when written; `scripts/check-examples.mjs` re-checks that the
+compiled and linked in Chrome's WebGL when written; `../scripts/check-examples.mjs` re-checks that the
 patch points still exist in `src/shaders/comic-material.ts` and that the uniforms match.
 
 ## Why patch instead of fork

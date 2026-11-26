@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "{comix/**,src/cinematic/**,src/comix-editor/**,src/editor-core/**}"
+fileMatchPattern: ["comix/**", "src/cinematic/**", "src/comix-editor/**", "src/editor-core/**"]
 ---
 
 # Declarative comix

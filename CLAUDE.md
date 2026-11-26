@@ -21,7 +21,7 @@ Per `docs/kiro-best-practice.md`, never blur these five roles:
 
 1. **Steering (`.kiro/steering/`) = Facts**: concise rules and exact domain terms (`glossary.md` — never invent synonyms).
 2. **Specs (`.kiro/specs/<name>/`) = Capabilities**: system features and big refactors, never per-level or per-page content.
-3. **Skills (`.kiro/skills/<name>/SKILL.md`) = Procedures**: 24 step-by-step workflows (`[WORKFLOW]`, `[ASSET PCG]`, `[LEVEL GEN]`) paired with deterministic scripts.
+3. **Skills (`.kiro/skills/<name>/SKILL.md`) = Procedures**: 63 step-by-step workflows (`[WORKFLOW]`, `[ASSET PCG]`, `[LEVEL GEN]`, `[AUDIO]`, `[SOCIAL]`) paired with deterministic scripts.
 4. **Schemas & JSON Specs = Content Truth**: `chapters/<slug>/`, `comix/<slug>/`, and `scripts/harness/terminal-lab/*.lab.json` typed by `script-types.ts` / `types.ts` / `spec-types.ts` / `lab-types.ts` and union-keyed `schema*.ts` field tables so missing editor forms fail `tsc`.
 5. **Hooks & Gates (`.kiro/hooks/`, `scripts/quality/`) = Enforcement**: zero-LLM Node scripts enforce pass/fail, not memory. `.kiro/settings/mcp.json` stays empty/minimal whenever offline `.mjs` scripts + skills suffice; team agents declare their MCP servers per agent in `scripts/harness/agents-build.mjs`; a feature's MCP server for others ships in its power (`.kiro/powers/<name>/`).
 

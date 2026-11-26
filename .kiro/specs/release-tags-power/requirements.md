@@ -1,6 +1,6 @@
 # Release tags power: requirements
 
-Status: approved
+Status: approved (approved by the user 2026-11-26, delegated)
 
 Capability: two project powers that connect builds to GitHub tags. `credits-tauri-local` builds a local, unversioned, non-production Tauri app. `credits-release` builds the production Tauri installers and makes the Netlify preview from the same release (GitHub Pages dropped, see Decisions).
 
@@ -38,6 +38,8 @@ Capability: two project powers that connect builds to GitHub tags. `credits-taur
 
 **Q:** Pages serves from a subpath and about 76 root-absolute URLs would break; root URL, refactor, or drop? **A (user, 2026-05-17):** "lets keep netlify": Pages is dropped; Netlify is the only web host.
 
+**Q:** Requirement 9 was reworded on 2026-11-26 to match `release.mjs` (preview only, no promotion); is it confirmed, and are the requirements, design and tasks approved? **A (user, 2026-11-26, delegated: "go with your recommendations"):** requirement 9 as reworded (preview only; production stays the user's second yes) is confirmed, and the spec's requirements, design and tasks are approved.
+
 ## Open questions
 
 (none)
@@ -47,3 +49,7 @@ Capability: two project powers that connect builds to GitHub tags. `credits-taur
 - 1-4: unit test of the local build script (dry run) and `--selftest`.
 - 5-7, 11: `release --selftest` and `--dry-run`; `npm run quality:agents`.
 - 8: the existing `desktop-release.yml` on a `v*` tag (first real release, task 9).
+
+## Later changes
+
+- **2026-11-26, commit 1905207 (see `.kiro/specs/architecture-hardening/`):** `release.mjs` reads the repository state through a pure `readStateWith` (a failed git or remote read is a refusal, exit 1), checks the Netlify login before the gates and the tag (exit 2 when missing), and passes the exit status of a failing child through; its tests are in `--selftest`.

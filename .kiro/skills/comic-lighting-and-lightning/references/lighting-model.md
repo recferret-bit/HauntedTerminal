@@ -126,16 +126,29 @@ set to 1 by `syncRoom` when `view.lantern`):
 - vibecoder lantern glow: `uEmissive = 0.35 + 1.25 t`
 
 Hidden actors otherwise sit at `alpha 0.04` (`defaultRoom()` / the session's `RoomView`).
-`config.lanternRadius` (140 px) is declared in `SandboxRenderConfig` but the stage does not read it:
-there is no dark overlay or cone in the game yet. The storybook draws one (`src/storybook/stage/lab-stage.ts`:
-a multiply plane in front of the camera with three hard steps, radius `140 / 58` units, emissive
-meshes re-drawn above it).
+`config.lanternRadius` (140 px) is declared in `SandboxRenderConfig` but the stage does not read it.
+Darkness in the game is the scene light, `StageLight` in `src/renderer/stage-light.ts`: it writes the
+shared `COMIC_LIGHT` uniforms (`uLampPos`, `uLampPower`, `uLampRadius`, `uLampDark`, ...) that every comic
+material reads, stepped at 12 fps. While `RoomView.dark` is true (he does not carry the lantern;
+`stage-frame.ts` passes `dark: !!stage.view?.dark`) it uses `DARK_DEF` instead of the chosen mode: a tight
+phosphor-green pool (radius 1.15, power 0.385, dark 1.4) centred on his chest, where the terminal screen
+is, with no halo and no `ls` boost; with empty hands (`vibecoder.dev_bare`) the power is halved
+(`BARE_GLOW` 0.5). Otherwise the F8 dock's mode applies (`lantern`: dark 0.55, radius 2.7, halo). The
+storybook has its own stand-in, `LanternLayer` (`src/storybook/stage/lantern-layer.ts`): a multiply
+plane in front of the camera with three hard steps, radius `140 / 58` units.
 
 ### PS_XRAY
 
-`HUD_OVERLAY_TOGGLED` -> `mountXray()`: a `THREE.Line` in `0x06d6a0` from the boss (y + 1.2) to the
-minion (y + 0.9), and two text sprites (`PID 666  CPU 98%`, `PID 667  PPID 666`), all named `xray`
-in the `fx` group; `clearXray()` removes them. It is an overlay: it does not change materials.
+`HUD_OVERLAY_TOGGLED` (`src/renderer/stage-event-cast.ts`) copies the event's processes into
+`stage.xrayProcs` (pid, ppid, name, cpu), sets `stage.xrayOn` (`ev.active`, else "any processes") and
+calls `syncOverlays()` (`src/renderer/stage-sync.ts`); `syncRoom` also turns it on from `RoomView.xray`.
+`syncOverlays()` gives every live enemy or boss with a `pid` (and any actor whose pid is listed) a PID
+plate badge: `<name> <cpu>%` from the process list, or its target / label. Each frame `updateXrayLinks()`
+(`src/renderer/stage-frame.ts`) draws parent -> child links between actors whose pids match a listed
+`ppid -> pid` pair (falling back to boss -> each enemy), and `StageOverlay.links()`
+(`src/renderer/stage-overlay.ts`) renders them in the DOM overlay as SVG: an ink line under a dashed
+green one, pulsing in two held widths. It is all DOM overlay: no Three.js objects and no material
+changes; `HUD_OVERLAY_TOGGLED` plays no FX (`event-fx.ts`).
 
 ### Flood
 

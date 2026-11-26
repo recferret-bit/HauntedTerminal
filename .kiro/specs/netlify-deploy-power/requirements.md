@@ -59,3 +59,7 @@ Capability: a project Kiro power, `credits-ship`, that puts Out Of Credits on a 
 - Req 4, 7: `play-browser.mjs --url` on the first real preview and production deploy (needs the user's Netlify login; done by hand).
 - Req 11: `npm run quality:agents` (the deny probe for the deploy script in every agent).
 - Req 12: read in the skill; checked by hand after the first production deploy.
+
+## Later changes
+
+- **2026-11-26, commit 1905207 (see `.kiro/specs/architecture-hardening/`):** `ship.mjs` treats `--dry-run` as a modifier of one command (`preview --dry-run`, `prod --dry-run` checks the stamp and uploads nothing; a second command or `--selftest --dry-run` is refused), deletes the old stamp before a preview so a failed preview can never be promoted, exports `loggedInWith` (also used by `credits-release` before it tags), and prints a rollback hint when production does not play. Its tests are in `--selftest`.

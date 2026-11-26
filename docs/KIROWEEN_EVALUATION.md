@@ -8,7 +8,7 @@ Strong entry, with Technological Implementation (how deeply Kiro is used) as its
 
 | Criterion | Estimate | One line |
 |---|---|---|
-| Technological Implementation (Kiro) | 8.5 to 9.5 | Specs (31), steering, skills, hooks, seven custom agents with enforced ownership, 81 property tests that found real bugs; three project powers (deploy with the Netlify MCP server, release, local desktop build) |
+| Technological Implementation (Kiro) | 8.5 to 9.5 | Specs (31), steering, skills, hooks, eight custom agents with enforced ownership, 81 property tests that found real bugs; three project powers (deploy with the Netlify MCP server, release, local desktop build) |
 | Design | 8 to 9 | A coherent, polished comic look, offline-ready typography, startup conversion funnel, and a full 11-level campaign; judged from screenshots and the video |
 | Innovation / Idea | 8 to 9 | A terminal as the only controller, code-generated Comix Zone art, a declarative engine with its own editors and Tauri + Steamworks desktop pipeline |
 | Potential Impact | 7.5 to 8.5 | Teaches real unix, HTML, JS and Docker through play, paired with a $0-server-CAC browser-demo-to-Steam commercial funnel targeting Zachtronics/terminal-puzzle fans & CS learners |
@@ -22,9 +22,9 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 |---|---|---|
 | **Spec-driven development** | 31 specs in `.kiro/specs/` (including `steam-launch-funnel` and the draft `steamworks-store-release`) plus 5 inventory item child specs, EARS requirements, design, tasks, a `Status:` gate; user answers recorded as `**A (user, date):**`; a hook blocks new source areas until a spec is approved | Strong. The `agent-team`, `property-based-tests`, and `steam-launch-funnel` specs show the whole loop, including designs revised after independent review |
 | **Steering** | 15 files; always-on facts, path-scoped rules, a glossary of exact vocabulary; `quality:declarative`, `quality:layers`, `quality:size` enforce them | Strong. Steering is checked by scripts, not trusted |
-| **Skills** | 24 skills in three categories, each paired with a validator | Strong |
+| **Skills** | 61 skills in four categories (25 project skills, each paired with a validator; 36 ElevenLabs CLI skills) | Strong |
 | **Hooks** | 16 in `.kiro/hooks/` (spec guard, brand guard, validators on save, gates on stop, property tests, agent gate) plus three per team agent (baseline, shell guard, scope) | Strong, and the agent hooks were probed against the real CLI |
-| **Custom agents** | 7 agents, generated from one table, with an `fs_write` fence, a shell allow-list, a guard hook, a scope hook, one owner per file; verified with real agents under auto-approve | Strong, with a stated limit: a guard against mistakes, not a sandbox |
+| **Custom agents** | 8 agents, generated from one table, with an `fs_write` fence, a shell allow-list, a guard hook, a scope hook, one owner per file; verified with real agents under auto-approve | Strong, with a stated limit: a guard against mistakes, not a sandbox |
 | **Property-based testing** | 81 fast-check properties in `npm run quality`; found 7 real bugs; planted-bug checks per feature; guards against vacuous properties | Strong. The write-up question "did PBT catch issues unit tests missed?" has a concrete answer |
 | **Sub-agents** | `lead-dev` delegates to six named agents; `semantic_reviewer` reviewed the work independently and found blockers | Good |
 | **Kiro CLI, Crew** | CLI path tested end to end; Crew prepared (agents installed, member on `lead-dev` in the repo workspace, `npm run crew:check`); the gateway honours the agents' rules; a real chat with the member is not done | Partial: needs the two-minute first test and one real task in the app |

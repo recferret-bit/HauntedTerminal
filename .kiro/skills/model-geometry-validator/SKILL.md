@@ -1,6 +1,6 @@
 ---
 name: model-geometry-validator
-description: "[ASSET PCG] Validate procedural 3D models (`ModelSpec` in `src/procgen`) against the art bible, numerically and without a GPU: floating parts, hairline gaps, buried parts, z-fighting coplanar faces, grounding, size and depth, part and triangle budgets, front-view read at game scale, 60/30/10 colour, palette families and per-category contracts (malware eye and jitter, pickup hover, door LED and socket, vibecoder walk tags). Use every time you create or change a model, a greeble, a palette zone or an archetype's random variation, and whenever `npm run procgen:validate` or `procgen:check` fails."
+description: "[ASSET PCG] Validate procedural 3D models (`ModelSpec` in `src/procgen`) against the art bible, numerically and without a GPU: floating parts, hairline gaps, buried parts, z-fighting coplanar faces, grounding, size and depth, part and triangle budgets, front-view read at game scale, 60/30/10 colour, palette families and per-category contracts (malware eye and jitter, pickup hover, door LED and socket, vibecoder walk tags). Use every time you create or change a model, a greeble, a palette zone or an archetype's random variation, and whenever `validate-model.mjs --all --strict` or the asset gate fails."
 ---
 
 # Model geometry validator
@@ -22,7 +22,7 @@ depth is only there to catch light.
 Run from the project root. No build step, no browser.
 
 ```bash
-npm run procgen:validate                     # every registered model
+node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict   # every registered model, warnings fail
 node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs malware.worm door.usb
 node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --category pickup
 node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --seeds 8 --quiet
@@ -122,7 +122,7 @@ Full table with thresholds and fixes per code: [checks-and-thresholds.md](./refe
    more than a few pixels?
 4. Look at it: `node scripts/harness/render-sheet.mjs <id> --views` and open the PNG. The validator
    proves the model is sound, not that it is good. Numbers first, eyes second.
-5. Before finishing: `npm run procgen:validate` must exit 0.
+5. Before finishing: `node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict` must exit 0.
 
 Never silence a check to get a model through. If a rule is wrong for a real case, change the
 threshold in `MODEL_RULES` (`src/procgen/validate/model/rules.ts`), mirror it in

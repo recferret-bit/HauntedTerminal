@@ -12,7 +12,7 @@ Power `credits-ship`. Spec: `.kiro/specs/netlify-deploy-power/`. Script: `node .
 - **Upload only with `ship.mjs`.** Never deploy with a Netlify MCP tool, `netlify deploy` by hand, or a Git-connected build: each of those skips the gates. Use the Netlify MCP server (bundled in this power) only to answer questions: which sites exist, the status or log of a deploy.
 - **Production needs the user's explicit yes in this conversation**, given after you showed them the passing preview URL. "Looks good so far" or silence is not a yes. Never run `ship.mjs prod` on your own initiative.
 - **No token in the repo, the chat or a command line.** Credentials come from `netlify login` or `NETLIFY_AUTH_TOKEN` in the user's own shell. If a token is pasted into the chat, tell the user to revoke it.
-- **The seven team agents cannot deploy.** Their shells deny this script (`npm run quality:agents` checks it). If you are one of them, hand the request to the user.
+- **No team agent can deploy.** Their shells deny this script (`npm run quality:agents` checks it). If you are one of them, hand the request to the user.
 
 ## Steps
 

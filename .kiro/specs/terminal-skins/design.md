@@ -11,12 +11,15 @@ src/contracts/terminal-skins.ts  NEW. The skin table, pure data: { id, label, ti
 src/contracts/brand.ts           TERMINAL_SKIN_KEY = `${PROJECT_SLUG}:terminal-skin:v1` (prefix-migrated, no legacy entry).
 src/game/commands-proc.ts        runSkin(args): `skin` lists the ids and labels; `skin <id>` returns the id as a request;
                                  anything else exits 1 with the valid ids. Same shape as runManual / restart-level.
-src/game/session.ts              case 'skin' -> pendingSkin; consumeSkinRequest().
-src/chapters/session-shell.ts    case 'skin' -> g.pendingSkin; session-state.ts field; session-flow.ts consumeSkinRequest(g);
+src/game/session.ts              case 'skin' -> pendingSkin; consumeSkinRequest(). (The case is now the `skin` entry
+                                 of `CLASSIC_HANDLERS` in `src/game/session-shell.ts`, 2026-11-26.)
+src/chapters/session-shell.ts    case 'skin' (now `CHAPTER_HANDLERS.skin`) -> g.pendingSkin; session-state.ts field; session-flow.ts consumeSkinRequest(g);
 src/chapters/chapter-session.ts  the public consumeSkinRequest().
 src/game/manual.ts               COMMANDS, helpText; manual-cmds-meta.ts the field manual entry and `man skin`; completion
                                  of `skin <id>` from SKIN_IDS.
-src/game/selfcheck.ts            a row for `skin` (list, switch, refuse).
+src/game/selfcheck.ts            a row for `skin` (list, switch, refuse). (Removed 2026-11-26 in commit 1905207, now
+                                 `scripts/harness/classic-unit.mjs`; `skin` is covered by the `skin <id>` property in
+                                 `props/terminal.mjs`, both shells.)
 src/terminal-lab/commands.ts     `skin` in a group (ungrouped() stays empty).
 src/ui/terminal-skin.ts          NEW. readSkinPref / writeSkinPref (untrusted parse, never throws, like sound-pref.ts),
                                  defaultSkinFor(platform) (mac -> iterm2, win -> windows-terminal, linux -> gnome-terminal,

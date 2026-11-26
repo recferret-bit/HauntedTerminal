@@ -9,7 +9,7 @@ src/procgen/archetypes/items/manual.ts Procedural 3D item.manual (hardcover book
 src/procgen/archetypes/items.ts       ITEM_BUILDERS.manual -> buildManual (auto-wires vibecoder.dev_manual in vibecoder.ts)
 .kiro/skills/credits-art-direction/references/world-lexicon.md Documents item.manual & vibecoder.dev_manual briefs
 chapters/chapter-01-kiroween/chapter.manifest.json Chapter 1 startItems includes "manual" alongside "terminal"
-src/chapters/types.ts, catalog.ts,    Inventory/hold comments, GRIMOIRE_ENTRIES, chapter-editor field hints updated
+src/chapters/types.ts, catalog.ts,    Inventory/hold comments, GRIMOIRE_ENTRIES (now metagame-data.ts), chapter-editor field hints updated
   src/chapter-editor/schema.ts
 src/ui/items-strip.ts                 Renders 4th HUD slot for item.manual automatically from ITEM_IDS
 pages/manual.html, public/_redirects  Standalone Field Manual entry page (/manual & /manual.html; offline WOFF2 fonts)

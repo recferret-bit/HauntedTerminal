@@ -9,7 +9,7 @@ src/procgen/archetypes/items/map.ts   Procedural 3D item.map (top strap + PCB sl
 src/procgen/archetypes/items.ts       ITEM_BUILDERS.map -> buildMap (auto-wires vibecoder.dev_map in vibecoder.ts)
 .kiro/skills/credits-art-direction/references/world-lexicon.md Documents item.map & vibecoder.dev_map
 chapters/chapter-01-kiroween/chapter.manifest.json Chapter 1 startItems includes "map" alongside "manual"
-src/chapters/{types,catalog}.ts,      Inventory/hold comments, GRIMOIRE_ENTRIES, chapter-editor field hints updated
+src/chapters/{types,catalog}.ts,      Inventory/hold comments, GRIMOIRE_ENTRIES (now metagame-data.ts), chapter-editor field hints updated
   src/chapter-editor/schema.ts
 src/game/manual.ts, manual-cmds-nav.ts, Registers 'map' command, helpText, MAN.map, runMap(), and Field Manual documentation
   manual-cmds-meta.ts
@@ -34,7 +34,7 @@ scripts/harness/{laptop-unit,         Unit & browser smoke tests for 5-item inve
 ## Decisions
 
 - **Declarative 4-stage motherboard grouping without chapter-specific IDs.** `buildMotherboardTopology()` walks `manifest.levels` in order: an initial non-hub/non-boss entry becomes `bootBlock`; each subsequent run of task levels terminating in `mechanic === 'hub'` forms one `MotherboardChannel` (`CHANNEL 01 // BUS A`, `CHANNEL 02 // BUS B`, `CHANNEL 03 // BUS C`); and any `mechanic === 'boss'` level becomes `coreBlocks`. Manifest `grants` are matched by `afterLevel` to attach RAM/SSD/item/core bus badges along the channels and chips—passing `quality:declarative` cleanly while rendering Kiroween's exact `1 + (2+1) * 3 + 1 = 11` architecture.
-- **Native `<dialog>` with non-pausing shell block.** Following `hint-dialog.ts` and `manual-book.ts`, `#chapter-map-dialog` uses `showModal()`, `closedby="any"` + `wireLightDismissFallback`, adds zero `PauseReason`, and lets `syncPause()` block xterm input while keeping the game clock and 30s battle turn timer running.
+- **Native `<dialog>` with non-pausing shell block.** Following `hint-dialog.ts` and `manual-book.ts`, `#chapter-map-dialog` uses `showModal()`, `closedby="any"` + `wireLightDismissFallback` (defined in `src/ui/modal-dialog.ts`; `hint-dialog.ts` only re-exports it), adds zero `PauseReason`, and lets `syncPause()` block xterm input while keeping the game clock and 30s battle turn timer running.
 - **Two-step in-place deploy safety.** When jumping to a different level in a chapter session where commands have already been executed (`levelCommands > 0` or `snap.commands > 0` when at start), `#cm-deploy-btn` reveals `#cm-confirm-row` (`Confirm Deploy` / `Cancel`) so accidental clicks never wipe level progress, then calls `session.jumpToLevel(level.id)` + `session.arriveLevel()` and `history.replaceState`.
 - **Single-zone-budget PCB palette for `item.map`.** `item.map` reuses `pcb`, `hair`, `paper`, `ink`, `hoodie`, and minimal `phosphor` beacon accents so `vibecoder.dev_map` remains <= 5 non-neutral/non-light zones under `--strict`.
 

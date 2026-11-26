@@ -14,7 +14,7 @@ import { join, resolve } from 'node:path';
 import { globToRegExp } from '../quality/agent-rules.mjs';
 
 /** Written by compilers and harness runs on behalf of whichever agent ran them. */
-export const SHARED_OUTPUTS = ['src/chapters/generated/**', 'src/cinematic/generated/**', 'scripts/harness/out/**', 'dist/**', 'public/comix/**', 'chapters/*/story/out/**'];
+export const SHARED_OUTPUTS = ['src/chapters/generated/**', 'src/cinematic/generated/**', 'scripts/harness/out/**', 'social/media/out/**', 'dist/**', 'public/comix/**', 'chapters/*/story/out/**'];
 
 /** `git status --porcelain` paths (both sides of a rename), relative to the repository root. */
 export function changedPaths(root) {

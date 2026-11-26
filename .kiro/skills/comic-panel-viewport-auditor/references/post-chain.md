@@ -37,15 +37,15 @@ Other modes for comparison (`?palette=` in the lab): 0 FULL (no remap: the true 
 
 | Param | Default | Effect on art |
 |---|---|---|
-| `mix` | 0.72 | Every term below is multiplied by it, then the result is mixed 72% over the clean image. |
-| `scanlineIntensity` | 0.22 | `sin(uv.y * height * π)`: a dark line every 2 device px, up to ~16% darker. A 1-device-px horizontal line can sit in a dark row and fade. |
-| `vignetteStrength` | 0.28 | Corners up to ~20% darker. Small dark things in corners vanish first. |
-| `noiseOpacity` | 0.035 | Grain in ~3 px blocks, changing 12 times per second. |
-| `rollIntensity` | 0.03 | A slow bright band rolling down. |
-| `flickerStrength` | 0.03 | Rare whole-frame dips. |
-| `distort` | 0.008 | Mild barrel plus a tiny horizontal wave: straight lines near the edges bow. |
+| `mix` | 1 | The processed frame fully replaces the clean one (lower values blend it back in). |
+| `scanlineIntensity` | 0.18 | A 1 css-px dark row every 3 css px, 18% darker, crawling one pitch every 0.9 s. A 1-px horizontal line can sit in a dark row and fade. |
+| `vignetteStrength` | 0.5 | Clear until 55% of the corner distance, then up to 50% darker at the corners. Small dark things in corners vanish first. |
+| `noiseOpacity` | 0.05 | Grain in 2 css-px blocks, mixed toward white, restepped 10 times per second. |
+| `rollIntensity` | 0.045 | A bright band 30% of the screen tall, crossing top to bottom every 8 s. |
+| `flickerStrength` | 0.05 | Two short whole-frame dips every 3.7 s (one at full strength, one at 60%). |
+| `distort` | 0 | Barrel warp, off by default (it re-filters the pixel cells). Straight lines stay straight. |
 
-Net effect: thin lines lose contrast, dark-on-dark loses another step, the frame edges lose detail.
+Net effect: thin horizontal lines lose contrast, dark-on-dark loses another step, the frame corners lose detail.
 Nothing in the CRT pass sharpens.
 
 ## Tone mapping (OutputPass)

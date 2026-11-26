@@ -7,9 +7,9 @@
       "description": "Report-only: lists Kiro specs with open questions or a bad status, and new src/ areas or pages with no approved spec. Silent when clean; always exits 0.",
       "action": {
         "type": "command",
-        "command": "node scripts/quality/check-specs.mjs --report",
-        "timeout": 15
-      }
+        "command": "node scripts/quality/check-specs.mjs --report"
+      },
+      "timeout": 15
     }
   ]
 }

@@ -83,7 +83,7 @@
           "src/chapters/**",
           "src/chapter-editor/**",
           "src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,dialogue,agents,battle}.ts",
-          "scripts/harness/props/{chapters,gameplay,sessions}.mjs",
+          "scripts/harness/props/{chapters,gameplay,gameplay-fsm,sessions}.mjs",
           "scripts/harness/battle-unit.mjs"
         ],
         "effect": "deny"
@@ -95,7 +95,7 @@
           "src/chapters/**",
           "src/chapter-editor/**",
           "src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,dialogue,agents,battle}.ts",
-          "scripts/harness/props/{chapters,gameplay,sessions}.mjs",
+          "scripts/harness/props/{chapters,gameplay,gameplay-fsm,sessions}.mjs",
           "scripts/harness/battle-unit.mjs"
         ],
         "effect": "allow"
@@ -164,6 +164,7 @@
           "diff scripts/harness/out/*",
           "npm run quality",
           "npm run quality:*",
+          "npm run test",
           "npm run build",
           "npm start",
           "npm stop",
@@ -213,6 +214,7 @@
           "diff scripts/harness/out/*",
           "npm run quality",
           "npm run quality:*",
+          "npm run test",
           "npm run build",
           "npm start",
           "npm stop",
@@ -255,7 +257,8 @@
           "node *release.mjs*",
           "node *tauri-local.mjs*",
           "node *build-tauri-steam*",
-          "node *agents-install*"
+          "node *agents-install*",
+          "node *mcp-probe*"
         ],
         "effect": "deny"
       },

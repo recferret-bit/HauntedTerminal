@@ -4,13 +4,13 @@
     {
       "name": "Dry run: new effect asset",
       "trigger": "PostFileCreate",
-      "description": "Dummy run when a particle or comic effect preset file is created.",
+      "description": "Report-only: when a particle or comic effect preset file is created, runs the particle effect validator. Always exits 0.",
       "matcher": "src/procgen/fx/.*\\.ts$",
       "action": {
         "type": "command",
-        "command": "node scripts/hooks/asset-dryrun.mjs effect",
-        "timeout": 20
-      }
+        "command": "node scripts/hooks/asset-dryrun.mjs effect"
+      },
+      "timeout": 20
     }
   ]
 }

@@ -301,6 +301,18 @@ await withProcgen(async (_procgen, vite) => {
     assert.ok(!s.exec('ls -a').output.includes('.spycam'));
   });
 
+  await test('classic rm refuses the root, the cwd and its ancestors with the chapter shell message', () => {
+    const s = fresh();
+    const cwd = s.snapshot().cwd;
+    for (const cmd of ['rm .', 'rm -r .', 'rm ..', 'rm -r ..', 'rm -rf /']) {
+      const res = s.exec(cmd);
+      assert.equal(res.code, 1, `${cmd} unexpectedly succeeded`);
+      assert.match(res.output, /^rm: refusing to remove '[^']+'$/m, `${cmd} missing refusal message`);
+      assert.ok(!res.output.includes('standing in it'), `${cmd} used the old classic message`);
+    }
+    assert.equal(s.snapshot().cwd, cwd);
+  });
+
   await test('command conformance suite across core POSIX commands, operators, redirection, and quoting', () => {
     const s = fresh();
     const cases = [

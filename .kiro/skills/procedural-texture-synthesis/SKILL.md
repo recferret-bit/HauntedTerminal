@@ -1,6 +1,6 @@
 ---
 name: procedural-texture-synthesis
-description: "[ASSET PCG] Draw, register and validate procedural comic textures: flat, hard-edged, palette-locked pixel buffers (PCB traces, chip labels, heatsink fins, glyph rain, hex dumps, corruption, ice, stone, floor backdrops, decals) made in TypeScript with the `tex*` toolkit in `src/procgen/textures`. Use whenever you add or change a texture, put `texture:` on a model part, need a backdrop or decal, see a seam, gradient or off-palette colour, or when `npm run procgen:textures` fails. Read `credits-art-direction` first."
+description: "[ASSET PCG] Draw, register and validate procedural comic textures: flat, hard-edged, palette-locked pixel buffers (PCB traces, chip labels, heatsink fins, glyph rain, hex dumps, corruption, ice, stone, floor backdrops, decals) made in TypeScript with the `tex*` toolkit in `src/procgen/textures`. Use whenever you add or change a texture, put `texture:` on a model part, need a backdrop or decal, see a seam, gradient or off-palette colour, or when `validate-textures.mjs --all` fails. Read `credits-art-direction` first."
 ---
 
 # Procedural texture synthesis
@@ -21,8 +21,9 @@ A texture reaches the screen through four stages, and each one removes something
    `col = mix(uColor * band, albedo * band, 0.86)`. The texture is 86% of the colour, the zone colour
    14%, and both are multiplied by the cel band (1, 0.68 or 0.4). Halftone dots, stripes, the ink rim,
    emissive and the lightning flash are added after.
-4. The pixel-art pass samples the frame in 2 px cells, quantizes to 20 levels with Bayer dither and
-   remaps through a palette ramp; then the CRT pass adds scanlines.
+4. The pixel-art pass samples the frame once per 3.5-CSS-px cell, quantizes to 16 levels with Bayer
+   dither 0.85 and keeps the true colour (palette mode 0; the retro ramps are options); then the CRT
+   pass adds scanlines every 3 CSS px, grain and a vignette.
 
 So:
 
@@ -95,10 +96,10 @@ Check there before drawing a new one.
 4. **Look.** Open the PNG with the Read tool. Tileable textures are shown 2x2 (backdrops 2x1): a seam
    is a line through the middle of the cell. Ask: is it recognisable as the thing at a glance? Is it
    ink and flat colour? Does one tile repeat without an obvious "stamp"? Try `--seed 7`.
-5. **Whole set.** `npm run procgen:textures` (all textures, sheet at `scripts/harness/out/textures.png`)
-   and `npm run procgen:selftest`.
+5. **Whole set.** `node .kiro/skills/procedural-texture-synthesis/scripts/validate-textures.mjs --all --sheet` (all textures, sheet at `scripts/harness/out/textures.png`)
+   and `node .kiro/skills/procedural-texture-synthesis/scripts/self-test.mjs`.
 6. **Under the real shaders.** `npm start`, open `/storybook.html?tab=textures` for every texture
-   through the pixel-art and CRT passes, then the models tab for a model that uses yours. The software sheet (`npm run procgen:sheet`) also samples textures, but only the
+   through the pixel-art and CRT passes, then the models tab for a model that uses yours. The software sheet (`node scripts/harness/render-sheet.mjs --all`) also samples textures, but only the
    storybook shows the pixel-art and CRT passes. If the drawing turns to mush there, it is too fine:
    make shapes bigger, not the texture larger.
 7. Add a row to [texture-catalog.md](./references/texture-catalog.md)

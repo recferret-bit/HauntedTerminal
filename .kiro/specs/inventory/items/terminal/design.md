@@ -20,7 +20,7 @@ src/chapters/
 - **Cyberdeck visual design.** Dark `silicon` shell (width ~0.46, height ~0.34, depth ~0.08), brown leather `hair` grip handle on top (`TOP + 0.08`), recessed `pcbDark` bezel with a glowing `phosphor` screen (`>_` prompt in ink/phosphor), solder keypad grid with arrow keys. Stands at `y = 0` on its foot. Sockets: `grip` at handle top, `screen` at display center, `fx` at center. No `light` socket.
 - **Hero model.** `vibecoder.dev_terminal` holds the cyberdeck by its top grip handle in the screen-right hand.
 - **No light emission.** When held, no `sockets.lantern` is defined. `ComicStage.lightFrame` treats the hero light as null, keeping the room in readable ambient flat shading without the flickering oil-lantern halo.
-- **Terminal Lab ownership.** The terminal child spec incorporates and owns the declarative test bench at `/terminal-lab` (previously defined in `.kiro/specs/terminal-lab/`).
+- **Terminal Lab ownership.** The terminal child spec incorporates and owns the declarative test bench at `/terminal-lab` (previously defined in `.kiro/specs/terminal-lab/`, removed; merged here into `.kiro/specs/inventory/items/terminal/`).
 
 ## Layers and gates
 

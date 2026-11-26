@@ -6,7 +6,7 @@
  *     --file .kiro/skills/procedural-texture-synthesis/examples/socket-pins.ts --sheet --out scripts/harness/out/draft.png
  *
  * To ship a texture like this: move the entry into src/procgen/textures/surfaces.ts (import the toolkit
- * from './toolkit.js' and './font.js' there), add it to SURFACE_TEXTURES, run `npm run procgen:textures`.
+ * from './toolkit.js' and './font.js' there), add it to SURFACE_TEXTURES, run `node .kiro/skills/procedural-texture-synthesis/scripts/validate-textures.mjs --all`.
  */
 import {
   INK, PAPER, makeRng, texColor, texDisc, texNew, texRect, texText, texTextWidth,

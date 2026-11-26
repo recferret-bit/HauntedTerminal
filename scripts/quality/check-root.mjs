@@ -15,6 +15,7 @@ const DIRS = {
   pages: 'HTML entry pages (the Vite root)',
   public: 'static assets served as-is',
   scripts: 'Node tooling: harness, hooks, quality gates',
+  social: 'declarative social media scenarios, research, video/screenshot/infographic specs & outputs',
   src: 'TypeScript source',
 };
 /** Files allowed at the root: tool configs that must live there, the agent entry docs, the readme and the licence. */

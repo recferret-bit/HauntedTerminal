@@ -10,11 +10,11 @@ These facts are not in the requirements' Findings and shape the design.
 
 1. **The neighbour data also drives door locks.** `src/renderer/stage-const.ts:45` `lockedNames(view)` reads `RoomView.neighbors` (relation `locked`); `stage-actor.ts` `doorLocked` and `stage-sync.ts:180-205` use it to show the lock badge and to open or close a door once with a CLANK. Removing `RoomView.neighbors` would unlock every door. Req 11 removes the column the player sees; the data stays (D1).
 2. **A second dialog/tip coupling exists.** `src/play/input.ts:106-107` passes `onRightDialogOpen` and `onClear`, both calling `hud.hideHint()`. Req 10 names only `onHintShow` -> `onHintOpened`. Both directions go (D10).
-3. **A hero is never left dead in a chapter session.** `hurt` (`session-rules.ts:241-262`) either restores from an SSD backup or calls `rebootLevel` at once. `deadNow` is transient. Req 18's "dead" case therefore means "the command works normally after the reboot" (D8).
+3. **A hero is never left dead in a chapter session.** `hurt` (`session-rules.ts:241-262`, now `src/chapters/session-level.ts`) either restores from an SSD backup or calls `rebootLevel` at once. `deadNow` is transient. Req 18's "dead" case therefore means "the command works normally after the reboot" (D8).
 4. **`loadLevel` replaces `g.rt`** (`session-level.ts`, levelCommands, levelTicks are fields of `rt`). A pending confirm kept in `g.rt` expires on any level load or reboot for free (section 8).
 5. **`restartFloor()` already exists on both sessions** (`Session` interface `game/session.ts:35`, `ChapterSession`, `flow.restartFloor`). No new session method is needed; `restart-level --yes` and the menu call it.
 6. **`pages/play.html` is the user's file.** `boot.ts:21-38` throws when `#stage-caption`, `#hud` and others are missing. The new UI is built by JS into existing nodes; `#stage-caption` stays in the DOM, hidden (D11).
-7. **Progress is saved only when a level is cleared** (`recordLevelClear`, `session-code.ts:463`, `session-fs.ts:136`). Leaving mid-level loses that level's progress, so Req 6's confirm is needed.
+7. **Progress is saved only when a level is cleared** (`recordLevelClear`, `session-code.ts:463`, `session-fs.ts:136`; now defined in `src/chapters/catalog.ts` and called from `session-code.ts` and `session-fs.ts`). Leaving mid-level loses that level's progress, so Req 6's confirm is needed.
 8. **Mute is not persisted today.** `run.muted` / `g.muted` live in the session and are lost on reload. `GameSnapshot.muted` also feeds the comix (`input.ts:194`).
 9. **The legacy-key migration is prefix based** (`legacy-keys.ts` `RENAMES`). A new key `out-of-credits:sound:v1` has no legacy name, so no `RENAMES` entry exists to add. Req 7 is met by using `PROJECT_SLUG` and adding a unit assertion.
 10. **Door LED**: `door.ethernet` already has `led` (zone `phosphor`) and a blinking amber `link.led` (`doors.ts:80-81`). The doc comment says the game recolours `led` at runtime, but a search of `src/renderer` and `src/procgen/runtime` found no such recolour. The lock badge already exists (`st-lock`, a lock decal plus "LOCKED", `stage-overlay.ts:491-495`).
@@ -27,13 +27,13 @@ These facts are not in the requirements' Findings and shape the design.
 |---|---|---|
 | Esc handler, menu state, wiring, `window.__menu` test hook | `src/play/{input,loop,state}.ts` | lead-dev |
 | Styles for menu, level block, tip box, hidden caption, no column | `src/styles/esc-menu.css` (new, loaded where the other CSS is), `game.css`, `dialog.css` | lead-dev |
-| Menu, level block, HUD buttons, tip box mount, orchestrator cleanup | `src/ui/esc-menu.ts` (new), `src/ui/level-block.ts` (new), `src/ui/sound-pref.ts` (new), `src/ui/hud.ts`, `src/ui/dialog-orchestrator.ts` | terminal-designer |
+| Menu, level block, HUD buttons, tip box mount, orchestrator cleanup | `src/ui/esc-menu.ts` (new), `src/ui/level-block.ts` (new; superseded, removed by tasks F2), `src/ui/sound-pref.ts` (new), `src/ui/hud.ts`, `src/ui/dialog-orchestrator.ts` | terminal-designer |
 | `restart-level` pure confirm rule, help, man, `COMMANDS` | `src/game/commands-proc.ts` (existing; a new `commands-restart.ts` has no owner in the write fences, see tasks T3), `src/game/manual.ts` | terminal-designer |
 | Lab groups and usage, lab script | `src/terminal-lab/commands.ts`, `scripts/harness/terminal-lab/restart-level.lab.json` | terminal-designer |
 | Terminal property | `scripts/harness/props/terminal.mjs` | terminal-designer |
 | Chapter shell case, pending confirm, reload flag, level info, locked caption | `src/chapters/{session-shell,session-flow,session-state,session-snapshot,chapter-session}.ts` | chapters-designer |
 | Battle and exit-door properties | `scripts/harness/props/{chapters,gameplay}.mjs`, `scripts/harness/battle-unit.mjs` | chapters-designer |
-| Classic shell case, classic tick counter, volume on `Session`, snapshot fields, selfcheck rows | `src/game/{session,types,sfx,selfcheck}.ts` | lead-dev |
+| Classic shell case, classic tick counter, volume on `Session`, snapshot fields, selfcheck rows | `src/game/{session,types,sfx,selfcheck}.ts` (`selfcheck.ts` removed 2026-11-26 in commit 1905207, now `scripts/harness/classic-unit.mjs`) | lead-dev |
 | Storage key constant | `src/contracts/brand.ts` | lead-dev |
 | Column removal, wider panel, door LED tint, stage selfcheck | `src/renderer/{stage-layout,stage-overlay,stage-sync,stage-const,stage-selfcheck}.ts` | artist |
 | Real Chrome run, visual audit | `docs/qa/` | qa |
@@ -68,7 +68,7 @@ Handlers are supplied by `src/play` (ui imports no `play`): `onMute`, `onVolume(
 
 ## 5. Avatar card, post-flip HUD reveal, and left-column stack
 
-- **No level block below the avatar**: `src/ui/level-block.ts` and `.hero-status-col > #level-block` are removed per user request; `.hero-status-col` holds only `#hero-avatar`, `#hud-hp-cell`, and `#hud-turn`. `#stage-caption` stays hidden in DOM (`display: none`). Level title, path, objective, checklist, and bugs live in the Esc menu (`GameSnapshot.level`).
+- **No level block below the avatar**: `src/ui/level-block.ts` and `.hero-status-col > #level-block` are removed per user request (tasks F2); `.hero-status-col` holds only `#hero-avatar`, `#hud-hp-cell`, and `#hud-turn`. `#stage-caption` stays hidden in DOM (`display: none`). Level title, path, objective, checklist, and bugs live in the Esc menu (`GameSnapshot.level`).
 - **Out-of-flow hero dialog drawer**: `.hero-dialog-drawer` uses `position: absolute; left: 100%; top: -3px` and `clip-path` stepped animations instead of in-flow `max-width` transitions, so opening a `vibecoder` line never shifts `.hero-status-col`, `#hud`, `.items-strip`, or `#tutorial-card`. `StageOverlay.collectObstacles()` includes `#hero-hud.open .hero-dialog-drawer`.
 - **Smooth post-page-flip HUD reveal**: `pages/play.html` and `src/play/boot.ts` start with `body.hud-hidden`; `syncPause` keeps `hud-hidden` active through `boot`, `intro`, `reveal`, `card`, and `cinematic` and calls `setHudHidden(false)` once the floor page-turn card finishes flipping, triggering `body.hud-enter` animations (honoring `prefers-reduced-motion`).
 - **Left-column stack (`#titleblock`)**: `#hero-hud` -> `.items-strip` (`pointer-events: auto`) -> `#tutorial-card` (`KIRO.D` help card moved from bottom-right into normal flow below `.items-strip`) -> `#fx-hint` (anchored below `.items-strip`).
@@ -115,7 +115,7 @@ Compound lines (`echo x; retry --yes`) work because the case lives in the shell 
 
 After the chapter ended, `exec` answers every line except `restart` with the "Issue complete" message (`session-flow.ts:116-120`); `restart-level` there gets that message. `restart` (Play Again) is untouched.
 
-Classic session (lead-dev, `game/session.ts:404` switch): same two cases, same helper. It needs a tick counter: add `ticks` to `Session`, incremented in `tick()` when not paused, and `restartPending` on the run (cleared in `load`). Classic `restartFloor()` stays as is (it is also the death path).
+Classic session (lead-dev, `game/session.ts:404` switch; now the `CLASSIC_HANDLERS` table in `src/game/session-shell.ts`): same two cases, same helper. It needs a tick counter: add `ticks` to `Session`, incremented in `tick()` when not paused, and `restartPending` on the run (cleared in `load`). Classic `restartFloor()` stays as is (it is also the death path).
 
 Menu path (Req 19): `handlers.onRestartLevel` calls `session.restartFloor()` directly; it neither reads nor types into the terminal. A reload clears `restartPending` as for every reload; opening, cancelling or closing the menu does not touch it (D9).
 
@@ -138,6 +138,8 @@ Menu path (Req 19): `handlers.onRestartLevel` calls `session.restartFloor()` dir
 
 `session-snapshot.ts:25-27` today: `exitOpen ? "SECTOR CLEAR..." : banner ?? summary`. New: when the exit is locked and the hero stands in the room that holds the exit door, `LOCKED: <first missing description>` plus `(+N more)` using `getChecklist(g)` (`unfinishedObjectives` returns a multi-line string, so it is not reused). Elsewhere the banner stays (D7). `ls` and `cat` output is not touched.
 
+Amended 2026-11-26 (Decisions Q19 in requirements.md, H4): the snapshot still sets `room.caption` to this text, but `#stage-caption` is hidden (D11) and no UI reads `room.caption`. The surface that names the missing win rule is the Esc menu objective `#esc-level-objective` (`levelInfo`, `session-snapshot.ts`; `src/ui/esc-menu.ts`), which shows the first unfinished win rule while the checklist under it lists them all.
+
 ## 12. Registration of `restart-level` and `retry` (Req 20)
 
 | Place | Change | Owner |
@@ -145,12 +147,12 @@ Menu path (Req 19): `handlers.onRestartLevel` calls `session.restartFloor()` dir
 | `manual.ts` `COMMANDS` | add `restart-level`, `retry` (feeds chapter `CHAPTER_COMMANDS` at `session-state.ts:184`, classic man topics `runtime.ts:425`, Tab completion) | terminal-designer |
 | `manual.ts` `helpText` | one line under `shell`/`carry` | terminal-designer |
 | `manual.ts` `MAN` | `restart-level` page (arming, `--yes`, expiry, names `restart`); `MAN.retry = MAN['restart-level']`; `exit` page gets the boss sentence | terminal-designer |
-| Chapter switch `session-shell.ts` (near `exit`, line 229) | two cases | chapters-designer |
-| Classic switch `game/session.ts:404` | two cases | lead-dev |
+| Chapter switch `session-shell.ts` (near `exit`, line 229; now the `CHAPTER_HANDLERS` table) | two cases | chapters-designer |
+| Classic switch `game/session.ts:404` (now `CLASSIC_HANDLERS` in `src/game/session-shell.ts`) | two cases | lead-dev |
 | `help` text of the chapter shell (long string at `session-shell.ts:129`) | mention | chapters-designer |
 | Terminal Lab `commands.ts` | group `Help & game`, `USAGE`, example line `restart-level --yes` (its `ungrouped` drift check fails otherwise) | terminal-designer |
 | Lab script | `restart-level.lab.json`: arm, confirm, `--yes`, expiry by another command | terminal-designer |
-| `selfcheck.ts` command table (`game/selfcheck.ts:360-520`) | rows: bare run arms, second run restarts, `retry --yes` restarts, `man restart-level`, Tab `rest` | lead-dev |
+| `selfcheck.ts` command table (`game/selfcheck.ts:360-520`; removed 2026-11-26 in commit 1905207, now `scripts/harness/classic-unit.mjs`, these rows are covered by the `restart-level` properties in `props/terminal.mjs`) | rows: bare run arms, second run restarts, `retry --yes` restarts, `man restart-level`, Tab `rest` | lead-dev |
 | Properties | `props/terminal.mjs`: for generated sequences, a bare run never restarts; second run or `--yes` restarts; any other line, a level change or more than 20 ticks expires; same sequence, same state; both shells | terminal-designer |
 | `validate-pack.ts` | no command list found (only `exitDir`/`exitCommand` and `locks.command`). A `locks` entry naming `restart-level` would simply refuse it; no code change. | none |
 
@@ -177,7 +179,7 @@ Menu path (Req 19): `handlers.onRestartLevel` calls `session.restartFloor()` dir
 
 ## 15. Layers, size, declarative
 
-- Layers: `ui/` may import contracts, game, chapters, shaders, renderer (`check-layers.mjs:39`); `play/` is outer. New files: `ui/esc-menu.ts`, `ui/level-block.ts`, `ui/sound-pref.ts` (the restart rule lives in the existing `game/commands-proc.ts`). `check-layers.mjs` is not edited.
+- Layers: `ui/` may import contracts, game, chapters, shaders, renderer (`check-layers.mjs:39`); `play/` is outer. New files: `ui/esc-menu.ts`, `ui/level-block.ts` (superseded, removed by tasks F2), `ui/sound-pref.ts` (the restart rule lives in the existing `game/commands-proc.ts`). `check-layers.mjs` is not edited.
 - Size: `hud.ts` is 467 lines and shrinks; `session.ts` 489 gets about 25 lines; `session-flow.ts` 303; `input.ts` 242. `game.css` is 1203 lines, so CSS is outside the size gate or already over it; new CSS goes to a new file anyway. Functions stay under 130 lines (the menu is built from small functions).
 - Declarative: nothing names a chapter or level. No chapter vocabulary changes (`exitDir`, `exitCommand`, `script` untouched), so the four-place rule does not apply.
 - Quality hooks: `guard-chapter-files` is not triggered (no vocabulary file).

@@ -1,6 +1,6 @@
 # Out Of Credits: PNG asset specification (Comix Zone style)
 
-Put transparent `.png` files in `public/assets/sprites/` and list them in `public/assets/manifest.json`. Add a key only together with its PNG: the game probes every listed file, and a missing one is a 404 with a console error on the hosted site (`manifest.json` is `{}` until the first PNG lands). The table below is the set of keys the renderer understands. The scene is made of procedural 3D meshes and shaders (Three.js). When a PNG exists, it is laid on the mesh with the same key as its albedo map. See the `ai-mesh-pipeline` skill.
+Put transparent `.png` files in `public/assets/sprites/` and list them in `public/assets/manifest.json`. Add a key only together with its PNG: the game probes every listed file, and a missing one is a 404 with a console error on the hosted site (`manifest.json` is `{}` until the first PNG lands). The scene is made of procedural 3D meshes and shaders (Three.js). A listed PNG is loaded and shown in the dev inspector, but nothing puts it on a mesh yet (`AssetRegistry.getTexture` has no caller). The table below is the planned key set; the actors the stage really builds are keyed by `LEGACY_CAST` in `src/renderer/procgen-cast.ts` (`vibecoder`, `ghost`, `crate`, `socket`, `gargoyle`, `gate`, `boss`, `minion`, `hole`, `mirror`, `scroll`, plus `black_hole`, `system_hand`). See the `ai-mesh-pipeline` skill.
 
 | Manifest key | File | Size | Anchor | Style |
 |---|---|---|---|---|

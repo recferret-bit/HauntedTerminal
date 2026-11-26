@@ -22,7 +22,7 @@ Capability: real-time damage is removed; combat is turn based only, with no swit
 
 ### Battle intro
 
-9. WHEN a battle begins, THE SYSTEM SHALL play a battle intro of about 4 seconds before every battle: an agent of the big four (Clod, Gork, Codec, Anti-Gravy) appears in the right-side dialog box with its `agent.<name>` portrait and taunts the vibecoder; then the Kiro ghost (`npc.kiro_ghost` portrait) gives one short advice line for the enemies present; then a "FIGHT!" banner plays with the new `fx.fight` effect.
+9. WHEN a battle begins, THE SYSTEM SHALL play a battle intro of about 10 seconds before every battle: an agent of the big four (Clod, Gork, Codec, Anti-Gravy) appears in the right-side dialog box with its `agent.<name>` portrait and taunts the vibecoder; then the Kiro ghost (`npc.kiro_ghost` portrait) gives one short advice line for the enemies present; then a "FIGHT!" banner plays with the new `fx.fight` effect.
 10. THE SYSTEM SHALL choose the agent at random, seeded by the level and the battle number, so the same run picks the same agents.
 11. THE SYSTEM SHALL take the taunts (a pool per agent) and the advice (one line per enemy type, from the bestiary weaknesses) from a code table in `src/game/agents.ts`; level specs gain no battle text.
 12. WHILE the battle intro plays, WHEN the player presses Enter, THE SYSTEM SHALL skip to the battle start; text typed during the intro SHALL stay on the prompt and SHALL NOT run.
@@ -129,7 +129,11 @@ Amended in the implementation, not before (they describe what ships today):
 - Req 1, 2, 21, 22: a unit suite for the orchestrator and the session (no enemy acts on `tick()` outside an enemy turn; `script.timed` still fires on seconds); `npm run quality:declarative`; a grep gate that `tactical` is gone from `src/`.
 - Req 3 to 6, 13 to 19: the orchestrator unit suite (state transitions, battle start and end, several enemies, empty line, timer runout, pause cases) and a new gameplay property in `property-tests.mjs` (the phase is always one of the states; an enemy damages the hero only in `enemy`; the player always has the first turn).
 - Req 7: `terminal-lab-unit.mjs` (Tick forces the enemy turn, damage absorbed), `terminal-lab.mjs --all`, `editor-smoke.mjs`.
-- Req 8: the classic session selfcheck (`src/game/selfcheck.ts`) and property tests.
+- Req 8: the classic session selfcheck (`src/game/selfcheck.ts`; removed 2026-11-26 in commit 1905207, now `scripts/harness/classic-unit.mjs`) and property tests.
 - Req 9 to 12, 20: a unit test on the intro sequence (seeded agent, advice per enemy type, Enter skips, typed text kept); `particle-effect-validator` on `fx.fight`; `visual-audit.mjs` with a battle-start screen; a person checks that the signal reads.
 - Req 23, 24: `node scripts/harness/generate-chapter.mjs --verify` and `node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs` with 0 deaths.
 - Req 25: review of the "Affected specs and docs" list in the final task; `npm run quality:specs`.
+
+## Later changes
+
+- **2026-11-26 (user, "go with your recommendations"):** the intro is `INTRO_SEC = 10` (was 4). Commit 7f7856a raised each intro line to 4.8 s (`BATTLE_LINE_MS`) and the voiced taunt and Kiro clips run 2 to 4 s, so a 4 s intro let FIGHT! fire during the first line. Enter still skips it. Decision A above ("about 4 s") is superseded.

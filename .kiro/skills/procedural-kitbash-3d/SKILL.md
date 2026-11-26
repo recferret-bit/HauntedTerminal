@@ -34,8 +34,8 @@ functions of a `seed`.
 |---|---|
 | `src/procgen/kit/shapes.ts` | Outlines (`outlineRoundRect`, `outlineArch`, `outlineComb`, `outlineStroke`, ...), part constructors (`kitPlate`, `kitBox`, `kitDisc`, `kitRing`), list transforms (`mirrorX`, `offsetParts`, `prefixParts`, `tiltParts`, `animateParts`) |
 | `src/procgen/kit/greebles.ts` | The hardware vocabulary, `greeble*()`. Re-exports `shapes.ts`, so import everything from here |
-| `src/procgen/archetypes/vibecoder.ts` | `vibecoder.dev` (holds the lantern), `vibecoder.dev_laptop`, `vibecoder.hand`. The developer is his body plus one held item: `HELD_VARIANTS` registers one model per item, `holdItem()` puts the item's `grip` socket in his hand |
-| `src/procgen/archetypes/items.ts`, `items/` | The inventory: `item.lantern`, `item.laptop` |
+| `src/procgen/archetypes/vibecoder.ts` | `vibecoder.dev` (holds the lantern), `vibecoder.dev_terminal`, `vibecoder.dev_laptop`, `vibecoder.dev_manual`, `vibecoder.dev_map`, `vibecoder.dev_bare` (empty hands), `vibecoder.hand`. The developer is his body plus one held item: one model is registered per entry of `ITEMS` (`src/contracts/inventory.ts`, its `heroModel`), and `holdItem()` puts the item's `grip` socket in his hand |
+| `src/procgen/archetypes/items.ts`, `items/` | The inventory, one builder per `ITEM_IDS` entry (`ITEM_BUILDERS`): `item.lantern`, `item.terminal`, `item.laptop`, `item.manual`, `item.map` |
 | `src/procgen/archetypes/pickups.ts` | `pickup.energy`, `pickup.ram`, `pickup.ssd` |
 | `src/procgen/archetypes/doors.ts` | `door.usb` `.ethernet` `.hdmi` `.serial` `.firewall` `.loopback` `.devnull` `.socket` |
 | `src/procgen/archetypes/props.ts` | `prop.file` `.tar` `.fuse` `.chip` `.capacitor` `.heatsink` `.fan` `.cables` `.crt` `.tombstone` |
@@ -84,7 +84,8 @@ triangle costs). Worked example: [examples/prop-floppy.ts](./examples/prop-flopp
     Zero errors and zero warnings across seeds before you stop.
 11. **Storybook.** `npm start`, open `/storybook.html`: the same model under the real comic shader,
     pixel-art and CRT passes, animated. This is the only place ink shells and animation are real.
-12. `npm run procgen:check` must stay green.
+12. The asset gate must stay green: `npx tsc --noEmit`, the four validators, the self-tests and
+    `npm run quality:fingerprint` ([credits-art-direction](../credits-art-direction/SKILL.md#the-harness)).
 
 ## Category rules
 

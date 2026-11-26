@@ -64,9 +64,10 @@ Two known gaps, so the preview is kinder than the game:
 - **Halftone placement differs.** The shader uses `vWorld.xz`, so on camera-facing faces (constant z)
   the dots become vertical streaks or vanish; the raster draws real screen-space dots. Moving the shader
   to `vWorld.xy` would fix the game; that is a look change, so it needs sign-off.
-- **The raster skips the post passes.** The default pixel-art palette (`paletteMode: 4`, COMIX, an option, no longer the default) keeps
-  little hue, so colours that differ in the sheet can come out the same in the game. See "The shipped
-  look loses hue" in the art bible.
+- **The raster skips the post passes.** The game's pixel-art pass (`paletteMode: 0`, full RGB) keeps the
+  hue but quantizes to 16 levels in 3.5-CSS-px cells, so detail finer than a cell can drop out in the
+  game. The optional COMIX and MANSION palettes (modes 4 and 5) keep only 22% of the hue: colours that
+  differ in the sheet can come out the same there. See "Post passes keep the hue" in the art bible.
 
 The texture toolkit's cel shades (`TEX_SHADES = [1, 0.68, 0.4]` in `src/procgen/textures/toolkit.ts`)
 are the same band values: change the bands and the texture palette lock moves with them.
@@ -83,13 +84,13 @@ implement stripes, the flash, the pixel-art pass or the CRT pass.
    If it is only wrong with them on, it is a pass parameter.
 2. **Tune live first.** Move the visual lab slider until it reads right; note the value.
 3. **Make it the default in code.** Pass defaults live in `DEFAULT_PIXEL_PARAMS` (`pixel-art.ts`),
-   `DEFAULT_CRT_PARAMS` (`crt-pass.ts`), `DEFAULT_INK` (`visual-lab.ts`). Material constants live in
+   `DEFAULT_CRT_PARAMS` (`crt-pass.ts`), `DEFAULT_INK` (`src/ui/visual-lab-state.ts`). Material constants live in
    `COMIC_FRAG`. Per-zone flags (`emissive`, `halftone`, `stripes`, `ghost`, `opacity`) live in
    `ZONES`: fix a zone there, not in a shader. Clear `localStorage` keys `credits.lab.*` to see defaults.
 4. **Keep parity** (table above) and run:
    ```
    node .kiro/skills/shader-texture-tuning/scripts/check-examples.mjs
-   npm run procgen:sheet        # software preview of every model: scripts/harness/out/models.png
+   node scripts/harness/render-sheet.mjs --all   # software preview of every model: scripts/harness/out/models.png
    npx tsc --noEmit
    ```
 5. **Look at the real frame**: the game and `/storybook.html`, vibecoder at game scale (58 px per unit),
@@ -100,9 +101,9 @@ Symptom to knob:
 
 | Symptom | Look at |
 |---|---|
-| Shadows crawl or speckle | `dither` (0.28) too high for `colorLevels` (20); a gradient in a texture or shader |
-| Everything pink / hue lost | `paletteMode` 4 does that by design; compare with mode 0 before changing a zone |
-| Outline too thin at game scale | `inkWeight` in the `ModelSpec` / `DEFAULT_INK_WEIGHT`; then `edgeStrength` (0.32) |
+| Shadows crawl or speckle | `dither` (0.85) too high for `colorLevels` (16); a gradient in a texture or shader |
+| Everything pink / hue lost | A saved `paletteMode` 4 (COMIX) does that by design; the default is 0, so clear `credits.lab.*` and compare with mode 0 before changing a zone |
+| Outline too thin at game scale | `inkWeight` in the `ModelSpec` / `DEFAULT_INK_WEIGHT`; then `edgeStrength` (0.65) |
 | Texture is mush | Texture detail under 2 px or low value contrast: fix the texture ([procedural-texture-synthesis](../procedural-texture-synthesis/SKILL.md)), not `pixelSize` |
 | Model is a dark blob | Too much surface in the 0.4 band (depth too large, faces turned from the light) or rim eating small parts |
 | Glow does nothing | `uEmissive` is additive in the zone colour: dark zones cannot glow. Use a `signal` zone |

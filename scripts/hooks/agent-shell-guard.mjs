@@ -89,13 +89,24 @@ export const SHARED_OUT = ['scripts/harness/out/*.txt', 'scripts/harness/out/*.l
 const DEV_TARGETS = new Set(['/dev/null', '/dev/stderr', '/dev/stdout']);
 const isCd = (words) => ['cd', 'pushd'].includes(words[0].replace(/^.*\//, ''));
 
-/** Why the `node` sub-command `words` must not run (`afterCd`: a `cd` came earlier in the line), or null. */
-function nodeProblem(words, afterCd) {
+/**
+ * The only agent that may spend ElevenLabs credits (spec .kiro/specs/audio-agent/, Q3-Q4): `audio-gen.mjs` dry-runs by
+ * default, and its `--generate` runs only for this agent. Shell rules cannot tell agents apart inside `node scripts/*`.
+ */
+export const AUDIO_GENERATOR = 'sound-designer';
+export const SOCIAL_AUDIO_GENERATORS = new Set(['smm-agent', 'sound-designer']);
+
+/** Why the `node` sub-command `words` must not run for `agent` (`afterCd`: a `cd` came earlier in the line), or null. */
+function nodeProblem(words, afterCd, agent) {
   if (afterCd) return 'node after cd: run scripts from the repository root (`node scripts/...`, `node .kiro/skills/...`).';
   const script = words.slice(1).find((w) => !w.startsWith('-')) ?? '';
   if (/[*?[\]{}$`~]/.test(script)) return `node ${script}: write the script path out in full (no globs or expansions).`;
   if (script.split('/').includes('..')) return `node ${script}: no \`..\` in a script path.`;
   if (script.replace(/^(\.\/)+/, '').startsWith('scripts/harness/out/')) return `node ${script}: nothing under scripts/harness/out/ may run (every agent can write there).`;
+  if (/(^|\/)audio-gen[^/]*\.mjs$/.test(script) && words.some((w) => w === '--generate' || w.startsWith('--generate=')) && agent !== AUDIO_GENERATOR)
+    return `audio-gen --generate spends ElevenLabs credits: only ${AUDIO_GENERATOR} runs it. Dry-run the plan, and hand generation to ${AUDIO_GENERATOR}.`;
+  if (/(^|\/)social-media\.mjs$/.test(script) && words.some((w) => w === '--generate' || w.startsWith('--generate=')) && !SOCIAL_AUDIO_GENERATORS.has(agent))
+    return 'social-media --generate spends ElevenLabs credits: only smm-agent or sound-designer runs it. Dry-run the plan first.';
   return null;
 }
 
@@ -109,8 +120,8 @@ function gitParts(words) {
   return { sub: words[i], rest: words.slice(i + 1) };
 }
 
-/** Why `command` must not run for `agentName` on `branch`, or null. `globs` are the agent's write globs. */
-export function violation(command, { globs, branch, isLead }) {
+/** Why `command` must not run for `agent` on `branch`, or null. `globs` are the agent's write globs. */
+export function violation(command, { globs, branch, isLead, agent = '' }) {
   const tokens = tokenize(command);
   const subs = subcommands(tokens);
   const hasCd = subs.some(isCd);
@@ -126,7 +137,7 @@ export function violation(command, { globs, branch, isLead }) {
     const cmd = words[0].replace(/^.*\//, '');
     if (isCd(words)) afterCd = true;
     if (cmd === 'node') {
-      const why = nodeProblem(words, afterCd);
+      const why = nodeProblem(words, afterCd, agent);
       if (why) return why;
     }
     if (cmd !== 'git') continue;
@@ -168,7 +179,7 @@ function main() {
   return import('../harness/agents-build.mjs').then(({ LEAD, ownWrites }) => {
     const globs = ownWrites(name);
     if (!globs) process.exit(0);
-    const reason = violation(command, { globs, branch: currentBranch(cwd), isLead: name === LEAD });
+    const reason = violation(command, { globs, branch: currentBranch(cwd), isLead: name === LEAD, agent: name });
     if (!reason) process.exit(0);
     console.error(`agent-shell-guard: blocked for ${name}: ${reason}`);
     process.exit(2);

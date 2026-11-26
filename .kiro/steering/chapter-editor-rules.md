@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "{src/chapter-editor/**,src/editor-core/**,scripts/harness/lib/**,pages/chapter-editor.html,src/styles/editor-workstation.css,src/styles/chapter-editor.css}"
+fileMatchPattern: ["src/chapter-editor/**", "src/editor-core/**", "scripts/harness/lib/chapter-*.mjs", "scripts/harness/lib/editor-api-common.mjs", "pages/chapter-editor.html", "src/styles/editor-workstation.css", "src/styles/chapter-editor.css"]
 ---
 
 # Chapter editor rules

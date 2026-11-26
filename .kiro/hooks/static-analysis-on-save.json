@@ -4,13 +4,13 @@
     {
       "name": "Static analysis on save",
       "trigger": "PostFileSave",
-      "description": "Report-only: runs ESLint across src and quality/hooks/desktop/mcp/harness scripts, circular import check, layer boundary check, and size limits when source or quality/harness scripts are saved.",
-      "matcher": "^src/.*\\.ts$|/src/.*\\.ts$|^scripts/(quality|hooks|desktop|mcp|harness)/.*\\.mjs$",
+      "description": "Report-only: runs every step (ESLint across src and quality/hooks/desktop/mcp/harness scripts, circular imports, layer boundaries, size limits) when source or those scripts are saved, prints a FAILED line per failing step and always exits 0.",
+      "matcher": "(^|/)src/.*\\.ts$|(^|/)scripts/(quality|hooks|desktop|mcp|harness)/.*\\.mjs$",
       "action": {
         "type": "command",
-        "command": "npm run quality:lint && node scripts/quality/check-cycles.mjs && node scripts/quality/check-layers.mjs && node scripts/quality/check-size.mjs src scripts/desktop",
-        "timeout": 60
-      }
+        "command": "f=0; for c in 'npm run quality:lint' 'node scripts/quality/check-cycles.mjs' 'node scripts/quality/check-layers.mjs' 'node scripts/quality/check-size.mjs src scripts/desktop'; do sh -c \"$c\" 2>&1 || { f=$((f+1)); echo \"FAILED (report-only): run $c\"; }; done; [ $f -eq 0 ] && echo 'static analysis: all steps passed' || echo \"static analysis: $f step(s) FAILED\"; exit 0"
+      },
+      "timeout": 60
     }
   ]
 }
