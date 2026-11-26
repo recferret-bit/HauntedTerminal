@@ -135,15 +135,15 @@ await withProcgen(async (_p, vite) => {
   );
   assert.equal(kiroRealtime.snapshot().enemiesLeft, 0, 'At Level 1 spawn, HUD enemiesLeft must be 0');
   const arrival = kiroRealtime.arriveLevel();
-  // Level 1 opens in the dark: no lantern in the pocket, empty hands and no terminal (Kiro brings it at 25 s), the monologue on the clock.
+  // Level 1 opens in the dark: manual and map in the pocket, empty hands and no terminal (Kiro brings it at 25 s), monologue on the clock.
   assert.ok(arrival.output.includes('pitch black'), 'Level 1 must open in the dark');
   assert.ok(arrival.events.some((e) => e.type === 'VIBECODER_EMOTE' && e.emote === 'shock'));
   assert.equal(arrival.snapshot.room.dark, true, 'Without the lantern the room is dark');
-  assert.deepEqual(arrival.snapshot.inventory, { items: ['manual'], held: null }, 'He starts with the manual only and empty hands');
+  assert.deepEqual(arrival.snapshot.inventory, { items: ['manual', 'map'], held: null }, 'He starts with manual + map and empty hands');
   const isBox = (e, speaker) => e.type === 'DIALOG_BOX' && e.speaker === speaker;
   const timeline = [];
   const kiroSeen = [];
-  for (let t = 0; t < 24; t++) {
+  for (let t = 0; t < 100; t++) { // the timed script is data; 100 s covers the whole monologue and Kiro's delivery
     const r = kiroRealtime.tick();
     timeline.push(...r.events);
     kiroSeen.push(r.snapshot.room.actors.some((a) => a.id === 'kiro' && a.model === 'npc.kiro_ghost'));
@@ -155,7 +155,7 @@ await withProcgen(async (_p, vite) => {
   const lastMonologueIdx = boxes.indexOf('vibecoder', 2);
   const firstVillainIdx = boxes.indexOf('antigravy');
   const lastVillainIdx = boxes.indexOf('clod');
-  const shockBoxIdx = boxes.lastIndexOf('vibecoder');
+  const shockBoxIdx = boxes.indexOf('vibecoder', lastVillainIdx);
   const firstKiroIdx = boxes.indexOf('kiro');
   assert.ok(
     lastMonologueIdx >= 2 && firstVillainIdx > lastMonologueIdx && lastVillainIdx >= firstVillainIdx + 3,
@@ -169,45 +169,40 @@ await withProcgen(async (_p, vite) => {
   assert.ok(timeline.filter((e) => isBox(e, 'vibecoder')).length >= 4, 'Vibecoder talks to himself and reacts in shock in dialog boxes');
   assert.ok(timeline.some((e) => isBox(e, 'kiro')), 'Kiro Ghost introduces himself in a dialog box');
   assert.ok(timeline.some((e) => e.type === 'ENTITY_SPAWNED' && e.entityId === 'kiro' && e.entrance === 'glide'), 'Kiro glides in');
+  assert.ok(timeline.some((e) => e.type === 'ITEM_CARRIED' && e.item === 'terminal'), 'Kiro carries the terminal over');
+  assert.ok(timeline.some((e) => e.type === 'ITEM_GIVEN' && e.item === 'terminal' && e.held === true), 'Kiro delivers the terminal into his hand');
+  assert.equal(kiroRealtime.snapshot().inventory.held, 'terminal', 'After the timed script on Level 1, Vibecoder holds the terminal');
   assert.equal(kiroSeen[5], false, 'Kiro is not on stage before his entrance');
   assert.equal(kiroSeen[15], false, 'Kiro is not on stage yet during Vibecoder shock');
-  assert.equal(kiroSeen[23], true, 'After the entrance, Kiro Ghost (npc.kiro_ghost) is on stage');
-  // Even after 24 real-time ticks in Level 1 Tutorial, player takes 0 damage (tutorial truce)
+  assert.equal(kiroSeen[kiroSeen.length - 1], true, 'After the entrance, Kiro Ghost (npc.kiro_ghost) is on stage');
+  // Even after 26+ real-time ticks in Level 1 Tutorial, player takes 0 damage (tutorial truce)
   const startHp = kiroRealtime.snapshot().hp;
   for (let t = 0; t < 15; t++) {
     kiroRealtime.tick();
   }
   assert.equal(kiroRealtime.snapshot().hp, startHp, 'Level 1 tutorial truce must prevent any bug damage');
-  // ls is locked until he holds the lantern, then the scripted order: mv lantern -> ls -> mv -> cat -> ps -> kill -> cd hub_uplink
-  const locked = kiroRealtime.exec('ls');
-  assert.ok(locked.output.includes('too dark'), 'ls is refused in the dark');
-  assert.equal(locked.snapshot.tutorial?.step, 1, 'A refused ls does not move the tutorial on');
-  assert.equal(kiroRealtime.exec('ls -la').output.includes('kiro_story.txt'), false, 'ls -la is locked too');
-  const stepLantern = kiroRealtime.exec('mv lantern ~');
-  assert.ok(stepLantern.output.includes('[COLLECTED]'));
-  assert.equal(stepLantern.snapshot.inventory?.held, 'lantern');
-  assert.equal(stepLantern.snapshot.room.dark, false);
-  assert.equal(stepLantern.snapshot.tutorial?.step, 2);
-  assert.equal(stepLantern.snapshot.tutorial?.command, 'ls');
+  // Level 1 teaches the 6 core shell commands in order without a lantern lock: ls -> mv -> cat -> ps -> kill -> cd hub_uplink
   const stepLs = kiroRealtime.exec('ls');
-  assert.ok(stepLs.output.includes('kiro_story.txt'), 'ls works with the lantern');
-  assert.equal(stepLs.snapshot.tutorial?.step, 3);
+  assert.ok(stepLs.output.includes('kiro_story.txt'), 'ls works on Level 1 in terminal glow');
+  assert.equal(stepLs.snapshot.tutorial?.step, 2);
   assert.equal(stepLs.snapshot.tutorial?.command, 'mv starter_ram_8gb.dimm ~');
   const stepMv = kiroRealtime.exec('mv starter_ram_8gb.dimm ~');
-  assert.equal(stepMv.snapshot.tutorial?.step, 4);
+  assert.equal(stepMv.snapshot.tutorial?.step, 3);
   assert.equal(stepMv.snapshot.tutorial?.command, 'cat kiro_story.txt');
   const stepCat = kiroRealtime.exec('cat kiro_story.txt');
-  assert.equal(stepCat.snapshot.tutorial?.step, 5);
+  assert.equal(stepCat.snapshot.tutorial?.step, 4);
   assert.equal(stepCat.snapshot.tutorial?.command, 'ps');
   assert.ok(
     stepCat.snapshot.room.actors.some((a) => a.id === 'tutorial_virus_1'),
     'Tutorial bug phases onto stage once player reaches the ps step',
   );
   const stepPs = kiroRealtime.exec('ps');
-  assert.equal(stepPs.snapshot.tutorial?.step, 6);
-  assert.equal(stepPs.snapshot.tutorial?.command, 'kill -9 1011');
-  const stepKill = kiroRealtime.exec('kill -9 1011');
-  assert.equal(stepKill.snapshot.tutorial?.step, 7);
+  assert.equal(stepPs.snapshot.tutorial?.step, 5);
+  const tutorialPid = kiroRealtime.rt.pids.get('tutorial_virus_1');
+  assert.ok(tutorialPid >= 1100 && tutorialPid <= 8899 && tutorialPid !== 1011, `the tutorial PID is random, got ${tutorialPid}`);
+  assert.equal(stepPs.snapshot.tutorial?.command, `kill -9 ${tutorialPid}`);
+  const stepKill = kiroRealtime.exec(`kill -9 ${tutorialPid}`);
+  assert.equal(stepKill.snapshot.tutorial?.step, 6);
   assert.equal(stepKill.snapshot.tutorial?.command, 'cd hub_uplink');
   assert.equal(
     stepKill.snapshot.room.actors.some((a) => a.id === 'kiro'),
@@ -215,27 +210,30 @@ await withProcgen(async (_p, vite) => {
     'Once Level 1 tutorial commands are done, Kiro Ghost goes ahead to the Hub',
   );
 
-  // Bypasses closed: find and kiro are locked in the dark too; taking the lantern early skips the stale reminders;
-  // a floor restart puts the dark start back.
-  const early = createChapterSession({ chapterId: 'chapter-01-kiroween' });
-  early.arriveLevel();
-  assert.ok(early.exec('find .').output.includes('too dark'), 'find is locked in the dark');
-  assert.ok(early.exec('kiro scan').output.includes('in the dark'), 'kiro scan is locked in the dark');
-  assert.equal(early.snapshot().room.xray, false, 'kiro scan must not switch the X-ray on in the dark');
-  // Doing later steps blind does not move the card past the lantern step.
-  assert.equal(early.exec('cat kiro_story.txt').snapshot.tutorial?.step, 1, 'Reading the briefing in the dark keeps the card on the lantern step');
-  const earlyEvents = [];
-  for (let t = 0; t < 4; t++) earlyEvents.push(...early.tick().events);
-  assert.ok(early.exec('mv lantern ~').output.includes('[COLLECTED]'));
-  for (let t = 0; t < 19; t++) earlyEvents.push(...early.tick().events);
-  assert.ok(earlyEvents.some((e) => isBox(e, 'kiro')), 'Kiro still arrives when the lantern was taken early');
-  assert.equal(earlyEvents.filter((e) => isBox(e, 'kiro')).length, 2, 'Kiro says only his arrival and delivery lines, no lantern reminders once it is taken');
-  assert.equal(earlyEvents.some((e) => e.type === 'TUTORIAL_STEP' && e.step === 1 && !e.done), false, 'No stale step-1 card after the lantern');
-  assert.equal(earlyEvents.some((e) => isBox(e, 'vibecoder') && /No lantern/.test(e.text)), false, 'He does not say he has no lantern after taking it');
-  const restarted = early.restartFloor();
-  assert.deepEqual(restarted.snapshot.inventory, { items: ['manual'], held: null }, 'A floor restart puts the dark start back (empty hands, no terminal)');
+  // Level 3 pitch-black lantern lock: find, ls, ls -la, and kiro are locked until `mv lantern ~`; taking the lantern early skips
+  // stale reminders; a floor restart puts the dark start back.
+  const l3 = createChapterSession({ chapterId: 'chapter-01-kiroween', startLevelId: 'level-03-task-gpu-salvage' });
+  const l3Arrival = l3.arriveLevel();
+  assert.deepEqual(l3Arrival.snapshot.inventory, { items: ['manual', 'map', 'terminal'], held: 'terminal' }, 'Level 3 opens carrying manual, map, and terminal');
+  assert.equal(l3Arrival.snapshot.room.dark, true, 'Level 3 opens pitch black before the lantern');
+  assert.ok(l3.exec('ls').output.includes('too dark'), 'ls is locked in the dark on Level 3');
+  assert.equal(l3.exec('ls -la').output.includes('gpu_shader_core_01.img'), false, 'ls -la is locked in the dark on Level 3');
+  assert.ok(l3.exec('find .').output.includes('too dark'), 'find is locked in the dark on Level 3');
+  assert.ok(l3.exec('kiro scan').output.includes('in the dark'), 'kiro scan is locked in the dark on Level 3');
+  assert.equal(l3.snapshot().room.xray, false, 'kiro scan must not switch the X-ray on in the dark');
+  const l3Events = [];
+  for (let t = 0; t < 2; t++) l3Events.push(...l3.tick().events);
+  const stepLantern = l3.exec('mv lantern ~');
+  assert.ok(stepLantern.output.includes('[COLLECTED]'));
+  assert.equal(stepLantern.snapshot.inventory?.held, 'lantern');
+  assert.equal(stepLantern.snapshot.room.dark, false);
+  for (let t = 0; t < 12; t++) l3Events.push(...l3.tick().events);
+  assert.equal(l3Events.some((e) => isBox(e, 'kiro') && /mv lantern ~/.test(e.text)), false, 'No lantern reminder once it is taken');
+  assert.ok(l3.exec('ls').output.includes('gpu_shader_core_01.img'), 'ls works on Level 3 with the lantern');
+  const restarted = l3.restartFloor();
+  assert.deepEqual(restarted.snapshot.inventory, { items: ['manual', 'map', 'terminal'], held: 'terminal' }, 'Level 3 restart puts the dark start back');
   assert.equal(restarted.snapshot.room.dark, true);
-  assert.ok(early.exec('ls').output.includes('too dark'), 'ls is locked again after the restart');
+  assert.ok(l3.exec('ls').output.includes('too dark'), 'ls is locked again after Level 3 restart');
 
   const kiroChap = createChapterSession({
     chapterId: 'chapter-01-kiroween',
@@ -243,17 +241,17 @@ await withProcgen(async (_p, vite) => {
   kiroChap.skipIntro();
   assert.equal(kiroChap.getLevels().length, 11, 'chapter-01-kiroween must have 11 executable levels');
   assert.equal(kiroChap.getCurrentLevel().id, 'level-01-tutorial-awakening');
-  assert.ok(kiroChap.exec('ls').output.includes('too dark'), 'ls is locked until the lantern is taken');
-  assert.ok(kiroChap.exec('mv lantern ~').output.includes('[COLLECTED]'));
   assert.ok(kiroChap.exec('ls').output.includes('kiro_story.txt'));
-  assert.ok(kiroChap.exec('cat kiro_story.txt').output.includes('BIG FOUR'));
   assert.ok(kiroChap.exec('mv starter_ram_8gb.dimm ~').output.includes('[COLLECTED]'));
-  assert.ok(kiroChap.exec('ps').output.includes('1011'));
-  const killProbe = kiroChap.exec('kill -9 1011');
+  assert.ok(kiroChap.exec('cat kiro_story.txt').output.includes('BIG FOUR'));
+  assert.ok(kiroChap.exec('ps').output.includes(String(kiroChap.rt.pids.get('tutorial_virus_1'))));
+  const killProbe = kiroChap.exec('kill -9 {pid:tutorial_virus_1}');
   assert.equal(killProbe.snapshot.enemiesLeft, 0);
   assert.ok(killProbe.output.includes('hub_uplink'));
   kiroChap.exec('cd hub_uplink');
   assert.equal(kiroChap.getCurrentLevel().id, 'level-02-task-ram-heist');
+  assert.equal(kiroChap.snapshot().inventory.held, 'terminal', 'Level 2 grants and holds the terminal');
+  assert.ok(!kiroChap.snapshot().inventory.items.includes('lantern'), 'Level 2 does not carry the lantern yet');
   assert.equal(
     kiroChap.snapshot().room.actors.some((a) => a.id === 'kiro'),
     false,
@@ -312,6 +310,13 @@ await withProcgen(async (_p, vite) => {
   kiroChap.exec('mv ram_16gb.dimm ~');
   kiroChap.exec('cd logic_cell');
   assert.equal(kiroChap.getCurrentLevel().id, 'level-06-task-logic-purge');
+  assert.ok(kiroChap.exec('edit cart.js').output.includes('laptop'), 'edit is locked on Level 6 until the laptop is taken');
+  assert.ok(kiroChap.exec("sed -i 's/foo/bar/' cart.js").output.includes('laptop'), 'sed is locked on Level 6 until the laptop is taken');
+  const laptopPick = kiroChap.exec('mv laptop ~');
+  assert.ok(laptopPick.output.includes('[COLLECTED]'), 'mv laptop ~ collects the laptop on Level 6');
+  assert.equal(laptopPick.snapshot.inventory.held, 'laptop', 'Level 6 holds the laptop after pickup');
+  const editCart = kiroChap.readEditableFile('cart.js');
+  assert.equal(editCart.ok, true, 'edit works once laptop is held');
 
   // Jump to Hub 2 (Level 7) & Hub 3 (Level 10): verify DeepSeek disables Codec and Llama disables Gork
   kiroChap.jumpToLevel('level-07-hub-model-two');
@@ -434,7 +439,7 @@ await withProcgen(async (_p, vite) => {
   // Preview isolation: a preview session neither emits ACHIEVEMENT_UNLOCKED nor leaks unlocked state
   const previewSess = createChapterSession({ chapterId: 'chapter-01-kiroween', preview: true });
   previewSess.skipIntro();
-  const prevKill = previewSess.exec('kill -9 1011');
+  const prevKill = previewSess.exec('kill -9 {pid:tutorial_virus_1}');
   assert.equal(
     prevKill.events.some((e) => e.type === 'ACHIEVEMENT_UNLOCKED'),
     false,

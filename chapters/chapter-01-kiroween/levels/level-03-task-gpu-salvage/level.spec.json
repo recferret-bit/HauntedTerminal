@@ -8,8 +8,15 @@
   "roomSeed": 33,
   "mechanic": "terminal",
   "exitDir": "/srv/kiroween/gpu_alley/server_hub_1",
-  "summary": "Codec mocks your lack of a prompt box! Unlock vram_crate (chmod 755), kill keygen.exe (PID 2104), remove port_445/worm.bin, and collect ram_16gb.dimm + gpu_shader_core_01.img before heading to the Hub.",
+  "summary": "GPU Alley is pitch black! Pull your oil lantern into your pocket (mv lantern ~) to light up the crypt, unlock vram_crate (chmod 755), kill keygen.exe (PID {pid:crack_l3}), remove port_445/worm.bin, and collect ram_16gb.dimm + gpu_shader_core_01.img before heading to the Hub.",
   "files": [
+    {
+      "path": "/srv/kiroween/gpu_alley/lantern",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "#!/bin/lantern\n# LANTERN: light for a dark room.\n# use: mv lantern ~   (it goes in your hand)\nexport LIGHT=\"on\"\n"
+    },
     {
       "path": "/srv/kiroween/gpu_alley/vram_crate",
       "kind": "dir",
@@ -75,6 +82,11 @@
   ],
   "pickups": [
     {
+      "id": "pickup_l3_lantern",
+      "type": "lantern",
+      "path": "/srv/kiroween/gpu_alley/lantern"
+    },
+    {
       "id": "pickup_l3_ram",
       "type": "ram",
       "path": "/srv/kiroween/gpu_alley/ram_16gb.dimm"
@@ -127,7 +139,7 @@
     {
       "kind": "enemy_neutralized",
       "enemyId": "crack_l3",
-      "description": "Kill `keygen.exe` (`ps` then `kill -9 2104`)"
+      "description": "Kill `keygen.exe` (`ps` then `kill -9 {pid:crack_l3}`)"
     },
     {
       "kind": "enemy_neutralized",
@@ -146,9 +158,10 @@
     }
   ],
   "solutionCommands": [
+    "mv lantern ~",
     "chmod 755 vram_crate",
     "ps",
-    "kill -9 2104",
+    "kill -9 {pid:crack_l3}",
     "rm port_445/worm.bin",
     "mv ram_16gb.dimm ~",
     "mv gpu_shader_core_01.img ~",
@@ -158,9 +171,100 @@
     "allySpeaker": "KIRO GHOST",
     "arrival": [
       {
+        "kind": "print",
+        "text": "\n[GPU ALLEY — /srv/kiroween/gpu_alley]\nThe crypt plunges into pitch darkness—your terminal glow alone cannot pierce it. Your oil lantern glints on the floor!\n"
+      },
+      {
         "kind": "taunt",
         "mood": "laugh",
         "print": "\n[BIG FOUR BULLYING] {text}\n"
+      }
+    ],
+    "timed": [
+      {
+        "afterSec": 1,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Whoa—GPU Alley is pitch black! My terminal glow was enough in the wires and Cache Vault, but I can't see a thing in this deep crypt!",
+            "holdSec": 9
+          }
+        ],
+        "unless": {
+          "kind": "has_item",
+          "item": "lantern"
+        }
+      },
+      {
+        "afterSec": 10,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "codec",
+            "text": "LMAO! Welcome to the dark sector, Vibecoder! Without real light you can't even run ls in here!",
+            "holdSec": 9
+          }
+        ],
+        "unless": {
+          "kind": "has_item",
+          "item": "lantern"
+        }
+      },
+      {
+        "afterSec": 19,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Wait—your oil lantern from the desk fell right at your feet! Take it with mv lantern ~ to light up GPU Alley!",
+            "holdSec": 9
+          }
+        ],
+        "unless": {
+          "kind": "has_item",
+          "item": "lantern"
+        }
+      },
+      {
+        "afterSec": 28,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Move it into your pocket (mv lantern ~) and the whole crypt lights up."
+          }
+        ],
+        "unless": {
+          "kind": "has_item",
+          "item": "lantern"
+        }
+      }
+    ],
+    "locks": [
+      {
+        "command": "ls",
+        "until": {
+          "kind": "has_item",
+          "item": "lantern"
+        },
+        "message": "ls: it is too dark to see anything in GPU Alley. Pull the lantern into your pocket first: mv lantern ~"
+      },
+      {
+        "command": "find",
+        "until": {
+          "kind": "has_item",
+          "item": "lantern"
+        },
+        "message": "find: it is too dark to see anything in GPU Alley. Pull the lantern into your pocket first: mv lantern ~"
+      },
+      {
+        "command": "kiro",
+        "until": {
+          "kind": "has_item",
+          "item": "lantern"
+        },
+        "message": "kiro: Kiro Ghost cannot scan in the dark crypt. Pull the lantern into your pocket first: mv lantern ~"
       }
     ],
     "bullying": {

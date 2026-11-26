@@ -8,7 +8,7 @@
   "roomSeed": 88,
   "mechanic": "docker-image",
   "exitDir": "/srv/kiroween/docker_forge/compose_furnace",
-  "summary": "Only GORK and CLOD remain—and they're bullying you with padlock ransomware! Kill `ransom.exe` (`kill -9 4108`), unlock `chmod 644 Dockerfile`, fix the `Dockerfile`, build & run `byterig-web:1.0` on port 3000, and collect `ram_16gb.dimm` + `gpu_tensor_chip_03.img`.",
+  "summary": "Only GORK and CLOD remain—and they're bullying you with padlock ransomware! Kill `ransom.exe` (`kill -9 {pid:ransomware_l8}`), unlock `chmod 644 Dockerfile`, fix the `Dockerfile`, build & run `byterig-web:1.0` on port 3000, and collect `ram_16gb.dimm` + `gpu_tensor_chip_03.img`.",
   "files": [
     {
       "path": "/srv/kiroween/docker_forge/ransom.exe",
@@ -113,7 +113,7 @@
     {
       "kind": "enemy_neutralized",
       "enemyId": "ransomware_l8",
-      "description": "Terminate `ransom.exe` (`ps` then `kill -9 4108`)"
+      "description": "Terminate `ransom.exe` (`ps` then `kill -9 {pid:ransomware_l8}`)"
     },
     {
       "kind": "docker_image_running",
@@ -134,7 +134,7 @@
   ],
   "solutionCommands": [
     "ps",
-    "kill -9 4108",
+    "kill -9 {pid:ransomware_l8}",
     "chmod 644 Dockerfile ram_16gb.dimm gpu_tensor_chip_03.img",
     "sed -i 's/node:99-vibe-turbo/node:20-alpine/' Dockerfile",
     "sed -i 's/EXPOSE 9999/EXPOSE 3000/' Dockerfile",

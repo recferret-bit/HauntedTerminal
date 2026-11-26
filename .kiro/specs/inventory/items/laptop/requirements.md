@@ -20,9 +20,10 @@ Capability: `item.laptop` is the developer's old clamshell laptop carried like a
 12. WHEN a page run is initiated while a previous run on the same `PreviewSlot` is pending or settling, THE SYSTEM SHALL cancel the previous run's timeout and discard its completion token, so an abandoned run NEVER replaces the new page with `STOPPED_PAGE` or falsely flags `hung = true`.
 13. THE SYSTEM SHALL offer seven coding tasks (3 JS Pad, 4 Web Weaver) judged by deterministic checks (`log`, `logs`, `noError`, `value`, `element`, `style`, `source`); each task's starter fails and reference solution passes; progress and drafts are saved in `localStorage` (`credits.laptop.progress`) with a reset option.
 
+14. WHEN a chapter level defines a `laptop` pickup (`PickupType` `'laptop'`, collected via `mv laptop ~`), THE SYSTEM SHALL add `'laptop'` to inventory, hold `'laptop'` (`vibecoder.dev_laptop`), emit `PICKUP_COLLECTED { item: 'laptop' }`, unlock commands gated on `has_item laptop` (`edit`, `sed` in Chapter 1 Level 6), and include `'laptop'` in subsequent levels via `manifest.grants` (`afterLevel: 6`).
+
 ## Out of scope
 
-- Giving the laptop to the player during the initial Kiroween chapter levels (lab only for now).
 - Opening `/laptop-lab` from inside the game terminal.
 - Chapter save data persistence for laptop quest progress.
 

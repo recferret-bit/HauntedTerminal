@@ -10,7 +10,7 @@ Capability: `item.lantern` is the developer's oil lantern from his desk, carried
 2. THE SYSTEM SHALL build `item.lantern` as a procedural 3D model standing on `y = 0` (4 parts: handle ring, cap, glass, foot; ~188 triangles; height ~0.41), using zones `lantern` and `hair`, with `grip` socket at `[0, 0.33, 0]` and `light` socket at `[0, 0.135, -0.07]`.
 3. WHEN the developer holds `lantern` (`vibecoder.dev`), THE SYSTEM SHALL mount the lantern's `grip` socket to his screen-right hand with the handle part positioned behind the hand and arm swing animation applied to all lantern parts.
 4. WHEN holding `lantern`, THE SYSTEM SHALL expose the item's `light` socket as `sockets.lantern` on the hero model `vibecoder.dev`, which the stage lighting system SHALL track as its primary light source (`ComicStage.light`).
-5. WHEN the player enters the computer or starts/restarts a run or level, THE SYSTEM SHALL place `lantern` in inventory and hold it in hand by default.
+5. WHEN the player starts/restarts a classic run or jumps to a chapter level at/after the chapter's lantern grant (`afterLevel: 3` in Chapter 1, where Level 3 collects the lantern pickup via `mv lantern ~` to unlock `ls`/`find`/`kiro`), THE SYSTEM SHALL place `lantern` in inventory and hold it in hand.
 6. WHEN the player executes `ls -a` (or `ls -la`), THE SYSTEM SHALL raise the lantern, reveal hidden files and dotfile malware (`.poltergeist.lock`, `.spycam`), trigger `LANTERN_REVEAL` events, and boost the stage lantern light for the duration of the transition.
 7. IF the developer holds another item (`terminal` or `laptop`), THEN executing `ls -a` SHALL automatically switch the held item back to `lantern` (`holdItem(inv, 'lantern')`), updating the hero model and stage lighting.
 

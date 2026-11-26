@@ -85,7 +85,7 @@ export function cmdHank(g: ChapterState, args: string[]): Step {
       return cmdHankAudit(g);
     }
     const events: KernelEvent[] = [];
-    const entry = g.pack.dialogs?.levels[g.rt.spec.id];
+    const entry = g.rt.dialog;
     const ally = allyVoice(g);
     const rungIndex = Math.min(2, g.rt.hintRung);
     if (rungIndex === 2) g.rt.usedSpoilerRung = true;

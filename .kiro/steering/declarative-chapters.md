@@ -26,6 +26,7 @@ The vocabulary of `script` is this file, so it cannot drift from the code: #[[fi
 3. **Generated is output.** Never edit `src/chapters/generated/` (a hook blocks it). Edit specs, run `node scripts/harness/generate-chapter.mjs`.
 4. **One JSON writer.** `scripts/harness/lib/chapter-json.mjs` (`stringifyChapterJson`) is the formatter of the editor and of agents; a no-op save changes zero bytes.
 5. **Existing asset ids only** (`ModelCatalog`, `RoomKind`). A missing one is an ASSET PCG task.
+6. **Random PIDs.** An enemy's `pid` in a level spec only marks that it has one; the player sees a PID rolled on every level load. Never write that number in text, dialogs or `solutionCommands`: write `{pid:<enemy id>}` (the pack check rejects the number and an unknown id). Spec: `.kiro/specs/random-pids/`.
 
 ## Humans tune, agents generate
 

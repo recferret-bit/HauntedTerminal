@@ -83,7 +83,7 @@ export const STEP_VARIANTS = (): Variants<ScriptStep['kind']> => ({
   dialog_box: [
     sel('speaker', 'Speaker', ['vibecoder', ...AGENTS]),
     t('text', 'Line', { rows: TEXT_ROWS }),
-    opt(n('holdSec', 'Hold seconds after the text (default 4)', { step: 0.5 })),
+    opt(n('holdSec', 'Hold seconds after the text (default 12)', { step: 0.5 })),
   ],
 });
 
@@ -128,7 +128,7 @@ export const ENEMY_FIELDS: Field[] = [
   t('id', 'Id'),
   sel('type', 'Type', ENEMY_TYPES),
   t('path', 'File', { suggest: 'paths', mono: true }),
-  opt(n('pid', 'PID')),
+  opt(n('pid', 'PID (marker; random each load, text writes {pid:<id>})')),
   opt(n('ppid', 'PPID')),
   opt(b('hidden', 'Starts hidden (dotfile)')),
   opt(t('port', 'Port dir (worm)', { suggest: 'paths', mono: true })),

@@ -27,6 +27,7 @@ function fileAbsentLabel(g: ChapterState, path: string): string {
   if (pickup?.type === 'ssd') return `Collect SSD drive (${name})`;
   if (pickup?.type === 'energy') return `Collect energy cell (${name})`;
   if (pickup?.type === 'lantern') return 'Pick up the lantern';
+  if (pickup?.type === 'laptop') return 'Pick up the laptop';
   if (name.startsWith('.')) return `Find and remove hidden file (${name})`;
   return `Remove ${relTarget(g.rt.spec.cwd, path)}`;
 }
@@ -112,6 +113,10 @@ export function chapterHintGoals(g: ChapterState): HintGoals {
   const lanternPickup = spec.pickups.find((p) => p.type === 'lantern' && !ruleAbsentPaths.has(p.path));
   if (lanternPickup) {
     tasks.push({ label: 'Pick up the lantern to light the room', done: hasItem(g.inventory, 'lantern') });
+  }
+  const laptopPickup = spec.pickups.find((p) => p.type === 'laptop' && !ruleAbsentPaths.has(p.path));
+  if (laptopPickup) {
+    tasks.push({ label: 'Pick up the laptop for coding tasks', done: hasItem(g.inventory, 'laptop') });
   }
   for (const rule of spec.winRules) tasks.push(...tasksForRule(g, rule));
   const lab = labTasks(g);

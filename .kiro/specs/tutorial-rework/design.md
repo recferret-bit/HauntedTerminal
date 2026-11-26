@@ -57,3 +57,7 @@ qa                  docs/qa/<date>-tutorial-rework.md
 - Vocabulary changes, each in the four places (types, interpreter, `src/chapter-editor/schema.ts`, `validate-pack.ts`): `dialog_box` step, `spawn.entrance`, `script.timed`, `script.locks`, `has_item` condition, `manifest.startItems`, `ChapterGrant.items`, pickup type `lantern`. `terminal-lab-unit.mjs` also runs, because the Terminal Lab reuses the editor field tables.
 - The `PICKUP_COLLECTED.item` union grows, so every exhaustive `Record<PickupType, ...>` fails `tsc` until it has a lantern entry. That is intended.
 - Gates: `npm run quality`, `node scripts/harness/generate-chapter.mjs --verify` (0 deaths), `node scripts/harness/editor-unit-test.mjs`, `node scripts/harness/editor-smoke.mjs`, `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab.mjs --all`, `node scripts/harness/property-tests.mjs`, `npm run quality:fingerprint` (must be byte-identical: no asset changes), and the visual audit report for the dark screen (`node scripts/harness/visual-audit.mjs`, flags explained, baselines not touched).
+
+### Later amendment (2026-11-25, Chapter 1 pacing rework)
+
+- See `.kiro/specs/tutorial-kiro-delivers-terminal/` and `.kiro/specs/inventory/items/{lantern,laptop}/`: Level 1 now focuses purely on receiving `terminal` and learning the shell (`ls`, `mv`, `cat`, `ps`, `kill -9`, `cd`), while `lantern` acquisition and the pitch-black `ls`/`find`/`kiro` lock moved to Level 3 (`afterLevel: 3`), and `laptop` acquisition (`edit`/`sed` lock) is introduced on Level 6 (`afterLevel: 6`).

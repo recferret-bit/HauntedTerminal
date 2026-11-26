@@ -13,7 +13,7 @@ import { absPath, hasWrite, lookup, type VNode } from '../game/tree.js';
 import type { CommandResult, TickResult } from '../game/types.js';
 import type { RankGrade } from './catalog.js';
 import type { LabConfig, LabInjection, LabInspect, LabLevelState } from './session-lab-types.js';
-import type { ChapterPack, LevelPatchChip, LevelSpec } from './types.js';
+import type { ChapterPack, LevelDialogEntry, LevelPatchChip, LevelSpec } from './types.js';
 
 export { empty as emptyStep, out as okStep } from '../game/play.js';
 
@@ -66,6 +66,8 @@ export interface ChapterSessionOptions {
   startLevelId?: string;
   chaosMode?: boolean;
   chaosSeed?: string;
+  /** Seeds the random PIDs (tests and the property suite); the game rolls them with `Math.random`. */
+  pidSeed?: number;
   /** Play this pack instead of the compiled catalog (the editor passes unsaved drafts). */
   pack?: ChapterPack;
   /** Preview runs leave progress, scrap and telemetry untouched. */
@@ -137,6 +139,10 @@ export interface LevelRuntime {
   spawned: Set<string>;
   /** Seconds (world ticks) since the level started: drives `script.timed`. */
   levelTicks: number;
+  /** The PIDs rolled for this load, by enemy id (`{pid:<enemy id>}` in text). Empty in a lab session. */
+  pids: ReadonlyMap<string, number>;
+  /** This level's `dialogs.json` entry with its PIDs filled in. */
+  dialog: LevelDialogEntry | undefined;
   /** Indexes of `script.timed` entries that already fired. */
   timedFired: Set<number>;
   /** Armed `restart-level` confirm; dies with the level runtime (a load or reboot builds a new one). */
@@ -157,6 +163,8 @@ export interface ChapterState {
   readonly kiro: KiroCompanion;
   readonly chaosMode: boolean;
   readonly chaosSeed: string;
+  /** Random source of the PID roll. */
+  readonly pidRandom: () => number;
   readonly host: WorldHost;
   /** The lab session's config, or null in the game. */
   readonly lab: LabConfig | null;

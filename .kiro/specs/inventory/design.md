@@ -21,7 +21,7 @@ scripts/quality/
 ## Decisions
 
 - **Single source of truth for items.** An item descriptor (`ItemDef` in `src/game/inventory.ts` or `src/procgen/archetypes/items.ts`) defines id, label, modelId, heroModelId, lore, whether it carries light, and whether it is a starter item. `items.ts` registers `item.<id>` for each builder, and `vibecoder.ts` registers each `vibecoder.dev_<id>` variant from the same table.
-- **Starter items.** `starterInventory()` gives `items: ['lantern', 'terminal', 'manual', 'map']` and `held: 'lantern'` (chapters may override via `manifest.startItems`, e.g. `['terminal', 'manual']` while the lantern is acquired on Level 1). The player carries them from arrival.
+- **Starter items.** `starterInventory()` gives `items: ['lantern', 'terminal', 'manual', 'map']` and `held: 'lantern'` (chapters may override via `manifest.startItems` and `manifest.grants`, e.g. Chapter 1 starts with `['manual', 'map']`, earns `terminal` in Level 1 via `give_item`, `lantern` in Level 3 via `mv lantern ~`, and `laptop` in Level 6 via `mv laptop ~`, with matching `afterLevel: 1/3/6` grants for direct jumps). The player carries them from arrival once earned.
 - **Light socket isolation.** Only items with `light: true` provide `sockets.lantern` on the hero model. `ComicStage.lightFrame` explicitly checks for `sockets.lantern` on the hero rather than falling back to `sockets.fx`.
 - **Chapter lifecycle integrity.** Restarting a chapter run (`restart(g)`) reinitializes `g.inventory` to `starterInventory()`, matching classic session behavior.
 - **Nested Kiro specs.** `spec-status.mjs` recursively finds `.kiro/specs/**/requirements.md`, validating parent and child specs with standard quality gates.

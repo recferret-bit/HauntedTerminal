@@ -10,7 +10,8 @@ src/procgen/archetypes/
 src/renderer/
   stage-frame.ts      lightFrame tracks hero's sockets.lantern as primary comic light source
 src/chapters/
-  session-fs.ts       cmdLs reveals dotfiles and switches held item to lantern
+  session-fs.ts       collectPickupNode gives/holds lantern (Chapter 1 Level 3 `mv lantern ~`); cmdLs reveals dotfiles and switches held item to lantern
+  session-level.ts    loadLevel applies cumulative `afterLevel: 3` grant on progression/jumps
 ```
 
 ## Decisions

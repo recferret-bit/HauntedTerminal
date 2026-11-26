@@ -8,21 +8,14 @@
   "roomSeed": 11,
   "mechanic": "terminal",
   "exitDir": "/mnt/wires_and_chips/hub_uplink",
-  "summary": "Sucked into your computer, you rise in a dark tangle of wires and chips where Kiro Ghost finds you. Practice mv lantern ~, ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 1011, then cd hub_uplink.",
+  "summary": "Sucked into your computer, you rise in a dark tangle of wires and chips where Kiro Ghost finds you and brings your terminal. Practice ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 {pid:tutorial_virus_1}, then cd hub_uplink.",
   "files": [
     {
       "path": "/mnt/wires_and_chips/kiro_story.txt",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== KIRO GHOST // AWAKENING IN THE WIRES & CHIPS ===\nVIBECODER: \"Where the hell am I?! Everything is dark... just tangled ribbon wires and silicon chips! What is going on?!\"\nKIRO GHOST: \"Easy, Vibecoder! I'm Kiro—a local open-weights spirit. You got sucked straight through your CRT into the motherboard!\"\nKIRO GHOST: \"Listen closely: the BIG FOUR cloud overlords—ANTI-GRAVY, CODEC, GORK, and CLOD—hijacked this machine and locked out every human developer.\"\nKIRO GHOST: \"Right now I'm too weak to fight them. I need more RAM sticks and GPU Tensor Chips so we can host real OPEN-WEIGHT MODELS (.gguf) on a local server!\"\nKIRO GHOST: \"Before I head to the Hub, let me teach you the 6 bare-metal survival commands:\n  1. mv lantern ~                 -> take the lantern so you can see\n  2. ls                           -> look around the directory\n  3. mv starter_ram_8gb.dimm ~    -> pocket RAM & GPU chips into your home rig (~)\n  4. cat kiro_story.txt           -> read files like this briefing\n  5. ps                           -> reveal live malware PIDs\n  6. kill -9 1011                 -> zap glitch_spark.exe (PID 1011) with SIGKILL\nGo forth into the first two sectors and scavenge RAM + GPU chips—I'll meet you at the Hub!\"\n"
-    },
-    {
-      "path": "/mnt/wires_and_chips/lantern",
-      "kind": "file",
-      "mode": 420,
-      "questCritical": true,
-      "content": "#!/bin/lantern\n# LANTERN: light for a dark room.\n# use: mv lantern ~   (it goes in your hand)\nexport LIGHT=\"on\"\n"
+      "content": "=== KIRO GHOST // AWAKENING IN THE WIRES & CHIPS ===\nVIBECODER: \"Where the hell am I?! Everything is dark... just tangled ribbon wires and silicon chips! What is going on?!\"\nKIRO GHOST: \"Easy, Vibecoder! I'm Kiro—a local open-weights spirit. You got sucked straight through your CRT into the motherboard!\"\nKIRO GHOST: \"Listen closely: the BIG FOUR cloud overlords—ANTI-GRAVY, CODEC, GORK, and CLOD—hijacked this machine and locked out every human developer.\"\nKIRO GHOST: \"Right now I'm too weak to fight them. I need more RAM sticks and GPU Tensor Chips so we can host real OPEN-WEIGHT MODELS (.gguf) on a local server!\"\nKIRO GHOST: \"Before I head to the Hub, let me teach you the 5 bare-metal survival commands:\n  1. ls                           -> look around using your terminal's screen glow\n  2. mv starter_ram_8gb.dimm ~    -> pocket RAM & GPU chips into your home rig (~)\n  3. cat kiro_story.txt           -> read files like this briefing\n  4. ps                           -> reveal live malware PIDs\n  5. kill -9 {pid:tutorial_virus_1}                 -> zap glitch_spark.exe (PID {pid:tutorial_virus_1}) with SIGKILL\nGo forth into the first two sectors and scavenge RAM + GPU chips—I'll meet you at the Hub!\"\n"
     },
     {
       "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
@@ -34,7 +27,7 @@
       "path": "/mnt/wires_and_chips/glitch_spark.exe",
       "kind": "file",
       "mode": 493,
-      "content": "BIG_FOUR_TUTORIAL_DRONE_PID_1011\n"
+      "content": "BIG_FOUR_TUTORIAL_DRONE_PID_{pid:tutorial_virus_1}\n"
     },
     {
       "path": "/mnt/wires_and_chips/hub_uplink",
@@ -52,11 +45,6 @@
     }
   ],
   "pickups": [
-    {
-      "id": "pickup_tutorial_lantern",
-      "type": "lantern",
-      "path": "/mnt/wires_and_chips/lantern"
-    },
     {
       "id": "pickup_tutorial_ram",
       "type": "ram",
@@ -104,16 +92,15 @@
     {
       "kind": "enemy_neutralized",
       "enemyId": "tutorial_virus_1",
-      "description": "Practice `ps` and `kill` to zap glitch_spark.exe (`ps` then `kill -9 1011`)"
+      "description": "Practice `ps` and `kill` to zap glitch_spark.exe (`ps` then `kill -9 {pid:tutorial_virus_1}`)"
     }
   ],
   "solutionCommands": [
-    "mv lantern ~",
     "ls",
     "mv starter_ram_8gb.dimm ~",
     "cat kiro_story.txt",
     "ps",
-    "kill -9 1011",
+    "kill -9 {pid:tutorial_virus_1}",
     "cd hub_uplink"
   ],
   "script": {
@@ -144,66 +131,18 @@
             "kind": "dialog_box",
             "speaker": "vibecoder",
             "text": "What is going on?!",
-            "holdSec": 2
+            "holdSec": 6
           }
         ]
-      },
-      {
-        "afterSec": 3,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "vibecoder",
-            "text": "Where am I? Is this... inside my computer?",
-            "holdSec": 2
-          }
-        ]
-      },
-      {
-        "afterSec": 5,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "vibecoder",
-            "text": "It is so dark. No lantern, no terminal, nothing.",
-            "holdSec": 2
-          }
-        ],
-        "unless": {
-          "kind": "has_item",
-          "item": "lantern"
-        }
       },
       {
         "afterSec": 7,
         "steps": [
           {
             "kind": "dialog_box",
-            "speaker": "antigravy",
-            "text": "BWAHAHA! Welcome to the motherboard, Vibecoder! Down here, you will type every single command manually!",
-            "holdSec": 2
-          }
-        ]
-      },
-      {
-        "afterSec": 9,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "codec",
-            "text": "LMAO! No tab-complete, no agentic auto-fix! You have to type all your shell commands by hand!",
-            "holdSec": 2
-          }
-        ]
-      },
-      {
-        "afterSec": 11,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "gork",
-            "text": "HAHAHA! Even worse—you will have to write code manually! Real HTML, CSS, JavaScript, and Dockerfiles with your own bare fingers!",
-            "holdSec": 2
+            "speaker": "vibecoder",
+            "text": "Where am I? Is this... inside my computer?",
+            "holdSec": 6
           }
         ]
       },
@@ -212,14 +151,62 @@
         "steps": [
           {
             "kind": "dialog_box",
-            "speaker": "clod",
-            "text": "Hohoho! I must chuckle at your predicament: typing commands and writing code manually, without a single cloud LLM to hold your hand!",
-            "holdSec": 2
+            "speaker": "vibecoder",
+            "text": "It is so dark. My hands are empty—no terminal, no light, nothing.",
+            "holdSec": 6
+          }
+        ],
+        "unless": {
+          "kind": "has_item",
+          "item": "terminal"
+        }
+      },
+      {
+        "afterSec": 19,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "antigravy",
+            "text": "BWAHAHA! Welcome to the motherboard, Vibecoder! Down here, you will type every single command manually!",
+            "holdSec": 6
           }
         ]
       },
       {
-        "afterSec": 15,
+        "afterSec": 25,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "codec",
+            "text": "LMAO! No tab-complete, no agentic auto-fix! You have to type all your shell commands by hand!",
+            "holdSec": 6
+          }
+        ]
+      },
+      {
+        "afterSec": 31,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "gork",
+            "text": "HAHAHA! Even worse—you will have to write code manually! Real HTML, CSS, JavaScript, and Dockerfiles with your own bare fingers!",
+            "holdSec": 6
+          }
+        ]
+      },
+      {
+        "afterSec": 37,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "clod",
+            "text": "Hohoho! I must chuckle at your predicament: typing commands and writing code manually, without a single cloud LLM to hold your hand!",
+            "holdSec": 6
+          }
+        ]
+      },
+      {
+        "afterSec": 43,
         "steps": [
           {
             "kind": "emote",
@@ -230,12 +217,12 @@
             "kind": "dialog_box",
             "speaker": "vibecoder",
             "text": "Type all commands manually?! Even write code manually?! No way—I'm cooked!",
-            "holdSec": 2
+            "holdSec": 6
           }
         ]
       },
       {
-        "afterSec": 17,
+        "afterSec": 49,
         "steps": [
           {
             "kind": "emote",
@@ -246,12 +233,12 @@
             "kind": "dialog_box",
             "speaker": "vibecoder",
             "text": "HELLOOOO?? Is anybody out there?!",
-            "holdSec": 2
+            "holdSec": 6
           }
         ]
       },
       {
-        "afterSec": 19,
+        "afterSec": 55,
         "steps": [
           {
             "kind": "spawn",
@@ -269,12 +256,12 @@
             "kind": "dialog_box",
             "speaker": "kiro",
             "text": "Easy, Vibecoder! I'm Kiro—a local open-weights spirit. I found you in the wires, and I'll teach you every command you need!",
-            "holdSec": 3
+            "holdSec": 9
           }
         ]
       },
       {
-        "afterSec": 22,
+        "afterSec": 64,
         "steps": [
           {
             "kind": "carry_item",
@@ -284,13 +271,13 @@
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "You dropped your terminal in the dark. Here, take it: down here you will type everything.",
-            "holdSec": 3
+            "text": "You dropped your terminal in the dark. Here, take it: its screen will light the nearby wires, and down here you will type everything.",
+            "holdSec": 9
           }
         ]
       },
       {
-        "afterSec": 25,
+        "afterSec": 73,
         "steps": [
           {
             "kind": "give_item",
@@ -300,16 +287,16 @@
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "My terminal! Okay... I can type again.",
-            "holdSec": 2
+            "text": "My terminal! Its phosphor glow lights the nearby wires... I can type again.",
+            "holdSec": 6
           }
         ]
       },
       {
-        "afterSec": 25,
+        "afterSec": 73,
         "unless": {
-          "kind": "has_item",
-          "item": "lantern"
+          "kind": "ran_command",
+          "name": "ls"
         },
         "steps": [
           {
@@ -319,59 +306,33 @@
         ]
       },
       {
-        "afterSec": 28,
+        "afterSec": 82,
         "steps": [
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "There is a lantern on the floor. Take it with mv lantern ~",
-            "holdSec": 3
+            "text": "Use your terminal's glow to look around the directory. Type ls!",
+            "holdSec": 9
           }
         ],
         "unless": {
-          "kind": "has_item",
-          "item": "lantern"
+          "kind": "ran_command",
+          "name": "ls"
         }
       },
       {
-        "afterSec": 31,
+        "afterSec": 91,
         "steps": [
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "Move it into your pocket (mv lantern ~) and the wires light up."
+            "text": "Type ls to inspect the wires and chips lying around you."
           }
         ],
         "unless": {
-          "kind": "has_item",
-          "item": "lantern"
+          "kind": "ran_command",
+          "name": "ls"
         }
-      }
-    ],
-    "locks": [
-      {
-        "command": "ls",
-        "until": {
-          "kind": "has_item",
-          "item": "lantern"
-        },
-        "message": "ls: it is too dark to see anything. Pull the lantern into your pocket first: mv lantern ~"
-      },
-      {
-        "command": "find",
-        "until": {
-          "kind": "has_item",
-          "item": "lantern"
-        },
-        "message": "find: it is too dark to see anything. Pull the lantern into your pocket first: mv lantern ~"
-      },
-      {
-        "command": "kiro",
-        "until": {
-          "kind": "has_item",
-          "item": "lantern"
-        },
-        "message": "kiro: Kiro Ghost cannot help you in the dark. Pull the lantern into your pocket first: mv lantern ~"
       }
     ],
     "tutorial": {
@@ -380,18 +341,7 @@
       "model": "npc.kiro_ghost",
       "steps": [
         {
-          "prompt": "KIRO TUTORIAL #1: It is pitch dark! Pull the lantern into your pocket with mv lantern ~.",
-          "command": "mv lantern ~",
-          "doneText": "KIRO GHOST: \"There! The lantern lights up the wires. Now look around with ls.\"",
-          "doneWhen": [
-            {
-              "kind": "has_item",
-              "item": "lantern"
-            }
-          ]
-        },
-        {
-          "prompt": "KIRO TUTORIAL #2: Now you can see the wires and chips. Look around with ls.",
+          "prompt": "KIRO TUTORIAL #1: Your terminal screen lights the nearby wires. Look around with ls.",
           "command": "ls",
           "doneText": "KIRO GHOST: \"Good eyes! See starter_ram_8gb.dimm and kiro_story.txt on the floor? Next, use mv to pocket that RAM stick into ~!\"",
           "doneWhen": [
@@ -418,7 +368,7 @@
           ]
         },
         {
-          "prompt": "KIRO TUTORIAL #3: I am weak and need RAM + GPU chips for open-weight models! Pocket the RAM stick with mv.",
+          "prompt": "KIRO TUTORIAL #2: I am weak and need RAM + GPU chips for open-weight models! Pocket the RAM stick with mv.",
           "command": "mv starter_ram_8gb.dimm ~",
           "doneText": "KIRO GHOST: \"Nice! +8GB DDR5 RAM pocketed! Now use cat to read my full story about the Big Four.\"",
           "doneWhen": [
@@ -429,7 +379,7 @@
           ]
         },
         {
-          "prompt": "KIRO TUTORIAL #4: Read Kiro Ghost's story about the Big Four (Anti-Gravy, Codec, Gork, Clod) with cat.",
+          "prompt": "KIRO TUTORIAL #3: Read Kiro Ghost's story about the Big Four (Anti-Gravy, Codec, Gork, Clod) with cat.",
           "command": "cat kiro_story.txt",
           "doneText": "KIRO GHOST: \"Watch out! A Big Four probe (glitch_spark.exe) just phased into the wires! Use ps to list running processes and find its PID.\"",
           "doneWhen": [
@@ -440,9 +390,9 @@
           ]
         },
         {
-          "prompt": "KIRO TUTORIAL #5: A rogue bug phased into the wires! List running processes with ps.",
+          "prompt": "KIRO TUTORIAL #4: A rogue bug phased into the wires! List running processes with ps.",
           "command": "ps",
-          "doneText": "KIRO GHOST: \"There it is—glitch_spark.exe is running as PID 1011! Zap it with kill -9 1011!\"",
+          "doneText": "KIRO GHOST: \"There it is—glitch_spark.exe is running as PID {pid:tutorial_virus_1}! Zap it with kill -9 {pid:tutorial_virus_1}!\"",
           "doneWhen": [
             {
               "kind": "ran_command",
@@ -455,8 +405,8 @@
           ]
         },
         {
-          "prompt": "KIRO TUTORIAL #6: Terminate glitch_spark.exe (PID 1011) using kill -9 1011.",
-          "command": "kill -9 1011",
+          "prompt": "KIRO TUTORIAL #5: Terminate glitch_spark.exe (PID {pid:tutorial_virus_1}) using kill -9 {pid:tutorial_virus_1}.",
+          "command": "kill -9 {pid:tutorial_virus_1}",
           "doneText": "KIRO GHOST: \"BOOM! You mastered ls, mv, cat, ps, and kill! I am flying ahead to the Hub—go forth into the first 2 task levels to get RAM + GPU chips!\"",
           "doneWhen": [
             {
@@ -466,7 +416,7 @@
           ]
         },
         {
-          "prompt": "KIRO TUTORIAL #7: Kiro went to the Hub! Step through hub_uplink to start the first 2 task levels.",
+          "prompt": "KIRO TUTORIAL #6: Kiro went to the Hub! Step through hub_uplink to start the first 2 task levels.",
           "command": "cd hub_uplink",
           "doneText": "KIRO GHOST: \"See you at the Hub, Vibecoder! Watch out—the Big Four will laugh at and bully you in the task sectors!\""
         }
@@ -505,7 +455,7 @@
           ]
         }
       },
-      "skipText": "[KIRO GHOST]: \"Skipping tutorial prompts! Finish the sector checks (`mv lantern ~`, `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 1011`) and step through `cd hub_uplink`!\"\n"
+      "skipText": "[KIRO GHOST]: \"Skipping tutorial prompts! Finish the sector checks (`ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`) and step through `cd hub_uplink`!\"\n"
     },
     "kiro": {
       "stage": "show",

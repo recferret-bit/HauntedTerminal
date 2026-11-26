@@ -196,7 +196,7 @@ await withProcgen(async (_p, vite) => {
     assert.ok(types(back.events).includes('BATTLE_STARTED'), 'coming back begins a new battle');
     assert.equal(of(back.events, 'BATTLE_STARTED')[0].battle, 2);
     s.skipBattleIntro();
-    assert.deepEqual(of(s.exec('kill -9 4001').events, 'BATTLE_ENDED').map((e) => e.reason), ['cleared']);
+    assert.deepEqual(of(s.exec('kill -9 {pid:v1}').events, 'BATTLE_ENDED').map((e) => e.reason), ['cleared']);
   });
 
   await test('session: restart-level in a battle: arming is one action with one enemy turn, the confirm ends the battle as level with no enemy turn', () => {

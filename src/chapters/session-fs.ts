@@ -423,9 +423,12 @@ export function collectPickupNode(g: ChapterState, pickup: Pickup, node: VNode, 
       g.hp = Math.min(maxHpFor(g.ram), g.hp + 10);
     } else if (pickup.type === 'ssd') {
       g.ssd += pickup.amount;
-    } else {
+    } else if (pickup.type === 'lantern') {
       // The lantern: he gets it and holds it; taking it again changes nothing.
       g.inventory = holdItem(giveItem(g.inventory, 'lantern'), 'lantern');
+    } else {
+      // The laptop: he gets it and holds it; taking it again changes nothing.
+      g.inventory = holdItem(giveItem(g.inventory, 'laptop'), 'laptop');
     }
     const isGpuPart = /gpu|vram|tensor/i.test(node.name) || /gpu|vram|tensor/i.test(pickup.id);
     const label = isGpuPart ? `${info.label(pickup.amount)} + Local GPU Tensor Chip` : info.label(pickup.amount);

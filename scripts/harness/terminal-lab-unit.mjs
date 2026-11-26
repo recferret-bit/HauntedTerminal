@@ -1301,6 +1301,7 @@ await withProcgen(async (_p, vite) => {
     await withFakeDom(async (makeEl) => {
       const parent = makeEl('div');
       let hintClosed = 0;
+      const openedSpeakers = [];
       const tutorialSteps = [];
       const orch = mountDialogOrchestrator(parent, stubDrawPortrait(), {
         tutorial: {
@@ -1309,6 +1310,7 @@ await withProcgen(async (_p, vite) => {
           hide() {},
         },
         onRightDialogOpen() { hintClosed += 1; },
+        onDialogOpen(line) { openedSpeakers.push(line.speaker); },
       });
 
       // 1. Duplicate suppression & unified AGENT_TAUNT -> .dialog-box
@@ -1318,6 +1320,7 @@ await withProcgen(async (_p, vite) => {
       assert.equal(orch.box.activeSide(), 'right');
       assert.equal(orch.box.activeLine()?.text, 'Take the lantern!');
       assert.equal(hintClosed, 1, 'opening right-side dialog closes open hint note');
+      assert.deepEqual(openedSpeakers, ['kiro'], 'onDialogOpen fires when dialog opens on screen');
       assert.equal(orch.stats().maxConcurrent, 1);
       assert.equal(orch.stats().maxRightConcurrent, 1);
 

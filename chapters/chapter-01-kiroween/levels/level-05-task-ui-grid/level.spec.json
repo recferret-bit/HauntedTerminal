@@ -139,6 +139,41 @@
         "print": "\n[BIG FOUR BULLYING] {text}\n"
       }
     ],
+    "timed": [
+      {
+        "afterSec": 1,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "codec",
+            "text": "HAHAHA! So you found your lantern and disabled Anti-Gravy? You still have to fix real HTML & CSS without an autocomplete prompt!",
+            "holdSec": 9
+          }
+        ]
+      },
+      {
+        "afterSec": 10,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "At least my lantern lights the dashboard monitor now! Let's inspect storefront.css and index.html.",
+            "holdSec": 9
+          }
+        ]
+      },
+      {
+        "afterSec": 19,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Set display: grid in storefront.css, remove disabled on #checkout-btn in index.html, and pocket the RAM + GPU chip!",
+            "holdSec": 9
+          }
+        ]
+      }
+    ],
     "bullying": {
       "after": 2,
       "every": 3,

@@ -101,6 +101,7 @@ Put arrival lines, tutorials, taunts and Kiro/boss reactions in each `level.spec
 1. **World Kill Rules Match `src/game/entities.ts`:**
    - `virus`: Never `rm` (`rm` clones it!). Always `kill -9 <pid>`.
    - `crack`: `rm` fails with `Text file busy` while running. `kill -9 <pid>` kills & removes it.
+   - PIDs are random on every load: write `kill -9 {pid:<enemy id>}` in `solutionCommands`, hints and dialogs, never the number (`.kiro/specs/random-pids/`).
    - `trojan`: Do not execute; `chmod -x <file>` petrifies it into harmless stone.
    - `exploit`: `kill` is blocked (`Operation not permitted`); make its `buffer` read-only (`chmod -w <buffer>`).
    - `kernel` boss: `kill` is blocked; complete the 3-phase stream/socket/anchor sequence so `kernelPhase()` reaches `3/3`, which automatically drops `hp` to `0` and unlocks `exit`.

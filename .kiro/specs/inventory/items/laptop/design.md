@@ -25,6 +25,8 @@ src/styles/           laptop.css, laptop-lab.css
 - **Trackpad styling & input release (B5 fix).** `laptop.css` includes `.lt-trackpad.scrolling .lt-finger` to display scroll offset. Trackpad button states release on window blur or pointer cancel.
 - **Safe object formatting (B6 fix).** `fmt()` in `bridge.ts` wraps property reads in `try/catch` to safely format objects with restricted cross-origin properties (such as `window` or `document`).
 
+- **Chapter acquisition (`PickupType` `'laptop'`).** Chapter 1 places `pickup_l6_laptop` in Level 6 (`level-06-task-logic-purge`) alongside `script.locks` for `edit` and `sed` until `has_item laptop`; `collectPickupNode` (`session-fs.ts`) gives and holds `'laptop'`, `manifest.grants` (`afterLevel: 6`) carries it into Levels 7+, and `session-level.ts` applies cumulative grants on level transitions.
+
 ## Layers and gates
 
-- Gates: `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/laptop-lab-smoke.mjs`, `validate-model.mjs item.laptop vibecoder.dev_laptop --seeds 4`, `npm run quality:fingerprint`, `npm run quality`.
+- Gates: `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/laptop-lab-smoke.mjs`, `validate-model.mjs item.laptop vibecoder.dev_laptop --seeds 4`, `npm run quality:fingerprint`, `npm run quality`, `node scripts/harness/generate-chapter.mjs --verify --ticks 3`.

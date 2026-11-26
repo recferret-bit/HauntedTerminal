@@ -4,15 +4,15 @@ Follows `requirements.md`. Approval: delegated by the user on 2026-11-25 ("do yo
 
 ## Data (chapter, `chapters-designer`)
 
-- `chapter.manifest.json`: `startItems` becomes `["manual"]`; the existing `afterLevel: 1` items grant becomes `["lantern", "terminal"]` (req 10).
+- `chapter.manifest.json`: `startItems` is `["manual", "map"]`; `grants` becomes progressive: `afterLevel: 1` `["terminal"]`, `afterLevel: 3` `["lantern"]`, `afterLevel: 6` `["laptop"]` (req 10).
 - `level-01-tutorial-awakening/level.spec.json -> script.timed` (patched in place, canonical writer), after the "I'm cooked!" line at 15 s:
   - 17 s: `emote { emote: "shout", text: "HELLOOOO??" }` + `dialog_box vibecoder "HELLOOOO?? Is anybody out there?!"`.
-  - 19 s: today's 17 s entry (`spawn kiro glide`, `kiro_action scan`, Kiro's first line).
-  - 22 s: `carry_item { entityId: "kiro", item: "terminal" }` + Kiro line ("You dropped your terminal in the dark. Here, you will need it for everything.").
-  - 25 s: `give_item { item: "terminal", from: "kiro" }` + vibecoder line ("My terminal! Okay... I can type again.") + `tutorial_step 1` (unless `has_item lantern`).
-  - 28 s and 31 s: today's two lantern lines (unless `has_item lantern`).
-  - Arrival `print` and the 5 s line stop mentioning the terminal's glow.
-- `solutionCommands` unchanged (req 11).
+  - 19 s: `spawn kiro glide`, `kiro_action scan`, Kiro's first line.
+  - 22 s: `carry_item { entityId: "kiro", item: "terminal" }` + Kiro line ("You dropped your cyberdeck terminal in the dark. Catch!").
+  - 25 s: `give_item { item: "terminal", from: "kiro" }` + vibecoder line ("My terminal! Okay... the screen glow barely reaches my boots, so I can run `ls` at least!") + `tutorial_step 1` (`ls`, unless `ran_command ls`).
+  - 28 s and 31 s: two `ls` guidance lines (unless `ran_command ls`).
+  - Arrival `print` notes pitch black darkness and empty hands (`manual`, `map` in pocket).
+- `solutionCommands` starts with `ls` (req 11, 6 commands total).
 
 ## Vocabulary (four places, `chapters-designer`; event types in `src/contracts`, `lead-dev`)
 
@@ -37,7 +37,7 @@ Follows `requirements.md`. Approval: delegated by the user on 2026-11-25 ("do yo
 
 ## Stage (`artist`)
 
-- **Bare hero:** `vibecoder.dev_bare` in `src/procgen/archetypes/vibecoder.ts`: the same body with an empty right hand, validated like the other hero variants.
+- **Bare hero:** `vibecoder.dev_bare` in `src/procgen/archetypes/vibecoder.ts`: the same body standing still with empty hands and both arms hanging relaxed at his sides (no raised holding arm) until an item is given, validated like the other hero variants.
 - **Light:** in `stage-frame.ts` / `stage-light.ts`, the dark glow strength drops (about 30% lower), and while the hero model is `vibecoder.dev_bare` it drops again (about half of that). Only the lines that set the glow change in the dirty `stage-light.ts`.
 - **Flight:** one helper `flyTo(stage, actor, to, ms)` in `stage-motion.ts`: a quadratic Bezier arc (control point above the midpoint), ease-in-out, sampled through `stepped(t, frames)` at 8 fps; the body mirrors (`scale.x` sign) to face the travel direction, and turns to face the hero on arrival. The `glide` entrance uses it (req 5).
 - **Carry:** `ITEM_CARRIED` attaches the item model (from `ModelCatalog`) at the actor's `fx` socket with a pop (`fx.touch-materialize` or the existing pickup pop), then `flyTo` next to the hero, where the actor hovers.

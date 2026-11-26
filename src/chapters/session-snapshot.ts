@@ -43,7 +43,7 @@ function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, 
       ];
       const prefix = modeBadges.length > 0 ? `[${modeBadges.join('+')}] ` : '';
       room.title = `${prefix}LEVEL ${String(g.rt.spec.index).padStart(2, '0')}/${String(g.levels.length).padStart(2, '0')} // ${cwdPath}`;
-      const dEntry = g.pack.dialogs?.levels[g.rt.spec.id];
+      const dEntry = g.rt.dialog;
       room.caption = exitOpen
         ? `SECTOR CLEAR — ${exitBase ? `cd ${exitBase}` : `run ${g.rt.spec.exitCommand ?? 'exit'}`} to advance!`
         : lockedCaption ?? dEntry?.banner ?? g.rt.spec.summary;

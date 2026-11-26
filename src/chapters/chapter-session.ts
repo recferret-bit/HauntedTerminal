@@ -11,6 +11,7 @@ import { createSfx, type Sfx } from '../game/sfx.js';
 import { absPath } from '../game/tree.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from '../game/types.js';
 import { getChapterPack } from './catalog.js';
+import { seededRandom } from './pids.js';
 import { levelScript } from './script.js';
 import * as code from './session-code.js';
 import * as flow from './session-flow.js';
@@ -50,6 +51,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   readonly kiro = new KiroCompanion();
   readonly chaosMode: boolean;
   readonly chaosSeed: string;
+  readonly pidRandom: () => number;
   readonly host: WorldHost;
   readonly lab: LabConfig | null;
 
@@ -95,6 +97,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
     }
     this.pack = pack;
     this.chaosSeed = options.chaosSeed || pack.manifest.id;
+    this.pidRandom = options.pidSeed === undefined ? Math.random : seededRandom(options.pidSeed);
     this.preview = Boolean(options.preview);
     this.levels = pack.levels;
     this.host = {

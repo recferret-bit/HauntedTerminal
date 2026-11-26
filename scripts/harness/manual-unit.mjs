@@ -251,7 +251,7 @@ await withProcgen(async (_p, vite) => {
     assert.equal(session.snapshot().tutorial, null);
     assert.ok(session.snapshot().inventory.items.includes('terminal'), 'skip still gives the terminal');
     const later = [];
-    for (let i = 0; i < 40; i++) later.push(...session.tick().events);
+    for (let i = 0; i < 100; i++) later.push(...session.tick().events);
     const late = later.filter((event) => event.type === 'DIALOG_BOX' || event.type === 'VIBECODER_EMOTE' || event.type === 'AGENT_TAUNT');
     assert.deepEqual(late, []);
   });

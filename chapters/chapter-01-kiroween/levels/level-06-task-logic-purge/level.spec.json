@@ -8,8 +8,15 @@
   "roomSeed": 66,
   "mechanic": "terminal-code",
   "exitDir": "/srv/kiroween/logic_cell/server_hub_2",
-  "summary": "Gork and Codec cackle as a trojan skims your VRAM! Petrify `token_skimmer.bin` (`chmod -x`), fix string-concatenation in `cart.js` (`Number(...)`), and collect `ram_16gb.dimm` + `gpu_shader_core_02.img`.",
+  "summary": "Your old clamshell laptop landed in the Logic Cell! Grab it (mv laptop ~), petrify token_skimmer.bin (chmod -x), fix string-concatenation in cart.js (Number(...)), and collect ram_16gb.dimm + gpu_shader_core_02.img.",
   "files": [
+    {
+      "path": "/srv/kiroween/logic_cell/laptop",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "#!/bin/laptop\n# LAPTOP: portable clamshell workstation for coding tasks.\n# use: mv laptop ~   (it goes in your hand)\nexport EDITOR=\"laptop\"\n"
+    },
     {
       "path": "/srv/kiroween/logic_cell/token_skimmer.bin",
       "kind": "file",
@@ -54,6 +61,11 @@
     }
   ],
   "pickups": [
+    {
+      "id": "pickup_l6_laptop",
+      "type": "laptop",
+      "path": "/srv/kiroween/logic_cell/laptop"
+    },
     {
       "id": "pickup_l6_ram",
       "type": "ram",
@@ -134,9 +146,9 @@
     }
   ],
   "solutionCommands": [
+    "mv laptop ~",
     "chmod -x token_skimmer.bin",
     "sed -i 's/price + shipping/Number(price) * Number(qty) + Number(shipping)/' cart.js",
-    "sed -i 's/BUG/FIXED/' cart.js",
     "mv ram_16gb.dimm ~",
     "mv gpu_shader_core_02.img ~",
     "cd server_hub_2"
@@ -144,9 +156,78 @@
   "script": {
     "arrival": [
       {
+        "kind": "print",
+        "text": "\n[LOGIC CELL — /srv/kiroween/logic_cell]\nBeside the ALU die sits an old beige clamshell briefcase—your laptop got pulled into the machine with you!\n"
+      },
+      {
         "kind": "taunt",
         "mood": "laugh",
         "print": "\n[BIG FOUR BULLYING] {text}\n"
+      }
+    ],
+    "timed": [
+      {
+        "afterSec": 1,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "gork",
+            "text": "BWAHAHA! '549' + '15' === '54915'! Try untangling JavaScript math without your workstation, Vibecoder!",
+            "holdSec": 9
+          }
+        ],
+        "unless": {
+          "kind": "has_item",
+          "item": "laptop"
+        }
+      },
+      {
+        "afterSec": 10,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Wait—is that my old clamshell laptop on the cell floor?! It got pulled into the computer with me!",
+            "holdSec": 9
+          }
+        ],
+        "unless": {
+          "kind": "has_item",
+          "item": "laptop"
+        }
+      },
+      {
+        "afterSec": 19,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Grab your laptop with mv laptop ~ to unlock code editing! Then petrify token_skimmer.bin (chmod -x) and fix the math in cart.js!",
+            "holdSec": 9
+          }
+        ],
+        "unless": {
+          "kind": "has_item",
+          "item": "laptop"
+        }
+      }
+    ],
+    "locks": [
+      {
+        "command": "edit",
+        "until": {
+          "kind": "has_item",
+          "item": "laptop"
+        },
+        "message": "edit: pick up your clamshell laptop first to unlock code editing: mv laptop ~"
+      },
+      {
+        "command": "sed",
+        "until": {
+          "kind": "has_item",
+          "item": "laptop"
+        },
+        "message": "sed: pick up your clamshell laptop first to patch code here: mv laptop ~"
       }
     ],
     "bullying": {

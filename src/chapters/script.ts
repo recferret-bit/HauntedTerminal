@@ -112,8 +112,10 @@ export function stepOutput(s: ScriptStep, env: StepEnv): { events: KernelEvent[]
     case 'dialog_box': {
       const name = s.speaker.toUpperCase();
       const model = s.speaker === 'vibecoder' ? (env.heroModel ?? 'vibecoder.dev_terminal') : agentModel(s.speaker);
+      // Subtract exit duration (EXIT_MS = 180 ms + timer margin) so back-to-back timed beats open without queue drift.
+      const holdMs = Math.max(400, Math.round((s.holdSec ?? 12) * 1000) - 220);
       return {
-        events: [{ type: 'DIALOG_BOX', speaker: s.speaker, name, model, text: s.text, holdMs: Math.round((s.holdSec ?? 4) * 1000) }],
+        events: [{ type: 'DIALOG_BOX', speaker: s.speaker, name, model, text: s.text, holdMs }],
         print: `[${name}] ${fill(s.text, vars)}\n`,
       };
     }
@@ -147,7 +149,7 @@ export function tutorialCard(tut: ScriptTutorial | undefined, n: number, done: b
 /** Run steps in order. Returns the terminal text they print. `vars` fills `{name}` in printed text. */
 export function runSteps(g: ChapterState, steps: ScriptStep[], events: KernelEvent[], vars: Record<string, string> = {}): string {
   const env: StepEnv = {
-    taunt: g.pack.dialogs?.levels[g.rt.spec.id]?.agentTaunt,
+    taunt: g.rt.dialog?.agentTaunt,
     anchorOf: (socket) => g.rt.cwd.children.get(socket)?.id ?? g.rt.cwd.id,
     tutorial: levelScript(g).tutorial,
     vars,
@@ -249,10 +251,28 @@ export function finishTutorial(g: ChapterState, events: KernelEvent[]): void {
   if (tut) announceTutorialStep(g, tut.steps.length, true, events);
 }
 
+const SKIP_KEEP = new Set<ScriptStep['kind']>(['spawn', 'carry_item', 'give_item']);
+
+/**
+ * Drops every tutorial beat that has not played yet. Dialogs, emotes and prompts
+ * are discarded. A spawn or an item hand-off still runs, so the sector stays playable.
+ */
+function fastForwardSkippedBeats(g: ChapterState, events: KernelEvent[]): void {
+  const timed = levelScript(g).timed ?? [];
+  timed.forEach((entry, i) => {
+    if (g.rt.timedFired.has(i)) return;
+    g.rt.timedFired.add(i);
+    if (entry.unless && evalCond(g, entry.unless)) return;
+    const steps = entry.steps.filter((step) => SKIP_KEEP.has(step.kind));
+    if (steps.length > 0) runSteps(g, steps, events);
+  });
+}
+
 /** Skips any running tutorial on the current level and returns its skip text (or ''). */
 export function applySkipTutorial(g: ChapterState, events: KernelEvent[]): string {
   const tut = levelScript(g).tutorial;
   g.rt.tutorialSkipped = true;
+  fastForwardSkippedBeats(g, events);
   if (tut) {
     if (!g.rt.hiddenRevealed) revealHidden(g, events);
     finishTutorial(g, events);

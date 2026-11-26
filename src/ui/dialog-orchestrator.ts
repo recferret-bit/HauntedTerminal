@@ -24,6 +24,7 @@ export const AGENT_MODELS: Record<AgentSpeakerId, string> = {
 export interface DialogOrchestratorOptions {
   tutorial?: TutorialCard;
   onRightDialogOpen?: () => void;
+  onDialogOpen?: (line: DialogLine, side: 'left' | 'right') => void;
   onClear?: () => void;
 }
 
@@ -59,8 +60,8 @@ export function stripSpeakerPrefix(raw: string): string {
   return stripped;
 }
 
-/** How long each battle-intro line holds (the intro is about 4 s in all). */
-const BATTLE_LINE_MS = 1600;
+/** How long each battle-intro line holds (extended 3x alongside dialog durations). */
+const BATTLE_LINE_MS = 4800;
 
 function toAgentDialogLine(ev: Extract<KernelEvent, { type: 'AGENT_TAUNT' }>): DialogLine | null {
   const agent: AgentSpeakerId = ev.agent in AGENT_MODELS ? ev.agent : 'clod';
@@ -73,7 +74,7 @@ function toAgentDialogLine(ev: Extract<KernelEvent, { type: 'AGENT_TAUNT' }>): D
     name: AGENTS[agent]?.name ?? agent.toUpperCase(),
     model: ev.model || AGENT_MODELS[agent],
     text,
-    holdMs: 2600 + Math.min(900, text.length * 12),
+    holdMs: (2600 + Math.min(900, text.length * 12)) * 3,
     mood,
     priority,
   };
@@ -103,8 +104,9 @@ export function mountDialogOrchestrator(
 
   const box = mountDialogBox(parent, drawPortrait, {
     canStartLine: (line) => !(socketOpen && (line.priority ?? 'script') === 'chatter'),
-    onOpen: (_line, side) => {
+    onOpen: (line, side) => {
       shown += 1;
+      opts.onDialogOpen?.(line, side);
       if (side === 'right') opts.onRightDialogOpen?.();
       const openAll = Math.max(1, countOpenDialogs(parent, '.dialog-box.open'));
       const openRight = side === 'right' ? Math.max(1, countOpenDialogs(parent, '.dialog-box.side-right.open')) : 0;

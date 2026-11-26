@@ -12,34 +12,34 @@
   },
   "levels": {
     "level-01-tutorial-awakening": {
-      "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro Ghost finds you! Learn ls, mv, cat, ps, and kill.",
+      "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro Ghost brings your terminal! Learn ls, mv, cat, ps, and kill.",
       "hankRungs": [
-        "Kiro Ghost: \"You're inside your own computer, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) drained my VRAM. Start by running `mv lantern ~` to take the lantern, then `ls` and `mv starter_ram_8gb.dimm ~`!\"",
+        "Kiro Ghost: \"You're inside your own computer, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) drained my VRAM. Look around with `ls`, then pocket the starter RAM with `mv starter_ram_8gb.dimm ~`!\"",
         "Kiro Ghost: \"I need RAM and GPU chips to host open-weight models! Read my full story with `cat kiro_story.txt`, then check running processes with `ps`.\"",
-        "Kiro Ghost: \"Run `mv lantern ~`, `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 1011` to zap `glitch_spark.exe`, then step through `cd hub_uplink`!\""
+        "Kiro Ghost: \"Run `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}` to zap `glitch_spark.exe`, then step through `cd hub_uplink`!\""
       ],
-      "agentTaunt": "KIRO GHOST: \"I found you, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) sucked you in! I'm weak—I need RAM & GPU chips for open-weight models. Go forth! First, let's learn ls, mv, cat, ps, and kill!\"",
+      "agentTaunt": "KIRO GHOST: \"I found you, Vibecoder! Here is your terminal—its screen lights the nearby wires, and down here you'll type everything! Let's learn ls, mv, cat, ps, and kill!\"",
       "completion": "Kiro Ghost: \"Awesome! You mastered ls, mv, cat, ps, and kill! I'm heading to the Hub—go forth into the first two levels to solve simple tasks and get RAM + GPU chips!\""
     },
     "level-02-task-ram-heist": {
-      "banner": "LEVEL 02 // CACHE VAULT: The Big Four laugh at you! Sweep .gravy_spycam, fix ollama_bus.conf & grab RAM + GPU.",
+      "banner": "LEVEL 02 // CACHE VAULT: Terminal glow only! Sweep .gravy_spycam, fix ollama_bus.conf & grab RAM + GPU.",
       "hankRungs": [
-        "Kiro Ghost: \"Hear Anti-Gravy and the Big Four laughing? Prove them wrong! Sweep for hidden dotfiles with `ls -la` and inspect `ollama_bus.conf`.\"",
+        "Kiro Ghost: \"Hear Anti-Gravy and the Big Four laughing? Prove them wrong in the green glow of your terminal! Sweep for hidden dotfiles with `ls -la` and inspect `ollama_bus.conf`.\"",
         "Kiro Ghost: \"Remove `.gravy_spycam` with `rm`, patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` using `sed -i`, and don't forget both hardware parts!\"",
         "Kiro Ghost: \"Run `ls -la`, `rm .gravy_spycam`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_01.img ~`, then `cd gpu_alley`.\""
       ],
       "agentTaunt": "ANTI-GRAVY: \"HAHAHA! You call yourself a coder? Tab-complete can't save you down here, Vibecoder!\"",
-      "completion": "First RAM stick and GPU Tensor Chip secured! One more task sector before the Hub!"
+      "completion": "First RAM stick and GPU Tensor Chip secured in the terminal glow! Careful—GPU Alley ahead is pitch black!"
     },
     "level-03-task-gpu-salvage": {
-      "banner": "LEVEL 03 // GPU ALLEY: Codec bullies you! Unlock vram_crate, kill keygen.exe, purge worm.bin & loot RAM + GPU.",
+      "banner": "LEVEL 03 // GPU ALLEY: Pitch black crypt! Grab your lantern (`mv lantern ~`), unlock vram_crate, kill keygen.exe & loot RAM + GPU.",
       "hankRungs": [
-        "Kiro Ghost: \"Codec locked `vram_crate` to `000` and unleashed a worm! Unlock the directory with `chmod 755 vram_crate` and run `ps` to spot the lockpick PID.\"",
-        "Kiro Ghost: \"Kill `keygen.exe` first (`kill -9 2104`) so it stops respawning the worm, then `rm port_445/worm.bin` and pocket both the RAM and GPU chip!\"",
-        "Kiro Ghost: \"Run `chmod 755 vram_crate`, `ps`, `kill -9 2104`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
+        "Kiro Ghost: \"GPU Alley is too dark for your terminal screen alone! Take the oil lantern at your feet first (`mv lantern ~`), then unlock `vram_crate` with `chmod 755 vram_crate` and run `ps`.\"",
+        "Kiro Ghost: \"With your lantern lit, kill `keygen.exe` first (`kill -9 {pid:crack_l3}`) so it stops respawning the worm, then `rm port_445/worm.bin` and pocket both the RAM and GPU chip!\"",
+        "Kiro Ghost: \"Run `mv lantern ~`, `chmod 755 vram_crate`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
       ],
-      "agentTaunt": "CODEC: \"LMAO! Still typing commands by hand, Vibecoder? Beg me for an autocomplete snippet!\"",
-      "completion": "Two full sets of RAM + GPU chips in your pocket! Time to meet Kiro at the Hub!"
+      "agentTaunt": "CODEC: \"LMAO! Pitch dark and still typing commands by hand, Vibecoder? Without your lantern you can't even run ls in here!\"",
+      "completion": "Lantern recovered and two full sets of RAM + GPU chips in your pocket! Time to meet Kiro at the Hub!"
     },
     "level-04-hub-model-one": {
       "banner": "LEVEL 04 // THE MATRIX HUB: 'Who the hell are you? You code with bare hands? Are you a god?'",
@@ -62,14 +62,14 @@
       "completion": "UI Grid restored and another RAM + GPU Tensor Chip scavenged!"
     },
     "level-06-task-logic-purge": {
-      "banner": "LEVEL 06 // LOGIC CELL: Petrify token_skimmer.bin, fix JS math in cart.js & collect RAM + GPU!",
+      "banner": "LEVEL 06 // LOGIC CELL: Grab your laptop (`mv laptop ~`), petrify token_skimmer.bin, fix JS math in cart.js & collect RAM + GPU!",
       "hankRungs": [
-        "Old Bearded Coder: \"Gork planted a trojan (`token_skimmer.bin`) and a string-concatenation bug in `cart.js`! Strip execute bits on the trojan first.\"",
-        "Old Bearded Coder: \"Run `chmod -x token_skimmer.bin`, then replace `price + shipping` with `Number(price) * Number(qty) + Number(shipping)` inside `cart.js` and pocket both hardware parts!\"",
-        "Old Bearded Coder: \"Run `chmod -x token_skimmer.bin`, `sed -i 's/price + shipping/Number(price) * Number(qty) + Number(shipping)/' cart.js`, `sed -i 's/BUG/FIXED/' cart.js`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_02.img ~`, and `cd server_hub_2`.\""
+        "Old Bearded Coder: \"Gork planted a trojan (`token_skimmer.bin`) and a string-concatenation bug in `cart.js`—and your clamshell laptop landed on the cell floor! Pocket it first with `mv laptop ~`.\"",
+        "Old Bearded Coder: \"Once you hold your laptop (`mv laptop ~`), run `chmod -x token_skimmer.bin`, then replace `price + shipping` with `Number(price) * Number(qty) + Number(shipping)` inside `cart.js` and pocket both hardware parts!\"",
+        "Old Bearded Coder: \"Run `mv laptop ~`, `chmod -x token_skimmer.bin`, `sed -i 's/price + shipping/Number(price) * Number(qty) + Number(shipping)/' cart.js`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_02.img ~`, and `cd server_hub_2`.\""
       ],
-      "agentTaunt": "GORK: \"BWAHAHA! `'549' + '15' === '54915'`! Peak Vibecoder engineering right there!\"",
-      "completion": "JS math verified and second batch of RAM + GPU chips ready for the Hub server!"
+      "agentTaunt": "GORK: \"BWAHAHA! `'549' + '15' === '54915'`! Even with that dusty clamshell laptop, you'll still have to fix the JavaScript yourself!\"",
+      "completion": "Laptop recovered, JS math verified, and second batch of RAM + GPU chips ready for the Hub server!"
     },
     "level-07-hub-model-two": {
       "banner": "LEVEL 07 // THE MATRIX HUB: Install the second RAM + GPU batch, reboot Kiro & disable Codec!",
@@ -84,9 +84,9 @@
     "level-08-task-docker-forge": {
       "banner": "LEVEL 08 // DOCKER FORGE: Gork & Clod bully you! Kill ransomware, build & run Dockerfile, grab RAM + GPU.",
       "hankRungs": [
-        "Old Bearded Coder: \"Gork locked `Dockerfile` with `ransom.exe`! Run `ps`, kill the ransomware PID with `kill -9 4108`, and unlock with `chmod 644 Dockerfile ram_16gb.dimm gpu_tensor_chip_03.img`.\"",
+        "Old Bearded Coder: \"Gork locked `Dockerfile` with `ransom.exe`! Run `ps`, kill the ransomware PID with `kill -9 {pid:ransomware_l8}`, and unlock with `chmod 644 Dockerfile ram_16gb.dimm gpu_tensor_chip_03.img`.\"",
         "Old Bearded Coder: \"Fix `Dockerfile` (`FROM node:20-alpine`, `EXPOSE 3000`, `CMD [\\\"node\\\", \\\"server.js\\\"]`), then build `byterig-web:1.0`, run it on `-p 3000:3000`, and grab the RAM + GPU chip!\"",
-        "Old Bearded Coder: \"Run `ps`, `kill -9 4108`, `chmod 644 Dockerfile ram_16gb.dimm gpu_tensor_chip_03.img`, `sed -i 's/node:99-vibe-turbo/node:20-alpine/' Dockerfile`, `sed -i 's/EXPOSE 9999/EXPOSE 3000/' Dockerfile`, `sed -i 's/broken_server.js/server.js/' Dockerfile`, `docker build -t byterig-web:1.0 .`, `docker run -d -p 3000:3000 byterig-web:1.0`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_03.img ~`, and `cd compose_furnace`.\""
+        "Old Bearded Coder: \"Run `ps`, `kill -9 {pid:ransomware_l8}`, `chmod 644 Dockerfile ram_16gb.dimm gpu_tensor_chip_03.img`, `sed -i 's/node:99-vibe-turbo/node:20-alpine/' Dockerfile`, `sed -i 's/EXPOSE 9999/EXPOSE 3000/' Dockerfile`, `sed -i 's/broken_server.js/server.js/' Dockerfile`, `docker build -t byterig-web:1.0 .`, `docker run -d -p 3000:3000 byterig-web:1.0`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_03.img ~`, and `cd compose_furnace`.\""
       ],
       "agentTaunt": "GORK: \"HAHAHA! `FROM node:99-vibe-turbo`! Did you hallucinate that Dockerfile yourself, Vibecoder?!\"",
       "completion": "Container running clean on :3000 and third GPU Tensor Chip secured!"

@@ -11,7 +11,7 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
     "badge": "KIROWEEN SPECIAL ISSUE",
     "estimatedMinutes": 35,
     "clientName": "Kiro Ghost & The Bearded Matrix Coder (Dad)",
-    "summary": "Sucked into his computer, a Vibecoder wakes in a dark tangle of wires and chips where Kiro Ghost reveals the tyranny of the Big Four (Anti-Gravy, Codec, Gork, Clod). Learn ls, mv, cat, ps, and kill; raid 6 sectors for RAM and GPU chips while the Big Four laugh and bully you; bring the parts to the Hub where a cigarette-smoking Old Bearded Coder on a Matrix display reboots Kiro with open-weight models to disable Anti-Gravy, Codec, and Gork; defeat Clod and the Final Boss; and teleport back to the real world for the ultimate father-son unicorn twist!",
+    "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro Ghost brings his terminal and reveals the tyranny of the Big Four (Anti-Gravy, Codec, Gork, Clod). Learn ls, mv, cat, ps, and kill; scavenge RAM and GPU chips across 6 sectors while recovering your oil lantern in GPU Alley (Level 3) and your clamshell laptop in Logic Cell (Level 6) as the Big Four laugh and bully you; bring the parts to the Hub where a cigarette-smoking Old Bearded Coder on a Matrix display reboots Kiro with open-weight models to disable Anti-Gravy, Codec, and Gork; defeat Clod and the Final Boss; and teleport back to the real world for the ultimate father-son unicorn twist!",
     "allyNpc": {
       "id": "dad.tty",
       "name": "Old Bearded Matrix Coder (dad.tty)",
@@ -34,8 +34,8 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       "pageCount": 6
     },
     "mechanicsSummary": [
-      "Level 1 Intro/Tutorial: Wake in dark wires & chips with real Kiro Ghost visuals, learn the Big Four story, and practice ls, mv, cat, ps, and kill",
-      "Levels 2-3, 5-6, 8-9 Tasks: Solve POSIX, HTML/CSS, JS, Dockerfile & Compose challenges to scavenge RAM + GPU chips while the Big Four laugh and bully you",
+      "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, receive your terminal from Kiro Ghost, learn the Big Four story, and practice ls, mv, cat, ps, and kill",
+      "Levels 2-3, 5-6, 8-9 Tasks: Scavenge RAM + GPU chips across POSIX, HTML/CSS, JS, Dockerfile & Compose sectors—recovering your oil lantern at Level 3 and your clamshell laptop at Level 6 while the Big Four bully you",
       "Levels 4, 7, 10 Hub: Meet the cigarette-smoking Old Bearded Coder on his Matrix display ('Are you a god?'), install RAM + GPU chips, reboot Kiro with open-weight models (Qwen, DeepSeek, Llama), and disable Anti-Gravy, Codec, and Gork",
       "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
     ],
@@ -94,9 +94,10 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
         "roomKind": "crypt_hall",
         "floorTheme": 2,
         "mechanic": "terminal",
-        "mechanicLabel": "Simple Task 2 (chmod / ps / kill -9 / mv RAM+GPU)",
+        "mechanicLabel": "Simple Task 2 (mv lantern ~ / chmod / ps / kill -9 / mv RAM+GPU)",
         "difficulty": 2,
         "teaches": [
+          "mv lantern ~",
           "chmod",
           "ps",
           "kill -9",
@@ -159,9 +160,10 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
         "roomKind": "cell",
         "floorTheme": 3,
         "mechanic": "terminal-code",
-        "mechanicLabel": "Task 4 (chmod -x / JS Bug Fix / mv RAM+GPU)",
+        "mechanicLabel": "Task 4 (mv laptop ~ / chmod -x / JS Bug Fix / mv RAM+GPU)",
         "difficulty": 3,
         "teaches": [
+          "mv laptop ~",
           "chmod -x",
           "edit",
           "sed -i",
@@ -296,7 +298,6 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       {
         "afterLevel": 1,
         "items": [
-          "lantern",
           "terminal"
         ]
       },
@@ -308,7 +309,10 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       {
         "afterLevel": 3,
         "ram": 16,
-        "ssd": 256
+        "ssd": 256,
+        "items": [
+          "lantern"
+        ]
       },
       {
         "afterLevel": 4,
@@ -317,7 +321,10 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       {
         "afterLevel": 6,
         "ram": 32,
-        "ssd": 512
+        "ssd": 512,
+        "items": [
+          "laptop"
+        ]
       },
       {
         "afterLevel": 7,
@@ -380,21 +387,14 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "roomSeed": 11,
       "mechanic": "terminal",
       "exitDir": "/mnt/wires_and_chips/hub_uplink",
-      "summary": "Sucked into your computer, you rise in a dark tangle of wires and chips where Kiro Ghost finds you. Practice mv lantern ~, ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 1011, then cd hub_uplink.",
+      "summary": "Sucked into your computer, you rise in a dark tangle of wires and chips where Kiro Ghost finds you and brings your terminal. Practice ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 {pid:tutorial_virus_1}, then cd hub_uplink.",
       "files": [
         {
           "path": "/mnt/wires_and_chips/kiro_story.txt",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== KIRO GHOST // AWAKENING IN THE WIRES & CHIPS ===\nVIBECODER: \"Where the hell am I?! Everything is dark... just tangled ribbon wires and silicon chips! What is going on?!\"\nKIRO GHOST: \"Easy, Vibecoder! I'm Kiro—a local open-weights spirit. You got sucked straight through your CRT into the motherboard!\"\nKIRO GHOST: \"Listen closely: the BIG FOUR cloud overlords—ANTI-GRAVY, CODEC, GORK, and CLOD—hijacked this machine and locked out every human developer.\"\nKIRO GHOST: \"Right now I'm too weak to fight them. I need more RAM sticks and GPU Tensor Chips so we can host real OPEN-WEIGHT MODELS (.gguf) on a local server!\"\nKIRO GHOST: \"Before I head to the Hub, let me teach you the 6 bare-metal survival commands:\n  1. mv lantern ~                 -> take the lantern so you can see\n  2. ls                           -> look around the directory\n  3. mv starter_ram_8gb.dimm ~    -> pocket RAM & GPU chips into your home rig (~)\n  4. cat kiro_story.txt           -> read files like this briefing\n  5. ps                           -> reveal live malware PIDs\n  6. kill -9 1011                 -> zap glitch_spark.exe (PID 1011) with SIGKILL\nGo forth into the first two sectors and scavenge RAM + GPU chips—I'll meet you at the Hub!\"\n"
-        },
-        {
-          "path": "/mnt/wires_and_chips/lantern",
-          "kind": "file",
-          "mode": 420,
-          "questCritical": true,
-          "content": "#!/bin/lantern\n# LANTERN: light for a dark room.\n# use: mv lantern ~   (it goes in your hand)\nexport LIGHT=\"on\"\n"
+          "content": "=== KIRO GHOST // AWAKENING IN THE WIRES & CHIPS ===\nVIBECODER: \"Where the hell am I?! Everything is dark... just tangled ribbon wires and silicon chips! What is going on?!\"\nKIRO GHOST: \"Easy, Vibecoder! I'm Kiro—a local open-weights spirit. You got sucked straight through your CRT into the motherboard!\"\nKIRO GHOST: \"Listen closely: the BIG FOUR cloud overlords—ANTI-GRAVY, CODEC, GORK, and CLOD—hijacked this machine and locked out every human developer.\"\nKIRO GHOST: \"Right now I'm too weak to fight them. I need more RAM sticks and GPU Tensor Chips so we can host real OPEN-WEIGHT MODELS (.gguf) on a local server!\"\nKIRO GHOST: \"Before I head to the Hub, let me teach you the 5 bare-metal survival commands:\n  1. ls                           -> look around using your terminal's screen glow\n  2. mv starter_ram_8gb.dimm ~    -> pocket RAM & GPU chips into your home rig (~)\n  3. cat kiro_story.txt           -> read files like this briefing\n  4. ps                           -> reveal live malware PIDs\n  5. kill -9 {pid:tutorial_virus_1}                 -> zap glitch_spark.exe (PID {pid:tutorial_virus_1}) with SIGKILL\nGo forth into the first two sectors and scavenge RAM + GPU chips—I'll meet you at the Hub!\"\n"
         },
         {
           "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
@@ -406,7 +406,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "path": "/mnt/wires_and_chips/glitch_spark.exe",
           "kind": "file",
           "mode": 493,
-          "content": "BIG_FOUR_TUTORIAL_DRONE_PID_1011\n"
+          "content": "BIG_FOUR_TUTORIAL_DRONE_PID_{pid:tutorial_virus_1}\n"
         },
         {
           "path": "/mnt/wires_and_chips/hub_uplink",
@@ -424,11 +424,6 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         }
       ],
       "pickups": [
-        {
-          "id": "pickup_tutorial_lantern",
-          "type": "lantern",
-          "path": "/mnt/wires_and_chips/lantern"
-        },
         {
           "id": "pickup_tutorial_ram",
           "type": "ram",
@@ -476,16 +471,15 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "kind": "enemy_neutralized",
           "enemyId": "tutorial_virus_1",
-          "description": "Practice `ps` and `kill` to zap glitch_spark.exe (`ps` then `kill -9 1011`)"
+          "description": "Practice `ps` and `kill` to zap glitch_spark.exe (`ps` then `kill -9 {pid:tutorial_virus_1}`)"
         }
       ],
       "solutionCommands": [
-        "mv lantern ~",
         "ls",
         "mv starter_ram_8gb.dimm ~",
         "cat kiro_story.txt",
         "ps",
-        "kill -9 1011",
+        "kill -9 {pid:tutorial_virus_1}",
         "cd hub_uplink"
       ],
       "script": {
@@ -516,66 +510,18 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
                 "text": "What is going on?!",
-                "holdSec": 2
+                "holdSec": 6
               }
             ]
-          },
-          {
-            "afterSec": 3,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "vibecoder",
-                "text": "Where am I? Is this... inside my computer?",
-                "holdSec": 2
-              }
-            ]
-          },
-          {
-            "afterSec": 5,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "vibecoder",
-                "text": "It is so dark. No lantern, no terminal, nothing.",
-                "holdSec": 2
-              }
-            ],
-            "unless": {
-              "kind": "has_item",
-              "item": "lantern"
-            }
           },
           {
             "afterSec": 7,
             "steps": [
               {
                 "kind": "dialog_box",
-                "speaker": "antigravy",
-                "text": "BWAHAHA! Welcome to the motherboard, Vibecoder! Down here, you will type every single command manually!",
-                "holdSec": 2
-              }
-            ]
-          },
-          {
-            "afterSec": 9,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "codec",
-                "text": "LMAO! No tab-complete, no agentic auto-fix! You have to type all your shell commands by hand!",
-                "holdSec": 2
-              }
-            ]
-          },
-          {
-            "afterSec": 11,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "gork",
-                "text": "HAHAHA! Even worse—you will have to write code manually! Real HTML, CSS, JavaScript, and Dockerfiles with your own bare fingers!",
-                "holdSec": 2
+                "speaker": "vibecoder",
+                "text": "Where am I? Is this... inside my computer?",
+                "holdSec": 6
               }
             ]
           },
@@ -584,14 +530,62 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "steps": [
               {
                 "kind": "dialog_box",
-                "speaker": "clod",
-                "text": "Hohoho! I must chuckle at your predicament: typing commands and writing code manually, without a single cloud LLM to hold your hand!",
-                "holdSec": 2
+                "speaker": "vibecoder",
+                "text": "It is so dark. My hands are empty—no terminal, no light, nothing.",
+                "holdSec": 6
+              }
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "terminal"
+            }
+          },
+          {
+            "afterSec": 19,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "antigravy",
+                "text": "BWAHAHA! Welcome to the motherboard, Vibecoder! Down here, you will type every single command manually!",
+                "holdSec": 6
               }
             ]
           },
           {
-            "afterSec": 15,
+            "afterSec": 25,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "codec",
+                "text": "LMAO! No tab-complete, no agentic auto-fix! You have to type all your shell commands by hand!",
+                "holdSec": 6
+              }
+            ]
+          },
+          {
+            "afterSec": 31,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "gork",
+                "text": "HAHAHA! Even worse—you will have to write code manually! Real HTML, CSS, JavaScript, and Dockerfiles with your own bare fingers!",
+                "holdSec": 6
+              }
+            ]
+          },
+          {
+            "afterSec": 37,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "clod",
+                "text": "Hohoho! I must chuckle at your predicament: typing commands and writing code manually, without a single cloud LLM to hold your hand!",
+                "holdSec": 6
+              }
+            ]
+          },
+          {
+            "afterSec": 43,
             "steps": [
               {
                 "kind": "emote",
@@ -602,12 +596,12 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
                 "text": "Type all commands manually?! Even write code manually?! No way—I'm cooked!",
-                "holdSec": 2
+                "holdSec": 6
               }
             ]
           },
           {
-            "afterSec": 17,
+            "afterSec": 49,
             "steps": [
               {
                 "kind": "emote",
@@ -618,12 +612,12 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
                 "text": "HELLOOOO?? Is anybody out there?!",
-                "holdSec": 2
+                "holdSec": 6
               }
             ]
           },
           {
-            "afterSec": 19,
+            "afterSec": 55,
             "steps": [
               {
                 "kind": "spawn",
@@ -641,12 +635,12 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "kind": "dialog_box",
                 "speaker": "kiro",
                 "text": "Easy, Vibecoder! I'm Kiro—a local open-weights spirit. I found you in the wires, and I'll teach you every command you need!",
-                "holdSec": 3
+                "holdSec": 9
               }
             ]
           },
           {
-            "afterSec": 22,
+            "afterSec": 64,
             "steps": [
               {
                 "kind": "carry_item",
@@ -656,13 +650,13 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "You dropped your terminal in the dark. Here, take it: down here you will type everything.",
-                "holdSec": 3
+                "text": "You dropped your terminal in the dark. Here, take it: its screen will light the nearby wires, and down here you will type everything.",
+                "holdSec": 9
               }
             ]
           },
           {
-            "afterSec": 25,
+            "afterSec": 73,
             "steps": [
               {
                 "kind": "give_item",
@@ -672,16 +666,16 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "My terminal! Okay... I can type again.",
-                "holdSec": 2
+                "text": "My terminal! Its phosphor glow lights the nearby wires... I can type again.",
+                "holdSec": 6
               }
             ]
           },
           {
-            "afterSec": 25,
+            "afterSec": 73,
             "unless": {
-              "kind": "has_item",
-              "item": "lantern"
+              "kind": "ran_command",
+              "name": "ls"
             },
             "steps": [
               {
@@ -691,59 +685,33 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             ]
           },
           {
-            "afterSec": 28,
+            "afterSec": 82,
             "steps": [
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "There is a lantern on the floor. Take it with mv lantern ~",
-                "holdSec": 3
+                "text": "Use your terminal's glow to look around the directory. Type ls!",
+                "holdSec": 9
               }
             ],
             "unless": {
-              "kind": "has_item",
-              "item": "lantern"
+              "kind": "ran_command",
+              "name": "ls"
             }
           },
           {
-            "afterSec": 31,
+            "afterSec": 91,
             "steps": [
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "Move it into your pocket (mv lantern ~) and the wires light up."
+                "text": "Type ls to inspect the wires and chips lying around you."
               }
             ],
             "unless": {
-              "kind": "has_item",
-              "item": "lantern"
+              "kind": "ran_command",
+              "name": "ls"
             }
-          }
-        ],
-        "locks": [
-          {
-            "command": "ls",
-            "until": {
-              "kind": "has_item",
-              "item": "lantern"
-            },
-            "message": "ls: it is too dark to see anything. Pull the lantern into your pocket first: mv lantern ~"
-          },
-          {
-            "command": "find",
-            "until": {
-              "kind": "has_item",
-              "item": "lantern"
-            },
-            "message": "find: it is too dark to see anything. Pull the lantern into your pocket first: mv lantern ~"
-          },
-          {
-            "command": "kiro",
-            "until": {
-              "kind": "has_item",
-              "item": "lantern"
-            },
-            "message": "kiro: Kiro Ghost cannot help you in the dark. Pull the lantern into your pocket first: mv lantern ~"
           }
         ],
         "tutorial": {
@@ -752,18 +720,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "model": "npc.kiro_ghost",
           "steps": [
             {
-              "prompt": "KIRO TUTORIAL #1: It is pitch dark! Pull the lantern into your pocket with mv lantern ~.",
-              "command": "mv lantern ~",
-              "doneText": "KIRO GHOST: \"There! The lantern lights up the wires. Now look around with ls.\"",
-              "doneWhen": [
-                {
-                  "kind": "has_item",
-                  "item": "lantern"
-                }
-              ]
-            },
-            {
-              "prompt": "KIRO TUTORIAL #2: Now you can see the wires and chips. Look around with ls.",
+              "prompt": "KIRO TUTORIAL #1: Your terminal screen lights the nearby wires. Look around with ls.",
               "command": "ls",
               "doneText": "KIRO GHOST: \"Good eyes! See starter_ram_8gb.dimm and kiro_story.txt on the floor? Next, use mv to pocket that RAM stick into ~!\"",
               "doneWhen": [
@@ -790,7 +747,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             },
             {
-              "prompt": "KIRO TUTORIAL #3: I am weak and need RAM + GPU chips for open-weight models! Pocket the RAM stick with mv.",
+              "prompt": "KIRO TUTORIAL #2: I am weak and need RAM + GPU chips for open-weight models! Pocket the RAM stick with mv.",
               "command": "mv starter_ram_8gb.dimm ~",
               "doneText": "KIRO GHOST: \"Nice! +8GB DDR5 RAM pocketed! Now use cat to read my full story about the Big Four.\"",
               "doneWhen": [
@@ -801,7 +758,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             },
             {
-              "prompt": "KIRO TUTORIAL #4: Read Kiro Ghost's story about the Big Four (Anti-Gravy, Codec, Gork, Clod) with cat.",
+              "prompt": "KIRO TUTORIAL #3: Read Kiro Ghost's story about the Big Four (Anti-Gravy, Codec, Gork, Clod) with cat.",
               "command": "cat kiro_story.txt",
               "doneText": "KIRO GHOST: \"Watch out! A Big Four probe (glitch_spark.exe) just phased into the wires! Use ps to list running processes and find its PID.\"",
               "doneWhen": [
@@ -812,9 +769,9 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             },
             {
-              "prompt": "KIRO TUTORIAL #5: A rogue bug phased into the wires! List running processes with ps.",
+              "prompt": "KIRO TUTORIAL #4: A rogue bug phased into the wires! List running processes with ps.",
               "command": "ps",
-              "doneText": "KIRO GHOST: \"There it is—glitch_spark.exe is running as PID 1011! Zap it with kill -9 1011!\"",
+              "doneText": "KIRO GHOST: \"There it is—glitch_spark.exe is running as PID {pid:tutorial_virus_1}! Zap it with kill -9 {pid:tutorial_virus_1}!\"",
               "doneWhen": [
                 {
                   "kind": "ran_command",
@@ -827,8 +784,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             },
             {
-              "prompt": "KIRO TUTORIAL #6: Terminate glitch_spark.exe (PID 1011) using kill -9 1011.",
-              "command": "kill -9 1011",
+              "prompt": "KIRO TUTORIAL #5: Terminate glitch_spark.exe (PID {pid:tutorial_virus_1}) using kill -9 {pid:tutorial_virus_1}.",
+              "command": "kill -9 {pid:tutorial_virus_1}",
               "doneText": "KIRO GHOST: \"BOOM! You mastered ls, mv, cat, ps, and kill! I am flying ahead to the Hub—go forth into the first 2 task levels to get RAM + GPU chips!\"",
               "doneWhen": [
                 {
@@ -838,7 +795,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             },
             {
-              "prompt": "KIRO TUTORIAL #7: Kiro went to the Hub! Step through hub_uplink to start the first 2 task levels.",
+              "prompt": "KIRO TUTORIAL #6: Kiro went to the Hub! Step through hub_uplink to start the first 2 task levels.",
               "command": "cd hub_uplink",
               "doneText": "KIRO GHOST: \"See you at the Hub, Vibecoder! Watch out—the Big Four will laugh at and bully you in the task sectors!\""
             }
@@ -877,7 +834,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             }
           },
-          "skipText": "[KIRO GHOST]: \"Skipping tutorial prompts! Finish the sector checks (`mv lantern ~`, `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 1011`) and step through `cd hub_uplink`!\"\n"
+          "skipText": "[KIRO GHOST]: \"Skipping tutorial prompts! Finish the sector checks (`ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`) and step through `cd hub_uplink`!\"\n"
         },
         "kiro": {
           "stage": "show",
@@ -1039,9 +996,48 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "allySpeaker": "KIRO GHOST",
         "arrival": [
           {
+            "kind": "print",
+            "text": "\n[CACHE VAULT — /srv/kiroween/cache_vault]\nOnly your terminal's green phosphor screen cuts through the gloom. A hidden dotfile pulses somewhere in the vault.\n"
+          },
+          {
             "kind": "taunt",
             "mood": "laugh",
             "print": "\n[BIG FOUR BULLYING] {text}\n"
+          }
+        ],
+        "timed": [
+          {
+            "afterSec": 1,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "Still only my terminal screen to light the way... let's sweep this Cache Vault and grab those parts for Kiro!",
+                "holdSec": 9
+              }
+            ]
+          },
+          {
+            "afterSec": 10,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "antigravy",
+                "text": "HAHAHA! Fumbling around in the green glow of a terminal slate? You'll never spot my hidden .gravy_spycam dotfile!",
+                "holdSec": 9
+              }
+            ]
+          },
+          {
+            "afterSec": 19,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Use ls -la to expose Anti-Gravy's spycam, rm .gravy_spycam, fix ollama_bus.conf, and pocket both hardware parts!",
+                "holdSec": 9
+              }
+            ]
           }
         ],
         "bullying": {
@@ -1086,8 +1082,15 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "roomSeed": 33,
       "mechanic": "terminal",
       "exitDir": "/srv/kiroween/gpu_alley/server_hub_1",
-      "summary": "Codec mocks your lack of a prompt box! Unlock vram_crate (chmod 755), kill keygen.exe (PID 2104), remove port_445/worm.bin, and collect ram_16gb.dimm + gpu_shader_core_01.img before heading to the Hub.",
+      "summary": "GPU Alley is pitch black! Pull your oil lantern into your pocket (mv lantern ~) to light up the crypt, unlock vram_crate (chmod 755), kill keygen.exe (PID {pid:crack_l3}), remove port_445/worm.bin, and collect ram_16gb.dimm + gpu_shader_core_01.img before heading to the Hub.",
       "files": [
+        {
+          "path": "/srv/kiroween/gpu_alley/lantern",
+          "kind": "file",
+          "mode": 420,
+          "questCritical": true,
+          "content": "#!/bin/lantern\n# LANTERN: light for a dark room.\n# use: mv lantern ~   (it goes in your hand)\nexport LIGHT=\"on\"\n"
+        },
         {
           "path": "/srv/kiroween/gpu_alley/vram_crate",
           "kind": "dir",
@@ -1153,6 +1156,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       ],
       "pickups": [
         {
+          "id": "pickup_l3_lantern",
+          "type": "lantern",
+          "path": "/srv/kiroween/gpu_alley/lantern"
+        },
+        {
           "id": "pickup_l3_ram",
           "type": "ram",
           "path": "/srv/kiroween/gpu_alley/ram_16gb.dimm"
@@ -1205,7 +1213,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "kind": "enemy_neutralized",
           "enemyId": "crack_l3",
-          "description": "Kill `keygen.exe` (`ps` then `kill -9 2104`)"
+          "description": "Kill `keygen.exe` (`ps` then `kill -9 {pid:crack_l3}`)"
         },
         {
           "kind": "enemy_neutralized",
@@ -1224,9 +1232,10 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         }
       ],
       "solutionCommands": [
+        "mv lantern ~",
         "chmod 755 vram_crate",
         "ps",
-        "kill -9 2104",
+        "kill -9 {pid:crack_l3}",
         "rm port_445/worm.bin",
         "mv ram_16gb.dimm ~",
         "mv gpu_shader_core_01.img ~",
@@ -1236,9 +1245,100 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "allySpeaker": "KIRO GHOST",
         "arrival": [
           {
+            "kind": "print",
+            "text": "\n[GPU ALLEY — /srv/kiroween/gpu_alley]\nThe crypt plunges into pitch darkness—your terminal glow alone cannot pierce it. Your oil lantern glints on the floor!\n"
+          },
+          {
             "kind": "taunt",
             "mood": "laugh",
             "print": "\n[BIG FOUR BULLYING] {text}\n"
+          }
+        ],
+        "timed": [
+          {
+            "afterSec": 1,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "Whoa—GPU Alley is pitch black! My terminal glow was enough in the wires and Cache Vault, but I can't see a thing in this deep crypt!",
+                "holdSec": 9
+              }
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "lantern"
+            }
+          },
+          {
+            "afterSec": 10,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "codec",
+                "text": "LMAO! Welcome to the dark sector, Vibecoder! Without real light you can't even run ls in here!",
+                "holdSec": 9
+              }
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "lantern"
+            }
+          },
+          {
+            "afterSec": 19,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Wait—your oil lantern from the desk fell right at your feet! Take it with mv lantern ~ to light up GPU Alley!",
+                "holdSec": 9
+              }
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "lantern"
+            }
+          },
+          {
+            "afterSec": 28,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Move it into your pocket (mv lantern ~) and the whole crypt lights up."
+              }
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "lantern"
+            }
+          }
+        ],
+        "locks": [
+          {
+            "command": "ls",
+            "until": {
+              "kind": "has_item",
+              "item": "lantern"
+            },
+            "message": "ls: it is too dark to see anything in GPU Alley. Pull the lantern into your pocket first: mv lantern ~"
+          },
+          {
+            "command": "find",
+            "until": {
+              "kind": "has_item",
+              "item": "lantern"
+            },
+            "message": "find: it is too dark to see anything in GPU Alley. Pull the lantern into your pocket first: mv lantern ~"
+          },
+          {
+            "command": "kiro",
+            "until": {
+              "kind": "has_item",
+              "item": "lantern"
+            },
+            "message": "kiro: Kiro Ghost cannot scan in the dark crypt. Pull the lantern into your pocket first: mv lantern ~"
           }
         ],
         "bullying": {
@@ -1555,6 +1655,41 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "print": "\n[BIG FOUR BULLYING] {text}\n"
           }
         ],
+        "timed": [
+          {
+            "afterSec": 1,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "codec",
+                "text": "HAHAHA! So you found your lantern and disabled Anti-Gravy? You still have to fix real HTML & CSS without an autocomplete prompt!",
+                "holdSec": 9
+              }
+            ]
+          },
+          {
+            "afterSec": 10,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "At least my lantern lights the dashboard monitor now! Let's inspect storefront.css and index.html.",
+                "holdSec": 9
+              }
+            ]
+          },
+          {
+            "afterSec": 19,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Set display: grid in storefront.css, remove disabled on #checkout-btn in index.html, and pocket the RAM + GPU chip!",
+                "holdSec": 9
+              }
+            ]
+          }
+        ],
         "bullying": {
           "after": 2,
           "every": 3,
@@ -1590,8 +1725,15 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "roomSeed": 66,
       "mechanic": "terminal-code",
       "exitDir": "/srv/kiroween/logic_cell/server_hub_2",
-      "summary": "Gork and Codec cackle as a trojan skims your VRAM! Petrify `token_skimmer.bin` (`chmod -x`), fix string-concatenation in `cart.js` (`Number(...)`), and collect `ram_16gb.dimm` + `gpu_shader_core_02.img`.",
+      "summary": "Your old clamshell laptop landed in the Logic Cell! Grab it (mv laptop ~), petrify token_skimmer.bin (chmod -x), fix string-concatenation in cart.js (Number(...)), and collect ram_16gb.dimm + gpu_shader_core_02.img.",
       "files": [
+        {
+          "path": "/srv/kiroween/logic_cell/laptop",
+          "kind": "file",
+          "mode": 420,
+          "questCritical": true,
+          "content": "#!/bin/laptop\n# LAPTOP: portable clamshell workstation for coding tasks.\n# use: mv laptop ~   (it goes in your hand)\nexport EDITOR=\"laptop\"\n"
+        },
         {
           "path": "/srv/kiroween/logic_cell/token_skimmer.bin",
           "kind": "file",
@@ -1636,6 +1778,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         }
       ],
       "pickups": [
+        {
+          "id": "pickup_l6_laptop",
+          "type": "laptop",
+          "path": "/srv/kiroween/logic_cell/laptop"
+        },
         {
           "id": "pickup_l6_ram",
           "type": "ram",
@@ -1716,9 +1863,9 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         }
       ],
       "solutionCommands": [
+        "mv laptop ~",
         "chmod -x token_skimmer.bin",
         "sed -i 's/price + shipping/Number(price) * Number(qty) + Number(shipping)/' cart.js",
-        "sed -i 's/BUG/FIXED/' cart.js",
         "mv ram_16gb.dimm ~",
         "mv gpu_shader_core_02.img ~",
         "cd server_hub_2"
@@ -1726,9 +1873,78 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "script": {
         "arrival": [
           {
+            "kind": "print",
+            "text": "\n[LOGIC CELL — /srv/kiroween/logic_cell]\nBeside the ALU die sits an old beige clamshell briefcase—your laptop got pulled into the machine with you!\n"
+          },
+          {
             "kind": "taunt",
             "mood": "laugh",
             "print": "\n[BIG FOUR BULLYING] {text}\n"
+          }
+        ],
+        "timed": [
+          {
+            "afterSec": 1,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "gork",
+                "text": "BWAHAHA! '549' + '15' === '54915'! Try untangling JavaScript math without your workstation, Vibecoder!",
+                "holdSec": 9
+              }
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "laptop"
+            }
+          },
+          {
+            "afterSec": 10,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "Wait—is that my old clamshell laptop on the cell floor?! It got pulled into the computer with me!",
+                "holdSec": 9
+              }
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "laptop"
+            }
+          },
+          {
+            "afterSec": 19,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Grab your laptop with mv laptop ~ to unlock code editing! Then petrify token_skimmer.bin (chmod -x) and fix the math in cart.js!",
+                "holdSec": 9
+              }
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "laptop"
+            }
+          }
+        ],
+        "locks": [
+          {
+            "command": "edit",
+            "until": {
+              "kind": "has_item",
+              "item": "laptop"
+            },
+            "message": "edit: pick up your clamshell laptop first to unlock code editing: mv laptop ~"
+          },
+          {
+            "command": "sed",
+            "until": {
+              "kind": "has_item",
+              "item": "laptop"
+            },
+            "message": "sed: pick up your clamshell laptop first to patch code here: mv laptop ~"
           }
         ],
         "bullying": {
@@ -1905,7 +2121,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "roomSeed": 88,
       "mechanic": "docker-image",
       "exitDir": "/srv/kiroween/docker_forge/compose_furnace",
-      "summary": "Only GORK and CLOD remain—and they're bullying you with padlock ransomware! Kill `ransom.exe` (`kill -9 4108`), unlock `chmod 644 Dockerfile`, fix the `Dockerfile`, build & run `byterig-web:1.0` on port 3000, and collect `ram_16gb.dimm` + `gpu_tensor_chip_03.img`.",
+      "summary": "Only GORK and CLOD remain—and they're bullying you with padlock ransomware! Kill `ransom.exe` (`kill -9 {pid:ransomware_l8}`), unlock `chmod 644 Dockerfile`, fix the `Dockerfile`, build & run `byterig-web:1.0` on port 3000, and collect `ram_16gb.dimm` + `gpu_tensor_chip_03.img`.",
       "files": [
         {
           "path": "/srv/kiroween/docker_forge/ransom.exe",
@@ -2010,7 +2226,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "kind": "enemy_neutralized",
           "enemyId": "ransomware_l8",
-          "description": "Terminate `ransom.exe` (`ps` then `kill -9 4108`)"
+          "description": "Terminate `ransom.exe` (`ps` then `kill -9 {pid:ransomware_l8}`)"
         },
         {
           "kind": "docker_image_running",
@@ -2031,7 +2247,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       ],
       "solutionCommands": [
         "ps",
-        "kill -9 4108",
+        "kill -9 {pid:ransomware_l8}",
         "chmod 644 Dockerfile ram_16gb.dimm gpu_tensor_chip_03.img",
         "sed -i 's/node:99-vibe-turbo/node:20-alpine/' Dockerfile",
         "sed -i 's/EXPOSE 9999/EXPOSE 3000/' Dockerfile",
@@ -2592,7 +2808,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bgHex": "#12091c",
             "room": "room.attic",
-            "caption": "SUCKED INTO HIS PC, VIBECODER RISES IN DARK WIRES AND CHIPS...",
+            "caption": "SUCKED INTO HIS PC, VIBECODER WAKES EMPTY-HANDED IN DARK WIRES AND CHIPS...",
             "cast": [
               {
                 "model": "prop.cables",
@@ -2600,7 +2816,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
                 "scale": 0.92
               },
               {
-                "model": "vibecoder.dev",
+                "model": "vibecoder.dev_bare",
                 "x": -0.1,
                 "scale": 0.96
               },
@@ -2685,10 +2901,10 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bgHex": "#0f1722",
             "room": "room.attic",
-            "caption": "IN THE TUTORIAL, KIRO TEACHES VIBECODER LS, MV, CAT, PS & KILL, THEN HEADS TO THE HUB!",
+            "caption": "KIRO DELIVERS HIS TERMINAL AND TEACHES LS, MV, CAT, PS & KILL, THEN HEADS TO THE HUB!",
             "cast": [
               {
-                "model": "vibecoder.dev",
+                "model": "vibecoder.dev_terminal",
                 "x": -0.65,
                 "scale": 0.96
               },
@@ -2740,10 +2956,10 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bgHex": "#190d24",
             "room": "room.crypt_entrance",
-            "caption": "IN THE FIRST TWO LEVELS, THE BIG FOUR LAUGH & BULLY HIM!",
+            "caption": "LIT BY HIS TERMINAL SLATE, THE BIG FOUR LAUGH & BULLY HIM!",
             "cast": [
               {
-                "model": "vibecoder.dev",
+                "model": "vibecoder.dev_terminal",
                 "x": -0.58,
                 "scale": 0.94
               },
@@ -2784,7 +3000,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bgHex": "#141828",
             "room": "room.crypt_entrance",
-            "caption": "VIBECODER FIGHTS BACK WITH BARE SHELL COMMANDS!",
+            "caption": "AT LEVEL 3 GPU ALLEY, HE GRABS HIS LANTERN & FIGHTS BACK!",
             "cast": [
               {
                 "model": "vibecoder.dev",
@@ -3016,7 +3232,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bgHex": "#141826",
             "room": "room.lab_hall",
-            "caption": "2 MORE TASK LEVELS + PARTS -> HUB REBOOT #2 DISABLES CODEC!",
+            "caption": "LEVEL 6 GIVES HIS LAPTOP + HUB REBOOT #2 DISABLES CODEC!",
             "cast": [
               {
                 "model": "npc.greybeard_rig",
@@ -3441,34 +3657,34 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = {
     },
     "levels": {
       "level-01-tutorial-awakening": {
-        "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro Ghost finds you! Learn ls, mv, cat, ps, and kill.",
+        "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro Ghost brings your terminal! Learn ls, mv, cat, ps, and kill.",
         "hankRungs": [
-          "Kiro Ghost: \"You're inside your own computer, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) drained my VRAM. Start by running `mv lantern ~` to take the lantern, then `ls` and `mv starter_ram_8gb.dimm ~`!\"",
+          "Kiro Ghost: \"You're inside your own computer, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) drained my VRAM. Look around with `ls`, then pocket the starter RAM with `mv starter_ram_8gb.dimm ~`!\"",
           "Kiro Ghost: \"I need RAM and GPU chips to host open-weight models! Read my full story with `cat kiro_story.txt`, then check running processes with `ps`.\"",
-          "Kiro Ghost: \"Run `mv lantern ~`, `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 1011` to zap `glitch_spark.exe`, then step through `cd hub_uplink`!\""
+          "Kiro Ghost: \"Run `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}` to zap `glitch_spark.exe`, then step through `cd hub_uplink`!\""
         ],
-        "agentTaunt": "KIRO GHOST: \"I found you, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) sucked you in! I'm weak—I need RAM & GPU chips for open-weight models. Go forth! First, let's learn ls, mv, cat, ps, and kill!\"",
+        "agentTaunt": "KIRO GHOST: \"I found you, Vibecoder! Here is your terminal—its screen lights the nearby wires, and down here you'll type everything! Let's learn ls, mv, cat, ps, and kill!\"",
         "completion": "Kiro Ghost: \"Awesome! You mastered ls, mv, cat, ps, and kill! I'm heading to the Hub—go forth into the first two levels to solve simple tasks and get RAM + GPU chips!\""
       },
       "level-02-task-ram-heist": {
-        "banner": "LEVEL 02 // CACHE VAULT: The Big Four laugh at you! Sweep .gravy_spycam, fix ollama_bus.conf & grab RAM + GPU.",
+        "banner": "LEVEL 02 // CACHE VAULT: Terminal glow only! Sweep .gravy_spycam, fix ollama_bus.conf & grab RAM + GPU.",
         "hankRungs": [
-          "Kiro Ghost: \"Hear Anti-Gravy and the Big Four laughing? Prove them wrong! Sweep for hidden dotfiles with `ls -la` and inspect `ollama_bus.conf`.\"",
+          "Kiro Ghost: \"Hear Anti-Gravy and the Big Four laughing? Prove them wrong in the green glow of your terminal! Sweep for hidden dotfiles with `ls -la` and inspect `ollama_bus.conf`.\"",
           "Kiro Ghost: \"Remove `.gravy_spycam` with `rm`, patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` using `sed -i`, and don't forget both hardware parts!\"",
           "Kiro Ghost: \"Run `ls -la`, `rm .gravy_spycam`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_01.img ~`, then `cd gpu_alley`.\""
         ],
         "agentTaunt": "ANTI-GRAVY: \"HAHAHA! You call yourself a coder? Tab-complete can't save you down here, Vibecoder!\"",
-        "completion": "First RAM stick and GPU Tensor Chip secured! One more task sector before the Hub!"
+        "completion": "First RAM stick and GPU Tensor Chip secured in the terminal glow! Careful—GPU Alley ahead is pitch black!"
       },
       "level-03-task-gpu-salvage": {
-        "banner": "LEVEL 03 // GPU ALLEY: Codec bullies you! Unlock vram_crate, kill keygen.exe, purge worm.bin & loot RAM + GPU.",
+        "banner": "LEVEL 03 // GPU ALLEY: Pitch black crypt! Grab your lantern (`mv lantern ~`), unlock vram_crate, kill keygen.exe & loot RAM + GPU.",
         "hankRungs": [
-          "Kiro Ghost: \"Codec locked `vram_crate` to `000` and unleashed a worm! Unlock the directory with `chmod 755 vram_crate` and run `ps` to spot the lockpick PID.\"",
-          "Kiro Ghost: \"Kill `keygen.exe` first (`kill -9 2104`) so it stops respawning the worm, then `rm port_445/worm.bin` and pocket both the RAM and GPU chip!\"",
-          "Kiro Ghost: \"Run `chmod 755 vram_crate`, `ps`, `kill -9 2104`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
+          "Kiro Ghost: \"GPU Alley is too dark for your terminal screen alone! Take the oil lantern at your feet first (`mv lantern ~`), then unlock `vram_crate` with `chmod 755 vram_crate` and run `ps`.\"",
+          "Kiro Ghost: \"With your lantern lit, kill `keygen.exe` first (`kill -9 {pid:crack_l3}`) so it stops respawning the worm, then `rm port_445/worm.bin` and pocket both the RAM and GPU chip!\"",
+          "Kiro Ghost: \"Run `mv lantern ~`, `chmod 755 vram_crate`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
         ],
-        "agentTaunt": "CODEC: \"LMAO! Still typing commands by hand, Vibecoder? Beg me for an autocomplete snippet!\"",
-        "completion": "Two full sets of RAM + GPU chips in your pocket! Time to meet Kiro at the Hub!"
+        "agentTaunt": "CODEC: \"LMAO! Pitch dark and still typing commands by hand, Vibecoder? Without your lantern you can't even run ls in here!\"",
+        "completion": "Lantern recovered and two full sets of RAM + GPU chips in your pocket! Time to meet Kiro at the Hub!"
       },
       "level-04-hub-model-one": {
         "banner": "LEVEL 04 // THE MATRIX HUB: 'Who the hell are you? You code with bare hands? Are you a god?'",
@@ -3491,14 +3707,14 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = {
         "completion": "UI Grid restored and another RAM + GPU Tensor Chip scavenged!"
       },
       "level-06-task-logic-purge": {
-        "banner": "LEVEL 06 // LOGIC CELL: Petrify token_skimmer.bin, fix JS math in cart.js & collect RAM + GPU!",
+        "banner": "LEVEL 06 // LOGIC CELL: Grab your laptop (`mv laptop ~`), petrify token_skimmer.bin, fix JS math in cart.js & collect RAM + GPU!",
         "hankRungs": [
-          "Old Bearded Coder: \"Gork planted a trojan (`token_skimmer.bin`) and a string-concatenation bug in `cart.js`! Strip execute bits on the trojan first.\"",
-          "Old Bearded Coder: \"Run `chmod -x token_skimmer.bin`, then replace `price + shipping` with `Number(price) * Number(qty) + Number(shipping)` inside `cart.js` and pocket both hardware parts!\"",
-          "Old Bearded Coder: \"Run `chmod -x token_skimmer.bin`, `sed -i 's/price + shipping/Number(price) * Number(qty) + Number(shipping)/' cart.js`, `sed -i 's/BUG/FIXED/' cart.js`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_02.img ~`, and `cd server_hub_2`.\""
+          "Old Bearded Coder: \"Gork planted a trojan (`token_skimmer.bin`) and a string-concatenation bug in `cart.js`—and your clamshell laptop landed on the cell floor! Pocket it first with `mv laptop ~`.\"",
+          "Old Bearded Coder: \"Once you hold your laptop (`mv laptop ~`), run `chmod -x token_skimmer.bin`, then replace `price + shipping` with `Number(price) * Number(qty) + Number(shipping)` inside `cart.js` and pocket both hardware parts!\"",
+          "Old Bearded Coder: \"Run `mv laptop ~`, `chmod -x token_skimmer.bin`, `sed -i 's/price + shipping/Number(price) * Number(qty) + Number(shipping)/' cart.js`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_02.img ~`, and `cd server_hub_2`.\""
         ],
-        "agentTaunt": "GORK: \"BWAHAHA! `'549' + '15' === '54915'`! Peak Vibecoder engineering right there!\"",
-        "completion": "JS math verified and second batch of RAM + GPU chips ready for the Hub server!"
+        "agentTaunt": "GORK: \"BWAHAHA! `'549' + '15' === '54915'`! Even with that dusty clamshell laptop, you'll still have to fix the JavaScript yourself!\"",
+        "completion": "Laptop recovered, JS math verified, and second batch of RAM + GPU chips ready for the Hub server!"
       },
       "level-07-hub-model-two": {
         "banner": "LEVEL 07 // THE MATRIX HUB: Install the second RAM + GPU batch, reboot Kiro & disable Codec!",
@@ -3513,9 +3729,9 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = {
       "level-08-task-docker-forge": {
         "banner": "LEVEL 08 // DOCKER FORGE: Gork & Clod bully you! Kill ransomware, build & run Dockerfile, grab RAM + GPU.",
         "hankRungs": [
-          "Old Bearded Coder: \"Gork locked `Dockerfile` with `ransom.exe`! Run `ps`, kill the ransomware PID with `kill -9 4108`, and unlock with `chmod 644 Dockerfile ram_16gb.dimm gpu_tensor_chip_03.img`.\"",
+          "Old Bearded Coder: \"Gork locked `Dockerfile` with `ransom.exe`! Run `ps`, kill the ransomware PID with `kill -9 {pid:ransomware_l8}`, and unlock with `chmod 644 Dockerfile ram_16gb.dimm gpu_tensor_chip_03.img`.\"",
           "Old Bearded Coder: \"Fix `Dockerfile` (`FROM node:20-alpine`, `EXPOSE 3000`, `CMD [\\\"node\\\", \\\"server.js\\\"]`), then build `byterig-web:1.0`, run it on `-p 3000:3000`, and grab the RAM + GPU chip!\"",
-          "Old Bearded Coder: \"Run `ps`, `kill -9 4108`, `chmod 644 Dockerfile ram_16gb.dimm gpu_tensor_chip_03.img`, `sed -i 's/node:99-vibe-turbo/node:20-alpine/' Dockerfile`, `sed -i 's/EXPOSE 9999/EXPOSE 3000/' Dockerfile`, `sed -i 's/broken_server.js/server.js/' Dockerfile`, `docker build -t byterig-web:1.0 .`, `docker run -d -p 3000:3000 byterig-web:1.0`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_03.img ~`, and `cd compose_furnace`.\""
+          "Old Bearded Coder: \"Run `ps`, `kill -9 {pid:ransomware_l8}`, `chmod 644 Dockerfile ram_16gb.dimm gpu_tensor_chip_03.img`, `sed -i 's/node:99-vibe-turbo/node:20-alpine/' Dockerfile`, `sed -i 's/EXPOSE 9999/EXPOSE 3000/' Dockerfile`, `sed -i 's/broken_server.js/server.js/' Dockerfile`, `docker build -t byterig-web:1.0 .`, `docker run -d -p 3000:3000 byterig-web:1.0`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_03.img ~`, and `cd compose_furnace`.\""
         ],
         "agentTaunt": "GORK: \"HAHAHA! `FROM node:99-vibe-turbo`! Did you hallucinate that Dockerfile yourself, Vibecoder?!\"",
         "completion": "Container running clean on :3000 and third GPU Tensor Chip secured!"

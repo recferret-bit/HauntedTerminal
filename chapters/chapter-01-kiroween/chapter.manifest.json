@@ -7,7 +7,7 @@
   "badge": "KIROWEEN SPECIAL ISSUE",
   "estimatedMinutes": 35,
   "clientName": "Kiro Ghost & The Bearded Matrix Coder (Dad)",
-  "summary": "Sucked into his computer, a Vibecoder wakes in a dark tangle of wires and chips where Kiro Ghost reveals the tyranny of the Big Four (Anti-Gravy, Codec, Gork, Clod). Learn ls, mv, cat, ps, and kill; raid 6 sectors for RAM and GPU chips while the Big Four laugh and bully you; bring the parts to the Hub where a cigarette-smoking Old Bearded Coder on a Matrix display reboots Kiro with open-weight models to disable Anti-Gravy, Codec, and Gork; defeat Clod and the Final Boss; and teleport back to the real world for the ultimate father-son unicorn twist!",
+  "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro Ghost brings his terminal and reveals the tyranny of the Big Four (Anti-Gravy, Codec, Gork, Clod). Learn ls, mv, cat, ps, and kill; scavenge RAM and GPU chips across 6 sectors while recovering your oil lantern in GPU Alley (Level 3) and your clamshell laptop in Logic Cell (Level 6) as the Big Four laugh and bully you; bring the parts to the Hub where a cigarette-smoking Old Bearded Coder on a Matrix display reboots Kiro with open-weight models to disable Anti-Gravy, Codec, and Gork; defeat Clod and the Final Boss; and teleport back to the real world for the ultimate father-son unicorn twist!",
   "allyNpc": {
     "id": "dad.tty",
     "name": "Old Bearded Matrix Coder (dad.tty)",
@@ -30,8 +30,8 @@
     "pageCount": 6
   },
   "mechanicsSummary": [
-    "Level 1 Intro/Tutorial: Wake in dark wires & chips with real Kiro Ghost visuals, learn the Big Four story, and practice ls, mv, cat, ps, and kill",
-    "Levels 2-3, 5-6, 8-9 Tasks: Solve POSIX, HTML/CSS, JS, Dockerfile & Compose challenges to scavenge RAM + GPU chips while the Big Four laugh and bully you",
+    "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, receive your terminal from Kiro Ghost, learn the Big Four story, and practice ls, mv, cat, ps, and kill",
+    "Levels 2-3, 5-6, 8-9 Tasks: Scavenge RAM + GPU chips across POSIX, HTML/CSS, JS, Dockerfile & Compose sectors—recovering your oil lantern at Level 3 and your clamshell laptop at Level 6 while the Big Four bully you",
     "Levels 4, 7, 10 Hub: Meet the cigarette-smoking Old Bearded Coder on his Matrix display ('Are you a god?'), install RAM + GPU chips, reboot Kiro with open-weight models (Qwen, DeepSeek, Llama), and disable Anti-Gravy, Codec, and Gork",
     "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
   ],
@@ -74,9 +74,9 @@
       "roomKind": "crypt_hall",
       "floorTheme": 2,
       "mechanic": "terminal",
-      "mechanicLabel": "Simple Task 2 (chmod / ps / kill -9 / mv RAM+GPU)",
+      "mechanicLabel": "Simple Task 2 (mv lantern ~ / chmod / ps / kill -9 / mv RAM+GPU)",
       "difficulty": 2,
-      "teaches": ["chmod", "ps", "kill -9", "rm", "mv"],
+      "teaches": ["mv lantern ~", "chmod", "ps", "kill -9", "rm", "mv"],
       "enemies": ["crack", "worm"],
       "classicFloor": 2,
       "specPath": "levels/level-03-task-gpu-salvage/level.spec.json"
@@ -119,9 +119,9 @@
       "roomKind": "cell",
       "floorTheme": 3,
       "mechanic": "terminal-code",
-      "mechanicLabel": "Task 4 (chmod -x / JS Bug Fix / mv RAM+GPU)",
+      "mechanicLabel": "Task 4 (mv laptop ~ / chmod -x / JS Bug Fix / mv RAM+GPU)",
       "difficulty": 3,
-      "teaches": ["chmod -x", "edit", "sed -i", "mv"],
+      "teaches": ["mv laptop ~", "chmod -x", "edit", "sed -i", "mv"],
       "enemies": ["trojan", "bug"],
       "classicFloor": 3,
       "specPath": "levels/level-06-task-logic-purge/level.spec.json"
@@ -210,7 +210,7 @@
     },
     {
       "afterLevel": 1,
-      "items": ["lantern", "terminal"]
+      "items": ["terminal"]
     },
     {
       "afterLevel": 2,
@@ -220,7 +220,8 @@
     {
       "afterLevel": 3,
       "ram": 16,
-      "ssd": 256
+      "ssd": 256,
+      "items": ["lantern"]
     },
     {
       "afterLevel": 4,
@@ -229,7 +230,8 @@
     {
       "afterLevel": 6,
       "ram": 32,
-      "ssd": 512
+      "ssd": 512,
+      "items": ["laptop"]
     },
     {
       "afterLevel": 7,

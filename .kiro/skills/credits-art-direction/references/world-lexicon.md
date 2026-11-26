@@ -9,6 +9,7 @@ Model ids are `<category>.<name>`. `gameKey` is the key the game's stage and
 | id | gameKey | Brief |
 |---|---|---|
 | `vibecoder.dev` | `vibecoder` | Tired developer, 1.6 units. Orange hoodie with the hood up, jeans, pale sneakers, messy hair edge, a lantern held out at the screen-right side. The only round, soft shapes in the game. Legs and arms tagged for `legWalk` / `armSwing`. |
+| `vibecoder.dev_bare` |  | Same developer with empty hands standing with both arms hanging relaxed at his sides (`held === null`, before receiving `terminal` in Level 1). |
 | `vibecoder.hand` | `system_hand` | The System Hand: a paper-white hand holding a stylus, palm to the camera, fingers pointing down. Enters from above the panel. |
 
 ## Inventory items

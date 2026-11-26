@@ -9,8 +9,8 @@ const GENERIC = [
   'ls', 'ls -a', 'ls -la', 'ps', 'pwd', 'cd ..', 'cd ~', 'help', 'hank', 'hint', 'inventory', 'inv', 'hold lantern', 'hold terminal',
   'hold laptop', 'hold manual', 'hold map', 'manual chmod', 'map', 'map 4', 'kiro', 'kiro scan', 'kiro load qwen', 'kiro load llama', 'kiro load deepseek', 'kiro load mistral', 'kiro load nope',
   'cat *', 'tutorial skip', 'kill -9 1', 'kill -STOP 1', 'chmod -x *', 'rm -rf *', 'exit',
-  // Lines that exit non-zero: a refused lock (`ls` before the lantern), a wrong riddle answer, an unknown command, a syntax error.
-  'ls', 'echo wrong > dad.tty.sock', 'frobnicate --now', 'echo "unterminated', 'ls | | cat',
+  // Lines that exit non-zero: a wrong riddle answer, an unknown command, a syntax error.
+  'echo wrong > dad.tty.sock', 'frobnicate --now', 'echo "unterminated', 'ls | | cat',
 ];
 
 export async function chapterWorld({ load }) {
@@ -22,8 +22,9 @@ export async function chapterWorld({ load }) {
   const fileNames = [...new Set(levels.flatMap((l) => (l.files ?? []).map((f) => f.path.split('/').pop())))];
 
   /** A level, entered the way the solver enters it (with the chapter's grants), intro skipped. */
-  const open = (levelIdx) => {
-    const session = createChapterSession({ chapterId: pack.manifest.id, pack: structuredClone(pack), preview: true, startLevelId: levels[levelIdx].id });
+  const open = (levelIdx, pidSeed = 1) => {
+    // A fixed `pidSeed` keeps the random PIDs repeatable, so transcripts and shrunk counterexamples replay.
+    const session = createChapterSession({ chapterId: pack.manifest.id, pack: structuredClone(pack), preview: true, startLevelId: levels[levelIdx].id, pidSeed });
     session.skipIntro();
     return session;
   };
@@ -32,7 +33,7 @@ export async function chapterWorld({ load }) {
   const openWith = (levelIdx, mutate) => {
     const copy = structuredClone(pack);
     mutate(copy);
-    const session = createChapterSession({ chapterId: copy.manifest.id, pack: copy, preview: true, startLevelId: copy.levels[levelIdx].id });
+    const session = createChapterSession({ chapterId: copy.manifest.id, pack: copy, preview: true, startLevelId: copy.levels[levelIdx].id, pidSeed: 1 });
     session.skipIntro();
     return session;
   };

@@ -144,9 +144,48 @@
     "allySpeaker": "KIRO GHOST",
     "arrival": [
       {
+        "kind": "print",
+        "text": "\n[CACHE VAULT — /srv/kiroween/cache_vault]\nOnly your terminal's green phosphor screen cuts through the gloom. A hidden dotfile pulses somewhere in the vault.\n"
+      },
+      {
         "kind": "taunt",
         "mood": "laugh",
         "print": "\n[BIG FOUR BULLYING] {text}\n"
+      }
+    ],
+    "timed": [
+      {
+        "afterSec": 1,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Still only my terminal screen to light the way... let's sweep this Cache Vault and grab those parts for Kiro!",
+            "holdSec": 9
+          }
+        ]
+      },
+      {
+        "afterSec": 10,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "antigravy",
+            "text": "HAHAHA! Fumbling around in the green glow of a terminal slate? You'll never spot my hidden .gravy_spycam dotfile!",
+            "holdSec": 9
+          }
+        ]
+      },
+      {
+        "afterSec": 19,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Use ls -la to expose Anti-Gravy's spycam, rm .gravy_spycam, fix ollama_bus.conf, and pocket both hardware parts!",
+            "holdSec": 9
+          }
+        ]
       }
     ],
     "bullying": {

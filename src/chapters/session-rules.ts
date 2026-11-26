@@ -132,7 +132,7 @@ export function refreshExitGates(g: ChapterState, events: KernelEvent[]): void {
       events.push({ type: 'INODE_MODE_CHANGED', inodeId: gate.id, oldMode: old, newMode: targetMode });
       if (targetMode === 0o755 && !g.rt.completionEmitted) {
         g.rt.completionEmitted = true;
-        const comp = g.pack.dialogs?.levels[g.rt.spec.id]?.completion;
+        const comp = g.rt.dialog?.completion;
         const skipRedundantTutorialComp = Boolean(levelScript(g).tutorial) && !g.rt.tutorialSkipped;
         const exitBase = splitParentAndName(g.rt.spec.exitDir).name;
         g.rt.completionNote += `${comp && !skipRedundantTutorialComp ? `\n${comp}\n` : ''}[EXIT GATE UNLOCKED] \`cd ${exitBase}\` is now open!\n`;

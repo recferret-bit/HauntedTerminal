@@ -93,6 +93,7 @@ export interface ChapterManifest {
 export type LevelFileSpec = ClassicLabFile;
 
 /** Same spawn record as a classic floor. `showIn` stays optional and unused by chapter JSON. */
+/** A level enemy. Its `pid` only marks that it has one: the number the player sees is rolled on every load (`pids.ts`), and text names it `{pid:<enemy id>}`. */
 export type LevelEnemySpec = EnemySpawn;
 
 export interface LevelPickupSpec {

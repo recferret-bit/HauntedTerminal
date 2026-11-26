@@ -244,7 +244,7 @@ function buildLevelTemplate(idx, total) {
           { kind: 'html_css_valid', htmlPath: `${cwd}/index.html`, cssPath: `${cwd}/storefront.css`, description: 'Restore HTML+CSS storefront visibility and enable checkout button' },
         ],
         solutionCommands: [
-          `kill -9 ${pid}`,
+          `kill -9 {pid:${id}-l${idx}-virus}`,
           "sed -i 's/display: none/display: grid/' storefront.css",
           "sed -i 's/width: 0%/width: 100%/' storefront.css",
           "sed -i 's/z-index: -1/z-index: 10/' storefront.css",
@@ -365,7 +365,7 @@ function buildLevelTemplate(idx, total) {
           { kind: 'docker_image_running', imageTag: 'byterig-web:1.0', port: 3000, description: 'Build and run byterig-web:1.0 on port 3000' },
         ],
         solutionCommands: [
-          `kill -9 ${pid}`,
+          `kill -9 {pid:${id}-l${idx}-ransom}`,
           "sed -i 's/node:99-vibe-turbo/node:20-alpine/' Dockerfile",
           "sed -i 's|RUN ./cryptominer.sh|COPY . .|' Dockerfile",
           "sed -i 's/1337/3000/' Dockerfile",
@@ -492,7 +492,7 @@ function buildLevelTemplate(idx, total) {
         { kind: 'file_contains', path: `${cwd}/service.conf`, pattern: 'PORT=3000', description: 'Set PORT=3000 in service.conf' },
       ],
       solutionCommands: [
-        ...(bugMode === 'virus' ? [`kill -9 ${400 + idx}`] : []),
+        ...(bugMode === 'virus' ? [`kill -9 {pid:${id}-l${idx}-virus}`] : []),
         "sed -i 's/0000/3000/' service.conf",
         "sed -i 's/BUG/FIXED/' service.conf",
         'source energy.cell',

@@ -16,13 +16,13 @@ User's words, 2026-11-25: "tweak how kiro ghost is floating to the player in the
 6. WHEN a script runs a `carry_item` step (`entityId`, `item`), THE SYSTEM SHALL pop the item model into that actor's hands and fly the actor (same tween style as req 5, facing its travel) next to the hero, where it hovers.
 7. WHEN a script runs a `give_item` step (`item`, optional `from`), THE SYSTEM SHALL add the item to the inventory, put it in his hand if his hands are empty, pop the item from `from`'s hands into the hero's hand on the stage, and return `from` to its slot.
 8. THE SYSTEM SHALL add `carry_item`, `give_item` and the `shout` emote through the four-place rule (types, interpreter, editor schema, pack checks); the engine SHALL name no level.
-9. WHEN level 1 plays, THE SYSTEM SHALL run: the vibecoder monologue and the big four lines as today, the vibecoder's `HELLOOOO??` shout and line, Kiro's glide entrance and first line, `carry_item` of the terminal, `give_item` of the terminal, then the lantern lines and tutorial card 1.
-10. THE SYSTEM SHALL start every later level, and a direct jump to it, with the terminal (`manifest.grants`), so only level 1 changes.
-11. THE SYSTEM SHALL keep level 1 solvable headlessly with 0 deaths, with the same `solutionCommands`.
+9. WHEN level 1 plays, THE SYSTEM SHALL run: the vibecoder monologue and the big four lines, the vibecoder's `HELLOOOO??` shout and line, Kiro's glide entrance and intro lines, `carry_item` of the terminal, `give_item` of the terminal, then `ls` guidance and tutorial step 1 (`ls`) without locking `ls` on level 1.
+10. THE SYSTEM SHALL start levels 2+ with the terminal (`manifest.grants` `afterLevel: 1`), grant the lantern after level 3 (`afterLevel: 3`, picked up in level 3 to unlock `ls`/`find`/`kiro`), and grant the laptop after level 6 (`afterLevel: 6`, picked up in level 6 to unlock `edit`/`sed`).
+11. THE SYSTEM SHALL keep level 1 solvable headlessly with 0 deaths in 6 commands (`ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 1011`, `cd hub_uplink`).
 
 ## Out of scope
 
-- Any change to levels 2 to 11 beyond the grant.
+- Any change to hub/boss structure beyond the progressive `afterLevel: 1/3/6` item grants and timed narrative bridging beats.
 - Dropping or losing the terminal after it is given.
 - Classic floors and Terminal Lab behaviour (they keep their start items).
 

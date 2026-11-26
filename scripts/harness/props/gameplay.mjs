@@ -21,11 +21,30 @@ export default async function gameplaySuite(ctx) {
     .map((l, index) => ({ index, rule: l.winRules.find((r) => r.kind === 'kiro_loaded'), aliases: l.script?.kiro?.coreAliases ?? {} }))
     .filter((h) => h.rule);
 
-  /** Levels with a lantern pickup, and the file name that `mv <name> ~` takes. */
-  const lanternLevels = world.levels
-    .map((l, index) => ({ index, pickup: (l.pickups ?? []).find((p) => p.type === 'lantern') }))
-    .filter((l) => l.pickup)
-    .map((l) => ({ index: l.index, name: l.pickup.path.split('/').pop() }));
+  const pickupLevelsOf = (type) =>
+    world.levels
+      .map((l, index) => ({ index, pickup: (l.pickups ?? []).find((p) => p.type === type) }))
+      .filter((l) => l.pickup)
+      .map((l) => ({ index: l.index, name: l.pickup.path.split('/').pop() }));
+  const pickupIdempotentProp = (type, list) => ({
+    name: `the ${type} pickup is idempotent: collecting it again (any way, any number of times) changes nothing`,
+    build: () =>
+      fc.property(fc.constantFrom(...list.keys()), fc.array(fc.constantFrom('mv', 'source', 'hold', 'tick'), { minLength: 1, maxLength: 6 }), (l, again) => {
+        const { index, name } = list[l];
+        const session = world.open(index);
+        const first = session.exec(`mv ${name} ~`);
+        expect(first.events.filter((e) => e.type === 'PICKUP_COLLECTED' && e.item === type).length === 1, `\`mv ${name} ~\` did not collect ${type} exactly once`);
+        const kept = JSON.stringify(session.snapshot().inventory);
+        expect(session.snapshot().inventory.held === type && kept.includes(`"${type}"`), `${type} is not held after collecting it: ${kept}`);
+        for (const how of again) {
+          const r = how === 'tick' ? session.tick() : session.exec(how === 'hold' ? `hold ${type}` : `${how} ${name}${how === 'mv' ? ' ~' : ''}`);
+          expect(!r.events.some((e) => e.type === 'PICKUP_COLLECTED' && e.item === type), `${type} was collected again by ${how}`);
+          expect(JSON.stringify(session.snapshot().inventory) === kept, `inventory changed from ${kept} to ${JSON.stringify(session.snapshot().inventory)} after ${how}`);
+        }
+      }),
+  });
+  const lanternLevels = pickupLevelsOf('lantern');
+  const laptopLevels = pickupLevelsOf('laptop');
   const itemId = fc.constantFrom(...inv.ITEM_IDS);
 
   /** A lab room with these pickups and the player at full HP: every heal lands on the cap. */
@@ -60,8 +79,8 @@ export default async function gameplaySuite(ctx) {
   const resets = (events) => events.some((e) => e.type === 'PLAYER_RESPAWNED' || e.type === 'FLOOR_ENTERED');
 
   const actionsOf = (r) => r.events.filter((x) => x.type === 'VIBECODER_ACTION');
-  /** The lines that always exit non-zero on level 1: a refused lock (`ls` before the lantern), a wrong riddle answer, an unknown command, a syntax error. */
-  const FAILING = ['ls', 'echo wrong > dad.tty.sock', 'frobnicate --now', 'echo "unterminated', 'ls | | cat'];
+  /** The lines that always exit non-zero on every level: a wrong riddle answer, an unknown command, a syntax error. */
+  const FAILING = ['echo wrong > dad.tty.sock', 'frobnicate --now', 'echo "unterminated', 'ls | | cat'];
 
   return [
     {
@@ -222,23 +241,8 @@ export default async function gameplaySuite(ctx) {
           }
         }),
     },
-    {
-      name: 'the lantern pickup is idempotent: collecting it again (any way, any number of times) changes nothing',
-      build: () =>
-        fc.property(fc.constantFrom(...lanternLevels.keys()), fc.array(fc.constantFrom('mv', 'source', 'hold', 'tick'), { minLength: 1, maxLength: 6 }), (l, again) => {
-          const { index, name } = lanternLevels[l];
-          const session = world.open(index);
-          const first = session.exec(`mv ${name} ~`);
-          expect(first.events.filter((e) => e.type === 'PICKUP_COLLECTED' && e.item === 'lantern').length === 1, `\`mv ${name} ~\` did not collect the lantern exactly once`);
-          const kept = JSON.stringify(session.snapshot().inventory);
-          expect(session.snapshot().inventory.held === 'lantern' && kept.includes('"lantern"'), `the lantern is not held after collecting it: ${kept}`);
-          for (const how of again) {
-            const r = how === 'tick' ? session.tick() : session.exec(how === 'hold' ? 'hold lantern' : `${how} ${name}${how === 'mv' ? ' ~' : ''}`);
-            expect(!r.events.some((e) => e.type === 'PICKUP_COLLECTED' && e.item === 'lantern'), `the lantern was collected again by ${how}`);
-            expect(JSON.stringify(session.snapshot().inventory) === kept, `inventory changed from ${kept} to ${JSON.stringify(session.snapshot().inventory)} after ${how}`);
-          }
-        }),
-    },
+    pickupIdempotentProp('lantern', lanternLevels),
+    pickupIdempotentProp('laptop', laptopLevels),
     {
       name: 'the inventory functions are idempotent: giving an owned item, or holding the held item, changes nothing',
       build: () =>
@@ -289,14 +293,19 @@ export default async function gameplaySuite(ctx) {
         }),
     },
     {
-      name: 'starting at level 2 or later (a jump) the hero already holds the lantern the tutorial gives',
-      examples: [[1], [world.levels.length - 1]],
+      name: 'starting at a later level (a jump) grants only the tools already unlocked up to that level',
+      examples: [[1], [2], [3], [5], [6], [world.levels.length - 1]],
       build: () =>
         fc.property(fc.integer({ min: 1, max: world.levels.length - 1 }), (levelIdx) => {
           const { items, held } = world.open(levelIdx).snapshot().inventory;
-          expect(items.includes('lantern') && held === 'lantern', `a jump to level ${levelIdx + 1} holds ${held} and owns ${JSON.stringify(items)}`);
           expect(items.includes('terminal'), `a jump to level ${levelIdx + 1} does not carry the terminal: ${JSON.stringify(items)}`);
-          expect(items.filter((i) => i === 'lantern').length === 1, `the lantern is in the inventory ${items.filter((i) => i === 'lantern').length} times`);
+          if (levelIdx < 3) {
+            expect(!items.includes('lantern') && held === 'terminal', `a jump to level ${levelIdx + 1} holds ${held} and owns ${JSON.stringify(items)}`);
+          } else {
+            expect(items.includes('lantern') && held === 'lantern', `a jump to level ${levelIdx + 1} holds ${held} and owns ${JSON.stringify(items)}`);
+            expect(items.filter((i) => i === 'lantern').length === 1, `the lantern is in the inventory ${items.filter((i) => i === 'lantern').length} times`);
+          }
+          expect(items.includes('laptop') === (levelIdx >= 6), `laptop grant mismatch at level ${levelIdx + 1}: ${JSON.stringify(items)}`);
         }),
     },
     {
@@ -307,7 +316,10 @@ export default async function gameplaySuite(ctx) {
         const start = session.snapshot().inventory;
         expect(start.held === null && !start.items.includes('terminal'), `level 1 starts with held ${start.held}, items ${JSON.stringify(start.items)}`);
         const seq = [];
-        for (let i = 0; i < 26; i++) {
+        // The script's timing is data (`script.timed`), so tick until Kiro has given it rather than for a fixed time.
+        let seconds = 0;
+        while (seconds < 300 && !seq.includes('given')) {
+          seconds++;
           for (const e of session.tick().events) {
             if (e.type === 'VIBECODER_EMOTE' && e.emote === 'shout') seq.push('shout');
             else if (e.type === 'ENTITY_SPAWNED' && e.entityId === 'kiro') seq.push('spawn');
@@ -317,7 +329,7 @@ export default async function gameplaySuite(ctx) {
         }
         expect(seq.join() === 'shout,spawn,carried,given', `event order ${seq.join()}`);
         const end = session.snapshot().inventory;
-        expect(end.held === 'terminal' && end.items.includes('terminal'), `after 26 s he holds ${end.held}, owns ${JSON.stringify(end.items)}`);
+        expect(end.held === 'terminal' && end.items.includes('terminal'), `after ${seconds} s he holds ${end.held}, owns ${JSON.stringify(end.items)}`);
       },
     },
     {

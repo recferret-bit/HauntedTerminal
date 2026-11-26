@@ -112,54 +112,65 @@ function lockAndTimedProps(world) {
   const text = (r) => `${r.output ?? ''}\n${r.stderr ?? ''}`;
   const word = (line) => line.trim().split(/\s+/)[0];
   const lockedLevels = world.levels
-    .map((level, index) => ({
-      index,
-      lock: (level.script?.locks ?? []).find((l) => l.until.kind === 'has_item' && l.until.item === 'lantern'),
-      pickup: (level.pickups ?? []).find((p) => p.type === 'lantern'),
-    }))
-    .filter((l) => l.lock && l.pickup);
+    .flatMap((level, index) =>
+      (level.script?.locks ?? [])
+        .filter((lock) => lock.until.kind === 'has_item')
+        .map((lock) => ({
+          index,
+          lock,
+          pickup: (level.pickups ?? []).find((p) => p.type === lock.until.item),
+        }))
+        .filter((entry) => entry.pickup),
+    );
   const timedLevels = world.levels
     .map((level, index) => ({ index, timed: level.script?.timed ?? [] }))
     .filter((l) => l.timed.some((t) => t.steps.some((s) => s.kind === 'dialog_box')));
-  // Commands that cannot take the lantern, delete its file or move the hero away from it.
+  // Commands that cannot take the gated pickup, delete its file or move the hero away from it.
   const idle = fc.oneof(
     { weight: 3, arbitrary: fc.constantFrom('ls', 'ls -a', 'ls -la', 'ls -l') },
-    { weight: 3, arbitrary: fc.constantFrom('pwd', 'ps', 'help', 'hint', 'inventory', 'inv', 'hold lantern', 'hold terminal', 'cat *', 'kiro', 'kiro scan') },
+    { weight: 3, arbitrary: fc.constantFrom('pwd', 'ps', 'help', 'hint', 'inventory', 'inv', 'hold lantern', 'hold terminal', 'hold laptop', 'cat *', 'kiro', 'kiro scan') },
     { weight: 1, arbitrary: fc.integer({ min: 1, max: 3 }).map((tick) => ({ tick })) },
   );
-  const kept = (lock) => (s) => typeof s !== 'string' || !/lantern/.test(s.replace('hold lantern', '')) || word(s) === lock.command;
+  const kept = (lock, pickup) => (s) => {
+    if (typeof s !== 'string') return true;
+    const targetName = pickup.path.split('/').pop();
+    const cleaned = s.replace(`hold ${pickup.type}`, '');
+    return !cleaned.includes(targetName) || word(s) === lock.command;
+  };
 
   return [
     {
-      name: 'a `script.locks` command (also with flags) is refused until the lantern is held, and works after `mv lantern ~`',
+      name: 'a `script.locks` command is refused until its required pickup is collected via `mv <item> ~`, then works',
       build: () =>
-        fc.property(fc.constantFrom(...lockedLevels.keys()), fc.array(idle, { maxLength: 12 }), fc.constantFrom('', ' -a', ' -la', ' -l'), (l, steps, flags) => {
+        fc.property(fc.constantFrom(...lockedLevels.keys()), fc.array(idle, { maxLength: 12 }), fc.constantFrom('', ' -a', ' -la', ' -l'), (l, steps, lsFlags) => {
           const { index, lock, pickup } = lockedLevels[l];
+          const item = pickup.type;
+          const flags = lock.command === 'ls' ? lsFlags : '';
           const session = world.open(index);
           const isLocked = (s) => typeof s === 'string' && word(s) === lock.command;
           const refused = (r) => (r.code ?? 0) !== 0 && text(r).includes(lock.message);
-          for (const s of [...steps.filter(kept(lock)), `${lock.command}${flags}`]) {
+          for (const s of [...steps.filter(kept(lock, pickup)), `${lock.command}${flags}`]) {
             if (typeof s !== 'string') {
               for (let i = 0; i < s.tick; i++) session.tick();
             } else {
               const r = session.exec(s);
-              if (isLocked(s)) expect(refused(r), `\`${s}\` before the lantern was not refused (code ${r.code}): ${JSON.stringify(text(r)).slice(0, 160)}`);
+              if (isLocked(s)) expect(refused(r), `\`${s}\` before ${item} was not refused (code ${r.code}): ${JSON.stringify(text(r)).slice(0, 160)}`);
             }
-            expect(!session.snapshot().inventory.items.includes('lantern'), `the lantern appeared in the inventory after ${JSON.stringify(s)}`);
+            expect(!session.snapshot().inventory.items.includes(item), `${item} appeared in the inventory after ${JSON.stringify(s)}`);
           }
           const name = pickup.path.split('/').pop();
           session.exec(`mv ${name} ~`);
-          expect(session.snapshot().inventory.items.includes('lantern'), `\`mv ${name} ~\` did not give the lantern`);
+          expect(session.snapshot().inventory.items.includes(item), `\`mv ${name} ~\` did not give ${item}`);
           for (const s of [`${lock.command}${flags}`, lock.command]) {
             const r = session.exec(s);
-            expect(!refused(r) && !text(r).includes(lock.message), `\`${s}\` is still refused with the lantern held: ${JSON.stringify(text(r)).slice(0, 160)}`);
+            expect(!refused(r) && !text(r).includes(lock.message), `\`${s}\` is still refused with ${item} held: ${JSON.stringify(text(r)).slice(0, 160)}`);
           }
         }),
     },
     {
       name: 'timed `dialog_box` entries fire once each, at the tick of their afterSec, in order',
       build: () =>
-        fc.property(fc.constantFrom(...timedLevels.keys()), fc.integer({ min: 0, max: 40 }), (l, ticks) => {
+        fc.property(fc.constantFrom(...timedLevels.keys()), fc.integer({ min: 0, max: 100 }), (l, ticks) => {
           const { index, timed } = timedLevels[l];
           const session = world.open(index);
           const got = [];
@@ -232,12 +243,79 @@ function exitDoorProps(world) {
   ];
 }
 
+/** The PID a level's spec gives an enemy, when the engine rolls it (spec `.kiro/specs/random-pids/`). */
+const rollable = (e) => e.pid !== undefined && ![1, 10, 777, 4242].includes(e.pid);
+
+/** Random PIDs: the roll, what the world and the played spec show, and that every solution still clears for any seed. */
+function pidProps(world, { rollPids, fillPids, seededRandom, PID_MIN, PID_MAX }) {
+  const withEnemies = world.levels.map((l, i) => i).filter((i) => world.levels[i].enemies.some(rollable));
+  const enemies = fc.uniqueArray(fc.record({ id: fc.stringMatching(/^[a-z][a-z0-9_]{0,8}$/), pid: fc.option(fc.constantFrom(1, 10, 777, 4242, 1011, 3003, 9999, 1100), { nil: undefined }) }), { selector: (e) => e.id, maxLength: 12 });
+  return [
+    {
+      name: 'rollPids: unique, in range, never a reserved or spec PID, only for enemies that have a rollable pid',
+      build: () =>
+        fc.property(enemies, fc.integer(), (list, seed) => {
+          const rolled = rollPids(list, seededRandom(seed));
+          const values = [...rolled.values()];
+          expect(new Set(values).size === values.length, `duplicate PIDs ${JSON.stringify(values)}`);
+          const fixed = new Set([1, 10, 777, 4242, ...list.map((e) => e.pid).filter((p) => p !== undefined)]);
+          for (const [id, pid] of rolled) {
+            expect(pid >= PID_MIN && pid <= PID_MAX, `${id}: ${pid} is out of range`);
+            expect(!fixed.has(pid), `${id}: ${pid} collides with a fixed PID`);
+          }
+          for (const e of list) expect(rolled.has(e.id) === rollable(e), `${e.id} (pid ${e.pid}) rolled=${rolled.has(e.id)}`);
+          const text = [...rolled].map(([id]) => `{pid:${id}}`).join(' ');
+          expect(fillPids(text, rolled) === values.join(' '), 'fillPids did not replace every placeholder');
+          expect(fillPids('{pid:nope} 1', rolled) === '{pid:nope} 1', 'an unknown id must stay as written');
+        }),
+    },
+    {
+      name: 'a level load shows only rolled PIDs: the world and the played spec agree, the spec number is gone, and killing it answers No such process',
+      build: () =>
+        fc.property(fc.constantFrom(...withEnemies), fc.integer(), (index, seed) => {
+          const session = world.open(index, seed);
+          const rolled = session.rt.pids;
+          const raw = world.levels[index].enemies.filter(rollable);
+          const played = session.getCurrentLevel();
+          expect(rolled.size === raw.length, `rolled ${rolled.size} PIDs for ${raw.length} enemies`);
+          for (const e of raw) {
+            const pid = rolled.get(e.id);
+            expect(pid !== undefined && pid !== e.pid, `${e.id}: rolled ${pid}, spec ${e.pid}`);
+            expect(session.rt.world.enemies.find((x) => x.id === e.id)?.pid === pid, `${e.id}: the world holds another PID than ${pid}`);
+            expect(played.enemies.find((x) => x.id === e.id)?.pid === pid, `${e.id}: the played spec holds another PID than ${pid}`);
+          }
+          const { solutionCommands, ...text } = played;
+          expect(!JSON.stringify(text).includes('{pid:'), 'a placeholder is left in the played spec');
+          expect(!JSON.stringify(session.rt.dialog ?? {}).includes('{pid:'), 'a placeholder is left in the dialogs');
+          const old = session.exec(`kill -9 ${raw[0].pid}`);
+          expect(/No such process/.test(old.output), `kill of the spec PID ${raw[0].pid} said: ${old.output}`);
+        }),
+    },
+    {
+      name: 'every level solution clears with 0 deaths for any PID seed',
+      build: () =>
+        fc.property(fc.nat(world.levels.length - 1), fc.integer(), (index, seed) => {
+          const session = world.open(index, seed);
+          let deaths = 0;
+          for (const cmd of world.levels[index].solutionCommands) {
+            for (let t = 0; t < 2; t++) deaths += session.tick().events.filter((e) => e.type === 'PLAYER_RESPAWNED').length;
+            deaths += (session.forceEnemyTurn()?.events ?? []).filter((e) => e.type === 'PLAYER_RESPAWNED').length;
+            deaths += session.exec(cmd).events.filter((e) => e.type === 'PLAYER_RESPAWNED').length;
+          }
+          expect(deaths === 0, `${deaths} death(s) on level ${index} with pidSeed ${seed}`);
+          expect(session.getCurrentLevel().id !== world.levels[index].id || session.snapshot().ended, `level ${index} did not clear with pidSeed ${seed}`);
+        }),
+    },
+  ];
+}
+
 export default async function chaptersSuite(ctx) {
   const { checkPack } = await ctx.load('/src/chapter-editor/check.ts');
   const { readAchievements, unlockAchievement } = await ctx.load('/src/chapters/achievements.ts');
   const { readChapterProgress, readMetagame, recordLevelClear, resetInMemoryStoresForTest } = await ctx.load('/src/chapters/catalog.ts');
   const { exportPortableSaveBundle, importPortableSaveBundle } = await ctx.load('/src/chapters/portable-save.ts');
   const world = await chapterWorld(ctx);
+  const pidsModule = await ctx.load('/src/chapters/pids.ts');
   const chaptersDir = join(projectRoot, 'chapters');
   const files = filesUnder(chaptersDir, '.json', readdirSync, join);
 
@@ -346,6 +424,7 @@ export default async function chaptersSuite(ctx) {
           expect(Array.isArray(issues), 'checkPack did not return a list');
         }),
     },
+    ...pidProps(world, pidsModule),
     ...lockAndTimedProps(world),
     ...exitDoorProps(world),
     ...portableSaveAndPreviewProps({

@@ -2,6 +2,7 @@ import type { RoomKind } from '../contracts/room-view.js';
 import { ITEM_IDS, isItemId } from '../contracts/inventory.js';
 import { BESTIARY, type EnemyType, type PickupType } from '../game/bestiary.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
+import { allStrings, pidRefs, RESERVED_PIDS } from './pids.js';
 import { isRec } from './record.js';
 import type { ChapterMechanic, ChapterPack, LevelSpec, ScriptCond, ScriptStep, WinRule } from './types.js';
 
@@ -17,7 +18,7 @@ export interface PackIssue {
 export const ROOM_KINDS = ['desk', 'attic', 'crypt_entrance', 'crypt_hall', 'chasm', 'cell', 'lab_hall', 'catwalk', 'furnace', 'core', 'outro'] as const satisfies readonly RoomKind[];
 export const MECHANICS = ['hub', 'terminal', 'html-css', 'terminal-code', 'docker-image', 'docker-compose', 'boss'] as const satisfies readonly ChapterMechanic[];
 export const ENEMY_TYPES = ['virus', 'worm', 'trojan', 'bug', 'exploit', 'crack', 'ransomware', 'spyware', 'rootkit', 'zombie', 'forkbomb', 'kernel'] as const satisfies readonly EnemyType[];
-export const PICKUP_TYPES = ['energy', 'ram', 'ssd', 'lantern'] as const satisfies readonly PickupType[];
+export const PICKUP_TYPES = ['energy', 'ram', 'ssd', 'lantern', 'laptop'] as const satisfies readonly PickupType[];
 const SPEAKERS: readonly string[] = ['clod', 'gork', 'codec', 'antigravy', 'kiro'];
 const KIRO_HIDE_WHEN = ['intro', 'exit_open', 'before_spawn'] as const;
 const SIGNALS = ['SIGTERM', 'SIGKILL', 'SIGSTOP', 'SIGCONT'];
@@ -274,9 +275,27 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack, winnable: boolean): Pack
 
   checkScript(c);
   const dialog = pack.dialogs?.levels[spec.id];
+  checkPids(c, dialog, winnable);
   if (pack.dialogs && !dialog) c.add('warn', 'dialogs', 'no entry in dialogs.json (banner, hints, taunt, completion)');
   if (dialog && dialog.hankRungs.length !== 3) c.add('error', 'dialogs', 'hankRungs needs exactly 3 hints');
   return c.issues;
+}
+
+/**
+ * Random PIDs (spec `random-pids`): a `{pid:<id>}` must name an enemy of this level that has a rolled `pid`, and the number
+ * a spec gives an enemy must not be written out in the level's text or its dialogs (it changes on every load).
+ */
+function checkPids(c: LevelCheck, dialog: unknown, winnable: boolean): void {
+  const rolled = new Map(c.spec.enemies.filter((e) => e.pid !== undefined && !RESERVED_PIDS.includes(e.pid)).map((e) => [e.id, e.pid as number]));
+  for (const id of new Set(pidRefs([c.spec, dialog]))) {
+    if (!rolled.has(id)) c.add('error', 'enemies', `{pid:${id}} names no enemy of this level that has a pid to roll`);
+  }
+  if (!winnable) return;
+  const text = allStrings([c.spec, dialog]);
+  for (const [id, pid] of rolled) {
+    const hit = text.find((s) => new RegExp(`(?<![\\d.])${pid}(?![\\d])`).test(s));
+    if (hit) c.add('error', 'enemies', `"${hit.slice(0, 50)}" writes PID ${pid} of ${id} as a number; write {pid:${id}} (the PID is random on every load)`);
+  }
 }
 
 export interface ValidateOptions {

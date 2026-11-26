@@ -13,10 +13,10 @@
           "rect": [0, 0, 0.5, 0.48],
           "bgHex": "#12091c",
           "room": "room.attic",
-          "caption": "SUCKED INTO HIS PC, VIBECODER RISES IN DARK WIRES AND CHIPS...",
+          "caption": "SUCKED INTO HIS PC, VIBECODER WAKES EMPTY-HANDED IN DARK WIRES AND CHIPS...",
           "cast": [
             { "model": "prop.cables", "x": -0.62, "scale": 0.92 },
-            { "model": "vibecoder.dev", "x": -0.1, "scale": 0.96 },
+            { "model": "vibecoder.dev_bare", "x": -0.1, "scale": 0.96 },
             { "model": "npc.kiro_ghost", "x": 0.48, "scale": 1.05 }
           ],
           "bubbles": [
@@ -58,9 +58,9 @@
           "rect": [0, 0.5, 1, 0.5],
           "bgHex": "#0f1722",
           "room": "room.attic",
-          "caption": "IN THE TUTORIAL, KIRO TEACHES VIBECODER LS, MV, CAT, PS & KILL, THEN HEADS TO THE HUB!",
+          "caption": "KIRO DELIVERS HIS TERMINAL AND TEACHES LS, MV, CAT, PS & KILL, THEN HEADS TO THE HUB!",
           "cast": [
-            { "model": "vibecoder.dev", "x": -0.65, "scale": 0.96 },
+            { "model": "vibecoder.dev_terminal", "x": -0.65, "scale": 0.96 },
             { "model": "npc.kiro_ghost", "x": -0.15, "scale": 1.06 },
             { "model": "pickup.ram", "x": 0.28, "scale": 1.05 },
             { "model": "malware.virus", "x": 0.72, "scale": 0.9 }
@@ -87,9 +87,9 @@
           "rect": [0, 0, 0.5, 0.48],
           "bgHex": "#190d24",
           "room": "room.crypt_entrance",
-          "caption": "IN THE FIRST TWO LEVELS, THE BIG FOUR LAUGH & BULLY HIM!",
+          "caption": "LIT BY HIS TERMINAL SLATE, THE BIG FOUR LAUGH & BULLY HIM!",
           "cast": [
-            { "model": "vibecoder.dev", "x": -0.58, "scale": 0.94 },
+            { "model": "vibecoder.dev_terminal", "x": -0.58, "scale": 0.94 },
             { "model": "agent.antigravy", "x": 0.04, "scale": 0.88 },
             { "model": "agent.codec", "x": 0.62, "scale": 0.88 }
           ],
@@ -109,7 +109,7 @@
           "rect": [0.52, 0, 0.48, 0.48],
           "bgHex": "#141828",
           "room": "room.crypt_entrance",
-          "caption": "VIBECODER FIGHTS BACK WITH BARE SHELL COMMANDS!",
+          "caption": "AT LEVEL 3 GPU ALLEY, HE GRABS HIS LANTERN & FIGHTS BACK!",
           "cast": [
             { "model": "vibecoder.dev", "x": -0.5, "scale": 0.94 },
             { "model": "malware.spyware", "x": 0.08, "scale": 0.9 },
@@ -231,7 +231,7 @@
           "rect": [0, 0, 0.5, 0.48],
           "bgHex": "#141826",
           "room": "room.lab_hall",
-          "caption": "2 MORE TASK LEVELS + PARTS -> HUB REBOOT #2 DISABLES CODEC!",
+          "caption": "LEVEL 6 GIVES HIS LAPTOP + HUB REBOOT #2 DISABLES CODEC!",
           "cast": [
             { "model": "npc.greybeard_rig", "x": -0.52, "scale": 0.88 },
             { "model": "npc.kiro_ghost", "x": 0.08, "scale": 1.05 },
