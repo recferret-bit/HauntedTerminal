@@ -9,7 +9,7 @@ export type EnemyType =
   | 'virus' | 'worm' | 'trojan' | 'bug' | 'exploit' | 'crack' | 'ransomware'
   | 'spyware' | 'rootkit' | 'zombie' | 'forkbomb' | 'kernel';
 
-export type PickupType = 'energy' | 'ram' | 'ssd' | 'lantern';
+export type PickupType = 'energy' | 'ram' | 'ssd' | 'lantern' | 'laptop';
 
 export interface EnemyInfo {
   type: EnemyType;
@@ -222,6 +222,11 @@ export const PICKUP_INFO: Record<PickupType, PickupInfo> = {
     type: 'lantern', model: 'item.lantern', amount: 1,
     label: () => 'LANTERN',
     blurb: '#!/bin/lantern\n# LANTERN: light for a dark room.\n# use: mv <file> ~   (it goes in your hand)\nexport LIGHT="on"\n',
+  },
+  laptop: {
+    type: 'laptop', model: 'item.laptop', amount: 1,
+    label: () => 'LAPTOP',
+    blurb: '#!/bin/laptop\n# LAPTOP: portable clamshell workstation for coding tasks.\n# use: mv <file> ~   (it goes in your hand)\nexport EDITOR="laptop"\n',
   },
 };
 

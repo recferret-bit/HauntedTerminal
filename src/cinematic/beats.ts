@@ -39,9 +39,17 @@ function fireLightning(world: ComixWorld, beat: Extract<PanelBeat, { kind: 'ligh
   else stage.lightning.flashPos.copy(at);
   stage.lightning.flashStrength = beat.flash;
   if (!live) return;
+  // Outside the house (the window bolt) is its own sample. The tower strike is the close one.
+  // Every other bolt, including the in-game storm, is the dry in-machine crack.
+  if (beat.audio === 'distant') {
+    world.sound.distantThunder();
+    return;
+  }
+  if (beat.audio === 'thunder') {
+    world.sound.thunder();
+    return;
+  }
   world.sound.cue('lightning');
-  if (beat.audio === 'distant') world.sound.distantThunder();
-  if (beat.audio === 'thunder') world.sound.thunder();
 }
 
 function fireOneBeat(world: ComixWorld, item: ResolvedBeat, t: number, live: boolean): void {

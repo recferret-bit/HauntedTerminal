@@ -27,8 +27,12 @@ export interface Shell {
   reset(banner?: string): void;
   /** Prefill the active prompt buffer without executing it. */
   setInput(text: string): void;
-  /** Show or hide the whole terminal panel (default on). Off: hidden, keys ignored, no echo. On: short pop-in and focus. Idempotent. */
-  setAvailable(on: boolean): void;
+  /**
+   * Show or hide the whole terminal panel (default on). Off: hidden, keys ignored, no echo.
+   * On: short pop-in and focus, unless `pop` is false (the visor boot plays its own animation).
+   * Idempotent.
+   */
+  setAvailable(on: boolean, pop?: boolean): void;
   readonly available: boolean;
   fit(): void;
   focus(): void;

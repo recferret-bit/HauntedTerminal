@@ -16,11 +16,18 @@ import { ITEM_BUILDERS } from './items.js';
 
 // ---------------------------------------------------------------- vibecoder.dev
 
-/** `item` null: empty hands, the right hand open and held out (`vibecoder.dev_bare`). */
+/** `item` null: empty hands, standing with both arms hanging relaxed at his sides (`vibecoder.dev_bare`). */
 function buildDev(id: string, label: string, item: ModelSpec | null): ModelSpec {
   const parts: PartSpec[] = [];
   const HIP_Y = 0.62;
   const SHOULDER_Y = 1.04;
+  const relaxedArm = (side: 'l' | 'r', sx: number, phase: number): PartSpec[] => {
+    const anim: AnimTag = { type: 'armSwing', axis: 'x', amp: 0.35, phase, pivot: [0.3 * sx, SHOULDER_Y, 0] };
+    return [
+      kitPlate(`arm.${side}`, outlineRoundRect(0.15, 0.5, 0.07, 3), 0.17, 'hoodie', [0.33 * sx, 0.82, -0.05], { rot: [0, 0, 0.14 * sx], bevel: 0.02, anim }),
+      kitDisc(`hand.${side}`, 0.07, 0.12, 'skin', [0.37 * sx, 0.56, -0.05], { anim }),
+    ];
+  };
 
   // Legs and sneakers: one rigid limb per side, so both parts of a leg share pivot and phase.
   for (const [side, sx, phase] of [['l', SCREEN_LEFT, 0], ['r', SCREEN_RIGHT, 0.5]] as const) {
@@ -44,20 +51,22 @@ function buildDev(id: string, label: string, item: ModelSpec | null): ModelSpec 
     kitPlate('string.r', outlineRoundRect(0.036, 0.13, 0.018, 2), 0.03, 'paper', [-0.06, 1.0, -0.15], { rot: [0, 0, 0.12], outline: false }),
   );
 
-  // Free arm on the screen-left, swinging against the legs.
-  const swing: AnimTag = { type: 'armSwing', axis: 'x', amp: 0.35, phase: 0, pivot: [0.3 * SCREEN_LEFT, SHOULDER_Y, 0] };
-  parts.push(
-    kitPlate('arm.l', outlineRoundRect(0.15, 0.5, 0.07, 3), 0.17, 'hoodie', [0.33 * SCREEN_LEFT, 0.82, -0.05], { rot: [0, 0, 0.14 * SCREEN_LEFT], bevel: 0.02, anim: swing }),
-    kitDisc('hand.l', 0.07, 0.12, 'skin', [0.37 * SCREEN_LEFT, 0.56, -0.05], { anim: swing }),
-  );
+  // Free arm on the screen-left, hanging down.
+  parts.push(...relaxedArm('l', SCREEN_LEFT, 0));
 
-  // Holding arm on the screen-right, held out. Arm, hand and the held item move as one piece.
+  // Right-side arm: held out when carrying an item; otherwise relaxed down at his side like arm.l.
   const R = SCREEN_RIGHT;
-  const hold: AnimTag = { type: 'armSwing', axis: 'x', amp: 0.08, phase: 0.5, pivot: [0.28 * R, SHOULDER_Y, 0] };
-  const armPath: Vec2[] = [[0.2 * R, 1.01], [0.36 * R, 0.93], [0.52 * R, 0.9]];
-  const hand = kitDisc('hand.r', 0.075, 0.14, 'skin', [0.55 * R, 0.9, -0.08], { anim: hold });
-  const held = item ? holdItem(item, [0.57 * R, 0.84, -0.07], hand, hold) : { parts: openHand(hand, hold), sockets: {} };
-  parts.push(kitPlate('arm.r', outlineStroke(armPath, 0.15), 0.17, 'hoodie', [0, 0, -0.05], { bevel: 0.02, anim: hold }), ...held.parts);
+  let rightSockets: Record<string, Vec3> = {};
+  if (item) {
+    const hold: AnimTag = { type: 'armSwing', axis: 'x', amp: 0.08, phase: 0.5, pivot: [0.28 * R, SHOULDER_Y, 0] };
+    const armPath: Vec2[] = [[0.2 * R, 1.01], [0.36 * R, 0.93], [0.52 * R, 0.9]];
+    const hand = kitDisc('hand.r', 0.075, 0.14, 'skin', [0.55 * R, 0.9, -0.08], { anim: hold });
+    const held = holdItem(item, [0.57 * R, 0.84, -0.07], hand, hold);
+    rightSockets = held.sockets;
+    parts.push(kitPlate('arm.r', outlineStroke(armPath, 0.15), 0.17, 'hoodie', [0, 0, -0.05], { bevel: 0.02, anim: hold }), ...held.parts);
+  } else {
+    parts.push(...relaxedArm('r', R, 0.5));
+  }
 
   // Head: the hood is up, so the head silhouette is the hood and the face sits inside it.
   parts.push(
@@ -71,8 +80,8 @@ function buildDev(id: string, label: string, item: ModelSpec | null): ModelSpec 
   const sockets: Record<string, Vec3> = {
     bubble: [0, 1.72, 0],
     fx: [0, 0.85, -0.2],
-    hand: [0.55 * R, 0.9, -0.1],
-    ...held.sockets,
+    hand: item ? [0.55 * R, 0.9, -0.1] : [0.37 * R, 0.56, -0.1],
+    ...rightSockets,
     eye: [0, 1.205, -0.21],
   };
   return { id, category: 'vibecoder', label, parts, sockets };
@@ -94,24 +103,6 @@ function holdItem(item: ModelSpec, anchor: Vec3, hand: PartSpec, anim: AnimTag):
     parts: [...moved.filter(isHandle), hand, ...moved.filter((p) => !isHandle(p))],
     sockets: light ? { lantern: [light[0] + by[0], light[1] + by[1], light[2] + by[2]] } : {},
   };
-}
-
-/**
- * The empty right hand: the palm disc plus three fanned fingers reaching out (toward screen-right) and a
- * thumb, all moving with the holding arm. Where the handed item will land: the `hand` socket stays on the palm.
- */
-function openHand(palm: PartSpec, anim: AnimTag): PartSpec[] {
-  const R = SCREEN_RIGHT;
-  const [px, py, pz] = palm.pos;
-  const finger = (name: string, dy: number, rot: number, len: number): PartSpec =>
-    kitPlate(name, outlineRoundRect(len, 0.058, 0.025, 2), 0.1, 'skin', [px + (0.04 + len / 2) * R, py + dy, pz], { rot: [0, 0, rot * R], bevel: 0.01, anim });
-  return [
-    palm,
-    finger('finger.up', 0.05, -0.28, 0.15),
-    finger('finger.mid', 0.0, 0, 0.17),
-    finger('finger.low', -0.05, 0.28, 0.14),
-    kitPlate('thumb.r', outlineRoundRect(0.06, 0.12, 0.028, 2), 0.1, 'skin', [px + 0.01 * R, py + 0.09, pz], { rot: [0, 0, 0.3 * R], bevel: 0.01, anim }),
-  ];
 }
 
 // ---------------------------------------------------------------- vibecoder.hand
@@ -163,7 +154,7 @@ ModelCatalog.register({
   id: BARE_HERO_MODEL,
   category: 'vibecoder',
   label: 'The developer (bare hands)',
-  lore: 'The developer with nothing in his hands: his right hand open and held out. He has lost his terminal in the dark and waits to be handed something.',
+  lore: 'The developer with nothing in his hands: standing with both arms relaxed at his sides until Kiro hands him his terminal.',
   build: () => buildDev(BARE_HERO_MODEL, 'The developer (bare hands)', null),
 });
 

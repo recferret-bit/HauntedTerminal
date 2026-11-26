@@ -3,8 +3,9 @@ import { isChapterSession } from '../chapters/chapter-session.js';
 import { publishKernel } from '../contracts/app-bus.js';
 import type { GameSnapshot } from '../game/types.js';
 import type { EndStats } from '../ui/hud.js';
-import { powerOff, powerOn, setCinematic } from '../ui/screen.js';
+import { matrixBoot, powerOff, powerOn, setCinematic } from '../ui/screen.js';
 import { holdForComix, syncPlayAudio } from './audio-sync.js';
+import { armOpeningTerminal, cueOpeningBoot } from './term-reveal.js';
 import { BANNER_MS, CARD_MS, FLOOR_NAMES, type Play } from './state.js';
 
 const nextTask = () => new Promise<void>((r) => window.setTimeout(r, 0));
@@ -122,10 +123,13 @@ async function startRun(play: Play): Promise<void> {
   const revealStartedAt = performance.now();
   const hadStashedCard = play.stashedFloorCard !== null;
   play.stashedFloorCard = null;
+  const hasTerm = snap.inventory.items.includes('terminal');
+  armOpeningTerminal(play, hasTerm);
   play.stage.triggerLightningIntro();
   play.apply(introShowedCard ? [] : [card], snap);
   if (!introShowedCard && !hadStashedCard) publishKernel(play.session.bus, [card]);
-  await powerOn(true);
+  if (cueOpeningBoot(play)) await matrixBoot(true);
+  else await powerOn(true);
   if (play.sessionSeq !== seq) return;
   await play.shell.typeOut(play.activeBanner, BANNER_MS);
   if (play.sessionSeq !== seq) return;

@@ -29,7 +29,7 @@ export interface Hud {
   /** Red flash over the stage and a floating damage number on the HP bar. */
   damage(amount: number, source: string): void;
   /** A comic pop next to the field the pickup raised. */
-  pickup(item: 'energy' | 'ram' | 'ssd' | 'lantern', label: string): void;
+  pickup(item: 'energy' | 'ram' | 'ssd' | 'lantern' | 'laptop', label: string): void;
   /** Big banner: an SSD backup saved the run. */
   backupUsed(hp: number): void;
   /** Non-blocking comic stamp when a local achievement unlocks. */
@@ -292,8 +292,8 @@ function hudApi(view: HudView): Hud {
       }, HERO_OUCH_MS + 10) as unknown as number);
     },
     pickup(item, label) {
-      if (item === 'lantern') {
-        view.items?.pop('lantern');
+      if (item === 'lantern' || item === 'laptop') {
+        view.items?.pop(item);
         return;
       }
       const anchor = item === 'ram' ? q('#hud-ram-cell', view.root) : item === 'ssd' ? q('#hud-ssd-cell', view.root) : view.hpCell;

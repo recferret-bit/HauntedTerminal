@@ -332,8 +332,9 @@ export const LAYOUTS: Record<string, Layout> = {
     slots: {
       vram_crate: { x: 3.75, model: 'door.usb' },
       port_445: { x: 3.15, model: 'door.usb' },
-      'ram_16gb.dimm': { x: 1.65 },
-      'gpu_shader_core_01.img': { x: 1.05 },
+      lantern: { x: 2.05 },
+      'ram_16gb.dimm': { x: 1.55 },
+      'gpu_shader_core_01.img': { x: 0.95 },
       'keygen.exe': { x: 0.25 },
       server_hub_1: { x: -0.88, key: 'gate', model: 'door.ethernet' },
     },
@@ -376,6 +377,7 @@ export const LAYOUTS: Record<string, Layout> = {
       { id: 'prop:logic-chip', model: 'prop.chip', x: 4.55, label: 'ALU logic die' },
     ],
     slots: {
+      laptop: { x: 3.65 },
       'cart.js': { x: 1.65, key: 'scroll' },
       'ram_16gb.dimm': { x: 1.05 },
       'gpu_shader_core_02.img': { x: 0.45 },

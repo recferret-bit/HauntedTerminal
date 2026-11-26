@@ -143,6 +143,19 @@ void main() {
 export const buildPixelArtFrag = () =>
   [BAYER_CHUNK, EDGE_CHUNK, PALETTE_CHUNK, QUANTIZE_CHUNK, PIXEL_MAIN].join('\n');
 
+/**
+ * The stage pass, with the source texel alpha kept. The stage target is opaque, so this is the
+ * same picture there. An overlay uses it so the quantizer does not paint over the terminal.
+ */
+export function buildPixelOverlayFrag(): string {
+  const main = PIXEL_MAIN.replace(
+    'gl_FragColor = vec4(col, 1.0);',
+    'float srcA = texture2D(tDiffuse, centerUv).a;\n  gl_FragColor = vec4(col, srcA);',
+  );
+  if (main === PIXEL_MAIN) throw new Error('pixel overlay fragment drifted from PIXEL_MAIN');
+  return [BAYER_CHUNK, EDGE_CHUNK, PALETTE_CHUNK, QUANTIZE_CHUNK, main].join('\n');
+}
+
 export function createPixelArtPass(width: number, height: number, params: PixelArtParams = DEFAULT_PIXEL_PARAMS): ShaderPass {
   return new ShaderPass({
     uniforms: {

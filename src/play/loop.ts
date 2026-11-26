@@ -7,6 +7,7 @@ import { emitKernelEvent, openChapterMap, openHintDialog, openManualModal } from
 import { exposeLabHooks } from './lab.js';
 import { mountTutorial, taunt } from '../ui/tutorial.js';
 import { syncPlayAudio } from './audio-sync.js';
+import { syncTerminalPresence } from './term-reveal.js';
 import { CARD_MS, type PauseReason, type Play } from './state.js';
 
 const EVENT_LOG_CAP = 400;
@@ -38,8 +39,8 @@ function syncPause(play: Play): void {
 }
 
 function paint(play: Play, snap: GameSnapshot): void {
-  // No terminal in his inventory (the tutorial start): no terminal panel and no typing until it is given.
-  play.shell.setAvailable(snap.inventory.items.includes('terminal'));
+  // No terminal in his inventory (the tutorial start): no panel until it is given, then the visor boot.
+  syncTerminalPresence(play, snap);
   play.hud?.update(snap);
   play.menu?.update(snap);
   play.hintDialog?.update(snap);
@@ -145,6 +146,10 @@ function applySlice(play: Play, events: KernelEvent[], snap: GameSnapshot, print
       case 'TUTORIAL_STEP':
         if (play.dialogs) play.dialogs.handleEvent(ev);
         else play.tutorial.step(ev);
+        if (ev.done && snap.tutorial === null) {
+          play.dialogs?.clear();
+          play.tutorial.hide();
+        }
         break;
       case 'GAME_ENDED':
         play.beginEnding({ rank: ev.rank, timeSec: ev.timeSec, commands: ev.commands, shortcuts: snap.shortcuts });

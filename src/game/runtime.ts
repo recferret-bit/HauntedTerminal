@@ -3,6 +3,7 @@ import type { KernelEvent } from '../contracts/events.js';
 import { BESTIARY, PICKUP_INFO, RAM_PER_STEP, SSD_PER_BACKUP, maxHpFor, type PickupType } from './bestiary.js';
 import { World, type KillHow, type Pickup } from './entities.js';
 import { FLOOR_PATHS, FLOOR_TITLES, buildFloor } from './floors.js';
+import { giveItem, holdItem } from './inventory.js';
 import { ensureLabDirChain, placeLabFile } from './lab-support.js';
 import { freshLabLevelState } from './lab-types.js';
 import { COMMANDS, manualTopics, mapTopics } from './manual.js';
@@ -242,6 +243,10 @@ export function applyPickup(g: Play, type: PickupType, amount: number, entityId:
   }
   push(g, events, { type: 'PICKUP_COLLECTED', entityId, item: type, amount: gained, label: info.label(gained) });
   if (type === 'lantern') return 'The lantern is already yours.\n';
+  if (type === 'laptop') {
+    g.run.inventory = holdItem(giveItem(g.run.inventory, 'laptop'), 'laptop');
+    return 'You pack the laptop.\n';
+  }
   if (type === 'energy') return `+${gained} HP. HP ${g.run.hp}/${maxHp(g)}.\n`;
   if (type === 'ram') return `+${amount} GB RAM (${g.run.ram} GB). Max HP ${maxHp(g)}, HP ${g.run.hp}.\n`;
   return `+${amount} GB SSD (${g.run.ssd} GB): ${backups(g)} backup(s). Die now and you restore in place.\n`;
