@@ -1,4 +1,5 @@
 import { createStateMachine, type StateMachine, type TransitionTable } from '../contracts/state-machine.js';
+import { isReducedMotionPreferred, mountWordReveal, planWordReveal } from '../contracts/word-reveal.js';
 import { el, PORTRAIT_FRAMES, replayClass, type DrawPortrait } from './dom-lite.js';
 
 export type DialogPhase = 'idle' | 'entering' | 'hold' | 'exiting';
@@ -23,6 +24,8 @@ export interface DialogLine {
   text: string;
   /** How long the box stays after the text is shown, in ms. */
   holdMs: number;
+  /** Optional upper bound on total hold time (including word reveal), in ms. */
+  maxHoldMs?: number;
   mood?: DialogMood;
   priority?: DialogPriority;
 }
@@ -31,6 +34,7 @@ export interface DialogBoxOptions {
   onOpen?: (line: DialogLine, side: 'left' | 'right') => void;
   onClose?: () => void;
   canStartLine?: (line: DialogLine, side: 'left' | 'right') => boolean;
+  reducedMotion?: () => boolean;
 }
 
 export interface DialogBox {
@@ -86,6 +90,7 @@ interface DialogView {
   enterTimer: number;
   exitTimer: number;
   headTimer: number;
+  wordTimer: number;
   headFrame: number;
   holdDeadline: number;
   current: DialogLine | null;
@@ -138,10 +143,12 @@ function stopTimers(v: DialogView): void {
   globalThis.clearTimeout(v.enterTimer);
   globalThis.clearTimeout(v.exitTimer);
   globalThis.clearInterval(v.headTimer);
+  globalThis.clearInterval(v.wordTimer);
   v.holdTimer = 0;
   v.enterTimer = 0;
   v.exitTimer = 0;
   v.headTimer = 0;
+  v.wordTimer = 0;
   v.holdDeadline = 0;
 }
 
@@ -180,26 +187,51 @@ function speakerDisplayName(line: DialogLine): string {
     : line.name;
 }
 
-function showInHeroDrawer(v: DialogView, hero: HeroDrawerEls, line: DialogLine): void {
+function startLineWordReveal(v: DialogView, host: HTMLElement, line: DialogLine): number {
+  const reveal = mountWordReveal(host, line.text);
+  const instant = Boolean(v.opts.reducedMotion?.() ?? isReducedMotionPreferred());
+  const plan = planWordReveal(reveal.wordCount, line.holdMs, {
+    instant,
+    ...(line.maxHoldMs !== undefined ? { maxHoldMs: line.maxHoldMs } : {}),
+  });
+  if (plan.stepMs <= 0) {
+    reveal.showAll();
+    return plan.holdMs;
+  }
+  let shown = 1;
+  reveal.showWords(shown);
+  v.wordTimer = globalThis.setInterval(() => {
+    shown += 1;
+    reveal.showWords(shown);
+    if (shown >= reveal.wordCount) {
+      globalThis.clearInterval(v.wordTimer);
+      v.wordTimer = 0;
+    }
+  }, plan.stepMs);
+  return plan.holdMs;
+}
+
+function showInHeroDrawer(v: DialogView, hero: HeroDrawerEls, line: DialogLine): number {
   v.root.classList.remove('open', 'entering', 'exiting');
   v.root.setAttribute('aria-hidden', 'true');
   v.root.style.top = '';
   hero.name.textContent = speakerDisplayName(line);
-  hero.text.textContent = line.text;
+  const holdMs = startLineWordReveal(v, hero.text, line);
   hero.hud.classList.remove('exiting', 'entering', ...MOOD_CLASSES);
   if (line.mood) hero.hud.classList.add(`mood-${line.mood}`);
   replayClass(hero.drawer, 'drawer-step');
   hero.hud.classList.add('talking', 'open', 'entering');
   hero.drawer.setAttribute('aria-hidden', 'false');
+  return holdMs;
 }
 
-function showInCornerBox(v: DialogView, line: DialogLine, side: 'left' | 'right'): void {
+function showInCornerBox(v: DialogView, line: DialogLine, side: 'left' | 'right'): number {
   closeHeroDrawer(v.parent);
   const cleanSpeaker = cleanSpeakerId(line.speaker);
   v.avatar.dataset.frame = '0';
   v.avatar.replaceChildren(v.drawPortrait(line.model, AVATAR_PX, 0));
   v.name.textContent = speakerDisplayName(line);
-  v.text.textContent = line.text;
+  const holdMs = startLineWordReveal(v, v.text, line);
   const moodClass = line.mood ? ` mood-${line.mood}` : '';
   v.root.className = `dialog-box side-${side} speaker-${cleanSpeaker}${moodClass}`;
   v.root.dataset.side = side;
@@ -214,6 +246,7 @@ function showInCornerBox(v: DialogView, line: DialogLine, side: 'left' | 'right'
     v.avatar.dataset.frame = String(v.headFrame);
     v.avatar.replaceChildren(v.drawPortrait(line.model, AVATAR_PX, v.headFrame));
   }, HEAD_FRAME_MS);
+  return holdMs;
 }
 
 function advanceQueue(v: DialogView): void {
@@ -234,8 +267,7 @@ function advanceQueue(v: DialogView): void {
   v.phase.send('START');
   v.headFrame = 0;
 
-  if (hero) showInHeroDrawer(v, hero, line);
-  else showInCornerBox(v, line, side);
+  const holdMs = hero ? showInHeroDrawer(v, hero, line) : showInCornerBox(v, line, side);
   v.opts.onOpen?.(line, side);
 
   v.enterTimer = globalThis.setTimeout(() => {
@@ -245,7 +277,6 @@ function advanceQueue(v: DialogView): void {
     findHeroDrawer(v.parent)?.hud.classList.remove('entering');
   }, ENTER_MS);
 
-  const holdMs = Math.max(0, line.holdMs);
   v.holdDeadline = Date.now() + holdMs;
   v.holdTimer = globalThis.setTimeout(() => beginExit(v), holdMs);
 }
@@ -283,6 +314,7 @@ export function mountDialogBox(
     enterTimer: 0,
     exitTimer: 0,
     headTimer: 0,
+    wordTimer: 0,
     headFrame: 0,
     holdDeadline: 0,
     current: null,

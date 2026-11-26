@@ -13,6 +13,14 @@ const { test, count } = testRunner();
 await withProcgen(async (_procgen, vite) => {
   const load = (path) => vite.ssrLoadModule(path);
   const { createStateMachine, nextMachineState, reachableStates } = await load('/src/contracts/state-machine.ts');
+  const {
+    WORD_REVEAL_STEP_MS,
+    MIN_POST_REVEAL_HOLD_MS,
+    wordRevealEnds,
+    planWordReveal,
+    mountWordReveal,
+    isReducedMotionPreferred,
+  } = await load('/src/contracts/word-reveal.ts');
   const { PLAY_PHASES, PLAY_PHASE_TRANSITIONS, createPlayLifecycle } = await load('/src/play/lifecycle.ts');
   const { createPlayBus, routeModalAction } = await load('/src/play/events.ts');
   const { anyModalOpen, closeOtherModals } = await load('/src/play/state.ts');
@@ -585,6 +593,51 @@ await withProcgen(async (_procgen, vite) => {
       assert.equal(fsm.send('SKIP'), true);
       assert.equal(fsm.state, 'idle');
     }
+  });
+
+  await test('word-reveal: preserves whitespace/newlines, pre-sizes via ghost span, and plans hold/instant/battle budgets', () => {
+    const sample = 'One  two\nthree!';
+    assert.deepEqual(wordRevealEnds(sample), [3, 8, 15]);
+    assert.deepEqual(wordRevealEnds('   '), []);
+
+    const dom = fakeDom();
+    dom.install();
+    try {
+      const host = dom.make('p');
+      const handle = mountWordReveal(host, sample);
+      assert.equal(handle.wordCount, 3);
+      assert.equal(host.textContent, sample);
+      const shown = host.querySelector('.word-reveal-shown');
+      const ghost = host.querySelector('.word-reveal-ghost');
+      assert.ok(shown && ghost);
+      assert.equal(ghost.getAttribute('aria-hidden'), 'true');
+      assert.equal(ghost.style.visibility, 'hidden');
+
+      handle.showWords(1);
+      assert.equal(shown.textContent, 'One');
+      assert.equal(ghost.textContent, '  two\nthree!');
+      assert.equal(host.textContent, sample);
+
+      handle.atMs(60, 60);
+      assert.equal(shown.textContent, 'One  two');
+      assert.equal(ghost.textContent, '\nthree!');
+
+      handle.showAll();
+      assert.equal(shown.textContent, sample);
+      assert.equal(ghost.textContent, '');
+      assert.equal(isReducedMotionPreferred(), false);
+    } finally {
+      dom.uninstall();
+    }
+
+    assert.deepEqual(planWordReveal(5, 2400), { stepMs: WORD_REVEAL_STEP_MS, holdMs: 2400, revealMs: 240 });
+    assert.deepEqual(planWordReveal(40, 1800), { stepMs: WORD_REVEAL_STEP_MS, holdMs: 39 * WORD_REVEAL_STEP_MS + MIN_POST_REVEAL_HOLD_MS, revealMs: 39 * WORD_REVEAL_STEP_MS });
+    const capped = planWordReveal(100, 4800, { maxHoldMs: 4800 });
+    assert.ok(capped.holdMs <= 4800 && capped.revealMs <= 4800 - MIN_POST_REVEAL_HOLD_MS);
+    const subSec = planWordReveal(5, 280);
+    assert.equal(subSec.holdMs, 280);
+    assert.ok(subSec.revealMs > 0 && subSec.revealMs < 280);
+    assert.deepEqual(planWordReveal(12, 2400, { instant: true }), { stepMs: 0, holdMs: 2400, revealMs: 0 });
   });
 
   console.log(`\narchitecture-unit OK (${count()} tests)`);

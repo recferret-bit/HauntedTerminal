@@ -1,0 +1,21 @@
+# Word-by-word in-game dialogs: tasks
+
+Status: see requirements.md
+
+Follows [design.md](./design.md) (`Status: see requirements.md`, approved by the user 2026-11-27). Approved by the user 2026-11-27; tasks 1–6 completed and verified. Requirement numbers refer to [requirements.md](./requirements.md). Every owner reports gates actually run.
+
+Order: 1 before 2 and 4. 2 before 3. 3 and 4 before 5. 5 before 6.
+
+- [x] **1. Shared word-reveal primitive and core unit tests (`src/contracts/word-reveal.ts`, `scripts/harness/architecture-unit.mjs`).** Owner: `lead-dev`. Covers: 1, 2, 3, 6, 8. Implement `WORD_REVEAL_STEP_MS = 60`, `MIN_POST_REVEAL_HOLD_MS = 900`, `wordRevealEnds`, `mountWordReveal` (`.word-reveal-shown` + `.word-reveal-ghost` with inline `visibility: hidden` and `aria-hidden="true"`), `planWordReveal` (word 1 on frame 0, gameplay post-reveal hold floor, `maxHoldMs` cap, sub-second test compression, `instant` mode), and `isReducedMotionPreferred`. Add unit tests in `scripts/harness/architecture-unit.mjs`. Gates: `npx tsc --noEmit`; `node scripts/harness/architecture-unit.mjs`.
+
+- [x] **2. Corner `.dialog-box` and `#hero-dialog-drawer` word-by-word reveal + DOM unit tests (`src/ui/dialog-box.ts`, `src/ui/dialog-orchestrator.ts`, `scripts/harness/terminal-lab-unit.mjs`).** Owner: `terminal-designer`. Covers: 1, 2, 3, 4, 5, 6, 7, 8. Needs task 1. Add `maxHoldMs?: number` on `DialogLine` (`BATTLE_LINE_MS` on `BATTLE_STARTED` lines), `reducedMotion?: () => boolean` on `DialogBoxOptions` and `DialogOrchestratorOptions`, and `wordTimer` in `DialogView` (cleared in `stopTimers`). Mount `mountWordReveal` + `planWordReveal` in `showInHeroDrawer` (`#hero-dialog-text`) and `showInCornerBox` (`.dialog-text`). Extend `scripts/harness/terminal-lab-unit.mjs` with progressive reveal, `reducedMotion`, hold extension, and `clear()`/`shortenHold()` cleanup assertions. Gates: `npx tsc --noEmit`; `node scripts/harness/terminal-lab-unit.mjs`.
+
+- [x] **3. Play page `reducedMotion` wiring (`src/play/input.ts`).** Owner: `lead-dev`. Covers: 5, 6, 8. Needs task 2. Pass `reducedMotion: () => play.stage.reducedMotion.on` into `mountDialogOrchestrator` in `src/play/input.ts`. Gates: `npx tsc --noEmit`; `npm run quality:layers`.
+
+- [x] **4. 3D in-room socket speech balloon word-by-word reveal (`src/renderer/stage-overlay.ts`, `src/renderer/stage-event-cast.ts`).** Owner: `artist` (reads `credits-art-direction`). Covers: 1, 2, 3, 4, 6, 7, 8. Needs task 1. Extend `StageOverlay.balloon` with `opts?: { instant?: boolean }`, wrap body text in `<span class="st-balloon-text">` via `mountWordReveal`, plan hold via `planWordReveal`, and drive `reveal.atMs(ms, stepMs)` from `render: (_t, ms) => ...` on the stage clock (`showAll()` when `instant`). Pass `{ instant: stage.reducedMotion.on }` in `onDialogue` (`src/renderer/stage-event-cast.ts`). Gates: `npx tsc --noEmit`; `npm run quality:fingerprint` (byte-identical); `node scripts/harness/screenshot-lab.mjs --selftest`.
+
+- [x] **5. Visual and browser QA pass (`1600x950` and `1280x820`).** Owner: `qa` (reads `comic-panel-viewport-auditor`). Covers: 1, 2, 3, 4, 5, 6, 7. Needs tasks 3 and 4. Verify in headless Chrome on `/play`: progressive word-by-word reveal with stable pre-sized box dimensions (zero height/tail reflow) in `#hero-dialog-drawer`, `.dialog-box.side-right`, and `.st-balloon` (`OBSTACLE_DIALOGUE_RENDERED` stepped via `__stage.advance`), `#skip-dialog-btn` dismissal, and `stage.reducedMotion.set(true)` immediate full-text display; inspect PNGs via `read_file`. Gates: `node scripts/harness/screenshot-lab.mjs --selftest`; headless Chrome `/play` screenshot & DOM checks.
+
+- [x] **6. Final project verification gates and spec close-out (`Status: done`).** Owner: `lead-dev`. Covers: all (1–8). Needs task 5. Confirm zero steering/doc drift, tick all tasks `[x]`, set `Status: done` in `requirements.md`, and run final project-wide gates (commit only if asked by user). Gates: `npm run quality`; `npm run test`; `npm run build`; `npm run quality:fingerprint`; `node scripts/quality/check-specs.mjs`.
+
+Handoff rule: a file outside the owner's paths goes to its owner as a handoff, never through the shell. No file under `chapters/` or `src/chapters/generated/` is edited for this spec.

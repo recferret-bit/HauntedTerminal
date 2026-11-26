@@ -1449,6 +1449,71 @@ await withProcgen(async (_p, vite) => {
     });
   });
 
+  await test('word-by-word dialog reveal: reveals corner & hero-drawer text progressively, honors reducedMotion, extends long holds, and cleans up on clear()', async () => {
+    await withFakeDom(async (makeEl) => {
+      const parent = makeEl('div');
+      const heroHud = makeEl('div');
+      heroHud.setAttribute('id', 'hero-hud');
+      const statusCol = makeEl('div');
+      statusCol.className = 'hero-status-col';
+      const drawer = makeEl('div');
+      drawer.setAttribute('id', 'hero-dialog-drawer');
+      const dName = makeEl('b');
+      dName.setAttribute('id', 'hero-dialog-name');
+      const dText = makeEl('p');
+      dText.setAttribute('id', 'hero-dialog-text');
+      drawer.append(dName, dText);
+      heroHud.append(statusCol, drawer);
+      parent.appendChild(heroHud);
+
+      const box = mountDialogBox(parent, stubDrawPortrait());
+      const cornerRoot = parent.querySelector('.dialog-box');
+      const cornerText = cornerRoot.querySelector('.dialog-text');
+
+      // Right-side corner dialog starts with word 1 visible + ghost remainder
+      const fiveWords = 'Alpha beta gamma delta epsilon';
+      box.show({ speaker: 'kiro', name: 'KIRO.D', model: 'npc.kiro_ghost', text: fiveWords, holdMs: 280 });
+      assert.equal(cornerText.textContent, fiveWords);
+      assert.equal(cornerText.querySelector('.word-reveal-shown').textContent, 'Alpha');
+      assert.equal(cornerText.querySelector('.word-reveal-ghost').textContent, ' beta gamma delta epsilon');
+      assert.equal(cornerText.querySelector('.word-reveal-ghost').style.visibility, 'hidden');
+
+      await wait(70);
+      assert.ok(cornerText.querySelector('.word-reveal-shown').textContent.length > 'Alpha'.length);
+      await wait(240);
+      assert.equal(cornerText.querySelector('.word-reveal-shown').textContent, fiveWords);
+      assert.equal(cornerText.querySelector('.word-reveal-ghost').textContent, '');
+      await wait(EXIT_MS + 40);
+
+      // Left-side #hero-dialog-text also reveals word by word
+      const heroLine = 'First second third fourth';
+      box.show({ speaker: 'vibecoder', name: 'DEV', model: 'vibecoder.dev_terminal', text: heroLine, holdMs: 260 });
+      assert.equal(dText.textContent, heroLine);
+      assert.equal(dText.querySelector('.word-reveal-shown').textContent, 'First');
+      assert.equal(dText.querySelector('.word-reveal-ghost').textContent, ' second third fourth');
+      await wait(290 + EXIT_MS + 40);
+
+      // Long gameplay line extends hold so reading time survives after final word appears
+      const thirtyWords = Array.from({ length: 30 }, (_, i) => `w${i + 1}`).join(' ');
+      box.show({ speaker: 'clod', name: 'CLOD', model: 'agent.clod', text: thirtyWords, holdMs: 1000 });
+      assert.equal(cornerRoot.classList.contains('open'), true);
+      await wait(1150);
+      assert.equal(cornerRoot.classList.contains('open'), true, 'extended hold keeps long revealing line open past raw holdMs');
+      assert.equal(cornerRoot.classList.contains('exiting'), false);
+      box.clear();
+      assert.equal(cornerRoot.classList.contains('open'), false);
+      assert.equal(box.pending(), 0);
+
+      // Reduced motion shows complete text immediately on frame 0
+      const rmBox = mountDialogBox(parent, stubDrawPortrait(), { reducedMotion: () => true });
+      const rmText = parent.querySelector('.dialog-box').querySelector('.dialog-text');
+      rmBox.show({ speaker: 'codec', name: 'CODEC', model: 'agent.codec', text: fiveWords, holdMs: 300 });
+      assert.equal(rmText.querySelector('.word-reveal-shown').textContent, fiveWords);
+      assert.equal(rmText.querySelector('.word-reveal-ghost').textContent, '');
+      rmBox.clear();
+    });
+  });
+
   await test('hintGoals: every chapter level and classic floor lists minimal tasks & goals with zero exact shell commands and tracks live completion', async () => {
     const { CHAPTER_MANIFESTS } = await load('/src/chapters/catalog.ts');
     const { createSession } = await load('/src/game/session.ts');

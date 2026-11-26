@@ -39,6 +39,7 @@ export interface DialogOrchestratorOptions {
   onRightDialogOpen?: () => void;
   onDialogOpen?: (line: DialogLine, side: 'left' | 'right') => void;
   onClear?: () => void;
+  reducedMotion?: () => boolean;
 }
 
 export interface DialogOrchestratorStats {
@@ -137,6 +138,7 @@ export function mountDialogOrchestrator(
   let maxRightConcurrent = 0;
 
   const box = mountDialogBox(parent, drawPortrait, {
+    ...(opts.reducedMotion ? { reducedMotion: opts.reducedMotion } : {}),
     canStartLine: (line) => !(socketFsm.state === 'socket_locked' && (line.priority ?? 'script') === 'chatter'),
     onOpen: (line, side) => {
       shown += 1;
@@ -203,8 +205,8 @@ export function mountDialogOrchestrator(
         }
         case 'BATTLE_STARTED':
           // The battle intro (INTRO_SEC, 10 s): the agent's taunt, then Kiro's advice, ahead of any chatter.
-          enqueueLine({ speaker: ev.agent, name: AGENTS[ev.agent]?.name ?? ev.agent.toUpperCase(), model: ev.model, text: ev.taunt, holdMs: BATTLE_LINE_MS, mood: 'laugh', priority: 'script' }, true);
-          enqueueLine({ speaker: 'kiro', name: AGENTS.kiro?.name ?? 'KIRO.D', model: AGENT_MODELS.kiro, text: ev.advice, holdMs: BATTLE_LINE_MS, priority: 'script' }, true);
+          enqueueLine({ speaker: ev.agent, name: AGENTS[ev.agent]?.name ?? ev.agent.toUpperCase(), model: ev.model, text: ev.taunt, holdMs: BATTLE_LINE_MS, maxHoldMs: BATTLE_LINE_MS, mood: 'laugh', priority: 'script' }, true);
+          enqueueLine({ speaker: 'kiro', name: AGENTS.kiro?.name ?? 'KIRO.D', model: AGENT_MODELS.kiro, text: ev.advice, holdMs: BATTLE_LINE_MS, maxHoldMs: BATTLE_LINE_MS, priority: 'script' }, true);
           break;
         case 'BATTLE_ENDED':
           dismissBattleIntro();

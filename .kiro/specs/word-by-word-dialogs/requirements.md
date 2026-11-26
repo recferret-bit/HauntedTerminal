@@ -1,6 +1,6 @@
 # Word-by-word in-game dialogs: requirements
 
-Status: draft
+Status: done (2026-11-27; requirements, design, tasks approved by the user 2026-11-27)
 
 Capability: Reveal dialog text word by word across all spoken gameplay dialogs — left-side Vibecoder drawer (`#hero-dialog-drawer`), right-side NPC/AI-agent/Kiro/battle-intro corner dialog boxes (`.dialog-box`), and 3D in-room socket speech balloons (`.st-balloon`) — using a pre-sized non-reflowing box at ~60 ms per word (~16 words/s), preserving full reading hold time after the final word appears, leaving terminal input non-blocked, keeping existing audio cues unchanged (visual only), and rendering complete text immediately under `prefers-reduced-motion` ("lets make all the dialogs text to appear word by word, make it true for all in game dialogs", 2026-11-26).
 
@@ -54,6 +54,9 @@ Capability: Reveal dialog text word by word across all spoken gameplay dialogs �
   **A (user, 2026-11-26):** Non-blocking terminal: existing Skip Dialog / battle-intro Enter / `clear()` work as today, and `prefers-reduced-motion` shows full text immediately — never steals keys from xterm (`Recommended`).
 - **Q4:** Should word-by-word reveal add per-word audio blips or stay visual?
   **A (user, 2026-11-26):** Visual only (keep the existing single speaker SFX when a dialog opens) — clean audio mix with zero repetitive blip fatigue or new audio cues (`Recommended`).
+- **Requirements approval (user, 2026-11-27):** Explicit approval of `requirements.md` as written.
+- **Design approval (user, 2026-11-27):** Explicit approval of `design.md` as written.
+- **Tasks approval (user, 2026-11-27):** Explicit approval of `tasks.md` as written.
 
 ## Open questions
 

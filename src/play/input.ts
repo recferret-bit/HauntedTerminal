@@ -202,6 +202,7 @@ export function mountPlayHud(play: Play): void {
   const chapter = isChapterSession(play.session) ? play.session : null;
   play.dialogs = mountDialogOrchestrator(play.dom.stageWrap, drawPortrait, {
     tutorial: play.tutorial,
+    reducedMotion: () => play.stage.reducedMotion.on,
     onDialogOpen: (line) => play.session.bus?.emit({ kind: 'dialog', speaker: line.speaker }),
   });
   play.dialogBox = play.dialogs.box;

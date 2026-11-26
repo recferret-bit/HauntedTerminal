@@ -96,7 +96,14 @@ function onDialogue(stage: ComicStage, ev: Extract<KernelEvent, { type: 'OBSTACL
   const line = ev.payload?.pages?.[0]?.text ?? ev.payload?.speakerName ?? '...';
   const who = speaker;
   const anchor = () => (who && !who.disposed ? actorSocket(who, 'bubble').add(new THREE.Vector3(0, 0.25, 0)) : anchorPoint(stage, 'panel', null));
-  stage.bubble = stage.overlay.balloon(String(ev.payload?.speakerName ?? '???'), String(line), String(ev.payload?.bubbleStyle ?? 'COMIX_CLASSIC'), anchor, Math.min(16000, Math.max(7000, 4000 + String(line).length * 55)));
+  stage.bubble = stage.overlay.balloon(
+    String(ev.payload?.speakerName ?? '???'),
+    String(line),
+    String(ev.payload?.bubbleStyle ?? 'COMIX_CLASSIC'),
+    anchor,
+    Math.min(16000, Math.max(7000, 4000 + String(line).length * 55)),
+    { instant: stage.reducedMotion.on },
+  );
 }
 
 function onVibecoderAction(stage: ComicStage, ev: Extract<KernelEvent, { type: 'VIBECODER_ACTION' }>): void {
