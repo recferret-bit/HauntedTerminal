@@ -15,7 +15,7 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== SECTOR 02 // CACHE VAULT (SIMPLE TASK 1) ===\n1. Anti-Gravy planted a hidden spycam dotfile watching your keystrokes. Run `ls -la` and `rm .gravy_spycam`.\n2. Patch `ollama_bus.conf` so `LOCAL_MODEL_PORT=11434` instead of `0000` (`sed -i 's/0000/11434/' ollama_bus.conf`).\n3. Scavenge the RAM stick and GPU chip for Kiro (`mv ram_16gb.dimm ~` and `mv gpu_tensor_chip_01.img ~`).\n"
+      "content": "=== SECTOR 02 // CACHE VAULT (SIMPLE TASK 1) ===\n1. Anti-Gravy planted a hidden spycam dotfile watching your keystrokes. Run `ls -la` and `rm .gravy_spycam`.\n2. Patch `ollama_bus.conf` so `LOCAL_MODEL_PORT=11434` instead of `0000` (`sed -i 's/0000/11434/' ollama_bus.conf`).\n3. Scavenge the RAM stick and GPU chip for Kiro.d (`mv ram_16gb.dimm ~` and `mv gpu_tensor_chip_01.img ~`).\n"
     },
     {
       "path": "/srv/kiroween/cache_vault/.gravy_spycam",
@@ -124,12 +124,12 @@
     {
       "kind": "file_absent",
       "path": "/srv/kiroween/cache_vault/ram_16gb.dimm",
-      "description": "Collect the RAM stick for Kiro (`mv ram_16gb.dimm ~`)"
+      "description": "Collect the RAM stick for Kiro.d (`mv ram_16gb.dimm ~`)"
     },
     {
       "kind": "file_absent",
       "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img",
-      "description": "Collect the GPU Tensor Chip for Kiro (`mv gpu_tensor_chip_01.img ~`)"
+      "description": "Collect the GPU Tensor Chip for Kiro.d (`mv gpu_tensor_chip_01.img ~`)"
     }
   ],
   "solutionCommands": [
@@ -141,7 +141,7 @@
     "cd gpu_alley"
   ],
   "script": {
-    "allySpeaker": "KIRO GHOST",
+    "allySpeaker": "KIRO.D",
     "arrival": [
       {
         "kind": "print",
@@ -160,7 +160,7 @@
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "Still only my terminal screen to light the way... let's sweep this Cache Vault and grab those parts for Kiro!",
+            "text": "Still only my terminal screen to light the way... let's sweep this Cache Vault and grab those parts for Kiro.d!",
             "holdSec": 9
           }
         ]
@@ -200,7 +200,7 @@
         },
         {
           "agent": "codec",
-          "text": "CODEC: \"LMAO! You actually type flags by hand? Kiro is too weak to save you!\""
+          "text": "CODEC: \"LMAO! You actually type flags by hand? Kiro.d is too weak to save you!\""
         },
         {
           "agent": "gork",
@@ -215,8 +215,8 @@
     "kiro": {
       "stage": "crack_only",
       "weak": true,
-      "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro at the Hub server!)\n",
-      "loadRefusal": "[KIRO GHOST]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
+      "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
+      "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
     }
   }
 }

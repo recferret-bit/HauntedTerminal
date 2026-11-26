@@ -1,5 +1,5 @@
 /**
- * Friendly cast (category `npc`): the Kiro Ghost companion and the old bearded coder at his rig.
+ * Friendly cast (category `npc`): the Kiro.d Unix daemon companion and the old bearded coder at his rig.
  * The builders live in `./npc/`; this file only registers them, in order.
  * Briefs: .kiro/skills/credits-art-direction/references/world-lexicon.md
  */
@@ -8,8 +8,8 @@ import { buildGreybeardRig } from './npc/greybeard-rig.js';
 import { buildKiroGhost } from './npc/kiro-ghost.js';
 
 ModelCatalog.register({
-  id: 'npc.kiro_ghost', category: 'npc', label: 'Kiro Ghost',
-  lore: 'kiro.d: your loyal self-hosted .gguf Ghost companion running on local VRAM. Scans rooms and cracks Cloud locks.',
+  id: 'npc.kiro_ghost', category: 'npc', label: 'Kiro.d',
+  lore: 'kiro.d: resident Unix background daemon (.d, PID 777) running air-gapped .gguf weights on local VRAM. Scans rooms and cracks Cloud locks.',
   build: buildKiroGhost,
 });
 ModelCatalog.register({

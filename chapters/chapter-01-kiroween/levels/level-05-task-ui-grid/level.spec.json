@@ -15,7 +15,7 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>Open-Weights GPU Telemetry Grid</title>\n  <link rel=\"stylesheet\" href=\"storefront.css\" />\n</head>\n<body>\n  <header class=\"site-header\">\n    <h1>KIRO OPEN-WEIGHTS HARDWARE MONITOR</h1>\n  </header>\n  <main class=\"product-grid\">\n    <article class=\"gpu-card\" data-sku=\"gpu\">\n      <h2>RTX 4090 24GB Tensor Core</h2>\n      <span class=\"price\">$1599</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ram\">\n      <h2>64GB DDR5 ECC Server Kit</h2>\n      <span class=\"price\">$249</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ssd\">\n      <h2>2TB Gen5 NVMe Weights Vault</h2>\n      <span class=\"price\">$189</span>\n    </article>\n  </main>\n  <!-- BUG: Codec disabled #checkout-btn -->\n  <aside id=\"cart-drawer\" class=\"cart-drawer\">\n    <h3>Mounted Open-Weights Parts</h3>\n    <p>Total Power: <span data-bind=\"cart-total\">$0.00</span></p>\n    <button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>\n  </aside>\n</body>\n</html>\n"
+      "content": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>Open-Weights GPU Telemetry Grid</title>\n  <link rel=\"stylesheet\" href=\"storefront.css\" />\n</head>\n<body>\n  <header class=\"site-header\">\n    <h1>KIRO.D OPEN-WEIGHTS HARDWARE MONITOR</h1>\n  </header>\n  <main class=\"product-grid\">\n    <article class=\"gpu-card\" data-sku=\"gpu\">\n      <h2>RTX 4090 24GB Tensor Core</h2>\n      <span class=\"price\">$1599</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ram\">\n      <h2>64GB DDR5 ECC Server Kit</h2>\n      <span class=\"price\">$249</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ssd\">\n      <h2>2TB Gen5 NVMe Weights Vault</h2>\n      <span class=\"price\">$189</span>\n    </article>\n  </main>\n  <!-- BUG: Codec disabled #checkout-btn -->\n  <aside id=\"cart-drawer\" class=\"cart-drawer\">\n    <h3>Mounted Open-Weights Parts</h3>\n    <p>Total Power: <span data-bind=\"cart-total\">$0.00</span></p>\n    <button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>\n  </aside>\n</body>\n</html>\n"
     },
     {
       "path": "/srv/kiroween/ui_dashboard/storefront.css",
@@ -186,7 +186,7 @@
         },
         {
           "agent": "gork",
-          "text": "GORK: \"BWAHAHA! Your Kiro Ghost only has one open-weight model—we still run this machine!\""
+          "text": "GORK: \"BWAHAHA! Your Kiro.d only has one open-weight model—we still run this machine!\""
         },
         {
           "agent": "clod",

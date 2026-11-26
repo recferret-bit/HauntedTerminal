@@ -76,7 +76,7 @@ function ruleLines(rule: Rule, cwd: string): ContextCommand[] {
     case 'dir_accessible':
       return [cmd('open it', `chmod 755 ${rel(rule.path, cwd)}`)];
     case 'kiro_decrypted':
-      return [cmd('have Kiro crack it', `kiro crack ${rel(rule.path, cwd)}`)];
+      return [cmd('have Kiro.d crack it', `kiro crack ${rel(rule.path, cwd)}`)];
     case 'kiro_loaded':
       return [cmd('load the core', `kiro load ${rule.core}`), cmd('see the cores', 'kiro')];
     case 'enemy_neutralized':

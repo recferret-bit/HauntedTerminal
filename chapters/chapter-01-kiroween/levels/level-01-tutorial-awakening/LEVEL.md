@@ -1,4 +1,4 @@
-# Level 01: Wires, Chips & The Kiro Ghost
+# Level 01: Wires, Chips & Kiro.d
 
 Mechanic `terminal`, room `attic`, cwd `/mnt/wires_and_chips`, exit `hub_uplink`. Safe level: no damage.
 
@@ -12,10 +12,10 @@ He starts in the dark with empty hands and only the field manual in his pocket (
 | 7, 9, 11, 13 | Big Four small talk (Anti-Gravy, Codec, Gork, Clod): each laughs at Vibecoder and warns he must type all commands manually and even write code manually. |
 | 15 | Vibecoder shock emote (`WRITE CODE MANUALLY?!`) and shocked dialog box line. |
 | 17 | Vibecoder shout emote (`HELLOOOO??`) and line. |
-| 19 | Kiro Ghost glides in (`spawn.entrance: glide`), scans, introduces himself in dialog box. |
-| 22 | Kiro picks up the terminal (`carry_item`) and flies beside him. |
-| 25 | Kiro hands over the terminal (`give_item`), terminal panel opens, phosphor glow lights nearby wires, tutorial card 1 appears. |
-| 28, 31 | Kiro tells him to look around with `ls` (unless `ls` has already run). |
+| 19 | Kiro.d glides in (`spawn.entrance: glide`), scans, introduces himself as a local Unix `.d` daemon in dialog box. |
+| 22 | Kiro.d picks up the terminal (`carry_item`) and flies beside him. |
+| 25 | Kiro.d hands over the terminal (`give_item`), terminal panel opens, phosphor glow lights nearby wires, tutorial card 1 appears. |
+| 28, 31 | Kiro.d tells him to look around with `ls` (unless `ls` has already run). |
 
 Timed entries fire on world ticks (`script.timed`), not on commands.
 

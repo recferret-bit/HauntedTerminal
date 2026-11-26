@@ -28,7 +28,7 @@ const SECTION_ORDER: readonly { id: ManualSectionId; code: string; title: string
   { id: 'files-perms', code: '03', title: 'Files & Permissions', shortTitle: 'Files' },
   { id: 'text-pipes', code: '04', title: 'Text & Streams', shortTitle: 'Text' },
   { id: 'procs-signals', code: '05', title: 'Processes & Signals', shortTitle: 'Kill/PS' },
-  { id: 'code-tools', code: '06', title: 'Code, Docker & Kiro', shortTitle: 'Tools' },
+  { id: 'code-tools', code: '06', title: 'Code, Docker & Kiro.d', shortTitle: 'Tools' },
   { id: 'game-meta', code: '07', title: 'Help, Hints & Meta', shortTitle: 'Meta' },
 ];
 

@@ -6,7 +6,7 @@ import type { PlayFrame } from './play-frame.js';
 const EVENT_PRESETS: Record<string, KernelEvent> = {
   AGENT_TAUNT: { type: 'AGENT_TAUNT', agent: 'clod', model: 'agent.clod', text: 'CLOD: "Test line."', mood: 'laugh' },
   VIBECODER_EMOTE: { type: 'VIBECODER_EMOTE', emote: 'shock', text: 'WHAT?!' },
-  KIRO_ACTION: { type: 'KIRO_ACTION', action: 'scan', core: 'qwen', message: 'Kiro scans the room.' },
+  KIRO_ACTION: { type: 'KIRO_ACTION', action: 'scan', core: 'qwen', message: 'Kiro.d scans the room.' },
   ENTITY_SPAWNED: { type: 'ENTITY_SPAWNED', entityId: 'preview_virus', model: 'malware.virus', reason: 'script' },
   ENEMY_KILLED: { type: 'ENEMY_KILLED', entityId: 'preview_virus', model: 'malware.virus', how: 'SIGKILL' },
   ENEMY_ATTACK: { type: 'ENEMY_ATTACK', entityId: 'preview_virus', model: 'malware.virus', damage: 5, attack: 'bite' },

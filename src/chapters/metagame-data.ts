@@ -128,9 +128,9 @@ export const GRIMOIRE_ENTRIES: readonly GrimoireEntry[] = [
   {
     command: 'kiro',
     category: 'POSIX',
-    syntax: 'kiro [scan | load <qwen|mistral|deepseek|llama> | crack <lock> | disclaimer] | cat <file> | kiro',
-    realWorld: 'Runs air-gapped, self-hosted `.gguf` open-weights inference locally on your own GPU VRAM.',
-    comicEffect: 'Unfolds your Destiny-style Kiro Ghost shell to scan rooms, hot-swap cores, audit files, and decrypt Cloud locks!',
+    syntax: 'kiro [scan | load <qwen|mistral|deepseek|llama> | crack <lock> | disclaimer] | cat <file> | kiro  (alias: kiro.d)',
+    realWorld: 'In Unix, a .d suffix marks a background daemon — running air-gapped, self-hosted `.gguf` open-weights inference locally on your own GPU VRAM.',
+    comicEffect: 'Unfolds your Kiro.d Unix daemon shell (PID 777) to scan rooms, hot-swap cores, audit files, and decrypt Cloud locks!',
   },
   {
     command: 'inventory',
@@ -167,11 +167,11 @@ export const BESTIARY_DOSSIER: readonly DossierEntry[] = [
   },
   {
     id: 'kiro.d',
-    name: 'kiro.d ("Little Weights" Ghost Companion)',
+    name: 'kiro.d (Local Unix .gguf Daemon)',
     model: 'npc.kiro_ghost',
     role: 'ALLY',
-    hostHardware: 'Classic white sheet Kiro Ghost with scalloped hem folds, dark oval eyes with cyan .gguf iris sparks, and orbiting gold VRAM shards.',
-    counterplay: '`kiro scan` sweeps threats; `kiro load <qwen|mistral|deepseek|llama>` boots open-weight models to disable the Big Four; `kiro crack <lock>` decrypts Cloud gates.',
+    hostHardware: 'Resident Unix background daemon (.d, PID 777) hosting quantized .gguf weights on local VRAM (Kiroween hackathon tribute; reworked post-event).',
+    counterplay: '`kiro` (or `kiro.d`) `scan` sweeps threats; `kiro load <qwen|mistral|deepseek|llama>` boots open-weight models to disable the Big Four; `kiro crack <lock>` decrypts Cloud gates.',
   },
   {
     id: 'spyware',

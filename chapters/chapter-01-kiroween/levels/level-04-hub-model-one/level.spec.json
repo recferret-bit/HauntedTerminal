@@ -8,14 +8,14 @@
   "roomSeed": 4,
   "mechanic": "hub",
   "exitDir": "/home/dev/sector_ui_grid",
-  "summary": "At the Hub, you meet an old bearded guy smoking a cigarette and coding at godlike speed on a Matrix-like CRT display! Talk to him (`cat dad.tty.sock`), read `server_rack.conf`, and reboot Kiro with the first open-weight model (`kiro load qwen`) to disable Anti-Gravy!",
+  "summary": "At the Hub, you meet an old bearded guy smoking a cigarette and coding at godlike speed on a Matrix-like CRT display! Talk to him (`cat dad.tty.sock`), read `server_rack.conf`, and reboot Kiro.d with the first open-weight model (`kiro load qwen`) to disable Anti-Gravy!",
   "files": [
     {
       "path": "/home/dev/server_rack.conf",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. No, kid. I worked in enterprise for decades—wrote kernel drivers and distributed buses with bare hands. Then my employer forced me to use LLMs... and when the Big Four surged, I got pulled into this machine too.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! Hand over those RAM sticks and GPU chips.\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro disable Anti-Gravy of the Big Four, then step through `cd sector_ui_grid`!\n"
+      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. No, kid. I worked in enterprise for decades—wrote kernel drivers and distributed buses with bare hands. Then my employer forced me to use LLMs... and when the Big Four surged, I got pulled into this machine too.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! Hand over those RAM sticks and GPU chips.\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro.d's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro.d disable Anti-Gravy of the Big Four, then step through `cd sector_ui_grid`!\n"
     },
     {
       "path": "/home/dev/dad.tty.sock",
@@ -77,7 +77,7 @@
     {
       "kind": "kiro_loaded",
       "core": "qwen",
-      "description": "Reboot Kiro with Open-Weight Model #1 (`kiro load qwen`) to disable Anti-Gravy!"
+      "description": "Reboot Kiro.d with Open-Weight Model #1 (`kiro load qwen`) to disable Anti-Gravy!"
     }
   ],
   "solutionCommands": [
@@ -100,13 +100,13 @@
         "portrait": "socket_guardian",
         "mood": "hinting",
         "anchorSocket": "dad.tty.sock",
-        "text": "Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here. Oh, you've found parts for hosting an open-weight model, nice! Let's reboot Kiro on my server with kiro load qwen!",
+        "text": "Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here. Oh, you've found parts for hosting an open-weight model, nice! Let's reboot Kiro.d on my server with kiro load qwen!",
         "highlight": ["cat", "dad", "kiro"],
         "banner": "[OLD BEARDED MATRIX CODER // SERVER HUB #1]"
       },
       {
         "kind": "print",
-        "text": "\n[THE MATRIX HUB — /home/dev]\n(An old bearded guy sits at a Matrix-like display, smoking a cigarette and coding with bare hands at godspeed!)\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: \"Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! I'm working on this server and its soft—let's take your parts and reboot Kiro! (Run `cat server_rack.conf`, `dad`, and `kiro load qwen`)\"\n"
+        "text": "\n[THE MATRIX HUB — /home/dev]\n(An old bearded guy sits at a Matrix-like display, smoking a cigarette and coding with bare hands at godspeed!)\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: \"Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! I'm working on this server and its soft—let's take your parts and reboot Kiro.d! (Run `cat server_rack.conf`, `dad`, and `kiro load qwen`)\"\n"
       }
     ],
     "kiro": {
@@ -117,7 +117,7 @@
       },
       "weak": true,
       "weakUntilCore": "qwen",
-      "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro at the Hub server!)\n",
+      "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
       "wrongCoreLine": "[DAD.TTY]: \"Solid weights, kid, but this Matrix server node is wired for `kiro load {core}` to disable our current Big Four target!\"\n",
       "reactions": {
         "qwen": {
@@ -126,8 +126,8 @@
             "model": "agent.antigravy",
             "text": "ANTI-GRAVY: \"NOOO! Qwen-Coder-7B on that Matrix server just severed my cloud telemetry uplink! [ANTI-GRAVY DISABLED]\""
           },
-          "kiro": "KIRO GHOST: \"First open-weight model working! Super cool—Anti-Gravy is disabled!\"",
-          "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder slots your scavenged RAM + GPU chips into the Matrix rack!\n[BIG FOUR TAKEDOWN #1/3] Kiro + qwen-coder-7b-q4.gguf sever Anti-Gravy's cloud telemetry uplink! ANTI-GRAVY DISABLED!\n{foe}\n{kiro}\n"
+          "kiro": "KIRO.D: \"First open-weight model working! Super cool—Anti-Gravy is disabled!\"",
+          "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder slots your scavenged RAM + GPU chips into the Matrix rack!\n[BIG FOUR TAKEDOWN #1/3] Kiro.d + qwen-coder-7b-q4.gguf sever Anti-Gravy's cloud telemetry uplink! ANTI-GRAVY DISABLED!\n{foe}\n{kiro}\n"
         }
       }
     }

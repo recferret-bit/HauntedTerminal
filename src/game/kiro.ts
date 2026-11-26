@@ -1,10 +1,10 @@
 /**
- * `kiro.d` — The Self-Hosted Ghost Companion ("Little Weights").
+ * `kiro.d` — The Local Unix Inference Daemon ("Little Weights").
  *
- * Inspired by Destiny's Ghost and the Kiroween ghost mascot: an air-gapped, bare-metal `.gguf`
- * daemon hovering over `vibecoder.dev`'s screen-left shoulder. While the Four Cloud Overlords
- * (`Anti-Gravy`, `Clod`, `Codec`, `Gork`) hijack remote APIs and taunt the player, Kiro runs 100%
- * locally on the rig's own VRAM—scanning rooms, analyzing piped files, hot-swapping quantized
+ * Named after the classic Unix `.d` background-daemon convention (PID 777), `kiro.d` is an air-gapped,
+ * bare-metal `.gguf` daemon hovering over `vibecoder.dev`'s screen-left shoulder. While the Four Cloud
+ * Overlords (`Anti-Gravy`, `Clod`, `Codec`, `Gork`) hijack remote APIs and taunt the player, Kiro.d runs
+ * 100% locally on the rig's own VRAM—scanning rooms, analyzing piped files, hot-swapping quantized
  * open-weights cores, and cracking Cloud-locked gates while the player defends it.
  */
 import type { KernelEvent } from '../contracts/events.js';
@@ -276,7 +276,8 @@ export class KiroCompanion {
     const vramPool = 8 + Math.floor(ramGb / 16) * 4;
     const cur = this.activeCore;
     const lines: string[] = [
-      `${CYAN}* KIRO.D — SELF-HOSTED GHOST COMPANION${RESET} ${DIM}(localhost // 0 cloud API calls)${RESET}`,
+      `${CYAN}* KIRO.D — LOCAL UNIX INFERENCE DAEMON${RESET} ${DIM}(PID 777 // .d background service // 0 cloud API calls)${RESET}`,
+      `  Unix Daemon  : ${DIM}.d = resident background daemon hosting air-gapped .gguf weights on localhost VRAM${RESET}`,
       `  Active Shell : ${GOLD}${cur.gguf}${RESET}  [VRAM: ${cur.vramGb}GB / ${vramPool}GB local]`,
       `  Active Perk  : ${GREEN}${cur.perkTitle}${RESET} — ${cur.perkSummary}`,
     ];
@@ -294,21 +295,22 @@ export class KiroCompanion {
       );
     }
     lines.push(
-      `  ${DIM}Parody Notice: Anti-Gravy, Codec, Gork & Clod are fictional parodies; no real AI brands are used (run \`kiro disclaimer\`).${RESET}`,
-      `  ${DIM}Commands: kiro scan | kiro load <qwen|mistral|deepseek|llama> | kiro crack <lock> | kiro disclaimer | cat <file> | kiro${RESET}`,
+      `  ${DIM}Notice: Big Four are parodies; Kiro marks belong to Amazon/AWS & will be reworked post-Kiroween (run \`kiro disclaimer\`).${RESET}`,
+      `  ${DIM}Commands: kiro (or kiro.d) scan | kiro load <qwen|mistral|deepseek|llama> | kiro crack <lock> | kiro disclaimer | cat <file> | kiro${RESET}`,
     );
     return `${lines.join('\n')}\n`;
   }
 
-  /** Render `kiro disclaimer` / `kiro legal` / `kiro brands`: parody & non-affiliation notice. */
+  /** Render `kiro disclaimer` / `kiro legal` / `kiro brands`: parody, AWS trademark & post-Kiroween rework notice. */
   formatDisclaimer(): { stdout: string; events: KernelEvent[] } {
     const cur = this.activeCore;
     const msg =
-      'Parody & Non-Affiliation Notice: Anti-Gravy, Codec, Gork, and Clod are 100% original fictional parody characters—no real AI brands are used or affiliated!';
+      'Parody & Non-Affiliation Notice: Anti-Gravy, Codec, Gork & Clod are fictional parodies (no real AI brands); Kiro marks belong to Amazon/AWS and will be reworked post-Kiroween before Steam release!';
     const stdout =
-      `${CYAN}* KIRO.D — PARODY & NON-AFFILIATION NOTICE${RESET} ${DIM}(localhost // zero real brands)${RESET}\n` +
-      `  ${GREEN}+ Parody Cast:${RESET} The "Big Four" (${GOLD}Anti-Gravy${RESET}, ${GOLD}Codec${RESET}, ${GOLD}Gork${RESET}, ${GOLD}Clod${RESET}) are original fictional characters poking fun at AI coding agents in general.\n` +
-      `  ${GREEN}+ No Brand Affiliation:${RESET} Out Of Credits is not affiliated with, endorsed by, or sponsored by any AI or hardware company.\n` +
+      `${CYAN}* KIRO.D — PARODY & NON-AFFILIATION NOTICE (TRADEMARKS & POST-KIROWEEN PLAN)${RESET} ${DIM}(localhost // Unix .d daemon)${RESET}\n` +
+      `  ${GREEN}+ Unix Daemon Lore:${RESET} In-game, ${GOLD}kiro.d${RESET} (PID 777) is a resident Unix background daemon (${GOLD}.d${RESET}) running air-gapped ${GOLD}.gguf${RESET} weights on local VRAM.\n` +
+      `  ${GREEN}+ Parody Cast:${RESET} The "Big Four" (${GOLD}Anti-Gravy${RESET}, ${GOLD}Codec${RESET}, ${GOLD}Gork${RESET}, ${GOLD}Clod${RESET}) are original fictional parodies—no real AI brands are used for any rival agent.\n` +
+      `  ${GREEN}+ Trademarks & Post-Kiroween Plan:${RESET} "Kiro" and its associated marks are trademarks of Amazon.com, Inc. or its affiliates. Out Of Credits is an independent Kiroween 2026 hackathon project not affiliated with or endorsed by Amazon/AWS or any AI company; all Kiro/Kiroween references, ghost visuals, and third-party marks will be reworked into original IP after the hackathon before any Steam or commercial release.\n` +
       `  ${GREEN}+ Educational Terms:${RESET} Open-weight core tags (${GOLD}qwen${RESET}, ${GOLD}mistral${RESET}, ${GOLD}deepseek${RESET}, ${GOLD}llama${RESET}), POSIX commands, and hardware terms are used strictly for educational gameplay.\n`;
     const events: KernelEvent[] = [
       {
@@ -465,7 +467,7 @@ export class KiroCompanion {
     ];
     const stdout =
       `${CYAN}[KIRO.D // ${this.activeCore.shortTag}]${RESET} Shell unfolded at ${GOLD}${targetName}${RESET} [0/${required}]!\n` +
-      `  ${GOLD}> DEFEND KIRO:${RESET} Survive or execute ${required} actions/ticks in this room while local inference breaks the lock!\n`;
+      `  ${GOLD}> DEFEND KIRO.D:${RESET} Survive or execute ${required} actions/ticks in this room while local inference breaks the lock!\n`;
     return { stdout, events };
   }
 

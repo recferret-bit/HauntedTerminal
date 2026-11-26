@@ -37,7 +37,7 @@ await withProcgen(async (_p, vite) => {
   test('every shell command and alias is documented via findCommandDoc with flags and examples', () => {
     const missing = [...new Set([...COMMANDS, ...CHAPTER_COMMANDS])].filter((c) => !findCommandDoc(c));
     assert.deepEqual(missing, [], `Undocumented shell commands: ${missing.join(', ')}`);
-    for (const alias of ['.', 'logout', 'inv', 'nano', 'vim', 'code', 'dossier', 'rig', 'ach', 'trophies']) {
+    for (const alias of ['.', 'kiro.d', 'logout', 'inv', 'nano', 'vim', 'code', 'dossier', 'rig', 'ach', 'trophies']) {
       assert.ok(findCommandDoc(alias), `alias ${alias} missing from findCommandDoc`);
     }
 
@@ -322,6 +322,30 @@ await withProcgen(async (_p, vite) => {
     assert.equal(session.consumeMapRequest(), '4');
     assert.equal(session.consumeMapRequest(), null);
     assert.ok(session.complete('map 1').matches.includes('11'));
+
+    assert.equal(runMan(['kiro.d']).code, 0);
+    assert.match(runMan(['kiro.d']).stdout, /Unix background daemon/i);
+    assert.equal(classic.exec('kiro.d status').code, 0);
+    assert.match(classic.exec('kiro.d status').output, /LOCAL UNIX INFERENCE DAEMON/);
+    const legalClassic = classic.exec('kiro.d disclaimer');
+    assert.equal(legalClassic.code, 0);
+    assert.match(legalClassic.output, /Amazon\.com, Inc\./);
+    assert.match(legalClassic.output, /reworked into original IP after the hackathon/i);
+    const pipedClassic = classic.exec('echo "API_KEY=sk_live_123" | kiro.d');
+    assert.equal(pipedClassic.code, 0);
+    assert.match(pipedClassic.output, /Leaked live secret detected/);
+
+    assert.equal(session.exec('kiro.d disclaimer').code, 0);
+    assert.ok(session.complete('kiro.d ').matches.includes('scan'));
+    const lockedA = createChapterSession({ chapterId: slug, startLevelId: 'level-03-task-gpu-salvage', pidSeed: 42, preview: true });
+    const lockedB = createChapterSession({ chapterId: slug, startLevelId: 'level-03-task-gpu-salvage', pidSeed: 42, preview: true });
+    lockedA.arriveLevel();
+    lockedB.arriveLevel();
+    const kiroLock = lockedA.exec('kiro scan');
+    const kirodLock = lockedB.exec('kiro.d scan');
+    assert.equal(kiroLock.code, 1);
+    assert.equal(kirodLock.code, 1);
+    assert.equal(kirodLock.output, kiroLock.output, 'kiro.d must respect script.locks for kiro identically');
   });
 });
 

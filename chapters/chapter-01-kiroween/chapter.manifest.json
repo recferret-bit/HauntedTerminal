@@ -2,16 +2,16 @@
   "id": "chapter-01-kiroween",
   "issueNumber": 1,
   "title": "Kiroween: Open Weights & Family Ties",
-  "subtitle": "Scavenge RAM + GPU chips, reboot Kiro Ghost with the Old Bearded Matrix Coder, disable the Big Four, and face Clod!",
+  "subtitle": "Scavenge RAM + GPU chips, reboot Kiro.d with the Old Bearded Matrix Coder, disable the Big Four, and face Clod!",
   "status": "playable",
   "badge": "KIROWEEN SPECIAL ISSUE",
   "estimatedMinutes": 35,
-  "clientName": "Kiro Ghost & The Bearded Matrix Coder (Dad)",
-  "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro Ghost brings his terminal and reveals the tyranny of the Big Four (Anti-Gravy, Codec, Gork, Clod). Learn ls, mv, cat, ps, and kill; scavenge RAM and GPU chips across 6 sectors while recovering your oil lantern in GPU Alley (Level 3) and your clamshell laptop in Logic Cell (Level 6) as the Big Four laugh and bully you; bring the parts to the Hub where a cigarette-smoking Old Bearded Coder on a Matrix display reboots Kiro with open-weight models to disable Anti-Gravy, Codec, and Gork; defeat Clod and the Final Boss; and teleport back to the real world for the ultimate father-son unicorn twist!",
+  "clientName": "Kiro.d & The Bearded Matrix Coder (Dad)",
+  "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal and reveals the tyranny of the Big Four (Anti-Gravy, Codec, Gork, Clod). Learn ls, mv, cat, ps, and kill; scavenge RAM and GPU chips across 6 sectors while recovering your oil lantern in GPU Alley (Level 3) and your clamshell laptop in Logic Cell (Level 6) as the Big Four laugh and bully you; bring the parts to the Hub where a cigarette-smoking Old Bearded Coder on a Matrix display reboots Kiro.d with open-weight models to disable Anti-Gravy, Codec, and Gork; defeat Clod and the Final Boss; and teleport back to the real world for the ultimate father-son unicorn twist!",
   "allyNpc": {
     "id": "dad.tty",
     "name": "Old Bearded Matrix Coder (dad.tty)",
-    "role": "Cigarette-smoking bare-hands enterprise greybeard who upgrades Kiro's open-weight server at the Hub—and turns out to be your Father!",
+    "role": "Cigarette-smoking bare-hands enterprise greybeard who upgrades Kiro.d's open-weight server at the Hub—and turns out to be your Father!",
     "model": "npc.greybeard_rig",
     "paletteFamily": "hardware"
   },
@@ -30,16 +30,16 @@
     "pageCount": 6
   },
   "mechanicsSummary": [
-    "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, receive your terminal from Kiro Ghost, learn the Big Four story, and practice ls, mv, cat, ps, and kill",
+    "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, receive your terminal from Kiro.d, learn the Big Four story, and practice ls, mv, cat, ps, and kill",
     "Levels 2-3, 5-6, 8-9 Tasks: Scavenge RAM + GPU chips across POSIX, HTML/CSS, JS, Dockerfile & Compose sectors—recovering your oil lantern at Level 3 and your clamshell laptop at Level 6 while the Big Four bully you",
-    "Levels 4, 7, 10 Hub: Meet the cigarette-smoking Old Bearded Coder on his Matrix display ('Are you a god?'), install RAM + GPU chips, reboot Kiro with open-weight models (Qwen, DeepSeek, Llama), and disable Anti-Gravy, Codec, and Gork",
-    "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
+    "Levels 4, 7, 10 Hub: Meet the cigarette-smoking Old Bearded Coder on his Matrix display ('Are you a god?'), install RAM + GPU chips, reboot Kiro.d with open-weight models (Qwen, DeepSeek, Llama), and disable Anti-Gravy, Codec, and Gork",
+    "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro.d as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
   ],
   "levels": [
     {
       "index": 1,
       "id": "level-01-tutorial-awakening",
-      "title": "Wires, Chips & The Kiro Ghost",
+      "title": "Wires, Chips & Kiro.d",
       "cwd": "/mnt/wires_and_chips",
       "roomKind": "attic",
       "floorTheme": 1,
@@ -89,7 +89,7 @@
       "roomKind": "desk",
       "floorTheme": 1,
       "mechanic": "hub",
-      "mechanicLabel": "Hub 1 (Meet Bearded Coder / Reboot Kiro / Disable Anti-Gravy)",
+      "mechanicLabel": "Hub 1 (Meet Bearded Coder / Reboot Kiro.d / Disable Anti-Gravy)",
       "difficulty": 1,
       "teaches": ["cat", "dad", "kiro load qwen", "cd"],
       "enemies": [],
@@ -134,7 +134,7 @@
       "roomKind": "desk",
       "floorTheme": 1,
       "mechanic": "hub",
-      "mechanicLabel": "Hub 2 (Upgrade Server / Reboot Kiro / Disable Codec)",
+      "mechanicLabel": "Hub 2 (Upgrade Server / Reboot Kiro.d / Disable Codec)",
       "difficulty": 1,
       "teaches": ["cat", "dad", "kiro load deepseek", "cd"],
       "enemies": [],
@@ -194,7 +194,7 @@
       "roomKind": "core",
       "floorTheme": 5,
       "mechanic": "boss",
-      "mechanicLabel": "Final Boss (Clod + Boss / Kiro Advisor / Real-World Father Twist)",
+      "mechanicLabel": "Final Boss (Clod + Boss / Kiro.d Advisor / Real-World Father Twist)",
       "difficulty": 5,
       "teaches": ["cat > /dev/null", "grep > .sock", "sed -i", "kill -9 1", "exit"],
       "enemies": ["kernel"],
@@ -276,7 +276,7 @@
       "model": "npc.greybeard_rig",
       "role": "ALLY",
       "hostHardware": "Veteran enterprise coder with a chest-length beard & lit cigarette hammering bare-metal code on a Matrix-display CRT server rack.",
-      "counterplay": "`cat dad.tty.sock` / `hank` to talk; bring scavenged RAM + GPU chips to the Hub and run `kiro load <qwen|deepseek|llama>` so he reboots Kiro and disables one of the Big Four!"
+      "counterplay": "`cat dad.tty.sock` / `hank` to talk; bring scavenged RAM + GPU chips to the Hub and run `kiro load <qwen|deepseek|llama>` so he reboots Kiro.d and disables one of the Big Four!"
     }
   ]
 }

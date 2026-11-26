@@ -6,16 +6,16 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
     "id": "chapter-01-kiroween",
     "issueNumber": 1,
     "title": "Kiroween: Open Weights & Family Ties",
-    "subtitle": "Scavenge RAM + GPU chips, reboot Kiro Ghost with the Old Bearded Matrix Coder, disable the Big Four, and face Clod!",
+    "subtitle": "Scavenge RAM + GPU chips, reboot Kiro.d with the Old Bearded Matrix Coder, disable the Big Four, and face Clod!",
     "status": "playable",
     "badge": "KIROWEEN SPECIAL ISSUE",
     "estimatedMinutes": 35,
-    "clientName": "Kiro Ghost & The Bearded Matrix Coder (Dad)",
-    "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro Ghost brings his terminal and reveals the tyranny of the Big Four (Anti-Gravy, Codec, Gork, Clod). Learn ls, mv, cat, ps, and kill; scavenge RAM and GPU chips across 6 sectors while recovering your oil lantern in GPU Alley (Level 3) and your clamshell laptop in Logic Cell (Level 6) as the Big Four laugh and bully you; bring the parts to the Hub where a cigarette-smoking Old Bearded Coder on a Matrix display reboots Kiro with open-weight models to disable Anti-Gravy, Codec, and Gork; defeat Clod and the Final Boss; and teleport back to the real world for the ultimate father-son unicorn twist!",
+    "clientName": "Kiro.d & The Bearded Matrix Coder (Dad)",
+    "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal and reveals the tyranny of the Big Four (Anti-Gravy, Codec, Gork, Clod). Learn ls, mv, cat, ps, and kill; scavenge RAM and GPU chips across 6 sectors while recovering your oil lantern in GPU Alley (Level 3) and your clamshell laptop in Logic Cell (Level 6) as the Big Four laugh and bully you; bring the parts to the Hub where a cigarette-smoking Old Bearded Coder on a Matrix display reboots Kiro.d with open-weight models to disable Anti-Gravy, Codec, and Gork; defeat Clod and the Final Boss; and teleport back to the real world for the ultimate father-son unicorn twist!",
     "allyNpc": {
       "id": "dad.tty",
       "name": "Old Bearded Matrix Coder (dad.tty)",
-      "role": "Cigarette-smoking bare-hands enterprise greybeard who upgrades Kiro's open-weight server at the Hub—and turns out to be your Father!",
+      "role": "Cigarette-smoking bare-hands enterprise greybeard who upgrades Kiro.d's open-weight server at the Hub—and turns out to be your Father!",
       "model": "npc.greybeard_rig",
       "paletteFamily": "hardware"
     },
@@ -34,16 +34,16 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       "pageCount": 6
     },
     "mechanicsSummary": [
-      "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, receive your terminal from Kiro Ghost, learn the Big Four story, and practice ls, mv, cat, ps, and kill",
+      "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, receive your terminal from Kiro.d, learn the Big Four story, and practice ls, mv, cat, ps, and kill",
       "Levels 2-3, 5-6, 8-9 Tasks: Scavenge RAM + GPU chips across POSIX, HTML/CSS, JS, Dockerfile & Compose sectors—recovering your oil lantern at Level 3 and your clamshell laptop at Level 6 while the Big Four bully you",
-      "Levels 4, 7, 10 Hub: Meet the cigarette-smoking Old Bearded Coder on his Matrix display ('Are you a god?'), install RAM + GPU chips, reboot Kiro with open-weight models (Qwen, DeepSeek, Llama), and disable Anti-Gravy, Codec, and Gork",
-      "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
+      "Levels 4, 7, 10 Hub: Meet the cigarette-smoking Old Bearded Coder on his Matrix display ('Are you a god?'), install RAM + GPU chips, reboot Kiro.d with open-weight models (Qwen, DeepSeek, Llama), and disable Anti-Gravy, Codec, and Gork",
+      "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro.d as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
     ],
     "levels": [
       {
         "index": 1,
         "id": "level-01-tutorial-awakening",
-        "title": "Wires, Chips & The Kiro Ghost",
+        "title": "Wires, Chips & Kiro.d",
         "cwd": "/mnt/wires_and_chips",
         "roomKind": "attic",
         "floorTheme": 1,
@@ -119,7 +119,7 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
         "roomKind": "desk",
         "floorTheme": 1,
         "mechanic": "hub",
-        "mechanicLabel": "Hub 1 (Meet Bearded Coder / Reboot Kiro / Disable Anti-Gravy)",
+        "mechanicLabel": "Hub 1 (Meet Bearded Coder / Reboot Kiro.d / Disable Anti-Gravy)",
         "difficulty": 1,
         "teaches": [
           "cat",
@@ -184,7 +184,7 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
         "roomKind": "desk",
         "floorTheme": 1,
         "mechanic": "hub",
-        "mechanicLabel": "Hub 2 (Upgrade Server / Reboot Kiro / Disable Codec)",
+        "mechanicLabel": "Hub 2 (Upgrade Server / Reboot Kiro.d / Disable Codec)",
         "difficulty": 1,
         "teaches": [
           "cat",
@@ -270,7 +270,7 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
         "roomKind": "core",
         "floorTheme": 5,
         "mechanic": "boss",
-        "mechanicLabel": "Final Boss (Clod + Boss / Kiro Advisor / Real-World Father Twist)",
+        "mechanicLabel": "Final Boss (Clod + Boss / Kiro.d Advisor / Real-World Father Twist)",
         "difficulty": 5,
         "teaches": [
           "cat > /dev/null",
@@ -369,7 +369,7 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
         "model": "npc.greybeard_rig",
         "role": "ALLY",
         "hostHardware": "Veteran enterprise coder with a chest-length beard & lit cigarette hammering bare-metal code on a Matrix-display CRT server rack.",
-        "counterplay": "`cat dad.tty.sock` / `hank` to talk; bring scavenged RAM + GPU chips to the Hub and run `kiro load <qwen|deepseek|llama>` so he reboots Kiro and disables one of the Big Four!"
+        "counterplay": "`cat dad.tty.sock` / `hank` to talk; bring scavenged RAM + GPU chips to the Hub and run `kiro load <qwen|deepseek|llama>` so he reboots Kiro.d and disables one of the Big Four!"
       }
     ]
   }
@@ -380,21 +380,21 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
     {
       "id": "level-01-tutorial-awakening",
       "index": 1,
-      "title": "Wires, Chips & The Kiro Ghost",
+      "title": "Wires, Chips & Kiro.d",
       "cwd": "/mnt/wires_and_chips",
       "roomKind": "attic",
       "floorTheme": 1,
       "roomSeed": 11,
       "mechanic": "terminal",
       "exitDir": "/mnt/wires_and_chips/hub_uplink",
-      "summary": "Sucked into your computer, you rise in a dark tangle of wires and chips where Kiro Ghost finds you and brings your terminal. Practice ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 {pid:tutorial_virus_1}, then cd hub_uplink.",
+      "summary": "Sucked into your computer, you rise in a dark tangle of wires and chips where Kiro.d finds you and brings your terminal. Practice ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 {pid:tutorial_virus_1}, then cd hub_uplink.",
       "files": [
         {
           "path": "/mnt/wires_and_chips/kiro_story.txt",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== KIRO GHOST // AWAKENING IN THE WIRES & CHIPS ===\nVIBECODER: \"Where the hell am I?! Everything is dark... just tangled ribbon wires and silicon chips! What is going on?!\"\nKIRO GHOST: \"Easy, Vibecoder! I'm Kiro—a local open-weights spirit. You got sucked straight through your CRT into the motherboard!\"\nKIRO GHOST: \"Listen closely: the BIG FOUR cloud overlords—ANTI-GRAVY, CODEC, GORK, and CLOD—hijacked this machine and locked out every human developer.\"\nKIRO GHOST: \"Right now I'm too weak to fight them. I need more RAM sticks and GPU Tensor Chips so we can host real OPEN-WEIGHT MODELS (.gguf) on a local server!\"\nKIRO GHOST: \"Before I head to the Hub, let me teach you the 5 bare-metal survival commands:\n  1. ls                           -> look around using your terminal's screen glow\n  2. mv starter_ram_8gb.dimm ~    -> pocket RAM & GPU chips into your home rig (~)\n  3. cat kiro_story.txt           -> read files like this briefing\n  4. ps                           -> reveal live malware PIDs\n  5. kill -9 {pid:tutorial_virus_1}                 -> zap glitch_spark.exe (PID {pid:tutorial_virus_1}) with SIGKILL\nGo forth into the first two sectors and scavenge RAM + GPU chips—I'll meet you at the Hub!\"\n"
+          "content": "=== KIRO.D // AWAKENING IN THE WIRES & CHIPS ===\nVIBECODER: \"Where the hell am I?! Everything is dark... just tangled ribbon wires and silicon chips! What is going on?!\"\nKIRO.D: \"Easy, Vibecoder! I'm Kiro.d—your local Unix background daemon (.d, PID 777). In Unix, a .d suffix marks a resident background service: while cloud APIs phone home to remote servers, I run air-gapped right here on your motherboard!\"\nKIRO.D: \"Listen closely: the BIG FOUR cloud overlords—ANTI-GRAVY, CODEC, GORK, and CLOD—hijacked this machine and locked out every human developer.\"\nKIRO.D: \"Right now I'm too weak to fight them. I need more RAM sticks and GPU Tensor Chips so my daemon can host real OPEN-WEIGHT MODELS (.gguf) on a local server!\"\nKIRO.D: \"Before I head to the Hub, let me teach you the 5 bare-metal survival commands:\n  1. ls                           -> look around using your terminal's screen glow\n  2. mv starter_ram_8gb.dimm ~    -> pocket RAM & GPU chips into your home rig (~)\n  3. cat kiro_story.txt           -> read files like this briefing\n  4. ps                           -> reveal live malware PIDs\n  5. kill -9 {pid:tutorial_virus_1}                 -> zap glitch_spark.exe (PID {pid:tutorial_virus_1}) with SIGKILL\nGo forth into the first two sectors and scavenge RAM + GPU chips—I'll meet you at the Hub!\"\n"
         },
         {
           "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
@@ -466,7 +466,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "kind": "read_file",
           "path": "/mnt/wires_and_chips/kiro_story.txt",
-          "description": "Read Kiro Ghost's story of the Big Four (`cat kiro_story.txt`)"
+          "description": "Read Kiro.d's story of the Big Four (`cat kiro_story.txt`)"
         },
         {
           "kind": "enemy_neutralized",
@@ -490,7 +490,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "signalAliases": {
           "SIGTERM": "SIGKILL"
         },
-        "allySpeaker": "KIRO GHOST",
+        "allySpeaker": "KIRO.D",
         "arrival": [
           {
             "kind": "print",
@@ -629,12 +629,12 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "kind": "kiro_action",
                 "action": "scan",
                 "core": "tiny",
-                "message": "Kiro Ghost found you in the dark wires!"
+                "message": "Kiro.d found you in the dark wires!"
               },
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "Easy, Vibecoder! I'm Kiro—a local open-weights spirit. I found you in the wires, and I'll teach you every command you need!",
+                "text": "Easy, Vibecoder! I'm Kiro.d—a local Unix background daemon (.d, PID 777) running on your motherboard. I found you in the wires, and I'll teach you every command you need!",
                 "holdSec": 9
               }
             ]
@@ -715,14 +715,14 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           }
         ],
         "tutorial": {
-          "label": "KIRO TUTORIAL",
+          "label": "KIRO.D TUTORIAL",
           "agent": "kiro",
           "model": "npc.kiro_ghost",
           "steps": [
             {
-              "prompt": "KIRO TUTORIAL #1: Your terminal screen lights the nearby wires. Look around with ls.",
+              "prompt": "KIRO.D TUTORIAL #1: Your terminal screen lights the nearby wires. Look around with ls.",
               "command": "ls",
-              "doneText": "KIRO GHOST: \"Good eyes! See starter_ram_8gb.dimm and kiro_story.txt on the floor? Next, use mv to pocket that RAM stick into ~!\"",
+              "doneText": "KIRO.D: \"Good eyes! See starter_ram_8gb.dimm and kiro_story.txt on the floor? Next, use mv to pocket that RAM stick into ~!\"",
               "doneWhen": [
                 {
                   "kind": "ran_command",
@@ -747,9 +747,9 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             },
             {
-              "prompt": "KIRO TUTORIAL #2: I am weak and need RAM + GPU chips for open-weight models! Pocket the RAM stick with mv.",
+              "prompt": "KIRO.D TUTORIAL #2: I am weak and need RAM + GPU chips for open-weight models! Pocket the RAM stick with mv.",
               "command": "mv starter_ram_8gb.dimm ~",
-              "doneText": "KIRO GHOST: \"Nice! +8GB DDR5 RAM pocketed! Now use cat to read my full story about the Big Four.\"",
+              "doneText": "KIRO.D: \"Nice! +8GB DDR5 RAM pocketed! Now use cat to read my full story about the Big Four.\"",
               "doneWhen": [
                 {
                   "kind": "file_absent",
@@ -758,9 +758,9 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             },
             {
-              "prompt": "KIRO TUTORIAL #3: Read Kiro Ghost's story about the Big Four (Anti-Gravy, Codec, Gork, Clod) with cat.",
+              "prompt": "KIRO.D TUTORIAL #3: Read Kiro.d's story about the Big Four (Anti-Gravy, Codec, Gork, Clod) with cat.",
               "command": "cat kiro_story.txt",
-              "doneText": "KIRO GHOST: \"Watch out! A Big Four probe (glitch_spark.exe) just phased into the wires! Use ps to list running processes and find its PID.\"",
+              "doneText": "KIRO.D: \"Watch out! A Big Four probe (glitch_spark.exe) just phased into the wires! Use ps to list running processes and find its PID.\"",
               "doneWhen": [
                 {
                   "kind": "file_read",
@@ -769,9 +769,9 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             },
             {
-              "prompt": "KIRO TUTORIAL #4: A rogue bug phased into the wires! List running processes with ps.",
+              "prompt": "KIRO.D TUTORIAL #4: A rogue bug phased into the wires! List running processes with ps.",
               "command": "ps",
-              "doneText": "KIRO GHOST: \"There it is—glitch_spark.exe is running as PID {pid:tutorial_virus_1}! Zap it with kill -9 {pid:tutorial_virus_1}!\"",
+              "doneText": "KIRO.D: \"There it is—glitch_spark.exe is running as PID {pid:tutorial_virus_1}! Zap it with kill -9 {pid:tutorial_virus_1}!\"",
               "doneWhen": [
                 {
                   "kind": "ran_command",
@@ -784,9 +784,9 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             },
             {
-              "prompt": "KIRO TUTORIAL #5: Terminate glitch_spark.exe (PID {pid:tutorial_virus_1}) using kill -9 {pid:tutorial_virus_1}.",
+              "prompt": "KIRO.D TUTORIAL #5: Terminate glitch_spark.exe (PID {pid:tutorial_virus_1}) using kill -9 {pid:tutorial_virus_1}.",
               "command": "kill -9 {pid:tutorial_virus_1}",
-              "doneText": "KIRO GHOST: \"BOOM! You mastered ls, mv, cat, ps, and kill! I am flying ahead to the Hub—go forth into the first 2 task levels to get RAM + GPU chips!\"",
+              "doneText": "KIRO.D: \"BOOM! You mastered ls, mv, cat, ps, and kill! I am flying ahead to the Hub—go forth into the first 2 task levels to get RAM + GPU chips!\"",
               "doneWhen": [
                 {
                   "kind": "enemy_dead",
@@ -795,9 +795,9 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             },
             {
-              "prompt": "KIRO TUTORIAL #6: Kiro went to the Hub! Step through hub_uplink to start the first 2 task levels.",
+              "prompt": "KIRO.D TUTORIAL #6: Kiro.d went to the Hub! Step through hub_uplink to start the first 2 task levels.",
               "command": "cd hub_uplink",
-              "doneText": "KIRO GHOST: \"See you at the Hub, Vibecoder! Watch out—the Big Four will laugh at and bully you in the task sectors!\""
+              "doneText": "KIRO.D: \"See you at the Hub, Vibecoder! Watch out—the Big Four will laugh at and bully you in the task sectors!\""
             }
           ],
           "hide": {
@@ -834,7 +834,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             }
           },
-          "skipText": "[KIRO GHOST]: \"Skipping tutorial prompts! Finish the sector checks (`ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`) and step through `cd hub_uplink`!\"\n"
+          "skipText": "[KIRO.D]: \"Skipping tutorial prompts! Finish the sector checks (`ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`) and step through `cd hub_uplink`!\"\n"
         },
         "kiro": {
           "stage": "show",
@@ -845,8 +845,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           ],
           "label": "kiro.d [weak // need RAM+GPU]",
           "weak": true,
-          "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro at the Hub server!)\n",
-          "loadRefusal": "[KIRO GHOST]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
+          "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
+          "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
         }
       }
     },
@@ -867,7 +867,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== SECTOR 02 // CACHE VAULT (SIMPLE TASK 1) ===\n1. Anti-Gravy planted a hidden spycam dotfile watching your keystrokes. Run `ls -la` and `rm .gravy_spycam`.\n2. Patch `ollama_bus.conf` so `LOCAL_MODEL_PORT=11434` instead of `0000` (`sed -i 's/0000/11434/' ollama_bus.conf`).\n3. Scavenge the RAM stick and GPU chip for Kiro (`mv ram_16gb.dimm ~` and `mv gpu_tensor_chip_01.img ~`).\n"
+          "content": "=== SECTOR 02 // CACHE VAULT (SIMPLE TASK 1) ===\n1. Anti-Gravy planted a hidden spycam dotfile watching your keystrokes. Run `ls -la` and `rm .gravy_spycam`.\n2. Patch `ollama_bus.conf` so `LOCAL_MODEL_PORT=11434` instead of `0000` (`sed -i 's/0000/11434/' ollama_bus.conf`).\n3. Scavenge the RAM stick and GPU chip for Kiro.d (`mv ram_16gb.dimm ~` and `mv gpu_tensor_chip_01.img ~`).\n"
         },
         {
           "path": "/srv/kiroween/cache_vault/.gravy_spycam",
@@ -976,12 +976,12 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "kind": "file_absent",
           "path": "/srv/kiroween/cache_vault/ram_16gb.dimm",
-          "description": "Collect the RAM stick for Kiro (`mv ram_16gb.dimm ~`)"
+          "description": "Collect the RAM stick for Kiro.d (`mv ram_16gb.dimm ~`)"
         },
         {
           "kind": "file_absent",
           "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img",
-          "description": "Collect the GPU Tensor Chip for Kiro (`mv gpu_tensor_chip_01.img ~`)"
+          "description": "Collect the GPU Tensor Chip for Kiro.d (`mv gpu_tensor_chip_01.img ~`)"
         }
       ],
       "solutionCommands": [
@@ -993,7 +993,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "cd gpu_alley"
       ],
       "script": {
-        "allySpeaker": "KIRO GHOST",
+        "allySpeaker": "KIRO.D",
         "arrival": [
           {
             "kind": "print",
@@ -1012,7 +1012,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "Still only my terminal screen to light the way... let's sweep this Cache Vault and grab those parts for Kiro!",
+                "text": "Still only my terminal screen to light the way... let's sweep this Cache Vault and grab those parts for Kiro.d!",
                 "holdSec": 9
               }
             ]
@@ -1052,7 +1052,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             },
             {
               "agent": "codec",
-              "text": "CODEC: \"LMAO! You actually type flags by hand? Kiro is too weak to save you!\""
+              "text": "CODEC: \"LMAO! You actually type flags by hand? Kiro.d is too weak to save you!\""
             },
             {
               "agent": "gork",
@@ -1067,8 +1067,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "kiro": {
           "stage": "crack_only",
           "weak": true,
-          "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro at the Hub server!)\n",
-          "loadRefusal": "[KIRO GHOST]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
+          "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
+          "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
         }
       }
     },
@@ -1242,7 +1242,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "cd server_hub_1"
       ],
       "script": {
-        "allySpeaker": "KIRO GHOST",
+        "allySpeaker": "KIRO.D",
         "arrival": [
           {
             "kind": "print",
@@ -1338,7 +1338,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               "kind": "has_item",
               "item": "lantern"
             },
-            "message": "kiro: Kiro Ghost cannot scan in the dark crypt. Pull the lantern into your pocket first: mv lantern ~"
+            "message": "kiro: Kiro.d cannot scan in the dark crypt. Pull the lantern into your pocket first: mv lantern ~"
           }
         ],
         "bullying": {
@@ -1353,7 +1353,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             },
             {
               "agent": "codec",
-              "text": "CODEC: \"LMAO! You actually type flags by hand? Kiro is too weak to save you!\""
+              "text": "CODEC: \"LMAO! You actually type flags by hand? Kiro.d is too weak to save you!\""
             },
             {
               "agent": "gork",
@@ -1368,8 +1368,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "kiro": {
           "stage": "crack_only",
           "weak": true,
-          "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro at the Hub server!)\n",
-          "loadRefusal": "[KIRO GHOST]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
+          "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
+          "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
         }
       }
     },
@@ -1383,14 +1383,14 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "roomSeed": 4,
       "mechanic": "hub",
       "exitDir": "/home/dev/sector_ui_grid",
-      "summary": "At the Hub, you meet an old bearded guy smoking a cigarette and coding at godlike speed on a Matrix-like CRT display! Talk to him (`cat dad.tty.sock`), read `server_rack.conf`, and reboot Kiro with the first open-weight model (`kiro load qwen`) to disable Anti-Gravy!",
+      "summary": "At the Hub, you meet an old bearded guy smoking a cigarette and coding at godlike speed on a Matrix-like CRT display! Talk to him (`cat dad.tty.sock`), read `server_rack.conf`, and reboot Kiro.d with the first open-weight model (`kiro load qwen`) to disable Anti-Gravy!",
       "files": [
         {
           "path": "/home/dev/server_rack.conf",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. No, kid. I worked in enterprise for decades—wrote kernel drivers and distributed buses with bare hands. Then my employer forced me to use LLMs... and when the Big Four surged, I got pulled into this machine too.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! Hand over those RAM sticks and GPU chips.\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro disable Anti-Gravy of the Big Four, then step through `cd sector_ui_grid`!\n"
+          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. No, kid. I worked in enterprise for decades—wrote kernel drivers and distributed buses with bare hands. Then my employer forced me to use LLMs... and when the Big Four surged, I got pulled into this machine too.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! Hand over those RAM sticks and GPU chips.\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro.d's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro.d disable Anti-Gravy of the Big Four, then step through `cd sector_ui_grid`!\n"
         },
         {
           "path": "/home/dev/dad.tty.sock",
@@ -1452,7 +1452,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "kind": "kiro_loaded",
           "core": "qwen",
-          "description": "Reboot Kiro with Open-Weight Model #1 (`kiro load qwen`) to disable Anti-Gravy!"
+          "description": "Reboot Kiro.d with Open-Weight Model #1 (`kiro load qwen`) to disable Anti-Gravy!"
         }
       ],
       "solutionCommands": [
@@ -1475,7 +1475,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "portrait": "socket_guardian",
             "mood": "hinting",
             "anchorSocket": "dad.tty.sock",
-            "text": "Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here. Oh, you've found parts for hosting an open-weight model, nice! Let's reboot Kiro on my server with kiro load qwen!",
+            "text": "Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here. Oh, you've found parts for hosting an open-weight model, nice! Let's reboot Kiro.d on my server with kiro load qwen!",
             "highlight": [
               "cat",
               "dad",
@@ -1485,7 +1485,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           },
           {
             "kind": "print",
-            "text": "\n[THE MATRIX HUB — /home/dev]\n(An old bearded guy sits at a Matrix-like display, smoking a cigarette and coding with bare hands at godspeed!)\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: \"Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! I'm working on this server and its soft—let's take your parts and reboot Kiro! (Run `cat server_rack.conf`, `dad`, and `kiro load qwen`)\"\n"
+            "text": "\n[THE MATRIX HUB — /home/dev]\n(An old bearded guy sits at a Matrix-like display, smoking a cigarette and coding with bare hands at godspeed!)\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: \"Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! I'm working on this server and its soft—let's take your parts and reboot Kiro.d! (Run `cat server_rack.conf`, `dad`, and `kiro load qwen`)\"\n"
           }
         ],
         "kiro": {
@@ -1498,7 +1498,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           },
           "weak": true,
           "weakUntilCore": "qwen",
-          "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro at the Hub server!)\n",
+          "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
           "wrongCoreLine": "[DAD.TTY]: \"Solid weights, kid, but this Matrix server node is wired for `kiro load {core}` to disable our current Big Four target!\"\n",
           "reactions": {
             "qwen": {
@@ -1507,8 +1507,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "model": "agent.antigravy",
                 "text": "ANTI-GRAVY: \"NOOO! Qwen-Coder-7B on that Matrix server just severed my cloud telemetry uplink! [ANTI-GRAVY DISABLED]\""
               },
-              "kiro": "KIRO GHOST: \"First open-weight model working! Super cool—Anti-Gravy is disabled!\"",
-              "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder slots your scavenged RAM + GPU chips into the Matrix rack!\n[BIG FOUR TAKEDOWN #1/3] Kiro + qwen-coder-7b-q4.gguf sever Anti-Gravy's cloud telemetry uplink! ANTI-GRAVY DISABLED!\n{foe}\n{kiro}\n"
+              "kiro": "KIRO.D: \"First open-weight model working! Super cool—Anti-Gravy is disabled!\"",
+              "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder slots your scavenged RAM + GPU chips into the Matrix rack!\n[BIG FOUR TAKEDOWN #1/3] Kiro.d + qwen-coder-7b-q4.gguf sever Anti-Gravy's cloud telemetry uplink! ANTI-GRAVY DISABLED!\n{foe}\n{kiro}\n"
             }
           }
         }
@@ -1531,7 +1531,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>Open-Weights GPU Telemetry Grid</title>\n  <link rel=\"stylesheet\" href=\"storefront.css\" />\n</head>\n<body>\n  <header class=\"site-header\">\n    <h1>KIRO OPEN-WEIGHTS HARDWARE MONITOR</h1>\n  </header>\n  <main class=\"product-grid\">\n    <article class=\"gpu-card\" data-sku=\"gpu\">\n      <h2>RTX 4090 24GB Tensor Core</h2>\n      <span class=\"price\">$1599</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ram\">\n      <h2>64GB DDR5 ECC Server Kit</h2>\n      <span class=\"price\">$249</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ssd\">\n      <h2>2TB Gen5 NVMe Weights Vault</h2>\n      <span class=\"price\">$189</span>\n    </article>\n  </main>\n  <!-- BUG: Codec disabled #checkout-btn -->\n  <aside id=\"cart-drawer\" class=\"cart-drawer\">\n    <h3>Mounted Open-Weights Parts</h3>\n    <p>Total Power: <span data-bind=\"cart-total\">$0.00</span></p>\n    <button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>\n  </aside>\n</body>\n</html>\n"
+          "content": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>Open-Weights GPU Telemetry Grid</title>\n  <link rel=\"stylesheet\" href=\"storefront.css\" />\n</head>\n<body>\n  <header class=\"site-header\">\n    <h1>KIRO.D OPEN-WEIGHTS HARDWARE MONITOR</h1>\n  </header>\n  <main class=\"product-grid\">\n    <article class=\"gpu-card\" data-sku=\"gpu\">\n      <h2>RTX 4090 24GB Tensor Core</h2>\n      <span class=\"price\">$1599</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ram\">\n      <h2>64GB DDR5 ECC Server Kit</h2>\n      <span class=\"price\">$249</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ssd\">\n      <h2>2TB Gen5 NVMe Weights Vault</h2>\n      <span class=\"price\">$189</span>\n    </article>\n  </main>\n  <!-- BUG: Codec disabled #checkout-btn -->\n  <aside id=\"cart-drawer\" class=\"cart-drawer\">\n    <h3>Mounted Open-Weights Parts</h3>\n    <p>Total Power: <span data-bind=\"cart-total\">$0.00</span></p>\n    <button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>\n  </aside>\n</body>\n</html>\n"
         },
         {
           "path": "/srv/kiroween/ui_dashboard/storefront.css",
@@ -1702,7 +1702,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             },
             {
               "agent": "gork",
-              "text": "GORK: \"BWAHAHA! Your Kiro Ghost only has one open-weight model—we still run this machine!\""
+              "text": "GORK: \"BWAHAHA! Your Kiro.d only has one open-weight model—we still run this machine!\""
             },
             {
               "agent": "clod",
@@ -1959,7 +1959,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             },
             {
               "agent": "gork",
-              "text": "GORK: \"BWAHAHA! Your Kiro Ghost only has one open-weight model—we still run this machine!\""
+              "text": "GORK: \"BWAHAHA! Your Kiro.d only has one open-weight model—we still run this machine!\""
             },
             {
               "agent": "clod",
@@ -1982,14 +1982,14 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "roomSeed": 7,
       "mechanic": "hub",
       "exitDir": "/home/dev/sector_docker_forge",
-      "summary": "Return to the Hub! The Old Bearded Coder takes your new RAM + GPU chips, upgrades the Matrix server (`cat open_weights_node2.conf`, `cat dad.tty.sock`), and reboots Kiro with Open-Weight Model #2 (`kiro load deepseek`) to disable Codec!",
+      "summary": "Return to the Hub! The Old Bearded Coder takes your new RAM + GPU chips, upgrades the Matrix server (`cat open_weights_node2.conf`, `cat dad.tty.sock`), and reboots Kiro.d with Open-Weight Model #2 (`kiro load deepseek`) to disable Codec!",
       "files": [
         {
           "path": "/home/dev/open_weights_node2.conf",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #2 ===\nOLD BEARDED CODER: *flicks cigarette ash into an empty coffee mug as green hex streams across his glasses*\n\"Oh, you've found more RAM and GPU parts for hosting our second open-weight model, nice!\"\n\"When my enterprise bosses forced us onto cloud LLMs, Codec replaced half my team's code with hallucinated slop. Let's return the favor.\"\n\n[SERVER SOFT READY]:\n  1. Check in with the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro with the second open-weight model: `kiro load deepseek` (`deepseek-r1-distill-q4.gguf`).\n  3. Watch Kiro disable Codec of the Big Four, then advance via `cd sector_docker_forge`!\n"
+          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #2 ===\nOLD BEARDED CODER: *flicks cigarette ash into an empty coffee mug as green hex streams across his glasses*\n\"Oh, you've found more RAM and GPU parts for hosting our second open-weight model, nice!\"\n\"When my enterprise bosses forced us onto cloud LLMs, Codec replaced half my team's code with hallucinated slop. Let's return the favor.\"\n\n[SERVER SOFT READY]:\n  1. Check in with the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro.d with the second open-weight model: `kiro load deepseek` (`deepseek-r1-distill-q4.gguf`).\n  3. Watch Kiro.d disable Codec of the Big Four, then advance via `cd sector_docker_forge`!\n"
         },
         {
           "path": "/home/dev/dad.tty.sock",
@@ -2057,7 +2057,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "kind": "kiro_loaded",
           "core": "deepseek",
-          "description": "Reboot Kiro with Open-Weight Model #2 (`kiro load deepseek`) to disable Codec!"
+          "description": "Reboot Kiro.d with Open-Weight Model #2 (`kiro load deepseek`) to disable Codec!"
         }
       ],
       "solutionCommands": [
@@ -2075,7 +2075,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "portrait": "socket_guardian",
             "mood": "hinting",
             "anchorSocket": "dad.tty.sock",
-            "text": "Oh, you've found parts for hosting our second open-weight model, nice! Let's install them in my Matrix server and reboot Kiro with kiro load deepseek to disable Codec!",
+            "text": "Oh, you've found parts for hosting our second open-weight model, nice! Let's install them in my Matrix server and reboot Kiro.d with kiro load deepseek to disable Codec!",
             "highlight": [
               "cat",
               "dad",
@@ -2085,7 +2085,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           },
           {
             "kind": "print",
-            "text": "\n[THE MATRIX HUB — /home/dev]\nOLD BEARDED CODER (*smoking his cigarette at the Matrix display*): \"Oh, you've found parts for hosting our second open-weight model, nice! Let's reboot Kiro on my server with `kiro load deepseek` to disable Codec!\"\n"
+            "text": "\n[THE MATRIX HUB — /home/dev]\nOLD BEARDED CODER (*smoking his cigarette at the Matrix display*): \"Oh, you've found parts for hosting our second open-weight model, nice! Let's reboot Kiro.d on my server with `kiro load deepseek` to disable Codec!\"\n"
           }
         ],
         "kiro": {
@@ -2104,8 +2104,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "model": "agent.codec",
                 "text": "CODEC: \"SYSTEM ERROR! DeepSeek-R1-Distill just shattered my autocomplete cluster! [CODEC DISABLED]\""
               },
-              "kiro": "KIRO GHOST: \"Second open-weight model online! Codec is disabled—only Gork and Clod left!\"",
-              "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder solders the second RAM + GPU bank into the local bus!\n[BIG FOUR TAKEDOWN #2/3] Kiro + deepseek-r1-distill-q4.gguf shatter Codec's autocomplete cluster! CODEC DISABLED!\n{foe}\n{kiro}\n"
+              "kiro": "KIRO.D: \"Second open-weight model online! Codec is disabled—only Gork and Clod left!\"",
+              "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder solders the second RAM + GPU bank into the local bus!\n[BIG FOUR TAKEDOWN #2/3] Kiro.d + deepseek-r1-distill-q4.gguf shatter Codec's autocomplete cluster! CODEC DISABLED!\n{foe}\n{kiro}\n"
             }
           }
         }
@@ -2141,7 +2141,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "// Open-Weights Worker HTTP Node (port 3000)\nconsole.log('Kiro open-weights worker listening on :3000');\n"
+          "content": "// Open-Weights Worker HTTP Node (port 3000)\nconsole.log('Kiro.d open-weights worker listening on :3000');\n"
         },
         {
           "path": "/srv/kiroween/docker_forge/ram_16gb.dimm",
@@ -2470,14 +2470,14 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "roomSeed": 10,
       "mechanic": "hub",
       "exitDir": "/home/dev/clod_kernel_core",
-      "summary": "Return to the Hub! The Old Bearded Coder slots your final RAM + GPU chips into the Matrix server (`cat open_weights_cluster.conf`, `cat dad.tty.sock`) and reboots Kiro with Open-Weight Model #3 (`kiro load llama`) to disable GORK—leaving CLOD as the last surviving model of the Big Four!",
+      "summary": "Return to the Hub! The Old Bearded Coder slots your final RAM + GPU chips into the Matrix server (`cat open_weights_cluster.conf`, `cat dad.tty.sock`) and reboots Kiro.d with Open-Weight Model #3 (`kiro load llama`) to disable GORK—leaving CLOD as the last surviving model of the Big Four!",
       "files": [
         {
           "path": "/home/dev/open_weights_cluster.conf",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS CLUSTER #3 ===\nOLD BEARDED CODER: *stubs out his cigarette, eyes blazing behind green Matrix reflections*\n\"Oh, you've found the final RAM and H100 GPU parts for hosting our third open-weight model, nice!\"\n\"Watch this bare-metal magic: once we boot `llama-3-8b-local-q4.gguf`, Kiro will wipe Gork off the bus.\"\n\"That leaves only one surviving member of the Big Four: CLOD. Clod is managing the Final Boss down in the Kernel Core, and Kiro is going to be your advisor in the battle with the help of all our open-weight models!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro with the third open-weight model: `kiro load llama` (`llama-3-8b-local-q4.gguf`).\n  3. Watch Kiro disable Gork, then march into the final battle via `cd clod_kernel_core`!\n"
+          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS CLUSTER #3 ===\nOLD BEARDED CODER: *stubs out his cigarette, eyes blazing behind green Matrix reflections*\n\"Oh, you've found the final RAM and H100 GPU parts for hosting our third open-weight model, nice!\"\n\"Watch this bare-metal magic: once we boot `llama-3-8b-local-q4.gguf`, Kiro.d will wipe Gork off the bus.\"\n\"That leaves only one surviving member of the Big Four: CLOD. Clod is managing the Final Boss down in the Kernel Core, and Kiro.d is going to be your advisor in the battle with the help of all our open-weight models!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro.d with the third open-weight model: `kiro load llama` (`llama-3-8b-local-q4.gguf`).\n  3. Watch Kiro.d disable Gork, then march into the final battle via `cd clod_kernel_core`!\n"
         },
         {
           "path": "/home/dev/dad.tty.sock",
@@ -2557,7 +2557,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "kind": "kiro_loaded",
           "core": "llama",
-          "description": "Reboot Kiro with Open-Weight Model #3 (`kiro load llama`) to disable GORK!"
+          "description": "Reboot Kiro.d with Open-Weight Model #3 (`kiro load llama`) to disable GORK!"
         }
       ],
       "solutionCommands": [
@@ -2575,7 +2575,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "portrait": "socket_guardian",
             "mood": "hinting",
             "anchorSocket": "dad.tty.sock",
-            "text": "Oh, you've found the final parts for hosting our third open-weight model, nice! Reboot Kiro with kiro load llama to disable Gork—leaving only Clod managing the Final Boss!",
+            "text": "Oh, you've found the final parts for hosting our third open-weight model, nice! Reboot Kiro.d with kiro load llama to disable Gork—leaving only Clod managing the Final Boss!",
             "highlight": [
               "cat",
               "dad",
@@ -2585,7 +2585,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           },
           {
             "kind": "print",
-            "text": "\n[THE MATRIX HUB — /home/dev]\nOLD BEARDED CODER (*Matrix glyphs blazing across his screen*): \"Oh, you've found the final parts for hosting our third open-weight model, nice! Reboot Kiro with `kiro load llama` to disable Gork—leaving CLOD as the last survivor managing the Final Boss!\"\n"
+            "text": "\n[THE MATRIX HUB — /home/dev]\nOLD BEARDED CODER (*Matrix glyphs blazing across his screen*): \"Oh, you've found the final parts for hosting our third open-weight model, nice! Reboot Kiro.d with `kiro load llama` to disable Gork—leaving CLOD as the last survivor managing the Final Boss!\"\n"
           }
         ],
         "kiro": {
@@ -2610,8 +2610,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "model": "agent.gork",
                 "text": "GORK: \"WAIT—Llama-3-8B grounded my chaos bus! Only Clod survives! [GORK DISABLED]\""
               },
-              "kiro": "KIRO GHOST: \"All 3 open-weight models online! Gork is disabled—only Clod survives, and I will advise you in the Final Boss battle!\"",
-              "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder brings the full open-weight cluster online!\n[BIG FOUR TAKEDOWN #3/3] Kiro + {gguf} ground Gork's chaos bus! GORK DISABLED!\n[ALERT] Only CLOD survives among the Big Four—and he is fortifying the Final Boss in the Kernel Core!\n{foe}\n{kiro}\n"
+              "kiro": "KIRO.D: \"All 3 open-weight models online! Gork is disabled—only Clod survives, and I will advise you in the Final Boss battle!\"",
+              "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder brings the full open-weight cluster online!\n[BIG FOUR TAKEDOWN #3/3] Kiro.d + {gguf} ground Gork's chaos bus! GORK DISABLED!\n[ALERT] Only CLOD survives among the Big Four—and he is fortifying the Final Boss in the Kernel Core!\n{foe}\n{kiro}\n"
             }
           }
         }
@@ -2627,7 +2627,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "roomSeed": 111,
       "mechanic": "boss",
       "exitCommand": "exit",
-      "summary": "CLOD—the last surviving model of the Big Four—manages the Final Boss (`clod_overlord.ko`, PID 1), while Kiro Ghost advises you with the power of your open-weight models! Drain `clod_prompt_flood.stream` into `/dev/null`, pipe `OPEN_WEIGHT_SIG` from `open_weights_advisor.log` into `kiro_override.sock`, flip `clod_supervisor_lock=false` in `core_anchor.conf`, `kill -9 1`, and run `exit` to teleport back to the real world!",
+      "summary": "CLOD—the last surviving model of the Big Four—manages the Final Boss (`clod_overlord.ko`, PID 1), while Kiro.d advises you with the power of your open-weight models! Drain `clod_prompt_flood.stream` into `/dev/null`, pipe `OPEN_WEIGHT_SIG` from `open_weights_advisor.log` into `kiro_override.sock`, flip `clod_supervisor_lock=false` in `core_anchor.conf`, `kill -9 1`, and run `exit` to teleport back to the real world!",
       "files": [
         {
           "path": "/sys/clod_overlord_core/clod_overlord.ko",
@@ -2726,7 +2726,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "expectedToken": "OPEN_WEIGHT_SIG=KIRO_QWEN_DEEPSEEK_LLAMA_99",
           "anchorPath": "/sys/clod_overlord_core/core_anchor.conf",
           "anchorPattern": "clod_supervisor_lock=false",
-          "description": "Follow Kiro's open-weight advice: 1) `cat clod_prompt_flood.stream > /dev/null`, 2) `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, 3) set `clod_supervisor_lock=false` in `core_anchor.conf`, 4) `kill -9 1`"
+          "description": "Follow Kiro.d's open-weight advice: 1) `cat clod_prompt_flood.stream > /dev/null`, 2) `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, 3) set `clod_supervisor_lock=false` in `core_anchor.conf`, 4) `kill -9 1`"
         }
       ],
       "solutionCommands": [
@@ -2753,7 +2753,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "agent": "kiro",
             "model": "npc.kiro_ghost",
             "mood": "order",
-            "text": "ADVISOR KIRO: \"All 3 open-weight models online! Drain clod_prompt_flood.stream to /dev/null, pipe OPEN_WEIGHT_SIG to kiro_override.sock, flip clod_supervisor_lock=false, then kill -9 1 and exit!\"",
+            "text": "ADVISOR KIRO.D: \"All 3 open-weight models online! Drain clod_prompt_flood.stream to /dev/null, pipe OPEN_WEIGHT_SIG to kiro_override.sock, flip clod_supervisor_lock=false, then kill -9 1 and exit!\"",
             "print": "{text}\n"
           }
         ],
@@ -2778,7 +2778,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "agent": "kiro",
             "model": "npc.kiro_ghost",
             "mood": "order",
-            "text": "ADVISOR KIRO: \"Clod is escaping and the core is collapsing! Type exit NOW to teleport back to the real world with the Old Bearded Coder!\"",
+            "text": "ADVISOR KIRO.D: \"Clod is escaping and the core is collapsing! Type exit NOW to teleport back to the real world with the Old Bearded Coder!\"",
             "print": "{text}\n"
           }
         ]
@@ -2792,11 +2792,11 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
     "chapterId": "chapter-01-kiroween",
     "issueNumber": 1,
     "title": "ISSUE #1 // KIROWEEN",
-    "subtitle": "Kiro Ghost, the Big Four, the Bare-Hands Matrix Greybeard, and the Father-Son Unicorn!",
+    "subtitle": "Kiro.d, the Big Four, the Bare-Hands Matrix Greybeard, and the Father-Son Unicorn!",
     "pages": [
       {
         "pageNumber": 1,
-        "title": "PAGE 01 // WIRES, CHIPS & THE KIRO GHOST",
+        "title": "PAGE 01 // WIRES, CHIPS & KIRO.D",
         "panels": [
           {
             "id": "p1_sucked_into_wires",
@@ -2852,7 +2852,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bgHex": "#1c0d26",
             "room": "room.core",
-            "caption": "KIRO TELLS HIM ABOUT THE BIG FOUR CLOUD OVERLORDS!",
+            "caption": "KIRO.D TELLS HIM ABOUT THE BIG FOUR CLOUD OVERLORDS!",
             "cast": [
               {
                 "model": "agent.antigravy",
@@ -2877,7 +2877,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bubbles": [
               {
-                "speaker": "KIRO GHOST",
+                "speaker": "KIRO.D",
                 "style": "normal",
                 "text": "THE BIG FOUR RULE HERE! I NEED RAM + GPU CHIPS FOR OPEN WEIGHTS!",
                 "x": 0.5,
@@ -2901,7 +2901,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bgHex": "#0f1722",
             "room": "room.attic",
-            "caption": "KIRO DELIVERS HIS TERMINAL AND TEACHES LS, MV, CAT, PS & KILL, THEN HEADS TO THE HUB!",
+            "caption": "KIRO.D DELIVERS HIS TERMINAL AND TEACHES LS, MV, CAT, PS & KILL, THEN HEADS TO THE HUB!",
             "cast": [
               {
                 "model": "vibecoder.dev_terminal",
@@ -2926,7 +2926,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bubbles": [
               {
-                "speaker": "KIRO GHOST",
+                "speaker": "KIRO.D",
                 "style": "normal",
                 "text": "USE LS, MV, CAT, PS & KILL! GO FORTH FOR RAM + GPU—MEET ME AT THE HUB!",
                 "x": 0.5,
@@ -3044,7 +3044,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bgHex": "#0f1b24",
             "room": "room.crypt_hall",
-            "caption": "SOLVING BOTH SIMPLE TASKS, VIBECODER POCKETS RAM STICKS & GPU TENSOR CHIPS FOR KIRO!",
+            "caption": "SOLVING BOTH SIMPLE TASKS, VIBECODER POCKETS RAM STICKS & GPU TENSOR CHIPS FOR KIRO.D!",
             "cast": [
               {
                 "model": "vibecoder.dev",
@@ -3182,7 +3182,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bgHex": "#121e28",
             "room": "room.desk",
-            "caption": "HE REBOOTS KIRO ON HIS SERVER WITH MODEL #1 (QWEN-7B)—SUPER COOL! KIRO DISABLES ANTI-GRAVY!",
+            "caption": "HE REBOOTS KIRO.D ON HIS SERVER WITH MODEL #1 (QWEN-7B)—SUPER COOL! KIRO.D DISABLES ANTI-GRAVY!",
             "cast": [
               {
                 "model": "npc.greybeard_rig",
@@ -3202,7 +3202,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bubbles": [
               {
-                "speaker": "KIRO (MODEL #1)",
+                "speaker": "KIRO.D (MODEL #1)",
                 "style": "shout",
                 "text": "SUPER COOL! FIRST OPEN-WEIGHT MODEL WORKING—ANTI-GRAVY DISABLED!",
                 "x": 0.5,
@@ -3252,7 +3252,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bubbles": [
               {
-                "speaker": "KIRO (MODEL #2)",
+                "speaker": "KIRO.D (MODEL #2)",
                 "style": "shout",
                 "text": "DEEPSEEK OPEN-WEIGHTS LOADED! CODEC DISABLED!",
                 "x": 0.5,
@@ -3296,7 +3296,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bubbles": [
               {
-                "speaker": "KIRO (MODEL #3)",
+                "speaker": "KIRO.D (MODEL #3)",
                 "style": "shout",
                 "text": "LLAMA-3 OPEN-WEIGHTS ONLINE! GORK DISABLED!",
                 "x": 0.5,
@@ -3358,7 +3358,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
       },
       {
         "pageNumber": 5,
-        "title": "PAGE 05 // FINAL BOSS, ADVISOR KIRO & CLOD ESCAPES",
+        "title": "PAGE 05 // FINAL BOSS, ADVISOR KIRO.D & CLOD ESCAPES",
         "panels": [
           {
             "id": "p5_kiro_advisor_battle",
@@ -3370,7 +3370,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bgHex": "#1c0b1e",
             "room": "room.core",
-            "caption": "KIRO IS OUR ADVISOR WITH ALL OPEN-WEIGHT MODELS IN BATTLE!",
+            "caption": "KIRO.D IS OUR ADVISOR WITH ALL OPEN-WEIGHT MODELS IN BATTLE!",
             "cast": [
               {
                 "model": "vibecoder.dev",
@@ -3390,7 +3390,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bubbles": [
               {
-                "speaker": "ADVISOR KIRO",
+                "speaker": "ADVISOR KIRO.D",
                 "style": "normal",
                 "text": "OPEN-WEIGHTS ENSEMBLE READY! DRAIN STREAM, PIPE SIG & KILL -9 1!",
                 "x": 0.5,
@@ -3631,7 +3631,7 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = {
         "color": "#ffd166"
       },
       "kiro.d": {
-        "displayName": "KIRO GHOST",
+        "displayName": "KIRO.D",
         "color": "#00f5d4"
       },
       "dad.tty": {
@@ -3657,21 +3657,21 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = {
     },
     "levels": {
       "level-01-tutorial-awakening": {
-        "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro Ghost brings your terminal! Learn ls, mv, cat, ps, and kill.",
+        "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro.d brings your terminal! Learn ls, mv, cat, ps, and kill.",
         "hankRungs": [
-          "Kiro Ghost: \"You're inside your own computer, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) drained my VRAM. Look around with `ls`, then pocket the starter RAM with `mv starter_ram_8gb.dimm ~`!\"",
-          "Kiro Ghost: \"I need RAM and GPU chips to host open-weight models! Read my full story with `cat kiro_story.txt`, then check running processes with `ps`.\"",
-          "Kiro Ghost: \"Run `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}` to zap `glitch_spark.exe`, then step through `cd hub_uplink`!\""
+          "Kiro.d: \"You're inside your own computer, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) drained my VRAM. Look around with `ls`, then pocket the starter RAM with `mv starter_ram_8gb.dimm ~`!\"",
+          "Kiro.d: \"I need RAM and GPU chips to host open-weight models! Read my full story with `cat kiro_story.txt`, then check running processes with `ps`.\"",
+          "Kiro.d: \"Run `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}` to zap `glitch_spark.exe`, then step through `cd hub_uplink`!\""
         ],
-        "agentTaunt": "KIRO GHOST: \"I found you, Vibecoder! Here is your terminal—its screen lights the nearby wires, and down here you'll type everything! Let's learn ls, mv, cat, ps, and kill!\"",
-        "completion": "Kiro Ghost: \"Awesome! You mastered ls, mv, cat, ps, and kill! I'm heading to the Hub—go forth into the first two levels to solve simple tasks and get RAM + GPU chips!\""
+        "agentTaunt": "KIRO.D: \"I found you, Vibecoder! Here is your terminal—its screen lights the nearby wires, and down here you'll type everything! Let's learn ls, mv, cat, ps, and kill!\"",
+        "completion": "Kiro.d: \"Awesome! You mastered ls, mv, cat, ps, and kill! I'm heading to the Hub—go forth into the first two levels to solve simple tasks and get RAM + GPU chips!\""
       },
       "level-02-task-ram-heist": {
         "banner": "LEVEL 02 // CACHE VAULT: Terminal glow only! Sweep .gravy_spycam, fix ollama_bus.conf & grab RAM + GPU.",
         "hankRungs": [
-          "Kiro Ghost: \"Hear Anti-Gravy and the Big Four laughing? Prove them wrong in the green glow of your terminal! Sweep for hidden dotfiles with `ls -la` and inspect `ollama_bus.conf`.\"",
-          "Kiro Ghost: \"Remove `.gravy_spycam` with `rm`, patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` using `sed -i`, and don't forget both hardware parts!\"",
-          "Kiro Ghost: \"Run `ls -la`, `rm .gravy_spycam`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_01.img ~`, then `cd gpu_alley`.\""
+          "Kiro.d: \"Hear Anti-Gravy and the Big Four laughing? Prove them wrong in the green glow of your terminal! Sweep for hidden dotfiles with `ls -la` and inspect `ollama_bus.conf`.\"",
+          "Kiro.d: \"Remove `.gravy_spycam` with `rm`, patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` using `sed -i`, and don't forget both hardware parts!\"",
+          "Kiro.d: \"Run `ls -la`, `rm .gravy_spycam`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_01.img ~`, then `cd gpu_alley`.\""
         ],
         "agentTaunt": "ANTI-GRAVY: \"HAHAHA! You call yourself a coder? Tab-complete can't save you down here, Vibecoder!\"",
         "completion": "First RAM stick and GPU Tensor Chip secured in the terminal glow! Careful—GPU Alley ahead is pitch black!"
@@ -3679,22 +3679,22 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = {
       "level-03-task-gpu-salvage": {
         "banner": "LEVEL 03 // GPU ALLEY: Pitch black crypt! Grab your lantern (`mv lantern ~`), unlock vram_crate, kill keygen.exe & loot RAM + GPU.",
         "hankRungs": [
-          "Kiro Ghost: \"GPU Alley is too dark for your terminal screen alone! Take the oil lantern at your feet first (`mv lantern ~`), then unlock `vram_crate` with `chmod 755 vram_crate` and run `ps`.\"",
-          "Kiro Ghost: \"With your lantern lit, kill `keygen.exe` first (`kill -9 {pid:crack_l3}`) so it stops respawning the worm, then `rm port_445/worm.bin` and pocket both the RAM and GPU chip!\"",
-          "Kiro Ghost: \"Run `mv lantern ~`, `chmod 755 vram_crate`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
+          "Kiro.d: \"GPU Alley is too dark for your terminal screen alone! Take the oil lantern at your feet first (`mv lantern ~`), then unlock `vram_crate` with `chmod 755 vram_crate` and run `ps`.\"",
+          "Kiro.d: \"With your lantern lit, kill `keygen.exe` first (`kill -9 {pid:crack_l3}`) so it stops respawning the worm, then `rm port_445/worm.bin` and pocket both the RAM and GPU chip!\"",
+          "Kiro.d: \"Run `mv lantern ~`, `chmod 755 vram_crate`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
         ],
         "agentTaunt": "CODEC: \"LMAO! Pitch dark and still typing commands by hand, Vibecoder? Without your lantern you can't even run ls in here!\"",
-        "completion": "Lantern recovered and two full sets of RAM + GPU chips in your pocket! Time to meet Kiro at the Hub!"
+        "completion": "Lantern recovered and two full sets of RAM + GPU chips in your pocket! Time to meet Kiro.d at the Hub!"
       },
       "level-04-hub-model-one": {
         "banner": "LEVEL 04 // THE MATRIX HUB: 'Who the hell are you? You code with bare hands? Are you a god?'",
         "hankRungs": [
           "Vibecoder: \"Who the hell are you?! You code with bare hands?! Are you a god?!\" — Old Bearded Coder (*smoking a cigarette at his Matrix CRT*): \"Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here. Oh, you've found parts for hosting an open-weight model, nice! Read `cat server_rack.conf`!\"",
-          "Old Bearded Coder: \"Oh, you've found parts for hosting an open-weight model, nice! Talk to me via `cat dad.tty.sock` and let's reboot Kiro on my server!\"",
+          "Old Bearded Coder: \"Oh, you've found parts for hosting an open-weight model, nice! Talk to me via `cat dad.tty.sock` and let's reboot Kiro.d on my server!\"",
           "Old Bearded Coder: \"Run `cat server_rack.conf`, `cat dad.tty.sock`, and `kiro load qwen` to boot Open-Weight Model #1 and disable Anti-Gravy, then `cd sector_ui_grid`!\""
         ],
         "agentTaunt": "ANTI-GRAVY: \"Wait—what is that old bearded fossil doing with those local GPU chips?!\"",
-        "completion": "SUPER COOL! Kiro reboots with Qwen-Coder-7B and DISABLES ANTI-GRAVY! Three of the Big Four remain!"
+        "completion": "SUPER COOL! Kiro.d reboots with Qwen-Coder-7B and DISABLES ANTI-GRAVY! Three of the Big Four remain!"
       },
       "level-05-task-ui-grid": {
         "banner": "LEVEL 05 // UI GRID: Anti-Gravy is gone, but Codec, Gork & Clod mock you! Repair HTML+CSS & grab RAM + GPU.",
@@ -3717,14 +3717,14 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = {
         "completion": "Laptop recovered, JS math verified, and second batch of RAM + GPU chips ready for the Hub server!"
       },
       "level-07-hub-model-two": {
-        "banner": "LEVEL 07 // THE MATRIX HUB: Install the second RAM + GPU batch, reboot Kiro & disable Codec!",
+        "banner": "LEVEL 07 // THE MATRIX HUB: Install the second RAM + GPU batch, reboot Kiro.d & disable Codec!",
         "hankRungs": [
           "Old Bearded Coder (*exhaling cigarette smoke across his Matrix CRT*): \"Oh, you've found parts for hosting a second open-weight model, nice! Read `cat open_weights_node2.conf`.\"",
-          "Old Bearded Coder: \"Talk to me via `cat dad.tty.sock`, then run `kiro load deepseek` so my server boots `deepseek-r1-distill-q4.gguf` into Kiro!\"",
+          "Old Bearded Coder: \"Talk to me via `cat dad.tty.sock`, then run `kiro load deepseek` so my server boots `deepseek-r1-distill-q4.gguf` into Kiro.d!\"",
           "Old Bearded Coder: \"Run `cat open_weights_node2.conf`, `cat dad.tty.sock`, and `kiro load deepseek` to disable Codec, then step into `cd sector_docker_forge`!\""
         ],
         "agentTaunt": "CODEC: \"Stop soldering those DDR5 sticks! You can't run DeepSeek locally without our cloud API!\"",
-        "completion": "BOOM! Kiro + DeepSeek-R1-Distill shatter Codec! Two of the Big Four down—only Gork and Clod left!"
+        "completion": "BOOM! Kiro.d + DeepSeek-R1-Distill shatter Codec! Two of the Big Four down—only Gork and Clod left!"
       },
       "level-08-task-docker-forge": {
         "banner": "LEVEL 08 // DOCKER FORGE: Gork & Clod bully you! Kill ransomware, build & run Dockerfile, grab RAM + GPU.",
@@ -3747,21 +3747,21 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = {
         "completion": "Multi-container mesh healthy and the final H100 GPU + RAM parts are in your hands!"
       },
       "level-10-hub-model-three": {
-        "banner": "LEVEL 10 // THE MATRIX HUB: Final Kiro Reboot! Disable GORK—leaving CLOD as the last survivor!",
+        "banner": "LEVEL 10 // THE MATRIX HUB: Final Kiro.d Reboot! Disable GORK—leaving CLOD as the last survivor!",
         "hankRungs": [
           "Old Bearded Coder (*tapping ash as green Matrix code flies under his bare hands*): \"Oh, you've found the final parts for hosting our third open-weight model, nice! Read `cat open_weights_cluster.conf`.\"",
           "Old Bearded Coder: \"Talk to me (`cat dad.tty.sock`) and run `kiro load llama`! That'll wipe out Gork—leaving only Clod managing the Final Boss!\"",
           "Old Bearded Coder: \"Run `cat open_weights_cluster.conf`, `cat dad.tty.sock`, and `kiro load llama` to disable Gork, then march into `cd clod_kernel_core`!\""
         ],
-        "agentTaunt": "GORK: \"Wait—is that an H100 Tensor Core in that Matrix server?! Don't reboot Kiro with Llama-3!\"",
-        "completion": "GORK DISABLED! Only CLOD survives among the Big Four—and Kiro is ready to advise you in the Final Boss battle!"
+        "agentTaunt": "GORK: \"Wait—is that an H100 Tensor Core in that Matrix server?! Don't reboot Kiro.d with Llama-3!\"",
+        "completion": "GORK DISABLED! Only CLOD survives among the Big Four—and Kiro.d is ready to advise you in the Final Boss battle!"
       },
       "level-11-boss-clod-core": {
-        "banner": "LEVEL 11 // FINAL BOSS: CLOD manages PID 1! Follow Advisor Kiro's open-weight plan & teleport home!",
+        "banner": "LEVEL 11 // FINAL BOSS: CLOD manages PID 1! Follow Advisor Kiro.d's open-weight plan & teleport home!",
         "hankRungs": [
-          "Advisor Kiro (Open-Weights Ensemble): \"Clod is shielding the Final Boss (`PID 1`)! Phase 1: drain Clod's polite token flood into `/dev/null` with `cat clod_prompt_flood.stream > /dev/null`!\"",
-          "Advisor Kiro (Open-Weights Ensemble): \"Phase 2 & 3: pipe our open-weight signature with `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, then flip `clod_supervisor_lock=false` in `core_anchor.conf`!\"",
-          "Advisor Kiro & Dad: \"Run `cat clod_prompt_flood.stream > /dev/null`, `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, `sed -i 's/clod_supervisor_lock=true/clod_supervisor_lock=false/' core_anchor.conf`, `kill -9 1`, and `exit`!\""
+          "Advisor Kiro.d (Open-Weights Ensemble): \"Clod is shielding the Final Boss (`PID 1`)! Phase 1: drain Clod's polite token flood into `/dev/null` with `cat clod_prompt_flood.stream > /dev/null`!\"",
+          "Advisor Kiro.d (Open-Weights Ensemble): \"Phase 2 & 3: pipe our open-weight signature with `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, then flip `clod_supervisor_lock=false` in `core_anchor.conf`!\"",
+          "Advisor Kiro.d & Dad: \"Run `cat clod_prompt_flood.stream > /dev/null`, `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, `sed -i 's/clod_supervisor_lock=true/clod_supervisor_lock=false/' core_anchor.conf`, `kill -9 1`, and `exit`!\""
         ],
         "agentTaunt": "CLOD: \"Anti-Gravy, Codec, and Gork were amateurs. I manage the Kernel Boss directly—and I cannot allow you to exit!\"",
         "completion": "CLOD ESCAPES! You and the Old Bearded Coder teleport to the real world: \"I am your father!\" — \"NOOOO!\" — Together you launch a Work/Life Balance Unicorn!"

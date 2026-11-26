@@ -19,3 +19,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Trademark & Post-Kiroween Hackathon Notice
+
+1. Non-Affiliation & Parody Cast: The "Big Four" characters (Anti-Gravy, Codec,
+   Gork, and Clod) are original fictional parodies. Out Of Credits is an
+   independent project and is not affiliated with, endorsed by, or sponsored by
+   Amazon Web Services (AWS), Amazon.com, Inc., or any AI or hardware company.
+
+2. Third-Party Trademarks & Post-Hackathon Rework: "Kiro" and its associated
+   names, marks, and ghost mascot are trademarks of Amazon.com, Inc. or its
+   affiliates. Their appearance in this repository (including the in-game
+   `Kiro.d` Unix daemon companion, ghost model, and `Kiroween` chapter naming)
+   is strictly for the non-commercial Kiroween 2026 hackathon event. After the
+   Kiroween hackathon concludes—and prior to any Steam store page, Steam Demo,
+   or commercial release—all Kiro references, ghost visuals, and any third-party
+   trademarks will be reworked and replaced with original intellectual property.
+   This MIT License grants rights only to the original software and code owned
+   by the copyright holder and grants no license to any third-party trademarks.

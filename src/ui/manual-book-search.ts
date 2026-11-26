@@ -26,7 +26,7 @@ const SKILL_FILTERS: ReadonlyArray<{ id: ManualSkillFilter; label: string }> = [
   { id: 'text', label: 'Text' },
   { id: 'procs', label: 'Kill / PS' },
   { id: 'code-docker', label: 'Code & Docker' },
-  { id: 'game', label: 'Kiro & Game' },
+  { id: 'game', label: 'Kiro.d & Game' },
 ];
 
 const SUGGESTIONS = ['chmod', '644', 'kill -9', 'ls -a', 'grep', 'sed -i', 'docker'];

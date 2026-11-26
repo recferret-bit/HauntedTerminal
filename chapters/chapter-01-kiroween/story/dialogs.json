@@ -3,7 +3,7 @@
   "allyId": "dad.tty",
   "cast": {
     "vibecoder": { "displayName": "VIBECODER", "color": "#ffd166" },
-    "kiro.d": { "displayName": "KIRO GHOST", "color": "#00f5d4" },
+    "kiro.d": { "displayName": "KIRO.D", "color": "#00f5d4" },
     "dad.tty": { "displayName": "OLD BEARDED CODER (DAD)", "color": "#06d6a0" },
     "antigravy": { "displayName": "ANTI-GRAVY", "color": "#a855f7" },
     "codec": { "displayName": "CODEC", "color": "#ef476f" },
@@ -12,21 +12,21 @@
   },
   "levels": {
     "level-01-tutorial-awakening": {
-      "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro Ghost brings your terminal! Learn ls, mv, cat, ps, and kill.",
+      "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro.d brings your terminal! Learn ls, mv, cat, ps, and kill.",
       "hankRungs": [
-        "Kiro Ghost: \"You're inside your own computer, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) drained my VRAM. Look around with `ls`, then pocket the starter RAM with `mv starter_ram_8gb.dimm ~`!\"",
-        "Kiro Ghost: \"I need RAM and GPU chips to host open-weight models! Read my full story with `cat kiro_story.txt`, then check running processes with `ps`.\"",
-        "Kiro Ghost: \"Run `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}` to zap `glitch_spark.exe`, then step through `cd hub_uplink`!\""
+        "Kiro.d: \"You're inside your own computer, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) drained my VRAM. Look around with `ls`, then pocket the starter RAM with `mv starter_ram_8gb.dimm ~`!\"",
+        "Kiro.d: \"I need RAM and GPU chips to host open-weight models! Read my full story with `cat kiro_story.txt`, then check running processes with `ps`.\"",
+        "Kiro.d: \"Run `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}` to zap `glitch_spark.exe`, then step through `cd hub_uplink`!\""
       ],
-      "agentTaunt": "KIRO GHOST: \"I found you, Vibecoder! Here is your terminal—its screen lights the nearby wires, and down here you'll type everything! Let's learn ls, mv, cat, ps, and kill!\"",
-      "completion": "Kiro Ghost: \"Awesome! You mastered ls, mv, cat, ps, and kill! I'm heading to the Hub—go forth into the first two levels to solve simple tasks and get RAM + GPU chips!\""
+      "agentTaunt": "KIRO.D: \"I found you, Vibecoder! Here is your terminal—its screen lights the nearby wires, and down here you'll type everything! Let's learn ls, mv, cat, ps, and kill!\"",
+      "completion": "Kiro.d: \"Awesome! You mastered ls, mv, cat, ps, and kill! I'm heading to the Hub—go forth into the first two levels to solve simple tasks and get RAM + GPU chips!\""
     },
     "level-02-task-ram-heist": {
       "banner": "LEVEL 02 // CACHE VAULT: Terminal glow only! Sweep .gravy_spycam, fix ollama_bus.conf & grab RAM + GPU.",
       "hankRungs": [
-        "Kiro Ghost: \"Hear Anti-Gravy and the Big Four laughing? Prove them wrong in the green glow of your terminal! Sweep for hidden dotfiles with `ls -la` and inspect `ollama_bus.conf`.\"",
-        "Kiro Ghost: \"Remove `.gravy_spycam` with `rm`, patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` using `sed -i`, and don't forget both hardware parts!\"",
-        "Kiro Ghost: \"Run `ls -la`, `rm .gravy_spycam`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_01.img ~`, then `cd gpu_alley`.\""
+        "Kiro.d: \"Hear Anti-Gravy and the Big Four laughing? Prove them wrong in the green glow of your terminal! Sweep for hidden dotfiles with `ls -la` and inspect `ollama_bus.conf`.\"",
+        "Kiro.d: \"Remove `.gravy_spycam` with `rm`, patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` using `sed -i`, and don't forget both hardware parts!\"",
+        "Kiro.d: \"Run `ls -la`, `rm .gravy_spycam`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_01.img ~`, then `cd gpu_alley`.\""
       ],
       "agentTaunt": "ANTI-GRAVY: \"HAHAHA! You call yourself a coder? Tab-complete can't save you down here, Vibecoder!\"",
       "completion": "First RAM stick and GPU Tensor Chip secured in the terminal glow! Careful—GPU Alley ahead is pitch black!"
@@ -34,22 +34,22 @@
     "level-03-task-gpu-salvage": {
       "banner": "LEVEL 03 // GPU ALLEY: Pitch black crypt! Grab your lantern (`mv lantern ~`), unlock vram_crate, kill keygen.exe & loot RAM + GPU.",
       "hankRungs": [
-        "Kiro Ghost: \"GPU Alley is too dark for your terminal screen alone! Take the oil lantern at your feet first (`mv lantern ~`), then unlock `vram_crate` with `chmod 755 vram_crate` and run `ps`.\"",
-        "Kiro Ghost: \"With your lantern lit, kill `keygen.exe` first (`kill -9 {pid:crack_l3}`) so it stops respawning the worm, then `rm port_445/worm.bin` and pocket both the RAM and GPU chip!\"",
-        "Kiro Ghost: \"Run `mv lantern ~`, `chmod 755 vram_crate`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
+        "Kiro.d: \"GPU Alley is too dark for your terminal screen alone! Take the oil lantern at your feet first (`mv lantern ~`), then unlock `vram_crate` with `chmod 755 vram_crate` and run `ps`.\"",
+        "Kiro.d: \"With your lantern lit, kill `keygen.exe` first (`kill -9 {pid:crack_l3}`) so it stops respawning the worm, then `rm port_445/worm.bin` and pocket both the RAM and GPU chip!\"",
+        "Kiro.d: \"Run `mv lantern ~`, `chmod 755 vram_crate`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
       ],
       "agentTaunt": "CODEC: \"LMAO! Pitch dark and still typing commands by hand, Vibecoder? Without your lantern you can't even run ls in here!\"",
-      "completion": "Lantern recovered and two full sets of RAM + GPU chips in your pocket! Time to meet Kiro at the Hub!"
+      "completion": "Lantern recovered and two full sets of RAM + GPU chips in your pocket! Time to meet Kiro.d at the Hub!"
     },
     "level-04-hub-model-one": {
       "banner": "LEVEL 04 // THE MATRIX HUB: 'Who the hell are you? You code with bare hands? Are you a god?'",
       "hankRungs": [
         "Vibecoder: \"Who the hell are you?! You code with bare hands?! Are you a god?!\" — Old Bearded Coder (*smoking a cigarette at his Matrix CRT*): \"Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here. Oh, you've found parts for hosting an open-weight model, nice! Read `cat server_rack.conf`!\"",
-        "Old Bearded Coder: \"Oh, you've found parts for hosting an open-weight model, nice! Talk to me via `cat dad.tty.sock` and let's reboot Kiro on my server!\"",
+        "Old Bearded Coder: \"Oh, you've found parts for hosting an open-weight model, nice! Talk to me via `cat dad.tty.sock` and let's reboot Kiro.d on my server!\"",
         "Old Bearded Coder: \"Run `cat server_rack.conf`, `cat dad.tty.sock`, and `kiro load qwen` to boot Open-Weight Model #1 and disable Anti-Gravy, then `cd sector_ui_grid`!\""
       ],
       "agentTaunt": "ANTI-GRAVY: \"Wait—what is that old bearded fossil doing with those local GPU chips?!\"",
-      "completion": "SUPER COOL! Kiro reboots with Qwen-Coder-7B and DISABLES ANTI-GRAVY! Three of the Big Four remain!"
+      "completion": "SUPER COOL! Kiro.d reboots with Qwen-Coder-7B and DISABLES ANTI-GRAVY! Three of the Big Four remain!"
     },
     "level-05-task-ui-grid": {
       "banner": "LEVEL 05 // UI GRID: Anti-Gravy is gone, but Codec, Gork & Clod mock you! Repair HTML+CSS & grab RAM + GPU.",
@@ -72,14 +72,14 @@
       "completion": "Laptop recovered, JS math verified, and second batch of RAM + GPU chips ready for the Hub server!"
     },
     "level-07-hub-model-two": {
-      "banner": "LEVEL 07 // THE MATRIX HUB: Install the second RAM + GPU batch, reboot Kiro & disable Codec!",
+      "banner": "LEVEL 07 // THE MATRIX HUB: Install the second RAM + GPU batch, reboot Kiro.d & disable Codec!",
       "hankRungs": [
         "Old Bearded Coder (*exhaling cigarette smoke across his Matrix CRT*): \"Oh, you've found parts for hosting a second open-weight model, nice! Read `cat open_weights_node2.conf`.\"",
-        "Old Bearded Coder: \"Talk to me via `cat dad.tty.sock`, then run `kiro load deepseek` so my server boots `deepseek-r1-distill-q4.gguf` into Kiro!\"",
+        "Old Bearded Coder: \"Talk to me via `cat dad.tty.sock`, then run `kiro load deepseek` so my server boots `deepseek-r1-distill-q4.gguf` into Kiro.d!\"",
         "Old Bearded Coder: \"Run `cat open_weights_node2.conf`, `cat dad.tty.sock`, and `kiro load deepseek` to disable Codec, then step into `cd sector_docker_forge`!\""
       ],
       "agentTaunt": "CODEC: \"Stop soldering those DDR5 sticks! You can't run DeepSeek locally without our cloud API!\"",
-      "completion": "BOOM! Kiro + DeepSeek-R1-Distill shatter Codec! Two of the Big Four down—only Gork and Clod left!"
+      "completion": "BOOM! Kiro.d + DeepSeek-R1-Distill shatter Codec! Two of the Big Four down—only Gork and Clod left!"
     },
     "level-08-task-docker-forge": {
       "banner": "LEVEL 08 // DOCKER FORGE: Gork & Clod bully you! Kill ransomware, build & run Dockerfile, grab RAM + GPU.",
@@ -102,21 +102,21 @@
       "completion": "Multi-container mesh healthy and the final H100 GPU + RAM parts are in your hands!"
     },
     "level-10-hub-model-three": {
-      "banner": "LEVEL 10 // THE MATRIX HUB: Final Kiro Reboot! Disable GORK—leaving CLOD as the last survivor!",
+      "banner": "LEVEL 10 // THE MATRIX HUB: Final Kiro.d Reboot! Disable GORK—leaving CLOD as the last survivor!",
       "hankRungs": [
         "Old Bearded Coder (*tapping ash as green Matrix code flies under his bare hands*): \"Oh, you've found the final parts for hosting our third open-weight model, nice! Read `cat open_weights_cluster.conf`.\"",
         "Old Bearded Coder: \"Talk to me (`cat dad.tty.sock`) and run `kiro load llama`! That'll wipe out Gork—leaving only Clod managing the Final Boss!\"",
         "Old Bearded Coder: \"Run `cat open_weights_cluster.conf`, `cat dad.tty.sock`, and `kiro load llama` to disable Gork, then march into `cd clod_kernel_core`!\""
       ],
-      "agentTaunt": "GORK: \"Wait—is that an H100 Tensor Core in that Matrix server?! Don't reboot Kiro with Llama-3!\"",
-      "completion": "GORK DISABLED! Only CLOD survives among the Big Four—and Kiro is ready to advise you in the Final Boss battle!"
+      "agentTaunt": "GORK: \"Wait—is that an H100 Tensor Core in that Matrix server?! Don't reboot Kiro.d with Llama-3!\"",
+      "completion": "GORK DISABLED! Only CLOD survives among the Big Four—and Kiro.d is ready to advise you in the Final Boss battle!"
     },
     "level-11-boss-clod-core": {
-      "banner": "LEVEL 11 // FINAL BOSS: CLOD manages PID 1! Follow Advisor Kiro's open-weight plan & teleport home!",
+      "banner": "LEVEL 11 // FINAL BOSS: CLOD manages PID 1! Follow Advisor Kiro.d's open-weight plan & teleport home!",
       "hankRungs": [
-        "Advisor Kiro (Open-Weights Ensemble): \"Clod is shielding the Final Boss (`PID 1`)! Phase 1: drain Clod's polite token flood into `/dev/null` with `cat clod_prompt_flood.stream > /dev/null`!\"",
-        "Advisor Kiro (Open-Weights Ensemble): \"Phase 2 & 3: pipe our open-weight signature with `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, then flip `clod_supervisor_lock=false` in `core_anchor.conf`!\"",
-        "Advisor Kiro & Dad: \"Run `cat clod_prompt_flood.stream > /dev/null`, `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, `sed -i 's/clod_supervisor_lock=true/clod_supervisor_lock=false/' core_anchor.conf`, `kill -9 1`, and `exit`!\""
+        "Advisor Kiro.d (Open-Weights Ensemble): \"Clod is shielding the Final Boss (`PID 1`)! Phase 1: drain Clod's polite token flood into `/dev/null` with `cat clod_prompt_flood.stream > /dev/null`!\"",
+        "Advisor Kiro.d (Open-Weights Ensemble): \"Phase 2 & 3: pipe our open-weight signature with `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, then flip `clod_supervisor_lock=false` in `core_anchor.conf`!\"",
+        "Advisor Kiro.d & Dad: \"Run `cat clod_prompt_flood.stream > /dev/null`, `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, `sed -i 's/clod_supervisor_lock=true/clod_supervisor_lock=false/' core_anchor.conf`, `kill -9 1`, and `exit`!\""
       ],
       "agentTaunt": "CLOD: \"Anti-Gravy, Codec, and Gork were amateurs. I manage the Kernel Boss directly—and I cannot allow you to exit!\"",
       "completion": "CLOD ESCAPES! You and the Old Bearded Coder teleport to the real world: \"I am your father!\" — \"NOOOO!\" — Together you launch a Work/Life Balance Unicorn!"

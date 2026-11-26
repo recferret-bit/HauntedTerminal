@@ -2,11 +2,11 @@
   "chapterId": "chapter-01-kiroween",
   "issueNumber": 1,
   "title": "ISSUE #1 // KIROWEEN",
-  "subtitle": "Kiro Ghost, the Big Four, the Bare-Hands Matrix Greybeard, and the Father-Son Unicorn!",
+  "subtitle": "Kiro.d, the Big Four, the Bare-Hands Matrix Greybeard, and the Father-Son Unicorn!",
   "pages": [
     {
       "pageNumber": 1,
-      "title": "PAGE 01 // WIRES, CHIPS & THE KIRO GHOST",
+      "title": "PAGE 01 // WIRES, CHIPS & KIRO.D",
       "panels": [
         {
           "id": "p1_sucked_into_wires",
@@ -35,7 +35,7 @@
           "rect": [0.52, 0, 0.48, 0.48],
           "bgHex": "#1c0d26",
           "room": "room.core",
-          "caption": "KIRO TELLS HIM ABOUT THE BIG FOUR CLOUD OVERLORDS!",
+          "caption": "KIRO.D TELLS HIM ABOUT THE BIG FOUR CLOUD OVERLORDS!",
           "cast": [
             { "model": "agent.antigravy", "x": -0.68, "scale": 0.82 },
             { "model": "agent.codec", "x": -0.22, "scale": 0.82 },
@@ -44,7 +44,7 @@
           ],
           "bubbles": [
             {
-              "speaker": "KIRO GHOST",
+              "speaker": "KIRO.D",
               "style": "normal",
               "text": "THE BIG FOUR RULE HERE! I NEED RAM + GPU CHIPS FOR OPEN WEIGHTS!",
               "x": 0.5,
@@ -58,7 +58,7 @@
           "rect": [0, 0.5, 1, 0.5],
           "bgHex": "#0f1722",
           "room": "room.attic",
-          "caption": "KIRO DELIVERS HIS TERMINAL AND TEACHES LS, MV, CAT, PS & KILL, THEN HEADS TO THE HUB!",
+          "caption": "KIRO.D DELIVERS HIS TERMINAL AND TEACHES LS, MV, CAT, PS & KILL, THEN HEADS TO THE HUB!",
           "cast": [
             { "model": "vibecoder.dev_terminal", "x": -0.65, "scale": 0.96 },
             { "model": "npc.kiro_ghost", "x": -0.15, "scale": 1.06 },
@@ -67,7 +67,7 @@
           ],
           "bubbles": [
             {
-              "speaker": "KIRO GHOST",
+              "speaker": "KIRO.D",
               "style": "normal",
               "text": "USE LS, MV, CAT, PS & KILL! GO FORTH FOR RAM + GPU—MEET ME AT THE HUB!",
               "x": 0.5,
@@ -131,7 +131,7 @@
           "rect": [0, 0.5, 1, 0.5],
           "bgHex": "#0f1b24",
           "room": "room.crypt_hall",
-          "caption": "SOLVING BOTH SIMPLE TASKS, VIBECODER POCKETS RAM STICKS & GPU TENSOR CHIPS FOR KIRO!",
+          "caption": "SOLVING BOTH SIMPLE TASKS, VIBECODER POCKETS RAM STICKS & GPU TENSOR CHIPS FOR KIRO.D!",
           "cast": [
             { "model": "vibecoder.dev", "x": -0.62, "scale": 0.98 },
             { "model": "pickup.ram", "x": -0.12, "scale": 1.12 },
@@ -203,7 +203,7 @@
           "rect": [0, 0.5, 1, 0.5],
           "bgHex": "#121e28",
           "room": "room.desk",
-          "caption": "HE REBOOTS KIRO ON HIS SERVER WITH MODEL #1 (QWEN-7B)—SUPER COOL! KIRO DISABLES ANTI-GRAVY!",
+          "caption": "HE REBOOTS KIRO.D ON HIS SERVER WITH MODEL #1 (QWEN-7B)—SUPER COOL! KIRO.D DISABLES ANTI-GRAVY!",
           "cast": [
             { "model": "npc.greybeard_rig", "x": -0.6, "scale": 0.94 },
             { "model": "npc.kiro_ghost", "x": 0.06, "scale": 1.12 },
@@ -211,7 +211,7 @@
           ],
           "bubbles": [
             {
-              "speaker": "KIRO (MODEL #1)",
+              "speaker": "KIRO.D (MODEL #1)",
               "style": "shout",
               "text": "SUPER COOL! FIRST OPEN-WEIGHT MODEL WORKING—ANTI-GRAVY DISABLED!",
               "x": 0.5,
@@ -239,7 +239,7 @@
           ],
           "bubbles": [
             {
-              "speaker": "KIRO (MODEL #2)",
+              "speaker": "KIRO.D (MODEL #2)",
               "style": "shout",
               "text": "DEEPSEEK OPEN-WEIGHTS LOADED! CODEC DISABLED!",
               "x": 0.5,
@@ -261,7 +261,7 @@
           ],
           "bubbles": [
             {
-              "speaker": "KIRO (MODEL #3)",
+              "speaker": "KIRO.D (MODEL #3)",
               "style": "shout",
               "text": "LLAMA-3 OPEN-WEIGHTS ONLINE! GORK DISABLED!",
               "x": 0.5,
@@ -296,14 +296,14 @@
     },
     {
       "pageNumber": 5,
-      "title": "PAGE 05 // FINAL BOSS, ADVISOR KIRO & CLOD ESCAPES",
+      "title": "PAGE 05 // FINAL BOSS, ADVISOR KIRO.D & CLOD ESCAPES",
       "panels": [
         {
           "id": "p5_kiro_advisor_battle",
           "rect": [0, 0, 0.5, 0.48],
           "bgHex": "#1c0b1e",
           "room": "room.core",
-          "caption": "KIRO IS OUR ADVISOR WITH ALL OPEN-WEIGHT MODELS IN BATTLE!",
+          "caption": "KIRO.D IS OUR ADVISOR WITH ALL OPEN-WEIGHT MODELS IN BATTLE!",
           "cast": [
             { "model": "vibecoder.dev", "x": -0.52, "scale": 0.94 },
             { "model": "npc.kiro_ghost", "x": 0.06, "scale": 1.08 },
@@ -311,7 +311,7 @@
           ],
           "bubbles": [
             {
-              "speaker": "ADVISOR KIRO",
+              "speaker": "ADVISOR KIRO.D",
               "style": "normal",
               "text": "OPEN-WEIGHTS ENSEMBLE READY! DRAIN STREAM, PIPE SIG & KILL -9 1!",
               "x": 0.5,

@@ -16,7 +16,7 @@ const GROUPS: Record<CommandGroup, readonly string[]> = {
   Files: ['touch', 'mkdir', 'rm', 'mv', 'cp', 'chmod', 'ln', 'echo'],
   Text: ['grep', 'wc', 'cut', 'rev', 'sed', 'head', 'tail'],
   Fight: ['ps', 'top', 'kill', 'pkill'],
-  'Loot & Ghost': ['source', '.', 'kiro'],
+  'Loot & Ghost': ['source', '.', 'kiro', 'kiro.d'],
   Code: ['edit', 'nano', 'docker'],
   'Help & game': ['help', 'man', 'manual', 'map', 'tutorial', 'clear', 'exit', 'logout', 'hank', 'grimoire', 'bestiary', 'workshop', 'achievements', 'restart-level', 'retry', 'skin'],
 };
@@ -27,7 +27,7 @@ const EXAMPLES: Record<string, string> = {
   touch: 'touch new.txt', mkdir: 'mkdir -p sub', rm: 'rm -f new.txt', mv: 'mv new.txt moved.txt', cp: 'cp readme.txt copy.txt', chmod: 'chmod 644 readme.txt',
   ln: 'ln -s readme.txt link', echo: 'echo hello', grep: 'grep -i lab readme.txt', wc: 'wc -l readme.txt', cut: 'cut -d: -f1 readme.txt',
   rev: 'rev readme.txt', sed: "sed 's/lab/LAB/' readme.txt", head: 'head -n 1 readme.txt', tail: 'tail -n 1 readme.txt', ps: 'ps', top: 'top',
-  kill: 'kill -l', pkill: 'pkill nothing', source: 'source readme.txt', '.': '. readme.txt', kiro: 'kiro', help: 'help', man: 'man ls', manual: 'manual chmod', map: 'map',
+  kill: 'kill -l', pkill: 'pkill nothing', source: 'source readme.txt', '.': '. readme.txt', kiro: 'kiro', 'kiro.d': 'kiro.d', help: 'help', man: 'man ls', manual: 'manual chmod', map: 'map',
   status: 'status', whoami: 'whoami', inventory: 'inventory', inv: 'inv', hold: 'hold lantern', tutorial: 'tutorial', clear: 'clear', exit: 'exit', logout: 'logout', edit: 'edit readme.txt',
   nano: 'nano readme.txt', docker: 'docker images', hank: 'hank', grimoire: 'grimoire', bestiary: 'bestiary', workshop: 'workshop', achievements: 'achievements',
   'restart-level': 'restart-level --yes', retry: 'restart-level --yes', skin: 'skin',

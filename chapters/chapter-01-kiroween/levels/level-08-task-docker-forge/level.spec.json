@@ -28,7 +28,7 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "// Open-Weights Worker HTTP Node (port 3000)\nconsole.log('Kiro open-weights worker listening on :3000');\n"
+      "content": "// Open-Weights Worker HTTP Node (port 3000)\nconsole.log('Kiro.d open-weights worker listening on :3000');\n"
     },
     {
       "path": "/srv/kiroween/docker_forge/ram_16gb.dimm",

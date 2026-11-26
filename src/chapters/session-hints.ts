@@ -76,7 +76,7 @@ function tasksForRule(g: ChapterState, rule: WinRule): HintTask[] {
     case 'kiro_decrypted':
       return [{ label: `Decrypt ${baseName(rule.path)}`, done }];
     case 'kiro_loaded':
-      return [{ label: `Load open-weight model "${rule.core}" into Kiro`, done }];
+      return [{ label: `Load open-weight model "${rule.core}" into Kiro.d`, done }];
     case 'enemy_neutralized':
       return [{ label: enemyTaskLabel(g, rule.enemyId), done }];
     case 'html_css_valid':

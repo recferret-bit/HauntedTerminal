@@ -59,7 +59,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     id: 'open_weights_init',
     steamApiName: 'ACH_OPEN_WEIGHTS_INIT',
     title: 'Local Weights Online',
-    description: 'Hot-swap your first air-gapped `.gguf` open-weight model into Kiro Ghost.',
+    description: 'Hot-swap your first air-gapped `.gguf` open-weight model into Kiro.d.',
     category: 'CRAFT',
     icon: 'GG',
   },

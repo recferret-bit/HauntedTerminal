@@ -226,7 +226,7 @@ export const RULES: Field[] = [
 
 const KIRO_REACTION: Field[] = [
   { type: 'object', key: 'foe', label: 'Foe line', fields: [sel('agent', 'Agent', AGENTS), t('model', 'Model', { suggest: 'models' }), t('text', 'Line', { rows: 2 })] },
-  t('kiro', 'Kiro line', { rows: 2 }),
+  t('kiro', 'Kiro.d line', { rows: 2 }),
   t('banner', 'Terminal banner', { rows: 5, mono: true, hint: '{foe} {kiro} {gguf} are filled in' }),
 ];
 
@@ -266,7 +266,7 @@ export const SCRIPT: Field[] = [
     label: 'Tutorial cards',
     optional: true,
     fields: [
-      opt(t('label', 'Terminal label', { hint: 'e.g. KIRO TUTORIAL' })),
+      opt(t('label', 'Terminal label', { hint: 'e.g. KIRO.D TUTORIAL' })),
       sel('agent', 'Speaker', AGENTS),
       t('model', 'Speaker model', { suggest: 'models' }),
       opt(t('skipText', '`tutorial skip` reply', { rows: 3, mono: true })),
@@ -319,7 +319,7 @@ export const SCRIPT: Field[] = [
   {
     type: 'object',
     key: 'kiro',
-    label: 'Kiro companion',
+    label: 'Kiro.d daemon',
     optional: true,
     fields: [
       opt(sel('stage', 'On stage', ['show', 'crack_only', 'hidden'])),
@@ -376,7 +376,7 @@ export const MANIFEST: Field[] = [
     optional: true,
     item: {
       title: (g) => `after level ${String(g.afterLevel)}: ${[g.ram ? `+${String(g.ram)}GB RAM` : '', g.ssd ? `+${String(g.ssd)}GB SSD` : '', g.core ? `core ${String(g.core)}` : ''].filter(Boolean).join(', ')}`,
-      fields: [n('afterLevel', 'After level'), opt(n('ram', 'RAM GB')), opt(n('ssd', 'SSD GB')), opt(t('core', 'Kiro core', { suggest: 'cores' })), opt({ type: 'strings', key: 'items', label: 'Items (lantern, terminal, laptop, manual, map; one per line)' })],
+      fields: [n('afterLevel', 'After level'), opt(n('ram', 'RAM GB')), opt(n('ssd', 'SSD GB')), opt(t('core', 'Kiro.d core', { suggest: 'cores' })), opt({ type: 'strings', key: 'items', label: 'Items (lantern, terminal, laptop, manual, map; one per line)' })],
     },
   },
   opt({ type: 'strings', key: 'startItems', label: 'Items he carries at the start (default lantern, terminal, manual, map; one per line)' }),

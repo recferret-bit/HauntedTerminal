@@ -36,7 +36,7 @@ function renderCoverPage(actions: BookActions): HTMLElement {
     el('h2', 'mb-cover-title', ['OUT OF CREDITS']),
     el('h3', 'mb-cover-sub', ['INTERACTIVE TERMINAL FIELD MANUAL']),
     el('p', 'mb-cover-lead', [
-      'Every Unix command, flag, octal permission number, POSIX signal, Docker instruction, and Kiro Ghost verb in one searchable book — built for absolute beginners, developers, and speedrunners.',
+      'Every Unix command, flag, octal permission number, POSIX signal, Docker instruction, and Kiro.d daemon verb in one searchable book — built for absolute beginners, developers, and speedrunners.',
     ]),
     el('div', 'mb-cover-stats', [
       el('div', 'mb-stat-card', [el('strong', '', [String(MANUAL_COMMANDS.length)]), el('span', '', ['Commands Covered'])]),

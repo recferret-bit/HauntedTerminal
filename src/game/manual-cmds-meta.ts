@@ -30,24 +30,24 @@ export const MANUAL_TOOLS_AND_META: readonly ManualCommandEntry[] = [
   },
   {
     command: 'kiro',
-    aliases: [],
+    aliases: ['kiro.d'],
     section: 'code-tools',
-    categoryLabel: 'Ghost Companion',
+    categoryLabel: 'Unix .gguf Daemon',
     filters: ['beginner', 'flags-numbers', 'combat', 'game'],
     availability: 'both',
-    syntax: 'kiro [scan | load <core> | crack <lock> | inspect <file> | disclaimer] | cat <file> | kiro',
-    summary: 'Command your air-gapped local `.gguf` Ghost companion (`kiro.d`) to scan, swap models, audit code, or crack locks.',
+    syntax: 'kiro [scan | load <core> | crack <lock> | inspect <file> | disclaimer] | cat <file> | kiro  (alias: kiro.d)',
+    summary: 'Command Kiro.d (`kiro.d`), your air-gapped local Unix `.gguf` inference daemon, to scan, swap models, audit code, or crack locks.',
     realWorld:
-      'Represents running quantized local open-weights LLMs (`qwen`, `mistral`, `deepseek`, `llama`) offline on your own VRAM with zero cloud API calls.',
+      'In Unix, a `.d` / `d` suffix marks a resident background daemon (`sshd`, `systemd`, `kiro.d`) — here running quantized open-weights LLMs (`qwen`, `mistral`, `deepseek`, `llama`) offline on local VRAM with zero cloud API calls.',
     inGame:
-      'Each core counters one Big Four cloud overlord and buffs `kiro scan`/`crack`/defense: `qwen` (2-step crack + `PS_XRAY` scan), `mistral` (+5 HP scan siphon & 50% trap mitigation), `deepseek` (scan reveals hidden dotfiles), `llama` (-5 incoming damage shield).',
+      'Runs as protected PID `777` (`kiro.d`). Each core counters one Big Four cloud overlord and buffs `kiro scan`/`crack`/defense: `qwen` (2-step crack + `PS_XRAY` scan), `mistral` (+5 HP scan siphon & 50% trap mitigation), `deepseek` (scan reveals hidden dotfiles), `llama` (-5 incoming damage shield).',
     flags: [
       { flag: '(no args) / status / cores', kind: 'subcommand', meaning: 'Show mounted `.gguf` core, VRAM pool, active perk, and all 4 cores', example: 'kiro' },
       { flag: 'scan', alias: 'sweep', kind: 'subcommand', meaning: 'Sweep room for threats, hidden dotfiles, locked gates, and code flaws', detail: 'Triggers active core perk (`qwen` -> PS_XRAY, `mistral` -> +5 HP, `deepseek` -> reveal hidden).', example: 'kiro scan' },
       { flag: 'load <core>', alias: 'pull / use / swap', kind: 'subcommand', meaning: 'Mount `qwen`, `mistral`, `deepseek`, or `llama` local weights', detail: 'Accepts short ids or prefixes (`qwen`, `mistral`, `deepseek`, `r1`, `llama`).', example: 'kiro load qwen' },
-      { flag: 'crack <lock>', alias: 'decrypt / hack', kind: 'subcommand', meaning: 'Deploy Kiro to decrypt a Cloud-locked dir/file over 2–3 turns/cycles', detail: 'Takes 2 steps with `qwen`, 3 with other cores. Stay in the room until complete!', example: 'kiro crack iron_gate' },
+      { flag: 'crack <lock>', alias: 'decrypt / hack', kind: 'subcommand', meaning: 'Deploy Kiro.d to decrypt a Cloud-locked dir/file over 2–3 turns/cycles', detail: 'Takes 2 steps with `qwen`, 3 with other cores. Stay in the room until complete!', example: 'kiro crack iron_gate' },
       { flag: 'inspect <file>', alias: 'audit / cat f | kiro', kind: 'subcommand', meaning: 'Run local static audit for leaked secrets, `BUG`s, CSS/JS/Docker errors', example: 'cat prod.py | kiro' },
-      { flag: 'disclaimer', alias: 'legal / brands', kind: 'subcommand', meaning: 'Print parody & non-affiliation notice for fictional story characters', example: 'kiro disclaimer' },
+      { flag: 'disclaimer', alias: 'legal / brands', kind: 'subcommand', meaning: 'Print parody, AWS trademark & post-Kiroween rework notice', example: 'kiro disclaimer' },
     ],
     pitfalls: [
       'Leaving the room while `kiro crack` is running aborts the decryption job.',
@@ -55,11 +55,11 @@ export const MANUAL_TOOLS_AND_META: readonly ManualCommandEntry[] = [
     ],
     examples: [
       { command: 'kiro scan', outcome: 'Audits files, spots threats & hidden files, triggers core perk.' },
-      { command: 'kiro load deepseek', outcome: 'Swaps to DeepSeek R1 core so scans reveal hidden dotfiles.' },
+      { command: 'kiro.d load deepseek', outcome: 'Swaps to DeepSeek R1 core via the `kiro.d` daemon alias so scans reveal hidden dotfiles.' },
       { command: 'kiro crack locked_vault', outcome: 'Starts decrypting locked_vault while you hold the room.' },
     ],
     related: ['ls', 'ps', 'edit', 'hank'],
-    keywords: ['ghost', 'gguf', 'local', 'ai', 'qwen', 'mistral', 'deepseek', 'llama', 'scan', 'crack', 'audit'],
+    keywords: ['kiro.d', 'daemon', 'ghost', 'gguf', 'local', 'ai', 'qwen', 'mistral', 'deepseek', 'llama', 'scan', 'crack', 'audit'],
   },
   {
     command: 'edit',

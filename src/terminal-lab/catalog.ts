@@ -244,9 +244,9 @@ const TASK_TEMPLATES: Record<WinRule['kind'], (s: LabScript, id: string) => LabS
   },
   kiro_decrypted: (s, id) => {
     const path = freshPath(s, s.room.cwd, 'sealed.dat');
-    return [{ op: 'file', path, mode: 0, content: 'sealed\n' }, { op: 'task', id, rule: { kind: 'kiro_decrypted', path, description: 'Have Kiro decrypt sealed.dat (kiro crack sealed.dat)' } }];
+    return [{ op: 'file', path, mode: 0, content: 'sealed\n' }, { op: 'task', id, rule: { kind: 'kiro_decrypted', path, description: 'Have Kiro.d decrypt sealed.dat (kiro crack sealed.dat)' } }];
   },
-  kiro_loaded: (_s, id) => [{ op: 'task', id, rule: { kind: 'kiro_loaded', core: 'qwen', description: 'Load the qwen core into Kiro (kiro load qwen)' } }],
+  kiro_loaded: (_s, id) => [{ op: 'task', id, rule: { kind: 'kiro_loaded', core: 'qwen', description: 'Load the qwen core into Kiro.d (kiro load qwen)' } }],
   enemy_neutralized: (s, id) => {
     const enemy = ENEMY_ENTRY_VIRUS.make(s)[0] as Extract<LabSetupOp, { op: 'enemy' }>;
     return [enemy, { op: 'task', id, rule: { kind: 'enemy_neutralized', enemyId: enemy.id, description: `Stop ${enemy.id} (ps, then kill)` } }];

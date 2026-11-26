@@ -168,7 +168,7 @@
     "cd server_hub_1"
   ],
   "script": {
-    "allySpeaker": "KIRO GHOST",
+    "allySpeaker": "KIRO.D",
     "arrival": [
       {
         "kind": "print",
@@ -264,7 +264,7 @@
           "kind": "has_item",
           "item": "lantern"
         },
-        "message": "kiro: Kiro Ghost cannot scan in the dark crypt. Pull the lantern into your pocket first: mv lantern ~"
+        "message": "kiro: Kiro.d cannot scan in the dark crypt. Pull the lantern into your pocket first: mv lantern ~"
       }
     ],
     "bullying": {
@@ -279,7 +279,7 @@
         },
         {
           "agent": "codec",
-          "text": "CODEC: \"LMAO! You actually type flags by hand? Kiro is too weak to save you!\""
+          "text": "CODEC: \"LMAO! You actually type flags by hand? Kiro.d is too weak to save you!\""
         },
         {
           "agent": "gork",
@@ -294,8 +294,8 @@
     "kiro": {
       "stage": "crack_only",
       "weak": true,
-      "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro at the Hub server!)\n",
-      "loadRefusal": "[KIRO GHOST]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
+      "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
+      "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
     }
   }
 }

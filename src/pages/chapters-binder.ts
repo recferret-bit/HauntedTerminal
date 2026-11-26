@@ -134,7 +134,7 @@ export function renderBinder(
     return;
   }
   const parodyBanner = dom('div', { class: 'workshop-flash' }, [
-    '◈ KIRO PARODY & NON-AFFILIATION NOTICE: The "Big Four" (Anti-Gravy, Codec, Gork, Clod) are original fictional parody characters—no real AI brands are used or affiliated. Run ',
+    '◈ KIRO.D PARODY, TRADEMARK & POST-KIROWEEN NOTICE: The "Big Four" (Anti-Gravy, Codec, Gork, Clod) are original fictional parodies—no real AI brands are used for rival agents. "Kiro" marks belong to Amazon.com, Inc. or its affiliates; all Kiro/Kiroween & ghost elements are a non-affiliated Kiroween 2026 hackathon tribute and will be reworked into original IP after the event before Steam release. Run ',
     dom('code', {}, ['kiro disclaimer']),
     ' in the terminal for details.',
   ]);

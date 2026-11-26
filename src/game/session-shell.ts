@@ -67,6 +67,7 @@ const CLASSIC_HANDLERS: Record<string, ClassicHandler> = {
   source: (g, args) => cmdSource(g, args),
   '.': (g, args) => cmdSource(g, args),
   kiro: (g, args, stdin) => cmdKiro(g, args, stdin),
+  'kiro.d': (g, args, stdin) => cmdKiro(g, args, stdin),
   help: (g) => out(`${helpText(g.hint())}\n`),
   man: (_g, args) => runMan(args),
   'restart-level': (g, args) => g.restartLevel(args),

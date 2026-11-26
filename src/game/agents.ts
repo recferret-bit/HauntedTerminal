@@ -142,7 +142,7 @@ export class AgentDirector {
     const out = this.empty();
     this.emote(out, 'shock', 'Where... am I? This is my /home... from the INSIDE?');
     if (this.kiro) {
-      out.text += `\x1b[1;38;2;76;201;240m[KIRO.D // ${this.kiro.activeCore.shortTag}]\x1b[0m Eyes up, Dev. Self-hosted Ghost shell online—no cloud APIs own me. Type \`kiro\` anytime.\n`;
+      out.text += `\x1b[1;38;2;76;201;240m[KIRO.D // ${this.kiro.activeCore.shortTag}]\x1b[0m Eyes up, Dev. Kiro.d Unix background daemon online—no cloud APIs own me. Type \`kiro\` (or \`kiro.d\`) anytime.\n`;
     }
     this.issue(out);
     out.text += '\x1b[2m(type the command in the prompt, or `tutorial skip` to skip the onboarding)\x1b[0m\n';
@@ -333,9 +333,9 @@ export function battleAdvice(threats: readonly BattleThreat[]): string {
   return `${lead.type.toUpperCase()}: ${BESTIARY[lead.type].weakness}.${more}`;
 }
 
-/** The terminal lines of a battle intro: the FIGHT banner, the agent's taunt, Kiro's advice. */
+/** The terminal lines of a battle intro: the FIGHT banner, the agent's taunt, Kiro.d's advice. */
 export function battleBanner(ev: Extract<KernelEvent, { type: 'BATTLE_STARTED' }>): string {
-  const tag = (agent: AgentName) => `\x1b[${COLOR[agent]}m[${agent.toUpperCase()}]\x1b[0m`;
+  const tag = (agent: AgentName) => `\x1b[${COLOR[agent]}m[${agent === 'kiro' ? 'KIRO.D' : agent.toUpperCase()}]\x1b[0m`;
   return (
     `\x1b[1;33m=== BATTLE #${ev.battle}: ${ev.enemyIds.length} malware in range. You move first. ===\x1b[0m\n` +
     `${tag(ev.agent)} ${ev.taunt}\n${tag('kiro')} ${ev.advice}\n`

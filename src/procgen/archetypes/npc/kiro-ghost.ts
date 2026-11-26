@@ -42,7 +42,7 @@ export function buildKiroGhost(seed: number): ModelSpec {
   return {
     id: 'npc.kiro_ghost',
     category: 'npc',
-    label: 'Kiro Ghost (local .gguf companion)',
+    label: 'Kiro.d (local .gguf Unix daemon)',
     tags: ['hover'],
     parts,
     sockets: {

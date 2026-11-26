@@ -1297,6 +1297,8 @@ await withProcgen(async (_p, vite) => {
 
   await test('dialog orchestrator: unifies DIALOG_BOX + AGENT_TAUNT, enforces 1 right dialog, preempts chatter, and coordinates hints & sockets', async () => {
     assert.equal(stripSpeakerPrefix('KIRO GHOST: "Easy, Vibecoder!"'), 'Easy, Vibecoder!');
+    assert.equal(stripSpeakerPrefix('KIRO.D: "Easy, Vibecoder!"'), 'Easy, Vibecoder!');
+    assert.equal(stripSpeakerPrefix('ADVISOR KIRO.D: "Drain stream!"'), 'Drain stream!');
     assert.equal(stripSpeakerPrefix('CLOD: Hello'), 'Hello');
     await withFakeDom(async (makeEl) => {
       const parent = makeEl('div');

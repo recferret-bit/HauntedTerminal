@@ -61,9 +61,9 @@ export interface DialogOrchestrator {
 const MAX_CHATTER_QUEUE = 3;
 const MAX_TEXT_LEN = 240;
 const SPEAKER_PREFIX_RX =
-  /^(?:\[(?:KIRO(?:\s+GHOST)?|KIRO\.D|ANTI-?GRAVY|CLOD|GORK|CODEC)\]|(?:ADVISOR\s+KIRO(?:\s*\([^)]+\))?|KIRO(?:\s+GHOST|\.D)?|ANTI-?GRAVY|CLOD|GORK|CODEC))\s*:\s*/i;
+  /^(?:\[(?:KIRO(?:\s+GHOST|\.D)?|ADVISOR\s+KIRO(?:\.D)?|ANTI-?GRAVY|CLOD|GORK|CODEC)\]|(?:ADVISOR\s+KIRO(?:\.D)?(?:\s*\([^)]+\))?|KIRO(?:\s+GHOST|\.D)?(?:\s*\([^)]+\))?|ANTI-?GRAVY|CLOD|GORK|CODEC))\s*:\s*/i;
 
-/** Removes redundant leading speaker tags (`KIRO GHOST: "..."`, `CLOD: ...`) since the dialog box displays the speaker header. */
+/** Removes redundant leading speaker tags (`KIRO.D: "..."`, `CLOD: ...`) since the dialog box displays the speaker header. */
 export function stripSpeakerPrefix(raw: string): string {
   const trimmed = String(raw ?? '').trim();
   const stripped = trimmed.replace(SPEAKER_PREFIX_RX, '').trim();
@@ -188,9 +188,9 @@ export function mountDialogOrchestrator(
           break;
         }
         case 'BATTLE_STARTED':
-          // The battle intro (about 4 s): the agent's taunt, then Kiro's advice, ahead of any chatter.
+          // The battle intro (INTRO_SEC, 10 s): the agent's taunt, then Kiro's advice, ahead of any chatter.
           enqueue({ speaker: ev.agent, name: AGENTS[ev.agent]?.name ?? ev.agent.toUpperCase(), model: ev.model, text: ev.taunt, holdMs: BATTLE_LINE_MS, mood: 'laugh', priority: 'script' });
-          enqueue({ speaker: 'kiro', name: AGENTS.kiro?.name ?? 'KIRO', model: AGENT_MODELS.kiro, text: ev.advice, holdMs: BATTLE_LINE_MS, priority: 'script' });
+          enqueue({ speaker: 'kiro', name: AGENTS.kiro?.name ?? 'KIRO.D', model: AGENT_MODELS.kiro, text: ev.advice, holdMs: BATTLE_LINE_MS, priority: 'script' });
           break;
         case 'TUTORIAL_STEP':
           opts.tutorial?.step(ev);

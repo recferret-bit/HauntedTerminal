@@ -8,7 +8,7 @@
   "roomSeed": 111,
   "mechanic": "boss",
   "exitCommand": "exit",
-  "summary": "CLOD—the last surviving model of the Big Four—manages the Final Boss (`clod_overlord.ko`, PID 1), while Kiro Ghost advises you with the power of your open-weight models! Drain `clod_prompt_flood.stream` into `/dev/null`, pipe `OPEN_WEIGHT_SIG` from `open_weights_advisor.log` into `kiro_override.sock`, flip `clod_supervisor_lock=false` in `core_anchor.conf`, `kill -9 1`, and run `exit` to teleport back to the real world!",
+  "summary": "CLOD—the last surviving model of the Big Four—manages the Final Boss (`clod_overlord.ko`, PID 1), while Kiro.d advises you with the power of your open-weight models! Drain `clod_prompt_flood.stream` into `/dev/null`, pipe `OPEN_WEIGHT_SIG` from `open_weights_advisor.log` into `kiro_override.sock`, flip `clod_supervisor_lock=false` in `core_anchor.conf`, `kill -9 1`, and run `exit` to teleport back to the real world!",
   "files": [
     {
       "path": "/sys/clod_overlord_core/clod_overlord.ko",
@@ -107,7 +107,7 @@
       "expectedToken": "OPEN_WEIGHT_SIG=KIRO_QWEN_DEEPSEEK_LLAMA_99",
       "anchorPath": "/sys/clod_overlord_core/core_anchor.conf",
       "anchorPattern": "clod_supervisor_lock=false",
-      "description": "Follow Kiro's open-weight advice: 1) `cat clod_prompt_flood.stream > /dev/null`, 2) `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, 3) set `clod_supervisor_lock=false` in `core_anchor.conf`, 4) `kill -9 1`"
+      "description": "Follow Kiro.d's open-weight advice: 1) `cat clod_prompt_flood.stream > /dev/null`, 2) `grep OPEN_WEIGHT_SIG open_weights_advisor.log > kiro_override.sock`, 3) set `clod_supervisor_lock=false` in `core_anchor.conf`, 4) `kill -9 1`"
     }
   ],
   "solutionCommands": [
@@ -134,7 +134,7 @@
         "agent": "kiro",
         "model": "npc.kiro_ghost",
         "mood": "order",
-        "text": "ADVISOR KIRO: \"All 3 open-weight models online! Drain clod_prompt_flood.stream to /dev/null, pipe OPEN_WEIGHT_SIG to kiro_override.sock, flip clod_supervisor_lock=false, then kill -9 1 and exit!\"",
+        "text": "ADVISOR KIRO.D: \"All 3 open-weight models online! Drain clod_prompt_flood.stream to /dev/null, pipe OPEN_WEIGHT_SIG to kiro_override.sock, flip clod_supervisor_lock=false, then kill -9 1 and exit!\"",
         "print": "{text}\n"
       }
     ],
@@ -159,7 +159,7 @@
         "agent": "kiro",
         "model": "npc.kiro_ghost",
         "mood": "order",
-        "text": "ADVISOR KIRO: \"Clod is escaping and the core is collapsing! Type exit NOW to teleport back to the real world with the Old Bearded Coder!\"",
+        "text": "ADVISOR KIRO.D: \"Clod is escaping and the core is collapsing! Type exit NOW to teleport back to the real world with the Old Bearded Coder!\"",
         "print": "{text}\n"
       }
     ]

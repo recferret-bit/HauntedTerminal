@@ -7,7 +7,7 @@ import type { Step } from './shell.js';
 export const COMMANDS = [
   'pwd', 'ls', 'cd', 'cat', 'readlink', 'find', 'touch', 'rm', 'mv', 'cp', 'chmod', 'ln',
   'echo', 'grep', 'wc', 'cut', 'rev', 'sed', 'head', 'tail', 'ps', 'top', 'kill', 'pkill',
-  'source', '.', 'kiro', 'help', 'man', 'manual', 'map', 'status', 'whoami', 'tutorial', 'clear', 'exit', 'logout',
+  'source', '.', 'kiro', 'kiro.d', 'help', 'man', 'manual', 'map', 'status', 'whoami', 'tutorial', 'clear', 'exit', 'logout',
   'inventory', 'inv', 'hold', 'restart-level', 'retry', 'skin',
 ];
 
@@ -105,14 +105,14 @@ const MAN: Record<string, string[]> = {
     '  Encrypted pickups (mode 000) need chmod 644 first. Never source malware.',
   ],
   kiro: [
-    'kiro: your air-gapped, self-hosted .gguf Ghost companion (kiro.d).',
+    'kiro (alias: kiro.d): your air-gapped Unix background daemon (PID 777, .d = daemon) running .gguf weights on local VRAM.',
     '  kiro                          inspect mounted .gguf core, VRAM budget & active buffs.',
     '  kiro scan                     sweep room threats, hidden dotfiles & corrupt configs.',
     '  kiro load <core>              swap local weights: qwen (vs Anti-Gravy), mistral (vs Clod),',
     '                                deepseek (vs Codec), llama (vs Gork Faraday shield).',
-    '  kiro crack <lock>             send Kiro to decrypt a Cloud-sealed gate while you defend it.',
-    '  kiro disclaimer               print the parody & non-affiliation notice (alias: kiro legal).',
-    '  cat <file> | kiro             audit a file with local weights (flags bugs & slop).',
+    '  kiro crack <lock>             send Kiro.d to decrypt a Cloud-sealed gate while you defend it.',
+    '  kiro disclaimer               print parody, AWS trademark & post-Kiroween rework notice (alias: kiro legal).',
+    '  cat <file> | kiro             audit a file with local weights (flags bugs & slop; kiro.d works too).',
   ],
   help: ['help: the cheat sheet and a hint for this room.'],
   man: ['man <command> | man <malware>: the manual.'],
@@ -171,6 +171,7 @@ const MAN: Record<string, string[]> = {
   ],
 };
 MAN['.'] = MAN.source ?? [];
+MAN['kiro.d'] = MAN.kiro ?? [];
 MAN.logout = MAN.exit ?? [];
 MAN.retry = MAN['restart-level'] ?? [];
 MAN.restart = MAN['restart-level'] ?? [];

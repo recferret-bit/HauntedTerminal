@@ -154,7 +154,7 @@ ModelCatalog.register({
   id: BARE_HERO_MODEL,
   category: 'vibecoder',
   label: 'The developer (bare hands)',
-  lore: 'The developer with nothing in his hands: standing with both arms relaxed at his sides until Kiro hands him his terminal.',
+  lore: 'The developer with nothing in his hands: standing with both arms relaxed at his sides until Kiro.d hands him his terminal.',
   build: () => buildDev(BARE_HERO_MODEL, 'The developer (bare hands)', null),
 });
 
