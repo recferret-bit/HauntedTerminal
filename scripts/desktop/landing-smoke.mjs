@@ -545,7 +545,7 @@ async function verifySteamStoreCutoverAndAutoCloud(cdp, evalJs, base) {
 
 async function verifyTabSwitchingFlow(cdp, evalJs, base) {
   await openPage(cdp, base, '/comix.html', `document.querySelector('.comix-tile')`);
-  await verifyTabSwitching(evalJs);
+  await verifyTabSwitching(evalJs, cdp);
   await verifyManualTargetPage(openPage, cdp, evalJs, base);
 }
 

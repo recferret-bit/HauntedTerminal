@@ -1,6 +1,14 @@
 /* Startup conversion funnel, roadmap comparison, desktop downloads, trophy rack, FAQ & native <dialog> modal. */
 /* Strict Comix Zone palette: flat cel blocks, ink borders, halftone paper, zero smooth gradients. */
 
+/* Keep every landing page at a constant viewport width and centering regardless of content height.
+   Under custom ::-webkit-scrollbar rules on macOS, scrollbar-gutter: stable alone reserves 0px until
+   content overflows; overflow-y: scroll locks the scrollbar track width across short and tall tabs. */
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
 .hub-header-wrap {
   max-width: 1180px;
   margin: 0 auto;

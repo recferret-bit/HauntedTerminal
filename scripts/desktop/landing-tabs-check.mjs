@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** Tab switching is instant: once the pages are fetched a click swaps the content in the same task, with no page load. */
-export async function verifyTabSwitching(evalJs) {
+export async function verifyTabSwitching(evalJs, cdp = null) {
   await evalJs(`new Promise((ok) => { const t = setInterval(() => { if (performance.getEntriesByType('resource').filter((r) => /\\/(desktop|achievements)\\.html$|\\/$/.test(new URL(r.name).pathname)).length >= 3) { clearInterval(t); ok(true); } }, 50); setTimeout(() => ok(false), 4000); })`);
   await evalJs(`(() => { window.__alive = 'same document'; window.__headerNode = document.querySelector('#hub-header .hub-nav'); })()`);
   const steps = [
@@ -13,19 +13,39 @@ export async function verifyTabSwitching(evalJs) {
     ['/', '#hero-telemetry-strip .telemetry-chip'],
     ['/comix.html', '.comix-tile'],
   ];
-  for (const [href, ready] of steps) {
-    const r = await evalJs(`(() => {
-      document.querySelector('#hub-header a[href="${href}"]').click();
-      return { path: location.pathname, alive: window.__alive, sameHeader: window.__headerNode === document.querySelector('#hub-header .hub-nav'),
-        drawn: document.querySelectorAll('${ready}').length > 0, mains: document.querySelectorAll('body > main').length,
-        current: [...document.querySelectorAll('#hub-header [aria-current="page"]')].length };
-    })()`);
-    assert.equal(r.path, href, `${href}: the URL follows the tab`);
-    assert.equal(r.alive, 'same document', `${href}: no page load (same document)`);
-    assert.equal(r.sameHeader, true, `${href}: the header node is never replaced`);
-    assert.equal(r.drawn, true, `${href}: the page is drawn in the same task as the click`);
-    assert.equal(r.mains, 1, `${href}: exactly one <main>`);
-    assert.equal(r.current, 1, `${href}: one current tab`);
+  const measureAll = async (label) => {
+    let baselineBox = null;
+    for (const [href, ready] of steps) {
+      const r = await evalJs(`(() => {
+        document.querySelector('#hub-header a[href="${href}"]').click();
+        const hdr = document.getElementById('hub-header').getBoundingClientRect();
+        const main = document.querySelector('body > main.hub-shell').getBoundingClientRect();
+        return { path: location.pathname, alive: window.__alive, sameHeader: window.__headerNode === document.querySelector('#hub-header .hub-nav'),
+          drawn: document.querySelectorAll('${ready}').length > 0, mains: document.querySelectorAll('body > main').length,
+          current: [...document.querySelectorAll('#hub-header [aria-current="page"]')].length,
+          box: {
+            clientW: document.documentElement.clientWidth,
+            hdrLeft: Math.round(hdr.left),
+            hdrW: Math.round(hdr.width),
+            mainLeft: Math.round(main.left),
+            mainW: Math.round(main.width),
+          } };
+      })()`);
+      assert.equal(r.path, href, `${href}: the URL follows the tab`);
+      assert.equal(r.alive, 'same document', `${href}: no page load (same document)`);
+      assert.equal(r.sameHeader, true, `${href}: the header node is never replaced`);
+      assert.equal(r.drawn, true, `${href}: the page is drawn in the same task as the click`);
+      assert.equal(r.mains, 1, `${href}: exactly one <main>`);
+      assert.equal(r.current, 1, `${href}: one current tab`);
+      if (!baselineBox) baselineBox = r.box;
+      else assert.deepEqual(r.box, baselineBox, `${href} (${label}): view width and alignment must stay constant regardless of vertical scrollbar`);
+    }
+  };
+  await measureAll('1440x900');
+  if (cdp) {
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1024, height: 768, deviceScaleFactor: 1, mobile: false });
+    await measureAll('1024x768');
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
   }
   await evalJs(`history.back()`);
   await sleep(300);
