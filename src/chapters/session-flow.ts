@@ -1,7 +1,7 @@
 import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import type { KernelEvent } from '../contracts/events.js';
 import { maxHpFor } from '../game/bestiary.js';
-import { giveItem, hasItem, holdItem, starterInventory } from '../game/inventory.js';
+import { giveItem, hasItem, holdItem, ITEMS, starterInventory, type ItemId } from '../game/inventory.js';
 import { setHold, skipIntro as endBattleIntro, type BattleHold } from '../game/battle.js';
 import { runLine, type Host } from '../game/shell.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from '../game/types.js';
@@ -344,6 +344,15 @@ export function debugTeleport(g: ChapterState, floor: FloorId): TickResult {
 export function debugHeal(g: ChapterState): GameSnapshot {
     g.hp = maxHpFor(g.ram);
     return snapshot(g);
+  }
+
+/** Dev panel: puts an item in the inventory (held when his hands are empty or it is the tube transistor). */
+export function debugGrantItem(g: ChapterState, item: ItemId): TickResult {
+    const had = hasItem(g.inventory, item);
+    g.inventory = giveItem(g.inventory, item);
+    if (!had && (item === 'tube_transistor' || g.inventory.held === null)) g.inventory = holdItem(g.inventory, item);
+    const events: KernelEvent[] = had ? [] : [{ type: 'ITEM_GIVEN', item, model: ITEMS[item].model, held: g.inventory.held === item }];
+    return { output: `\x1b[36m${had ? 'Already carrying' : 'Granted'} ${ITEMS[item].label} (dev panel).\x1b[0m`, events, snapshot: snapshot(g) };
   }
 
 export function debugDamage(g: ChapterState, amount = 10): TickResult {

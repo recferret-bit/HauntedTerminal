@@ -431,6 +431,14 @@ export function mountPlayDev(play: Play): void {
         play.events.emit({ kind: 'apply-events', events: r.events, snap: r.snapshot });
       } else play.events.emit({ kind: 'paint', snap: r });
     },
+    onGrantItem: play.session.debugGrantItem
+      ? (item) => {
+        const r = play.session.debugGrantItem?.(item);
+        if (!r) return;
+        if (r.output) play.shell.printAbove(r.output);
+        play.events.emit({ kind: 'apply-events', events: r.events, snap: r.snapshot });
+      }
+      : undefined,
     onDialogue: () => {
       if (play.lifecycle.phase() === 'play') void play.shell.submit('cat intercom.sock');
     },

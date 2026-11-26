@@ -2,18 +2,87 @@
 
 Status: draft
 
-Capability: a new inventory item, the Tensor GPU, is found in Level 2. When the vibecoder brings it to a Hub, Kiro flies from the vibecoder to the Old Bearded Coder (dad.tty). Kiro says, in effect, "look whom I found, a vibecoder from the prophecy, and he found a Tensor GPU". The old coder answers that open-weight models can now be loaded into Kiro. Magic plays, Kiro gains a hacking ability, more dialogs explain it, and the old coder gives the vibecoder the map and the manual. The dialogs must explain all of it.
+Capability: a new inventory item, the Tensor GPU, drops in Level 2. When the vibecoder brings it to Hub 1, Kiro flies from the vibecoder to the Old Bearded Coder (dad.tty). Kiro says, in effect, "look whom I found, a vibecoder from the prophecy, and he found a Tensor GPU". The old coder answers that open-weight models can now be loaded into Kiro. Magic plays, and the dialogs explain that every open-weight model gives Kiro a skill (`qwen` heals, `deepseek` gives riddle hints), that each skill has one charge per level, and that hidden VRAM modules add charges. The old coder then gives the vibecoder the map and the manual. The dialogs must explain all of it.
 
 User's words, 2026-11-27: "lets add tensor gpu item on the level 2, when user brings it to the hub > i need a new dialog and action. Like kiro must fly from vibecoder to the old guy, when close to him > a new dialog, like look whom i found, its a vibecoder from a prophesy, he found tensor gpu! old guys saying: great, we now can load open weight model into you. Then some magic happens, kiro is capable to do some hacking, more dialogs. Old guy gives the vibecoder a map and manual. Dialogs must explain that."
 
-Everything below is *proposed, not decided*. It is drawn from the user's words and from what the code already does. Every choice the code or the author made without the user is listed under `## Open questions
+The requirements are proposed until the user approves them. The decisions below are the user's. Anything not yet answered is listed under Open questions.
 
-- [ ] The gate must still hold after the GPU is consumed, so `has_item tensor_gpu` cannot be the `until` condition of the `kiro crack` / `hack` lock. What persistent condition should it be: a new condition (for example `ran_command`/flag set by the ritual), `core_loaded` (which only holds from `kiro load qwen`), or the item staying in the inventory? Which levels does the lock cover (2 and 3 only, or every level before the ritual)?
-- [ ] `hack` is already an alias of `kiro crack`. Does "add `kiro hack`" mean keep the alias and only gate it, or make `hack` its own subcommand with a different effect?
-- [ ] Is the Tensor GPU still shown in the items strip after it is consumed (dim), or removed? This decides whether `item.tensor_gpu` needs only a pickup/strip model and no `vibecoder.dev_tensor_gpu` hero model.
-- [ ] Does level 3's `gpu_shader_core_01.img` stay as it is?
-- [ ] An achievement for it, and a sound for the flight and the magic?
+## Findings (from code, read-only, 2026-11-27)
+
+- **Levels.** `chapters/chapter-01-kiroween/levels/` holds levels 1 to 11. Level 2 is `level-02-task-ram-heist` (Cache Vault, the Tube Transistor drop). Level 3 is `level-03-task-gpu-salvage` (a task level). Hubs are level 4 (`level-04-hub-model-one`, wins on `kiro load qwen`), level 7 (`deepseek`) and level 10 (`llama`; `mistral` is only an optional core there). There is no level 0.
+- **The old guy.** `chapter.manifest.json -> allyNpc`: id `dad.tty`, model `npc.greybeard_rig`, the hub socket `/home/dev/dad.tty.sock`, dialog speaker `dad`.
+- **Map and manual today.** `level-04-hub-model-one/level.spec.json -> script.timed[afterSec 18]` runs `give_item map`, `give_item manual` and a `dad` dialog box. `manifest.grants` with `afterLevel: 4` gives both to a player who enters later levels directly.
+- **Items.** `src/contracts/inventory.ts` has `ITEM_IDS` (`tube_transistor, terminal, laptop, manual, map`), read also by `src/ui/items-strip.ts`, `src/chapters/achievements.ts`, `src/chapter-editor/schema.ts` and `src/chapters/validate-pack.ts`. Pickups use `PickupType` and `PICKUP_INFO` (`src/game/bestiary.ts`). Hero hold models are `vibecoder.dev_<id>`. No `item.tensor_gpu` or `item.vram_module` exists. `pickup.gpu` and `prop.gpu_card` are visual starting points. Level 3's `gpu_shader_core_01.img` is an `ssd` pickup with GPU wording.
+- **Lantern.** The glossary's lantern is stored as `tube_transistor` (`src/chapters/session-shell.ts:141`). `ls` flags (`-a`, `-l`, ...) are refused until it is held, so in Level 1 `ls -a` is refused.
+- **Kiro.** `src/game/kiro.ts` holds the cores (`KIRO_CORES`: qwen, mistral, deepseek, llama). `src/game/kiro-commands.ts:74` treats `crack`, `decrypt` and `hack` as one subcommand. Levels 2 and 3 refuse `kiro load`.
+- **Flight.** `carry_item` and `give_item` fly Kiro only to the hero or home (`src/renderer/stage-carry.ts`, `stage-motion.ts: flyTo`). No step flies an actor to an NPC.
+- **Script vocabulary.** Steps: `print, emote, spawn, kiro_action, say, taunt, dialogue, dialog_box, tutorial_step, carry_item, give_item`. Conditions include `has_item`, `core_loaded`, `kiro_loaded`, `ran_command`, `file_read`, `enemy_dead`. `script.triggers` fires once per level load when its condition holds. Speakers: `vibecoder, dad, kiro, clod, gork, codec, antigravy`.
+- **Four-place rule** for any new step or field: types (`script-types.ts`), interpreter (`script.ts`, with `OPENING_KEEP` and `SKIP_KEEP`), editor schema (`src/chapter-editor/schema.ts`), pack checks (`src/chapters/validate-pack.ts`). A new step also needs a stage handler, a `KernelEvent` (`src/contracts/events.ts`), a sound mapping (`src/audio/sfx-kernel.ts`) and Terminal Lab coverage.
+- **New models.** Items need an ASSET PCG model (`procedural-kitbash-3d`, `model-geometry-validator`), and `quality:fingerprint` changes for intended asset additions.
+
+## Requirements
+
+1. WHEN the gargoyle in Level 2 is petrified, THE SYSTEM SHALL drop the Tensor GPU beside the Tube Transistor, and WHEN the vibecoder takes it with `mv`, THE SYSTEM SHALL add `tensor_gpu` to his inventory, show it in the items strip, and say in a dialog what it is.
+2. WHEN the vibecoder is in Hub 1 (level 4) carrying `tensor_gpu`, THE SYSTEM SHALL start the ritual once, through a `script.triggers` entry on `has_item tensor_gpu`.
+3. WHEN the ritual starts, THE SYSTEM SHALL fly Kiro from the vibecoder to the old coder (`dad.tty`) along a smooth path with a new generic `fly_to` script step (actor, target entity, wait for arrival), and hold him next to the old coder.
+4. WHEN Kiro reaches the old coder, THE SYSTEM SHALL play, in order: Kiro says he found a vibecoder from the prophecy who has found a Tensor GPU; the old coder says open-weight models can now be loaded into Kiro.
+5. WHEN those dialogs end, THE SYSTEM SHALL play a magic effect on Kiro with existing FX presets, remove `tensor_gpu` from the inventory (the strip slot goes dim), and play one sound for the flight and one for the magic.
+6. WHEN the magic ends, THE SYSTEM SHALL play further dialogs (about 10-12 lines for the whole ritual, in the old coder's gruff tone) that explain: open-weight models give Kiro a skill; `kiro load <core>` loads one; `qwen` gives `kiro heal`, `deepseek` gives `kiro hint`; each skill has one charge per level; VRAM modules hidden in the machine add charges; the `VRAM x N` chip shows them.
+7. WHEN the explanation ends, THE SYSTEM SHALL have the old coder give the vibecoder the map and the manual with the existing `give_item` flights and explain `map` / `F3` and `manual` / `F1`. The 18 s timed beat that gives them today moves into the ritual, and `manifest.grants` (`afterLevel: 4`) keeps giving both to a player who enters later levels directly.
+8. IF the player clicks Skip Dialog during the ritual, THEN THE SYSTEM SHALL still fly Kiro, consume the GPU and grant the map and the manual (`OPENING_KEEP`, `SKIP_KEEP`).
+9. WHEN the vibecoder has loaded `qwen` and sends `kiro heal` during a battle, THE SYSTEM SHALL spend one charge, restore half of his max HP, and count it as one player action followed by one enemy turn.
+10. WHEN the vibecoder has loaded `deepseek` and sends `kiro hint` near a riddle, THE SYSTEM SHALL spend one charge and print the riddle's `hint` line from the level spec, or one generic line when it has none. Outside a battle it takes no turn.
+11. WHEN a skill command is sent with no charge, or with its core not loaded, THE SYSTEM SHALL refuse it with one line, spend nothing and take no turn.
+12. THE SYSTEM SHALL give each skill one charge at the start of every level once its core is loaded, and each VRAM module taken SHALL add one extra charge, kept until used and across levels.
+13. THE SYSTEM SHALL place one VRAM module in Level 1 and one in Level 6, each inside a folder tree of 100 or more subfolders with hidden files, built by a new generator field in the level spec (count and seed). The module SHALL be reachable by every normal means (`ls` along a visible clue trail, `tree`, `find`, `grep -r`, and `ls -a` wherever the lantern lock allows it), so the player may search freely.
+14. WHEN the vibecoder takes a VRAM module with `mv`, THE SYSTEM SHALL remove the file, add one extra charge and raise the `vram_module` slot count in the items strip.
+15. THE SYSTEM SHALL show a `VRAM x N` chip with a memory-chip glyph in the hero card, and a `vram_module` slot in the items strip.
+16. THE SYSTEM SHALL no longer treat `hack` as an alias of `kiro crack`, and `kiro crack` SHALL stay as it is.
+17. THE SYSTEM SHALL add the new vocabulary (`fly_to`, the tree generator field, the riddle `hint` field) through the four-place rule, with Terminal Lab coverage, and the engine SHALL name no chapter or level. Every dialog line and hint SHALL live in `level.spec.json`.
+18. THE SYSTEM SHALL provide `item.tensor_gpu` and `item.vram_module` (with their pickup models and icon) as procedural models under the art bible, validated, before any level spec names them. No hero hold model is needed.
+19. THE SYSTEM SHALL keep every level solvable headlessly with 0 deaths; the skills are optional and the solutions do not depend on them.
+
+## Out of scope
+
+- A second chapter, an achievement for this feature, a change to level 3's `gpu_shader_core_01.img`, skills for `llama` and `mistral`, new music. (decided)
+- A ritual flag (`set_flag` / `flag`): dropped in Q17.
+
+## Decisions
+
+- **Q1: Where is the Tensor GPU in Level 2?** **A (user, 2026-11-27):** B. It drops when the gargoyle is petrified, next to the transistor, taken with `mv`.
+- **Q2: Which hub, what starts it?** **A (user, 2026-11-27):** A. Hub 1 (level 4), automatic on arrival with `has_item tensor_gpu`. `kiro load qwen` stays the win rule.
+- **Q3: How does Kiro fly?** **A (user, 2026-11-27):** A. A new generic `fly_to` step.
+- **Q4: The old gate on `kiro crack` / `hack`.** **A (user, 2026-11-27):** A, later superseded by Q8, Q11 and Q17.
+- **Q5: Map, manual and dialogs.** **A (user, 2026-11-27):** A. The map and manual beat moves to the end of the ritual, about 10-12 gruff dialog lines, the GPU is consumed, `manifest.grants` still covers players who skip ahead.
+- **Q6: What keeps the unlock after the GPU is consumed?** **A (user, 2026-11-27):** A, superseded by Q17 (no flag).
+- **Q7: Which levels does the lock cover?** **A (user, 2026-11-27):** A (levels 1-3), superseded by Q17.
+- **Q8: What does `hack` do?** **A (user, 2026-11-27):** B, a separate subcommand, superseded by Q11 (skills per core).
+- **Q9: The GPU in the items strip once consumed.** **A (user, 2026-11-27):** A. The slot stays dim; no hero hold model.
+- **Q10: Level 3's chip, an achievement, sounds.** **A (user, 2026-11-27):** A. Level 3 unchanged, no achievement, one sound for the flight and one for the magic.
+- **Q11: What does the new Kiro ability do?** **A (user, 2026-11-27):** Own answer. Every open-weight model gives one special skill during a battle or a riddle (heal the vibecoder, riddle advice). Two models for now.
+- **Q12: What limits a skill?** **A (user, 2026-11-27):** Own answer. Single use. Secret VRAM module items give extra uses, hidden in a folder with 100+ subfolders and hidden files, one on "level 0" (corrected to Level 1) and one on Level 6, with a new icon and HUD status.
+- **Q13: `kiro crack` and the `hack` alias.** **A (user, 2026-11-27):** A. The alias is dropped; `kiro crack` stays ungated as today.
+- **Q14: Shape of the ritual flag.** **A (user, 2026-11-27):** A, superseded by Q17.
+- **Q15: Players who skip ahead get the flag.** **A (user, 2026-11-27):** A, superseded by Q17 (they still get the map and manual).
+- **Q16: Which cores get a skill?** **A (user, 2026-11-27):** A. `qwen` heals, a second core hints, the rest none. (Corrected by Q22.)
+- **Q17: When is a skill usable?** **A (user, 2026-11-27):** A. From `kiro load <core>` onward; no ritual flag, no `set_flag` / `flag`.
+- **Q18: Commands and cost.** **A (user, 2026-11-27):** A. `kiro heal` and `kiro hint`; one player action in battle; a hint outside a battle costs no turn but uses a charge.
+- **Q19: Single use and VRAM modules.** **A (user, 2026-11-27):** A. One charge per core skill per level; each module adds one extra charge kept until used.
+- **Q20: Where are the modules?** **A (user, 2026-11-27):** A. Level 1 and Level 6, 100+ subfolders and hidden files, built by a generator field in the level spec.
+- **Q21: HUD status and icon.** **A (user, 2026-11-27):** A. A `VRAM x N` chip in the hero card, plus a `vram_module` strip slot.
+- **Q22: Which core gives the riddle hint?** **A (user, 2026-11-27):** A. `deepseek` (Hub 2).
+- **Q23: How does the player find hidden files?** **A (user, 2026-11-27):** Own answer. Make every way work (`ls` trail, `tree`, `find`, `grep -r`, `ls -a`), to give the player freedom.
+- **Q24: How does the player take a module?** **A (user, 2026-11-27):** A. `mv vram.mod ~`; it is consumed into a charge and the strip slot counts them.
+- **Q25: Charges.** **A (user, 2026-11-27):** A. Each loaded core starts every level with 1 charge; module charges are kept; with none, a refusal line and no turn.
+- **Q26: Heal and hint.** **A (user, 2026-11-27):** A. `heal` restores half max HP; `hint` prints the riddle's `hint` line or a generic line.
+
+## Open questions
+
+- [ ] Level 2 can be left without taking the GPU, and the map and manual beat now lives in the ritual. If the GPU is missing at Hub 1: (a) add a Level 2 win rule that needs the GPU, (b) give the map and manual in a short fallback beat without the ritual, or (c) have the old coder send the player back?
+- [ ] `ls -a` and `ls -l` are refused until the lantern (Tube Transistor, Level 2), so in Level 1 they stay refused. Keep that lock (the module is reachable by the `ls` trail, `tree`, `find`, `grep -r`) or lift it in Level 1?
+- [ ] Is the extra charge from a VRAM module one shared pool that either skill can spend, or tied to one core?
 
 ## Verification
 
-(Proposed.) `node scripts/quality/check-specs.mjs`; `generate-chapter.mjs --verify` (0 deaths); `editor-unit-test.mjs`, `editor-smoke.mjs`, `terminal-lab-unit.mjs` (new step and item); `model-geometry-validator` `--all --strict` and `quality:fingerprint` (new model); `npm run quality`.
+(Proposed.) `node scripts/quality/check-specs.mjs`; `generate-chapter.mjs --verify` (0 deaths); `editor-unit-test.mjs`, `editor-smoke.mjs`, `terminal-lab-unit.mjs` (new steps, fields and items); `battle-unit.mjs` and `property-tests.mjs --only gameplay` (heal in battle); `model-geometry-validator` `--all --strict` and `quality:fingerprint` (new models); `npm run quality`.

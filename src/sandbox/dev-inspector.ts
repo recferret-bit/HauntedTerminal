@@ -1,5 +1,6 @@
 import type { KernelEvent } from '../contracts/events.js';
 import type { ComicStage } from '../renderer/comic-stage.js';
+import type { ItemId } from '../contracts/inventory.js';
 import { dom } from '../ui/dom-lite.js';
 
 export interface InspectorActions {
@@ -15,6 +16,8 @@ export interface InspectorActions {
   /** Route a fake event through the game's event sink (stage + HUD reactions). Defaults to the stage only. */
   emit?: (ev: KernelEvent) => void;
   /** Give a pickup. Undefined when the Session has no debug hook for it (buttons show disabled). */
+  /** Grant an inventory item. Undefined when the session has no hook for it (buttons show disabled). */
+  onGrantItem?: (item: ItemId) => void;
   onGive?: (item: 'energy' | 'ram' | 'ssd') => void;
 }
 
@@ -22,7 +25,15 @@ function inspSection(title: string, children: ReadonlyArray<HTMLElement>): HTMLE
   return dom('div', { class: 'insp-section' }, [dom('h3', {}, [title]), ...children]);
 }
 
-function buildInspectorNodes(stage: ComicStage, give: InspectorActions['onGive']): HTMLElement[] {
+const GRANT_ITEMS: ReadonlyArray<readonly [ItemId, string]> = [
+  ['tube_transistor', 'Lantern / Transistor'], ['map', 'Map'], ['terminal', 'Terminal'], ['laptop', 'Laptop'],
+];
+
+function buildInspectorNodes(
+  stage: ComicStage,
+  give: InspectorActions['onGive'],
+  grant: InspectorActions['onGrantItem'],
+): HTMLElement[] {
   const floors: Array<[string, string]> = [
     ['1', '1: Attic'], ['2', '2: Crypt'], ['3', '3: Symlinks'], ['4', '4: Boiler'], ['5', '5: Kernel'],
   ];
@@ -43,6 +54,11 @@ function buildInspectorNodes(stage: ComicStage, give: InspectorActions['onGive']
     ? [pickupRow]
     : [pickupRow, dom('p', { class: 'insp-note' }, ['Session has no debugGive() yet: pickups can only be collected in game.'])];
 
+  const grantRow = dom('div', { class: 'btn-grid' }, [
+    ...GRANT_ITEMS.map(([k, label]) => dom('button', { class: 'insp-btn', 'data-grant': k, disabled: !grant }, [label])),
+    dom('button', { class: 'insp-btn', 'data-grant': 'all', disabled: !grant }, ['All items']),
+  ]);
+
   const evs: Array<[string, string]> = [
     ['lantern', 'ls -la'], ['hop', 'cd hop'], ['smash3', 'cd ../../../'], ['eloop', 'ELOOP flood'],
     ['denied', 'Rattle 000'], ['chmod_open', 'chmod +rx'], ['petrify', 'chmod -x'], ['bridge', 'mv bridge'],
@@ -59,6 +75,7 @@ function buildInspectorNodes(stage: ComicStage, give: InspectorActions['onGive']
   return [
     inspSection('F2 // FLOORS', [dom('div', { class: 'btn-grid' }, floorBtns)]),
     inspSection('PICKUPS', pickupChildren),
+    inspSection('ITEMS', [grantRow]),
     inspSection('CINEMATICS', [
       dom('div', { class: 'btn-grid' }, [
         dom('button', { class: 'insp-btn', id: 'btn-intro' }, ['Play intro']),
@@ -125,6 +142,7 @@ function wireInspector(
   stage: ComicStage,
   actions: InspectorActions,
   give: InspectorActions['onGive'],
+  grant: InspectorActions['onGrantItem'],
   fire: (ev: KernelEvent) => void,
   render: () => void,
 ): void {
@@ -141,6 +159,13 @@ function wireInspector(
   }
   container.querySelectorAll<HTMLButtonElement>('[data-give]').forEach((btn) => {
     btn.onclick = () => give?.(btn.dataset.give as 'energy' | 'ram' | 'ssd');
+  });
+  container.querySelectorAll<HTMLButtonElement>('[data-grant]').forEach((btn) => {
+    btn.onclick = () => {
+      const key = btn.dataset.grant ?? '';
+      const ids = key === 'all' ? GRANT_ITEMS.map(([id]) => id) : [key as ItemId];
+      ids.forEach((id) => grant?.(id));
+    };
   });
   const intro = container.querySelector<HTMLButtonElement>('#btn-intro');
   if (intro) intro.onclick = () => actions.onPlayIntro();
@@ -190,10 +215,11 @@ export function mountDevInspector(
   actions: InspectorActions,
 ): void {
   const give = actions.onGive;
+  const grant = actions.onGrantItem;
   const fire = actions.emit ?? ((ev: KernelEvent) => stage.handleEvent(ev));
   const render = (): void => {
-    container.replaceChildren(...buildInspectorNodes(stage, give));
-    wireInspector(container, stage, actions, give, fire, render);
+    container.replaceChildren(...buildInspectorNodes(stage, give, grant));
+    wireInspector(container, stage, actions, give, grant, fire, render);
   };
   render();
 }

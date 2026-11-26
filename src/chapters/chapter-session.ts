@@ -3,7 +3,7 @@ import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import { createBattle, type BattleHold, type BattleState } from '../game/battle.js';
 import type { PickupType } from '../game/bestiary.js';
 import type { WorldHost } from '../game/entities.js';
-import { starterInventory } from '../game/inventory.js';
+import { starterInventory, type ItemId } from '../game/inventory.js';
 import { createOuch, type OuchState } from '../game/ouch.js';
 import { KiroCompanion } from '../game/kiro.js';
 import type { Session } from '../game/session.js';
@@ -253,6 +253,10 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
 
   debugHeal(): GameSnapshot {
     return flow.debugHeal(this);
+  }
+
+  debugGrantItem(item: ItemId): TickResult {
+    return heard(this, flow.debugGrantItem(this, item));
   }
 
   debugDamage(amount = 10): TickResult {

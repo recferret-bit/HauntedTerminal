@@ -618,7 +618,7 @@ await withProcgen(async (_procgen, vite) => {
       assert.equal(ghost.textContent, '  two\nthree!');
       assert.equal(host.textContent, sample);
 
-      handle.atMs(60, 60);
+      handle.atMs(120, 120);
       assert.equal(shown.textContent, 'One  two');
       assert.equal(ghost.textContent, '\nthree!');
 
@@ -630,7 +630,8 @@ await withProcgen(async (_procgen, vite) => {
       dom.uninstall();
     }
 
-    assert.deepEqual(planWordReveal(5, 2400), { stepMs: WORD_REVEAL_STEP_MS, holdMs: 2400, revealMs: 240 });
+    assert.equal(WORD_REVEAL_STEP_MS, 120);
+    assert.deepEqual(planWordReveal(5, 2400), { stepMs: WORD_REVEAL_STEP_MS, holdMs: 2400, revealMs: 4 * WORD_REVEAL_STEP_MS });
     assert.deepEqual(planWordReveal(40, 1800), { stepMs: WORD_REVEAL_STEP_MS, holdMs: 39 * WORD_REVEAL_STEP_MS + MIN_POST_REVEAL_HOLD_MS, revealMs: 39 * WORD_REVEAL_STEP_MS });
     const capped = planWordReveal(100, 4800, { maxHoldMs: 4800 });
     assert.ok(capped.holdMs <= 4800 && capped.revealMs <= 4800 - MIN_POST_REVEAL_HOLD_MS);

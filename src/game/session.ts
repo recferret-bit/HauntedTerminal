@@ -5,7 +5,7 @@ import { executeRestartCommand, type RestartPending } from './commands-proc.js';
 import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import { World, type WorldHost } from './entities.js';
 import { FLOOR_TITLES } from './floors.js';
-import { starterInventory } from './inventory.js';
+import { starterInventory, type ItemId } from './inventory.js';
 import { KiroCompanion } from './kiro.js';
 import { observeLab } from './lab-checks.js';
 import { applyLabInjection, buildLabInspect } from './lab-support.js';
@@ -40,6 +40,8 @@ export interface Session {
   debugTeleport(floor: FloorId): TickResult;
   debugHeal(): GameSnapshot;
   debugDamage(amount?: number): TickResult;
+  /** Dev panel: grant an inventory item. Only the chapter session has it. */
+  debugGrantItem?(item: ItemId): TickResult;
   // The concrete session also has `debugGive(item, amount?)` (dev panel); main.ts probes for it.
   /** End the floor-1 tutorial now (the HUD button; the shell has `tutorial skip`). */
   skipTutorial(): TickResult;

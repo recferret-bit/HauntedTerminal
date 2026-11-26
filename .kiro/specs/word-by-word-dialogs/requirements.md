@@ -2,7 +2,7 @@
 
 Status: done (2026-11-27; requirements, design, tasks approved by the user 2026-11-27)
 
-Capability: Reveal dialog text word by word across all spoken gameplay dialogs — left-side Vibecoder drawer (`#hero-dialog-drawer`), right-side NPC/AI-agent/Kiro/battle-intro corner dialog boxes (`.dialog-box`), and 3D in-room socket speech balloons (`.st-balloon`) — using a pre-sized non-reflowing box at ~60 ms per word (~16 words/s), preserving full reading hold time after the final word appears, leaving terminal input non-blocked, keeping existing audio cues unchanged (visual only), and rendering complete text immediately under `prefers-reduced-motion` ("lets make all the dialogs text to appear word by word, make it true for all in game dialogs", 2026-11-26).
+Capability: Reveal dialog text word by word across all spoken gameplay dialogs — left-side Vibecoder drawer (`#hero-dialog-drawer`), right-side NPC/AI-agent/Kiro/battle-intro corner dialog boxes (`.dialog-box`), and 3D in-room socket speech balloons (`.st-balloon`) — using a pre-sized non-reflowing box at ~120 ms per word (~8.3 words/s), preserving full reading hold time after the final word appears, leaving terminal input non-blocked, keeping existing audio cues unchanged (visual only), and rendering complete text immediately under `prefers-reduced-motion` ("lets make all the dialogs text to appear word by word, make it true for all in game dialogs", 2026-11-26).
 
 ## What exists today (read from the code, 2026-11-26)
 
@@ -15,8 +15,8 @@ Capability: Reveal dialog text word by word across all spoken gameplay dialogs �
 1. **Unified word-by-word reveal across spoken gameplay dialogs:**
    WHEN a spoken gameplay dialog line opens in `#hero-dialog-drawer`, `.dialog-box` (`DIALOG_BOX`, `AGENT_TAUNT`, or `BATTLE_STARTED` battle-intro taunt/advice), or `.st-balloon` (`OBSTACLE_DIALOGUE_RENDERED`), THE SYSTEM SHALL reveal its body text progressively word by word (preserving original whitespace and line breaks) rather than showing the full spoken string at `t = 0`, while keeping speaker header/name labels immediate.
 
-2. **Pre-sized layout stability and ~60 ms/word pacing:**
-   WHILE words are being revealed in `#hero-dialog-drawer`, `.dialog-box`, or `.st-balloon`, THE SYSTEM SHALL pre-size the dialog container using hidden ghost words so box width, height, `fitBalloonText`, and tail positioning never reflow or jump as words appear, advancing at ~60 ms per word (~16 words/s).
+2. **Pre-sized layout stability and ~120 ms/word pacing:**
+   WHILE words are being revealed in `#hero-dialog-drawer`, `.dialog-box`, or `.st-balloon`, THE SYSTEM SHALL pre-size the dialog container using hidden ghost words so box width, height, `fitBalloonText`, and tail positioning never reflow or jump as words appear, advancing at ~120 ms per word (~8.3 words/s).
 
 3. **Full reading hold after reveal completes:**
    WHEN word-by-word reveal starts on a timed dialog (`mountDialogBox` or `.st-balloon`), THE SYSTEM SHALL ensure the dialog's reading hold window runs for the line's full hold duration after the final word appears (bounded safely for battle-intro/chatter pacing so short lines stay readable and long lines are never truncated mid-reveal).
@@ -57,6 +57,7 @@ Capability: Reveal dialog text word by word across all spoken gameplay dialogs �
 - **Requirements approval (user, 2026-11-27):** Explicit approval of `requirements.md` as written.
 - **Design approval (user, 2026-11-27):** Explicit approval of `design.md` as written.
 - **Tasks approval (user, 2026-11-27):** Explicit approval of `tasks.md` as written.
+- **Pacing adjustment (user, 2026-11-27, "decrease its speed x2"):** Decreased word-by-word reveal speed 2x from 60 ms/word (~16.7 words/s) to 120 ms/word (~8.3 words/s).
 
 ## Open questions
 

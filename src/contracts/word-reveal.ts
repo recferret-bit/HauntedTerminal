@@ -4,8 +4,8 @@
  */
 import { el } from './dom.js';
 
-/** Default ms elapsed per revealed word (~16.7 words/s). */
-export const WORD_REVEAL_STEP_MS = 60;
+/** Default ms elapsed per revealed word (~8.3 words/s). */
+export const WORD_REVEAL_STEP_MS = 120;
 /** Minimum reading hold kept after the final word appears on gameplay-duration lines. */
 export const MIN_POST_REVEAL_HOLD_MS = 900;
 
