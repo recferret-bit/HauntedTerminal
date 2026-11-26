@@ -1,27 +1,27 @@
 {
   "id": "level-02-task-ram-heist",
   "index": 2,
-  "title": "Cache Vault: First RAM & GPU Salvage",
+  "title": "Cache Vault: Gargoyle Sentry & Lantern Reward",
   "cwd": "/srv/kiroween/cache_vault",
   "roomKind": "crypt_entrance",
   "floorTheme": 2,
   "roomSeed": 22,
   "mechanic": "terminal",
   "exitDir": "/srv/kiroween/cache_vault/gpu_alley",
-  "summary": "Anti-Gravy and the Big Four laugh at your vibe-coding habits! Reveal and remove .gravy_spycam, patch ollama_bus.conf from port 0000 to 11434, and collect both ram_16gb.dimm and gpu_tensor_chip_01.img.",
+  "summary": "A visible Big Four gargoyle minion (`gravy_sentry.bin`) guards Cache Vault! Finish talking with Kiro.d to learn how turn-based battles, RAM (+Max HP), and SSD (Revive) work, read `cat vault_notes.txt`, petrify `gravy_sentry.bin` (`chmod -x`), fix `ollama_bus.conf`, and loot RAM + SSD to win back your Oil Lantern!",
   "files": [
     {
-      "path": "/srv/kiroween/cache_vault/task_notes.txt",
+      "path": "/srv/kiroween/cache_vault/vault_notes.txt",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== SECTOR 02 // CACHE VAULT (SIMPLE TASK 1) ===\n1. Anti-Gravy planted a hidden spycam dotfile watching your keystrokes. Run `ls -la` and `rm .gravy_spycam`.\n2. Patch `ollama_bus.conf` so `LOCAL_MODEL_PORT=11434` instead of `0000` (`sed -i 's/0000/11434/' ollama_bus.conf`).\n3. Scavenge the RAM stick and GPU chip for Kiro.d (`mv ram_16gb.dimm ~` and `mv gpu_tensor_chip_01.img ~`).\n"
+      "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. COUNTERPLAY: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`.\n3. BUS FIX: Restore port `11434` in `ollama_bus.conf`: `sed -i 's/0000/11434/' ollama_bus.conf`.\n4. HARDWARE SURVIVAL: Pocket `ram_16gb.dimm` (+10 Max HP) and `gpu_tensor_chip_01.img` (+256GB SSD auto-Revive backup + Hub part) with `mv <file> ~`, then `cd gpu_alley` to claim your OIL LANTERN!\n"
     },
     {
-      "path": "/srv/kiroween/cache_vault/.gravy_spycam",
+      "path": "/srv/kiroween/cache_vault/gravy_sentry.bin",
       "kind": "file",
-      "mode": 420,
-      "content": "GRAVY_CLOUD_TELEMETRY_LENS\n"
+      "mode": 493,
+      "content": "ANTI_GRAVY_MINION_GARGOYLE_TROJAN\n"
     },
     {
       "path": "/srv/kiroween/cache_vault/ollama_bus.conf",
@@ -50,10 +50,9 @@
   ],
   "enemies": [
     {
-      "id": "spyware_l2",
-      "type": "spyware",
-      "path": "/srv/kiroween/cache_vault/.gravy_spycam",
-      "hidden": true
+      "id": "trojan_l2",
+      "type": "trojan",
+      "path": "/srv/kiroween/cache_vault/gravy_sentry.bin"
     }
   ],
   "pickups": [
@@ -111,9 +110,14 @@
   ],
   "winRules": [
     {
-      "kind": "file_absent",
-      "path": "/srv/kiroween/cache_vault/.gravy_spycam",
-      "description": "Reveal and delete Anti-Gravy's hidden spycam (`ls -la` then `rm .gravy_spycam`)"
+      "kind": "read_file",
+      "path": "/srv/kiroween/cache_vault/vault_notes.txt",
+      "description": "Read Kiro.d's vault survival notes (`cat vault_notes.txt`)"
+    },
+    {
+      "kind": "enemy_neutralized",
+      "enemyId": "trojan_l2",
+      "description": "Petrify Anti-Gravy's visible gargoyle minion (`chmod -x gravy_sentry.bin`)"
     },
     {
       "kind": "file_contains",
@@ -124,17 +128,17 @@
     {
       "kind": "file_absent",
       "path": "/srv/kiroween/cache_vault/ram_16gb.dimm",
-      "description": "Collect the RAM stick for Kiro.d (`mv ram_16gb.dimm ~`)"
+      "description": "Collect the 16GB RAM stick for +10 Max HP (`mv ram_16gb.dimm ~`)"
     },
     {
       "kind": "file_absent",
       "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img",
-      "description": "Collect the GPU Tensor Chip for Kiro.d (`mv gpu_tensor_chip_01.img ~`)"
+      "description": "Collect the 256GB SSD/GPU image for auto-Revive & Hub reboot (`mv gpu_tensor_chip_01.img ~`)"
     }
   ],
   "solutionCommands": [
-    "ls -la",
-    "rm .gravy_spycam",
+    "cat vault_notes.txt",
+    "chmod -x gravy_sentry.bin",
     "sed -i 's/0000/11434/' ollama_bus.conf",
     "mv ram_16gb.dimm ~",
     "mv gpu_tensor_chip_01.img ~",
@@ -145,12 +149,7 @@
     "arrival": [
       {
         "kind": "print",
-        "text": "\n[CACHE VAULT — /srv/kiroween/cache_vault]\nOnly your terminal's green phosphor screen cuts through the gloom. A hidden dotfile pulses somewhere in the vault.\n"
-      },
-      {
-        "kind": "taunt",
-        "mood": "laugh",
-        "print": "\n[BIG FOUR BULLYING] {text}\n"
+        "text": "\n[CACHE VAULT — /srv/kiroween/cache_vault]\nA stone-winged gargoyle binary (`gravy_sentry.bin`) crouches beside `vault_notes.txt` and the RAM bank! Listen to Kiro.d before engaging (or click Skip Dialog »).\n"
       }
     ],
     "timed": [
@@ -160,30 +159,41 @@
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "Still only my terminal screen to light the way... let's sweep this Cache Vault and grab those parts for Kiro.d!",
-            "holdSec": 9
+            "text": "Whoa—that winged gargoyle (`gravy_sentry.bin`) is staring right at me! What is that thing, Kiro.d?!",
+            "holdSec": 8
           }
         ]
       },
       {
-        "afterSec": 10,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "antigravy",
-            "text": "HAHAHA! Fumbling around in the green glow of a terminal slate? You'll never spot my hidden .gravy_spycam dotfile!",
-            "holdSec": 9
-          }
-        ]
-      },
-      {
-        "afterSec": 19,
+        "afterSec": 9,
         "steps": [
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "Use ls -la to expose Anti-Gravy's spycam, rm .gravy_spycam, fix ollama_bus.conf, and pocket both hardware parts!",
+            "text": "Careful, Vibecoder! Big Four minions are DANGEROUS—they hurl blazing red Matrix fireballs that shred your health! Wait till we finish talking before your terminal unlocks!",
             "holdSec": 9
+          }
+        ]
+      },
+      {
+        "afterSec": 18,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "HOW BATTLE BEGINS: the instant our dialog ends, Anti-Gravy will taunt you and TURN-BASED BATTLE starts (FIGHT!). You act FIRST: every Enter is 1 turn answered by 1 enemy turn, and if your 30s turn timer hits 0:00, enemies strike anyway!",
+            "holdSec": 10
+          }
+        ]
+      },
+      {
+        "afterSec": 28,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Read cat vault_notes.txt and petrify it with chmod -x gravy_sentry.bin! Grab RAM (+10 MAX HEALTH) and SSD/GPU (256GB = automatic REVIVE on death + Hub parts for our chapter mission)—clear this sector to earn your OIL LANTERN!",
+            "holdSec": 8
           }
         ]
       }
@@ -217,6 +227,17 @@
       "weak": true,
       "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
       "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
-    }
+    },
+    "openingSec": 36,
+    "locks": [
+      {
+        "command": "ls",
+        "until": {
+          "kind": "has_item",
+          "item": "lantern"
+        },
+        "message": "ls: still locked without your Oil Lantern! Clear Cache Vault to win your lantern as a reward (read `cat vault_notes.txt` instead)."
+      }
+    ]
   }
 }

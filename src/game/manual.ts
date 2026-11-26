@@ -164,7 +164,7 @@ const MAN: Record<string, string[]> = {
   workshop: ['workshop [<perk>]: view Silicon Scrap and toggle ~/.bashrc Rig Perks.'],
   achievements: [
     'achievements [export | sync | <category>]  (aliases: ach, trophies):',
-    '  achievements            list all 12 local trophies and their 1:1 Steamworks ACH_* keys.',
+    '  achievements            list all 13 local trophies and their 1:1 Steamworks ACH_* keys.',
     '  achievements <filter>   filter by category (campaign, combat, craft, mastery) or title.',
     '  achievements export     print Steamworks-ready JSON payload for desktop/Steam migration.',
     '  achievements sync       push unlocked ACH_* keys to the Tauri + Steamworks bridge.',

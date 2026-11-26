@@ -1,21 +1,33 @@
 {
   "id": "level-03-task-gpu-salvage",
   "index": 3,
-  "title": "GPU Alley: Lockpicks & Tensor Cores",
+  "title": "GPU Alley: Lantern ls, Dotfile Riddle & Lockpicks",
   "cwd": "/srv/kiroween/gpu_alley",
   "roomKind": "crypt_hall",
   "floorTheme": 2,
   "roomSeed": 33,
   "mechanic": "terminal",
   "exitDir": "/srv/kiroween/gpu_alley/server_hub_1",
-  "summary": "GPU Alley is pitch black! Pull your oil lantern into your pocket (mv lantern ~) to light up the crypt, unlock vram_crate (chmod 755), kill keygen.exe (PID {pid:crack_l3}), remove port_445/worm.bin, and collect ram_16gb.dimm + gpu_shader_core_01.img before heading to the Hub.",
+  "summary": "Your newly rewarded Oil Lantern unlocks `ls`! Sweep GPU Alley with `ls -la` to expose `.codec_spycam` (`rm`) and read `.tensor_rune` to solve `lantern_gate.sock`, then kill `keygen.exe`, delete `port_445/worm.bin`, and loot RAM + SSD before visiting the Hub!",
   "files": [
     {
-      "path": "/srv/kiroween/gpu_alley/lantern",
+      "path": "/srv/kiroween/gpu_alley/.codec_spycam",
+      "kind": "file",
+      "mode": 420,
+      "content": "CODEC_HIDDEN_DOTFILE_SPYCAM\n"
+    },
+    {
+      "path": "/srv/kiroween/gpu_alley/.tensor_rune",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "#!/bin/lantern\n# LANTERN: light for a dark room.\n# use: mv lantern ~   (it goes in your hand)\nexport LIGHT=\"on\"\n"
+      "content": "# Hidden Lantern Dotfile\nRUNE_PHRASE=amber_flame\n"
+    },
+    {
+      "path": "/srv/kiroween/gpu_alley/lantern_gate.sock",
+      "kind": "socket",
+      "mode": 493,
+      "content": "Sweep hidden dotfiles with ls -la, read .tensor_rune, and echo its RUNE_PHRASE here!"
     },
     {
       "path": "/srv/kiroween/gpu_alley/vram_crate",
@@ -66,6 +78,12 @@
   ],
   "enemies": [
     {
+      "id": "spyware_l3",
+      "type": "spyware",
+      "path": "/srv/kiroween/gpu_alley/.codec_spycam",
+      "hidden": true
+    },
+    {
       "id": "crack_l3",
       "type": "crack",
       "path": "/srv/kiroween/gpu_alley/keygen.exe",
@@ -81,11 +99,6 @@
     }
   ],
   "pickups": [
-    {
-      "id": "pickup_l3_lantern",
-      "type": "lantern",
-      "path": "/srv/kiroween/gpu_alley/lantern"
-    },
     {
       "id": "pickup_l3_ram",
       "type": "ram",
@@ -132,9 +145,14 @@
   ],
   "winRules": [
     {
-      "kind": "dir_accessible",
-      "path": "/srv/kiroween/gpu_alley/vram_crate",
-      "description": "Restore read+execute permissions on `vram_crate` (`chmod 755 vram_crate`)"
+      "kind": "enemy_neutralized",
+      "enemyId": "spyware_l3",
+      "description": "Sweep hidden dotfiles with `ls -la` and remove `.codec_spycam` (`rm .codec_spycam`)"
+    },
+    {
+      "kind": "riddle_solved",
+      "riddleId": "riddle_l3_ls",
+      "description": "Use `ls -la` to find `.tensor_rune` and solve `lantern_gate.sock` (`echo amber_flame > lantern_gate.sock`)"
     },
     {
       "kind": "enemy_neutralized",
@@ -158,11 +176,11 @@
     }
   ],
   "solutionCommands": [
-    "mv lantern ~",
-    "chmod 755 vram_crate",
-    "ps",
+    "ls -la",
+    "cat .tensor_rune",
+    "echo amber_flame > lantern_gate.sock",
     "kill -9 {pid:crack_l3}",
-    "rm port_445/worm.bin",
+    "rm .codec_spycam port_445/worm.bin",
     "mv ram_16gb.dimm ~",
     "mv gpu_shader_core_01.img ~",
     "cd server_hub_1"
@@ -172,12 +190,7 @@
     "arrival": [
       {
         "kind": "print",
-        "text": "\n[GPU ALLEY — /srv/kiroween/gpu_alley]\nThe crypt plunges into pitch darkness—your terminal glow alone cannot pierce it. Your oil lantern glints on the floor!\n"
-      },
-      {
-        "kind": "taunt",
-        "mood": "laugh",
-        "print": "\n[BIG FOUR BULLYING] {text}\n"
+        "text": "\n[GPU ALLEY — /srv/kiroween/gpu_alley]\nYour rewarded Oil Lantern blazes in your hand—`ls` and `ls -la` are now unlocked! Listen to Kiro.d before Codec attacks.\n"
       }
     ],
     "timed": [
@@ -187,84 +200,32 @@
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "Whoa—GPU Alley is pitch black! My terminal glow was enough in the wires and Cache Vault, but I can't see a thing in this deep crypt!",
-            "holdSec": 9
+            "text": "Awesome—winning my Oil Lantern after Cache Vault lights up this whole crypt! I can finally run ls and ls -la!",
+            "holdSec": 8
           }
-        ],
-        "unless": {
-          "kind": "has_item",
-          "item": "lantern"
-        }
+        ]
       },
       {
-        "afterSec": 10,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "codec",
-            "text": "LMAO! Welcome to the dark sector, Vibecoder! Without real light you can't even run ls in here!",
-            "holdSec": 9
-          }
-        ],
-        "unless": {
-          "kind": "has_item",
-          "item": "lantern"
-        }
-      },
-      {
-        "afterSec": 19,
+        "afterSec": 9,
         "steps": [
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "Wait—your oil lantern from the desk fell right at your feet! Take it with mv lantern ~ to light up GPU Alley!",
+            "text": "Now that ls is unlocked, sweep with ls -la right when battle starts! It exposes Codec's hidden .codec_spycam AND reveals the hidden .tensor_rune dotfile that unlocks lantern_gate.sock!",
             "holdSec": 9
           }
-        ],
-        "unless": {
-          "kind": "has_item",
-          "item": "lantern"
-        }
+        ]
       },
       {
-        "afterSec": 28,
+        "afterSec": 18,
         "steps": [
           {
             "kind": "dialog_box",
-            "speaker": "kiro",
-            "text": "Move it into your pocket (mv lantern ~) and the whole crypt lights up."
+            "speaker": "vibecoder",
+            "text": "Got it—ls -la for the spycam and riddle, kill keygen.exe and worm.bin, then bring our RAM + SSD haul to the Matrix Hub! Bring it on, Codec!",
+            "holdSec": 7
           }
-        ],
-        "unless": {
-          "kind": "has_item",
-          "item": "lantern"
-        }
-      }
-    ],
-    "locks": [
-      {
-        "command": "ls",
-        "until": {
-          "kind": "has_item",
-          "item": "lantern"
-        },
-        "message": "ls: it is too dark to see anything in GPU Alley. Pull the lantern into your pocket first: mv lantern ~"
-      },
-      {
-        "command": "find",
-        "until": {
-          "kind": "has_item",
-          "item": "lantern"
-        },
-        "message": "find: it is too dark to see anything in GPU Alley. Pull the lantern into your pocket first: mv lantern ~"
-      },
-      {
-        "command": "kiro",
-        "until": {
-          "kind": "has_item",
-          "item": "lantern"
-        },
-        "message": "kiro: Kiro.d cannot scan in the dark crypt. Pull the lantern into your pocket first: mv lantern ~"
+        ]
       }
     ],
     "bullying": {
@@ -296,6 +257,24 @@
       "weak": true,
       "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
       "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
+    },
+    "openingSec": 25
+  },
+  "riddles": [
+    {
+      "id": "riddle_l3_ls",
+      "path": "/srv/kiroween/gpu_alley/lantern_gate.sock",
+      "speaker": "LANTERN GATE",
+      "prompt": "Only an Oil Lantern bearer may unseal vram_crate! Sweep hidden dotfiles with `ls -la`, read `.tensor_rune`, and echo its RUNE_PHRASE into `lantern_gate.sock`!",
+      "answer": "amber_flame",
+      "hints": [
+        "Raise your lantern with `ls -la` to reveal hidden dotfiles starting with \".\"!",
+        "Inspect the hidden rune file: `cat .tensor_rune`",
+        "Write the rune phrase into this socket: `echo amber_flame > lantern_gate.sock`"
+      ],
+      "success": "LANTERN GATE: \"The lantern flame reveals `.tensor_rune`! `vram_crate` clicks open!\"",
+      "opens": "/srv/kiroween/gpu_alley/vram_crate",
+      "tokens": ["ls", "cat", "echo"]
     }
-  }
+  ]
 }

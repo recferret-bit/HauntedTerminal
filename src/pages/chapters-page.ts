@@ -3,7 +3,7 @@ import type { AppBus } from '../contracts/app-bus.js';
 import '../contracts/migrate-storage.js';
 import { installFullscreenKey } from '../chapters/fullscreen.js';
 import '../styles/hub.css';
-import { CHAPTER_MANIFESTS, readChapterProgress } from '../chapters/catalog.js';
+import { CHAPTER_MANIFESTS, isFieldManualAvailable, readChapterProgress } from '../chapters/catalog.js';
 import { hydrateFromDesktopSaveBundle } from '../chapters/portable-save.js';
 import { wireExternalLinksForDesktop, wireSteamWishlistLink } from '../chapters/steam-bridge.js';
 import type { ChapterLevelSummary, ChapterManifest } from '../chapters/types.js';
@@ -41,6 +41,18 @@ function renderChapters(els: ChaptersPageEls, state: ChaptersViewState): void {
   renderLevelGrid(els, state, progress, rerender);
   renderLevelDossier(els, state, progress, rerender);
   renderMetagame(els, state, rerender);
+  const manualSlot = document.getElementById('chapters-manual-slot');
+  if (manualSlot) {
+    if (isFieldManualAvailable(undefined, progress)) {
+      const a = document.createElement('a');
+      a.className = 'comic-btn';
+      a.href = '/manual.html';
+      a.textContent = 'Field Manual';
+      manualSlot.replaceChildren(a);
+    } else {
+      manualSlot.replaceChildren();
+    }
+  }
   restoreActiveFocus(focusSel);
 }
 

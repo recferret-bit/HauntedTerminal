@@ -126,6 +126,7 @@ export function mountPlayShell(play: Play): void {
       onSearchDismiss: () => play.session.bus?.emit({ kind: 'menu', action: 'move' }),
       onInsertCommand: (cmd) => {
         play.events.emit({ kind: 'modal', modal: 'manual', action: 'close' });
+        if (play.shell.dialogLocked) return;
         play.shell.setInput(cmd);
         window.setTimeout(() => play.shell.focus(), 0);
       },
@@ -150,6 +151,7 @@ function openMenuModal(play: Play): void {
 
 function openManualModal(play: Play, queryOrPage?: string | number): void {
   if (!play.manualBook || !play.lifecycle.canOpenManualOrMap()) return;
+  if (!play.session.snapshot().inventory.items.includes('manual')) return;
   closeOtherModals(play, 'manual');
   play.manualBook.open(queryOrPage);
   play.events.emit({ kind: 'sync-pause' });
@@ -164,6 +166,7 @@ function closeManualModal(play: Play): void {
 
 function openChapterMap(play: Play, queryOrIndex?: string | number): void {
   if (!play.chapterMap || !play.lifecycle.canOpenManualOrMap()) return;
+  if (!play.session.snapshot().inventory.items.includes('map')) return;
   closeOtherModals(play, 'map');
   play.chapterMap.open(queryOrIndex);
   play.events.emit({ kind: 'sync-pause' });
@@ -252,6 +255,15 @@ export function mountPlayHud(play: Play): void {
     maxFloors: chapter ? chapter.getLevels().length : 5,
     onHint: () => play.events.emit({ kind: 'modal', modal: 'hint', action: 'toggle' }),
     onMap: () => play.events.emit({ kind: 'modal', modal: 'map', action: 'toggle' }),
+    onManual: () => play.events.emit({ kind: 'modal', modal: 'manual', action: 'toggle' }),
+    onSkipDialog: () => {
+      const statsOpen = play.dom.statsEl.classList.contains('open');
+      if (!play.lifecycle.canOpenEscMenu(statsOpen) || !isChapterSession(play.session)) return;
+      const res = play.session.skipOpeningDialog();
+      if (!res) return;
+      play.dialogs?.clear();
+      play.events.emit({ kind: 'apply-tick', res });
+    },
     onPlayAgain: (skip) => play.events.emit({ kind: 'play-again', skipIntro: skip }),
   });
   play.events.emit({ kind: 'paint', snap: play.session.snapshot() });
@@ -339,7 +351,7 @@ export function bindPlayInput(play: Play): void {
 
   document.addEventListener('click', (e) => {
     const el = e.target as Element | null;
-    if (!el?.closest('button, .item-slot.clickable') || el.closest('#outro, #cinematic, #code-editor-pane, #manual-book-modal, #esc-menu, #hint-dialog, #hud-hint, #chapter-map-dialog, #hud-map, .item-slot.item-map')) return;
+    if (!el?.closest('button, .item-slot.clickable') || el.closest('#outro, #cinematic, #code-editor-pane, #manual-book-modal, #esc-menu, #hint-dialog, #hud-hint, #chapter-map-dialog, #hud-map, .item-slot.item-map, .item-slot.item-manual')) return;
     if (play.lifecycle.phase() === 'play' && !anyModalOpen(play)) {
       window.setTimeout(() => play.shell.focus(), 0);
     }

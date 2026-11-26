@@ -230,6 +230,15 @@ const TASK_TEMPLATES: Record<WinRule['kind'], (s: LabScript, id: string) => LabS
     const path = freshPath(s, s.room.cwd, 'ally.sock');
     return [{ op: 'socket', path }, { op: 'task', id, rule: { kind: 'talk_ally', socket: baseName(path), description: 'Talk to the ally (cat ally.sock)' } }];
   },
+  riddle_solved: (s, id) => {
+    const path = freshPath(s, s.room.cwd, 'riddle.sock');
+    const riddleId = freshId(s, 'riddle');
+    return [
+      { op: 'riddle', id: riddleId, path, prompt: 'Speak the hidden dotfile name.', answer: '.secret_rune', speaker: 'Gate', hints: ['Run ls -la to inspect dotfiles.'], tokens: ['ls', 'echo'] },
+      { op: 'file', path: freshPath(s, s.room.cwd, '.secret_rune'), content: 'rune\n' },
+      { op: 'task', id, rule: { kind: 'riddle_solved', riddleId, description: 'Solve the socket riddle' } },
+    ];
+  },
   file_absent: (s, id) => {
     const path = freshPath(s, s.room.cwd, 'junk.tmp');
     return [{ op: 'file', path, content: 'junk\n' }, { op: 'task', id, rule: { kind: 'file_absent', path, description: 'Remove junk.tmp' } }];

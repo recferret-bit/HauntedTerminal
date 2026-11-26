@@ -103,6 +103,10 @@ export function levelToLabScript(pack: ChapterPack, level: LevelSpec, takenIds: 
     setup.push({ op: 'pickup', ...structuredClone(p) });
   }
   for (const patch of level.patches ?? []) setup.push({ op: 'patch', ...structuredClone(patch) });
+  for (const r of level.riddles ?? []) {
+    usedIds.add(r.id);
+    setup.push({ op: 'riddle', ...structuredClone(r) });
+  }
   for (const p of level.props ?? []) {
     const id = usedIds.has(p.id) ? nextFreeTaskId(usedIds, 1) : p.id;
     usedIds.add(id);

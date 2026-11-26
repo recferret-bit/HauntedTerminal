@@ -34,6 +34,8 @@ export default async function gameplaySuite(ctx) {
     return Math.min(...at);
   };
   const lanternFrom = grantedFrom('lantern');
+  const mapFrom = grantedFrom('map');
+  const manualFrom = grantedFrom('manual');
   const laptopFrom = grantedFrom('laptop');
 
   const pickupLevelsOf = (type) =>
@@ -44,19 +46,29 @@ export default async function gameplaySuite(ctx) {
   const pickupIdempotentProp = (type, list) => ({
     name: `the ${type} pickup is idempotent: collecting it again (any way, any number of times) changes nothing`,
     build: () =>
-      fc.property(fc.constantFrom(...list.keys()), fc.array(fc.constantFrom('mv', 'source', 'hold', 'tick'), { minLength: 1, maxLength: 6 }), (l, again) => {
-        const { index, name } = list[l];
-        const session = world.open(index);
-        const first = session.exec(`mv ${name} ~`);
-        expect(first.events.filter((e) => e.type === 'PICKUP_COLLECTED' && e.item === type).length === 1, `\`mv ${name} ~\` did not collect ${type} exactly once`);
-        const kept = JSON.stringify(session.snapshot().inventory);
-        expect(session.snapshot().inventory.held === type && kept.includes(`"${type}"`), `${type} is not held after collecting it: ${kept}`);
-        for (const how of again) {
-          const r = how === 'tick' ? session.tick() : session.exec(how === 'hold' ? `hold ${type}` : `${how} ${name}${how === 'mv' ? ' ~' : ''}`);
-          expect(!r.events.some((e) => e.type === 'PICKUP_COLLECTED' && e.item === type), `${type} was collected again by ${how}`);
-          expect(JSON.stringify(session.snapshot().inventory) === kept, `inventory changed from ${kept} to ${JSON.stringify(session.snapshot().inventory)} after ${how}`);
-        }
-      }),
+      fc.property(
+        fc.constantFrom(...(list.length ? list.keys() : [0])),
+        fc.array(fc.constantFrom('mv', 'source', 'hold', 'tick'), { minLength: 1, maxLength: 6 }),
+        (l, again) => {
+          const session = list.length
+            ? world.open(list[l].index)
+            : world.openWith(1, (p) => {
+                const cwd = p.levels[1].cwd;
+                p.levels[1].files.push({ path: `${cwd}/${type}`, kind: 'file', content: `${type}\n` });
+                p.levels[1].pickups.push({ id: `prop_${type}`, type, path: `${cwd}/${type}` });
+              });
+          const name = list.length ? list[l].name : type;
+          const first = session.exec(`mv ${name} ~`);
+          expect(first.events.filter((e) => e.type === 'PICKUP_COLLECTED' && e.item === type).length === 1, `\`mv ${name} ~\` did not collect ${type} exactly once`);
+          const kept = JSON.stringify(session.snapshot().inventory);
+          expect(session.snapshot().inventory.held === type && kept.includes(`"${type}"`), `${type} is not held after collecting it: ${kept}`);
+          for (const how of again) {
+            const r = how === 'tick' ? session.tick() : session.exec(how === 'hold' ? `hold ${type}` : `${how} ${name}${how === 'mv' ? ' ~' : ''}`);
+            expect(!r.events.some((e) => e.type === 'PICKUP_COLLECTED' && e.item === type), `${type} was collected again by ${how}`);
+            expect(JSON.stringify(session.snapshot().inventory) === kept, `inventory changed from ${kept} to ${JSON.stringify(session.snapshot().inventory)} after ${how}`);
+          }
+        },
+      ),
   });
   const lanternLevels = pickupLevelsOf('lantern');
   const laptopLevels = pickupLevelsOf('laptop');
@@ -100,6 +112,7 @@ export default async function gameplaySuite(ctx) {
   /** A level, its own solution played until a battle intro starts, then the intro skipped (Enter): the first player turn. Null if none. */
   const battleAt = (levelIdx) => {
     const session = world.open(levelIdx);
+    if (session.snapshot().openingDialog) session.skipOpeningDialog();
     for (const c of world.levels[levelIdx].solutionCommands ?? []) {
       if (session.snapshot().battle?.phase === 'intro' || session.levelIdx !== levelIdx) break;
       session.exec(c);
@@ -285,14 +298,12 @@ export default async function gameplaySuite(ctx) {
         }),
     },
     {
-      // The shipped chapter lists the terminal as a start item and the lantern as a grant; random lists put the same item in `startItems`
-      // and in several grants, which is what a human can do in the editor.
+      // The shipped chapter starts bare-handed (`startItems: []`) and grants items across levels; random lists put the same item
+      // in `startItems` and in several grants, which is what a human can do in the editor.
       name: '`startItems` and `grants` never put an item in the inventory twice, and give exactly the union that applies',
       build: () =>
         fc.property(
-          // `startItems: []` is left out on purpose: validatePack rejects it as an error (src/chapters/validate-pack.ts), so no
-          // valid pack reaches the game with it. The next property pins that check.
-          fc.option(fc.array(itemId, { minLength: 1, maxLength: 6 }), { nil: undefined }),
+          fc.option(fc.array(itemId, { maxLength: 6 }), { nil: undefined }),
           fc.array(fc.record({ afterLevel: fc.integer({ min: 0, max: 4 }), items: fc.option(fc.array(itemId, { maxLength: 4 }), { nil: undefined }) }), { maxLength: 5 }),
           fc.nat(world.levels.length - 1),
           (startItems, grants, levelIdx) => {
@@ -312,21 +323,22 @@ export default async function gameplaySuite(ctx) {
         ),
     },
     {
-      // An empty `startItems` would leave `held: 'terminal'` with nothing owned, so the pack check refuses it.
-      name: '`validatePack` rejects an empty `startItems` and accepts any non-empty list of known items',
-      examples: [[[]]],
+      // `startItems: []` starts the hero completely bare-handed; unknown item ids are rejected by `validatePack`.
+      name: '`validatePack` accepts empty or known `startItems` and rejects unknown item ids',
+      examples: [[[]], [['sword']]],
       build: () =>
-        fc.property(fc.array(itemId, { maxLength: 6 }), (startItems) => {
+        fc.property(fc.array(fc.constantFrom(...inv.ITEM_IDS, 'sword', '', 'LAPTOP'), { maxLength: 6 }), (startItems) => {
           const pack = structuredClone(world.pack);
           pack.manifest.startItems = startItems;
-          const hit = validatePack(pack, { winnable: false }).some((i) => i.severity === 'error' && i.message.startsWith('startItems:'));
-          expect(hit === (startItems.length === 0), `startItems ${JSON.stringify(startItems)}: error reported = ${hit}`);
+          const hit = validatePack(pack, { winnable: false }).some((i) => i.severity === 'error' && i.message.startsWith('startItems'));
+          const hasBad = startItems.some((id) => !inv.isItemId(id));
+          expect(hit === hasBad, `startItems ${JSON.stringify(startItems)}: error reported = ${hit}, expected ${hasBad}`);
         }),
     },
     {
       // The thresholds come from the manifest's grants (`afterLevel`), so the examples sit on both sides of each one.
       name: 'starting at a later level (a jump) grants only the tools already unlocked up to that level',
-      examples: [...new Set([1, lanternFrom - 1, lanternFrom, laptopFrom - 1, laptopFrom, world.levels.length - 1])].filter((i) => i >= 1 && i < world.levels.length).map((i) => [i]),
+      examples: [...new Set([1, lanternFrom - 1, lanternFrom, mapFrom - 1, mapFrom, laptopFrom - 1, laptopFrom, world.levels.length - 1])].filter((i) => i >= 1 && i < world.levels.length).map((i) => [i]),
       build: () =>
         fc.property(fc.integer({ min: 1, max: world.levels.length - 1 }), (levelIdx) => {
           const { items, held } = world.open(levelIdx).snapshot().inventory;
@@ -337,6 +349,8 @@ export default async function gameplaySuite(ctx) {
             expect(items.includes('lantern') && held === 'lantern', `a jump to level ${levelIdx + 1} holds ${held} and owns ${JSON.stringify(items)}`);
             expect(items.filter((i) => i === 'lantern').length === 1, `the lantern is in the inventory ${items.filter((i) => i === 'lantern').length} times`);
           }
+          expect(items.includes('map') === (levelIdx >= mapFrom), `map grant mismatch at level ${levelIdx + 1}: ${JSON.stringify(items)}`);
+          expect(items.includes('manual') === (levelIdx >= manualFrom), `manual grant mismatch at level ${levelIdx + 1}: ${JSON.stringify(items)}`);
           expect(items.includes('laptop') === (levelIdx >= laptopFrom), `laptop grant mismatch at level ${levelIdx + 1}: ${JSON.stringify(items)}`);
         }),
     },

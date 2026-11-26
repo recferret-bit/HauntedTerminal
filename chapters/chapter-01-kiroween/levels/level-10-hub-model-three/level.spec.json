@@ -107,19 +107,8 @@
   "script": {
     "arrival": [
       {
-        "kind": "dialogue",
-        "obstacleId": "ally:dad.tty",
-        "speaker": "OLD BEARDED CODER (DAD.TTY)",
-        "portrait": "socket_guardian",
-        "mood": "hinting",
-        "anchorSocket": "dad.tty.sock",
-        "text": "Oh, you've found the final parts for hosting our third open-weight model, nice! Reboot Kiro.d with kiro load llama to disable Gork—leaving only Clod managing the Final Boss!",
-        "highlight": ["cat", "dad", "kiro"],
-        "banner": "[OLD BEARDED MATRIX CODER // SERVER HUB #3]"
-      },
-      {
         "kind": "print",
-        "text": "\n[THE MATRIX HUB — /home/dev]\nOLD BEARDED CODER (*Matrix glyphs blazing across his screen*): \"Oh, you've found the final parts for hosting our third open-weight model, nice! Reboot Kiro.d with `kiro load llama` to disable Gork—leaving CLOD as the last survivor managing the Final Boss!\"\n"
+        "text": "\n[THE MATRIX HUB — /home/dev]\nGreen Matrix glyphs blaze across the Old Bearded Coder's screen as he readies the final cluster! Finish talking with him and Kiro.d (or click Skip Dialog ») before Gork taunts.\n"
       }
     ],
     "kiro": {
@@ -143,6 +132,42 @@
           "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder brings the full open-weight cluster online!\n[BIG FOUR TAKEDOWN #3/3] Kiro.d + {gguf} ground Gork's chaos bus! GORK DISABLED!\n[ALERT] Only CLOD survives among the Big Four—and he is fortifying the Final Boss in the Kernel Core!\n{foe}\n{kiro}\n"
         }
       }
-    }
+    },
+    "openingSec": 24,
+    "timed": [
+      {
+        "afterSec": 1,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "We got the final H100 Tensor Core and DDR5 RAM! Ready for the third open-weight reboot!",
+            "holdSec": 8
+          }
+        ]
+      },
+      {
+        "afterSec": 9,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "dad",
+            "text": "Oh, you've found the final parts for hosting our third open-weight model, nice! Booting Llama-3 will wipe Gork off the bus and leave only Clod!",
+            "holdSec": 8
+          }
+        ]
+      },
+      {
+        "afterSec": 17,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Right after Gork taunts us, run cat open_weights_cluster.conf, cat dad.tty.sock, and kiro load llama—then I'll advise you against Clod and PID 1!",
+            "holdSec": 7
+          }
+        ]
+      }
+    ]
   }
 }

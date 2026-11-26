@@ -1,8 +1,9 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
 import { setRest } from './stage-actor.js';
+import { clearCarried } from './stage-carry.js';
 import { FLOORS } from './stage-const.js';
-import { playCard, playFx, say, triggerShake } from './stage-fx.js';
+import { clearBubble, playCard, playFx, say, triggerShake } from './stage-fx.js';
 import { applyLantern, syncFlood } from './stage-layout.js';
 import { claim, hopInPlace, owns, rattle, release, slideToHome, suckIntoNull } from './stage-motion.js';
 import { anchorPoint, findByModel } from './stage-resolve.js';
@@ -108,6 +109,8 @@ function onFloorCleared(stage: ComicStage, ev: Extract<KernelEvent, { type: 'FLO
 }
 
 function onFloorEntered(stage: ComicStage, ev: Extract<KernelEvent, { type: 'FLOOR_ENTERED' }>): void {
+  clearBubble(stage);
+  clearCarried(stage);
   const floor = FLOORS[ev.floorId] ?? FLOORS[stage.currentFloor] ?? FLOORS[1]!;
   const accent = `#${floor.accent.toString(16).padStart(6, '0')}`;
   const path = ev.path || floor.path;

@@ -1,7 +1,7 @@
 import type { RoomKind } from '../contracts/room-view.js';
 import type { KernelEvent } from '../contracts/events.js';
 import type { LabCond } from '../chapters/session-lab-types.js';
-import type { LevelEnemySpec, LevelFileSpec, LevelPatchChip, LevelPickupSpec, ChapterMechanic, ScriptAgent, ScriptMood, ScriptStep, WinRule } from '../chapters/types.js';
+import type { LevelEnemySpec, LevelFileSpec, LevelPatchChip, LevelPickupSpec, LevelRiddleSpec, ChapterMechanic, ScriptAgent, ScriptMood, ScriptStep, WinRule } from '../chapters/types.js';
 
 export type { LabCond };
 
@@ -49,7 +49,7 @@ export type LabSetupOp =
   /** A speech bubble anchored on a socket when the level starts. */
   | ({ op: 'dialogue' } & LabDialogue)
   /** A talking socket. `cat` prints the prompt; writing the answer to it solves it. */
-  | { op: 'riddle'; id: string; path: string; prompt: string; answer: string; speaker?: string; hints?: string[]; success?: string; opens?: string; tokens?: string[] }
+  | ({ op: 'riddle' } & LevelRiddleSpec)
   /** A game win rule (a task of the level): the checklist, the exit gate, the code validators. */
   | { op: 'task'; id: string; rule: WinRule }
   /** A lab-only condition that is watched live: a command ran, some output, an exit code, an event, a file, a solved riddle. */

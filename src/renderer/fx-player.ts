@@ -34,6 +34,7 @@ export const FX_IDS = [
   'fx.agent-gork',
   'fx.agent-codec',
   'fx.matrix-fault',
+  'fx.enemy-fireball',
 ] as const;
 
 export type FxId = (typeof FX_IDS)[number];

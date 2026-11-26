@@ -73,6 +73,7 @@ await test('readVideoSpec: dynamic {chapter}/{level:N} resolution, portrait defa
         dur: 2.0,
         mode: 'laptop',
         laptop: { state: 'desktop', speed: 0, task: 'js-add' },
+        events: [{ t: 0.3, do: 'laptop', send: 'OPEN' }, { t: 1.5, do: 'laptop', task: 'js-add' }],
       },
       {
         id: 'sb_scene',
@@ -102,6 +103,7 @@ await test('readVideoSpec: dynamic {chapter}/{level:N} resolution, portrait defa
   assert.throws(() => withTempSpec({ name: 'over_max', maxSeconds: 4, scenes: [{ dur: 5 }] }, (f) => readVideoSpec(f, { root: projectRoot })), /exceeds maxSeconds/);
   assert.throws(() => withTempSpec({ name: 'bad_mode', audio: false, scenes: [{ dur: 2, mode: 'vr' }] }, (f) => readVideoSpec(f, { root: projectRoot })), /mode/);
   assert.throws(() => withTempSpec({ name: 'bad_skin', audio: false, scenes: [{ dur: 2, mode: 'play', skin: 'powershell-xp' }] }, (f) => readVideoSpec(f, { root: projectRoot })), /skin/);
+  assert.throws(() => withTempSpec({ name: 'bad_laptop_ev', audio: false, scenes: [{ dur: 2, mode: 'laptop', events: [{ t: 0.3, do: 'laptop', send: 'EXPLODE' }] }] }, (f) => readVideoSpec(f, { root: projectRoot })), /send/);
   assert.throws(() => withTempSpec({ name: 'bad_lvl', audio: false, scenes: [{ dur: 2, mode: 'play', level: 99 }] }, (f) => readVideoSpec(f, { root: projectRoot })), /no level index 99/);
   assert.throws(() => withTempSpec({ name: 'bad_ticks', audio: false, scenes: [{ dur: 2, mode: 'play', setup: [{ ticks: 0 }] }] }, (f) => readVideoSpec(f, { root: projectRoot })), /ticks/);
   assert.throws(() => withTempSpec({ name: 'bad_task', audio: false, scenes: [{ dur: 2, mode: 'laptop', laptop: { task: 'bad task!' } }] }, (f) => readVideoSpec(f, { root: projectRoot })), /laptop\.task/);

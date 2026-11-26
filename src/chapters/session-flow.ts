@@ -9,7 +9,17 @@ import { evaluateBatchEvents, formatAchievementLines } from './achievements.js';
 import { readMetagame, recordTelemetry } from './catalog.js';
 import { fillPids } from './pids.js';
 import type { LevelSpec } from './types.js';
-import { applySkipTutorial, bullyingNote, runTimed, syncTutorial } from './script.js';
+import {
+  applySkipTutorial,
+  bullyingNote,
+  completeOpeningBeats,
+  emitLevelTaunt,
+  hasOpeningGate,
+  levelScript,
+  openingActive,
+  runTimed,
+  syncTutorial,
+} from './script.js';
 import type { ChapterState, EditorOpenPayload } from './session-state.js';
 import { afterCommand, battleSecond, enemyTurn, maybeBeginBattle } from './session-battle.js';
 import { arriveCurrentLevel, levelBannerText, loadLevel, restartChapterLevel } from './session-level.js';
@@ -103,6 +113,25 @@ export function arriveLevel(g: ChapterState): TickResult {
     return { output, events, snapshot: snapshot(g) };
   }
 
+function syncWorldAndGates(g: ChapterState, events: KernelEvent[]): string {
+  syncValidatedCodeBugs(g);
+  g.rt.world.sync(events);
+  refreshExitGates(g, events);
+  return g.rt.world.drain();
+}
+
+/** Completes the level's opening Vibecoder + Kiro dialog (`openingSec`), then starts the battle or emits the Big Four taunt. */
+function resolveOpeningTransition(g: ChapterState, events: KernelEvent[]): string {
+  if (g.rt.openingDone || !hasOpeningGate(g) || g.ended) return '';
+  let out = completeOpeningBeats(g, events) + syncWorldAndGates(g, events);
+  const mark = events.length;
+  out += maybeBeginBattle(g, events);
+  const battleBegan = events.slice(mark).some((e) => e.type === 'BATTLE_STARTED');
+  if (!battleBegan) {
+    out += emitLevelTaunt(g, events);
+  }
+  return out;
+}
 /** Copies every VIBECODER_ACTION with `failed: true` on a non-zero exit; a success leaves the events untouched. */
 function markFailedActions(events: KernelEvent[], code: number | undefined): KernelEvent[] {
   if (!code) return events;
@@ -138,9 +167,13 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
 
     const prevLevelIdx = g.levelIdx;
     const arrivalEvents: KernelEvent[] = [];
+    const isSkipTutorialCmd = /^tutorial\s+(?:skip|off)$/i.test(typed);
+    let arrivalOut = !g.rt.levelArrived ? arriveCurrentLevel(g, arrivalEvents) : '';
+    if (!isSkipTutorialCmd && openingActive(g)) {
+      arrivalOut += resolveOpeningTransition(g, arrivalEvents);
+    }
     // A line sent during the battle intro ends it and is the player's first action (headless drivers; the play page skips on Enter itself).
     endBattleIntro(g.battle, arrivalEvents);
-    const arrivalOut = !g.rt.levelArrived ? arriveCurrentLevel(g, arrivalEvents) : '';
 
     g.commands += 1;
     g.rt.levelCommands += 1;
@@ -212,12 +245,11 @@ export function tick(g: ChapterState): TickResult {
 /** One second of the level clock (`script.timed`), then `then` (the battle second, or a lab step), then the bookkeeping. */
 export function clockTick(g: ChapterState, then: (events: KernelEvent[]) => string): TickResult {
     return settle(g, (events) => {
-      let out = runTimed(g, events);
-      syncValidatedCodeBugs(g);
-      g.rt.world.sync(events);
-      refreshExitGates(g, events);
-      out += g.rt.world.drain();
-      out += then(events);
+      let out = runTimed(g, events) + syncWorldAndGates(g, events) + then(events);
+      if (openingActive(g) && g.rt.levelTicks >= (levelScript(g).openingSec ?? 0)) {
+        out += resolveOpeningTransition(g, events);
+        return out;
+      }
       return out + maybeBeginBattle(g, events);
     });
   }
@@ -241,6 +273,16 @@ export function skipBattleIntro(g: ChapterState): TickResult | null {
     return settle(g, (events) => {
       endBattleIntro(g.battle, events);
       return '';
+    });
+  }
+
+/** Opening Vibecoder + Kiro conversation -> Big Four taunt / battle start (Skip Dialog button). Null when none is active. */
+export function skipOpeningDialog(g: ChapterState): TickResult | null {
+    if (!openingActive(g)) return null;
+    g.intro = false;
+    return settle(g, (events) => {
+      const arr = !g.rt.levelArrived ? arriveCurrentLevel(g, events) : '';
+      return arr + resolveOpeningTransition(g, events);
     });
   }
 

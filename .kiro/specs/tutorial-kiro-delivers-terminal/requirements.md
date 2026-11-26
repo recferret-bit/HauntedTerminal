@@ -16,9 +16,9 @@ User's words, 2026-11-25: "tweak how kiro ghost is floating to the player in the
 6. WHEN a script runs a `carry_item` step (`entityId`, `item`), THE SYSTEM SHALL pop the item model into that actor's hands and fly the actor (same flight as req 5, 2.2 s, facing its travel) next to the hero, where it hovers.
 7. WHEN a script runs a `give_item` step (`item`, optional `from`), THE SYSTEM SHALL add the item to the inventory, put it in his hand if his hands are empty, pop the item from `from`'s hands into the hero's hand on the stage, and fly `from` back to its slot (same flight as req 5, 2.4 s).
 8. THE SYSTEM SHALL add `carry_item`, `give_item` and the `shout` emote through the four-place rule (types, interpreter, editor schema, pack checks); the engine SHALL name no level.
-9. WHEN level 1 plays, THE SYSTEM SHALL run: the vibecoder monologue and the big four lines, the vibecoder's `HELLOOOO??` shout and line, Kiro's glide entrance and intro lines, `carry_item` of the terminal, `give_item` of the terminal, then `ls` guidance and tutorial step 1 (`ls`) without locking `ls` on level 1.
-10. THE SYSTEM SHALL start levels 2+ with the terminal (`manifest.grants` `afterLevel: 1`), grant the lantern after level 3 (`afterLevel: 3`, picked up in level 3 to unlock `ls`/`find`/`kiro`), and grant the laptop after level 6 (`afterLevel: 6`, picked up in level 6 to unlock `edit`/`sed`).
-11. THE SYSTEM SHALL keep level 1 solvable headlessly with 0 deaths in 6 commands (`ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`; the PID is rolled per load, see `.kiro/specs/random-pids/`).
+9. WHEN level 1 plays, THE SYSTEM SHALL run (`openingSec: 60` locking terminal input until finished or skipped via `Skip Dialog »`): the vibecoder monologue, the vibecoder's `HELLOOOO??` shout and line, Kiro's glide entrance and mission / RAM Max HP / SSD Revive briefing lines, `carry_item` of the terminal, `give_item` of the terminal, `tutorial_step 1` (`pwd`, with `ls` locked until `lantern` is won after Level 2), and Clod's Big Four taunt.
+10. THE SYSTEM SHALL start levels 2+ with the terminal (`manifest.grants` `afterLevel: 1`), reward the lantern after level 2 (`afterLevel: 2`, unlocking `ls` in level 3), gift `map` and `manual` at Hub #1 (`afterLevel: 4`), and grant the laptop after level 6 (`afterLevel: 6`, picked up in level 6 to unlock `edit`/`sed`).
+11. THE SYSTEM SHALL keep level 1 solvable headlessly with 0 deaths in 6 commands (`pwd`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`; the PID is rolled per load, see `.kiro/specs/random-pids/`).
 12. The first show of the terminal panel in a run (the visor boot). *(proposed from code, commit 8536a3f; see `## Later changes`; where it lives: `design.md`, "Terminal UI gate")*
     - WHEN the terminal panel is shown for the first time in a run because an `ITEM_GIVEN` of `terminal` hands it over during play, THE SYSTEM SHALL play the visor boot in place of the pop-in: a centre dot stretches into a horizontal line and the line opens until the whole panel shows (1.8 s), under a green visor overlay of falling hex-glyph rain, a scanline wash and a white beam on the same beats, and SHALL play the `term_boot` cue with it.
     - WHERE a run opens with the terminal already carried, WHEN the level reveal plays, THE SYSTEM SHALL play the same visor boot together with the stage drop, in place of the CRT power-on, and SHALL play the `term_boot` cue with it.
@@ -29,7 +29,7 @@ User's words, 2026-11-25: "tweak how kiro ghost is floating to the player in the
 
 ## Out of scope
 
-- Any change to hub/boss structure beyond the progressive `afterLevel: 1/3/6` item grants and timed narrative bridging beats.
+- Any change to hub/boss structure beyond the progressive `afterLevel: 1/2/4/6` item grants and timed narrative bridging beats.
 - Dropping or losing the terminal after it is given.
 - Classic floors and Terminal Lab behaviour (they keep their start items).
 

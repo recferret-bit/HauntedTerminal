@@ -59,11 +59,11 @@
       "level": 1,
       "skin": "iterm2",
       "transition": "flash-amber",
-      "setup": [{ "ticks": 75 }, "ls"],
+      "setup": [{ "ticks": 75 }, "pwd"],
       "events": [
         { "t": 0.5, "do": "typeAndSubmit", "line": "ps", "cps": 18 },
-        { "t": 2.6, "do": "modal", "modal": "manual", "action": "open", "query": "kill" },
-        { "t": 5.2, "do": "modal", "modal": "manual", "action": "close" }
+        { "t": 2.6, "do": "modal", "modal": "hint", "action": "open" },
+        { "t": 5.2, "do": "modal", "modal": "hint", "action": "close" }
       ],
       "pills": [
         {
@@ -71,15 +71,15 @@
           "dur": 6.2,
           "pos": "top-left",
           "accent": "phosphor",
-          "items": ["$ ls", "$ ps", "$ kill -9 <pid>", "F1 Hardcover Field Manual"]
+          "items": ["$ pwd", "$ ps", "$ kill -9 <pid>", "Guided Kiro.d Briefings"]
         }
       ],
       "captions": [
         {
           "n": "02",
-          "tag": "SECTOR 01 · KIRO GHOST & FIELD MANUAL",
+          "tag": "SECTOR 01 · KIRO GHOST & TERMINAL SLATE",
           "head": "LEARN REAL UNIX BY SURVIVING IT",
-          "sub": "Kiro Ghost brings your terminal and hardcover comic manual—zero prior Linux mastery required.",
+          "sub": "Kiro Ghost delivers your terminal slate and guides your first strikes—zero prior Linux mastery required.",
           "at": 0.3,
           "dur": 6.2,
           "accent": "phosphor"
@@ -179,7 +179,7 @@
           "dur": 6.2,
           "pos": "top-left",
           "accent": "phosphor",
-          "items": ["dad.tty · Matrix Server Rig", "F3 PCB Motherboard Map"]
+          "items": ["dad.tty · Matrix Server Rig", "F1 Field Manual & F3 PCB Map"]
         }
       ],
       "captions": [
@@ -236,7 +236,7 @@
         {
           "n": "07",
           "tag": "CHAPTER 1 PLAYABLE NOW · STEAM EDITION INCOMING",
-          "head": "11 SECTORS · 12 ACH_* TROPHIES · PORTABLE SAVES",
+          "head": "11 SECTORS · 13 ACH_* TROPHIES · PORTABLE SAVES",
           "sub": "Start instantly in your browser and carry every trophy straight into Steam.",
           "at": 0.1,
           "dur": 1.6,
@@ -253,7 +253,7 @@
         "sub": "Play all 11 sectors of Chapter 1 free in your browser today—export your .json save & trophies straight to Steam.",
         "steps": [
           "PLAY CHAPTER 1 IN BROWSER",
-          "UNLOCK 12 ACH_* TROPHIES",
+          "UNLOCK 13 ACH_* TROPHIES",
           "WISHLIST ON STEAM"
         ],
         "cta": "WISHLIST ON STEAM & PLAY FREE DEMO ▸",

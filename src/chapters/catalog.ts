@@ -6,8 +6,11 @@ import {
 } from './generated/catalog-data.js';
 import {
   evaluateWorkshopAchievement,
+  isManualUnlocked,
+  readAchievements,
   resetAchievementsForTest,
   type AchievementEvent,
+  type AchievementStore,
 } from './achievements.js';
 import { scheduleDesktopSaveSync } from './steam-bridge.js';
 import {
@@ -340,4 +343,23 @@ export function recordLevelClear(
   meta.scrap += scrapEarned;
   writeMetagame(meta);
   return { scrapEarned, totalScrap: meta.scrap };
+}
+
+/** True once `ACH_FIELD_MANUAL` is earned or saved progress has cleared any sector that grants `manual`. */
+export function isFieldManualAvailable(
+  achStore: AchievementStore = readAchievements(),
+  progress: ChapterProgressStore = readChapterProgress(),
+): boolean {
+  if (isManualUnlocked(achStore)) return true;
+  for (const manifest of chapterManifests) {
+    const chapProg = progress[manifest.id];
+    if (!chapProg) continue;
+    for (const grant of manifest.grants ?? []) {
+      if (!grant.items?.includes('manual') || grant.afterLevel <= 0) continue;
+      if (manifest.levels.some((lvl) => lvl.index >= grant.afterLevel && chapProg[lvl.id]?.cleared)) {
+        return true;
+      }
+    }
+  }
+  return false;
 }

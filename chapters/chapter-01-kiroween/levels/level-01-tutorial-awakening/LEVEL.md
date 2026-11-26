@@ -4,24 +4,23 @@ Mechanic `terminal`, room `attic`, cwd `/mnt/wires_and_chips`, exit `hub_uplink`
 
 ## Beat
 
-He starts in the dark with empty hands and only the field manual in his pocket (`manifest.startItems: ["manual"]`).
+He starts in the dark completely empty-handed (`manifest.startItems: []`), with the terminal locked (`openingSec: 60`, skippable via `Skip Dialog »`) until Vibecoder and Kiro.d finish talking, after which Clod taunts.
 
 | Level tick | What happens |
 |---|---|
-| 1, 3, 5 | Dialog box, VIBECODER monologue: "What is going on?!", "Where am I?", dark and empty hands (no terminal yet). |
-| 7, 9, 11, 13 | Big Four small talk (Anti-Gravy, Codec, Gork, Clod): each laughs at Vibecoder and warns he must type all commands manually and even write code manually. |
-| 15 | Vibecoder shock emote (`WRITE CODE MANUALLY?!`) and shocked dialog box line. |
-| 17 | Vibecoder shout emote (`HELLOOOO??`) and line. |
-| 19 | Kiro.d glides in (`spawn.entrance: glide`), scans, introduces himself as a local Unix `.d` daemon in dialog box. |
-| 22 | Kiro.d picks up the terminal (`carry_item`) and flies beside him. |
-| 25 | Kiro.d hands over the terminal (`give_item`), terminal panel opens, phosphor glow lights nearby wires, tutorial card 1 appears. |
-| 28, 31 | Kiro.d tells him to look around with `ls` (unless `ls` has already run). |
+| 1, 7, 13 | VIBECODER monologue + shout (`HELLOOOO??`) in the dark with empty hands. |
+| 19 | Kiro.d glides in (`spawn.entrance: glide`), scans, and introduces himself (PID 777). |
+| 28 | Kiro.d explains the whole-chapter mission (6 hardware sectors -> 3 Matrix Hub open-weight reboots -> Clod + PID 1). |
+| 37 | Kiro.d explains RAM (+10 Max HP) and SSD/GPU images (256GB = automatic Revive backup + Hub parts), and why `ls` is locked until Sector 02 rewards the Oil Lantern. |
+| 46 | Kiro.d carries the terminal over (`carry_item`). |
+| 54 | Vibecoder reacts (`54..60s`) while the terminal remains withheld & locked until the conversation finishes. |
+| 60 | Opening dialog finishes, Kiro.d hands over the terminal (`give_item`), Clod taunts, and tutorial card 1 (`pwd`) appears! |
 
 Timed entries fire on world ticks (`script.timed`), not on commands.
 
 ## Tutorial cards
 
-1. `ls`
+1. `pwd` (`ls` stays disabled until the lantern reward after Level 2)
 2. `mv starter_ram_8gb.dimm ~`
 3. `cat kiro_story.txt`
 4. `ps`
@@ -35,7 +34,7 @@ RAM pocketed, `kiro_story.txt` read, `tutorial_virus_1` neutralized. Then `cd hu
 ## Solution
 
 ```
-ls
+pwd
 mv starter_ram_8gb.dimm ~
 cat kiro_story.txt
 ps
@@ -45,4 +44,4 @@ cd hub_uplink
 
 ## Entering later
 
-A player who jumps to level 2 or later gets the terminal from `manifest.grants` (`afterLevel: 1`, `items: ["terminal"]`). The lantern arrives at Level 3 (`afterLevel: 3`) and the laptop at Level 6 (`afterLevel: 6`).
+A player who jumps to later levels receives cumulative `manifest.grants`: `terminal` (`afterLevel: 1`), `lantern` (`afterLevel: 2`), `map` + `manual` (`afterLevel: 4`), and `laptop` (`afterLevel: 6`).

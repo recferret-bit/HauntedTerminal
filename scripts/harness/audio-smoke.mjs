@@ -265,16 +265,19 @@ try {
   check((await masterGain()) === 0, '/play?mute=1 starts muted with master gain 0');
   await browser.open(`${base}/play/chapter-01-kiroween/level-04-hub-model-one?nointro=1`);
   await browser.waitFor('window.__term && window.__term.phase() === "play" && !window.__term.busy()', 15000, 'hub level ready');
+  await realClick('#skip-dialog-btn', 200);
   await clearSpy();
   await $('window.__term.submit("kiro scan")');
   await waitCue('sfx/xray_on', 4000);
   check((await cues()).includes('sfx/xray_on'), 'Empty-room kiro scan (0 enemies) emits sfx/xray_on');
 
-  // 2. Level 2 (?nointro=1, terminal & manual ready immediately): initial FLOOR_ENTERED title_card, terminal keys, commands, hold, manual modal, esc menu, visual lab, dev FX
-  await browser.open(`${base}/play/chapter-01-kiroween/level-02-task-ram-heist?nointro=1`);
-  await browser.waitFor('window.__term && window.__term.phase() === "play" && !window.__term.busy() && !document.querySelector("#terminal-bezel.tty-unavailable")', 15000, 'level 2 terminal ready');
+  // 2. Level 5 (?nointro=1, lantern + manual + map unlocked after Hub #1): initial FLOOR_ENTERED title_card, terminal keys, commands, hold, manual modal, esc menu, visual lab, dev FX
+  await browser.open(`${base}/play/chapter-01-kiroween/level-05-task-ui-grid?nointro=1`);
+  await browser.waitFor('window.__term && window.__term.phase() === "play" && !window.__term.busy() && !document.querySelector("#terminal-bezel.tty-unavailable")', 15000, 'level 5 terminal ready');
   await waitCue('sfx/title_card', 4000);
   check((await cues()).includes('sfx/title_card'), 'Initial ?nointro=1 load publishes FLOOR_ENTERED -> sfx/title_card');
+  await realClick('#skip-dialog-btn', 200);
+  await pressKey('Enter', 'Enter', 13);
   await sleep(350);
 
   // Clicking terminal focuses it without playing button SFX; key press/backspace/tab/delete work cleanly

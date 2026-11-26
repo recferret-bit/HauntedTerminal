@@ -47,6 +47,15 @@
       ]
     },
     {
+      "op": "task",
+      "id": "gate-task",
+      "rule": {
+        "kind": "riddle_solved",
+        "riddleId": "gate",
+        "description": "Solve gate.sock"
+      }
+    },
+    {
       "op": "check",
       "id": "said-wrong",
       "description": "Give a wrong answer first",
@@ -74,6 +83,11 @@
       "id": "gate",
       "is": "fail",
       "note": "not solved yet"
+    },
+    {
+      "op": "check",
+      "id": "gate-task",
+      "is": "fail"
     },
     {
       "op": "run",
@@ -126,6 +140,10 @@
     {
       "op": "check",
       "id": "gate"
+    },
+    {
+      "op": "check",
+      "id": "gate-task"
     },
     {
       "op": "run",

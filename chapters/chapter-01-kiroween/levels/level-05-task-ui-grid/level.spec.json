@@ -134,9 +134,8 @@
   "script": {
     "arrival": [
       {
-        "kind": "taunt",
-        "mood": "laugh",
-        "print": "\n[BIG FOUR BULLYING] {text}\n"
+        "kind": "print",
+        "text": "\n[UI GRID — /srv/kiroween/ui_dashboard]\nAnti-Gravy is offline! Finish your briefing with Kiro.d (or click Skip Dialog ») before Codec taunts.\n"
       }
     ],
     "timed": [
@@ -145,31 +144,20 @@
         "steps": [
           {
             "kind": "dialog_box",
-            "speaker": "codec",
-            "text": "HAHAHA! So you found your lantern and disabled Anti-Gravy? You still have to fix real HTML & CSS without an autocomplete prompt!",
-            "holdSec": 9
-          }
-        ]
-      },
-      {
-        "afterSec": 10,
-        "steps": [
-          {
-            "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "At least my lantern lights the dashboard monitor now! Let's inspect storefront.css and index.html.",
-            "holdSec": 9
+            "text": "Anti-Gravy is silenced, and I have my Lantern, Map (F3), and Field Manual (F1) now! What broke in this UI Grid, Kiro.d?",
+            "holdSec": 8
           }
         ]
       },
       {
-        "afterSec": 19,
+        "afterSec": 9,
         "steps": [
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "Set display: grid in storefront.css, remove disabled on #checkout-btn in index.html, and pocket the RAM + GPU chip!",
-            "holdSec": 9
+            "text": "Codec hid .product-grid in storefront.css and disabled #checkout-btn in index.html! Fix both and grab the RAM + SSD parts so we keep raising Max HP, Revives, and Hub power!",
+            "holdSec": 8
           }
         ]
       }
@@ -196,6 +184,7 @@
     },
     "kiro": {
       "stage": "crack_only"
-    }
+    },
+    "openingSec": 17
   }
 }

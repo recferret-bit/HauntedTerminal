@@ -73,6 +73,7 @@ export function subjectFor(stage: ComicStage, ev: KernelEvent): StageActor | nul
       return findByName(stage, ev.name, true);
     case 'LANTERN_REVEAL':
       return findByKey(stage, 'ghost');
+    case 'BATTLE_STARTED':
     case 'AGENT_TAUNT': {
       const modelId = typeof ev.model === 'string' && ev.model
         ? ev.model
@@ -88,15 +89,30 @@ export function subjectFor(stage: ComicStage, ev: KernelEvent): StageActor | nul
 
 export function sourceFor(stage: ComicStage, ev: KernelEvent): StageActor | null {
   if (ev.type !== 'PLAYER_DAMAGED') return null;
-  // The attacker: named by sourceName, else whoever is holding its tell (windup). No match, no lunge.
+  // The attacker: named by sourceName (including entities-combat's `stderr` / `necromancer_forkd` / `zombie_worker`), else whoever holds windup.
+  if (ev.sourceName === 'stderr') {
+    const kernel = findByModel(stage, 'boss.kernel') ?? firstOfKind(stage, 'boss');
+    if (kernel && !kernel.dead) return kernel;
+  }
+  if (ev.sourceName === 'necromancer_forkd') {
+    const forkbomb = findByModel(stage, 'boss.forkbomb') ?? firstOfKind(stage, 'boss');
+    if (forkbomb && !forkbomb.dead) return forkbomb;
+  }
   const named = findByName(stage, ev.sourceName);
-  if (named && (named.kind === 'enemy' || named.kind === 'boss')) return named;
+  if (named && !named.dead && (named.kind === 'enemy' || named.kind === 'boss')) return named;
   let tell: StageActor | null = null;
   for (const a of stage.actors.values()) {
     if (a.exiting || a.dead || a.animator.state !== 'windup') continue;
     if (!tell || (stage.lastAttack?.id === a.id)) tell = a;
   }
-  return tell;
+  if (tell) return tell;
+  if (ev.sourceName === 'zombie_worker') {
+    const last = stage.lastAttack ? stage.actors.get(stage.lastAttack.id) : undefined;
+    if (last && !last.exiting && !last.dead && last.modelId === 'malware.zombie') return last;
+    const z = findByModel(stage, 'malware.zombie');
+    if (z && !z.dead) return z;
+  }
+  return null;
 }
 
 export function childrenOf(stage: ComicStage, parent: StageActor): StageActor[] {

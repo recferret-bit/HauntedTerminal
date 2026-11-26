@@ -81,7 +81,7 @@ export interface ChapterManifest {
   mechanicsSummary: string[];
   /** Hardware and cores owned when a level is entered directly (see `ChapterGrant`). */
   grants?: ChapterGrant[];
-  /** Items he carries when a run starts (default `['lantern', 'terminal', 'manual', 'map']`). */
+  /** Items he carries when a run starts (default `['lantern', 'terminal']`). */
   startItems?: ItemId[];
   /** Closing card shown after the last level. */
   outro?: ChapterOutro;
@@ -120,9 +120,22 @@ export interface LevelPatchChip {
   replace: string;
 }
 
+export interface LevelRiddleSpec {
+  id: string;
+  path: string;
+  prompt: string;
+  answer: string;
+  speaker?: string;
+  hints?: string[];
+  success?: string;
+  opens?: string;
+  tokens?: string[];
+}
+
 export type WinRule =
   | { kind: 'read_file'; path: string; description: string }
   | { kind: 'talk_ally'; socket: string; description: string }
+  | { kind: 'riddle_solved'; riddleId: string; description: string }
   | { kind: 'file_absent'; path: string; description: string }
   | { kind: 'file_contains'; path: string; pattern: string; description: string }
   | { kind: 'dir_accessible'; path: string; description: string }
@@ -161,6 +174,8 @@ export interface LevelSpec {
   enemies: LevelEnemySpec[];
   pickups: LevelPickupSpec[];
   patches: LevelPatchChip[];
+  /** Optional talking-socket riddles (`cat <sock>`, `echo <answer> > <sock>`). */
+  riddles?: LevelRiddleSpec[];
   /** Optional declarative visual stage props (`ModelCatalog` ids). */
   props?: LevelPropSpec[];
   winRules: WinRule[];

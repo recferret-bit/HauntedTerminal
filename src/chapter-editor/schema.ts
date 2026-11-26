@@ -78,7 +78,7 @@ export const STEP_VARIANTS = (): Variants<ScriptStep['kind']> => ({
   carry_item: [t('entityId', 'Carrier (kiro or a spawned entity id)'), sel('item', 'Item', ITEM_IDS)],
   give_item: [sel('item', 'Item', ITEM_IDS), opt(t('from', 'Giver (kiro or a spawned entity id)'))],
   dialog_box: [
-    sel('speaker', 'Speaker', ['vibecoder', ...AGENTS]),
+    sel('speaker', 'Speaker', ['vibecoder', 'dad', ...AGENTS]),
     t('text', 'Line', { rows: TEXT_ROWS }),
     opt(n('holdSec', 'Hold seconds after the text (default 12)', { step: 0.5 })),
   ],
@@ -151,6 +151,18 @@ export const PROP_FIELDS: Field[] = [
 
 export const PATCH_FIELDS: Field[] = [t('file', 'File name'), t('label', 'Label'), t('find', 'Find', { rows: 2, mono: true }), t('replace', 'Replace', { rows: 2, mono: true })];
 
+export const RIDDLE_FIELDS: Field[] = [
+  t('id', 'Id'),
+  t('path', 'Socket path', { mono: true, suggest: 'paths', hint: 'a .sock file in the room' }),
+  t('prompt', 'What the socket says', { rows: 3 }),
+  t('answer', 'Accepted answer', { mono: true, hint: 'the exact text, or re:regex (re:/^(a|b)$/i for flags)' }),
+  opt(t('speaker', 'Speaker name')),
+  opt({ type: 'strings', key: 'hints', label: 'Hints, one per wrong answer (the last repeats)' }),
+  opt(t('success', 'Said when solved')),
+  opt(t('opens', 'Door it opens', { mono: true, suggest: 'paths', hint: 'a directory or file made readable when solved' })),
+  opt({ type: 'strings', key: 'tokens', label: 'Commands the bubble highlights (one per line)' }),
+];
+
 export const FILES: Field[] = [
   {
     type: 'array',
@@ -181,6 +193,12 @@ export const ENTITIES: Field[] = [
   },
   opt({
     type: 'array',
+    key: 'riddles',
+    label: 'Talking-socket riddles (cat <sock>, echo <answer> > <sock>)',
+    item: { title: (r) => `${String(r.id)} (${String(r.path)})`, fields: RIDDLE_FIELDS },
+  }),
+  opt({
+    type: 'array',
     key: 'props',
     label: 'Stage props (hardware & Kiroween dressing)',
     item: { title: (p) => `${String(p.id)} (${String(p.model)})`, fields: PROP_FIELDS },
@@ -191,6 +209,7 @@ const DESC = t('description', 'Checklist line shown to the player', { rows: 2 })
 export const RULE_VARIANTS = (): Variants<WinRule['kind']> => ({
   read_file: [t('path', 'Path', { suggest: 'paths', mono: true }), DESC],
   talk_ally: [t('socket', 'Socket name', { suggest: 'sockets', mono: true }), DESC],
+  riddle_solved: [t('riddleId', 'Riddle id'), DESC],
   file_absent: [t('path', 'Path', { suggest: 'paths', mono: true }), DESC],
   file_contains: [t('path', 'Path', { suggest: 'paths', mono: true }), t('pattern', 'Pattern', { mono: true }), DESC],
   dir_accessible: [t('path', 'Path', { suggest: 'paths', mono: true }), DESC],
@@ -231,6 +250,7 @@ const KIRO_REACTION: Field[] = [
 ];
 
 export const SCRIPT: Field[] = [
+  opt(n('openingSec', 'Opening conversation seconds (locks terminal until finished or skipped; then Big Four taunt / battle begins)', { step: 1 })),
   stepsField('arrival', 'Arrival (runs once on entering)', { optional: true }),
   {
     type: 'array',
@@ -379,7 +399,7 @@ export const MANIFEST: Field[] = [
       fields: [n('afterLevel', 'After level'), opt(n('ram', 'RAM GB')), opt(n('ssd', 'SSD GB')), opt(t('core', 'Kiro.d core', { suggest: 'cores' })), opt({ type: 'strings', key: 'items', label: 'Items (lantern, terminal, laptop, manual, map; one per line)' })],
     },
   },
-  opt({ type: 'strings', key: 'startItems', label: 'Items he carries at the start (default lantern, terminal, manual, map; one per line)' }),
+  opt({ type: 'strings', key: 'startItems', label: 'Items he carries at the start (default lantern, terminal; one per line)' }),
   {
     type: 'array',
     key: 'dossier',

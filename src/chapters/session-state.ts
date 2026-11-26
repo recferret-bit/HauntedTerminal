@@ -50,6 +50,8 @@ export interface ChapterSession extends Session {
   labTick(): TickResult;
   /** Battle intro -> the player's first turn (Enter on the play page). False when no intro is playing. */
   skipBattleIntro(): TickResult | null;
+  /** Skips the opening Vibecoder + Kiro conversation (`openingSec`), unlocking the terminal and firing the Big Four taunt / battle start. */
+  skipOpeningDialog(): TickResult | null;
   /** Stop or restart the battle turn timer while the mini-editor or the laptop is open. */
   holdTurnTimer(hold: BattleHold, on: boolean): void;
   /** The player's turn ends now and the enemies act (the lab's Tick, the solver's timer runouts). Null outside a battle's player turn. */
@@ -145,6 +147,10 @@ export interface LevelRuntime {
   dialog: LevelDialogEntry | undefined;
   /** Indexes of `script.timed` entries that already fired. */
   timedFired: Set<number>;
+  /** True once the opening Vibecoder + Kiro conversation (`openingSec`) has finished or been skipped. */
+  openingDone: boolean;
+  /** Battles started in this level runtime (used to wire the level's Big Four `agentTaunt` onto Battle #1). */
+  levelBattles: number;
   /** Armed `restart-level` confirm; dies with the level runtime (a load or reboot builds a new one). */
   restartPending: RestartPending | null;
   /** Lab session state for this level (absorbed damage, solved riddles, latched checks). Empty in the game. */

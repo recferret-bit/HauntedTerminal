@@ -1,0 +1,103 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "fps": 24,
+  "seed": 1995,
+  "shots": [
+    {
+      "id": "01-landing-home",
+      "title": "Landing Home: Free Chapter 1 Browser Demo & Steam Roadmap",
+      "mode": "page",
+      "dur": 1.5,
+      "captureAt": 0.8,
+      "settleMs": 1200,
+      "page": { "url": "/" }
+    },
+    {
+      "id": "02-steam-waitlist-dialog",
+      "title": "Steam Coming Soon / Launch Pass Waitlist Dialog (/?wishlist=1)",
+      "mode": "page",
+      "dur": 1.5,
+      "captureAt": 0.8,
+      "settleMs": 1200,
+      "page": { "url": "/?wishlist=1" }
+    },
+    {
+      "id": "03-landing-desktop-builds",
+      "title": "Desktop Builds Tab: Native macOS, Windows & Steam Deck Installers",
+      "mode": "page",
+      "dur": 1.5,
+      "captureAt": 0.8,
+      "settleMs": 1000,
+      "page": { "url": "/desktop.html" }
+    },
+    {
+      "id": "04-landing-achievements",
+      "title": "Achievements & Portable Save Export/Import Tab",
+      "mode": "page",
+      "dur": 1.5,
+      "captureAt": 0.8,
+      "settleMs": 1000,
+      "page": { "url": "/achievements.html" }
+    },
+    {
+      "id": "05-lab-terminal",
+      "title": "Terminal Lab: Deterministic Test Bench & Kernel Boss Fixture",
+      "mode": "page",
+      "dur": 2.0,
+      "captureAt": 1.0,
+      "settleMs": 4500,
+      "page": { "url": "/terminal-lab/enemy-kernel" }
+    },
+    {
+      "id": "06-lab-laptop",
+      "title": "Laptop Lab: Clamshell 486 Emulator, Lifecycle Controls & Quests",
+      "mode": "laptop",
+      "dur": 2.0,
+      "captureAt": 1.0,
+      "settleMs": 1500,
+      "laptop": { "state": "desktop", "speed": 0, "task": "web-style", "ui": true }
+    },
+    {
+      "id": "07-lab-storybook",
+      "title": "3D Procgen Storybook Lab: Kernel Boss (PID 1) Shader & Cel Relief",
+      "mode": "storybook",
+      "dur": 2.0,
+      "captureAt": 1.0,
+      "settleMs": 1200,
+      "storybook": { "inspect": "boss.kernel", "tab": "models", "bg": "floor5", "state": "attack", "from": 0.6, "to": 1.2, "ui": true, "guides": true, "pixel": true, "crt": true }
+    },
+    {
+      "id": "08-lab-chapter-editor",
+      "title": "Chapter Editor: Declarative Sector Rules & Live Game Preview",
+      "mode": "page",
+      "dur": 2.0,
+      "captureAt": 1.0,
+      "settleMs": 4500,
+      "page": { "url": "/editor/{chapter}/{level:3}" }
+    },
+    {
+      "id": "09-lab-comix-editor",
+      "title": "Comix Editor: 3D Animated Comic Timeline & Multi-Panel Inspector",
+      "mode": "page",
+      "dur": 2.0,
+      "captureAt": 1.0,
+      "settleMs": 4500,
+      "page": { "url": "/comix-editor" }
+    },
+    {
+      "id": "10-lab-field-manual",
+      "title": "Interactive Hardcover Field Manual & Live chmod Calculator",
+      "mode": "play",
+      "level": 5,
+      "skin": "iterm2",
+      "dur": 2.0,
+      "captureAt": 1.0,
+      "settleMs": 1200,
+      "setup": [{ "ticks": 30 }],
+      "events": [
+        { "t": 0.15, "do": "modal", "modal": "manual", "action": "open", "query": "chmod" }
+      ]
+    }
+  ]
+}

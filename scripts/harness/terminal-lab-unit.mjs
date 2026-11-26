@@ -528,13 +528,18 @@ await withProcgen(async (_p, vite) => {
 
   await test('goals: every win rule template starts undone, is the only task, and its scene has no errors', () => {
     const kinds = entries().filter((e) => e.id.startsWith('task.'));
-    assert.equal(kinds.length, 13);
+    assert.equal(kinds.length, 14);
     for (const e of kinds) {
       const script = lab();
       script.setup.push(...e.make(script));
-      const tasks = play(script).inspect().goals.filter((t) => t.kind === 'task');
+      const s = play(script);
+      const tasks = s.inspect().goals.filter((t) => t.kind === 'task');
       assert.deepEqual(tasks.map((t) => t.done), [false], e.id);
       assert.deepEqual(checkLab(script).filter((i) => i.severity === 'error'), [], e.id);
+      if (e.id === 'task.riddle_solved') {
+        s.exec('echo .secret_rune > riddle.sock');
+        assert.deepEqual(s.inspect().goals.filter((t) => t.kind === 'task').map((t) => t.done), [true], 'task.riddle_solved flips done once solved');
+      }
     }
   });
 
@@ -1544,10 +1549,16 @@ await withProcgen(async (_p, vite) => {
       assert.equal(host.querySelector('.hint-dialog-sector').textContent, 'Test Sector');
       assert.equal(host.querySelector('.hint-dialog-badge').textContent, '1/2 DONE');
       assert.equal(host.querySelector('.hint-dialog-list').children.length, 3);
+      assert.equal(
+        host.querySelector('.hint-dialog-tip').textContent,
+        'Field Manual locked — reach the Server Hub to obtain it.',
+        'before manual is in inventory, hint-dialog tip does not advertise F1',
+      );
 
-      // Live update while open flips badge to EXIT READY.
+      // Live update while open flips badge to EXIT READY and unlocks F1 tip once manual is carried.
       dialogApi.update({
         ...snap1,
+        inventory: { items: ['terminal', 'manual'], held: 'manual' },
         hintGoals: {
           ...snap1.hintGoals,
           goal: 'All tasks done — gate is open.',
@@ -1561,6 +1572,11 @@ await withProcgen(async (_p, vite) => {
       });
       assert.equal(host.querySelector('.hint-dialog-badge').textContent, 'EXIT READY');
       assert.equal(host.querySelector('.hint-dialog-badge').classList.contains('ready'), true);
+      assert.equal(
+        host.querySelector('.hint-dialog-tip').textContent,
+        'Need command reference? Press F1 for the Field Manual.',
+        'once manual is carried, hint-dialog tip shows F1 shortcut',
+      );
 
       // Close is idempotent and notifies onClose once.
       dialogApi.close();

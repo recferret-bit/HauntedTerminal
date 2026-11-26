@@ -4,11 +4,11 @@
 
 ```
 src/contracts/inventory.ts            Adds 'map' to ITEM_IDS & ITEMS descriptor (item.map, vibecoder.dev_map)
-src/game/inventory.ts                 starterInventory() includes 'map' (['lantern', 'terminal', 'manual', 'map'])
+src/game/inventory.ts                 starterInventory() defaults to ['lantern', 'terminal'] (map omitted by default)
 src/procgen/archetypes/items/map.ts   Procedural 3D item.map (top strap + PCB slate + trace bed + IC blocks + phosphor beacons)
 src/procgen/archetypes/items.ts       ITEM_BUILDERS.map -> buildMap (auto-wires vibecoder.dev_map in vibecoder.ts)
 .kiro/skills/credits-art-direction/references/world-lexicon.md Documents item.map & vibecoder.dev_map
-chapters/chapter-01-kiroween/chapter.manifest.json Chapter 1 startItems includes "map" alongside "manual"
+chapters/chapter-01-kiroween/chapter.manifest.json Chapter 1 startItems is []; grants afterLevel: 4 includes "map" & "manual" (gifted via give_item at Hub #1)
 src/chapters/{types,catalog}.ts,      Inventory/hold comments, GRIMOIRE_ENTRIES (now metagame-data.ts), chapter-editor field hints updated
   src/chapter-editor/schema.ts
 src/game/manual.ts, manual-cmds-nav.ts, Registers 'map' command, helpText, MAN.map, runMap(), and Field Manual documentation

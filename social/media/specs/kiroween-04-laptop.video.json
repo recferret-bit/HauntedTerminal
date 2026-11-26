@@ -1,0 +1,46 @@
+{
+  "name": "kiroween-04-laptop",
+  "platform": "steam",
+  "fps": 24,
+  "width": 1280,
+  "height": 720,
+  "maxSeconds": 14,
+  "look": "comix",
+  "ticker": false,
+  "badge": false,
+  "audio": false,
+  "gif": { "maxMB": 4.7, "width": 720, "fps": 12 },
+  "scenes": [
+    {
+      "id": "lap-01-pickup-in-game",
+      "dur": 1.8,
+      "mode": "play",
+      "level": 6,
+      "skin": "iterm2",
+      "setup": [{ "ticks": 22 }, "hold terminal"],
+      "events": [
+        { "t": 0.15, "do": "typeAndSubmit", "line": "mv laptop ~", "cps": 28 }
+      ]
+    },
+    {
+      "id": "lap-02-clamshell-lifecycle",
+      "dur": 10.2,
+      "mode": "laptop",
+      "transition": "cut",
+      "settleMs": 300,
+      "laptop": { "state": "closed", "speed": 0.75, "ui": false },
+      "events": [
+        { "t": 0.25, "do": "laptop", "send": "OPEN" },
+        { "t": 1.65, "do": "laptop", "send": "POWER" },
+        { "t": 6.85, "do": "laptop", "task": "js-add" },
+        { "t": 8.55, "do": "laptop", "task": "web-style" }
+      ],
+      "pills": [
+        { "at": 0.05, "dur": 1.5, "pos": "top-left", "accent": "amber", "items": ["ITEM.LAPTOP // HAUNTED BOOK 486"] },
+        { "at": 1.65, "dur": 4.85, "pos": "top-left", "accent": "cyan", "items": ["BOOTING HAUNTED/OS 3.1"] },
+        { "at": 6.85, "dur": 1.6, "pos": "top-left", "accent": "phosphor", "items": ["JSPAD.EXE // SANDBOXED WORKER JS"] },
+        { "at": 8.55, "dur": 1.55, "pos": "top-left", "accent": "cyan", "items": ["WEAVER.EXE // LIVE HTML & CSS PREVIEW"] }
+      ]
+    }
+  ]
+}

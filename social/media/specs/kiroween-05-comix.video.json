@@ -1,0 +1,42 @@
+{
+  "name": "kiroween-05-comix",
+  "platform": "steam",
+  "fps": 24,
+  "width": 1280,
+  "height": 720,
+  "maxSeconds": 14,
+  "look": "comix",
+  "ticker": false,
+  "badge": false,
+  "audio": false,
+  "gif": { "maxMB": 4.7, "width": 720, "fps": 12 },
+  "scenes": [
+    {
+      "id": "cx-01-krakoom",
+      "dur": 3.0,
+      "mode": "comix",
+      "comix": { "slug": "intro", "from": 12.6, "to": 15.6 }
+    },
+    {
+      "id": "cx-02-agents-burst",
+      "dur": 3.5,
+      "mode": "comix",
+      "transition": "flash",
+      "comix": { "slug": "intro", "from": 23.6, "to": 27.1 }
+    },
+    {
+      "id": "cx-03-upload-vortex",
+      "dur": 3.0,
+      "mode": "comix",
+      "transition": "flash-amber",
+      "comix": { "slug": "intro", "from": 32.1, "to": 35.1 }
+    },
+    {
+      "id": "cx-04-dawn-outro",
+      "dur": 2.5,
+      "mode": "comix",
+      "transition": "flash",
+      "comix": { "slug": "outro", "from": 0.4, "to": 5.4 }
+    }
+  ]
+}

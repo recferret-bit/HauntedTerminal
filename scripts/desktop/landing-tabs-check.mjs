@@ -66,20 +66,44 @@ export async function verifySteamOpensInPlace(evalJs, path) {
   assert.deepEqual(steam, { open: true, same: true, email: true }, `${path}: Steam Coming Soon opens the dialog without leaving the page`);
 }
 
-/** Verify Home exposes Field Manual links in TTY preview card, Demo card, and Entry Doors, and opens /manual.html cleanly. */
-export async function verifyLandingManualLinks(evalJs, measureContrast) {
+/** Verify Home hides Field Manual links before obtained (`ACH_FIELD_MANUAL`), and exposes them with WCAG AA contrast once unlocked. */
+export async function verifyLandingManualLinks(evalJs, measureContrast, unlocked = false) {
   const links = await evalJs(`(() => ({
     tty: Boolean(document.querySelector('.tty-mini-card a[href="/manual.html"]')),
+    ttyLockedNote: /locked/i.test(document.getElementById('home-manual-tty')?.textContent || ''),
     demo: Boolean(document.querySelector('.edition-card a.comic-btn[href="/manual.html"]')),
     door: Boolean(document.querySelector('section[aria-labelledby="entry-doors"] a.door-card[href="/manual.html"]')),
   }))()`);
-  assert.deepEqual(links, { tty: true, demo: true, door: true }, 'Landing / must expose Field Manual links in TTY preview card, Demo card, and Entry Doors');
+  if (!unlocked) {
+    assert.deepEqual(
+      { tty: links.tty, demo: links.demo, door: links.door },
+      { tty: false, demo: false, door: false },
+      'Landing / must NOT expose Field Manual links before the Old Coder gifts it at Server Hub #1',
+    );
+    assert.equal(links.ttyLockedNote, true, 'Landing / TTY card must explain Field Manual unlocks at Server Hub #1');
+    return;
+  }
+  assert.deepEqual(
+    { tty: links.tty, demo: links.demo, door: links.door },
+    { tty: true, demo: true, door: true },
+    'Once ACH_FIELD_MANUAL is unlocked, Landing / must expose Field Manual links in TTY preview card, Demo card, and Entry Doors',
+  );
   const demoRatio = await measureContrast(evalJs, '.edition-card a[href="/manual.html"]');
   assert.ok(demoRatio >= 4.5, `.edition-card a[href="/manual.html"] contrast must be >= 4.5, got ${demoRatio.toFixed(2)}`);
 }
 
 export async function verifyManualTargetPage(openPage, cdp, evalJs, base) {
+  await openPage(cdp, base, '/manual.html', `document.getElementById('manual-locked-panel')`);
+  const lockedOk = await evalJs(`(() => Boolean(document.getElementById('manual-locked-panel') && !document.querySelector('.mb-book-shell')))()`);
+  assert.equal(lockedOk, true, '/manual.html must show locked state before ACH_FIELD_MANUAL is earned');
+
+  await evalJs(`(() => {
+    const raw = JSON.parse(localStorage.getItem('out-of-credits:achievements:v1') || '{"schemaVersion":1,"unlocked":{},"stats":{}}');
+    raw.unlocked = raw.unlocked || {};
+    raw.unlocked.field_manual = { id: 'field_manual', steamApiName: 'ACH_FIELD_MANUAL', unlockedAt: 1700000002000 };
+    localStorage.setItem('out-of-credits:achievements:v1', JSON.stringify(raw));
+  })()`);
   await openPage(cdp, base, '/manual.html', `document.querySelector('#mb-search-input')`);
   const ok = await evalJs(`(() => Boolean(document.querySelector('.mb-book-shell') && document.documentElement.scrollWidth <= window.innerWidth))()`);
-  assert.equal(ok, true, 'Landing /manual.html link target must load standalone Field Manual cleanly without overflow');
+  assert.equal(ok, true, 'After ACH_FIELD_MANUAL unlocks, /manual.html must load standalone Field Manual cleanly without overflow');
 }

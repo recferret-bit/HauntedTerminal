@@ -67,6 +67,10 @@ function tasksForRule(g: ChapterState, rule: WinRule): HintTask[] {
       return [{ label: `Read ${baseName(rule.path)}`, done }];
     case 'talk_ally':
       return [{ label: `Talk to ${allyLabel(g)} (${rule.socket})`, done }];
+    case 'riddle_solved': {
+      const r = g.rt.spec.riddles?.find((x) => x.id === rule.riddleId);
+      return [{ label: `Solve the riddle at ${r ? baseName(r.path) : rule.riddleId}`, done }];
+    }
     case 'file_absent':
       return [{ label: fileAbsentLabel(g, rule.path), done }];
     case 'file_contains':

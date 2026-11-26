@@ -8,14 +8,14 @@
   "roomSeed": 4,
   "mechanic": "hub",
   "exitDir": "/home/dev/sector_ui_grid",
-  "summary": "At the Hub, you meet an old bearded guy smoking a cigarette and coding at godlike speed on a Matrix-like CRT display! Talk to him (`cat dad.tty.sock`), read `server_rack.conf`, and reboot Kiro.d with the first open-weight model (`kiro load qwen`) to disable Anti-Gravy!",
+  "summary": "At the Matrix Hub, the cigarette-smoking Old Bearded Coder gifts you the PCB Motherboard Map (`F3` / `map`) and Unix Field Manual (`F1` / `manual`), then takes your scavenged parts to reboot Kiro.d with `kiro load qwen`—disabling Anti-Gravy!",
   "files": [
     {
       "path": "/home/dev/server_rack.conf",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. No, kid. I worked in enterprise for decades—wrote kernel drivers and distributed buses with bare hands. Then my employer forced me to use LLMs... and when the Big Four surged, I got pulled into this machine too.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! Hand over those RAM sticks and GPU chips.\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro.d's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro.d disable Anti-Gravy of the Big Four, then step through `cd sector_ui_grid`!\n"
+      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. Worked in enterprise for decades, kid. Take my PCB Motherboard Map (`map` / `F3`) and Unix Field Manual (`manual` / `F1`)—you'll need both deeper in the machine.\"\nOLD BEARDED CODER: \"And nice haul of RAM + GPU chips! Let's slot them into my server and reboot Kiro.d!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro.d's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro.d disable Anti-Gravy of the Big Four, then step through `cd sector_ui_grid`!\n"
     },
     {
       "path": "/home/dev/dad.tty.sock",
@@ -94,19 +94,8 @@
         "text": "ARE YOU A GOD?!"
       },
       {
-        "kind": "dialogue",
-        "obstacleId": "ally:dad.tty",
-        "speaker": "OLD BEARDED CODER (DAD.TTY)",
-        "portrait": "socket_guardian",
-        "mood": "hinting",
-        "anchorSocket": "dad.tty.sock",
-        "text": "Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here. Oh, you've found parts for hosting an open-weight model, nice! Let's reboot Kiro.d on my server with kiro load qwen!",
-        "highlight": ["cat", "dad", "kiro"],
-        "banner": "[OLD BEARDED MATRIX CODER // SERVER HUB #1]"
-      },
-      {
         "kind": "print",
-        "text": "\n[THE MATRIX HUB — /home/dev]\n(An old bearded guy sits at a Matrix-like display, smoking a cigarette and coding with bare hands at godspeed!)\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: \"Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! I'm working on this server and its soft—let's take your parts and reboot Kiro.d! (Run `cat server_rack.conf`, `dad`, and `kiro load qwen`)\"\n"
+        "text": "\n[THE MATRIX HUB — /home/dev]\nAn old bearded greybeard sits at a Matrix CRT server rack, smoking a cigarette and coding with bare hands! Finish talking with him and Kiro.d (or click Skip Dialog ») before Anti-Gravy taunts.\n"
       }
     ],
     "kiro": {
@@ -130,6 +119,61 @@
           "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder slots your scavenged RAM + GPU chips into the Matrix rack!\n[BIG FOUR TAKEDOWN #1/3] Kiro.d + qwen-coder-7b-q4.gguf sever Anti-Gravy's cloud telemetry uplink! ANTI-GRAVY DISABLED!\n{foe}\n{kiro}\n"
         }
       }
-    }
+    },
+    "openingSec": 34,
+    "timed": [
+      {
+        "afterSec": 1,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Who the hell are you?! You code with bare hands on a Matrix display?! Are you a god?!",
+            "holdSec": 8
+          }
+        ]
+      },
+      {
+        "afterSec": 9,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "dad",
+            "text": "Worked in enterprise for decades, kid. Employer forced me onto cloud LLMs, now I'm stuck in here too. Nice—you scavenged RAM and GPU parts to host an open-weight model!",
+            "holdSec": 9
+          }
+        ]
+      },
+      {
+        "afterSec": 18,
+        "steps": [
+          {
+            "kind": "give_item",
+            "item": "map"
+          },
+          {
+            "kind": "give_item",
+            "item": "manual"
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "dad",
+            "text": "Here—take my PCB MOTHERBOARD MAP (F3 or map) and my hardcover UNIX FIELD MANUAL (F1 or manual, now unlocked on the main menu too)! Never dive deeper without them.",
+            "holdSec": 9
+          }
+        ]
+      },
+      {
+        "afterSec": 27,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Awesome—Map and Field Manual unlocked! Once we finish talking, Anti-Gravy will taunt us—then run cat server_rack.conf, cat dad.tty.sock, and kiro load qwen to disable him!",
+            "holdSec": 7
+          }
+        ]
+      }
+    ]
   }
 }

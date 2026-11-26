@@ -7,7 +7,7 @@
   "badge": "KIROWEEN SPECIAL ISSUE",
   "estimatedMinutes": 35,
   "clientName": "Kiro.d & The Bearded Matrix Coder (Dad)",
-  "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal and reveals the tyranny of the Big Four (Anti-Gravy, Codec, Gork, Clod). Learn ls, mv, cat, ps, and kill; scavenge RAM and GPU chips across 6 sectors while recovering your oil lantern in GPU Alley (Level 3) and your clamshell laptop in Logic Cell (Level 6) as the Big Four laugh and bully you; bring the parts to the Hub where a cigarette-smoking Old Bearded Coder on a Matrix display reboots Kiro.d with open-weight models to disable Anti-Gravy, Codec, and Gork; defeat Clod and the Final Boss; and teleport back to the real world for the ultimate father-son unicorn twist!",
+  "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal, explains why RAM (+10 Max HP) and SSD/GPU images (auto-Revive backup + local server parts) keep him alive, and lays out the chapter mission: raid 6 sectors, reboot Kiro.d at the Matrix Hub with 3 open-weight models to silence Anti-Gravy, Codec, and Gork, then defeat Clod and PID 1 to exit home! Clear Sector 02 to win your oil lantern (unlocking ls in Sector 03), receive the Motherboard Map & Field Manual from the Old Bearded Coder on your first Hub visit (Sector 04), recover your clamshell laptop in Logic Cell (Sector 06), and uncover the father-son unicorn twist!",
   "allyNpc": {
     "id": "dad.tty",
     "name": "Old Bearded Matrix Coder (dad.tty)",
@@ -30,9 +30,9 @@
     "pageCount": 6
   },
   "mechanicsSummary": [
-    "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, receive your terminal from Kiro.d, learn the Big Four story, and practice ls, mv, cat, ps, and kill",
-    "Levels 2-3, 5-6, 8-9 Tasks: Scavenge RAM + GPU chips across POSIX, HTML/CSS, JS, Dockerfile & Compose sectors—recovering your oil lantern at Level 3 and your clamshell laptop at Level 6 while the Big Four bully you",
-    "Levels 4, 7, 10 Hub: Meet the cigarette-smoking Old Bearded Coder on his Matrix display ('Are you a god?'), install RAM + GPU chips, reboot Kiro.d with open-weight models (Qwen, DeepSeek, Llama), and disable Anti-Gravy, Codec, and Gork",
+    "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, finish talking with Kiro.d (who brings your terminal and explains your chapter mission + RAM Max HP & SSD Revive), then practice pwd, mv, cat, ps, and kill while ls stays locked without a lantern",
+    "Levels 2-3, 5-6, 8-9 Tasks: Finish Vibecoder + Kiro.d opening dialog (or Skip Dialog) before Big Four taunt & turn-based battle! Petrify a visible gargoyle minion in Level 2 to win your Oil Lantern, unlock ls + dotfile riddle in Level 3, and recover your laptop in Level 6",
+    "Levels 4, 7, 10 Hub: On your first Hub visit (Level 4), the Old Bearded Coder hands you the Motherboard Map & Unix Field Manual (unlocking ACH_FIELD_MANUAL and /manual), then reboots Kiro.d with Qwen, DeepSeek, and Llama to silence Anti-Gravy, Codec, and Gork",
     "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro.d as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
   ],
   "levels": [
@@ -44,9 +44,9 @@
       "roomKind": "attic",
       "floorTheme": 1,
       "mechanic": "terminal",
-      "mechanicLabel": "Intro Tutorial (ls / mv / cat / ps / kill)",
+      "mechanicLabel": "Intro Tutorial (pwd / mv / cat / ps / kill)",
       "difficulty": 1,
-      "teaches": ["ls", "mv", "cat", "ps", "kill -9", "cd"],
+      "teaches": ["pwd", "mv", "cat", "ps", "kill -9", "cd"],
       "enemies": ["virus"],
       "classicFloor": 1,
       "specPath": "levels/level-01-tutorial-awakening/level.spec.json"
@@ -54,30 +54,30 @@
     {
       "index": 2,
       "id": "level-02-task-ram-heist",
-      "title": "Cache Vault: First RAM & GPU Salvage",
+      "title": "Cache Vault: Gargoyle Sentry & Lantern Reward",
       "cwd": "/srv/kiroween/cache_vault",
       "roomKind": "crypt_entrance",
       "floorTheme": 2,
       "mechanic": "terminal",
-      "mechanicLabel": "Simple Task 1 (ls -la / rm / sed / mv RAM+GPU)",
+      "mechanicLabel": "Task 1 (Battle Rules / chmod -x / sed / Lantern Reward)",
       "difficulty": 1,
-      "teaches": ["ls -la", "rm", "sed -i", "mv"],
-      "enemies": ["spyware"],
+      "teaches": ["cat", "chmod -x", "sed -i", "mv"],
+      "enemies": ["trojan"],
       "classicFloor": 2,
       "specPath": "levels/level-02-task-ram-heist/level.spec.json"
     },
     {
       "index": 3,
       "id": "level-03-task-gpu-salvage",
-      "title": "GPU Alley: Lockpicks & Tensor Cores",
+      "title": "GPU Alley: Lantern ls, Dotfile Riddle & Lockpicks",
       "cwd": "/srv/kiroween/gpu_alley",
       "roomKind": "crypt_hall",
       "floorTheme": 2,
       "mechanic": "terminal",
-      "mechanicLabel": "Simple Task 2 (mv lantern ~ / chmod / ps / kill -9 / mv RAM+GPU)",
+      "mechanicLabel": "Task 2 (ls -la / Dotfile Riddle / ps / kill -9 / mv)",
       "difficulty": 2,
-      "teaches": ["mv lantern ~", "chmod", "ps", "kill -9", "rm", "mv"],
-      "enemies": ["crack", "worm"],
+      "teaches": ["ls -la", "rm", "cat", "echo >", "ps", "kill -9", "mv"],
+      "enemies": ["spyware", "crack", "worm"],
       "classicFloor": 2,
       "specPath": "levels/level-03-task-gpu-salvage/level.spec.json"
     },
@@ -89,9 +89,9 @@
       "roomKind": "desk",
       "floorTheme": 1,
       "mechanic": "hub",
-      "mechanicLabel": "Hub 1 (Meet Bearded Coder / Reboot Kiro.d / Disable Anti-Gravy)",
+      "mechanicLabel": "Hub 1 (Old Coder Gifts Map+Manual / Reboot Kiro.d / Disable Anti-Gravy)",
       "difficulty": 1,
-      "teaches": ["cat", "dad", "kiro load qwen", "cd"],
+      "teaches": ["cat", "dad", "map", "manual", "kiro load qwen", "cd"],
       "enemies": [],
       "classicFloor": 1,
       "specPath": "levels/level-04-hub-model-one/level.spec.json"
@@ -202,30 +202,28 @@
       "specPath": "levels/level-11-boss-clod-core/level.spec.json"
     }
   ],
-  "startItems": ["manual", "map"],
+  "startItems": [],
   "grants": [
     {
       "afterLevel": 1,
-      "ram": 16
-    },
-    {
-      "afterLevel": 1,
+      "ram": 16,
       "items": ["terminal"]
     },
     {
       "afterLevel": 2,
       "ram": 16,
-      "ssd": 256
-    },
-    {
-      "afterLevel": 3,
-      "ram": 16,
       "ssd": 256,
       "items": ["lantern"]
     },
     {
+      "afterLevel": 3,
+      "ram": 16,
+      "ssd": 256
+    },
+    {
       "afterLevel": 4,
-      "core": "qwen"
+      "core": "qwen",
+      "items": ["map", "manual"]
     },
     {
       "afterLevel": 6,

@@ -10,11 +10,12 @@ import {
   clockSecond,
   endBattle,
   startEnemyTurn,
+  type BattleIntroOverride,
   type BattleThreat,
   type TurnReason,
 } from '../game/battle.js';
 import { absPath } from '../game/tree.js';
-import { hashSeed, type ChapterState } from './session-state.js';
+import { hashSeed, resolveTauntAgent, type ChapterState } from './session-state.js';
 import { enemiesHeld, worldStep } from './session-world.js';
 
 /** The enemies that would fight the hero now; none while the level holds its enemies. */
@@ -23,13 +24,25 @@ function currentThreats(g: ChapterState): BattleThreat[] {
   return g.rt.world.threats().map((e) => ({ id: e.id, type: e.type, boss: e.boss }));
 }
 
-/** idle -> intro when threats are in the hero's room; returns the terminal lines. The agent is seeded by the level and the battle number. */
+/** idle -> intro when threats are in the hero's room; returns the terminal lines. Battle #1 of a level uses its Big Four `agentTaunt` when present. */
 export function maybeBeginBattle(g: ChapterState, events: KernelEvent[]): string {
   if (g.battle.phase !== 'idle' || g.ended) return '';
   const threats = currentThreats(g);
   if (threats.length === 0) return '';
   const mark = events.length;
-  beginBattle(g.battle, threats, hashSeed(`${g.rt.spec.id}:${g.battle.battle + 1}`), events);
+  const seed = hashSeed(`${g.rt.spec.id}:${g.battle.battle + 1}`);
+  let override: BattleIntroOverride | undefined;
+  if (g.rt.levelBattles === 0 && g.rt.dialog?.agentTaunt) {
+    const raw = g.rt.dialog.agentTaunt;
+    const who = resolveTauntAgent(raw);
+    const clean = raw.replace(/^(?:\[[^\]]+\]|[A-Z0-9 ._-]+)\s*:\s*/i, '').replace(/^"|"$/g, '').trim();
+    override = {
+      agent: who === 'kiro' ? undefined : who,
+      taunt: clean || raw,
+    };
+  }
+  g.rt.levelBattles += 1;
+  beginBattle(g.battle, threats, seed, events, override);
   const started = events.slice(mark).find((e) => e.type === 'BATTLE_STARTED');
   return started?.type === 'BATTLE_STARTED' ? battleBanner(started) : '';
 }

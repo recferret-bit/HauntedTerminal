@@ -1,0 +1,82 @@
+{
+  "name": "kiroween-02-bosses-enemies-fx",
+  "platform": "steam",
+  "fps": 24,
+  "width": 1280,
+  "height": 720,
+  "maxSeconds": 14,
+  "look": "comix",
+  "ticker": false,
+  "badge": false,
+  "audio": false,
+  "gif": { "maxMB": 4.7, "width": 720, "fps": 12 },
+  "scenes": [
+    {
+      "id": "fx-01-kernel-fault-and-devnull",
+      "dur": 3.8,
+      "mode": "play",
+      "level": 11,
+      "skin": "iterm2",
+      "setup": [{ "ticks": 22 }, "hold laptop"],
+      "events": [
+        { "t": 0.2, "do": "typeAndSubmit", "line": "kill -9 1", "cps": 26 },
+        { "t": 1.75, "do": "typeAndSubmit", "line": "cat clod_prompt_flood.stream > /dev/null", "cps": 30 }
+      ]
+    },
+    {
+      "id": "fx-02-kernel-sigkill",
+      "dur": 2.2,
+      "mode": "play",
+      "level": 11,
+      "skin": "putty",
+      "transition": "flash-amber",
+      "setup": [{ "ticks": 22 }, "hold terminal", { "solution": { "level": 11, "count": 3 } }],
+      "events": [
+        { "t": 0.2, "do": "typeAndSubmit", "line": "kill -9 1", "cps": 24 }
+      ]
+    },
+    {
+      "id": "fx-03-exploit-furnace",
+      "dur": 2.6,
+      "mode": "play",
+      "level": 9,
+      "skin": "windows-terminal",
+      "transition": "whip",
+      "setup": [{ "ticks": 22 }, "hold map"],
+      "events": [
+        { "t": 0.2, "do": "typeAndSubmit", "line": "rm port_hijack.bin", "cps": 26 },
+        { "t": 1.35, "do": "typeAndSubmit", "line": "chmod -w proxy.buf", "cps": 26 }
+      ]
+    },
+    {
+      "id": "fx-04-matrix-ok-fx",
+      "dur": 1.2,
+      "mode": "storybook",
+      "transition": "glitch",
+      "storybook": { "inspect": "fx.matrix-cast", "tab": "fx", "bg": "floor3", "state": "normal", "from": 0.0, "to": 0.9, "ui": false, "guides": false, "pixel": true, "crt": true },
+      "pills": [
+        { "at": 0.05, "dur": 1.1, "pos": "top-left", "accent": "phosphor", "items": ["FX // MATRIX OK (fx.matrix-cast)", "VALID COMMAND SWIRL"] }
+      ]
+    },
+    {
+      "id": "fx-05-matrix-error-fx",
+      "dur": 1.2,
+      "mode": "storybook",
+      "transition": "cut",
+      "storybook": { "inspect": "fx.matrix-fault", "tab": "fx", "bg": "floor5", "state": "normal", "from": 0.0, "to": 0.9, "ui": false, "guides": false, "pixel": true, "crt": true },
+      "pills": [
+        { "at": 0.05, "dur": 1.1, "pos": "top-left", "accent": "magenta", "items": ["FX // MATRIX ERROR (fx.matrix-fault)", "FAILED COMMAND FAULT"] }
+      ]
+    },
+    {
+      "id": "fx-06-boss-forkbomb",
+      "dur": 1.2,
+      "mode": "storybook",
+      "transition": "flash",
+      "storybook": { "inspect": "boss.forkbomb", "tab": "models", "bg": "floor4", "state": "attack", "from": 0.0, "to": 2.0, "ui": false, "guides": false, "pixel": true, "crt": true },
+      "pills": [
+        { "at": 0.05, "dur": 1.1, "pos": "top-left", "accent": "orange", "items": ["BOSS // FORK BOMB HYDRA", "ANIMATED 3D RELIEF"] }
+      ]
+    }
+  ]
+}

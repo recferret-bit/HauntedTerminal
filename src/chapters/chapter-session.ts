@@ -12,7 +12,7 @@ import { absPath } from '../game/tree.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from '../game/types.js';
 import { getChapterPack } from './catalog.js';
 import { seededRandom } from './pids.js';
-import { levelScript } from './script.js';
+import { hasOpeningGate, levelScript, openingActive } from './script.js';
 import * as code from './session-code.js';
 import * as flow from './session-flow.js';
 import * as level from './session-level.js';
@@ -110,7 +110,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
       kernelPhase: () => rules.computeBossPhase(this),
       truce: () =>
         this.rt.spec.mechanic === 'hub' ||
-        this.rt.levelCommands === 0 ||
+        (hasOpeningGate(this) ? openingActive(this) : this.rt.levelCommands === 0) ||
         levelScript(this).safe === true ||
         (this.lab === null && rules.allWinRulesMet(this)),
       bossDown: () => {},
@@ -185,6 +185,11 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
 
   skipBattleIntro(): TickResult | null {
     const res = flow.skipBattleIntro(this);
+    return res ? heard(this, res) : null;
+  }
+
+  skipOpeningDialog(): TickResult | null {
+    const res = flow.skipOpeningDialog(this);
     return res ? heard(this, res) : null;
   }
 

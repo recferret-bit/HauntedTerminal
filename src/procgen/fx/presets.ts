@@ -478,6 +478,23 @@ const presets: FxPreset[] = [
       { name: 'glitch', role: 'accent', zone: 'faultGlow', shape: fxBlock(0.34, 0.1), emit: 'line', spawn: { width: 1.65, height: 1.65 }, angle: [0, 0], speed: [0.6, 2.2], drag: 6, delayMs: [0, 320], lifeMs: [140, 280], size: [0.68, 1.05], scale: [[0, 1.05], [0.5, 0.65]], count: 3 },
     ],
   },
+  {
+    id: 'fx.enemy-fireball',
+    label: 'Enemy red Matrix fireball',
+    family: 'system',
+    trigger: { event: 'PLAYER_DAMAGED', moment: 'enemy-fireball', when: 'an enemy strikes the vibecoder: a blazing red Matrix fireball streaks from the attacker into the hero' },
+    anchor: 'center',
+    durationMs: 440,
+    stepFps: 15,
+    flash: 0.55,
+    light: { zone: 'faultBright', radius: 3.4, power: 1.55, envelope: [[0, 1.3], [0.35, 1.1], [0.72, 0.5]] },
+    layers: [
+      { name: 'core', role: 'primary', zone: 'faultBright', shape: fxStarburst(8, 0.46, 0.23, 0.25), count: 1, emit: 'burst', spin: [-300, 300], lifeMs: [280, 280], scale: [[0, 1.25], [0.4, 1.05], [0.75, 0.72]] },
+      { name: 'glyphs', role: 'primary', zone: 'faultBright', shape: fxMatrixGlyph('fu', 0.28), shapes: fxMatrixGlyphSet(FX_MATRIX_GLYPHS, 0.28), count: 7, emit: 'cone', origin: [0.12, 0], spawn: { radius: [0.08, 0.26] }, angle: [-34, 34], speed: [1.8, 3.1], drag: 4.5, glyphSwapSteps: 2, delayMs: [0, 80], lifeMs: [240, 340], size: [0.9, 1.18], scale: [[0, 1.18], [0.45, 0.9], [0.8, 0.55]] },
+      { name: 'wake', role: 'secondary', zone: 'faultDark', shape: fxDrop(0.38, 0.19), count: 5, emit: 'cone', origin: [0.18, 0], spawn: { radius: [0.1, 0.28] }, angle: [-26, 26], speed: [2.0, 3.4], drag: 5.0, align: true, delayMs: [0, 70], lifeMs: [220, 320], size: [0.88, 1.16], scale: [[0, 1.15], [0.5, 0.82], [0.8, 0.5]] },
+      { name: 'sparks', role: 'accent', zone: 'paper', shape: fxSpark(0.32, 0.11), count: 4, emit: 'cone', origin: [0.06, 0], angle: [-48, 48], speed: [2.4, 3.8], drag: 5.5, align: true, delayMs: [0, 60], lifeMs: [180, 260], size: [0.85, 1.15], scale: [[0, 1.15], [0.55, 0.68]] },
+    ],
+  },
 ];
 
 // Guarded so a hot reload of this module does not throw on re-registration.

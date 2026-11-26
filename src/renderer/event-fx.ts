@@ -135,8 +135,12 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
       const id = agentTauntFx(ev.agent);
       return id ? [cue(id, 'agent', 0, ' ', 0.85)] : [];
     }
+    case 'BATTLE_STARTED': {
+      const id = agentTauntFx(ev.agent);
+      return id ? [cue(id, 'agent', 0, ' ', 0.85)] : [];
+    }
     case 'BATTLE_TURN':
-      // The battle begins: the banner plays once, on the player's first turn (BATTLE_STARTED / ENEMY_ACTING / BATTLE_ENDED have none).
+      // The battle begins: the FIGHT! banner plays once, on the player's first turn (ENEMY_ACTING / BATTLE_ENDED have none).
       return ev.first && ev.actor === 'player' ? [cue('fx.fight', 'panel')] : [];
     case 'GAME_ENDED':
       return [];

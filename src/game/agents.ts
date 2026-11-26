@@ -333,11 +333,12 @@ export function battleAdvice(threats: readonly BattleThreat[]): string {
   return `${lead.type.toUpperCase()}: ${BESTIARY[lead.type].weakness}.${more}`;
 }
 
-/** The terminal lines of a battle intro: the FIGHT banner, the agent's taunt, Kiro.d's advice. */
+/** The terminal lines of a battle intro: the FIGHT banner, turn-based rules, the agent's taunt, Kiro.d's advice. */
 export function battleBanner(ev: Extract<KernelEvent, { type: 'BATTLE_STARTED' }>): string {
   const tag = (agent: AgentName) => `\x1b[${COLOR[agent]}m[${agent === 'kiro' ? 'KIRO.D' : agent.toUpperCase()}]\x1b[0m`;
   return (
     `\x1b[1;33m=== BATTLE #${ev.battle}: ${ev.enemyIds.length} malware in range. You move first. ===\x1b[0m\n` +
+    `\x1b[38;5;214m[COMBAT] Press ENTER to start now! Every command = 1 turn answered by 1 enemy turn (30s timer under your avatar).\x1b[0m\n` +
     `${tag(ev.agent)} ${ev.taunt}\n${tag('kiro')} ${ev.advice}\n`
   );
 }

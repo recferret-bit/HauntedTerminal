@@ -69,6 +69,8 @@ function ruleLines(rule: Rule, cwd: string): ContextCommand[] {
       return [cmd('read it', `cat ${rel(rule.path, cwd)}`)];
     case 'talk_ally':
       return [cmd('talk to the ally', `cat ${rule.socket}`)];
+    case 'riddle_solved':
+      return [cmd('ask the ally', 'hank')];
     case 'file_absent':
       return [cmd('remove it', `rm ${rel(rule.path, cwd)}`)];
     case 'file_contains':

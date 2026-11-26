@@ -39,3 +39,26 @@ node scripts/harness/social-media.mjs infographics
 node scripts/harness/social-media.mjs audio list
 node scripts/harness/social-media.mjs audio plan vo_tiktok_hook
 ```
+
+## Kiroween Project Page Pack
+
+Declarative specs for the 5 size-capped GIFs (`< 5 MB` each) and 10 high-res (`1920x1080`) project-page PNG stills:
+
+| Spec File | Output | Description |
+|---|---|---|
+| `kiroween-01-gameplay.video.json` | `out/kiroween/gifs/01-gameplay.gif` | Matrix Fault -> `chmod -x` Petrify & RAM pickup (`level:2`), `pkill -STOP` ice & `pkill -9` (`level:8`), Matrix Hub `deepseek` (`level:7`). |
+| `kiroween-02-bosses-enemies-fx.video.json` | `out/kiroween/gifs/02-bosses-enemies-fx.gif` | Kernel Boss (`level:11`) fault/`/dev/null`/`SIGKILL`, Exploit (`level:9`), `fx.matrix-cast`, `fx.matrix-fault`, and `boss.forkbomb`. |
+| `kiroween-03-terminal.video.json` | `out/kiroween/gifs/03-terminal.gif` | Matrix Error/OK + `pkill -STOP` across 6 terminal skins, single brief lantern reveal (`level:3`), F1 Field Manual & F3 Map. |
+| `kiroween-04-laptop.video.json` | `out/kiroween/gifs/04-laptop.gif` | In-game `mv laptop ~` pickup -> smooth 3D clamshell lid open & dive -> BIOS + HAUNTED/OS 3.1 splash -> JS Pad & Web Weaver. |
+| `kiroween-05-comix.video.json` | `out/kiroween/gifs/05-comix.gif` | 3D animated Comix Zone intro (`KRAKOOM!`, `KRSSSH!`, `SHLUUURRP!`) and dawn outro return. |
+| `kiroween/screenshots.spec.json` | `out/kiroween/images/*.png` | 10 × `1920x1080` stills: Home, Steam Launch Pass dialog, Desktop Builds, Achievements, all labs, editors & Field Manual. |
+
+```bash
+# Regenerate the 10 Kiroween project-page screenshots
+node scripts/harness/social-media.mjs screenshots --spec social/media/specs/kiroween/screenshots.spec.json --out social/media/out/kiroween/images
+
+# Regenerate the 5 Kiroween video/GIF bundles
+for s in kiroween-01-gameplay kiroween-02-bosses-enemies-fx kiroween-03-terminal kiroween-04-laptop kiroween-05-comix; do
+  node scripts/harness/social-media.mjs video "social/media/specs/${s}.video.json" --out "social/media/out/kiroween/video/${s}"
+done
+```

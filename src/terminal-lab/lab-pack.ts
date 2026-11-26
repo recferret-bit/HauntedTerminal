@@ -136,6 +136,13 @@ function grantsOf(script: LabScript): ChapterGrant[] {
 function levelOf(script: LabScript): LevelSpec {
   const { room, setup } = script;
   const arrival = arrivalSteps(setup);
+  const files = collectFiles(setup);
+  const filePaths = new Set(files.map((f) => f.path));
+  const riddles = setup.flatMap((op) => {
+    if (op.op !== 'riddle') return [];
+    const r = bare(op);
+    return [script.driver === 'classic' && r.opens && !filePaths.has(r.opens) ? { ...r, opens: undefined } : r];
+  });
   const level: LevelSpec = {
     id: LAB_LEVEL_ID,
     index: 1,
@@ -145,10 +152,11 @@ function levelOf(script: LabScript): LevelSpec {
     floorTheme: room.floorTheme,
     mechanic: room.mechanic,
     summary: room.summary,
-    files: collectFiles(setup),
+    files,
     enemies: setup.flatMap((op) => (op.op === 'enemy' ? [bare(op)] : [])),
     pickups: setup.flatMap((op) => (op.op === 'pickup' ? [bare(op)] : [])),
     patches: setup.flatMap((op) => (op.op === 'patch' ? [bare(op)] : [])),
+    ...(riddles.length > 0 ? { riddles } : {}),
     winRules: setup.flatMap((op) => (op.op === 'task' ? [op.rule] : [])),
     solutionCommands: [],
   };

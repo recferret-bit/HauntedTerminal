@@ -147,7 +147,7 @@
           { "tag": "STEP 1", "label": "Browser Demo", "sub": "0 install friction" },
           { "tag": "STEP 2", "label": "Export .json", "sub": "Perks & S-ranks" },
           { "tag": "STEP 3", "label": "Native Tauri v2", "sub": "Mac / Win / Linux" },
-          { "tag": "STEP 4", "label": "Steamworks", "sub": "12 ACH_* + Cloud" }
+          { "tag": "STEP 4", "label": "Steamworks", "sub": "13 ACH_* + Cloud" }
         ]
       },
       "callouts": [
@@ -156,7 +156,7 @@
         { "head": "Built for Streamers & Speedrunners", "body": "Deterministic command counts, F11 fullscreen, 6 terminal skins, and instant restart-level keep runs crisp." }
       ],
       "metrics": [
-        { "value": "12", "label": "STEAM ACH_* KEYS" },
+        { "value": "13", "label": "STEAM ACH_* KEYS" },
         { "value": "3 OS", "label": "MAC · WIN · LINUX" },
         { "value": "0", "label": "EXTERNAL CDNS" },
         { "value": "100%", "label": "SAVE CARRYOVER" }

@@ -1,5 +1,5 @@
 import { ACHIEVEMENT_SPECS, readAchievements } from '../chapters/achievements.js';
-import { CHAPTER_MANIFESTS, buildPlayUrl, readChapterProgress, readMetagame } from '../chapters/catalog.js';
+import { CHAPTER_MANIFESTS, buildPlayUrl, isFieldManualAvailable, readChapterProgress, readMetagame } from '../chapters/catalog.js';
 import { countClearedSectors } from '../chapters/portable-save.js';
 import { isTauriDesktop, querySteamStatus } from '../chapters/steam-bridge.js';
 import { refreshOnSaveChange } from './boot.js';
@@ -25,8 +25,10 @@ function renderHeroTelemetry(runtimeLabel: string): void {
   if (!strip) return;
   const manifest = CHAPTER_MANIFESTS[0];
   const totalLevels = manifest?.levels.length ?? 11;
-  const cleared = countClearedSectors(readChapterProgress());
-  const unlocked = Object.keys(readAchievements().unlocked).length;
+  const progress = readChapterProgress();
+  const cleared = countClearedSectors(progress);
+  const store = readAchievements();
+  const unlocked = Object.keys(store.unlocked).length;
   const scrap = readMetagame().scrap;
   const waitlist = readWaitlistEntry();
 
@@ -46,6 +48,94 @@ function renderHeroTelemetry(runtimeLabel: string): void {
     const resume = findNextUnclearLevel();
     resumeSlot.replaceChildren(
       ...(resume ? [el('a', { class: 'comic-btn paper cta-lg', href: resume.url }, resume.label)] : []),
+    );
+  }
+  renderManualGates(isFieldManualAvailable(store, progress));
+}
+
+function renderManualGates(open: boolean): void {
+  const tty = document.getElementById('home-manual-tty');
+  if (tty) {
+    tty.replaceWith(
+      open
+        ? el(
+            'a',
+            { id: 'home-manual-tty', class: 'tty-mini-line tty-mini-link', href: '/manual.html' },
+            el('b', {}, '$ manual -9'),
+            ' -> ',
+            el('em', {}, 'Open Field Manual Book (flags, chmod, search)'),
+          )
+        : el(
+            'span',
+            { id: 'home-manual-tty', class: 'tty-mini-line' },
+            el('b', {}, '$ manual -9'),
+            ' -> ',
+            el('em', {}, '[LOCKED] Obtain Field Manual at Server Hub #1'),
+          ),
+    );
+  }
+  const demoSlot = document.getElementById('home-manual-demo-slot');
+  if (demoSlot) {
+    demoSlot.replaceChildren(...(open ? [el('a', { class: 'comic-btn teal', href: '/manual.html' }, 'Field Manual')] : []));
+  }
+  const door = document.getElementById('home-manual-door-slot');
+  if (door) {
+    door.replaceWith(
+      open
+        ? el(
+            'a',
+            { id: 'home-manual-door-slot', class: 'door-card door-card-wide', href: '/manual.html' },
+            el(
+              'div',
+              {},
+              el('div', { class: 'door-card-top' }, el('span', { class: 'door-kicker teal' }, 'FIELD MANUAL // F1'), el('span', {}, 'Page-Flipping Book')),
+              el('h3', {}, 'Interactive Unix Terminal Field Manual'),
+              el(
+                'p',
+                {},
+                'Flip through every command, flag (',
+                el('code', {}, 'kill -9'),
+                ', ',
+                el('code', {}, 'rm -rf'),
+                '), live ',
+                el('code', {}, 'chmod'),
+                ' octal/symbolic calculator (',
+                el('code', {}, '755'),
+                '/',
+                el('code', {}, '644'),
+                '/',
+                el('code', {}, '000'),
+                '), regex pattern helper, and instant search — also carried in-game as your ',
+                el('code', {}, 'manual'),
+                ' inventory item (',
+                el('code', {}, 'hold manual'),
+                ' or press ',
+                el('code', {}, 'F1'),
+                ').',
+              ),
+            ),
+            el('span', { class: 'door-go' }, 'Open Field Manual Book'),
+          )
+        : el(
+            'div',
+            { id: 'home-manual-door-slot', class: 'door-card door-card-wide', 'aria-disabled': 'true' },
+            el(
+              'div',
+              {},
+              el('div', { class: 'door-card-top' }, el('span', { class: 'door-kicker' }, 'FIELD MANUAL // LOCKED'), el('span', {}, 'Obtain at Server Hub #1')),
+              el('h3', {}, 'Interactive Unix Terminal Field Manual'),
+              el(
+                'p',
+                {},
+                'Reach Server Hub #1 in Chapter 1 so the Old Bearded Coder hands you the hardcover Field Manual & Motherboard Map — unlocking this standalone book, ',
+                el('code', {}, 'F1'),
+                ' in-game, and ',
+                el('code', {}, 'ACH_FIELD_MANUAL'),
+                '.',
+              ),
+            ),
+            el('span', { class: 'door-go' }, 'Locked — Reach Server Hub #1'),
+          ),
     );
   }
 }

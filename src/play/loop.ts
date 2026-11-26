@@ -30,7 +30,13 @@ function syncPause(play: Play): void {
 
 function paint(play: Play, snap: GameSnapshot): void {
   // No terminal in his inventory (the tutorial start): no panel until it is given, then the visor boot.
+  play.shell.setDialogLocked?.(Boolean(snap.openingDialog));
   syncTerminalPresence(play, snap);
+  if (play.dom.manualBtnEl) {
+    const hideManual = !snap.inventory?.items.includes('manual');
+    play.dom.manualBtnEl.hidden = hideManual;
+    play.dom.manualBtnEl.classList.toggle('hidden', hideManual);
+  }
   play.hud?.update(snap);
   play.menu?.update(snap);
   play.hintDialog?.update(snap);
@@ -113,6 +119,9 @@ function applySlice(play: Play, events: KernelEvent[], snap: GameSnapshot, print
         break;
       case 'PICKUP_COLLECTED':
         play.hud?.pickup(ev.item, ev.label);
+        break;
+      case 'ITEM_GIVEN':
+        play.hud?.itemGiven?.(ev.item);
         break;
       case 'PLAYER_RESPAWNED':
         if (ev.from === 'ssd_backup') play.hud?.backupUsed(ev.hp);

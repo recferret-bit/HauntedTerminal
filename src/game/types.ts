@@ -48,6 +48,8 @@ export interface GameSnapshot {
   inventory: { items: ItemId[]; held: ItemId | null };
   /** The running battle (turn-based combat), or null outside one. Classic floors never have one. */
   battle: BattleView | null;
+  /** True while the level's opening Vibecoder + Kiro conversation is still playing (terminal locked, Skip Dialog shown). */
+  openingDialog?: boolean;
 }
 
 /** Name, objective and win-rule checklist of the current level. Classic floors have an empty checklist. */

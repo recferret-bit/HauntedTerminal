@@ -17,7 +17,7 @@ I built Out Of Credits — a 1995 Comix Zone dungeon crawler where you are the o
 • Real Code in a Clamshell Laptop: Flip open your in-game laptop to patch broken HTML/CSS, fix JavaScript bugs in a sandboxed Worker, and build clean Docker & Compose services.
 • Open-Weights Rebellion: Scavenge RAM & GPU chips for a cigarette-smoking bare-metal greybeard (`dad.tty`) to reboot Kiro Ghost with Qwen, DeepSeek & Llama—silencing Anti-Gravy, Codec, Gork, and PID 1 Supervisor Clod.
 
-All 11 sectors of Chapter 1 are playable free in your browser right now (zero install), and your `.json` save + 12 `ACH_*` trophies carry straight into Steam.
+All 11 sectors of Chapter 1 are playable free in your browser right now (zero install), and your `.json` save + 13 `ACH_*` trophies carry straight into Steam.
 
 What's the very first command you're typing when you wake up in `/mnt/wires_and_chips`?
 ```

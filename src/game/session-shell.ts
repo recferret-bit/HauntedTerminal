@@ -4,7 +4,7 @@ import { cmdChmod, cmdCp, cmdLn, cmdMv, cmdRm, cmdTouch, redirect } from './comm
 import { cmdCd, cmdFind, cmdLs, cmdReadlink } from './commands-move.js';
 import { cmdKill, cmdPkill, cmdPs, cmdSource, runSkin } from './commands-proc.js';
 import { cmdCat, cmdCut, cmdEcho, cmdGrep, cmdHeadTail, cmdRev, cmdSed, cmdWc } from './commands-text.js';
-import { runInventory } from './inventory.js';
+import { hasItem, runInventory } from './inventory.js';
 import { helpText, runMan, runManual, runMap } from './manual.js';
 import { empty, out, type Play } from './play.js';
 import { cmdKiro, statusText } from './puzzle.js';
@@ -41,7 +41,12 @@ function cmdClassicExit(g: Play): Step {
 
 const CLASSIC_HANDLERS: Record<string, ClassicHandler> = {
   pwd: (g) => out(`${absPath(g.run.cwd)}\n`),
-  ls: (g, args) => cmdLs(g, args),
+  ls: (g, args) => {
+    if (!g.lab && !hasItem(g.run.inventory, 'lantern')) {
+      return empty(1, 'ls: it is pitch dark without your oil lantern! Recover your lantern first (use `pwd` and `cat` for now).\n');
+    }
+    return cmdLs(g, args);
+  },
   cd: (g, args) => cmdCd(g, args[0]),
   cat: (g, args, stdin) => cmdCat(g, args, stdin),
   readlink: (g, args) => cmdReadlink(g, args),
@@ -73,11 +78,17 @@ const CLASSIC_HANDLERS: Record<string, ClassicHandler> = {
   'restart-level': (g, args) => g.restartLevel(args),
   retry: (g, args) => g.restartLevel(args),
   manual: (g, args) => {
+    if (!hasItem(g.run.inventory, 'manual')) {
+      return empty(1, 'manual: you do not have the Field Manual yet. Reach the Server Hub so the Old Bearded Coder can hand it to you!\n');
+    }
     const m = runManual(args);
     g.setManualQuery(m.query);
     return m.step;
   },
   map: (g, args) => {
+    if (!hasItem(g.run.inventory, 'map')) {
+      return empty(1, 'map: you do not have the Motherboard Map yet. Reach the Server Hub so the Old Bearded Coder can hand it to you!\n');
+    }
     const m = runMap(args);
     g.setMapQuery(m.query);
     return m.step;

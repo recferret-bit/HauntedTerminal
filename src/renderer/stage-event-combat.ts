@@ -15,8 +15,11 @@ export function handleCombatEvent(stage: ComicStage, ev: KernelEvent, subject: S
     case 'PLAYER_DAMAGED':
       onPlayerDamaged(stage, ev);
       return true;
+    case 'BATTLE_STARTED':
+      onBattleStarted(stage, ev, subject);
+      return true;
     case 'ENEMY_ATTACK':
-      if (subject) enemyAttack(stage, subject);
+      onEnemyAttack(stage, ev, subject);
       return true;
     case 'BATTLE_TURN':
     case 'BATTLE_ENDED':
@@ -76,6 +79,33 @@ function onPlayerDamaged(stage: ComicStage, ev: Extract<KernelEvent, { type: 'PL
   if (ev.hpRemaining <= 0) stage.tweens.delay(450, () => playTear(stage, 'SEGFAULT'));
 }
 
+function onBattleStarted(stage: ComicStage, ev: Extract<KernelEvent, { type: 'BATTLE_STARTED' }>, subject: StageActor | null): void {
+  if (subject && !subject.disposed && !subject.exiting && !subject.dead && subject.modelId.startsWith('agent.')) {
+    if (subject.rest !== 'frozen' && subject.rest !== 'petrified') subject.animator.setState('attack');
+  }
+  const hero = stage.hero();
+  const ids = Array.isArray(ev.enemyIds) ? ev.enemyIds : [];
+  for (const id of ids) {
+    const a = stage.actors.get(id);
+    if (!a || a.disposed || a.exiting || a.dead || a.rest === 'petrified' || a.rest === 'frozen' || a.rest === 'hidden') continue;
+    const dir = hero ? Math.sign(hero.base.x - a.base.x) || -1 : -1;
+    a.animator.setFacing(dir > 0 ? 1 : -1);
+    hopInPlace(stage, a, 0.14, 240);
+    if (!stage.reducedMotion.on) flashActor(stage, a, 0xe8002b, 200, 0);
+  }
+  say(stage, 'BATTLE INCOMING!', anchorPoint(stage, 'panel', null), '#ffd166', 0.8, 1.12);
+}
+
+function onEnemyAttack(stage: ComicStage, ev: Extract<KernelEvent, { type: 'ENEMY_ATTACK' }>, subject: StageActor | null): void {
+  if (!subject) return;
+  enemyAttack(stage, subject);
+  if (subject.exiting || subject.dead || subject.rest === 'petrified' || subject.rest === 'frozen' || subject.rest === 'hidden') return;
+  if (typeof ev.damage === 'number' && ev.damage > 0) {
+    const word = String(ev.attack || 'INCOMING').trim().toUpperCase().slice(0, 18);
+    say(stage, `${word}!`, actorSocket(subject, 'fx'), '#ef476f', 0.95);
+  }
+}
+
 function onEnemyHit(stage: ComicStage, ev: Extract<KernelEvent, { type: 'ENEMY_HIT' }>, subject: StageActor | null): void {
   if (!subject || subject.exiting) return;
   subject.displayHp = Math.max(0, ev.hpRemaining);
@@ -109,8 +139,18 @@ function onPickup(stage: ComicStage, ev: Extract<KernelEvent, { type: 'PICKUP_CO
   const hero = stage.hero();
   const at = subject ? actorSocket(subject, 'fx') : hero ? actorSocket(hero, 'fx') : anchorPoint(stage, 'panel', null);
   // The preset bursts the amount (ev.label); the item's name rises above it.
-  const noun = ev.item === 'energy' ? 'ENERGY CELL' : ev.item === 'ram' ? 'RAM STICK' : 'SSD DRIVE';
-  say(stage, noun, at, ev.item === 'energy' ? '#ffd166' : ev.item === 'ram' ? '#4cc9f0' : '#06d6a0', 1.35);
+  const noun =
+    ev.item === 'energy'
+      ? 'ENERGY CELL'
+      : ev.item === 'ram'
+        ? 'RAM STICK'
+        : ev.item === 'lantern'
+          ? 'OIL LANTERN'
+          : ev.item === 'laptop'
+            ? 'LAPTOP'
+            : 'SSD DRIVE';
+  const tint = ev.item === 'energy' || ev.item === 'lantern' ? '#ffd166' : ev.item === 'ram' || ev.item === 'laptop' ? '#4cc9f0' : '#06d6a0';
+  say(stage, noun, at, tint, 1.35);
   if (hero) hopInPlace(stage, hero, 0.12, 200);
 }
 

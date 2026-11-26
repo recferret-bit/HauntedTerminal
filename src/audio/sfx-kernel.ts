@@ -28,6 +28,7 @@ function fileCues(ev: KernelEvent): SfxId[] {
 
 const SPEAKER_CUES: Record<string, SfxId> = {
   vibecoder: 'dialog_hero',
+  dad: 'socket_crackle',
   antigravy: 'taunt_antigravy_1',
   codec: 'taunt_codec_1',
   gork: 'taunt_gork_1',

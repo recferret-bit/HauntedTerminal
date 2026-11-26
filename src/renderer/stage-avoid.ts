@@ -12,7 +12,7 @@ export interface Box {
 }
 
 /** DOM elements of the page that paint over the stage. */
-export const CHROME_IDS = ['titleblock', 'hud', 'tutorial-card'];
+export const CHROME_IDS = ['titleblock', 'hud', 'tutorial-card', 'skip-dialog-btn', 'battle-callout'];
 
 /** Bottom edge (px, in `base` space) of the stat strip and buttons that paint over the stage top; 0 when absent. */
 export function hudBottom(base: { left: number; top: number }): number {

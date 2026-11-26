@@ -25,6 +25,7 @@ Every `levels/<level-id>/level.spec.json` declares:
   - `file_absent` (`rm <path>`)
   - `file_contains` (`sed -i` or `edit <file>`)
   - `dir_accessible` (`chmod +rx <dir>`)
+  - `riddle_solved` (`echo <answer> > <gate.sock>`)
   - `enemy_neutralized` (`kill`, `rm`, `chmod -x`, or `chmod -w <buffer>`)
   - `html_css_valid` (validated by `validateStorefrontHtmlCss` in `src/chapters/validators.ts`)
   - `cart_js_valid` (validated + test-vector executed by `validateCartJs`)

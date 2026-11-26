@@ -95,19 +95,8 @@
   "script": {
     "arrival": [
       {
-        "kind": "dialogue",
-        "obstacleId": "ally:dad.tty",
-        "speaker": "OLD BEARDED CODER (DAD.TTY)",
-        "portrait": "socket_guardian",
-        "mood": "hinting",
-        "anchorSocket": "dad.tty.sock",
-        "text": "Oh, you've found parts for hosting our second open-weight model, nice! Let's install them in my Matrix server and reboot Kiro.d with kiro load deepseek to disable Codec!",
-        "highlight": ["cat", "dad", "kiro"],
-        "banner": "[OLD BEARDED MATRIX CODER // SERVER HUB #2]"
-      },
-      {
         "kind": "print",
-        "text": "\n[THE MATRIX HUB — /home/dev]\nOLD BEARDED CODER (*smoking his cigarette at the Matrix display*): \"Oh, you've found parts for hosting our second open-weight model, nice! Let's reboot Kiro.d on my server with `kiro load deepseek` to disable Codec!\"\n"
+        "text": "\n[THE MATRIX HUB — /home/dev]\nCigarette smoke curls across the Old Bearded Coder's Matrix CRT as he preps Node #2! Finish talking with him and Kiro.d (or click Skip Dialog ») before Codec taunts.\n"
       }
     ],
     "kiro": {
@@ -128,6 +117,42 @@
           "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder solders the second RAM + GPU bank into the local bus!\n[BIG FOUR TAKEDOWN #2/3] Kiro.d + deepseek-r1-distill-q4.gguf shatter Codec's autocomplete cluster! CODEC DISABLED!\n{foe}\n{kiro}\n"
         }
       }
-    }
+    },
+    "openingSec": 24,
+    "timed": [
+      {
+        "afterSec": 1,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Back at the Matrix Hub with my laptop and our second batch of RAM + GPU chips!",
+            "holdSec": 8
+          }
+        ]
+      },
+      {
+        "afterSec": 9,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "dad",
+            "text": "Oh, you've found parts for hosting our second open-weight model, nice! Let's solder them into my Matrix server so we knock Codec offline next!",
+            "holdSec": 8
+          }
+        ]
+      },
+      {
+        "afterSec": 17,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Once our huddle ends, Codec will taunt us—then run cat open_weights_node2.conf, cat dad.tty.sock, and kiro load deepseek to disable Codec!",
+            "holdSec": 7
+          }
+        ]
+      }
+    ]
   }
 }

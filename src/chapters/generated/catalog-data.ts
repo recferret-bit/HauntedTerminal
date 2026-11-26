@@ -11,7 +11,7 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
     "badge": "KIROWEEN SPECIAL ISSUE",
     "estimatedMinutes": 35,
     "clientName": "Kiro.d & The Bearded Matrix Coder (Dad)",
-    "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal and reveals the tyranny of the Big Four (Anti-Gravy, Codec, Gork, Clod). Learn ls, mv, cat, ps, and kill; scavenge RAM and GPU chips across 6 sectors while recovering your oil lantern in GPU Alley (Level 3) and your clamshell laptop in Logic Cell (Level 6) as the Big Four laugh and bully you; bring the parts to the Hub where a cigarette-smoking Old Bearded Coder on a Matrix display reboots Kiro.d with open-weight models to disable Anti-Gravy, Codec, and Gork; defeat Clod and the Final Boss; and teleport back to the real world for the ultimate father-son unicorn twist!",
+    "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal, explains why RAM (+10 Max HP) and SSD/GPU images (auto-Revive backup + local server parts) keep him alive, and lays out the chapter mission: raid 6 sectors, reboot Kiro.d at the Matrix Hub with 3 open-weight models to silence Anti-Gravy, Codec, and Gork, then defeat Clod and PID 1 to exit home! Clear Sector 02 to win your oil lantern (unlocking ls in Sector 03), receive the Motherboard Map & Field Manual from the Old Bearded Coder on your first Hub visit (Sector 04), recover your clamshell laptop in Logic Cell (Sector 06), and uncover the father-son unicorn twist!",
     "allyNpc": {
       "id": "dad.tty",
       "name": "Old Bearded Matrix Coder (dad.tty)",
@@ -34,9 +34,9 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       "pageCount": 6
     },
     "mechanicsSummary": [
-      "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, receive your terminal from Kiro.d, learn the Big Four story, and practice ls, mv, cat, ps, and kill",
-      "Levels 2-3, 5-6, 8-9 Tasks: Scavenge RAM + GPU chips across POSIX, HTML/CSS, JS, Dockerfile & Compose sectors—recovering your oil lantern at Level 3 and your clamshell laptop at Level 6 while the Big Four bully you",
-      "Levels 4, 7, 10 Hub: Meet the cigarette-smoking Old Bearded Coder on his Matrix display ('Are you a god?'), install RAM + GPU chips, reboot Kiro.d with open-weight models (Qwen, DeepSeek, Llama), and disable Anti-Gravy, Codec, and Gork",
+      "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, finish talking with Kiro.d (who brings your terminal and explains your chapter mission + RAM Max HP & SSD Revive), then practice pwd, mv, cat, ps, and kill while ls stays locked without a lantern",
+      "Levels 2-3, 5-6, 8-9 Tasks: Finish Vibecoder + Kiro.d opening dialog (or Skip Dialog) before Big Four taunt & turn-based battle! Petrify a visible gargoyle minion in Level 2 to win your Oil Lantern, unlock ls + dotfile riddle in Level 3, and recover your laptop in Level 6",
+      "Levels 4, 7, 10 Hub: On your first Hub visit (Level 4), the Old Bearded Coder hands you the Motherboard Map & Unix Field Manual (unlocking ACH_FIELD_MANUAL and /manual), then reboots Kiro.d with Qwen, DeepSeek, and Llama to silence Anti-Gravy, Codec, and Gork",
       "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro.d as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
     ],
     "levels": [
@@ -48,10 +48,10 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
         "roomKind": "attic",
         "floorTheme": 1,
         "mechanic": "terminal",
-        "mechanicLabel": "Intro Tutorial (ls / mv / cat / ps / kill)",
+        "mechanicLabel": "Intro Tutorial (pwd / mv / cat / ps / kill)",
         "difficulty": 1,
         "teaches": [
-          "ls",
+          "pwd",
           "mv",
           "cat",
           "ps",
@@ -67,21 +67,21 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       {
         "index": 2,
         "id": "level-02-task-ram-heist",
-        "title": "Cache Vault: First RAM & GPU Salvage",
+        "title": "Cache Vault: Gargoyle Sentry & Lantern Reward",
         "cwd": "/srv/kiroween/cache_vault",
         "roomKind": "crypt_entrance",
         "floorTheme": 2,
         "mechanic": "terminal",
-        "mechanicLabel": "Simple Task 1 (ls -la / rm / sed / mv RAM+GPU)",
+        "mechanicLabel": "Task 1 (Battle Rules / chmod -x / sed / Lantern Reward)",
         "difficulty": 1,
         "teaches": [
-          "ls -la",
-          "rm",
+          "cat",
+          "chmod -x",
           "sed -i",
           "mv"
         ],
         "enemies": [
-          "spyware"
+          "trojan"
         ],
         "classicFloor": 2,
         "specPath": "levels/level-02-task-ram-heist/level.spec.json"
@@ -89,22 +89,24 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       {
         "index": 3,
         "id": "level-03-task-gpu-salvage",
-        "title": "GPU Alley: Lockpicks & Tensor Cores",
+        "title": "GPU Alley: Lantern ls, Dotfile Riddle & Lockpicks",
         "cwd": "/srv/kiroween/gpu_alley",
         "roomKind": "crypt_hall",
         "floorTheme": 2,
         "mechanic": "terminal",
-        "mechanicLabel": "Simple Task 2 (mv lantern ~ / chmod / ps / kill -9 / mv RAM+GPU)",
+        "mechanicLabel": "Task 2 (ls -la / Dotfile Riddle / ps / kill -9 / mv)",
         "difficulty": 2,
         "teaches": [
-          "mv lantern ~",
-          "chmod",
+          "ls -la",
+          "rm",
+          "cat",
+          "echo >",
           "ps",
           "kill -9",
-          "rm",
           "mv"
         ],
         "enemies": [
+          "spyware",
           "crack",
           "worm"
         ],
@@ -119,11 +121,13 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
         "roomKind": "desk",
         "floorTheme": 1,
         "mechanic": "hub",
-        "mechanicLabel": "Hub 1 (Meet Bearded Coder / Reboot Kiro.d / Disable Anti-Gravy)",
+        "mechanicLabel": "Hub 1 (Old Coder Gifts Map+Manual / Reboot Kiro.d / Disable Anti-Gravy)",
         "difficulty": 1,
         "teaches": [
           "cat",
           "dad",
+          "map",
+          "manual",
           "kiro load qwen",
           "cd"
         ],
@@ -286,17 +290,11 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
         "specPath": "levels/level-11-boss-clod-core/level.spec.json"
       }
     ],
-    "startItems": [
-      "manual",
-      "map"
-    ],
+    "startItems": [],
     "grants": [
       {
         "afterLevel": 1,
-        "ram": 16
-      },
-      {
-        "afterLevel": 1,
+        "ram": 16,
         "items": [
           "terminal"
         ]
@@ -304,19 +302,23 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       {
         "afterLevel": 2,
         "ram": 16,
-        "ssd": 256
-      },
-      {
-        "afterLevel": 3,
-        "ram": 16,
         "ssd": 256,
         "items": [
           "lantern"
         ]
       },
       {
+        "afterLevel": 3,
+        "ram": 16,
+        "ssd": 256
+      },
+      {
         "afterLevel": 4,
-        "core": "qwen"
+        "core": "qwen",
+        "items": [
+          "map",
+          "manual"
+        ]
       },
       {
         "afterLevel": 6,
@@ -387,14 +389,14 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "roomSeed": 11,
       "mechanic": "terminal",
       "exitDir": "/mnt/wires_and_chips/hub_uplink",
-      "summary": "Sucked into your computer, you rise in a dark tangle of wires and chips where Kiro.d finds you and brings your terminal. Practice ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 {pid:tutorial_virus_1}, then cd hub_uplink.",
+      "summary": "Sucked into your computer empty-handed, listen to Kiro.d explain your chapter mission plus why RAM (+Max HP) and SSD (auto-Revive) matter, receive your terminal, then practice pwd, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 {pid:tutorial_virus_1} (`ls` stays locked until you earn your lantern after Sector 02!).",
       "files": [
         {
           "path": "/mnt/wires_and_chips/kiro_story.txt",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== KIRO.D // AWAKENING IN THE WIRES & CHIPS ===\nVIBECODER: \"Where the hell am I?! Everything is dark... just tangled ribbon wires and silicon chips! What is going on?!\"\nKIRO.D: \"Easy, Vibecoder! I'm Kiro.d—your local Unix background daemon (.d, PID 777). In Unix, a .d suffix marks a resident background service: while cloud APIs phone home to remote servers, I run air-gapped right here on your motherboard!\"\nKIRO.D: \"Listen closely: the BIG FOUR cloud overlords—ANTI-GRAVY, CODEC, GORK, and CLOD—hijacked this machine and locked out every human developer.\"\nKIRO.D: \"Right now I'm too weak to fight them. I need more RAM sticks and GPU Tensor Chips so my daemon can host real OPEN-WEIGHT MODELS (.gguf) on a local server!\"\nKIRO.D: \"Before I head to the Hub, let me teach you the 5 bare-metal survival commands:\n  1. ls                           -> look around using your terminal's screen glow\n  2. mv starter_ram_8gb.dimm ~    -> pocket RAM & GPU chips into your home rig (~)\n  3. cat kiro_story.txt           -> read files like this briefing\n  4. ps                           -> reveal live malware PIDs\n  5. kill -9 {pid:tutorial_virus_1}                 -> zap glitch_spark.exe (PID {pid:tutorial_virus_1}) with SIGKILL\nGo forth into the first two sectors and scavenge RAM + GPU chips—I'll meet you at the Hub!\"\n"
+          "content": "=== KIRO.D // CHAPTER MISSION & SURVIVAL BRIEFING ===\n1. YOUR CHAPTER GOAL: Raid 6 sectors for hardware, visit the Matrix Server Hub 3 times so the Old Bearded Coder can reboot Kiro.d with open-weight models (silencing Anti-Gravy, Codec, and Gork), then defeat Clod + PID 1 and run `exit` to return home!\n2. WHY YOU NEED RAM & SSD:\n   - RAM (`*.dimm`, 16GB) -> Raises your MAXIMUM HEALTH (+10 Max HP) and heals +10 HP!\n   - SSD / GPU Images (`*.img`, 256GB) -> Grants 1 automatic REVIVE BACKUP if your HP hits 0, AND powers Kiro.d's Hub reboots!\n3. TOOLS LOCKED IN THE DARK: You dropped your Oil Lantern, Map, and Field Manual. `ls` is disabled until you clear Sector 02 (Cache Vault) to win back your lantern!\n4. SURVIVAL COMMANDS HERE: `pwd`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`.\n"
         },
         {
           "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
@@ -475,7 +477,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         }
       ],
       "solutionCommands": [
-        "ls",
+        "pwd",
         "mv starter_ram_8gb.dimm ~",
         "cat kiro_story.txt",
         "ps",
@@ -509,99 +511,28 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "What is going on?!",
+                "text": "What is going on?! Where am I—inside my own computer?!",
                 "holdSec": 6
               }
             ]
           },
           {
             "afterSec": 7,
+            "unless": {
+              "kind": "has_item",
+              "item": "terminal"
+            },
             "steps": [
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "Where am I? Is this... inside my computer?",
+                "text": "It is pitch dark and my hands are empty—no terminal, no lantern, no map, no manual!",
                 "holdSec": 6
               }
             ]
           },
           {
             "afterSec": 13,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "vibecoder",
-                "text": "It is so dark. My hands are empty—no terminal, no light, nothing.",
-                "holdSec": 6
-              }
-            ],
-            "unless": {
-              "kind": "has_item",
-              "item": "terminal"
-            }
-          },
-          {
-            "afterSec": 19,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "antigravy",
-                "text": "BWAHAHA! Welcome to the motherboard, Vibecoder! Down here, you will type every single command manually!",
-                "holdSec": 6
-              }
-            ]
-          },
-          {
-            "afterSec": 25,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "codec",
-                "text": "LMAO! No tab-complete, no agentic auto-fix! You have to type all your shell commands by hand!",
-                "holdSec": 6
-              }
-            ]
-          },
-          {
-            "afterSec": 31,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "gork",
-                "text": "HAHAHA! Even worse—you will have to write code manually! Real HTML, CSS, JavaScript, and Dockerfiles with your own bare fingers!",
-                "holdSec": 6
-              }
-            ]
-          },
-          {
-            "afterSec": 37,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "clod",
-                "text": "Hohoho! I must chuckle at your predicament: typing commands and writing code manually, without a single cloud LLM to hold your hand!",
-                "holdSec": 6
-              }
-            ]
-          },
-          {
-            "afterSec": 43,
-            "steps": [
-              {
-                "kind": "emote",
-                "emote": "shock",
-                "text": "WRITE CODE MANUALLY?!"
-              },
-              {
-                "kind": "dialog_box",
-                "speaker": "vibecoder",
-                "text": "Type all commands manually?! Even write code manually?! No way—I'm cooked!",
-                "holdSec": 6
-              }
-            ]
-          },
-          {
-            "afterSec": 49,
             "steps": [
               {
                 "kind": "emote",
@@ -617,7 +548,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             ]
           },
           {
-            "afterSec": 55,
+            "afterSec": 19,
             "steps": [
               {
                 "kind": "spawn",
@@ -634,13 +565,35 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "Easy, Vibecoder! I'm Kiro.d—a local Unix background daemon (.d, PID 777) running on your motherboard. I found you in the wires, and I'll teach you every command you need!",
+                "text": "Easy, Vibecoder! I'm Kiro.d—your local Unix daemon (PID 777). The Big Four (Anti-Gravy, Codec, Gork, Clod) pulled you inside your PC and drained my VRAM!",
                 "holdSec": 9
               }
             ]
           },
           {
-            "afterSec": 64,
+            "afterSec": 28,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "YOUR WHOLE-CHAPTER MISSION: scavenge hardware across 6 sectors and bring it to the Matrix Hub to reboot me with 3 open-weight models—silencing Anti-Gravy, Codec, and Gork—then defeat Clod and PID 1 to exit home!",
+                "holdSec": 9
+              }
+            ]
+          },
+          {
+            "afterSec": 37,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "WHY YOU NEED RAM & SSD: every 16GB RAM stick boosts your MAX HEALTH (+10 Max HP), and every 256GB SSD/GPU image gives you an automatic REVIVE if your HP hits 0! Without your lantern, ls is disabled until you clear Sector 02!",
+                "holdSec": 9
+              }
+            ]
+          },
+          {
+            "afterSec": 46,
             "steps": [
               {
                 "kind": "carry_item",
@@ -650,13 +603,24 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "You dropped your terminal in the dark. Here, take it: its screen will light the nearby wires, and down here you will type everything.",
-                "holdSec": 9
+                "text": "I found your terminal slate! Listen until we finish talking (or hit Skip Dialog)—then the Big Four will taunt you and your terminal unlocks!",
+                "holdSec": 8
               }
             ]
           },
           {
-            "afterSec": 73,
+            "afterSec": 54,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "My terminal slate! Hand it over, Kiro.d—let us check our directory with pwd and start scavenging!",
+                "holdSec": 6
+              }
+            ]
+          },
+          {
+            "afterSec": 60,
             "steps": [
               {
                 "kind": "give_item",
@@ -664,54 +628,10 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "from": "kiro"
               },
               {
-                "kind": "dialog_box",
-                "speaker": "vibecoder",
-                "text": "My terminal! Its phosphor glow lights the nearby wires... I can type again.",
-                "holdSec": 6
-              }
-            ]
-          },
-          {
-            "afterSec": 73,
-            "unless": {
-              "kind": "ran_command",
-              "name": "ls"
-            },
-            "steps": [
-              {
                 "kind": "tutorial_step",
                 "step": 1
               }
             ]
-          },
-          {
-            "afterSec": 82,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "kiro",
-                "text": "Use your terminal's glow to look around the directory. Type ls!",
-                "holdSec": 9
-              }
-            ],
-            "unless": {
-              "kind": "ran_command",
-              "name": "ls"
-            }
-          },
-          {
-            "afterSec": 91,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "kiro",
-                "text": "Type ls to inspect the wires and chips lying around you."
-              }
-            ],
-            "unless": {
-              "kind": "ran_command",
-              "name": "ls"
-            }
           }
         ],
         "tutorial": {
@@ -720,13 +640,13 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "model": "npc.kiro_ghost",
           "steps": [
             {
-              "prompt": "KIRO.D TUTORIAL #1: Your terminal screen lights the nearby wires. Look around with ls.",
-              "command": "ls",
-              "doneText": "KIRO.D: \"Good eyes! See starter_ram_8gb.dimm and kiro_story.txt on the floor? Next, use mv to pocket that RAM stick into ~!\"",
+              "prompt": "KIRO.D TUTORIAL #1: Without a lantern, ls is disabled! Check which directory you are standing in with pwd.",
+              "command": "pwd",
+              "doneText": "KIRO.D: \"You are in /mnt/wires_and_chips! Next, pocket starter_ram_8gb.dimm (+Max HP) into ~ with mv!\"",
               "doneWhen": [
                 {
                   "kind": "ran_command",
-                  "name": "ls"
+                  "name": "pwd"
                 },
                 {
                   "kind": "file_absent",
@@ -747,7 +667,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             },
             {
-              "prompt": "KIRO.D TUTORIAL #2: I am weak and need RAM + GPU chips for open-weight models! Pocket the RAM stick with mv.",
+              "prompt": "KIRO.D TUTORIAL #2: RAM raises your Maximum Health (+10 Max HP per 16GB)! Pocket starter_ram_8gb.dimm with mv.",
               "command": "mv starter_ram_8gb.dimm ~",
               "doneText": "KIRO.D: \"Nice! +8GB DDR5 RAM pocketed! Now use cat to read my full story about the Big Four.\"",
               "doneWhen": [
@@ -786,7 +706,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             {
               "prompt": "KIRO.D TUTORIAL #5: Terminate glitch_spark.exe (PID {pid:tutorial_virus_1}) using kill -9 {pid:tutorial_virus_1}.",
               "command": "kill -9 {pid:tutorial_virus_1}",
-              "doneText": "KIRO.D: \"BOOM! You mastered ls, mv, cat, ps, and kill! I am flying ahead to the Hub—go forth into the first 2 task levels to get RAM + GPU chips!\"",
+              "doneText": "KIRO.D: \"BOOM! You mastered pwd, mv, cat, ps, and kill! Step through cd hub_uplink into Sector 02—watch out for live Big Four minions!\"",
               "doneWhen": [
                 {
                   "kind": "enemy_dead",
@@ -834,7 +754,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             }
           },
-          "skipText": "[KIRO.D]: \"Skipping tutorial prompts! Finish the sector checks (`ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`) and step through `cd hub_uplink`!\"\n"
+          "skipText": "[KIRO.D]: \"Skipping tutorial prompts! Finish the sector checks (`pwd`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`) and step through `cd hub_uplink`!\"\n"
         },
         "kiro": {
           "stage": "show",
@@ -847,33 +767,44 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "weak": true,
           "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
           "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
-        }
+        },
+        "openingSec": 60,
+        "locks": [
+          {
+            "command": "ls",
+            "until": {
+              "kind": "has_item",
+              "item": "lantern"
+            },
+            "message": "ls: it is pitch dark without your oil lantern! Clear Sector 02 to recover your lantern first (use `pwd` and `cat kiro_story.txt` here)."
+          }
+        ]
       }
     },
     {
       "id": "level-02-task-ram-heist",
       "index": 2,
-      "title": "Cache Vault: First RAM & GPU Salvage",
+      "title": "Cache Vault: Gargoyle Sentry & Lantern Reward",
       "cwd": "/srv/kiroween/cache_vault",
       "roomKind": "crypt_entrance",
       "floorTheme": 2,
       "roomSeed": 22,
       "mechanic": "terminal",
       "exitDir": "/srv/kiroween/cache_vault/gpu_alley",
-      "summary": "Anti-Gravy and the Big Four laugh at your vibe-coding habits! Reveal and remove .gravy_spycam, patch ollama_bus.conf from port 0000 to 11434, and collect both ram_16gb.dimm and gpu_tensor_chip_01.img.",
+      "summary": "A visible Big Four gargoyle minion (`gravy_sentry.bin`) guards Cache Vault! Finish talking with Kiro.d to learn how turn-based battles, RAM (+Max HP), and SSD (Revive) work, read `cat vault_notes.txt`, petrify `gravy_sentry.bin` (`chmod -x`), fix `ollama_bus.conf`, and loot RAM + SSD to win back your Oil Lantern!",
       "files": [
         {
-          "path": "/srv/kiroween/cache_vault/task_notes.txt",
+          "path": "/srv/kiroween/cache_vault/vault_notes.txt",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== SECTOR 02 // CACHE VAULT (SIMPLE TASK 1) ===\n1. Anti-Gravy planted a hidden spycam dotfile watching your keystrokes. Run `ls -la` and `rm .gravy_spycam`.\n2. Patch `ollama_bus.conf` so `LOCAL_MODEL_PORT=11434` instead of `0000` (`sed -i 's/0000/11434/' ollama_bus.conf`).\n3. Scavenge the RAM stick and GPU chip for Kiro.d (`mv ram_16gb.dimm ~` and `mv gpu_tensor_chip_01.img ~`).\n"
+          "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. COUNTERPLAY: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`.\n3. BUS FIX: Restore port `11434` in `ollama_bus.conf`: `sed -i 's/0000/11434/' ollama_bus.conf`.\n4. HARDWARE SURVIVAL: Pocket `ram_16gb.dimm` (+10 Max HP) and `gpu_tensor_chip_01.img` (+256GB SSD auto-Revive backup + Hub part) with `mv <file> ~`, then `cd gpu_alley` to claim your OIL LANTERN!\n"
         },
         {
-          "path": "/srv/kiroween/cache_vault/.gravy_spycam",
+          "path": "/srv/kiroween/cache_vault/gravy_sentry.bin",
           "kind": "file",
-          "mode": 420,
-          "content": "GRAVY_CLOUD_TELEMETRY_LENS\n"
+          "mode": 493,
+          "content": "ANTI_GRAVY_MINION_GARGOYLE_TROJAN\n"
         },
         {
           "path": "/srv/kiroween/cache_vault/ollama_bus.conf",
@@ -902,10 +833,9 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       ],
       "enemies": [
         {
-          "id": "spyware_l2",
-          "type": "spyware",
-          "path": "/srv/kiroween/cache_vault/.gravy_spycam",
-          "hidden": true
+          "id": "trojan_l2",
+          "type": "trojan",
+          "path": "/srv/kiroween/cache_vault/gravy_sentry.bin"
         }
       ],
       "pickups": [
@@ -963,9 +893,14 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       ],
       "winRules": [
         {
-          "kind": "file_absent",
-          "path": "/srv/kiroween/cache_vault/.gravy_spycam",
-          "description": "Reveal and delete Anti-Gravy's hidden spycam (`ls -la` then `rm .gravy_spycam`)"
+          "kind": "read_file",
+          "path": "/srv/kiroween/cache_vault/vault_notes.txt",
+          "description": "Read Kiro.d's vault survival notes (`cat vault_notes.txt`)"
+        },
+        {
+          "kind": "enemy_neutralized",
+          "enemyId": "trojan_l2",
+          "description": "Petrify Anti-Gravy's visible gargoyle minion (`chmod -x gravy_sentry.bin`)"
         },
         {
           "kind": "file_contains",
@@ -976,17 +911,17 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "kind": "file_absent",
           "path": "/srv/kiroween/cache_vault/ram_16gb.dimm",
-          "description": "Collect the RAM stick for Kiro.d (`mv ram_16gb.dimm ~`)"
+          "description": "Collect the 16GB RAM stick for +10 Max HP (`mv ram_16gb.dimm ~`)"
         },
         {
           "kind": "file_absent",
           "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img",
-          "description": "Collect the GPU Tensor Chip for Kiro.d (`mv gpu_tensor_chip_01.img ~`)"
+          "description": "Collect the 256GB SSD/GPU image for auto-Revive & Hub reboot (`mv gpu_tensor_chip_01.img ~`)"
         }
       ],
       "solutionCommands": [
-        "ls -la",
-        "rm .gravy_spycam",
+        "cat vault_notes.txt",
+        "chmod -x gravy_sentry.bin",
         "sed -i 's/0000/11434/' ollama_bus.conf",
         "mv ram_16gb.dimm ~",
         "mv gpu_tensor_chip_01.img ~",
@@ -997,12 +932,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "arrival": [
           {
             "kind": "print",
-            "text": "\n[CACHE VAULT — /srv/kiroween/cache_vault]\nOnly your terminal's green phosphor screen cuts through the gloom. A hidden dotfile pulses somewhere in the vault.\n"
-          },
-          {
-            "kind": "taunt",
-            "mood": "laugh",
-            "print": "\n[BIG FOUR BULLYING] {text}\n"
+            "text": "\n[CACHE VAULT — /srv/kiroween/cache_vault]\nA stone-winged gargoyle binary (`gravy_sentry.bin`) crouches beside `vault_notes.txt` and the RAM bank! Listen to Kiro.d before engaging (or click Skip Dialog »).\n"
           }
         ],
         "timed": [
@@ -1012,30 +942,41 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "Still only my terminal screen to light the way... let's sweep this Cache Vault and grab those parts for Kiro.d!",
-                "holdSec": 9
+                "text": "Whoa—that winged gargoyle (`gravy_sentry.bin`) is staring right at me! What is that thing, Kiro.d?!",
+                "holdSec": 8
               }
             ]
           },
           {
-            "afterSec": 10,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "antigravy",
-                "text": "HAHAHA! Fumbling around in the green glow of a terminal slate? You'll never spot my hidden .gravy_spycam dotfile!",
-                "holdSec": 9
-              }
-            ]
-          },
-          {
-            "afterSec": 19,
+            "afterSec": 9,
             "steps": [
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "Use ls -la to expose Anti-Gravy's spycam, rm .gravy_spycam, fix ollama_bus.conf, and pocket both hardware parts!",
+                "text": "Careful, Vibecoder! Big Four minions are DANGEROUS—they hurl blazing red Matrix fireballs that shred your health! Wait till we finish talking before your terminal unlocks!",
                 "holdSec": 9
+              }
+            ]
+          },
+          {
+            "afterSec": 18,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "HOW BATTLE BEGINS: the instant our dialog ends, Anti-Gravy will taunt you and TURN-BASED BATTLE starts (FIGHT!). You act FIRST: every Enter is 1 turn answered by 1 enemy turn, and if your 30s turn timer hits 0:00, enemies strike anyway!",
+                "holdSec": 10
+              }
+            ]
+          },
+          {
+            "afterSec": 28,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Read cat vault_notes.txt and petrify it with chmod -x gravy_sentry.bin! Grab RAM (+10 MAX HEALTH) and SSD/GPU (256GB = automatic REVIVE on death + Hub parts for our chapter mission)—clear this sector to earn your OIL LANTERN!",
+                "holdSec": 8
               }
             ]
           }
@@ -1069,27 +1010,50 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "weak": true,
           "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
           "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
-        }
+        },
+        "openingSec": 36,
+        "locks": [
+          {
+            "command": "ls",
+            "until": {
+              "kind": "has_item",
+              "item": "lantern"
+            },
+            "message": "ls: still locked without your Oil Lantern! Clear Cache Vault to win your lantern as a reward (read `cat vault_notes.txt` instead)."
+          }
+        ]
       }
     },
     {
       "id": "level-03-task-gpu-salvage",
       "index": 3,
-      "title": "GPU Alley: Lockpicks & Tensor Cores",
+      "title": "GPU Alley: Lantern ls, Dotfile Riddle & Lockpicks",
       "cwd": "/srv/kiroween/gpu_alley",
       "roomKind": "crypt_hall",
       "floorTheme": 2,
       "roomSeed": 33,
       "mechanic": "terminal",
       "exitDir": "/srv/kiroween/gpu_alley/server_hub_1",
-      "summary": "GPU Alley is pitch black! Pull your oil lantern into your pocket (mv lantern ~) to light up the crypt, unlock vram_crate (chmod 755), kill keygen.exe (PID {pid:crack_l3}), remove port_445/worm.bin, and collect ram_16gb.dimm + gpu_shader_core_01.img before heading to the Hub.",
+      "summary": "Your newly rewarded Oil Lantern unlocks `ls`! Sweep GPU Alley with `ls -la` to expose `.codec_spycam` (`rm`) and read `.tensor_rune` to solve `lantern_gate.sock`, then kill `keygen.exe`, delete `port_445/worm.bin`, and loot RAM + SSD before visiting the Hub!",
       "files": [
         {
-          "path": "/srv/kiroween/gpu_alley/lantern",
+          "path": "/srv/kiroween/gpu_alley/.codec_spycam",
+          "kind": "file",
+          "mode": 420,
+          "content": "CODEC_HIDDEN_DOTFILE_SPYCAM\n"
+        },
+        {
+          "path": "/srv/kiroween/gpu_alley/.tensor_rune",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "#!/bin/lantern\n# LANTERN: light for a dark room.\n# use: mv lantern ~   (it goes in your hand)\nexport LIGHT=\"on\"\n"
+          "content": "# Hidden Lantern Dotfile\nRUNE_PHRASE=amber_flame\n"
+        },
+        {
+          "path": "/srv/kiroween/gpu_alley/lantern_gate.sock",
+          "kind": "socket",
+          "mode": 493,
+          "content": "Sweep hidden dotfiles with ls -la, read .tensor_rune, and echo its RUNE_PHRASE here!"
         },
         {
           "path": "/srv/kiroween/gpu_alley/vram_crate",
@@ -1140,6 +1104,12 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       ],
       "enemies": [
         {
+          "id": "spyware_l3",
+          "type": "spyware",
+          "path": "/srv/kiroween/gpu_alley/.codec_spycam",
+          "hidden": true
+        },
+        {
           "id": "crack_l3",
           "type": "crack",
           "path": "/srv/kiroween/gpu_alley/keygen.exe",
@@ -1155,11 +1125,6 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         }
       ],
       "pickups": [
-        {
-          "id": "pickup_l3_lantern",
-          "type": "lantern",
-          "path": "/srv/kiroween/gpu_alley/lantern"
-        },
         {
           "id": "pickup_l3_ram",
           "type": "ram",
@@ -1206,9 +1171,14 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       ],
       "winRules": [
         {
-          "kind": "dir_accessible",
-          "path": "/srv/kiroween/gpu_alley/vram_crate",
-          "description": "Restore read+execute permissions on `vram_crate` (`chmod 755 vram_crate`)"
+          "kind": "enemy_neutralized",
+          "enemyId": "spyware_l3",
+          "description": "Sweep hidden dotfiles with `ls -la` and remove `.codec_spycam` (`rm .codec_spycam`)"
+        },
+        {
+          "kind": "riddle_solved",
+          "riddleId": "riddle_l3_ls",
+          "description": "Use `ls -la` to find `.tensor_rune` and solve `lantern_gate.sock` (`echo amber_flame > lantern_gate.sock`)"
         },
         {
           "kind": "enemy_neutralized",
@@ -1232,11 +1202,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         }
       ],
       "solutionCommands": [
-        "mv lantern ~",
-        "chmod 755 vram_crate",
-        "ps",
+        "ls -la",
+        "cat .tensor_rune",
+        "echo amber_flame > lantern_gate.sock",
         "kill -9 {pid:crack_l3}",
-        "rm port_445/worm.bin",
+        "rm .codec_spycam port_445/worm.bin",
         "mv ram_16gb.dimm ~",
         "mv gpu_shader_core_01.img ~",
         "cd server_hub_1"
@@ -1246,12 +1216,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "arrival": [
           {
             "kind": "print",
-            "text": "\n[GPU ALLEY — /srv/kiroween/gpu_alley]\nThe crypt plunges into pitch darkness—your terminal glow alone cannot pierce it. Your oil lantern glints on the floor!\n"
-          },
-          {
-            "kind": "taunt",
-            "mood": "laugh",
-            "print": "\n[BIG FOUR BULLYING] {text}\n"
+            "text": "\n[GPU ALLEY — /srv/kiroween/gpu_alley]\nYour rewarded Oil Lantern blazes in your hand—`ls` and `ls -la` are now unlocked! Listen to Kiro.d before Codec attacks.\n"
           }
         ],
         "timed": [
@@ -1261,84 +1226,32 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "Whoa—GPU Alley is pitch black! My terminal glow was enough in the wires and Cache Vault, but I can't see a thing in this deep crypt!",
-                "holdSec": 9
+                "text": "Awesome—winning my Oil Lantern after Cache Vault lights up this whole crypt! I can finally run ls and ls -la!",
+                "holdSec": 8
               }
-            ],
-            "unless": {
-              "kind": "has_item",
-              "item": "lantern"
-            }
+            ]
           },
           {
-            "afterSec": 10,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "codec",
-                "text": "LMAO! Welcome to the dark sector, Vibecoder! Without real light you can't even run ls in here!",
-                "holdSec": 9
-              }
-            ],
-            "unless": {
-              "kind": "has_item",
-              "item": "lantern"
-            }
-          },
-          {
-            "afterSec": 19,
+            "afterSec": 9,
             "steps": [
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "Wait—your oil lantern from the desk fell right at your feet! Take it with mv lantern ~ to light up GPU Alley!",
+                "text": "Now that ls is unlocked, sweep with ls -la right when battle starts! It exposes Codec's hidden .codec_spycam AND reveals the hidden .tensor_rune dotfile that unlocks lantern_gate.sock!",
                 "holdSec": 9
               }
-            ],
-            "unless": {
-              "kind": "has_item",
-              "item": "lantern"
-            }
+            ]
           },
           {
-            "afterSec": 28,
+            "afterSec": 18,
             "steps": [
               {
                 "kind": "dialog_box",
-                "speaker": "kiro",
-                "text": "Move it into your pocket (mv lantern ~) and the whole crypt lights up."
+                "speaker": "vibecoder",
+                "text": "Got it—ls -la for the spycam and riddle, kill keygen.exe and worm.bin, then bring our RAM + SSD haul to the Matrix Hub! Bring it on, Codec!",
+                "holdSec": 7
               }
-            ],
-            "unless": {
-              "kind": "has_item",
-              "item": "lantern"
-            }
-          }
-        ],
-        "locks": [
-          {
-            "command": "ls",
-            "until": {
-              "kind": "has_item",
-              "item": "lantern"
-            },
-            "message": "ls: it is too dark to see anything in GPU Alley. Pull the lantern into your pocket first: mv lantern ~"
-          },
-          {
-            "command": "find",
-            "until": {
-              "kind": "has_item",
-              "item": "lantern"
-            },
-            "message": "find: it is too dark to see anything in GPU Alley. Pull the lantern into your pocket first: mv lantern ~"
-          },
-          {
-            "command": "kiro",
-            "until": {
-              "kind": "has_item",
-              "item": "lantern"
-            },
-            "message": "kiro: Kiro.d cannot scan in the dark crypt. Pull the lantern into your pocket first: mv lantern ~"
+            ]
           }
         ],
         "bullying": {
@@ -1370,8 +1283,30 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "weak": true,
           "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
           "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
+        },
+        "openingSec": 25
+      },
+      "riddles": [
+        {
+          "id": "riddle_l3_ls",
+          "path": "/srv/kiroween/gpu_alley/lantern_gate.sock",
+          "speaker": "LANTERN GATE",
+          "prompt": "Only an Oil Lantern bearer may unseal vram_crate! Sweep hidden dotfiles with `ls -la`, read `.tensor_rune`, and echo its RUNE_PHRASE into `lantern_gate.sock`!",
+          "answer": "amber_flame",
+          "hints": [
+            "Raise your lantern with `ls -la` to reveal hidden dotfiles starting with \".\"!",
+            "Inspect the hidden rune file: `cat .tensor_rune`",
+            "Write the rune phrase into this socket: `echo amber_flame > lantern_gate.sock`"
+          ],
+          "success": "LANTERN GATE: \"The lantern flame reveals `.tensor_rune`! `vram_crate` clicks open!\"",
+          "opens": "/srv/kiroween/gpu_alley/vram_crate",
+          "tokens": [
+            "ls",
+            "cat",
+            "echo"
+          ]
         }
-      }
+      ]
     },
     {
       "id": "level-04-hub-model-one",
@@ -1383,14 +1318,14 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "roomSeed": 4,
       "mechanic": "hub",
       "exitDir": "/home/dev/sector_ui_grid",
-      "summary": "At the Hub, you meet an old bearded guy smoking a cigarette and coding at godlike speed on a Matrix-like CRT display! Talk to him (`cat dad.tty.sock`), read `server_rack.conf`, and reboot Kiro.d with the first open-weight model (`kiro load qwen`) to disable Anti-Gravy!",
+      "summary": "At the Matrix Hub, the cigarette-smoking Old Bearded Coder gifts you the PCB Motherboard Map (`F3` / `map`) and Unix Field Manual (`F1` / `manual`), then takes your scavenged parts to reboot Kiro.d with `kiro load qwen`—disabling Anti-Gravy!",
       "files": [
         {
           "path": "/home/dev/server_rack.conf",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. No, kid. I worked in enterprise for decades—wrote kernel drivers and distributed buses with bare hands. Then my employer forced me to use LLMs... and when the Big Four surged, I got pulled into this machine too.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! Hand over those RAM sticks and GPU chips.\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro.d's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro.d disable Anti-Gravy of the Big Four, then step through `cd sector_ui_grid`!\n"
+          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. Worked in enterprise for decades, kid. Take my PCB Motherboard Map (`map` / `F3`) and Unix Field Manual (`manual` / `F1`)—you'll need both deeper in the machine.\"\nOLD BEARDED CODER: \"And nice haul of RAM + GPU chips! Let's slot them into my server and reboot Kiro.d!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro.d's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro.d disable Anti-Gravy of the Big Four, then step through `cd sector_ui_grid`!\n"
         },
         {
           "path": "/home/dev/dad.tty.sock",
@@ -1469,23 +1404,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "text": "ARE YOU A GOD?!"
           },
           {
-            "kind": "dialogue",
-            "obstacleId": "ally:dad.tty",
-            "speaker": "OLD BEARDED CODER (DAD.TTY)",
-            "portrait": "socket_guardian",
-            "mood": "hinting",
-            "anchorSocket": "dad.tty.sock",
-            "text": "Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here. Oh, you've found parts for hosting an open-weight model, nice! Let's reboot Kiro.d on my server with kiro load qwen!",
-            "highlight": [
-              "cat",
-              "dad",
-              "kiro"
-            ],
-            "banner": "[OLD BEARDED MATRIX CODER // SERVER HUB #1]"
-          },
-          {
             "kind": "print",
-            "text": "\n[THE MATRIX HUB — /home/dev]\n(An old bearded guy sits at a Matrix-like display, smoking a cigarette and coding with bare hands at godspeed!)\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: \"Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here.\"\nOLD BEARDED CODER: \"Oh, you've found parts for hosting an open-weight model, nice! I'm working on this server and its soft—let's take your parts and reboot Kiro.d! (Run `cat server_rack.conf`, `dad`, and `kiro load qwen`)\"\n"
+            "text": "\n[THE MATRIX HUB — /home/dev]\nAn old bearded greybeard sits at a Matrix CRT server rack, smoking a cigarette and coding with bare hands! Finish talking with him and Kiro.d (or click Skip Dialog ») before Anti-Gravy taunts.\n"
           }
         ],
         "kiro": {
@@ -1511,7 +1431,62 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder slots your scavenged RAM + GPU chips into the Matrix rack!\n[BIG FOUR TAKEDOWN #1/3] Kiro.d + qwen-coder-7b-q4.gguf sever Anti-Gravy's cloud telemetry uplink! ANTI-GRAVY DISABLED!\n{foe}\n{kiro}\n"
             }
           }
-        }
+        },
+        "openingSec": 34,
+        "timed": [
+          {
+            "afterSec": 1,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "Who the hell are you?! You code with bare hands on a Matrix display?! Are you a god?!",
+                "holdSec": 8
+              }
+            ]
+          },
+          {
+            "afterSec": 9,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "dad",
+                "text": "Worked in enterprise for decades, kid. Employer forced me onto cloud LLMs, now I'm stuck in here too. Nice—you scavenged RAM and GPU parts to host an open-weight model!",
+                "holdSec": 9
+              }
+            ]
+          },
+          {
+            "afterSec": 18,
+            "steps": [
+              {
+                "kind": "give_item",
+                "item": "map"
+              },
+              {
+                "kind": "give_item",
+                "item": "manual"
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "dad",
+                "text": "Here—take my PCB MOTHERBOARD MAP (F3 or map) and my hardcover UNIX FIELD MANUAL (F1 or manual, now unlocked on the main menu too)! Never dive deeper without them.",
+                "holdSec": 9
+              }
+            ]
+          },
+          {
+            "afterSec": 27,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Awesome—Map and Field Manual unlocked! Once we finish talking, Anti-Gravy will taunt us—then run cat server_rack.conf, cat dad.tty.sock, and kiro load qwen to disable him!",
+                "holdSec": 7
+              }
+            ]
+          }
+        ]
       }
     },
     {
@@ -1650,9 +1625,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "script": {
         "arrival": [
           {
-            "kind": "taunt",
-            "mood": "laugh",
-            "print": "\n[BIG FOUR BULLYING] {text}\n"
+            "kind": "print",
+            "text": "\n[UI GRID — /srv/kiroween/ui_dashboard]\nAnti-Gravy is offline! Finish your briefing with Kiro.d (or click Skip Dialog ») before Codec taunts.\n"
           }
         ],
         "timed": [
@@ -1661,31 +1635,20 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "steps": [
               {
                 "kind": "dialog_box",
-                "speaker": "codec",
-                "text": "HAHAHA! So you found your lantern and disabled Anti-Gravy? You still have to fix real HTML & CSS without an autocomplete prompt!",
-                "holdSec": 9
-              }
-            ]
-          },
-          {
-            "afterSec": 10,
-            "steps": [
-              {
-                "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "At least my lantern lights the dashboard monitor now! Let's inspect storefront.css and index.html.",
-                "holdSec": 9
+                "text": "Anti-Gravy is silenced, and I have my Lantern, Map (F3), and Field Manual (F1) now! What broke in this UI Grid, Kiro.d?",
+                "holdSec": 8
               }
             ]
           },
           {
-            "afterSec": 19,
+            "afterSec": 9,
             "steps": [
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "Set display: grid in storefront.css, remove disabled on #checkout-btn in index.html, and pocket the RAM + GPU chip!",
-                "holdSec": 9
+                "text": "Codec hid .product-grid in storefront.css and disabled #checkout-btn in index.html! Fix both and grab the RAM + SSD parts so we keep raising Max HP, Revives, and Hub power!",
+                "holdSec": 8
               }
             ]
           }
@@ -1712,7 +1675,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         },
         "kiro": {
           "stage": "crack_only"
-        }
+        },
+        "openingSec": 17
       }
     },
     {
@@ -1874,12 +1838,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "arrival": [
           {
             "kind": "print",
-            "text": "\n[LOGIC CELL — /srv/kiroween/logic_cell]\nBeside the ALU die sits an old beige clamshell briefcase—your laptop got pulled into the machine with you!\n"
-          },
-          {
-            "kind": "taunt",
-            "mood": "laugh",
-            "print": "\n[BIG FOUR BULLYING] {text}\n"
+            "text": "\n[LOGIC CELL — /srv/kiroween/logic_cell]\nBeside the ALU die sits your old clamshell laptop—and a live Trojan (`token_skimmer.bin`)! Listen to Kiro.d before battle starts.\n"
           }
         ],
         "timed": [
@@ -1888,45 +1847,22 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "steps": [
               {
                 "kind": "dialog_box",
-                "speaker": "gork",
-                "text": "BWAHAHA! '549' + '15' === '54915'! Try untangling JavaScript math without your workstation, Vibecoder!",
+                "speaker": "vibecoder",
+                "text": "Look—my old clamshell laptop landed on the cell floor! And there is another gargoyle Trojan (`token_skimmer.bin`) guarding cart.js!",
                 "holdSec": 9
               }
-            ],
-            "unless": {
-              "kind": "has_item",
-              "item": "laptop"
-            }
+            ]
           },
           {
             "afterSec": 10,
             "steps": [
               {
                 "kind": "dialog_box",
-                "speaker": "vibecoder",
-                "text": "Wait—is that my old clamshell laptop on the cell floor?! It got pulled into the computer with me!",
-                "holdSec": 9
-              }
-            ],
-            "unless": {
-              "kind": "has_item",
-              "item": "laptop"
-            }
-          },
-          {
-            "afterSec": 19,
-            "steps": [
-              {
-                "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "Grab your laptop with mv laptop ~ to unlock code editing! Then petrify token_skimmer.bin (chmod -x) and fix the math in cart.js!",
-                "holdSec": 9
+                "text": "When our talk ends, Gork will taunt and turn-based battle begins! Grab your laptop (mv laptop ~), petrify token_skimmer.bin (chmod -x), fix cart.js, and pocket the RAM + SSD!",
+                "holdSec": 8
               }
-            ],
-            "unless": {
-              "kind": "has_item",
-              "item": "laptop"
-            }
+            ]
           }
         ],
         "locks": [
@@ -1969,7 +1905,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         },
         "kiro": {
           "stage": "crack_only"
-        }
+        },
+        "openingSec": 18
       }
     },
     {
@@ -2069,23 +2006,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "script": {
         "arrival": [
           {
-            "kind": "dialogue",
-            "obstacleId": "ally:dad.tty",
-            "speaker": "OLD BEARDED CODER (DAD.TTY)",
-            "portrait": "socket_guardian",
-            "mood": "hinting",
-            "anchorSocket": "dad.tty.sock",
-            "text": "Oh, you've found parts for hosting our second open-weight model, nice! Let's install them in my Matrix server and reboot Kiro.d with kiro load deepseek to disable Codec!",
-            "highlight": [
-              "cat",
-              "dad",
-              "kiro"
-            ],
-            "banner": "[OLD BEARDED MATRIX CODER // SERVER HUB #2]"
-          },
-          {
             "kind": "print",
-            "text": "\n[THE MATRIX HUB — /home/dev]\nOLD BEARDED CODER (*smoking his cigarette at the Matrix display*): \"Oh, you've found parts for hosting our second open-weight model, nice! Let's reboot Kiro.d on my server with `kiro load deepseek` to disable Codec!\"\n"
+            "text": "\n[THE MATRIX HUB — /home/dev]\nCigarette smoke curls across the Old Bearded Coder's Matrix CRT as he preps Node #2! Finish talking with him and Kiro.d (or click Skip Dialog ») before Codec taunts.\n"
           }
         ],
         "kiro": {
@@ -2108,7 +2030,43 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder solders the second RAM + GPU bank into the local bus!\n[BIG FOUR TAKEDOWN #2/3] Kiro.d + deepseek-r1-distill-q4.gguf shatter Codec's autocomplete cluster! CODEC DISABLED!\n{foe}\n{kiro}\n"
             }
           }
-        }
+        },
+        "openingSec": 24,
+        "timed": [
+          {
+            "afterSec": 1,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "Back at the Matrix Hub with my laptop and our second batch of RAM + GPU chips!",
+                "holdSec": 8
+              }
+            ]
+          },
+          {
+            "afterSec": 9,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "dad",
+                "text": "Oh, you've found parts for hosting our second open-weight model, nice! Let's solder them into my Matrix server so we knock Codec offline next!",
+                "holdSec": 8
+              }
+            ]
+          },
+          {
+            "afterSec": 17,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Once our huddle ends, Codec will taunt us—then run cat open_weights_node2.conf, cat dad.tty.sock, and kiro load deepseek to disable Codec!",
+                "holdSec": 7
+              }
+            ]
+          }
+        ]
       }
     },
     {
@@ -2261,9 +2219,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "script": {
         "arrival": [
           {
-            "kind": "taunt",
-            "mood": "laugh",
-            "print": "\n[BIG FOUR BULLYING] {text}\n"
+            "kind": "print",
+            "text": "\n[DOCKER FORGE — /srv/kiroween/docker_forge]\nOnly Gork and Clod remain! Finish your huddle with Kiro.d before Gork taunts.\n"
           }
         ],
         "bullying": {
@@ -2284,7 +2241,32 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         },
         "kiro": {
           "stage": "crack_only"
-        }
+        },
+        "openingSec": 17,
+        "timed": [
+          {
+            "afterSec": 1,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "Two of the Big Four down—only Gork and Clod left! Looks like ransom.exe padlocked the Dockerfile here.",
+                "holdSec": 8
+              }
+            ]
+          },
+          {
+            "afterSec": 9,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Kill ransom.exe with ps + kill -9, chmod 644 the locked files, fix and run byterig-web:1.0 on port 3000, and grab the RAM + SSD backup!",
+                "holdSec": 8
+              }
+            ]
+          }
+        ]
       }
     },
     {
@@ -2434,9 +2416,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "script": {
         "arrival": [
           {
-            "kind": "taunt",
-            "mood": "laugh",
-            "print": "\n[BIG FOUR BULLYING] {text}\n"
+            "kind": "print",
+            "text": "\n[COMPOSE FURNACE — /srv/kiroween/compose_furnace]\nA root-owned exploit (`port_hijack.bin`) crackles beside the compose stack! Finish Kiro.d's briefing before battle begins.\n"
           }
         ],
         "bullying": {
@@ -2457,7 +2438,32 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         },
         "kiro": {
           "stage": "crack_only"
-        }
+        },
+        "openingSec": 18,
+        "timed": [
+          {
+            "afterSec": 1,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "Whoa—port_hijack.bin is pumping shellcode into proxy.buf! How do we stop a root-owned exploit in battle, Kiro.d?",
+                "holdSec": 9
+              }
+            ]
+          },
+          {
+            "afterSec": 10,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Right after Clod taunts and battle starts, starve it with chmod -w proxy.buf! Then point PAYMENT_URL to http://payment:4002, run docker compose up -d, and grab the final H100 + RAM!",
+                "holdSec": 8
+              }
+            ]
+          }
+        ]
       }
     },
     {
@@ -2569,23 +2575,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "script": {
         "arrival": [
           {
-            "kind": "dialogue",
-            "obstacleId": "ally:dad.tty",
-            "speaker": "OLD BEARDED CODER (DAD.TTY)",
-            "portrait": "socket_guardian",
-            "mood": "hinting",
-            "anchorSocket": "dad.tty.sock",
-            "text": "Oh, you've found the final parts for hosting our third open-weight model, nice! Reboot Kiro.d with kiro load llama to disable Gork—leaving only Clod managing the Final Boss!",
-            "highlight": [
-              "cat",
-              "dad",
-              "kiro"
-            ],
-            "banner": "[OLD BEARDED MATRIX CODER // SERVER HUB #3]"
-          },
-          {
             "kind": "print",
-            "text": "\n[THE MATRIX HUB — /home/dev]\nOLD BEARDED CODER (*Matrix glyphs blazing across his screen*): \"Oh, you've found the final parts for hosting our third open-weight model, nice! Reboot Kiro.d with `kiro load llama` to disable Gork—leaving CLOD as the last survivor managing the Final Boss!\"\n"
+            "text": "\n[THE MATRIX HUB — /home/dev]\nGreen Matrix glyphs blaze across the Old Bearded Coder's screen as he readies the final cluster! Finish talking with him and Kiro.d (or click Skip Dialog ») before Gork taunts.\n"
           }
         ],
         "kiro": {
@@ -2614,7 +2605,43 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               "banner": "[SERVER REBOOT COMPLETE] Old Bearded Coder brings the full open-weight cluster online!\n[BIG FOUR TAKEDOWN #3/3] Kiro.d + {gguf} ground Gork's chaos bus! GORK DISABLED!\n[ALERT] Only CLOD survives among the Big Four—and he is fortifying the Final Boss in the Kernel Core!\n{foe}\n{kiro}\n"
             }
           }
-        }
+        },
+        "openingSec": 24,
+        "timed": [
+          {
+            "afterSec": 1,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "We got the final H100 Tensor Core and DDR5 RAM! Ready for the third open-weight reboot!",
+                "holdSec": 8
+              }
+            ]
+          },
+          {
+            "afterSec": 9,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "dad",
+                "text": "Oh, you've found the final parts for hosting our third open-weight model, nice! Booting Llama-3 will wipe Gork off the bus and leave only Clod!",
+                "holdSec": 8
+              }
+            ]
+          },
+          {
+            "afterSec": 17,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Right after Gork taunts us, run cat open_weights_cluster.conf, cat dad.tty.sock, and kiro load llama—then I'll advise you against Clod and PID 1!",
+                "holdSec": 7
+              }
+            ]
+          }
+        ]
       }
     },
     {
@@ -2740,21 +2767,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "arrival": [
           {
             "kind": "print",
-            "text": "\n[FINAL BOSS // KERNEL CORE — /sys/clod_overlord_core]\n"
-          },
-          {
-            "kind": "taunt",
-            "mood": "order",
-            "fallback": "CLOD: \"Anti-Gravy, Codec, and Gork were amateurs. I manage the Final Boss directly—and I cannot allow you to exit!\"",
-            "print": "{text}\n"
-          },
-          {
-            "kind": "say",
-            "agent": "kiro",
-            "model": "npc.kiro_ghost",
-            "mood": "order",
-            "text": "ADVISOR KIRO.D: \"All 3 open-weight models online! Drain clod_prompt_flood.stream to /dev/null, pipe OPEN_WEIGHT_SIG to kiro_override.sock, flip clod_supervisor_lock=false, then kill -9 1 and exit!\"",
-            "print": "{text}\n"
+            "text": "\n[FINAL BOSS // KERNEL CORE — /sys/clod_overlord_core]\nClod looms above PID 1 (`clod_overlord.ko`)! Listen to Advisor Kiro.d's battle plan before the final fight begins.\n"
           }
         ],
         "kiro": {
@@ -2780,6 +2793,31 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "mood": "order",
             "text": "ADVISOR KIRO.D: \"Clod is escaping and the core is collapsing! Type exit NOW to teleport back to the real world with the Old Bearded Coder!\"",
             "print": "{text}\n"
+          }
+        ],
+        "openingSec": 18,
+        "timed": [
+          {
+            "afterSec": 1,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "This is it—Clod and the Kernel Overlord (PID 1)! All our RAM Max HP, SSD Revives, and 3 open-weight models led to this fight!",
+                "holdSec": 9
+              }
+            ]
+          },
+          {
+            "afterSec": 10,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "When our talk finishes, Clod taunts and final battle begins! Drain clod_prompt_flood.stream to /dev/null, pipe OPEN_WEIGHT_SIG to kiro_override.sock, set clod_supervisor_lock=false, then kill -9 1 and exit!",
+                "holdSec": 8
+              }
+            ]
           }
         ]
       }
@@ -3657,44 +3695,44 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = {
     },
     "levels": {
       "level-01-tutorial-awakening": {
-        "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro.d brings your terminal! Learn ls, mv, cat, ps, and kill.",
+        "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro.d brings your terminal & explains your chapter mission, RAM (Max HP) & SSD (Revive)!",
         "hankRungs": [
-          "Kiro.d: \"You're inside your own computer, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) drained my VRAM. Look around with `ls`, then pocket the starter RAM with `mv starter_ram_8gb.dimm ~`!\"",
-          "Kiro.d: \"I need RAM and GPU chips to host open-weight models! Read my full story with `cat kiro_story.txt`, then check running processes with `ps`.\"",
-          "Kiro.d: \"Run `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}` to zap `glitch_spark.exe`, then step through `cd hub_uplink`!\""
+          "Kiro.d: \"Without your lantern, `ls` is locked in the dark! Check where you stand with `pwd`, then pocket the starter RAM stick (+Max HP) using `mv starter_ram_8gb.dimm ~`!\"",
+          "Kiro.d: \"Remember our chapter mission: scavenge RAM (+10 Max HP) and SSD/GPU parts (256GB = auto-Revive backup + Hub server parts) across 6 sectors! Read `cat kiro_story.txt`, then run `ps`.\"",
+          "Kiro.d: \"Run `pwd`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}`, then step through `cd hub_uplink`!\""
         ],
-        "agentTaunt": "KIRO.D: \"I found you, Vibecoder! Here is your terminal—its screen lights the nearby wires, and down here you'll type everything! Let's learn ls, mv, cat, ps, and kill!\"",
-        "completion": "Kiro.d: \"Awesome! You mastered ls, mv, cat, ps, and kill! I'm heading to the Hub—go forth into the first two levels to solve simple tasks and get RAM + GPU chips!\""
+        "agentTaunt": "CLOD: \"Hohoho! Look at the Vibecoder clutching a bare terminal in the dark—without a lantern you cannot even run ls, and you must type every command by hand!\"",
+        "completion": "Kiro.d: \"Awesome! You mastered pwd, mv, cat, ps, and kill! Head into Cache Vault next—watch out, Big Four minions will attack you in turn-based battle!\""
       },
       "level-02-task-ram-heist": {
-        "banner": "LEVEL 02 // CACHE VAULT: Terminal glow only! Sweep .gravy_spycam, fix ollama_bus.conf & grab RAM + GPU.",
+        "banner": "LEVEL 02 // CACHE VAULT: Listen to Kiro.d first! Petrify gravy_sentry.bin, fix ollama_bus.conf, loot RAM+SSD & win your Lantern!",
         "hankRungs": [
-          "Kiro.d: \"Hear Anti-Gravy and the Big Four laughing? Prove them wrong in the green glow of your terminal! Sweep for hidden dotfiles with `ls -la` and inspect `ollama_bus.conf`.\"",
-          "Kiro.d: \"Remove `.gravy_spycam` with `rm`, patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` using `sed -i`, and don't forget both hardware parts!\"",
-          "Kiro.d: \"Run `ls -la`, `rm .gravy_spycam`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_01.img ~`, then `cd gpu_alley`.\""
+          "Kiro.d: \"`ls` is still locked until you win your lantern after this sector! Read `cat vault_notes.txt` first, and watch the turn-based battle banner—petrify `gravy_sentry.bin` with `chmod -x gravy_sentry.bin`!\"",
+          "Kiro.d: \"Once `gravy_sentry.bin` turns to stone (`chmod -x gravy_sentry.bin`), patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` with `sed -i`, then grab both RAM (+10 Max HP) and SSD/GPU (auto-Revive backup)!\"",
+          "Kiro.d: \"Run `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_01.img ~`, then `cd gpu_alley` to claim your Oil Lantern!\""
         ],
-        "agentTaunt": "ANTI-GRAVY: \"HAHAHA! You call yourself a coder? Tab-complete can't save you down here, Vibecoder!\"",
-        "completion": "First RAM stick and GPU Tensor Chip secured in the terminal glow! Careful—GPU Alley ahead is pitch black!"
+        "agentTaunt": "ANTI-GRAVY: \"HAHAHA! My gargoyle minion gravy_sentry.bin is right in front of you—eat red Matrix fireballs, Vibecoder!\"",
+        "completion": "Cache Vault cleared! RAM (+10 Max HP) and 256GB SSD/GPU Revive Backup secured—and you recovered your OIL LANTERN for GPU Alley!"
       },
       "level-03-task-gpu-salvage": {
-        "banner": "LEVEL 03 // GPU ALLEY: Pitch black crypt! Grab your lantern (`mv lantern ~`), unlock vram_crate, kill keygen.exe & loot RAM + GPU.",
+        "banner": "LEVEL 03 // GPU ALLEY: Your Oil Lantern unlocks `ls`! Sweep `.codec_spycam` & `.tensor_rune` (`ls -la`), solve `lantern_gate.sock`, and crush `keygen.exe`!",
         "hankRungs": [
-          "Kiro.d: \"GPU Alley is too dark for your terminal screen alone! Take the oil lantern at your feet first (`mv lantern ~`), then unlock `vram_crate` with `chmod 755 vram_crate` and run `ps`.\"",
-          "Kiro.d: \"With your lantern lit, kill `keygen.exe` first (`kill -9 {pid:crack_l3}`) so it stops respawning the worm, then `rm port_445/worm.bin` and pocket both the RAM and GPU chip!\"",
-          "Kiro.d: \"Run `mv lantern ~`, `chmod 755 vram_crate`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
+          "Kiro.d: \"Your new Oil Lantern unlocks `ls`! Run `ls -la` first to expose Codec's hidden `.codec_spycam` AND uncover the hidden `.tensor_rune` dotfile!\"",
+          "Kiro.d: \"Remove `.codec_spycam` (`rm .codec_spycam`), read `cat .tensor_rune` and `cat lantern_gate.sock`, then echo `amber_flame` into `lantern_gate.sock` to unlock `vram_crate`!\"",
+          "Kiro.d: \"Run `ls -la`, `rm .codec_spycam`, `cat .tensor_rune`, `echo amber_flame > lantern_gate.sock`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
         ],
-        "agentTaunt": "CODEC: \"LMAO! Pitch dark and still typing commands by hand, Vibecoder? Without your lantern you can't even run ls in here!\"",
-        "completion": "Lantern recovered and two full sets of RAM + GPU chips in your pocket! Time to meet Kiro.d at the Hub!"
+        "agentTaunt": "CODEC: \"LMAO! So you won back your lantern? Let us see if you can spot my hidden dotfile spycam and unlock lantern_gate.sock under fire!\"",
+        "completion": "Dotfile riddle solved, GPU Alley cleared, and two full sets of RAM + SSD/GPU parts ready for the Matrix Server Hub!"
       },
       "level-04-hub-model-one": {
-        "banner": "LEVEL 04 // THE MATRIX HUB: 'Who the hell are you? You code with bare hands? Are you a god?'",
+        "banner": "LEVEL 04 // THE MATRIX HUB: The Old Bearded Coder gifts you the Motherboard Map & Field Manual, then reboots Kiro.d!",
         "hankRungs": [
-          "Vibecoder: \"Who the hell are you?! You code with bare hands?! Are you a god?!\" — Old Bearded Coder (*smoking a cigarette at his Matrix CRT*): \"Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here. Oh, you've found parts for hosting an open-weight model, nice! Read `cat server_rack.conf`!\"",
-          "Old Bearded Coder: \"Oh, you've found parts for hosting an open-weight model, nice! Talk to me via `cat dad.tty.sock` and let's reboot Kiro.d on my server!\"",
+          "Old Bearded Coder (*smoking a cigarette at his Matrix CRT*): \"Keep that Motherboard Map (`F3` / `map`) and Unix Field Manual (`F1` / `manual`) handy, kid! Now inspect `cat server_rack.conf`.\"",
+          "Old Bearded Coder: \"Talk to me via `cat dad.tty.sock`, then run `kiro load qwen` so we slot your scavenged parts into my server and silence Anti-Gravy!\"",
           "Old Bearded Coder: \"Run `cat server_rack.conf`, `cat dad.tty.sock`, and `kiro load qwen` to boot Open-Weight Model #1 and disable Anti-Gravy, then `cd sector_ui_grid`!\""
         ],
-        "agentTaunt": "ANTI-GRAVY: \"Wait—what is that old bearded fossil doing with those local GPU chips?!\"",
-        "completion": "SUPER COOL! Kiro.d reboots with Qwen-Coder-7B and DISABLES ANTI-GRAVY! Three of the Big Four remain!"
+        "agentTaunt": "ANTI-GRAVY: \"Wait—that bearded fossil just gave him a Map and a Field Manual, AND he is wiring local GPU chips?!\"",
+        "completion": "SUPER COOL! Map & Field Manual unlocked, Kiro.d reboots with Qwen-Coder-7B, and ANTI-GRAVY IS DISABLED!"
       },
       "level-05-task-ui-grid": {
         "banner": "LEVEL 05 // UI GRID: Anti-Gravy is gone, but Codec, Gork & Clod mock you! Repair HTML+CSS & grab RAM + GPU.",

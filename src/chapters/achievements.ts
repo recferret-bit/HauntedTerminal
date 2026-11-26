@@ -39,6 +39,14 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     icon: 'LS',
   },
   {
+    id: 'field_manual',
+    steamApiName: 'ACH_FIELD_MANUAL',
+    title: 'Read The Fine Manual',
+    description: 'Receive the Unix Field Manual and Motherboard Map from the Old Bearded Coder at the Server Hub.',
+    category: 'CAMPAIGN',
+    icon: 'FM',
+  },
+  {
     id: 'sigkill_hunter',
     steamApiName: 'ACH_SIGKILL_HUNTER',
     title: 'Untrappable Signal',
@@ -262,6 +270,11 @@ export function unlockAchievement(id: string, opts?: { preview?: boolean; lab?: 
   return ev;
 }
 
+/** Whether the player has obtained the Unix Field Manual in the campaign (`ACH_FIELD_MANUAL`). */
+export function isManualUnlocked(store: AchievementStore = readAchievements()): boolean {
+  return Boolean(store.unlocked.field_manual);
+}
+
 export function formatAchievementLines(unlocked: readonly AchievementEvent[]): string {
   if (unlocked.length === 0) return '';
   const lines = unlocked.map(
@@ -289,6 +302,8 @@ export function evaluateBatchEvents(
   for (const ev of events) {
     if (ev.type === 'LANTERN_REVEAL') {
       if (ev.revealedInodes.length > 0) tryGrant('lantern_sweep');
+    } else if (ev.type === 'ITEM_GIVEN' && ev.item === 'manual') {
+      tryGrant('field_manual');
     } else if (ev.type === 'ENEMY_KILLED') {
       store.stats.malwareKilled += 1;
       dirty = true;

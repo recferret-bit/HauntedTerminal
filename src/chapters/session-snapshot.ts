@@ -4,7 +4,7 @@ import { absPath } from '../game/tree.js';
 import type { GameSnapshot, LevelInfo, RoomActor, RoomView } from '../game/types.js';
 import { buildRoom, roomSeedForPath, type SceneFacts, type ViewThing } from '../game/view.js';
 import { computeRunRank, splitParentAndName, type ChapterState } from './session-state.js';
-import { hiddenEnemyId, isNodeHidden, kiroStage, tutorialState } from './script.js';
+import { hiddenEnemyId, isNodeHidden, kiroStage, openingActive, tutorialState } from './script.js';
 import { chapterHintGoals } from './session-hints.js';
 import { allWinRulesMet, computeBossPhase, getChecklist } from './session-rules.js';
 
@@ -211,6 +211,7 @@ export function snapshot(g: ChapterState): GameSnapshot {
       tutorial: tutorialState(g),
       inventory: { items: [...g.inventory.items], held: g.inventory.held },
       battle: battleView(g.battle),
+      openingDialog: openingActive(g),
       volume: g.volume,
       level: levelInfo(g, effectiveCounts),
       hintGoals: chapterHintGoals(g),

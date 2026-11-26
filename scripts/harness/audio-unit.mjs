@@ -252,6 +252,10 @@ await withProcgen(async (_procgen, vite) => {
       ['dialog_hero'],
     );
     assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'dialog', speaker: 'dad' }),
+      ['socket_crackle'],
+    );
+    assert.deepEqual(
       sfxMod.sfxFor({ kind: 'kernel', event: { type: 'AGENT_TAUNT', agent: 'codec', model: 'agent.codec', text: 'ha', mood: 'smug' } }),
       ['taunt_codec_1'],
     );

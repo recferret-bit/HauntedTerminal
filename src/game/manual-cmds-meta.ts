@@ -134,7 +134,7 @@ export const MANUAL_TOOLS_AND_META: readonly ManualCommandEntry[] = [
     summary: 'Open the interactive comic-book Field Manual without pausing the game or battle clock.',
     realWorld: 'Interactive GUI companion to classic `man` pages with search, page flipping, and live calculators.',
     inGame:
-      'Opens the Field Manual modal right over the stage (same as pressing `F1` or clicking `MANUAL`). Pass a command, flag (`-9`), or number (`644`) to jump directly there! Unlike modals that pause the action, opening the manual keeps the 30s battle turn timer live.',
+      'Once obtained from the Old Bearded Coder at the Server Hub, opens the Field Manual modal right over the stage (same as pressing `F1` or clicking `MANUAL`). Pass a command, flag (`-9`), or number (`644`) to jump directly there! Unlike modals that pause the action, opening the manual keeps the 30s battle turn timer live.',
     flags: [
       { flag: '[query]', kind: 'operator', meaning: 'Optional command, flag (`-9`), number (`755`), or concept to jump/search immediately', example: 'manual chmod' },
     ],
@@ -161,7 +161,7 @@ export const MANUAL_TOOLS_AND_META: readonly ManualCommandEntry[] = [
     summary: 'Open the interactive PCB Motherboard Chapter Map popup without pausing the game or battle clock.',
     realWorld: 'Visual motherboard schematic showing Boot ROM, Data Channels, Hub Controllers, and the CPU Core Socket.',
     inGame:
-      'Opens the Chapter Motherboard Map popup (same as pressing `F3`, clicking `Map` in the HUD, or clicking the `map` item slot). Inspect any block or deploy straight to any sector while keeping the 30s battle timer running.',
+      'Once obtained from the Old Bearded Coder at the Server Hub, opens the Chapter Motherboard Map popup (same as pressing `F3`, clicking `Map` in the HUD, or clicking the `map` item slot). Inspect any block or deploy straight to any sector while keeping the 30s battle timer running.',
     flags: [
       { flag: '[level]', kind: 'operator', meaning: 'Optional 1-based level number (`1`..`11`), `boot`, `hub`, `boss`, or sector name to focus', example: 'map 4' },
     ],
@@ -301,7 +301,7 @@ export const MANUAL_TOOLS_AND_META: readonly ManualCommandEntry[] = [
     filters: ['game'],
     availability: 'chapter',
     syntax: 'achievements [export | sync | <category|filter>]',
-    summary: 'View all 12 local trophies and their 1:1 `ACH_*` keys, export JSON, or sync with desktop.',
+    summary: 'View all 13 local trophies and their 1:1 `ACH_*` keys, export JSON, or sync with desktop.',
     realWorld: 'Inspects achievement telemetry and portable JSON save export.',
     inGame: 'Filter by `campaign`, `combat`, `craft`, `mastery`, or `export` portable Steamworks payload.',
     flags: [
@@ -310,7 +310,7 @@ export const MANUAL_TOOLS_AND_META: readonly ManualCommandEntry[] = [
       { flag: '<filter>', kind: 'operator', meaning: 'Filter by category (`campaign`, `combat`, `craft`, `mastery`), id, or key', example: 'achievements combat' },
     ],
     pitfalls: ['Still works even after clearing the chapter (`g.ended === true`) so you can export anytime!'],
-    examples: [{ command: 'achievements', outcome: 'Lists all 12 achievements and unlock state.' }],
+    examples: [{ command: 'achievements', outcome: 'Lists all 13 achievements and unlock state.' }],
     related: ['workshop', 'status', 'exit'],
     keywords: ['trophies', 'steam', 'export', 'sync', 'ach'],
   },

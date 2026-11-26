@@ -34,6 +34,9 @@ export interface Shell {
    */
   setAvailable(on: boolean, pop?: boolean): void;
   readonly available: boolean;
+  /** Lock keyboard/paste input while an opening Vibecoder + Kiro conversation plays (without pausing the game clock or marking `busy()`). */
+  setDialogLocked?(on: boolean): void;
+  readonly dialogLocked?: boolean;
   fit(): void;
   focus(): void;
   blur(): void;

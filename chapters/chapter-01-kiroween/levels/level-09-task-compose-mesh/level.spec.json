@@ -141,9 +141,8 @@
   "script": {
     "arrival": [
       {
-        "kind": "taunt",
-        "mood": "laugh",
-        "print": "\n[BIG FOUR BULLYING] {text}\n"
+        "kind": "print",
+        "text": "\n[COMPOSE FURNACE — /srv/kiroween/compose_furnace]\nA root-owned exploit (`port_hijack.bin`) crackles beside the compose stack! Finish Kiro.d's briefing before battle begins.\n"
       }
     ],
     "bullying": {
@@ -164,6 +163,31 @@
     },
     "kiro": {
       "stage": "crack_only"
-    }
+    },
+    "openingSec": 18,
+    "timed": [
+      {
+        "afterSec": 1,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Whoa—port_hijack.bin is pumping shellcode into proxy.buf! How do we stop a root-owned exploit in battle, Kiro.d?",
+            "holdSec": 9
+          }
+        ]
+      },
+      {
+        "afterSec": 10,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Right after Clod taunts and battle starts, starve it with chmod -w proxy.buf! Then point PAYMENT_URL to http://payment:4002, run docker compose up -d, and grab the final H100 + RAM!",
+            "holdSec": 8
+          }
+        ]
+      }
+    ]
   }
 }

@@ -69,7 +69,19 @@ function openTerm(host: HTMLElement): { term: Terminal; fitAddon: FitAddon } {
   return { term, fitAddon };
 }
 
-function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: { available: boolean }): Shell {
+function syncInputTabStop(st: LineState, gate: { available: boolean; dialogLocked: boolean }): void {
+  const ta = st.term.textarea;
+  if (!ta) return;
+  const interactive = gate.available && !gate.dialogLocked && !st.blocked;
+  ta.tabIndex = interactive ? 0 : -1;
+  ta.setAttribute('aria-disabled', String(!interactive));
+  if (!interactive && typeof document !== 'undefined' && document.activeElement === ta) {
+    st.term.blur();
+  }
+}
+
+function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: { available: boolean; dialogLocked: boolean }): Shell {
+  syncInputTabStop(st, gate);
   return {
     term: st.term,
     submit: (line: string) => enqueue(st, line),
@@ -77,6 +89,7 @@ function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: {
     setBlocked(next: boolean) {
       if (next === st.blocked) return;
       st.blocked = next;
+      syncInputTabStop(st, gate);
       if (!st.blocked) {
         drain(st);
         if (!st.promptShown && st.queue.length === 0) newPrompt(st);
@@ -132,6 +145,7 @@ function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: {
       if (!st.blocked) newPrompt(st);
     },
     setInput(text: string) {
+      if (gate.dialogLocked) return;
       if (!st.blocked && st.queue.length === 0 && !st.draining) {
         if (!st.promptShown) newPrompt(st);
         setBuffer(st, text);
@@ -148,6 +162,7 @@ function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: {
       if (on === gate.available) return;
       gate.available = on;
       panel.classList.toggle('tty-unavailable', !on);
+      syncInputTabStop(st, gate);
       if (!on) {
         st.term.blur();
         return;
@@ -158,12 +173,25 @@ function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: {
         panel.classList.add('tty-popin');
       }
       try { fitAddon.fit(); } catch { /* host hidden */ }
-      st.term.focus();
+      if (!gate.dialogLocked && !st.blocked) st.term.focus();
     },
     get available() {
       return gate.available;
     },
-    focus: () => st.term.focus(),
+    setDialogLocked(on: boolean) {
+      if (on === gate.dialogLocked) return;
+      gate.dialogLocked = on;
+      panel.classList.toggle('tty-dialog-locked', on);
+      syncInputTabStop(st, gate);
+      if (on) st.term.blur();
+      else if (gate.available && !st.blocked) st.term.focus();
+    },
+    get dialogLocked() {
+      return gate.dialogLocked;
+    },
+    focus: () => {
+      if (gate.available && !gate.dialogLocked && !st.blocked) st.term.focus();
+    },
     blur: () => st.term.blur(),
   };
 }
@@ -173,7 +201,14 @@ const MODIFIER_KEYS = new Set(['Shift', 'Control', 'Alt', 'Meta', 'AltGraph', 'C
 export function mountShell(host: HTMLElement, hooks: ShellHooks): Shell {
   const { term, fitAddon } = openTerm(host);
   const st = createLineState(term, hooks);
-  const gate = { available: true };
+  const gate = { available: true, dialogLocked: false };
+  const panel = host.closest<HTMLElement>('#terminal-bezel') ?? host;
+  if (!panel.querySelector('.tty-dialog-lock-note')) {
+    const lockNote = document.createElement('div');
+    lockNote.className = 'tty-dialog-lock-note';
+    lockNote.textContent = 'CONVERSATION IN PROGRESS — Finish listening or click "Skip Dialog »" on stage to unlock terminal';
+    panel.appendChild(lockNote);
+  }
   let keyRepeat = false;
   term.attachCustomKeyEventHandler((ev) => {
     // Track keydown/keyup repeat; skip keypress so WebKit's keypress.repeat=false never masks a held key.
@@ -189,8 +224,8 @@ export function mountShell(host: HTMLElement, hooks: ShellHooks): Shell {
     term.textarea.addEventListener('paste', clearRepeat);
   }
   term.onData((data) => {
-    if (st.blocked || !gate.available) return;
+    if (st.blocked || !gate.available || gate.dialogLocked) return;
     handleKey(st, data, keyRepeat);
   });
-  return shellApi(st, fitAddon, host.closest<HTMLElement>('#terminal-bezel') ?? host, gate);
+  return shellApi(st, fitAddon, panel, gate);
 }

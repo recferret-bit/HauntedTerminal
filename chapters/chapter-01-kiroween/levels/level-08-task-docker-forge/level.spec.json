@@ -148,9 +148,8 @@
   "script": {
     "arrival": [
       {
-        "kind": "taunt",
-        "mood": "laugh",
-        "print": "\n[BIG FOUR BULLYING] {text}\n"
+        "kind": "print",
+        "text": "\n[DOCKER FORGE — /srv/kiroween/docker_forge]\nOnly Gork and Clod remain! Finish your huddle with Kiro.d before Gork taunts.\n"
       }
     ],
     "bullying": {
@@ -171,6 +170,31 @@
     },
     "kiro": {
       "stage": "crack_only"
-    }
+    },
+    "openingSec": 17,
+    "timed": [
+      {
+        "afterSec": 1,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Two of the Big Four down—only Gork and Clod left! Looks like ransom.exe padlocked the Dockerfile here.",
+            "holdSec": 8
+          }
+        ]
+      },
+      {
+        "afterSec": 9,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Kill ransom.exe with ps + kill -9, chmod 644 the locked files, fix and run byterig-web:1.0 on port 3000, and grab the RAM + SSD backup!",
+            "holdSec": 8
+          }
+        ]
+      }
+    ]
   }
 }

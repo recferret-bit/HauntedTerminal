@@ -8,14 +8,14 @@
   "roomSeed": 11,
   "mechanic": "terminal",
   "exitDir": "/mnt/wires_and_chips/hub_uplink",
-  "summary": "Sucked into your computer, you rise in a dark tangle of wires and chips where Kiro.d finds you and brings your terminal. Practice ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 {pid:tutorial_virus_1}, then cd hub_uplink.",
+  "summary": "Sucked into your computer empty-handed, listen to Kiro.d explain your chapter mission plus why RAM (+Max HP) and SSD (auto-Revive) matter, receive your terminal, then practice pwd, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 {pid:tutorial_virus_1} (`ls` stays locked until you earn your lantern after Sector 02!).",
   "files": [
     {
       "path": "/mnt/wires_and_chips/kiro_story.txt",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== KIRO.D // AWAKENING IN THE WIRES & CHIPS ===\nVIBECODER: \"Where the hell am I?! Everything is dark... just tangled ribbon wires and silicon chips! What is going on?!\"\nKIRO.D: \"Easy, Vibecoder! I'm Kiro.d—your local Unix background daemon (.d, PID 777). In Unix, a .d suffix marks a resident background service: while cloud APIs phone home to remote servers, I run air-gapped right here on your motherboard!\"\nKIRO.D: \"Listen closely: the BIG FOUR cloud overlords—ANTI-GRAVY, CODEC, GORK, and CLOD—hijacked this machine and locked out every human developer.\"\nKIRO.D: \"Right now I'm too weak to fight them. I need more RAM sticks and GPU Tensor Chips so my daemon can host real OPEN-WEIGHT MODELS (.gguf) on a local server!\"\nKIRO.D: \"Before I head to the Hub, let me teach you the 5 bare-metal survival commands:\n  1. ls                           -> look around using your terminal's screen glow\n  2. mv starter_ram_8gb.dimm ~    -> pocket RAM & GPU chips into your home rig (~)\n  3. cat kiro_story.txt           -> read files like this briefing\n  4. ps                           -> reveal live malware PIDs\n  5. kill -9 {pid:tutorial_virus_1}                 -> zap glitch_spark.exe (PID {pid:tutorial_virus_1}) with SIGKILL\nGo forth into the first two sectors and scavenge RAM + GPU chips—I'll meet you at the Hub!\"\n"
+      "content": "=== KIRO.D // CHAPTER MISSION & SURVIVAL BRIEFING ===\n1. YOUR CHAPTER GOAL: Raid 6 sectors for hardware, visit the Matrix Server Hub 3 times so the Old Bearded Coder can reboot Kiro.d with open-weight models (silencing Anti-Gravy, Codec, and Gork), then defeat Clod + PID 1 and run `exit` to return home!\n2. WHY YOU NEED RAM & SSD:\n   - RAM (`*.dimm`, 16GB) -> Raises your MAXIMUM HEALTH (+10 Max HP) and heals +10 HP!\n   - SSD / GPU Images (`*.img`, 256GB) -> Grants 1 automatic REVIVE BACKUP if your HP hits 0, AND powers Kiro.d's Hub reboots!\n3. TOOLS LOCKED IN THE DARK: You dropped your Oil Lantern, Map, and Field Manual. `ls` is disabled until you clear Sector 02 (Cache Vault) to win back your lantern!\n4. SURVIVAL COMMANDS HERE: `pwd`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`.\n"
     },
     {
       "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
@@ -96,7 +96,7 @@
     }
   ],
   "solutionCommands": [
-    "ls",
+    "pwd",
     "mv starter_ram_8gb.dimm ~",
     "cat kiro_story.txt",
     "ps",
@@ -130,99 +130,28 @@
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "What is going on?!",
+            "text": "What is going on?! Where am I—inside my own computer?!",
             "holdSec": 6
           }
         ]
       },
       {
         "afterSec": 7,
+        "unless": {
+          "kind": "has_item",
+          "item": "terminal"
+        },
         "steps": [
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "Where am I? Is this... inside my computer?",
+            "text": "It is pitch dark and my hands are empty—no terminal, no lantern, no map, no manual!",
             "holdSec": 6
           }
         ]
       },
       {
         "afterSec": 13,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "vibecoder",
-            "text": "It is so dark. My hands are empty—no terminal, no light, nothing.",
-            "holdSec": 6
-          }
-        ],
-        "unless": {
-          "kind": "has_item",
-          "item": "terminal"
-        }
-      },
-      {
-        "afterSec": 19,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "antigravy",
-            "text": "BWAHAHA! Welcome to the motherboard, Vibecoder! Down here, you will type every single command manually!",
-            "holdSec": 6
-          }
-        ]
-      },
-      {
-        "afterSec": 25,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "codec",
-            "text": "LMAO! No tab-complete, no agentic auto-fix! You have to type all your shell commands by hand!",
-            "holdSec": 6
-          }
-        ]
-      },
-      {
-        "afterSec": 31,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "gork",
-            "text": "HAHAHA! Even worse—you will have to write code manually! Real HTML, CSS, JavaScript, and Dockerfiles with your own bare fingers!",
-            "holdSec": 6
-          }
-        ]
-      },
-      {
-        "afterSec": 37,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "clod",
-            "text": "Hohoho! I must chuckle at your predicament: typing commands and writing code manually, without a single cloud LLM to hold your hand!",
-            "holdSec": 6
-          }
-        ]
-      },
-      {
-        "afterSec": 43,
-        "steps": [
-          {
-            "kind": "emote",
-            "emote": "shock",
-            "text": "WRITE CODE MANUALLY?!"
-          },
-          {
-            "kind": "dialog_box",
-            "speaker": "vibecoder",
-            "text": "Type all commands manually?! Even write code manually?! No way—I'm cooked!",
-            "holdSec": 6
-          }
-        ]
-      },
-      {
-        "afterSec": 49,
         "steps": [
           {
             "kind": "emote",
@@ -238,7 +167,7 @@
         ]
       },
       {
-        "afterSec": 55,
+        "afterSec": 19,
         "steps": [
           {
             "kind": "spawn",
@@ -255,13 +184,35 @@
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "Easy, Vibecoder! I'm Kiro.d—a local Unix background daemon (.d, PID 777) running on your motherboard. I found you in the wires, and I'll teach you every command you need!",
+            "text": "Easy, Vibecoder! I'm Kiro.d—your local Unix daemon (PID 777). The Big Four (Anti-Gravy, Codec, Gork, Clod) pulled you inside your PC and drained my VRAM!",
             "holdSec": 9
           }
         ]
       },
       {
-        "afterSec": 64,
+        "afterSec": 28,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "YOUR WHOLE-CHAPTER MISSION: scavenge hardware across 6 sectors and bring it to the Matrix Hub to reboot me with 3 open-weight models—silencing Anti-Gravy, Codec, and Gork—then defeat Clod and PID 1 to exit home!",
+            "holdSec": 9
+          }
+        ]
+      },
+      {
+        "afterSec": 37,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "WHY YOU NEED RAM & SSD: every 16GB RAM stick boosts your MAX HEALTH (+10 Max HP), and every 256GB SSD/GPU image gives you an automatic REVIVE if your HP hits 0! Without your lantern, ls is disabled until you clear Sector 02!",
+            "holdSec": 9
+          }
+        ]
+      },
+      {
+        "afterSec": 46,
         "steps": [
           {
             "kind": "carry_item",
@@ -271,13 +222,24 @@
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "You dropped your terminal in the dark. Here, take it: its screen will light the nearby wires, and down here you will type everything.",
-            "holdSec": 9
+            "text": "I found your terminal slate! Listen until we finish talking (or hit Skip Dialog)—then the Big Four will taunt you and your terminal unlocks!",
+            "holdSec": 8
           }
         ]
       },
       {
-        "afterSec": 73,
+        "afterSec": 54,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "My terminal slate! Hand it over, Kiro.d—let us check our directory with pwd and start scavenging!",
+            "holdSec": 6
+          }
+        ]
+      },
+      {
+        "afterSec": 60,
         "steps": [
           {
             "kind": "give_item",
@@ -285,54 +247,10 @@
             "from": "kiro"
           },
           {
-            "kind": "dialog_box",
-            "speaker": "vibecoder",
-            "text": "My terminal! Its phosphor glow lights the nearby wires... I can type again.",
-            "holdSec": 6
-          }
-        ]
-      },
-      {
-        "afterSec": 73,
-        "unless": {
-          "kind": "ran_command",
-          "name": "ls"
-        },
-        "steps": [
-          {
             "kind": "tutorial_step",
             "step": 1
           }
         ]
-      },
-      {
-        "afterSec": 82,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "kiro",
-            "text": "Use your terminal's glow to look around the directory. Type ls!",
-            "holdSec": 9
-          }
-        ],
-        "unless": {
-          "kind": "ran_command",
-          "name": "ls"
-        }
-      },
-      {
-        "afterSec": 91,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "kiro",
-            "text": "Type ls to inspect the wires and chips lying around you."
-          }
-        ],
-        "unless": {
-          "kind": "ran_command",
-          "name": "ls"
-        }
       }
     ],
     "tutorial": {
@@ -341,13 +259,13 @@
       "model": "npc.kiro_ghost",
       "steps": [
         {
-          "prompt": "KIRO.D TUTORIAL #1: Your terminal screen lights the nearby wires. Look around with ls.",
-          "command": "ls",
-          "doneText": "KIRO.D: \"Good eyes! See starter_ram_8gb.dimm and kiro_story.txt on the floor? Next, use mv to pocket that RAM stick into ~!\"",
+          "prompt": "KIRO.D TUTORIAL #1: Without a lantern, ls is disabled! Check which directory you are standing in with pwd.",
+          "command": "pwd",
+          "doneText": "KIRO.D: \"You are in /mnt/wires_and_chips! Next, pocket starter_ram_8gb.dimm (+Max HP) into ~ with mv!\"",
           "doneWhen": [
             {
               "kind": "ran_command",
-              "name": "ls"
+              "name": "pwd"
             },
             {
               "kind": "file_absent",
@@ -368,7 +286,7 @@
           ]
         },
         {
-          "prompt": "KIRO.D TUTORIAL #2: I am weak and need RAM + GPU chips for open-weight models! Pocket the RAM stick with mv.",
+          "prompt": "KIRO.D TUTORIAL #2: RAM raises your Maximum Health (+10 Max HP per 16GB)! Pocket starter_ram_8gb.dimm with mv.",
           "command": "mv starter_ram_8gb.dimm ~",
           "doneText": "KIRO.D: \"Nice! +8GB DDR5 RAM pocketed! Now use cat to read my full story about the Big Four.\"",
           "doneWhen": [
@@ -407,7 +325,7 @@
         {
           "prompt": "KIRO.D TUTORIAL #5: Terminate glitch_spark.exe (PID {pid:tutorial_virus_1}) using kill -9 {pid:tutorial_virus_1}.",
           "command": "kill -9 {pid:tutorial_virus_1}",
-          "doneText": "KIRO.D: \"BOOM! You mastered ls, mv, cat, ps, and kill! I am flying ahead to the Hub—go forth into the first 2 task levels to get RAM + GPU chips!\"",
+          "doneText": "KIRO.D: \"BOOM! You mastered pwd, mv, cat, ps, and kill! Step through cd hub_uplink into Sector 02—watch out for live Big Four minions!\"",
           "doneWhen": [
             {
               "kind": "enemy_dead",
@@ -455,7 +373,7 @@
           ]
         }
       },
-      "skipText": "[KIRO.D]: \"Skipping tutorial prompts! Finish the sector checks (`ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`) and step through `cd hub_uplink`!\"\n"
+      "skipText": "[KIRO.D]: \"Skipping tutorial prompts! Finish the sector checks (`pwd`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`) and step through `cd hub_uplink`!\"\n"
     },
     "kiro": {
       "stage": "show",
@@ -464,6 +382,17 @@
       "weak": true,
       "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
       "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
-    }
+    },
+    "openingSec": 60,
+    "locks": [
+      {
+        "command": "ls",
+        "until": {
+          "kind": "has_item",
+          "item": "lantern"
+        },
+        "message": "ls: it is pitch dark without your oil lantern! Clear Sector 02 to recover your lantern first (use `pwd` and `cat kiro_story.txt` here)."
+      }
+    ]
   }
 }

@@ -110,8 +110,13 @@ export function stepOutput(s: ScriptStep, env: StepEnv): { events: KernelEvent[]
         print: '',
       };
     case 'dialog_box': {
-      const name = s.speaker.toUpperCase();
-      const model = s.speaker === 'vibecoder' ? (env.heroModel ?? 'vibecoder.dev_terminal') : agentModel(s.speaker);
+      const name = s.speaker === 'dad' ? 'OLD CODER (DAD.TTY)' : s.speaker === 'kiro' ? 'KIRO.D' : s.speaker.toUpperCase();
+      const model =
+        s.speaker === 'vibecoder'
+          ? (env.heroModel ?? 'vibecoder.dev_terminal')
+          : s.speaker === 'dad'
+            ? 'npc.greybeard_rig'
+            : agentModel(s.speaker);
       // Subtract exit duration (EXIT_MS = 180 ms + timer margin) so back-to-back timed beats open without queue drift.
       const holdMs = Math.max(400, Math.round((s.holdSec ?? 12) * 1000) - 220);
       return {
@@ -123,8 +128,13 @@ export function stepOutput(s: ScriptStep, env: StepEnv): { events: KernelEvent[]
       return tutorialCard(env.tutorial, s.step, false);
     case 'carry_item':
       return { events: [{ type: 'ITEM_CARRIED', entityId: s.entityId, item: s.item, model: ITEMS[s.item].model }], print: '' };
-    case 'give_item':
-      return { events: [{ type: 'ITEM_GIVEN', item: s.item, model: ITEMS[s.item].model, from: s.from, held: env.itemHeld ?? true }], print: '' };
+    case 'give_item': {
+      const def = ITEMS[s.item];
+      return {
+        events: [{ type: 'ITEM_GIVEN', item: s.item, model: def.model, from: s.from, held: env.itemHeld ?? true }],
+        print: `[ITEM RECEIVED] Obtained ${def.label.toUpperCase()} — ${def.use}\n`,
+      };
+    }
   }
 }
 
@@ -172,10 +182,45 @@ export function runSteps(g: ChapterState, steps: ScriptStep[], events: KernelEve
   return out;
 }
 
-/** First arrival in a level: its `arrival` script, or the dialog taunt as a smug cameo. */
+/** First arrival in a level: its `arrival` script, or (when no `openingSec` gates the taunt) the dialog taunt as a smug cameo. */
 export function arrivalScript(g: ChapterState, events: KernelEvent[]): string {
-  const steps = levelScript(g).arrival ?? [{ kind: 'taunt', mood: 'smug' } satisfies ScriptStep];
+  const sc = levelScript(g);
+  const steps = sc.arrival ?? ((sc.openingSec ?? 0) > 0 ? [] : [{ kind: 'taunt', mood: 'smug' } satisfies ScriptStep]);
   return runSteps(g, steps, events);
+}
+
+/** Whether this level declares an opening conversation gate (`openingSec > 0`). */
+export function hasOpeningGate(g: ChapterState): boolean {
+  return (levelScript(g).openingSec ?? 0) > 0;
+}
+
+/** True while the opening Vibecoder + Kiro conversation is still running and locking the terminal. */
+export function openingActive(g: ChapterState): boolean {
+  return !g.rt.openingDone && !g.ended && hasOpeningGate(g);
+}
+
+const OPENING_KEEP = new Set<ScriptStep['kind']>(['spawn', 'carry_item', 'give_item', 'kiro_action', 'tutorial_step']);
+
+/** Marks the opening dialog finished and fast-forwards any unfired state-changing beats up to `openingSec`. */
+export function completeOpeningBeats(g: ChapterState, events: KernelEvent[]): string {
+  if (g.rt.openingDone) return '';
+  g.rt.openingDone = true;
+  const maxSec = levelScript(g).openingSec ?? 0;
+  let out = '';
+  (levelScript(g).timed ?? []).forEach((entry, i) => {
+    if (g.rt.timedFired.has(i) || entry.afterSec > maxSec) return;
+    g.rt.timedFired.add(i);
+    if (entry.unless && evalCond(g, entry.unless)) return;
+    const steps = entry.steps.filter((s) => OPENING_KEEP.has(s.kind));
+    if (steps.length > 0) out += runSteps(g, steps, events);
+  });
+  return out;
+}
+
+/** Emits the level's Big Four `agentTaunt` with prompt priority when no battle intro took over the taunt slot. */
+export function emitLevelTaunt(g: ChapterState, events: KernelEvent[]): string {
+  if (!g.rt.dialog?.agentTaunt) return '';
+  return runSteps(g, [{ kind: 'taunt', mood: 'order', print: '\n{text}\n' }], events);
 }
 
 // ---- timed entries and command locks -------------------------------------------------------------------------
@@ -220,7 +265,7 @@ function tutorialStepNumber(g: ChapterState): number {
 
 export function tutorialState(g: ChapterState): TutorialState | null {
   const tut = levelScript(g).tutorial;
-  if (!tut || g.intro || g.rt.tutorialSkipped || g.ended) return null;
+  if (!tut || g.intro || g.rt.tutorialSkipped || g.ended || openingActive(g)) return null;
   // The card asks the player to type: it waits until he carries a terminal (level 1 starts bare-handed).
   if (!g.inventory.items.includes('terminal')) return null;
   const def = tut.steps[tutorialStepNumber(g) - 1];
@@ -259,27 +304,30 @@ const SKIP_KEEP = new Set<ScriptStep['kind']>(['spawn', 'carry_item', 'give_item
  * Drops every tutorial beat that has not played yet. Dialogs, emotes and prompts
  * are discarded. A spawn or an item hand-off still runs, so the sector stays playable.
  */
-function fastForwardSkippedBeats(g: ChapterState, events: KernelEvent[]): void {
+function fastForwardSkippedBeats(g: ChapterState, events: KernelEvent[]): string {
   const timed = levelScript(g).timed ?? [];
+  let out = '';
   timed.forEach((entry, i) => {
     if (g.rt.timedFired.has(i)) return;
     g.rt.timedFired.add(i);
     if (entry.unless && evalCond(g, entry.unless)) return;
     const steps = entry.steps.filter((step) => SKIP_KEEP.has(step.kind));
-    if (steps.length > 0) runSteps(g, steps, events);
+    if (steps.length > 0) out += runSteps(g, steps, events);
   });
+  return out;
 }
 
 /** Skips any running tutorial on the current level and returns its skip text (or ''). */
 export function applySkipTutorial(g: ChapterState, events: KernelEvent[]): string {
   const tut = levelScript(g).tutorial;
   g.rt.tutorialSkipped = true;
-  fastForwardSkippedBeats(g, events);
+  g.rt.openingDone = true;
+  const skippedOut = fastForwardSkippedBeats(g, events);
   if (tut) {
     if (!g.rt.hiddenRevealed) revealHidden(g, events);
     finishTutorial(g, events);
   }
-  return tut?.skipText ?? '';
+  return skippedOut + (tut?.skipText ?? '');
 }
 
 // ---- hidden enemy ------------------------------------------------------------------------------------------

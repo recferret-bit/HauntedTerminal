@@ -23,6 +23,7 @@ interface HintParts {
   badge: HTMLElement;
   goal: HTMLElement;
   list: HTMLElement;
+  tip: HTMLElement;
   closeBtn: HTMLButtonElement;
   xBtn: HTMLButtonElement;
 }
@@ -81,10 +82,17 @@ function buildHintDialog(): HintParts {
   dialog.setAttribute('aria-labelledby', 'hint-dialog-title');
   dialog.setAttribute('aria-describedby', 'hint-dialog-goal');
 
-  return { dialog, title, sector, badge, goal, list, closeBtn, xBtn };
+  return { dialog, title, sector, badge, goal, list, tip, closeBtn, xBtn };
 }
 
 function renderHintGoals(p: HintParts, snap: GameSnapshot): void {
+  const hasManual = snap.inventory ? snap.inventory.items.includes('manual') : true;
+  setText(
+    p.tip,
+    hasManual
+      ? 'Need command reference? Press F1 for the Field Manual.'
+      : 'Field Manual locked — reach the Server Hub to obtain it.',
+  );
   const data = snap.hintGoals ?? fallbackGoals(snap);
   setText(p.sector, data.title);
   setText(p.goal, data.goal);

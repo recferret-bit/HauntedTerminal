@@ -33,7 +33,7 @@ const scratch = mkdtempSync(join(tmpdir(), 'haunted-desktop-unit-'));
 try {
   // 1. Source achievement extractor & cross-OS CLI direct-run / SemVer flag validation.
   const achievements = extractAchievementsFromSource(REPO_ROOT);
-  assert.equal(achievements.length, 12, 'Expected 12 declarative achievements in src/chapters/achievements.ts');
+  assert.equal(achievements.length, 13, 'Expected 13 declarative achievements in src/chapters/achievements.ts');
   for (const ach of achievements) {
     assert.match(ach.steamApiName, /^ACH_[A-Z0-9_]+$/, `Invalid Steam API name: ${ach.steamApiName}`);
   }
@@ -55,7 +55,7 @@ try {
     if (prevSteamEnv === undefined) delete process.env.STEAM_APP_ID;
     else process.env.STEAM_APP_ID = prevSteamEnv;
   }
-  console.log('  ok  extractAchievementsFromSource & cross-OS CLI flag guards: 12 ACH_* keys, --no-steam & pathToFileURL verified');
+  console.log('  ok  extractAchievementsFromSource & cross-OS CLI flag guards: 13 ACH_* keys, --no-steam & pathToFileURL verified');
 
   // 2. Icon synthesizer emits valid PNG, Windows ICO, and Apple ICNS binary headers.
   const icons = buildTauriIconSet();
@@ -96,7 +96,7 @@ try {
 
   const standaloneCfg = parseDesktopFlags(['--out', standaloneDir, '--dist', fakeDist]);
   const gen1 = runGenerateTauri(standaloneCfg);
-  assert.equal(gen1.achievementsCount, 12);
+  assert.equal(gen1.achievementsCount, 13);
   assert.equal(existsSync(join(standaloneDir, 'steam_appid.txt')), false, 'Standalone mode must not write steam_appid.txt');
   assert.ok(gen1.routed >= 20, 'Static /play, /play/floor/*, /editor, /comix-editor, /terminal-lab, /laptop-lab routes must be materialized');
   assert.ok(existsSync(join(fakeDist, 'play/chapter-01-kiroween/index.html')));

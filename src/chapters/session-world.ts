@@ -4,15 +4,16 @@
  */
 import type { KernelEvent } from '../contracts/events.js';
 import { lookup, makeNode } from '../game/tree.js';
-import { evalCond, levelScript } from './script.js';
+import { evalCond, hasOpeningGate, levelScript, openingActive } from './script.js';
 import { stepKiroCrack } from './session-kiro.js';
 import { refreshExitGates, syncValidatedCodeBugs } from './session-rules.js';
 import { ensureDirChain, type ChapterState } from './session-state.js';
 
-/** The world does not tick yet: before the level's first command, and while the script's `holdEnemiesUntil` is unmet. */
+/** The world does not tick yet: during the opening conversation (or before the first command when none is declared), and while `holdEnemiesUntil` is unmet. */
 export function enemiesHeld(g: ChapterState): boolean {
   const holdUntil = levelScript(g).holdEnemiesUntil;
-  return g.rt.levelCommands === 0 || (holdUntil !== undefined && !evalCond(g, holdUntil));
+  const preStart = hasOpeningGate(g) ? openingActive(g) : g.rt.levelCommands === 0;
+  return preStart || (holdUntil !== undefined && !evalCond(g, holdUntil));
 }
 
 /** Anti-softlock cron_restorer: a quest-critical file that stays deleted for 2 steps comes back. */

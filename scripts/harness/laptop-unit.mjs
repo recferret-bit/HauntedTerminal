@@ -281,16 +281,18 @@ await withProcgen(async (_p, vite) => {
   });
 
   // ---- the game inventory ----
-  await test('the inventory starts with the lantern, terminal, manual, and map in hand and holds only what it has', () => {
+  await test('the inventory starts with the lantern and terminal (no manual or map by default) and holds only what it has', () => {
     const start = inv.starterInventory();
-    assert.deepEqual(start, { items: ['lantern', 'terminal', 'manual', 'map'], held: 'lantern' });
+    assert.deepEqual(start, { items: ['lantern', 'terminal'], held: 'lantern' });
+    assert.equal(inv.holdItem(start, 'manual'), start);
+    assert.equal(inv.holdItem(start, 'map'), start);
     assert.equal(inv.holdItem(start, 'laptop'), start);
-    const withLaptop = inv.giveItem(start, 'laptop');
-    assert.equal(inv.giveItem(withLaptop, 'laptop'), withLaptop, 'an item is given once');
-    assert.equal(inv.holdItem(withLaptop, 'terminal').held, 'terminal');
-    assert.equal(inv.holdItem(withLaptop, 'manual').held, 'manual');
-    assert.equal(inv.holdItem(withLaptop, 'map').held, 'map');
-    assert.equal(inv.holdItem(withLaptop, 'laptop').held, 'laptop');
+    const withAll = inv.giveItem(inv.giveItem(inv.giveItem(start, 'manual'), 'map'), 'laptop');
+    assert.equal(inv.giveItem(withAll, 'laptop'), withAll, 'an item is given once');
+    assert.equal(inv.holdItem(withAll, 'terminal').held, 'terminal');
+    assert.equal(inv.holdItem(withAll, 'manual').held, 'manual');
+    assert.equal(inv.holdItem(withAll, 'map').held, 'map');
+    assert.equal(inv.holdItem(withAll, 'laptop').held, 'laptop');
     assert.equal(inv.heroModel('terminal'), 'vibecoder.dev_terminal');
     assert.equal(inv.heroModel('manual'), 'vibecoder.dev_manual');
     assert.equal(inv.heroModel('map'), 'vibecoder.dev_map');
@@ -298,7 +300,7 @@ await withProcgen(async (_p, vite) => {
     assert.equal(inv.heroModel(undefined), 'vibecoder.dev');
   });
   await test('inventory / hold commands and Tab completion', () => {
-    const start = inv.giveItem(inv.starterInventory(), 'laptop');
+    const start = inv.giveItem(inv.giveItem(inv.giveItem(inv.starterInventory(), 'manual'), 'map'), 'laptop');
     assert.match(inv.inventoryCommand(start, 'inv', []).step.stdout, /\* lantern[\s\S]*terminal[\s\S]*manual[\s\S]*map[\s\S]*laptop/);
     const held = inv.inventoryCommand(start, 'hold', ['laptop']);
     assert.equal(held.inv.held, 'laptop');

@@ -20,7 +20,7 @@ const SHOT_POS = new Set(['center', 'right', 'left', 'bottom-right', 'top-right'
 const FITS = new Set(['contain', 'cover']);
 const SKINS = new Set(['iterm2', 'terminal-app', 'putty', 'windows-terminal', 'gnome-terminal', 'vt100']);
 const MODALS = new Set(['manual', 'map', 'menu', 'editor', 'hint']);
-const EVENT_DOS = new Set(['type', 'submit', 'typeAndSubmit', 'modal', 'skin', 'tick', 'scroll']);
+const EVENT_DOS = new Set(['type', 'submit', 'typeAndSubmit', 'modal', 'skin', 'tick', 'scroll', 'laptop']);
 const DIAGRAM_KINDS = new Set(['pipeline', 'funnel', 'versus', 'loop']);
 const AUDIO_KINDS = new Set(['voice', 'sfx', 'music']);
 const SLUG_RX = /^[a-z0-9][a-z0-9_-]*$/i;
@@ -360,6 +360,8 @@ function normalizeScene(s, i, { chapter, root, specDir }) {
     if ((ev.do === 'submit' || ev.do === 'typeAndSubmit') && typeof ev.line !== 'string') fail(`${ew}.line`, 'required');
     if (ev.do === 'modal' && (!MODALS.has(ev.modal) || !['open', 'close'].includes(ev.action ?? 'open'))) fail(`${ew}.modal`, 'invalid modal/action');
     if (ev.do === 'skin' && !SKINS.has(ev.skin)) fail(`${ew}.skin`, `unknown skin "${ev.skin}"`);
+    if (ev.do === 'laptop' && !ev.send && !ev.task) fail(`${ew}.laptop`, 'requires send or task');
+    if (ev.do === 'laptop' && ev.send && !['OPEN', 'POWER', 'CLOSE'].includes(ev.send)) fail(`${ew}.send`, 'must be OPEN|POWER|CLOSE');
     return {
       ...ev,
       ...(ev.line ? { line: resolvePlaceholders(ev.line, chapter) } : {}),

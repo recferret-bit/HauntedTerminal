@@ -26,7 +26,7 @@ src/styles/
 src/contracts/
   events.ts                             + ACHIEVEMENT_UNLOCKED variant on KernelEvent
 src/chapters/
-  achievements.ts                       12 declarative AchievementSpecs (1:1 ACH_* Steamworks keys), localStorage store,
+  achievements.ts                       13 declarative AchievementSpecs (1:1 ACH_* Steamworks keys), localStorage store,
                                         event/clear/workshop evaluators, portable save bundle export & validated import
   steam-bridge.ts                       optional Tauri v2 IPC bridge (`steam_unlock_achievement`, `steam_sync_achievements`,
                                         `steam_status`, `desktop_read_save_bundle`, `desktop_write_save_bundle`,
@@ -75,7 +75,7 @@ docs/
 
 ## Decisions
 
-- **Declarative, chapter-agnostic achievements (`src/chapters/achievements.ts`).** None of the 12 achievements name a chapter, level id, or hardcoded level index (`npm run quality:declarative`): they evaluate generic `KernelEvent`s, `LevelSpec['mechanic']`, `openingSector` (`g.levels[0]?.id === spec.id`), `RankGrade`, `chaosMode`, loaded `.gguf` cores, and Workshop perk unlocks.
+- **Declarative, chapter-agnostic achievements (`src/chapters/achievements.ts`).** None of the 13 achievements name a chapter, level id, or hardcoded level index (`npm run quality:declarative`): they evaluate generic `KernelEvent`s, `LevelSpec['mechanic']`, `openingSector` (`g.levels[0]?.id === spec.id`), `RankGrade`, `chaosMode`, loaded `.gguf` cores, and Workshop perk unlocks.
 - **Strict preview & lab isolation.** `unlockAchievement` and `evaluateSessionAchievements` short-circuit whenever `g.preview || g.lab !== null`. Headless solvers (`solve.ts`), editor previews (`?draft=1`), Terminal Lab runs, and `property-tests.mjs` determinism checks stay 100% stateless and reproducible.
 - **Optional `steam` Cargo feature in generated `src-tauri/Cargo.toml`.** Valve's `steam_api` redistributable binary cannot be committed to an open-source MIT repo without a Steamworks Partner account. Making `steam = ["dep:steamworks"]` an explicit Cargo feature allows `.github/workflows/desktop-release.yml` to compile and publish real native macOS/Windows/Linux desktop builds on every `v*` tag immediately today, while `build-tauri-steam.mjs --steam --app-id <ID>` compiles full `steamworks-rs` (`0.11.0`) achievement/stat/callback integration as soon as partner credentials exist.
 - **Self-hosted SIL OFL `.woff2` fonts (`public/fonts/`).** Desktop apps on Steam/Steam Deck must boot and render identically with Wi-Fi off. Local `@font-face` declarations eliminate the Google Fonts network waterfall on web and guarantee 100% offline desktop typography.

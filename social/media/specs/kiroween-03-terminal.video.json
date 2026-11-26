@@ -1,0 +1,68 @@
+{
+  "name": "kiroween-03-terminal",
+  "platform": "steam",
+  "fps": 24,
+  "width": 1280,
+  "height": 720,
+  "maxSeconds": 14,
+  "look": "comix",
+  "ticker": false,
+  "badge": false,
+  "audio": false,
+  "gif": { "maxMB": 4.7, "width": 720, "fps": 12 },
+  "scenes": [
+    {
+      "id": "term-01-fault-ok-skins",
+      "dur": 5.0,
+      "mode": "play",
+      "level": 8,
+      "skin": "iterm2",
+      "setup": [{ "ticks": 22 }, "hold terminal"],
+      "events": [
+        { "t": 0.2, "do": "typeAndSubmit", "line": "cat Dockerfile", "cps": 26 },
+        { "t": 1.4, "do": "skin", "skin": "vt100" },
+        { "t": 1.65, "do": "typeAndSubmit", "line": "chmod 644 Dockerfile", "cps": 28 },
+        { "t": 3.1, "do": "skin", "skin": "putty" },
+        { "t": 3.35, "do": "typeAndSubmit", "line": "pkill -STOP ransom", "cps": 28 },
+        { "t": 4.55, "do": "skin", "skin": "windows-terminal" }
+      ],
+      "pills": [
+        { "at": 0.08, "dur": 1.25, "pos": "top-left", "accent": "magenta", "items": ["iTerm2 · MATRIX ERROR", "$ cat Dockerfile [DENIED]"] },
+        { "at": 1.4, "dur": 1.65, "pos": "top-left", "accent": "phosphor", "items": ["VT100 · MATRIX OK", "$ chmod 644 Dockerfile"] },
+        { "at": 3.1, "dur": 1.4, "pos": "top-left", "accent": "cyan", "items": ["PuTTY · SIGSTOP ICE", "$ pkill -STOP ransom"] },
+        { "at": 4.55, "dur": 0.4, "pos": "top-left", "accent": "orange", "items": ["WINDOWS TERMINAL"] }
+      ]
+    },
+    {
+      "id": "term-02-lantern-reveal",
+      "dur": 2.2,
+      "mode": "play",
+      "level": 3,
+      "skin": "terminal-app",
+      "transition": "flash",
+      "setup": [{ "ticks": 28 }],
+      "events": [
+        { "t": 0.2, "do": "typeAndSubmit", "line": "ls -la", "cps": 26 }
+      ],
+      "pills": [
+        { "at": 0.08, "dur": 2.0, "pos": "top-left", "accent": "amber", "items": ["TERMINAL.APP · LANTERN REVEAL", "$ ls -la"] }
+      ]
+    },
+    {
+      "id": "term-03-manual-and-map",
+      "dur": 4.4,
+      "mode": "play",
+      "level": 4,
+      "skin": "gnome-terminal",
+      "transition": "flash-amber",
+      "setup": [{ "ticks": 36 }, "hold manual", { "solution": { "level": 4, "count": 2 } }],
+      "events": [
+        { "t": 0.2, "do": "typeAndSubmit", "line": "kiro load qwen", "cps": 24 },
+        { "t": 1.15, "do": "modal", "modal": "manual", "action": "open", "query": "chmod" },
+        { "t": 2.6, "do": "modal", "modal": "manual", "action": "close" },
+        { "t": 2.85, "do": "modal", "modal": "map", "action": "open" },
+        { "t": 4.2, "do": "modal", "modal": "map", "action": "close" }
+      ]
+    }
+  ]
+}

@@ -17,6 +17,7 @@ import type { StageActor } from './stage-cast.js';
 import type { PanelBounds } from './stage-cards.js';
 import { StageOverlay } from './stage-overlay.js';
 import { installStageDevHook } from './stage-selfcheck.js';
+import { clearCarried } from './stage-carry.js';
 import { ACTOR_Z, CAM_HOME, DESIGN_LEFT, DESIGN_RIGHT, FEET_Y, LOOK_HOME } from './stage-const.js';
 import { reportStage } from './stage-actor.js';
 import { enqueueStageEvent } from './stage-events.js';
@@ -303,6 +304,7 @@ export class ComicStage {
   }
 
   buildScene(): void {
+    clearCarried(this);
     buildStageScene(this);
   }
 

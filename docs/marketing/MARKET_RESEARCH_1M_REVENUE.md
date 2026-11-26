@@ -51,7 +51,7 @@ Using Chris Zukowski (*How To Market A Game*) and GameDiscoverCo Steam conversio
 |---|---:|---|---|
 | **Stage 1: Coming Soon + Browser Demo Loop** | **0 -> 7,500 WL** | Live Chapter 1 Browser Demo (`/play`) with portable `.json` save/trophy export to Steam + daily TikTok/Shorts/X clips + `r/linux`, `r/programming`, Hacker News "Show HN" | Cross Zukowski's **7,000+ WL Popular Upcoming floor** *before* entering Steam Next Fest (pre-fest velocity correlates `r = 0.825` with Next Fest lift). |
 | **Stage 2: Micro-Creator & Tech YouTuber Seeding** | **7,500 -> 22,000 WL** | 40–60 coding/Linux/indie micro-creators (TikTok/Shorts/YouTube) playing Chapter 1 ("Dev Beats Malware With Real Linux Commands") + themed Steam festivals (Programming Fest, Turn-Based Carnival, Cyberpunk/Retro Fest) | Maintain `> 22 min` median Demo playtime (Chapter 1 is ~35 min, 11 zero-death-verified sectors) and `> 8.5%` browser-player -> Steam Wishlist click-through. |
-| **Stage 3: Steam Next Fest Multiplier** | **22,000 -> 45,000 WL** | Enter Steam Next Fest in the top tier of playable demos -> hit Next Fest category charts -> 2.0x–2.6x wishlist amplification | Demo carries all 12 `ACH_*` trophies + Steam Auto-Cloud save carryover into the full game. |
+| **Stage 3: Steam Next Fest Multiplier** | **22,000 -> 45,000 WL** | Enter Steam Next Fest in the top tier of playable demos -> hit Next Fest category charts -> 2.0x–2.6x wishlist amplification | Demo carries all 13 `ACH_*` trophies + Steam Auto-Cloud save carryover into the full game. |
 | **Stage 4: Launch-Month Blitz & Creator Embargo** | **45,000 -> 55,000+ WL -> Launch** | Variety & tech creator embargo drop 48h pre-launch + Spark Ads on top 3 organic TikToks + Steam "New & Trending" -> **1,000 Steam reviews** rapid push ("Overwhelmingly Positive" halo) | Cross **500 reviews in Week 1** to lock algorithmic Discovery Queue traffic across Year 1 seasonal sales. |
 
 ---
@@ -91,7 +91,7 @@ Using Chris Zukowski (*How To Market A Game*) and GameDiscoverCo Steam conversio
    - **`0:05–0:16` Core Terminal Loop:** Lantern reveals hidden `.spycam` -> `chmod -x` petrifies a Trojan -> 30-second turn-based battle against malware with Kiro Ghost advising.
    - **`0:16–0:28` Escalation (Laptop Code + Matrix Hub):** Clamshell Laptop opens (`mv laptop ~`) to patch broken JS/CSS & spin up Docker containers -> Dad (`dad.tty`) at the Matrix Hub reboots Kiro with open-weight cores (`Qwen`, `DeepSeek`, `Llama`) to silence Anti-Gravy, Codec, and Gork.
    - **`0:28–0:40` Climax (Clod & PID 1 Kernel Boss + Tools):** Hardcover Field Manual (`F1`), PCB Motherboard Map (`F3`), 6 Terminal Skins -> Final showdown in `/sys/clod_overlord_core` (`kill -9 1`).
-   - **`0:40–0:50` End Slate CTA:** **PLAY CHAPTER 1 FREE IN BROWSER · WISHLIST ON STEAM** + 12 `ACH_*` Trophies & Portable Save Carryover.
+   - **`0:40–0:50` End Slate CTA:** **PLAY CHAPTER 1 FREE IN BROWSER · WISHLIST ON STEAM** + 13 `ACH_*` Trophies & Portable Save Carryover.
 2. **Engineering Devlogs & Creator Kit:** Ship a press/creator kit in `social/` with clean `1920x1080` screenshots, high-DPI infographics, GIFs under 5 MB, and zero-setup browser URLs so YouTubers can try the game in 5 seconds before requesting a Steam build.
 
 ---

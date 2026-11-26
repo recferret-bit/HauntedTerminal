@@ -157,12 +157,7 @@
     "arrival": [
       {
         "kind": "print",
-        "text": "\n[LOGIC CELL — /srv/kiroween/logic_cell]\nBeside the ALU die sits an old beige clamshell briefcase—your laptop got pulled into the machine with you!\n"
-      },
-      {
-        "kind": "taunt",
-        "mood": "laugh",
-        "print": "\n[BIG FOUR BULLYING] {text}\n"
+        "text": "\n[LOGIC CELL — /srv/kiroween/logic_cell]\nBeside the ALU die sits your old clamshell laptop—and a live Trojan (`token_skimmer.bin`)! Listen to Kiro.d before battle starts.\n"
       }
     ],
     "timed": [
@@ -171,45 +166,22 @@
         "steps": [
           {
             "kind": "dialog_box",
-            "speaker": "gork",
-            "text": "BWAHAHA! '549' + '15' === '54915'! Try untangling JavaScript math without your workstation, Vibecoder!",
+            "speaker": "vibecoder",
+            "text": "Look—my old clamshell laptop landed on the cell floor! And there is another gargoyle Trojan (`token_skimmer.bin`) guarding cart.js!",
             "holdSec": 9
           }
-        ],
-        "unless": {
-          "kind": "has_item",
-          "item": "laptop"
-        }
+        ]
       },
       {
         "afterSec": 10,
         "steps": [
           {
             "kind": "dialog_box",
-            "speaker": "vibecoder",
-            "text": "Wait—is that my old clamshell laptop on the cell floor?! It got pulled into the computer with me!",
-            "holdSec": 9
-          }
-        ],
-        "unless": {
-          "kind": "has_item",
-          "item": "laptop"
-        }
-      },
-      {
-        "afterSec": 19,
-        "steps": [
-          {
-            "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "Grab your laptop with mv laptop ~ to unlock code editing! Then petrify token_skimmer.bin (chmod -x) and fix the math in cart.js!",
-            "holdSec": 9
+            "text": "When our talk ends, Gork will taunt and turn-based battle begins! Grab your laptop (mv laptop ~), petrify token_skimmer.bin (chmod -x), fix cart.js, and pocket the RAM + SSD!",
+            "holdSec": 8
           }
-        ],
-        "unless": {
-          "kind": "has_item",
-          "item": "laptop"
-        }
+        ]
       }
     ],
     "locks": [
@@ -252,6 +224,7 @@
     },
     "kiro": {
       "stage": "crack_only"
-    }
+    },
+    "openingSec": 18
   }
 }

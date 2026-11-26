@@ -8,7 +8,7 @@ This playbook pairs with `.kiro/specs/steamworks-store-release/requirements.md` 
 
 1. **Top of Funnel — Instant Browser Demo (`/` -> `/play/chapter-01-kiroween`)**:
    - Visitors play all **11 zero-death-verified sectors** of Chapter 1 in their browser with zero install or signup friction.
-   - Progress (`out-of-credits:progress:v1`), Silicon Scrap / `~/.bashrc` Rig Perks (`out-of-credits:metagame:v1`), and **12 local achievements** (`out-of-credits:achievements:v1`, keyed 1:1 with `ACH_*` Steamworks API names) persist locally.
+   - Progress (`out-of-credits:progress:v1`), Silicon Scrap / `~/.bashrc` Rig Perks (`out-of-credits:metagame:v1`), and **13 local achievements** (`out-of-credits:achievements:v1`, keyed 1:1 with `ACH_*` Steamworks API names) persist locally.
 2. **Mid Funnel — Dedicated Tagged Desktop Builds (`#desktop-builds` & GitHub Releases)**:
    - Pushing any `v*` git tag triggers `.github/workflows/desktop-release.yml`, running `npm run quality`, `generate-chapter.mjs --verify`, `npm run build`, `generate-tauri-steam.mjs`, and `verify-desktop-bundle.mjs`, then building native **macOS** (`.dmg`), **Windows** (`.msi` / `-setup.exe`), **Linux / Steam Deck** (`.AppImage` / `.deb`), and **Portable Offline Web** (`tar.gz`) artifacts with `SHA256SUMS.txt`.
    - Browser players click **Export Save & Trophies (.json)** on `/` and **Import Save Bundle (.json)** inside the desktop app to carry every sector clear, perk, and `ACH_*` trophy over immediately.
@@ -54,7 +54,7 @@ Valve reviews store presence separately from game builds, so you can publish you
 
 ---
 
-## 4. Registering the 12 `ACH_*` Achievements & Auto-Cloud in Steamworks
+## 4. Registering the 13 `ACH_*` Achievements & Auto-Cloud in Steamworks
 
 Every local achievement in `src/chapters/achievements.ts` already carries its canonical Steamworks API key:
 
@@ -62,6 +62,7 @@ Every local achievement in `src/chapters/achievements.ts` already carries its ca
 |---|---|---|---|
 | `first_boot` | `ACH_FIRST_BOOT` | `CAMPAIGN` | No |
 | `lantern_sweep` | `ACH_LANTERN_SWEEP` | `COMBAT` | No |
+| `field_manual` | `ACH_FIELD_MANUAL` | `CAMPAIGN` | No |
 | `sigkill_hunter` | `ACH_SIGKILL_HUNTER` | `COMBAT` | No |
 | `stone_cold_chmod` | `ACH_STONE_COLD_CHMOD` | `COMBAT` | No |
 | `open_weights_init` | `ACH_OPEN_WEIGHTS_INIT` | `CRAFT` | No |
@@ -73,7 +74,7 @@ Every local achievement in `src/chapters/achievements.ts` already carries its ca
 | `campaign_clear` | `ACH_CAMPAIGN_CLEAR` | `CAMPAIGN` | Yes |
 | `zero_panic_run` | `ACH_ZERO_PANIC_RUN` | `MASTERY` | Yes |
 
-1. In `App Admin -> Stats & Achievements -> Achievements`, create the 12 entries above with **Set By: Client**, upload `256 x 256` color (unlocked) and grayscale (locked) icons, and click **Publish** under `Publish -> Prepare for Publishing`.
+1. In `App Admin -> Stats & Achievements -> Achievements`, create the 13 entries above with **Set By: Client**, upload `256 x 256` color (unlocked) and grayscale (locked) icons, and click **Publish** under `Publish -> Prepare for Publishing`.
 2. In `App Admin -> Steam Cloud`, enable **Steam Auto-Cloud** on Tauri's `app_data_dir` (`dev.outofcredits.app`) for Windows (`WinAppDataRoaming`), macOS (`MacAppSupport`), and Linux (`LinuxXdgDataHome`) with pattern `*.json` (`out-of-credits-save.json` and `achievements-ledger.json` are atomically persisted and hydrated on boot via `desktop_write_save_bundle` / `desktop_read_save_bundle`), and share the Demo App's Auto-Cloud root with the Main App so Demo players keep their saves across OSes automatically.
 
 ---

@@ -9,6 +9,7 @@ import { fade, removeActor, setRest } from './stage-actor.js';
 import { ACTOR_Z, HERO_STEPS, HERO_WALK_MS } from './stage-const.js';
 import { playCues, playFx, say } from './stage-fx.js';
 import { applyLantern } from './stage-layout.js';
+import { launchEnemyProjectile } from './stage-projectile.js';
 import { anchorPoint, findByModel, firstOfKind } from './stage-resolve.js';
 import type { ComicStage } from './comic-stage.js';
 
@@ -188,6 +189,7 @@ export function enemyAttack(stage: ComicStage, a: StageActor): void {
   const { dir, hero } = faceHero(stage, a);
   a.animator.setState('windup');
   if (hero) a.animator.setLook(dir, 0);
+  if (!stage.reducedMotion.on) flashActor(stage, a, 0xe8002b, 160, 0);
   const stamp = { turn: enemyTurns.get(stage) ?? 0, serial: ++tellSerial };
   tells.set(a, stamp);
   const g = a.gen;
@@ -215,12 +217,13 @@ export function battleTurnChanged(stage: ComicStage, ev: { type: 'BATTLE_TURN'; 
   }
 }
 
-/** The strike: attack pose and a stepped lunge toward the hero (pulled back, snap out, two holds back). */
+/** The strike: attack pose, red-Matrix fireball projectile, and a stepped lunge toward the hero. */
 export function strikeFrom(stage: ComicStage, a: StageActor): void {
   if (a.exiting || a.dead || a.rest === 'petrified' || a.rest === 'frozen') return;
   const { dir } = faceHero(stage, a);
   tells.delete(a);
   a.animator.setState('attack');
+  launchEnemyProjectile(stage, a);
   const g = claim(a);
   const lunge = a.kind === 'boss' ? 0.25 : 0.42;
   stage.tweens.add(420, (t) => {

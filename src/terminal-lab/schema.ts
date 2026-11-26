@@ -1,5 +1,5 @@
 import { MECHANICS, ROOM_KINDS } from '../chapters/validate-pack.js';
-import { AGENTS, ENEMY_FIELDS, FILE_FIELDS, MOODS, PATCH_FIELDS, PICKUP_FIELDS, PROP_FIELDS, RULE_VARIANTS, STEP_VARIANTS as SCRIPT_STEP_VARIANTS } from '../chapter-editor/schema.js';
+import { AGENTS, ENEMY_FIELDS, FILE_FIELDS, MOODS, PATCH_FIELDS, PICKUP_FIELDS, PROP_FIELDS, RIDDLE_FIELDS, RULE_VARIANTS, STEP_VARIANTS as SCRIPT_STEP_VARIANTS } from '../chapter-editor/schema.js';
 import { b, n, opt, sel, t, type Field } from '../editor-core/schema.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
 import { LAB_FLOORS, type LabCond, type LabSetupKind, type LabStepKind } from './lab-types.js';
@@ -36,17 +36,7 @@ export const SETUP_VARIANTS = (): Record<LabSetupKind, Field[]> => ({
   npc: SAY_FIELDS,
   taunt: TAUNT_FIELDS,
   dialogue: SCRIPT_STEP_VARIANTS().dialogue,
-  riddle: [
-    t('id', 'Id'),
-    t('path', 'Socket path', { mono: true, hint: 'a .sock file in the room' }),
-    t('prompt', 'What the socket says', { rows: 3 }),
-    t('answer', 'Accepted answer', { mono: true, hint: 'the exact text, or re:regex (re:/^(a|b)$/i for flags)' }),
-    opt(t('speaker', 'Speaker name')),
-    opt({ type: 'strings', key: 'hints', label: 'Hints, one per wrong answer (the last repeats)' }),
-    opt(t('success', 'Said when solved')),
-    opt(t('opens', 'Door it opens', { mono: true, suggest: 'paths', hint: 'a directory or file made readable when solved' })),
-    opt({ type: 'strings', key: 'tokens', label: 'Commands the bubble highlights (one per line)' }),
-  ],
+  riddle: RIDDLE_FIELDS,
   task: [t('id', 'Id'), { type: 'union', key: 'rule', label: 'Win rule', union: RULE_VARIANTS, tag: 'kind' }],
   check: [t('id', 'Id'), t('description', 'Checklist line', { rows: 2 }), { type: 'union', key: 'when', label: 'Passes when', union: COND_VARIANTS, tag: 'kind' }],
 });

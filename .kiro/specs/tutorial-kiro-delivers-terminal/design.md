@@ -4,15 +4,14 @@ Follows `requirements.md`. Approval: delegated by the user on 2026-11-25 ("do yo
 
 ## Data (chapter, `chapters-designer`)
 
-- `chapter.manifest.json`: `startItems` is `["manual", "map"]`; `grants` becomes progressive: `afterLevel: 1` `["terminal"]`, `afterLevel: 3` `["lantern"]`, `afterLevel: 6` `["laptop"]` (req 10).
-- `level-01-tutorial-awakening/level.spec.json -> script.timed` (patched in place, canonical writer), after the "I'm cooked!" line at 15 s:
-  - 17 s: `emote { emote: "shout", text: "HELLOOOO??" }` + `dialog_box vibecoder "HELLOOOO?? Is anybody out there?!"`.
-  - 19 s: `spawn kiro glide`, `kiro_action scan`, Kiro's first line.
-  - 22 s: `carry_item { entityId: "kiro", item: "terminal" }` + Kiro line ("You dropped your cyberdeck terminal in the dark. Catch!").
-  - 25 s: `give_item { item: "terminal", from: "kiro" }` + vibecoder line ("My terminal! Okay... the screen glow barely reaches my boots, so I can run `ls` at least!") + `tutorial_step 1` (`ls`, unless `ran_command ls`).
-  - 28 s and 31 s: two `ls` guidance lines (unless `ran_command ls`).
-  - Arrival `print` notes pitch black darkness and empty hands (`manual`, `map` in pocket).
-- `solutionCommands` starts with `ls` (req 11, 6 commands total).
+- `chapter.manifest.json`: `startItems` is `[]`; `grants` becomes progressive: `afterLevel: 1` `["terminal"]`, `afterLevel: 2` `["lantern"]`, `afterLevel: 4` `["map", "manual"]`, `afterLevel: 6` `["laptop"]` (req 10).
+- `level-01-tutorial-awakening/level.spec.json -> script.timed` (`openingSec: 60`, patched in place, canonical writer):
+  - 1 s & 7 s: vibecoder waking in pitch darkness with empty hands (no terminal, lantern, map, or manual).
+  - 13 s: `emote { emote: "shout", text: "HELLOOOO??" }` + `dialog_box vibecoder "HELLOOOO?? Is anybody out there?!"`.
+  - 19 s, 28 s, 37 s: `spawn kiro glide`, `kiro_action scan`, Kiro's intro, whole-chapter mission briefing, and RAM (+Max HP) / SSD (auto-Revive) explanation (`ls` stays locked until `lantern` is rewarded after Sector 02).
+  - 46 s & 54 s: `carry_item { entityId: "kiro", item: "terminal" }` + Kiro and vibecoder handover lines.
+  - 60 s: `give_item { item: "terminal", from: "kiro" }` + `tutorial_step 1` (`pwd`), followed by Clod's Big Four taunt (`emitLevelTaunt`).
+- `solutionCommands` starts with `pwd` (req 11, 6 commands total).
 
 ## Vocabulary (four places, `chapters-designer`; event types in `src/contracts`, `lead-dev`)
 

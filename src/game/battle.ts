@@ -65,8 +65,20 @@ export function pickAgent(seed: number): BattleAgent {
   return BIG_FOUR[Math.abs(seed) % BIG_FOUR.length]!;
 }
 
-/** idle -> intro: a battle begins. `seed` picks the agent and its taunt; nobody acts during the intro. */
-export function beginBattle(b: BattleState, threats: readonly BattleThreat[], seed: number, events: KernelEvent[]): void {
+export interface BattleIntroOverride {
+  agent?: BattleAgent;
+  taunt?: string;
+  advice?: string;
+}
+
+/** idle -> intro: a battle begins. `seed` picks the agent and its taunt unless `override` supplies the level's Big Four taunt. */
+export function beginBattle(
+  b: BattleState,
+  threats: readonly BattleThreat[],
+  seed: number,
+  events: KernelEvent[],
+  override?: BattleIntroOverride,
+): void {
   const next = nextMachineState(BATTLE_TRANSITIONS, b.phase, 'BEGIN');
   if (!next || threats.length === 0) return;
   b.battle += 1;
@@ -74,14 +86,16 @@ export function beginBattle(b: BattleState, threats: readonly BattleThreat[], se
   b.introLeft = INTRO_SEC;
   b.secondsLeft = TURN_SEC;
   b.enemyIds = threats.map((t) => t.id);
-  const agent = pickAgent(seed);
+  const agent = override?.agent ?? pickAgent(seed);
+  const taunt = override?.taunt?.trim() || battleTaunt(agent, seed);
+  const advice = override?.advice?.trim() || battleAdvice(threats);
   events.push({
     type: 'BATTLE_STARTED',
     battle: b.battle,
     agent,
     model: `agent.${agent}`,
-    taunt: battleTaunt(agent, seed),
-    advice: battleAdvice(threats),
+    taunt,
+    advice,
     enemyIds: [...b.enemyIds],
   });
 }

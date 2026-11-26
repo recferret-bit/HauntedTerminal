@@ -20,15 +20,22 @@ export function mountItemsStrip(
   drawPortrait: DrawPortrait,
   onItemClick?: (id: ItemId) => void,
 ): ItemsStrip {
+  const slotTitle = (id: ItemId, carried: boolean): string => {
+    const base = `${ITEMS[id].label}: ${ITEMS[id].use}`;
+    if (!onItemClick || (id !== 'map' && id !== 'manual')) return base;
+    if (!carried) return `${base} (Not carried yet)`;
+    return id === 'map' ? `${base} (Click or F3)` : `${base} (Click or F1)`;
+  };
   const slots = new Map<ItemId, HTMLElement>();
   for (const id of ITEM_IDS) {
     const slot = el('div', `item-slot item-${id}`, [el('span', 'item-icon', [drawPortrait(ITEMS[id].model, ICON_PX)]), el('span', 'item-label', [ITEMS[id].label])]);
-    slot.title = id === 'map' && onItemClick ? `${ITEMS[id].label}: ${ITEMS[id].use} (Click or F3)` : `${ITEMS[id].label}: ${ITEMS[id].use}`;
+    slot.title = slotTitle(id, false);
     slot.dataset.item = id;
-    if (id === 'map' && onItemClick) {
+    if ((id === 'map' || id === 'manual') && onItemClick) {
       slot.classList.add('clickable');
       slot.setAttribute('role', 'button');
-      slot.tabIndex = 0;
+      slot.setAttribute('aria-disabled', 'true');
+      slot.tabIndex = -1;
       const fire = () => {
         if (slot.classList.contains('carried')) onItemClick(id);
       };
@@ -54,6 +61,11 @@ export function mountItemsStrip(
         const carried = inventory.items.includes(id);
         slot.classList.toggle('carried', carried);
         slot.classList.toggle('held', carried && inventory.held === id);
+        slot.title = slotTitle(id, carried);
+        if ((id === 'map' || id === 'manual') && onItemClick) {
+          slot.tabIndex = carried ? 0 : -1;
+          slot.setAttribute('aria-disabled', String(!carried));
+        }
         slot.setAttribute('aria-label', `${ITEMS[id].label}: ${carried ? (inventory.held === id ? 'in hand' : 'carried') : 'not carried'}`);
       }
     },

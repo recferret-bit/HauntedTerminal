@@ -11,6 +11,8 @@ import { mountItemsStrip, type ItemsStrip } from './items-strip.js';
 export interface HudHandlers {
   onHint(): void;
   onMap?(): void;
+  onManual?(): void;
+  onSkipDialog?(): void;
   onPlayAgain(skipIntroNextTime: boolean): void;
   maxFloors?: number;
   /** Draws the item icons of the strip (the renderer's `drawPortrait`, passed in by `src/play`: `src/ui` imports no three). Without it the strip is not mounted. */
@@ -30,6 +32,8 @@ export interface Hud {
   damage(amount: number, source: string): void;
   /** A comic pop next to the field the pickup raised. */
   pickup(item: 'energy' | 'ram' | 'ssd' | 'lantern' | 'laptop', label: string): void;
+  /** Pops an inventory slot when an NPC or sector reward hands over an item. */
+  itemGiven?(item: ItemId): void;
   /** Big banner: an SSD backup saved the run. */
   backupUsed(hp: number): void;
   /** Non-blocking comic stamp when a local achievement unlocks. */
@@ -121,6 +125,9 @@ interface HudView {
   hpText: HTMLElement;
   hpBar: HTMLElement;
   turn: HTMLElement;
+  battleCallout: HTMLElement;
+  skipDialogBtn: HTMLButtonElement;
+  mapBtn: HTMLButtonElement;
   lastTurn: string;
   ram: HTMLElement;
   ssd: HTMLElement;
@@ -251,6 +258,12 @@ function updateHud(view: HudView, snap: GameSnapshot): void {
   view.time.textContent = clock(snap.timeSec);
   view.pause.classList.toggle('on', !!snap.paused);
   if (snap.inventory) view.items?.update(snap.inventory);
+  const hideMap = !snap.inventory?.items.includes('map');
+  view.mapBtn.hidden = hideMap;
+  view.mapBtn.classList.toggle('hidden', hideMap);
+  const hideSkip = !snap.openingDialog;
+  view.skipDialogBtn.hidden = hideSkip;
+  view.skipDialogBtn.classList.toggle('hidden', hideSkip);
   updateTurn(view, snap.battle);
 }
 
@@ -268,7 +281,21 @@ function updateTurn(view: HudView, battle: GameSnapshot['battle']): void {
   view.turn.hidden = text === '';
   view.turn.textContent = text;
   view.turn.dataset.phase = battle?.phase ?? 'idle';
-  view.turn.classList.toggle('urgent', battle?.phase === 'player' && (battle.secondsLeft ?? 0) <= 10);
+  const urgent = battle?.phase === 'player' && (battle.secondsLeft ?? 0) <= 10;
+  view.turn.classList.toggle('urgent', urgent);
+  const callout = !battle
+    ? ''
+    : battle.phase === 'intro'
+      ? 'BATTLE INCOMING — BIG FOUR TAUNTING! Press ENTER to FIGHT now!'
+      : battle.phase === 'player'
+        ? `BATTLE // YOUR TURN ${clock(battle.secondsLeft ?? 0)}${battle.held ? ' (PAUSED)' : ''} — Every Enter = 1 move, then enemies attack!`
+        : 'BATTLE // ENEMY TURN — Incoming attack!';
+  const hideCallout = callout === '';
+  view.battleCallout.hidden = hideCallout;
+  view.battleCallout.classList.toggle('hidden', hideCallout);
+  view.battleCallout.textContent = callout;
+  view.battleCallout.dataset.phase = battle?.phase ?? 'idle';
+  view.battleCallout.classList.toggle('urgent', urgent);
 }
 
 function hudApi(view: HudView): Hud {
@@ -298,6 +325,9 @@ function hudApi(view: HudView): Hud {
       const anchor = item === 'ram' ? q('#hud-ram-cell', view.root) : item === 'ssd' ? q('#hud-ssd-cell', view.root) : view.hpCell;
       replayClass(anchor, 'bump');
       pop(anchor, label, `pop-${item}`);
+    },
+    itemGiven(item) {
+      view.items?.pop(item);
     },
     backupUsed(hp) {
       q('span', view.backup).textContent = `SSD backup loaded. HP ${hp}.`;
@@ -360,9 +390,18 @@ function mountLeftItemsStrip(
   return items;
 }
 
-function mountFx(stageWrap: HTMLElement): HTMLElement {
+function mountFx(stageWrap: HTMLElement, onSkipDialog?: () => void): { fx: HTMLElement; skipBtn: HTMLButtonElement; battleCallout: HTMLElement } {
   stageWrap.querySelector<HTMLElement>('#titleblock > #fx-hint')?.remove();
   stageWrap.querySelector<HTMLElement>('.hud-fx-layer')?.remove();
+  stageWrap.querySelector<HTMLElement>('#skip-dialog-btn')?.remove();
+  stageWrap.querySelector<HTMLElement>('#battle-callout')?.remove();
+  const skipBtn = dom('button', { type: 'button', id: 'skip-dialog-btn', class: 'skip-dialog-btn', title: 'Skip conversation and unlock terminal' }, [
+    'Skip Dialog »',
+  ]);
+  skipBtn.hidden = true;
+  skipBtn.onclick = () => onSkipDialog?.();
+  const battleCallout = dom('div', { id: 'battle-callout', class: 'battle-callout', 'aria-live': 'polite' });
+  battleCallout.hidden = true;
   const fx = dom('div', { class: 'hud-fx-layer' }, [
     dom('div', { class: 'damage-flash', id: 'fx-damage' }),
     dom('div', { class: 'backup-banner', id: 'fx-backup' }, [dom('b', {}, ['BACKUP RESTORED!']), dom('span')]),
@@ -375,15 +414,15 @@ function mountFx(stageWrap: HTMLElement): HTMLElement {
       ]),
     ]),
   ]);
-  stageWrap.appendChild(fx);
-  return fx;
+  stageWrap.append(fx, skipBtn, battleCallout);
+  return { fx, skipBtn, battleCallout };
 }
 
 export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLElement, handlers: HudHandlers): Hud {
   heroHudCleanup.get(stageWrap)?.();
   root.replaceChildren(...buildHudNodes(handlers.maxFloors ?? 5));
   const hero = mountHeroHud(stageWrap, handlers.drawPortrait);
-  const fx = mountFx(stageWrap);
+  const { fx, skipBtn, battleCallout } = mountFx(stageWrap, handlers.onSkipDialog);
   bindHud(root, handlers);
   stats.replaceChildren(buildStatsCard());
   const skipBox = q<HTMLInputElement>('#outro-skip', stats);
@@ -407,6 +446,9 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     hpText: hero.hpText,
     hpBar: hero.hpBar,
     turn: hero.turn,
+    battleCallout,
+    skipDialogBtn: skipBtn,
+    mapBtn: q<HTMLButtonElement>('#hud-map', root),
     lastTurn: '',
     ram: q('#hud-ram', root),
     ssd: q('#hud-ssd', root),
@@ -429,6 +471,7 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
       handlers.drawPortrait,
       (id) => {
         if (id === 'map') handlers.onMap?.();
+        else if (id === 'manual') handlers.onManual?.();
       },
     ),
     drawPortrait: handlers.drawPortrait,

@@ -306,7 +306,10 @@ await withProcgen(async (_procgen, vite) => {
       assert.ok(FX_IDS.includes(id), `unknown cue id ${id}`);
       assert.ok(FxCatalog.has(id), `missing FxCatalog entry for ${id}`);
     }
-    const directStageOnly = new Set(['fx.lightning-strike']);
+    const directStageOnly = new Set(['fx.lightning-strike', 'fx.enemy-fireball']);
+    for (const id of directStageOnly) {
+      assert.ok(FxCatalog.has(id), `missing FxCatalog entry for direct stage FX ${id}`);
+    }
     const missingFromSelfcheck = FX_IDS.filter((id) => !directStageOnly.has(id) && !played.has(id));
     assert.deepEqual(missingFromSelfcheck, [], `FX_IDS not covered by stage-selfcheck allEvents: ${missingFromSelfcheck.join(', ')}`);
   });
@@ -537,6 +540,7 @@ await withProcgen(async (_procgen, vite) => {
   await test('ChapterSession cmdRm refuses removing root, cwd, or ancestor directories', () => {
     const ch = createChapterSession({ chapterId: 'chapter-01-kiroween', startLevel: 0 });
     ch.skipIntro();
+    ch.skipTutorial();
     const startCwd = ch.snapshot().cwd;
     for (const cmd of ['rm .', 'rm -r .', 'rm ..', 'rm -r ..', 'rm -rf /']) {
       const res = ch.exec(cmd);

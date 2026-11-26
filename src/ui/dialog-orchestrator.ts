@@ -61,7 +61,7 @@ export interface DialogOrchestrator {
 const MAX_CHATTER_QUEUE = 3;
 const MAX_TEXT_LEN = 240;
 const SPEAKER_PREFIX_RX =
-  /^(?:\[(?:KIRO(?:\s+GHOST|\.D)?|ADVISOR\s+KIRO(?:\.D)?|ANTI-?GRAVY|CLOD|GORK|CODEC)\]|(?:ADVISOR\s+KIRO(?:\.D)?(?:\s*\([^)]+\))?|KIRO(?:\s+GHOST|\.D)?(?:\s*\([^)]+\))?|ANTI-?GRAVY|CLOD|GORK|CODEC))\s*:\s*/i;
+  /^(?:\[(?:KIRO(?:\s+GHOST|\.D)?|ADVISOR\s+KIRO(?:\.D)?|OLD\s+CODER(?:\s*\([^)]+\))?|DAD(?:\.TTY)?|ANTI-?GRAVY|CLOD|GORK|CODEC)\]|(?:ADVISOR\s+KIRO(?:\.D)?(?:\s*\([^)]+\))?|KIRO(?:\s+GHOST|\.D)?(?:\s*\([^)]+\))?|OLD\s+CODER(?:\s*\([^)]+\))?|DAD(?:\.TTY)?|ANTI-?GRAVY|CLOD|GORK|CODEC))\s*:\s*/i;
 
 /** Removes redundant leading speaker tags (`KIRO.D: "..."`, `CLOD: ...`) since the dialog box displays the speaker header. */
 export function stripSpeakerPrefix(raw: string): string {

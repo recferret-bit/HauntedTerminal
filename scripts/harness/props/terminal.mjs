@@ -40,8 +40,12 @@ export default async function terminalSuite({ load }) {
   const { resolveLevelByQuery } = await load('/src/ui/chapter-map-model.ts');
   // `map` on the real chapter (its manifest is what the map resolves against); one session per level, opened on first use.
   const mapWorld = await chapterWorld({ load });
-  const mapSessions = new Map();
-  const mapSession = (i) => mapSessions.get(i) ?? mapSessions.set(i, mapWorld.open(i)).get(i);
+  const mapLockedSessions = new Map();
+  const mapUnlockedSessions = new Map();
+  const mapLockedSession = (i) => mapLockedSessions.get(i) ?? mapLockedSessions.set(i, mapWorld.open(i)).get(i);
+  const mapSession = (i) =>
+    mapUnlockedSessions.get(i) ??
+    mapUnlockedSessions.set(i, mapWorld.openWith(i, (p) => { p.manifest.startItems = ['terminal', 'map']; })).get(i);
 
   /** A fresh session on `kind` holding `files` (`{ name: oneLineContent }`), each file's content being `<line>\n`. */
   const room = (kind, files = {}) => {
@@ -353,6 +357,12 @@ export default async function terminalSuite({ load }) {
           fc.stringMatching(/^[a-z0-9 #-]{0,10}$/),
         );
         return fc.property(fc.nat(mapWorld.levels.length - 1), query, (at, q) => {
+          const rawSession = mapLockedSession(at);
+          rawSession.skipOpeningDialog();
+          if (!rawSession.snapshot().inventory.items.includes('map')) {
+            const denied = rawSession.exec(q ? `map ${q}` : 'map');
+            expect(denied.code === 1 && rawSession.consumeMapRequest() === null, `map ${q} succeeded without carrying map at level ${at + 1}`);
+          }
           const session = mapSession(at);
           const r = session.exec(q ? `map ${q}` : 'map');
           expect(r.code === 0, `map ${q} exited ${r.code}: ${JSON.stringify(r.output)}`);

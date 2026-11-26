@@ -1,9 +1,45 @@
 import type { KernelEvent } from '../contracts/events.js';
+import { giveItem, hasItem, holdItem, ITEMS, type ItemId } from '../game/inventory.js';
 import { absPath, lookup, type VNode } from '../game/tree.js';
 import { levelScript } from './script.js';
 import type { WinRule } from './types.js';
 import { validateCartJs, validateDockerCompose, validateDockerfile, validateStorefrontHtmlCss } from './validators.js';
 import { splitParentAndName, type ChapterState } from './session-state.js';
+
+/** Grants unowned items from `manifest.grants` up to `maxAfterLevel`; optionally emits reward events and text. */
+export function grantManifestItemsUpTo(
+  g: ChapterState,
+  maxAfterLevel: number,
+  emitRewards: boolean,
+  events: KernelEvent[],
+): string {
+  if (maxAfterLevel <= 0) return '';
+  const newlyGranted: ItemId[] = [];
+  for (const grant of g.pack.manifest.grants ?? []) {
+    if (maxAfterLevel < grant.afterLevel) continue;
+    for (const item of grant.items ?? []) {
+      const had = hasItem(g.inventory, item);
+      g.inventory = giveItem(g.inventory, item);
+      if (!had) newlyGranted.push(item);
+      if (!had && (item === 'lantern' || g.inventory.held === null)) {
+        g.inventory = holdItem(g.inventory, item);
+      }
+    }
+  }
+  if (g.inventory.held === null && hasItem(g.inventory, 'terminal')) {
+    g.inventory = holdItem(g.inventory, 'terminal');
+  }
+  if (!emitRewards || newlyGranted.length === 0) return '';
+  let note = '';
+  for (const item of newlyGranted) {
+    events.push({ type: 'ITEM_GIVEN', item, model: ITEMS[item].model, held: g.inventory.held === item });
+    if (item === 'lantern' || item === 'laptop') {
+      events.push({ type: 'PICKUP_COLLECTED', entityId: `reward:${item}`, item, amount: 1, label: item.toUpperCase() });
+    }
+    note += `\n[SECTOR REWARD] Obtained ${ITEMS[item].label.toUpperCase()} — ${ITEMS[item].use}\n`;
+  }
+  return note;
+}
 
 export function getChecklist(g: ChapterState): Array<{ description: string; done: boolean }> {
     return g.rt.spec.winRules.map((rule) => ({
@@ -65,6 +101,8 @@ export function evalWinRule(g: ChapterState, rule: WinRule): boolean {
         return g.rt.filesRead.has(rule.path);
       case 'talk_ally':
         return g.rt.talkedSockets.has(rule.socket);
+      case 'riddle_solved':
+        return g.rt.lab.solved.has(rule.riddleId);
       case 'file_absent':
         return lookup(g.rt.root, rule.path) === null;
       case 'file_contains': {
@@ -130,10 +168,14 @@ export function refreshExitGates(g: ChapterState, events: KernelEvent[]): void {
       events.push({ type: 'INODE_MODE_CHANGED', inodeId: gate.id, oldMode: old, newMode: targetMode });
       if (targetMode === 0o755 && !g.rt.completionEmitted) {
         g.rt.completionEmitted = true;
+        const rewardNote =
+          !g.lab && (g.rt.levelCommands > 0 || g.rt.levelTicks > 0)
+            ? grantManifestItemsUpTo(g, g.rt.spec.index, true, events)
+            : '';
         const comp = g.rt.dialog?.completion;
         const skipRedundantTutorialComp = Boolean(levelScript(g).tutorial) && !g.rt.tutorialSkipped;
         const exitBase = splitParentAndName(g.rt.spec.exitDir).name;
-        g.rt.completionNote += `${comp && !skipRedundantTutorialComp ? `\n${comp}\n` : ''}[EXIT GATE UNLOCKED] \`cd ${exitBase}\` is now open!\n`;
+        g.rt.completionNote += `${rewardNote}${comp && !skipRedundantTutorialComp ? `\n${comp}\n` : ''}[EXIT GATE UNLOCKED] \`cd ${exitBase}\` is now open!\n`;
       }
     }
   }

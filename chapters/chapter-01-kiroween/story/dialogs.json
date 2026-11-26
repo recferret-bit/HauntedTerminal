@@ -12,44 +12,44 @@
   },
   "levels": {
     "level-01-tutorial-awakening": {
-      "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro.d brings your terminal! Learn ls, mv, cat, ps, and kill.",
+      "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro.d brings your terminal & explains your chapter mission, RAM (Max HP) & SSD (Revive)!",
       "hankRungs": [
-        "Kiro.d: \"You're inside your own computer, Vibecoder! The Big Four (Anti-Gravy, Codec, Gork, Clod) drained my VRAM. Look around with `ls`, then pocket the starter RAM with `mv starter_ram_8gb.dimm ~`!\"",
-        "Kiro.d: \"I need RAM and GPU chips to host open-weight models! Read my full story with `cat kiro_story.txt`, then check running processes with `ps`.\"",
-        "Kiro.d: \"Run `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}` to zap `glitch_spark.exe`, then step through `cd hub_uplink`!\""
+        "Kiro.d: \"Without your lantern, `ls` is locked in the dark! Check where you stand with `pwd`, then pocket the starter RAM stick (+Max HP) using `mv starter_ram_8gb.dimm ~`!\"",
+        "Kiro.d: \"Remember our chapter mission: scavenge RAM (+10 Max HP) and SSD/GPU parts (256GB = auto-Revive backup + Hub server parts) across 6 sectors! Read `cat kiro_story.txt`, then run `ps`.\"",
+        "Kiro.d: \"Run `pwd`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}`, then step through `cd hub_uplink`!\""
       ],
-      "agentTaunt": "KIRO.D: \"I found you, Vibecoder! Here is your terminal—its screen lights the nearby wires, and down here you'll type everything! Let's learn ls, mv, cat, ps, and kill!\"",
-      "completion": "Kiro.d: \"Awesome! You mastered ls, mv, cat, ps, and kill! I'm heading to the Hub—go forth into the first two levels to solve simple tasks and get RAM + GPU chips!\""
+      "agentTaunt": "CLOD: \"Hohoho! Look at the Vibecoder clutching a bare terminal in the dark—without a lantern you cannot even run ls, and you must type every command by hand!\"",
+      "completion": "Kiro.d: \"Awesome! You mastered pwd, mv, cat, ps, and kill! Head into Cache Vault next—watch out, Big Four minions will attack you in turn-based battle!\""
     },
     "level-02-task-ram-heist": {
-      "banner": "LEVEL 02 // CACHE VAULT: Terminal glow only! Sweep .gravy_spycam, fix ollama_bus.conf & grab RAM + GPU.",
+      "banner": "LEVEL 02 // CACHE VAULT: Listen to Kiro.d first! Petrify gravy_sentry.bin, fix ollama_bus.conf, loot RAM+SSD & win your Lantern!",
       "hankRungs": [
-        "Kiro.d: \"Hear Anti-Gravy and the Big Four laughing? Prove them wrong in the green glow of your terminal! Sweep for hidden dotfiles with `ls -la` and inspect `ollama_bus.conf`.\"",
-        "Kiro.d: \"Remove `.gravy_spycam` with `rm`, patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` using `sed -i`, and don't forget both hardware parts!\"",
-        "Kiro.d: \"Run `ls -la`, `rm .gravy_spycam`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_01.img ~`, then `cd gpu_alley`.\""
+        "Kiro.d: \"`ls` is still locked until you win your lantern after this sector! Read `cat vault_notes.txt` first, and watch the turn-based battle banner—petrify `gravy_sentry.bin` with `chmod -x gravy_sentry.bin`!\"",
+        "Kiro.d: \"Once `gravy_sentry.bin` turns to stone (`chmod -x gravy_sentry.bin`), patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` with `sed -i`, then grab both RAM (+10 Max HP) and SSD/GPU (auto-Revive backup)!\"",
+        "Kiro.d: \"Run `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_01.img ~`, then `cd gpu_alley` to claim your Oil Lantern!\""
       ],
-      "agentTaunt": "ANTI-GRAVY: \"HAHAHA! You call yourself a coder? Tab-complete can't save you down here, Vibecoder!\"",
-      "completion": "First RAM stick and GPU Tensor Chip secured in the terminal glow! Careful—GPU Alley ahead is pitch black!"
+      "agentTaunt": "ANTI-GRAVY: \"HAHAHA! My gargoyle minion gravy_sentry.bin is right in front of you—eat red Matrix fireballs, Vibecoder!\"",
+      "completion": "Cache Vault cleared! RAM (+10 Max HP) and 256GB SSD/GPU Revive Backup secured—and you recovered your OIL LANTERN for GPU Alley!"
     },
     "level-03-task-gpu-salvage": {
-      "banner": "LEVEL 03 // GPU ALLEY: Pitch black crypt! Grab your lantern (`mv lantern ~`), unlock vram_crate, kill keygen.exe & loot RAM + GPU.",
+      "banner": "LEVEL 03 // GPU ALLEY: Your Oil Lantern unlocks `ls`! Sweep `.codec_spycam` & `.tensor_rune` (`ls -la`), solve `lantern_gate.sock`, and crush `keygen.exe`!",
       "hankRungs": [
-        "Kiro.d: \"GPU Alley is too dark for your terminal screen alone! Take the oil lantern at your feet first (`mv lantern ~`), then unlock `vram_crate` with `chmod 755 vram_crate` and run `ps`.\"",
-        "Kiro.d: \"With your lantern lit, kill `keygen.exe` first (`kill -9 {pid:crack_l3}`) so it stops respawning the worm, then `rm port_445/worm.bin` and pocket both the RAM and GPU chip!\"",
-        "Kiro.d: \"Run `mv lantern ~`, `chmod 755 vram_crate`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
+        "Kiro.d: \"Your new Oil Lantern unlocks `ls`! Run `ls -la` first to expose Codec's hidden `.codec_spycam` AND uncover the hidden `.tensor_rune` dotfile!\"",
+        "Kiro.d: \"Remove `.codec_spycam` (`rm .codec_spycam`), read `cat .tensor_rune` and `cat lantern_gate.sock`, then echo `amber_flame` into `lantern_gate.sock` to unlock `vram_crate`!\"",
+        "Kiro.d: \"Run `ls -la`, `rm .codec_spycam`, `cat .tensor_rune`, `echo amber_flame > lantern_gate.sock`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
       ],
-      "agentTaunt": "CODEC: \"LMAO! Pitch dark and still typing commands by hand, Vibecoder? Without your lantern you can't even run ls in here!\"",
-      "completion": "Lantern recovered and two full sets of RAM + GPU chips in your pocket! Time to meet Kiro.d at the Hub!"
+      "agentTaunt": "CODEC: \"LMAO! So you won back your lantern? Let us see if you can spot my hidden dotfile spycam and unlock lantern_gate.sock under fire!\"",
+      "completion": "Dotfile riddle solved, GPU Alley cleared, and two full sets of RAM + SSD/GPU parts ready for the Matrix Server Hub!"
     },
     "level-04-hub-model-one": {
-      "banner": "LEVEL 04 // THE MATRIX HUB: 'Who the hell are you? You code with bare hands? Are you a god?'",
+      "banner": "LEVEL 04 // THE MATRIX HUB: The Old Bearded Coder gifts you the Motherboard Map & Field Manual, then reboots Kiro.d!",
       "hankRungs": [
-        "Vibecoder: \"Who the hell are you?! You code with bare hands?! Are you a god?!\" — Old Bearded Coder (*smoking a cigarette at his Matrix CRT*): \"Worked in enterprise for decades, kid. Employer forced me to use LLMs, now I'm here. Oh, you've found parts for hosting an open-weight model, nice! Read `cat server_rack.conf`!\"",
-        "Old Bearded Coder: \"Oh, you've found parts for hosting an open-weight model, nice! Talk to me via `cat dad.tty.sock` and let's reboot Kiro.d on my server!\"",
+        "Old Bearded Coder (*smoking a cigarette at his Matrix CRT*): \"Keep that Motherboard Map (`F3` / `map`) and Unix Field Manual (`F1` / `manual`) handy, kid! Now inspect `cat server_rack.conf`.\"",
+        "Old Bearded Coder: \"Talk to me via `cat dad.tty.sock`, then run `kiro load qwen` so we slot your scavenged parts into my server and silence Anti-Gravy!\"",
         "Old Bearded Coder: \"Run `cat server_rack.conf`, `cat dad.tty.sock`, and `kiro load qwen` to boot Open-Weight Model #1 and disable Anti-Gravy, then `cd sector_ui_grid`!\""
       ],
-      "agentTaunt": "ANTI-GRAVY: \"Wait—what is that old bearded fossil doing with those local GPU chips?!\"",
-      "completion": "SUPER COOL! Kiro.d reboots with Qwen-Coder-7B and DISABLES ANTI-GRAVY! Three of the Big Four remain!"
+      "agentTaunt": "ANTI-GRAVY: \"Wait—that bearded fossil just gave him a Map and a Field Manual, AND he is wiring local GPU chips?!\"",
+      "completion": "SUPER COOL! Map & Field Manual unlocked, Kiro.d reboots with Qwen-Coder-7B, and ANTI-GRAVY IS DISABLED!"
     },
     "level-05-task-ui-grid": {
       "banner": "LEVEL 05 // UI GRID: Anti-Gravy is gone, but Codec, Gork & Clod mock you! Repair HTML+CSS & grab RAM + GPU.",

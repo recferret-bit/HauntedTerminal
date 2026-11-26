@@ -2,11 +2,12 @@ import type { KernelEvent } from '../contracts/events.js';
 import { animReactionsFor, ZONES, type AnimEventReaction } from '../procgen/index.js';
 import { eventLeadMs, fxCuesFor } from './event-fx.js';
 import { reportStage, setRest } from './stage-actor.js';
+import { clearCarried } from './stage-carry.js';
 import { HERO_WALK_MS, MAX_LEAD_MS } from './stage-const.js';
 import { handleCastEvent } from './stage-event-cast.js';
 import { handleCombatEvent } from './stage-event-combat.js';
 import { handleTravelEvent } from './stage-event-travel.js';
-import { playCues, triggerShake } from './stage-fx.js';
+import { clearBubble, playCues, triggerShake } from './stage-fx.js';
 import { flashActor, strikeFrom } from './stage-motion.js';
 import { findByModel, sourceFor, subjectFor } from './stage-resolve.js';
 import type { StageActor } from './stage-cast.js';
@@ -17,6 +18,10 @@ export function enqueueStageEvent(stage: ComicStage, ev: KernelEvent): void {
   try {
     if (!ev || typeof ev !== 'object' || typeof (ev as { type?: unknown }).type !== 'string') return;
     if (!stage.built) return;
+    if (ev.type === 'FLOOR_ENTERED') {
+      clearBubble(stage);
+      clearCarried(stage);
+    }
     const now = stage.clockMs;
     let at = Math.max(now, stage.cursor);
     if (at - now > MAX_LEAD_MS) at = now;

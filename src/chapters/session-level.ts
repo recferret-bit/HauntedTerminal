@@ -3,14 +3,13 @@ import { endBattle } from '../game/battle.js';
 import { SSD_PER_BACKUP, maxHpFor } from '../game/bestiary.js';
 import { World } from '../game/entities.js';
 import type { EnemySpawn, PickupSpawn } from '../game/floors.js';
-import { giveItem, hasItem, holdItem } from '../game/inventory.js';
 import { lookup, makeRoot } from '../game/tree.js';
 import type { LevelSpec } from './types.js';
 import { readMetagame, recordTelemetry } from './catalog.js';
 import { arrivalScript, hiddenEnemyId, levelScript } from './script.js';
 import { applyPids, fillPidsDeep, fixedPids, rollPids } from './pids.js';
 import { ensureDirChain, placeFile, resolveTauntAgent, splitParentAndName, type ChapterState, type QuestBackup } from './session-state.js';
-import { refreshExitGates } from './session-rules.js';
+import { grantManifestItemsUpTo, refreshExitGates } from './session-rules.js';
 
 function rebootLevel(g: ChapterState, events: KernelEvent[]): string {
   g.ram = g.entryRam;
@@ -58,21 +57,9 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
     const spec = applyPids(g.levels[idx]!, pids);
     g.entryRam = g.ram;
     g.entrySsd = g.ssd;
-    if (!isRetry && idx > 0) {
-      for (const grant of g.pack.manifest.grants ?? []) {
-        if (idx < grant.afterLevel) continue;
-        for (const item of grant.items ?? []) {
-          const had = hasItem(g.inventory, item);
-          g.inventory = giveItem(g.inventory, item);
-          if (!had && (item === 'lantern' || g.inventory.held === null)) {
-            g.inventory = holdItem(g.inventory, item);
-          }
-        }
-      }
-      if (g.inventory.held === null && hasItem(g.inventory, 'terminal')) {
-        g.inventory = holdItem(g.inventory, 'terminal');
-      }
-    }
+    const clearedFloor = !isRetry && idx > 0 && events.some((e) => e.type === 'FLOOR_CLEARED');
+    const grantEvents: KernelEvent[] = [];
+    const rewardNote = isRetry ? '' : grantManifestItemsUpTo(g, idx, clearedFloor && !g.lab, grantEvents);
     if (!isRetry) g.entryInventory = g.inventory;
     if (!isRetry && idx === 0) {
       g.hp = maxHpFor(g.ram);
@@ -140,6 +127,8 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       spawned: new Set(),
       levelTicks: 0,
       timedFired: new Set(),
+      openingDone: false,
+      levelBattles: 0,
       restartPending: null,
       lab: { absorbed: {}, solved: new Set(), attempts: {}, hits: new Set() },
     };
@@ -165,8 +154,11 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       });
     }
 
+    if (grantEvents.length > 0) events.push(...grantEvents);
     if (!g.intro) {
-      g.rt.arrivalNote = arriveCurrentLevel(g, events);
+      g.rt.arrivalNote = rewardNote + arriveCurrentLevel(g, events);
+    } else if (rewardNote) {
+      g.rt.arrivalNote = rewardNote;
     }
   }
 

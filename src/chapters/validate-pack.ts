@@ -19,7 +19,7 @@ export const ROOM_KINDS = ['desk', 'attic', 'crypt_entrance', 'crypt_hall', 'cha
 export const MECHANICS = ['hub', 'terminal', 'html-css', 'terminal-code', 'docker-image', 'docker-compose', 'boss'] as const satisfies readonly ChapterMechanic[];
 export const ENEMY_TYPES = ['virus', 'worm', 'trojan', 'bug', 'exploit', 'crack', 'ransomware', 'spyware', 'rootkit', 'zombie', 'forkbomb', 'kernel'] as const satisfies readonly EnemyType[];
 export const PICKUP_TYPES = ['energy', 'ram', 'ssd', 'lantern', 'laptop'] as const satisfies readonly PickupType[];
-const SPEAKERS: readonly string[] = ['clod', 'gork', 'codec', 'antigravy', 'kiro'];
+const SPEAKERS: readonly string[] = ['clod', 'gork', 'codec', 'antigravy', 'kiro', 'dad'];
 const KIRO_HIDE_WHEN = ['intro', 'exit_open', 'before_spawn'] as const;
 const SIGNALS = ['SIGTERM', 'SIGKILL', 'SIGSTOP', 'SIGCONT'];
 
@@ -41,11 +41,13 @@ class LevelCheck {
   readonly paths: Map<string, string>;
   readonly enemies: Set<string>;
   readonly sockets: Set<string>;
+  readonly riddles: Set<string>;
 
   constructor(readonly spec: LevelSpec, readonly pack: ChapterPack) {
     this.paths = new Map(spec.files.map((f) => [f.path, f.kind]));
     this.enemies = new Set(spec.enemies.map((e) => e.id));
     this.sockets = new Set(spec.files.filter((f) => f.kind === 'socket').map((f) => baseName(f.path)));
+    this.riddles = new Set((spec.riddles ?? []).map((r) => r.id));
   }
 
   add(severity: PackIssue['severity'], tab: string, message: string): void {
@@ -137,6 +139,9 @@ function checkRule(c: LevelCheck, rule: WinRule, i: number): void {
     case 'talk_ally':
       if (!c.sockets.has(rule.socket)) c.add('error', 'rules', `${what}: socket "${rule.socket}" is not in files[]`);
       break;
+    case 'riddle_solved':
+      if (!c.riddles.has(rule.riddleId)) c.add('error', 'rules', `${what}: riddle "${rule.riddleId}" is not in riddles[]`);
+      break;
     case 'kiro_loaded':
       if (!KIRO_CORE_ORDER.some((k) => k === rule.core)) c.add('error', 'rules', `${what}: unknown core "${rule.core}" (${KIRO_CORE_ORDER.join(', ')})`);
       break;
@@ -165,6 +170,7 @@ function checkRule(c: LevelCheck, rule: WinRule, i: number): void {
 function checkScript(c: LevelCheck): void {
   const script = c.spec.script;
   if (!script) return;
+  if (script.openingSec !== undefined && !(script.openingSec >= 0)) c.add('error', 'script', 'script.openingSec must be 0 or more');
   if (script.arrival) c.steps('script.arrival', script.arrival);
   if (script.onBossKill) c.steps('script.onBossKill', script.onBossKill);
   script.timed?.forEach((t, i) => {
@@ -246,6 +252,16 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack, winnable: boolean): Pack
   for (const p of spec.patches) {
     if (![...c.paths.keys()].some((f) => baseName(f) === p.file)) c.add('error', 'entities', `patch "${p.label}": file "${p.file}" is not in files[]`);
   }
+  const riddleIds = new Set<string>();
+  (spec.riddles ?? []).forEach((r, idx) => {
+    if (!r.id?.trim()) c.add('error', 'entities', `riddles[${idx}]: missing riddle id`);
+    else if (riddleIds.has(r.id)) c.add('error', 'entities', `duplicate riddle id "${r.id}"`);
+    else riddleIds.add(r.id);
+    c.needPath('entities', `riddle "${r.id || idx}"`, r.path, 'socket');
+    if (r.opens) c.needPath('entities', `riddle "${r.id || idx}" opens`, r.opens);
+    if (!r.prompt?.trim()) c.add('error', 'entities', `riddle "${r.id || idx}": prompt is empty`);
+    if (!r.answer?.trim()) c.add('error', 'entities', `riddle "${r.id || idx}": answer is empty`);
+  });
   const propIds = new Set<string>();
   (spec.props ?? []).forEach((p, idx) => {
     if (!p.id?.trim()) c.add('error', 'entities', `props[${idx}]: missing prop id`);
@@ -335,9 +351,6 @@ export function validatePack(pack: ChapterPack, { winnable = true }: ValidateOpt
     ['startItems', pack.manifest.startItems],
     ...(pack.manifest.grants ?? []).map((g, i): [string, readonly string[] | undefined] => [`grants[${i}].items`, g.items]),
   ];
-  if (pack.manifest.startItems?.length === 0) {
-    issues.push({ severity: 'error', where: 'chapter', tab: 'manifest', message: 'startItems: an empty list leaves him with nothing to hold; name at least one item or remove the field' });
-  }
   for (const [where, items] of manifestItems) {
     for (const item of items ?? []) {
       if (!isItemId(item)) issues.push({ severity: 'error', where: 'chapter', tab: 'manifest', message: `${where}: unknown item "${item}" (${ITEM_IDS.join(', ')})` });

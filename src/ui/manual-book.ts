@@ -1,3 +1,4 @@
+import { isFieldManualAvailable } from '../chapters/catalog.js';
 import { createStateMachine, type StateMachine, type TransitionTable } from '../contracts/state-machine.js';
 import { BOOK_PAGES, BOOK_SECTIONS, resolveManualPageIndex, tokenizeSearchQuery } from '../game/manual-catalog.js';
 import type { BookPage } from '../game/manual-types.js';
@@ -312,7 +313,10 @@ export function mountManualBook(host: HTMLElement, options: ManualBookOptions = 
     shell.prevBtn.disabled = !view.hasPrev;
     shell.nextBtn.disabled = !view.hasNext;
     shell.pageCountEl.textContent = view.label;
-    if (shell.standaloneLink) shell.standaloneLink.href = `/manual.html?page=${start + 1}`;
+    if (shell.standaloneLink) {
+      shell.standaloneLink.href = `/manual.html?page=${start + 1}`;
+      shell.standaloneLink.hidden = !isFieldManualAvailable();
+    }
     for (const [id, b] of shell.tabs.buttons) b.classList.toggle('active', view.active.has(id));
   }
 

@@ -14,7 +14,7 @@ export interface PixelBlit {
   dispose(): void;
 }
 
-function compile(gl: WebGLRenderingContext, type: number, src: string): WebGLShader | null {
+export function compileWebGlShader(gl: WebGLRenderingContext, type: number, src: string): WebGLShader | null {
   const sh = gl.createShader(type);
   if (!sh) return null;
   gl.shaderSource(sh, src);
@@ -46,8 +46,8 @@ export function mountPixelBlit(params: PixelArtParams, pixelRatio: number): Pixe
   if (!gl) return null;
   // Three injects this for the stage pass. A raw fragment shader will not compile without it.
   const frag = `precision mediump float;\n${buildPixelOverlayFrag()}`;
-  const vs = compile(gl, gl.VERTEX_SHADER, VERT);
-  const fs = compile(gl, gl.FRAGMENT_SHADER, frag);
+  const vs = compileWebGlShader(gl, gl.VERTEX_SHADER, VERT);
+  const fs = compileWebGlShader(gl, gl.FRAGMENT_SHADER, frag);
   const prog = gl.createProgram();
   if (!vs || !fs || !prog) return null;
   gl.attachShader(prog, vs);

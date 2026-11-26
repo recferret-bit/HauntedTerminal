@@ -20,7 +20,7 @@
       "skin": "iterm2",
       "dur": 2.5,
       "captureAt": 1.6,
-      "setup": [{ "ticks": 75 }, "ls"]
+      "setup": [{ "ticks": 75 }, "pwd"]
     },
     {
       "id": "03-gpu-alley-lantern-battle",

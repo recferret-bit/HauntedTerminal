@@ -382,7 +382,13 @@ export class StageOverlay {
       },
     });
     this.dialogue = it;
-    return { drop: () => { it.done = true; } };
+    return {
+      drop: () => {
+        it.done = true;
+        it.wrap.remove();
+        if (this.dialogue === it) this.dialogue = null;
+      },
+    };
   }
 
   /** The page-turn card: swings in around the spine (screen-left edge) in 6 poses, holds, turns away in 5. */

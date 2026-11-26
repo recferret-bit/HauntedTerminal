@@ -1,4 +1,4 @@
-import { runInventory } from '../game/inventory.js';
+import { hasItem, runInventory } from '../game/inventory.js';
 import { executeRestartCommand, runSkin } from '../game/commands-proc.js';
 import { SKIN_IDS } from '../contracts/terminal-skins.js';
 import type { KernelEvent } from '../contracts/events.js';
@@ -132,21 +132,38 @@ function cmdRestartLevel(g: ChapterState, args: string[]): Step {
 /** A `script.locks` entry refuses the command before it runs (`ls`, `ls -a`, `ls -la`: the first word decides; `kiro.d` shares `kiro`). */
 export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
     const first = argv[0] ?? '';
-    const locked = lockMessage(g, first === 'kiro.d' ? 'kiro' : first);
+    const canonical = first === 'kiro.d' ? 'kiro' : first;
+    const locked = lockMessage(g, canonical);
     if (locked !== undefined) {
       g.commandCue = 'locked';
       return emptyStep(1, locked.replace(/\n?$/, '\n'));
     }
-    return dispatchCommand(g, argv, stdin);
+    if (!g.lab && first === 'ls' && !hasItem(g.inventory, 'lantern')) {
+      g.commandCue = 'locked';
+      return emptyStep(1, "ls: it is pitch dark without your oil lantern! Clear Sector 02 to recover your lantern first (use `pwd` and `cat` for now).\n");
+    }
+    const step = dispatchCommand(g, argv, stdin);
+    if (step.code === 0 && canonical && canonical !== 'ls' && !g.reloadedNow) {
+      g.rt.commandsRun.add(canonical);
+    }
+    return step;
   }
 
 function dispatchManual(g: ChapterState, args: string[]): Step {
+    if (!hasItem(g.inventory, 'manual')) {
+      g.commandCue = 'locked';
+      return emptyStep(1, 'manual: you are not carrying the Field Manual yet! Reach the Server Hub so the Old Bearded Coder can hand it to you.\n');
+    }
     const m = runManual(args);
     g.pendingManual = m.query;
     return m.step;
   }
 
 function dispatchMap(g: ChapterState, args: string[]): Step {
+    if (!hasItem(g.inventory, 'map')) {
+      g.commandCue = 'locked';
+      return emptyStep(1, 'map: you are not carrying the Motherboard Map yet! Reach the Server Hub so the Old Bearded Coder can hand it to you.\n');
+    }
     const cur = g.rt.spec;
     const header = `[MOTHERBOARD MAP] ${g.pack.manifest.title} — Sector ${String(cur.index).padStart(2, '0')}/${g.levels.length}: ${cur.title}\n`;
     const m = runMap(args, header);
@@ -189,7 +206,7 @@ function dispatchRev(g: ChapterState, args: string[], stdin: string): Step {
 
 function dispatchHelp(g: ChapterState): Step {
   return okStep(
-    `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack] local Unix .gguf daemon Kiro.d (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 12 local trophies & Steamworks ACH_* payload\n  restart-level [--yes]  reload this level (asks twice; alias: retry)\n`,
+    `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack] local Unix .gguf daemon Kiro.d (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 13 local trophies & Steamworks ACH_* payload\n  restart-level [--yes]  reload this level (asks twice; alias: retry)\n`,
   );
 }
 

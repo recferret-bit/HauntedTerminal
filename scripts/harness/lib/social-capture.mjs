@@ -27,7 +27,11 @@ const SKIN_META = {
   vt100: { title: 'VT100', tab: 'VT100' },
 };
 
-function buildPreloadScript(seed, skin) {
+function buildPreloadScript(seed, skin, { virtualTimers = false, unlockManual = false } = {}) {
+  const vt = Boolean(virtualTimers);
+  const manualSeed = unlockManual
+    ? "localStorage.setItem('out-of-credits:achievements:v1', JSON.stringify({ schemaVersion: 1, unlocked: { field_manual: { id: 'field_manual', steamApiName: 'ACH_FIELD_MANUAL', unlockedAt: 1700000000000 } }, stats: { malwareKilled: 0, sectorsCleared: 0, sRanksEarned: 0, clearedMechanics: [], loadedCores: [] } }));"
+    : '';
   return `(() => {
     let a = ${Number(seed) >>> 0};
     Math.random = () => {
@@ -38,6 +42,7 @@ function buildPreloadScript(seed, skin) {
     };
     try {
       localStorage.setItem('credits.lab.stormOn', '0');
+      ${manualSeed}
       ${skin ? `localStorage.setItem('out-of-credits:terminal-skin:v1', ${JSON.stringify(JSON.stringify(skin))});` : ''}
     } catch {}
     const tickHandlers = [];
@@ -64,6 +69,36 @@ function buildPreloadScript(seed, skin) {
       configurable: true,
       value: () => (window.__useVirtualClock ? vNow : origPerf()),
     });
+    const timers = new Map();
+    let tid = 0;
+    const origSetTimeout = window.setTimeout.bind(window);
+    const origClearTimeout = window.clearTimeout.bind(window);
+    window.setTimeout = (fn, ms = 0, ...args) => {
+      if (!${vt} || !window.__useVirtualClock) return origSetTimeout(fn, ms, ...args);
+      const id = 1e8 + (++tid);
+      timers.set(id, { due: vNow + Math.max(0, Number(ms) || 0), fn, args });
+      return id;
+    };
+    window.clearTimeout = (id) => {
+      if (timers.delete(id)) return;
+      origClearTimeout(id);
+    };
+    const animTimes = new WeakMap();
+    window.__socialSyncAnims = (dtMs) => {
+      if (!${vt} || !document.getAnimations) return;
+      void document.body.offsetHeight;
+      for (const anim of document.getAnimations()) {
+        if (!animTimes.has(anim)) {
+          anim.pause();
+          animTimes.set(anim, 0);
+          anim.currentTime = 0;
+        } else if (dtMs > 0) {
+          const next = animTimes.get(anim) + dtMs;
+          animTimes.set(anim, next);
+          anim.currentTime = next;
+        }
+      }
+    };
     const rafQueue = new Map();
     let rafId = 0;
     const origRaf = window.requestAnimationFrame.bind(window);
@@ -82,10 +117,27 @@ function buildPreloadScript(seed, skin) {
       vNow = origPerf();
       window.__useVirtualClock = true;
       if (window.__stage && window.__stage.freeze) window.__stage.freeze(true);
+      window.__socialSyncAnims(0);
       return true;
     };
     window.__socialStep = (dtMs) => {
       vNow += dtMs;
+      if (${vt}) {
+        let steps = 0;
+        while (steps++ < 256) {
+          let nextId = null;
+          let nextEntry = null;
+          for (const [id, entry] of timers) {
+            if (entry.due <= vNow + 1e-6 && (!nextEntry || entry.due < nextEntry.due)) {
+              nextId = id;
+              nextEntry = entry;
+            }
+          }
+          if (!nextEntry) break;
+          timers.delete(nextId);
+          try { if (typeof nextEntry.fn === 'function') nextEntry.fn(...nextEntry.args); } catch (e) { console.error(e); }
+        }
+      }
       if (window.__stage) {
         if (window.__stage.freeze) window.__stage.freeze(true);
         if (window.__stage.advance) window.__stage.advance(dtMs);
@@ -95,6 +147,7 @@ function buildPreloadScript(seed, skin) {
       for (const cb of batch) {
         try { cb(vNow); } catch (e) { console.error(e); }
       }
+      window.__socialSyncAnims(dtMs);
       return true;
     };
   })();`;
@@ -176,7 +229,8 @@ async function configureLaptopScene(b, laptopCfg) {
 }
 
 async function bootSceneOnPage(b, base, scene, spec, includeOverlay = true) {
-  await b.send('Page.addScriptToEvaluateOnNewDocument', { source: buildPreloadScript(spec.seed, scene.skin) });
+  const unlockManual = scene.mode === 'page' && /^\/manual(?:\.html)?(?:[?#/]|$)/.test(scene.url);
+  await b.send('Page.addScriptToEvaluateOnNewDocument', { source: buildPreloadScript(spec.seed, scene.skin, { virtualTimers: scene.mode === 'laptop', unlockManual }) });
   await b.open(`${base}${scene.url}`);
   await b.waitFor('document.readyState === "complete"', 20000, `load ${scene.url}`);
   await b.evaluate('document.fonts && document.fonts.ready ? document.fonts.ready.then(() => true) : true', 10000).catch(() => {});
@@ -269,6 +323,20 @@ async function applyScheduledAction(b, act) {
     })()`);
   } else if (act.kind === 'scroll') {
     await b.evaluate(`window.scrollTo(0, ${Number(ev.y) || 0}); true`);
+  } else if (act.kind === 'laptop') {
+    await b.evaluate(`(() => {
+      const lt = window.__laptop;
+      if (!lt) return true;
+      const send = ${JSON.stringify(ev.send ?? null)};
+      const task = ${JSON.stringify(ev.task ?? null)};
+      if (send) lt.machine.send(send);
+      if (task) {
+        if (lt.machine.state !== 'desktop') lt.jump('desktop');
+        lt.ctx.startTask(task);
+      }
+      if (window.__socialSyncAnims) window.__socialSyncAnims(0);
+      return true;
+    })()`);
   }
 }
 

@@ -8,7 +8,7 @@ import type { ItemId } from '../contracts/inventory.js';
  */
 export type ScriptAgent = 'clod' | 'gork' | 'codec' | 'antigravy' | 'kiro';
 export type ScriptMood = 'laugh' | 'order' | 'smug' | 'annoyed';
-export type DialogSpeaker = 'vibecoder' | ScriptAgent;
+export type DialogSpeaker = 'vibecoder' | 'dad' | ScriptAgent;
 
 /** Steps that run once, `afterSec` seconds (level ticks) after the level starts. */
 export interface ScriptTimed {
@@ -133,6 +133,8 @@ export interface ScriptKiro {
 export interface LevelScript {
   /** Runs once when the player arrives. Omit it and the dialog `agentTaunt` plays as a smug cameo. */
   arrival?: ScriptStep[];
+  /** Seconds the opening Vibecoder + Kiro conversation holds the terminal locked before Big Four taunt / battle begins (skippable via Skip Dialog). */
+  openingSec?: number;
   /** Steps fired once by the level tick counter (`tick()`), each at its `afterSec`. */
   timed?: ScriptTimed[];
   /** Commands refused until a condition holds. */

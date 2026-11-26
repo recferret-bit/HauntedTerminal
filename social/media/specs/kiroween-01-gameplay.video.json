@@ -1,0 +1,53 @@
+{
+  "name": "kiroween-01-gameplay",
+  "platform": "steam",
+  "fps": 24,
+  "width": 1280,
+  "height": 720,
+  "maxSeconds": 14,
+  "look": "comix",
+  "ticker": false,
+  "badge": false,
+  "audio": false,
+  "gif": { "maxMB": 4.7, "width": 720, "fps": 12 },
+  "scenes": [
+    {
+      "id": "gp-01-vault-fault-to-petrify",
+      "dur": 4.4,
+      "mode": "play",
+      "level": 2,
+      "skin": "iterm2",
+      "setup": [{ "ticks": 38 }],
+      "events": [
+        { "t": 0.25, "do": "typeAndSubmit", "line": "ls", "cps": 22 },
+        { "t": 1.75, "do": "typeAndSubmit", "line": "chmod -x gravy_sentry.bin", "cps": 26 },
+        { "t": 3.35, "do": "typeAndSubmit", "line": "mv ram_16gb.dimm ~", "cps": 26 }
+      ]
+    },
+    {
+      "id": "gp-02-forge-ice-sigkill",
+      "dur": 4.0,
+      "mode": "play",
+      "level": 8,
+      "skin": "vt100",
+      "transition": "flash-amber",
+      "setup": [{ "ticks": 22 }, "hold laptop"],
+      "events": [
+        { "t": 0.2, "do": "typeAndSubmit", "line": "pkill -STOP ransom", "cps": 26 },
+        { "t": 2.0, "do": "typeAndSubmit", "line": "pkill -9 ransom", "cps": 26 }
+      ]
+    },
+    {
+      "id": "gp-03-hub-deepseek",
+      "dur": 3.4,
+      "mode": "play",
+      "level": 7,
+      "skin": "gnome-terminal",
+      "transition": "whip",
+      "setup": [{ "ticks": 20 }, "hold manual", { "solution": { "level": 7, "count": 2 } }],
+      "events": [
+        { "t": 0.3, "do": "typeAndSubmit", "line": "kiro load deepseek", "cps": 24 }
+      ]
+    }
+  ]
+}

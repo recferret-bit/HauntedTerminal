@@ -3,11 +3,17 @@ import type { KernelEvent } from '../contracts/events.js';
 import { buildModel, disposeModel, ModelCatalog, type BuiltModel } from '../procgen/index.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
 import { setRest } from './stage-actor.js';
-import { playFx } from './stage-fx.js';
+import { playFx, say } from './stage-fx.js';
 import { stampMaterialBases } from './procgen-cast.js';
-import { flyTo } from './stage-motion.js';
+import { flyTo, hopInPlace } from './stage-motion.js';
 import { easeOutBack, stepped } from './tween.js';
 import type { ComicStage } from './comic-stage.js';
+
+const GIVEN_ITEM_SAY: Record<string, { label: string; tint: string }> = {
+  terminal: { label: '+TERMINAL SLATE', tint: '#06d6a0' },
+  manual: { label: '+FIELD MANUAL', tint: '#4cc9f0' },
+  map: { label: '+MOTHERBOARD MAP', tint: '#ffd166' },
+};
 
 /** An item a script `carry_item` put into an actor's hands: it rides on the carrier until ITEM_GIVEN. */
 interface Carried {
@@ -35,6 +41,22 @@ function dropCarried(stage: ComicStage, c: Carried): void {
   disposeModel(c.model);
   const m = carriedOf(stage);
   for (const [id, v] of m) if (v === c) m.delete(id);
+}
+
+/** Drops every active carried prop (on floor transitions / scene rebuilds) and releases held carriers back to home. */
+export function clearCarried(stage: ComicStage): void {
+  const m = carried.get(stage);
+  if (!m || m.size === 0) return;
+  for (const c of [...m.values()]) {
+    const carrier = c.carrier;
+    dropCarried(stage, c);
+    if (!carrier.disposed) {
+      carrier.lock = 0;
+      carrier.offset.set(0, 0, 0);
+      carrier.base.copy(carrier.home);
+      setRest(carrier);
+    }
+  }
 }
 
 /** Keeps the item in front of the carrier's belly, on the side it faces (the body mirrors, the item does not). */
@@ -97,17 +119,29 @@ export function itemCarried(stage: ComicStage, ev: Extract<KernelEvent, { type: 
  */
 export function itemGiven(stage: ComicStage, ev: Extract<KernelEvent, { type: 'ITEM_GIVEN' }>): void {
   const c = ev.from ? carriedOf(stage).get(ev.from) : undefined;
+  const info = typeof ev.item === 'string' ? GIVEN_ITEM_SAY[ev.item] : undefined;
   const handAt = (): THREE.Vector3 | null => {
     const h = stage.hero();
     return h && !h.disposed ? actorSocket(h, 'hand') : null;
   };
+  const announce = (at: THREE.Vector3): void => {
+    if (!info) return;
+    say(stage, info.label, at, info.tint, 1.25);
+    const h = stage.hero();
+    if (h && !h.disposed) hopInPlace(stage, h, 0.12, 200);
+  };
   const pop = (): void => {
     const at = handAt();
-    if (at) playFx(stage, 'fx.pickup-ssd', at, { text: ' ', noShake: true, scale: 0.8 }, `give:${ev.item}`);
+    if (!at) return;
+    playFx(stage, 'fx.pickup-ssd', at, { text: ' ', noShake: true, scale: 0.8 }, `give:${ev.item}`);
+    announce(at);
   };
   if (!c || !c.alive) {
     const at = handAt();
-    if (at) playFx(stage, 'fx.touch-materialize', at, { noShake: true, scale: 0.8 }, `give:${ev.item}`);
+    if (at) {
+      playFx(stage, 'fx.touch-materialize', at, { noShake: true, scale: 0.8 }, `give:${ev.item}`);
+      announce(at);
+    }
     return;
   }
   const carrier = c.carrier;

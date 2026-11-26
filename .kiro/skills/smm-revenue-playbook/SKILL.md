@@ -20,7 +20,7 @@ Never write generic "check out our indie game!" copy. Every asset must radiate *
   - Recoverable **clamshell laptop (`item.laptop`)** running real JavaScript in a sandboxed Worker and real HTML/CSS in a sandboxed iframe, plus Dockerfile & Compose repairs.
   - Tactile items: oil **lantern** (`dark` room reveal), hardcover comic **Terminal Field Manual (`F1`)**, live PCB **Motherboard Map (`F3`)**, and **6 terminal skins** (`iTerm2`, `VT100`, `PuTTY`, `Windows Terminal`, `GNOME`, `macOS Terminal`).
   - Satirical cast: cheering **Kiro Ghost**, cigarette-smoking bare-metal **Old Bearded Matrix Coder (`dad.tty`)** rebooting open-weight models (`Qwen`, `DeepSeek`, `Llama`), and the 4 smug parody AI supervisors (**Anti-Gravy**, **Codec**, **Gork**, and **PID 1 Supervisor Clod**).
-- **Frictionless Conversion Hook:** All **11 zero-death-verified sectors** of Chapter 1 boot instantly in the browser (`0` install, `0` signup), and players export their `.json` save & **12 `ACH_*` trophies** straight into the offline-verified Tauri v2 + Steamworks desktop edition (Mac, Windows, Linux, Steam Deck).
+- **Frictionless Conversion Hook:** All **11 zero-death-verified sectors** of Chapter 1 boot instantly in the browser (`0` install, `0` signup), and players export their `.json` save & **13 `ACH_*` trophies** straight into the offline-verified Tauri v2 + Steamworks desktop edition (Mac, Windows, Linux, Steam Deck).
 
 ---
 

@@ -147,6 +147,7 @@ export function allEvents(): KernelEvent[] {
     { type: 'ITEM_CARRIED', entityId: 'socket', item: 'terminal', model: 'item.terminal' },
     { type: 'ITEM_GIVEN', item: 'terminal', model: 'item.terminal', from: 'socket', held: true },
     { type: 'ITEM_GIVEN', item: 'terminal', model: 'item.terminal', held: true },
+    { type: 'BATTLE_STARTED', battle: 1, agent: 'antigravy', model: 'agent.antigravy', taunt: 'Eat fireballs!', advice: 'TROJAN: chmod -x it.', enemyIds: ['trojan-1'] },
     { type: 'BATTLE_TURN', battle: 1, actor: 'player', first: true, reason: 'start' },
   ];
 }
@@ -183,6 +184,7 @@ function bogusEvents(): KernelEvent[] {
     { type: 'ITEM_CARRIED', entityId: 'socket', item: 'terminal', model: 'not.a.model' },
     { type: 'ITEM_GIVEN', item: 'terminal', model: 'item.terminal', from: 'nobody', held: false },
     { type: 'ITEM_GIVEN' },
+    { type: 'BATTLE_STARTED' },
     { type: 'VIBECODER_EMOTE', emote: 'shout' },
     { type: 'VIBECODER_EMOTE' },
   ];
@@ -231,9 +233,18 @@ function pairCases(): PairCase[] {
       { type: 'PROC_SIGNALED', pid: 670, signal: 'SIGSTOP', outcome: 'FROZEN' },
       { type: 'ENEMY_STATE', entityId: 'bug-1', model: 'malware.bug', state: 'frozen' },
     ] },
-    { name: 'tell then strike', expect: { 'fx.hit-vibecoder': [1, 1] }, events: [
+    { name: 'tell then strike', expect: { 'fx.enemy-fireball': [1, 1], 'fx.hit-vibecoder': [1, 1] }, events: [
       { type: 'ENEMY_ATTACK', entityId: 'zombie-1', model: 'malware.zombie', damage: 6, attack: 'swipe' },
       { type: 'PLAYER_DAMAGED', amount: 6, hpRemaining: 60, sourceName: 'zombie_worker' },
+    ] },
+    { name: 'kernel stderr strike without windup', expect: { 'fx.enemy-fireball': [1, 1], 'fx.hit-vibecoder': [1, 1] }, events: [
+      { type: 'PLAYER_DAMAGED', amount: 12, hpRemaining: 60, sourceName: 'stderr' },
+    ] },
+    { name: 'forkbomb SIGTERM rage strike', expect: { 'fx.enemy-fireball': [1, 1], 'fx.hit-vibecoder': [1, 1] }, events: [
+      { type: 'PROC_SIGNALED', pid: 666, signal: 'SIGTERM', outcome: 'TRAPPED_ENRAGED' },
+      { type: 'ENEMY_ATTACK', entityId: 'boss-1', model: 'boss.forkbomb', damage: 15, attack: 'fork' },
+      { type: 'ENEMY_STATE', entityId: 'boss-1', model: 'boss.forkbomb', state: 'enraged' },
+      { type: 'PLAYER_DAMAGED', amount: 15, hpRemaining: 55, sourceName: 'necromancer_forkd' },
     ] },
     { name: 'unknown pid', expect: { 'fx.sigkill': [0, 0] }, events: [
       { type: 'PROC_SIGNALED', pid: 4242, signal: 'SIGKILL', outcome: 'KILLED' },
