@@ -1,0 +1,68 @@
+{
+  "cues": [
+    {
+      "id": "vo_tiktok_hook",
+      "kind": "voice",
+      "platform": "tiktok",
+      "seconds": 12,
+      "voice": "George",
+      "model": "eleven_v4",
+      "filter": null,
+      "description": "Punchy 12s TikTok / Shorts hook voiceover for 9:16 vertical terminal gameplay clip",
+      "text": "I ran out of AI credits at two A M, got pulled inside my own computer by lightning, and now my only weapon against malware is a real Linux terminal. One wrong command and PID one wipes my memory."
+    },
+    {
+      "id": "vo_x_teaser",
+      "kind": "voice",
+      "platform": "x",
+      "seconds": 18,
+      "voice": "Daniel",
+      "model": "eleven_v4",
+      "filter": null,
+      "description": "18s developer-focused X teaser narration over Comix Zone terminal & laptop gameplay",
+      "text": "Welcome to Out Of Credits: a nineteen ninety-five Comix Zone dungeon crawler where your only controller is a real Unix terminal and JavaScript laptop. Reveal hidden spyware, petrify trojans with chmod minus x, reboot open-weight cores with Dad, and kill PID one."
+    },
+    {
+      "id": "vo_youtube_trailer",
+      "kind": "voice",
+      "platform": "youtube",
+      "seconds": 36,
+      "voice": "George",
+      "model": "eleven_v4",
+      "filter": null,
+      "description": "36s Official Steam & YouTube Gameplay Trailer voiceover",
+      "text": "Lightning strikes your tower at midnight and pulls you straight into the motherboard. In Out Of Credits, every comic panel is a real directory and your terminal is the only way out. Sweep dark sectors with your lantern, petrify trojans with chmod, patch broken JavaScript and Docker containers on your laptop, upgrade open-weight servers at the Matrix Hub, and silence Clod at the kernel core. Play Chapter One free in your browser and wishlist on Steam."
+    },
+    {
+      "id": "vo_clod_social_taunt",
+      "kind": "voice",
+      "platform": "tiktok",
+      "seconds": 4.5,
+      "voice": "George",
+      "model": "eleven_v4",
+      "filter": "robot",
+      "description": "Parody supervisor Clod robot taunt for vertical boss-duel clips",
+      "text": "Your monthly token quota is zero, human. Try typing faster before thirty seconds expire!"
+    },
+    {
+      "id": "sfx_social_panel_rip",
+      "kind": "sfx",
+      "platform": "all",
+      "seconds": 1.2,
+      "loop": false,
+      "model": "eleven_text_to_sound_v3",
+      "description": "Crisp comic-book paper tear + CRT electric snap for fast vertical scene cuts",
+      "prompt": "Crisp heavy comic book paper rip combined with a tight 16-bit CRT static zap and dry snare hit, punchy trailer transition, dry studio mix, zero reverb, ends in clean silence."
+    },
+    {
+      "id": "music_social_short_loop",
+      "kind": "music",
+      "platform": "tiktok",
+      "seconds": 20,
+      "loop": true,
+      "model": "music_v2_5",
+      "description": "High-tempo 132 BPM A-minor 16-bit FM synth & tracker bassline loop for TikTok and Shorts",
+      "prompt": "Driving 132 BPM A minor 1990s 16-bit console FM synth action loop, punchy dry chiptune slap bass, crisp tracker drums, dark gothic hardware tension leaving clean midrange room for mechanical keyboard clicks and voiceover, instrumental only."
+    }
+  ]
+}

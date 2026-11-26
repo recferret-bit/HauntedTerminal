@@ -1,0 +1,264 @@
+{
+  "name": "youtube-trailer",
+  "platform": "youtube",
+  "fps": 24,
+  "width": 1920,
+  "height": 1080,
+  "maxSeconds": 50,
+  "look": "big",
+  "badge": "OFFICIAL GAMEPLAY TRAILER",
+  "ticker": "OUT OF CREDITS  ·  1995 COMIX ZONE TERMINAL DUNGEON CRAWLER  ·  REAL UNIX COMMANDS + SANDBOXED JS LAPTOP  ·  WISHLIST ON STEAM",
+  "audio": {
+    "music": "battle_boss",
+    "offset": 0,
+    "fadeIn": 0.4,
+    "fadeOut": 2.4,
+    "gainDb": -3,
+    "voiceover": { "cue": "vo_youtube_trailer", "at": 0.5, "gainDb": 2.0, "required": false },
+    "cues": [
+      { "at": 0.2, "cue": "lightning", "gainDb": -1 },
+      { "at": 6.2, "cue": "term_boot", "gainDb": -2 },
+      { "at": 13.5, "cue": "lantern_on", "gainDb": -1 },
+      { "at": 20.8, "cue": "petrify", "gainDb": 0 },
+      { "at": 28.0, "cue": "lap_open", "gainDb": -1 },
+      { "at": 35.0, "cue": "kiro_load", "gainDb": -1 },
+      { "at": 41.5, "cue": "boss_kernel_panic", "gainDb": -1 }
+    ],
+    "autoGameSfx": true
+  },
+  "scenes": [
+    {
+      "id": "yt-01-midnight-lightning",
+      "dur": 6.0,
+      "mode": "comix",
+      "comix": { "slug": "intro", "from": 11.2, "to": 16.4 },
+      "bumper": {
+        "at": 0.1,
+        "dur": 1.6,
+        "tag": "OUT OF CREDITS · OFFICIAL TRAILER",
+        "head": "LIGHTNING PULLS YOU INTO YOUR PC",
+        "sub": "You are the only human inside a gothic 1995 comic motherboard.",
+        "accent": "amber"
+      },
+      "captions": [
+        {
+          "n": "01",
+          "tag": "PREMISE · 3D ANIMATED COMIX",
+          "head": "TRAPPED INSIDE HAUNTED SILICON",
+          "sub": "Every room is hardware. Every corridor is a comic panel. Typing is the only way to move.",
+          "at": 1.9,
+          "dur": 3.9,
+          "accent": "amber"
+        }
+      ]
+    },
+    {
+      "id": "yt-02-kiro-awakening",
+      "dur": 6.8,
+      "mode": "play",
+      "level": 1,
+      "skin": "iterm2",
+      "transition": "flash-amber",
+      "setup": [{ "ticks": 75 }, "ls"],
+      "events": [
+        { "t": 0.5, "do": "typeAndSubmit", "line": "ps", "cps": 18 },
+        { "t": 2.6, "do": "modal", "modal": "manual", "action": "open", "query": "kill" },
+        { "t": 5.2, "do": "modal", "modal": "manual", "action": "close" }
+      ],
+      "pills": [
+        {
+          "at": 0.3,
+          "dur": 6.2,
+          "pos": "top-left",
+          "accent": "phosphor",
+          "items": ["$ ls", "$ ps", "$ kill -9 <pid>", "F1 Hardcover Field Manual"]
+        }
+      ],
+      "captions": [
+        {
+          "n": "02",
+          "tag": "SECTOR 01 · KIRO GHOST & FIELD MANUAL",
+          "head": "LEARN REAL UNIX BY SURVIVING IT",
+          "sub": "Kiro Ghost brings your terminal and hardcover comic manual—zero prior Linux mastery required.",
+          "at": 0.3,
+          "dur": 6.2,
+          "accent": "phosphor"
+        }
+      ]
+    },
+    {
+      "id": "yt-03-lantern-and-battles",
+      "dur": 7.2,
+      "mode": "play",
+      "level": 3,
+      "skin": "vt100",
+      "transition": "whip",
+      "setup": [{ "solution": { "level": 3, "count": 2 } }],
+      "events": [
+        { "t": 0.6, "do": "typeAndSubmit", "line": "ls -la", "cps": 20 },
+        { "t": 3.4, "do": "skin", "skin": "putty" }
+      ],
+      "pills": [
+        {
+          "at": 0.3,
+          "dur": 6.6,
+          "pos": "top-left",
+          "accent": "amber",
+          "items": ["item.lantern · Dark Room Sweep", "6 Terminal Skins (iTerm2 · VT100 · PuTTY)"]
+        }
+      ],
+      "bursts": [
+        { "at": 1.6, "dur": 1.5, "text": "FIGHT!", "pos": "top-right", "accent": "orange" }
+      ],
+      "captions": [
+        {
+          "n": "03",
+          "tag": "TURN-BASED COMBAT · 30-SECOND CLOCK",
+          "head": "EVERY ENTER IS ONE TACTICAL TURN",
+          "sub": "Expose dotfile spyware with ls -la, unlock port gates, and race the 30-second battle clock.",
+          "at": 0.3,
+          "dur": 6.6,
+          "accent": "amber"
+        }
+      ]
+    },
+    {
+      "id": "yt-04-chmod-and-laptop",
+      "dur": 7.2,
+      "mode": "laptop",
+      "laptop": { "state": "desktop", "speed": 0, "task": "js-add" },
+      "transition": "flash",
+      "dialogs": [
+        {
+          "at": 0.5,
+          "dur": 6.3,
+          "pos": "right",
+          "accent": "cyan",
+          "kicker": "SECTOR 05–09 · FULL-STACK REPAIRS",
+          "title": "CLAMSHELL LAPTOP STUDIO",
+          "rows": [
+            ["CHMOD -X", "Strip execute bits to petrify Trojans"],
+            ["JS PAD", "Patch live JavaScript in Worker sandbox"],
+            ["DOCKER", "Build clean images & Compose meshes"]
+          ],
+          "stats": [
+            ["7", "CODING TASKS"],
+            ["0", "FAKE QUIZZES"],
+            ["S", "RANK GOLF"]
+          ],
+          "foot": "Timer holds automatically while editing code."
+        }
+      ],
+      "captions": [
+        {
+          "n": "04",
+          "tag": "ITEM.LAPTOP · SANDBOXED WORKER & IFRAME",
+          "head": "PATCH BROKEN JS, CSS & DOCKER CONTAINERS",
+          "sub": "Recover your laptop in Logic Cell to repair corrupted production services from inside.",
+          "at": 0.3,
+          "dur": 6.6,
+          "accent": "cyan"
+        }
+      ]
+    },
+    {
+      "id": "yt-05-matrix-hub-dad",
+      "dur": 6.8,
+      "mode": "play",
+      "level": 4,
+      "skin": "gnome-terminal",
+      "transition": "glitch",
+      "setup": [{ "solution": { "level": 4, "count": 2 } }],
+      "events": [
+        { "t": 1.2, "do": "modal", "modal": "map", "action": "open" },
+        { "t": 4.4, "do": "modal", "modal": "map", "action": "close" }
+      ],
+      "pills": [
+        {
+          "at": 0.3,
+          "dur": 6.2,
+          "pos": "top-left",
+          "accent": "phosphor",
+          "items": ["dad.tty · Matrix Server Rig", "F3 PCB Motherboard Map"]
+        }
+      ],
+      "captions": [
+        {
+          "n": "05",
+          "tag": "3 MATRIX HUBS · OPEN-WEIGHTS REBOOT",
+          "head": "UPGRADE KIRO WITH DAD & DISABLE THE BIG FOUR",
+          "sub": "Slot scavenged RAM & GPU chips to load Qwen, DeepSeek & Llama—silencing Anti-Gravy, Codec & Gork.",
+          "at": 0.3,
+          "dur": 6.2,
+          "accent": "phosphor"
+        }
+      ]
+    },
+    {
+      "id": "yt-06-clod-kernel-boss",
+      "dur": 7.0,
+      "mode": "play",
+      "level": 11,
+      "skin": "iterm2",
+      "transition": "flash-amber",
+      "setup": [{ "solution": { "level": 11, "count": 2 } }],
+      "bursts": [
+        { "at": 0.8, "dur": 1.8, "text": "PID 1!", "pos": "top-right", "accent": "magenta" }
+      ],
+      "pills": [
+        {
+          "at": 0.3,
+          "dur": 6.3,
+          "pos": "top-left",
+          "accent": "magenta",
+          "items": ["clod_overlord.ko · PID 1", "$ grep > .sock && kill -9 1"]
+        }
+      ],
+      "captions": [
+        {
+          "n": "06",
+          "tag": "SECTOR 11 · KERNEL PANIC CHAMBER",
+          "head": "CONFRONT CLOD & SHATTER PID 1",
+          "sub": "Redirect streams into /dev/null, crack the kernel shield, and trigger the real-world finale.",
+          "at": 0.3,
+          "dur": 6.3,
+          "accent": "magenta"
+        }
+      ]
+    },
+    {
+      "id": "yt-07-end-slate",
+      "dur": 7.0,
+      "mode": "storybook",
+      "storybook": { "inspect": "boss.kernel", "bg": "floor5", "state": "attack", "from": 0.0, "to": 7.0, "ui": false, "pixel": true, "crt": true },
+      "transition": "dip",
+      "captions": [
+        {
+          "n": "07",
+          "tag": "CHAPTER 1 PLAYABLE NOW · STEAM EDITION INCOMING",
+          "head": "11 SECTORS · 12 ACH_* TROPHIES · PORTABLE SAVES",
+          "sub": "Start instantly in your browser and carry every trophy straight into Steam.",
+          "at": 0.1,
+          "dur": 1.6,
+          "accent": "amber"
+        }
+      ],
+      "card": {
+        "at": 1.8,
+        "eyebrow": "OUT OF CREDITS · PC · MAC · LINUX · STEAM DECK",
+        "title": [
+          "YOUR TERMINAL IS THE WEAPON.",
+          "WISHLIST OUT OF CREDITS ON STEAM."
+        ],
+        "sub": "Play all 11 sectors of Chapter 1 free in your browser today—export your .json save & trophies straight to Steam.",
+        "steps": [
+          "PLAY CHAPTER 1 IN BROWSER",
+          "UNLOCK 12 ACH_* TROPHIES",
+          "WISHLIST ON STEAM"
+        ],
+        "cta": "WISHLIST ON STEAM & PLAY FREE DEMO ▸",
+        "foot": "TAURI V2 OFFLINE DESKTOP · ZERO RUNTIME AI SLOP · 1995 COMIX ZONE ENGINE"
+      }
+    }
+  ]
+}

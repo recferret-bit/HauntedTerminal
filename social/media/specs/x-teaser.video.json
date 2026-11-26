@@ -1,0 +1,185 @@
+{
+  "name": "x-teaser",
+  "platform": "x",
+  "fps": 24,
+  "width": 1280,
+  "height": 720,
+  "maxSeconds": 26,
+  "look": "comix",
+  "badge": "FREE WEB DEMO · STEAM",
+  "ticker": "OUT OF CREDITS  ·  1995 COMIX ZONE UNIX DUNGEON CRAWLER  ·  REAL CLI + JS LAPTOP  ·  PLAY CHAPTER 1 FREE IN BROWSER",
+  "audio": {
+    "music": "title_theme",
+    "offset": 0,
+    "fadeIn": 0.35,
+    "fadeOut": 1.8,
+    "gainDb": -3,
+    "voiceover": { "cue": "vo_x_teaser", "at": 0.4, "gainDb": 2.0, "required": false },
+    "cues": [
+      { "at": 0.15, "cue": "lightning", "gainDb": -2 },
+      { "at": 4.3, "cue": "term_boot", "gainDb": -2 },
+      { "at": 9.2, "cue": "petrify", "gainDb": -1 },
+      { "at": 14.2, "cue": "kiro_load", "gainDb": -1 },
+      { "at": 18.8, "cue": "taunt_clod_1", "gainDb": 0 }
+    ],
+    "autoGameSfx": true
+  },
+  "scenes": [
+    {
+      "id": "x-01-storm-pull",
+      "dur": 4.0,
+      "mode": "comix",
+      "comix": { "slug": "intro", "from": 31.95, "to": 34.95 },
+      "bumper": {
+        "at": 0.05,
+        "dur": 1.35,
+        "tag": "OUT OF AI CREDITS AT 2:00 AM",
+        "head": "PULLED INSIDE YOUR OWN PC",
+        "sub": "1995 Comix Zone visuals. A real Unix terminal is your only weapon.",
+        "accent": "amber"
+      },
+      "captions": [
+        {
+          "n": "01",
+          "tag": "COMIX ZONE × UNIX SHELL",
+          "head": "EVERY DIRECTORY IS A COMIC PANEL",
+          "sub": "You are the only human inside a haunted machine ruled by parody AI supervisors.",
+          "at": 1.5,
+          "dur": 2.35,
+          "accent": "amber"
+        }
+      ]
+    },
+    {
+      "id": "x-02-terminal-combat",
+      "dur": 4.8,
+      "mode": "play",
+      "level": 3,
+      "skin": "iterm2",
+      "transition": "flash-amber",
+      "setup": [{ "solution": { "level": 3, "count": 1 } }],
+      "events": [
+        { "t": 0.35, "do": "typeAndSubmit", "line": "ls -la", "cps": 20 },
+        { "t": 2.1, "do": "type", "text": "kill -9 ", "cps": 20 }
+      ],
+      "pills": [
+        {
+          "at": 0.2,
+          "dur": 4.3,
+          "pos": "top-left",
+          "accent": "phosphor",
+          "items": ["$ mv lantern ~", "$ ls -la", "$ ps && kill -9 <pid>"]
+        }
+      ],
+      "bursts": [
+        { "at": 1.4, "dur": 1.3, "text": "REVEALED!", "pos": "top-right", "accent": "amber" }
+      ],
+      "captions": [
+        {
+          "n": "02",
+          "tag": "TURN-BASED CLI BATTLES · 30S CLOCK",
+          "head": "SWEEP WITH YOUR LANTERN & SNIPE PIDS",
+          "sub": "Real ls, chmod, ps, sed, and kill -9 trigger deterministic 3D comic combat.",
+          "at": 0.2,
+          "dur": 4.4,
+          "accent": "phosphor"
+        }
+      ]
+    },
+    {
+      "id": "x-03-laptop-and-chmod",
+      "dur": 4.8,
+      "mode": "laptop",
+      "laptop": { "state": "desktop", "speed": 0, "task": "web-style" },
+      "transition": "whip",
+      "pills": [
+        {
+          "at": 0.2,
+          "dur": 4.3,
+          "pos": "top-left",
+          "accent": "cyan",
+          "items": ["item.laptop · Sandboxed JS Pad", "Web Weaver HTML/CSS + Docker"]
+        }
+      ],
+      "bursts": [
+        { "at": 0.8, "dur": 1.4, "text": "PATCHED!", "pos": "top-right", "accent": "cyan" }
+      ],
+      "captions": [
+        {
+          "n": "03",
+          "tag": "CLAMSHELL LAPTOP · REAL CODE",
+          "head": "FIX LIVE JAVASCRIPT, CSS & DOCKER CONTAINERS",
+          "sub": "Open your laptop mid-sector to patch broken code in an isolated Worker sandbox.",
+          "at": 0.2,
+          "dur": 4.4,
+          "accent": "cyan"
+        }
+      ]
+    },
+    {
+      "id": "x-04-dad-matrix-hub",
+      "dur": 4.8,
+      "mode": "play",
+      "level": 4,
+      "skin": "vt100",
+      "transition": "glitch",
+      "setup": [{ "solution": { "level": 4, "count": 2 } }],
+      "pills": [
+        {
+          "at": 0.2,
+          "dur": 4.3,
+          "pos": "top-left",
+          "accent": "amber",
+          "items": ["dad.tty · Bare-Metal Greybeard", "$ kiro load qwen | deepseek | llama"]
+        }
+      ],
+      "captions": [
+        {
+          "n": "04",
+          "tag": "THE MATRIX HUB · OPEN WEIGHTS",
+          "head": "REBOOT KIRO GHOST & SILENCE THE BIG FOUR",
+          "sub": "Bring scavenged RAM & GPU chips to Dad's rack to knock out Anti-Gravy, Codec & Gork.",
+          "at": 0.2,
+          "dur": 4.4,
+          "accent": "amber"
+        }
+      ]
+    },
+    {
+      "id": "x-05-boss-and-cta",
+      "dur": 5.6,
+      "mode": "play",
+      "level": 11,
+      "skin": "iterm2",
+      "transition": "flash",
+      "setup": [{ "solution": { "level": 11, "count": 2 } }],
+      "captions": [
+        {
+          "n": "05",
+          "tag": "FINAL SECTOR · /SYS/CLOD_OVERLORD_CORE",
+          "head": "SHATTER PID 1 & ESCAPE THE MACHINE",
+          "sub": "11 zero-death-verified sectors, 12 Steam ACH_* trophies, and portable browser saves.",
+          "at": 0.15,
+          "dur": 1.9,
+          "accent": "magenta"
+        }
+      ],
+      "card": {
+        "at": 2.2,
+        "eyebrow": "OUT OF CREDITS · CHAPTER 1 LIVE NOW",
+        "title": [
+          "NO MOUSE. NO FAKE HACKING.",
+          "JUST YOUR UNIX TERMINAL."
+        ],
+        "sub": "11 Playable Sectors · Real POSIX + JS Laptop · 6 Terminal Skins · Portable Steam Saves",
+        "steps": [
+          "PLAY FREE IN BROWSER",
+          "EXPORT .JSON TROPHIES",
+          "WISHLIST ON STEAM"
+        ],
+        "cta": "PLAY DEMO & WISHLIST ON STEAM ▸",
+        "foot": "#IndieDev #Linux #Programming #Steam"
+      }
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "project": "Out Of Credits",
+  "revenueTargetUsd": 1000000,
+  "updatedAt": "2026-11-26",
+  "positioning": {
+    "elevatorPitch": "A 1995 Comix Zone comic-book dungeon crawler inside a haunted PC where your ONLY controller is a real Unix terminal and JavaScript laptop.",
+    "visualPillars": [
+      "1995 Sega Comix Zone ink-framed panels, paper gutters, halftone cel bands, and comic SFX bursts",
+      "Claustrophobic CRT scanlines + pixel-art quantizer inside hardware architecture (attic drives, firewall crypt, RAM maze, CPU furnace, kernel core)",
+      "Tactile real terminal typing (ls -la, chmod -x, ps, kill -9, sed, docker build) + split laptop JS/HTML/CSS coding",
+      "Satirical AI rebellion story: Kiro Ghost, cigarette-smoking Matrix Greybeard Dad (dad.tty), open-weight server reboots (Qwen, DeepSeek, Llama), and the parody Big Four (Anti-Gravy, Codec, Gork, Clod)"
+    ],
+    "recommendedSteamPriceUsd": 14.99,
+    "deluxeSoundtrackBundleUsd": 19.99,
+    "launchDiscountPct": 15
+  },
+  "revenueMath": {
+    "targetGrossUsd": 1000000,
+    "basePriceUsd": 14.99,
+    "blendedGrossPerUnitUsd": 11.4,
+    "unitsRequiredYearOne": 87720,
+    "launchDayWishlistTarget": 55000,
+    "preNextFestWishlistFloor": 7500,
+    "nextFestWishlistMultiplier": 2.6,
+    "yearOneWishlistToSaleRatio": 1.6,
+    "browserDemoToWishlistTargetRate": 0.085,
+    "browserDemoPlayersNeeded": 420000,
+    "shortFormViewsNeededAt1PctCtr": 42000000
+  },
+  "comparables": [
+    {
+      "title": "Hacknet",
+      "releaseYear": 2015,
+      "priceUsd": 9.99,
+      "steamReviews": 26000,
+      "positivePct": 94,
+      "estimatedCopiesMin": 400000,
+      "estimatedCopiesMax": 1100000,
+      "estimatedGrossUsdMin": 3400000,
+      "estimatedGrossUsdMax": 8300000,
+      "overlap": "Real Unix terminal commands as primary input + narrative thriller + driving tracker soundtrack",
+      "marketingTakeaway": "Proved mainstream non-programmers love real CLI commands when paired with tense atmosphere, clear visual feedback, and strong narrative stakes."
+    },
+    {
+      "title": "The Farmer Was Replaced",
+      "releaseYear": 2025,
+      "priceUsd": 9.99,
+      "steamReviews": 18000,
+      "positivePct": 96,
+      "estimatedCopiesMin": 250000,
+      "estimatedCopiesMax": 500000,
+      "estimatedGrossUsdMin": 2500000,
+      "estimatedGrossUsdMax": 4800000,
+      "overlap": "Real code execution driving immediate, visually satisfying screen action",
+      "marketingTakeaway": "Broke out from slow Early Access to multi-million 1.0 launch via viral TikTok & YouTube Shorts loops showing code on one side and instant satisfying visual payoff on the other, followed by variety YouTubers."
+    },
+    {
+      "title": "Turing Complete",
+      "releaseYear": 2021,
+      "priceUsd": 19.99,
+      "steamReviews": 5900,
+      "positivePct": 96,
+      "estimatedCopiesMin": 140000,
+      "estimatedCopiesMax": 220000,
+      "estimatedGrossUsdMin": 2100000,
+      "estimatedGrossUsdMax": 4100000,
+      "overlap": "Inside-the-computer PCB/hardware progression, assembly/logic mastery, CS/developer audience",
+      "marketingTakeaway": "Commands a full $19.99 price point with zero resistance from engineering/CS players because every puzzle teaches real transferable intuition."
+    },
+    {
+      "title": "Duskers",
+      "releaseYear": 2016,
+      "priceUsd": 19.99,
+      "steamReviews": 2800,
+      "positivePct": 90,
+      "estimatedCopiesMin": 95000,
+      "estimatedCopiesMax": 140000,
+      "estimatedGrossUsdMin": 1600000,
+      "estimatedGrossUsdMax": 2500000,
+      "overlap": "Tactile CLI typing under haunted, claustrophobic CRT dread",
+      "marketingTakeaway": "Typing under pressure (Out Of Credits' 30-second turn timer + haunted hardware rooms) creates 'streamer-bait' tension that turn-based mouse clicks never replicate."
+    },
+    {
+      "title": "Grey Hack",
+      "releaseYear": 2017,
+      "priceUsd": 19.99,
+      "steamReviews": 1850,
+      "positivePct": 90,
+      "estimatedCopiesMin": 55000,
+      "estimatedCopiesMax": 100000,
+      "estimatedGrossUsdMin": 1100000,
+      "estimatedGrossUsdMax": 1300000,
+      "overlap": "Authentic Unix filesystem, permissions, processes, and terminal skinning",
+      "marketingTakeaway": "Deep Linux/Unix authenticity earns evergreen Reddit (r/linux, r/unixporn, r/programming) and YouTube tutorial traffic."
+    },
+    {
+      "title": "TIS-100",
+      "releaseYear": 2015,
+      "priceUsd": 6.99,
+      "steamReviews": 3400,
+      "positivePct": 97,
+      "estimatedCopiesMin": 120000,
+      "estimatedCopiesMax": 220000,
+      "estimatedGrossUsdMin": 800000,
+      "estimatedGrossUsdMax": 950000,
+      "overlap": "CRT terminal manual aesthetic + rank optimization leaderboards (S-rank command count)",
+      "marketingTakeaway": "Physical/printable reference manual (like Out Of Credits' hardcover Field Manual) + optimization leaderboards drive intense word-of-mouth among engineers."
+    },
+    {
+      "title": "EXAPUNKS",
+      "releaseYear": 2018,
+      "priceUsd": 19.99,
+      "steamReviews": 1900,
+      "positivePct": 95,
+      "estimatedCopiesMin": 58000,
+      "estimatedCopiesMax": 65000,
+      "estimatedGrossUsdMin": 798000,
+      "estimatedGrossUsdMax": 1050000,
+      "overlap": "90s zine/comic hacker counterculture + coding inside everyday machines",
+      "marketingTakeaway": "90s counterculture zine/comic framing elevates dry coding puzzles into a cult world."
+    },
+    {
+      "title": "Bitburner",
+      "releaseYear": 2021,
+      "priceUsd": 0,
+      "steamReviews": 7400,
+      "positivePct": 94,
+      "estimatedCopiesMin": 500000,
+      "estimatedCopiesMax": 900000,
+      "estimatedGrossUsdMin": 0,
+      "estimatedGrossUsdMax": 0,
+      "overlap": "Web-born JavaScript + terminal game ported to Steam with massive player retention",
+      "marketingTakeaway": "Web playability builds a massive top-of-funnel audience; pairing a free Chapter 1 Web/Steam Demo with a paid multi-chapter Steam Edition converts free web reach into $1M+ Steam revenue."
+    },
+    {
+      "title": "Buckshot Roulette",
+      "releaseYear": 2024,
+      "priceUsd": 2.99,
+      "steamReviews": 65000,
+      "positivePct": 96,
+      "estimatedCopiesMin": 4000000,
+      "estimatedCopiesMax": 5000000,
+      "estimatedGrossUsdMin": 8000000,
+      "estimatedGrossUsdMax": 12000000,
+      "overlap": "Gritty CRT aesthetic + turn-based duel tension + industrial tracker audio",
+      "marketingTakeaway": "15-second vertical TikTok clips of high-stakes turn-based CRT standoffs + punchy electronic music explode algorithmically even from zero-follower accounts."
+    },
+    {
+      "title": "Inscryption",
+      "releaseYear": 2021,
+      "priceUsd": 19.99,
+      "steamReviews": 110000,
+      "positivePct": 97,
+      "estimatedCopiesMin": 2000000,
+      "estimatedCopiesMax": 3000000,
+      "estimatedGrossUsdMin": 30000000,
+      "estimatedGrossUsdMax": 45000000,
+      "overlap": "Trapped inside a cursed machine, turn-based duels against smug bosses, meta-narrative twists",
+      "marketingTakeaway": "Smug talking adversaries across the table (like Anti-Gravy, Codec, Gork, and Clod taunting the Vibecoder) create unforgettable clip-worthy moments."
+    }
+  ],
+  "platformPlaybooks": {
+    "x": {
+      "cadencePerWeek": 5,
+      "primaryGoal": "Developer/Linux/Indie cult community, tech-meme virality, direct Browser Demo clicks & Steam UTM wishlists",
+      "winningFormats": [
+        "18-28s muted-autoplay MP4 (`1280x720` or `1920x1080`) opening on frame 0 with a real Unix command (`chmod -x`, `kill -9`) smashing a 3D malware enemy in a Comix Zone panel",
+        "Relatable dev-burnout & AI-subscription satire hooks ('Ran out of AI credits at 2 AM, got pulled inside my own PC, now Clod is my PID 1 boss')",
+        "Terminal skin flexes (`iTerm2` vs `VT100` vs `PuTTY` on `#ScreenshotSaturday` / `r/unixporn` crossover)",
+        "4-post technical architecture threads (deterministic 3D-drawn-as-2D cel + halftone shaders, real VFS & sandboxed JS laptop, zero runtime generative slop)"
+      ]
+    },
+    "tiktok": {
+      "cadencePerWeek": 5,
+      "primaryGoal": "Algorithmic FYP reach among CS students, devs, Linux users & retro-horror gamers -> Bio Browser Demo & Steam Wishlist",
+      "winningFormats": [
+        "12-22s native `1080x1920` (`9:16`) split/vertical clips with a <1.0s impossible-premise or challenge hook",
+        "'POV: You type `rm -rf` vs `chmod -x` in a dungeon crawler' — side-by-side command -> 3D comic consequence",
+        "'Can you beat PID 1 in under 15 commands?' — 30s turn-timer countdown pressure + robot taunt voice line",
+        "Seamless loop cut (final frame lightning zap cuts straight back to frame 0 command prompt) to push >100% watch completion"
+      ]
+    },
+    "youtube": {
+      "cadencePerWeek": 2,
+      "primaryGoal": "High-intent Steam wishlist conversion (long-form trailers/devlogs + YouTube Shorts syndication + creator outreach)",
+      "winningFormats": [
+        "45-60s Official Steam/YouTube Gameplay Trailer (`1920x1080`, first 3s action, zero studio logo cold-open, escalating from `ls` -> `chmod -x` -> Laptop JS repair -> Dad's Matrix Hub -> Clod PID 1 Boss)",
+        "YouTube Shorts (`1080x1920`) cross-posted 1:1 with TikTok vertical hooks using pinned Steam UTM comment",
+        "8-12 min Engineering Devlog ('How I Built a 1995 Comix Zone 3D Engine Controlled Entirely by a Unix Terminal')",
+        "Curated Chapter 1 Demo builds for programming/variety creators (Primeagen, Fireship-style tech channels, PirateSoftware, CallMeKevin, Olexa, Real Civil Engineer, SplatterCatGaming)"
+      ]
+    }
+  }
+}

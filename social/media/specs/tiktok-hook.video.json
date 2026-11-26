@@ -1,0 +1,154 @@
+{
+  "name": "tiktok-hook",
+  "platform": "tiktok",
+  "fps": 24,
+  "width": 1080,
+  "height": 1920,
+  "maxSeconds": 18,
+  "look": "vertical",
+  "badge": "LINUX VS MALWARE",
+  "ticker": "OUT OF CREDITS · REAL UNIX TERMINAL DUNGEON CRAWLER · PLAY FREE & WISHLIST ON STEAM",
+  "audio": {
+    "music": "battle_loop",
+    "offset": 0,
+    "fadeIn": 0.2,
+    "fadeOut": 1.2,
+    "gainDb": -3,
+    "voiceover": { "cue": "vo_tiktok_hook", "at": 0.15, "gainDb": 2.5, "required": false },
+    "cues": [
+      { "at": 0.08, "cue": "cine_sfx_slam", "gainDb": 0 },
+      { "at": 3.8, "cue": "lantern_on", "gainDb": -1 },
+      { "at": 8.0, "cue": "petrify", "gainDb": 0 },
+      { "at": 11.8, "cue": "taunt_clod_1", "gainDb": 0 }
+    ],
+    "autoGameSfx": true
+  },
+  "scenes": [
+    {
+      "id": "tt-01-frame0-hook",
+      "dur": 3.6,
+      "mode": "play",
+      "level": 3,
+      "skin": "iterm2",
+      "setup": [{ "solution": { "level": 3, "count": 1 } }],
+      "events": [
+        { "t": 0.35, "do": "typeAndSubmit", "line": "ls -la", "cps": 22 }
+      ],
+      "bursts": [
+        { "at": 0.1, "dur": 1.2, "text": "0 CREDITS!", "pos": "top-right", "accent": "orange" }
+      ],
+      "pills": [
+        {
+          "at": 0.15,
+          "dur": 3.2,
+          "pos": "top-left",
+          "accent": "phosphor",
+          "items": ["POV: Pulled inside your PC at 2 AM", "$ ls -la"]
+        }
+      ],
+      "captions": [
+        {
+          "n": "HOOK",
+          "tag": "NO MOUSE · REAL LINUX ONLY",
+          "head": "YOUR ONLY WEAPON IS A UNIX TERMINAL",
+          "sub": "Sweep dark hardware rooms and expose hidden malware PIDs.",
+          "at": 0.1,
+          "dur": 3.3,
+          "accent": "amber"
+        }
+      ]
+    },
+    {
+      "id": "tt-02-chmod-stone",
+      "dur": 4.2,
+      "mode": "play",
+      "level": 6,
+      "skin": "vt100",
+      "transition": "flash-amber",
+      "setup": [{ "solution": { "level": 6, "count": 2 } }],
+      "events": [
+        { "t": 0.4, "do": "type", "text": "chmod -x ", "cps": 22 }
+      ],
+      "bursts": [
+        { "at": 0.9, "dur": 1.5, "text": "CHMOD -X!", "pos": "top-right", "accent": "cyan" }
+      ],
+      "pills": [
+        {
+          "at": 0.2,
+          "dur": 3.8,
+          "pos": "top-left",
+          "accent": "cyan",
+          "items": ["$ chmod -x trojan", "$ mv laptop ~"]
+        }
+      ],
+      "captions": [
+        {
+          "n": "TURN 1",
+          "tag": "REAL PERMISSIONS = REAL MAGIC",
+          "head": "STRIP EXECUTE BITS TO PETRIFY TROJANS",
+          "sub": "Then flip open your clamshell laptop to patch broken JavaScript.",
+          "at": 0.15,
+          "dur": 3.85,
+          "accent": "cyan"
+        }
+      ]
+    },
+    {
+      "id": "tt-03-boss-timer",
+      "dur": 4.2,
+      "mode": "play",
+      "level": 11,
+      "skin": "iterm2",
+      "transition": "glitch",
+      "setup": [{ "solution": { "level": 11, "count": 2 } }],
+      "events": [
+        { "t": 0.4, "do": "type", "text": "kill -9 1", "cps": 20 }
+      ],
+      "bursts": [
+        { "at": 0.7, "dur": 1.5, "text": "30s CLOCK!", "pos": "top-right", "accent": "magenta" }
+      ],
+      "pills": [
+        {
+          "at": 0.2,
+          "dur": 3.8,
+          "pos": "top-left",
+          "accent": "magenta",
+          "items": ["Supervisor Clod · PID 1", "$ kill -9 1"]
+        }
+      ],
+      "captions": [
+        {
+          "n": "BOSS",
+          "tag": "30 SECONDS PER TURN",
+          "head": "CAN YOU KILL PID 1 WITHOUT ONE TYPO?",
+          "sub": "One bad flag wastes your turn and Kernel Overlord strikes back.",
+          "at": 0.15,
+          "dur": 3.85,
+          "accent": "magenta"
+        }
+      ]
+    },
+    {
+      "id": "tt-04-loop-cta",
+      "dur": 4.0,
+      "mode": "storybook",
+      "storybook": { "inspect": "vibecoder.dev_laptop", "bg": "floor4", "state": "walk", "from": 0.0, "to": 4.0, "ui": false, "pixel": true, "crt": true },
+      "transition": "flash-amber",
+      "card": {
+        "at": 0.15,
+        "eyebrow": "OUT OF CREDITS · FREE BROWSER DEMO",
+        "title": [
+          "PLAY CHAPTER 1 FREE",
+          "WISHLIST ON STEAM"
+        ],
+        "sub": "11 Sectors · Real Unix + JS Laptop · 1995 Comix Zone Visuals",
+        "steps": [
+          "LINK IN BIO: PLAY IN BROWSER",
+          "WISHLIST OUT OF CREDITS ON STEAM"
+        ],
+        "cta": "TRY SECTOR 01 NOW ▸",
+        "foot": "COMMENT YOUR FIRST LINUX COMMAND BELOW"
+      }
+    }
+  ]
+}

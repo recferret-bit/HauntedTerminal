@@ -1,0 +1,98 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "fps": 24,
+  "seed": 1995,
+  "shots": [
+    {
+      "id": "01-intro-lightning-pull",
+      "title": "3D Intro Comix: Midnight Storm & PC Tower Lightning Pull",
+      "mode": "comix",
+      "dur": 2.0,
+      "captureAt": 1.0,
+      "comix": { "slug": "intro", "from": 13.45, "to": 13.75 }
+    },
+    {
+      "id": "02-tutorial-kiro-terminal",
+      "title": "Sector 01 Awakening: Kiro Ghost Delivers Your Unix Terminal",
+      "mode": "play",
+      "level": 1,
+      "skin": "iterm2",
+      "dur": 2.5,
+      "captureAt": 1.6,
+      "setup": [{ "ticks": 75 }, "ls"]
+    },
+    {
+      "id": "03-gpu-alley-lantern-battle",
+      "title": "Sector 03 GPU Alley: Lantern Sweep & Turn-Based Malware Battle",
+      "mode": "play",
+      "level": 3,
+      "skin": "vt100",
+      "dur": 2.5,
+      "captureAt": 1.8,
+      "setup": [{ "solution": { "level": 3, "count": 2 } }]
+    },
+    {
+      "id": "04-matrix-hub-dad-open-weights",
+      "title": "Sector 04 Matrix Hub: Old Bearded Coder (dad.tty) & Open-Weights Server",
+      "mode": "play",
+      "level": 4,
+      "skin": "iterm2",
+      "dur": 2.5,
+      "captureAt": 1.6,
+      "setup": [{ "solution": { "level": 4, "count": 2 } }]
+    },
+    {
+      "id": "05-logic-cell-chmod-trojan",
+      "title": "Sector 06 Logic Cell: Petrifying Trojans With chmod -x & JS Repair",
+      "mode": "play",
+      "level": 6,
+      "skin": "gnome-terminal",
+      "dur": 2.5,
+      "captureAt": 1.6,
+      "setup": [{ "solution": { "level": 6, "count": 2 } }]
+    },
+    {
+      "id": "06-clamshell-laptop-studio",
+      "title": "Developer Clamshell Laptop: Sandboxed JS Pad & Web Weaver",
+      "mode": "laptop",
+      "dur": 2.0,
+      "captureAt": 1.2,
+      "laptop": { "state": "desktop", "speed": 0, "task": "js-add" }
+    },
+    {
+      "id": "07-hardcover-field-manual",
+      "title": "Hardcover Comic Terminal Field Manual (F1 / manual)",
+      "mode": "page",
+      "dur": 2.0,
+      "captureAt": 1.0,
+      "page": { "url": "/manual?cmd=chmod" }
+    },
+    {
+      "id": "08-kernel-core-clod-boss",
+      "title": "Sector 11 Kernel Core: Clod Supervisor & PID 1 Overlord Showdown",
+      "mode": "play",
+      "level": 11,
+      "skin": "iterm2",
+      "dur": 2.5,
+      "captureAt": 1.8,
+      "setup": [{ "solution": { "level": 11, "count": 2 } }]
+    },
+    {
+      "id": "09-storybook-boss-kernel",
+      "title": "Procedural 3D-as-2D Cel & Halftone Relief: Kernel Boss (PID 1)",
+      "mode": "storybook",
+      "dur": 2.0,
+      "captureAt": 1.0,
+      "storybook": { "inspect": "boss.kernel", "bg": "floor5", "state": "attack", "from": 0.35, "to": 1.8, "ui": false, "pixel": true, "crt": true }
+    },
+    {
+      "id": "10-steam-landing-hub",
+      "title": "Browser Demo Front Door, Portable Saves & Steam Wishlist Hub",
+      "mode": "page",
+      "dur": 2.0,
+      "captureAt": 1.0,
+      "page": { "url": "/" }
+    }
+  ]
+}

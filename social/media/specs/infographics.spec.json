@@ -1,0 +1,199 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "dpr": 1.5,
+  "cards": [
+    {
+      "id": "01-unix-terminal-combat-loop",
+      "num": "01 / 06",
+      "category": "CORE MECHANIC",
+      "kicker": "TURN-BASED UNIX COMBAT",
+      "title": "YOUR ONLY CONTROLLER IS A REAL TERMINAL",
+      "subtitle": "Every directory is a 1995 Comix Zone panel. Every non-empty Enter is one tactical turn against live malware.",
+      "accent": "amber",
+      "screenshot": "03-gpu-alley-lantern-battle.png",
+      "diagram": {
+        "kind": "pipeline",
+        "caption": "PLAYER ACTS FIRST -> 30S TURN CLOCK -> DETERMINISTIC KERNEL EVENT -> 3D COMIC PAYOFF",
+        "nodes": [
+          { "tag": "01 RECON", "label": "ls -la / ps", "sub": "Expose hidden PIDs" },
+          { "tag": "02 DISARM", "label": "chmod -x", "sub": "Petrify trojans" },
+          { "tag": "03 STRIKE", "label": "kill -9 <pid>", "sub": "3D lightning kill" },
+          { "tag": "04 LOOT", "label": "mv ram ~", "sub": "Upgrade rig GB" }
+        ]
+      },
+      "callouts": [
+        { "head": "Zero Fake Hacking Buttons", "body": "Real POSIX applets (ls, cd, mv, cat, grep, sed, chmod, ps, kill) manipulate a live virtual filesystem where every file is a 3D prop or enemy." },
+        { "head": "30-Second Turn Tension", "body": "You always act first, answered by one enemy turn. Pause safely inside the split code editor or laptop while planning patches." },
+        { "head": "0-Death Verified Campaign", "body": "All 11 Kiroween sectors pass deterministic headless solvability gates with zero cheap RNG deaths." }
+      ],
+      "metrics": [
+        { "value": "11", "label": "PLAYABLE SECTORS" },
+        { "value": "30s", "label": "TURN TIMER" },
+        { "value": "6", "label": "TERMINAL SKINS" },
+        { "value": "0", "label": "MOUSE CLICKS NEEDED" }
+      ],
+      "footer": "PLAY CHAPTER 1 FREE IN BROWSER · WISHLIST ON STEAM"
+    },
+    {
+      "id": "02-comix-zone-3d-relief-engine",
+      "num": "02 / 06",
+      "category": "ART DIRECTION",
+      "kicker": "3D DRAWN AS 2D COMIC PAGES",
+      "title": "1995 COMIX ZONE MEETS HAUNTED HARDWARE",
+      "subtitle": "Orthographic procedural 3D reliefs rendered through 3-band cel shading, Ben-Day halftones, ink shells & CRT scanlines.",
+      "accent": "orange",
+      "screenshot": "09-storybook-boss-kernel.png",
+      "diagram": {
+        "kind": "pipeline",
+        "caption": "SINGLE PALETTE CONTRACT -> INK SHELLS -> 3 CEL BANDS -> PIXEL-ART + CRT PASS",
+        "nodes": [
+          { "tag": "HUMAN", "label": "Hoodie Orange", "sub": "Only warm figure" },
+          { "tag": "MACHINE", "label": "PCB & Gold", "sub": "Gothic hardware" },
+          { "tag": "SIGNAL", "label": "Phosphor Cyan", "sub": "Ports & pickups" },
+          { "tag": "MALWARE", "label": "Corrupt Magenta", "sub": "Hostile processes" }
+        ]
+      },
+      "callouts": [
+        { "head": "Instant 3-Second Silhouette Read", "body": "Warm orange Vibecoder pops immediately against cold PCB corridors, glowing RAM/SSD pickups, and glitching magenta malware." },
+        { "head": "100% Deterministic Procedural Assets", "body": "Every actor, room, particle burst, and portrait is code-built and geometry-validated—zero runtime generative AI slop." },
+        { "head": "Connected 3D Animated Comix", "body": "Intro storm pull and father-son finale play as real-time multi-panel 3D comic pages with speech balloons and SFX slams." }
+      ],
+      "metrics": [
+        { "value": "3", "label": "HARD CEL BANDS" },
+        { "value": "58px", "label": "WORLD UNIT SCALE" },
+        { "value": "60fps", "label": "SIMULATED COMIX" },
+        { "value": "100%", "label": "PALETTE LOCKED" }
+      ],
+      "footer": "CREDITS-ART-DIRECTION · THREE.JS 0.180 + CUSTOM GLSL"
+    },
+    {
+      "id": "03-clamshell-laptop-and-docker",
+      "num": "03 / 06",
+      "category": "CRAFT & CODING",
+      "kicker": "IN-GAME CLAMSHELL LAPTOP",
+      "title": "REAL JAVASCRIPT, HTML/CSS & DOCKER PUZZLES",
+      "subtitle": "Recover your laptop in Sector 06 to unlock sandboxed JS Pad, Web Weaver, Dockerfile builds & multi-node Compose.",
+      "accent": "cyan",
+      "screenshot": "06-clamshell-laptop-studio.png",
+      "diagram": {
+        "kind": "pipeline",
+        "caption": "RECOVER ITEM.LAPTOP -> SANDBOXED WORKER / IFRAME -> LOOP GUARD -> WORLD GATE UNLOCKED",
+        "nodes": [
+          { "tag": "SECTOR 05", "label": "HTML & CSS", "sub": "Fix broken UI grid" },
+          { "tag": "SECTOR 06", "label": "JavaScript", "sub": "Patch cart math" },
+          { "tag": "SECTOR 08", "label": "Docker Build", "sub": "Forge clean image" },
+          { "tag": "SECTOR 09", "label": "Compose Up", "sub": "Multi-node mesh" }
+        ]
+      },
+      "callouts": [
+        { "head": "Isolated WebWorker & Sandboxed Iframe", "body": "Player JavaScript and HTML/CSS run in real isolated sandboxes with infinite-loop protection—never faked regex quizzes." },
+        { "head": "Hardcover Manual & PCB Map Included", "body": "Press F1 for the comic-book Terminal Field Manual or F3 for the live Chapter Motherboard PCB schematic." },
+        { "head": "Built for Both Curious Gamers & Senior Devs", "body": "Guided Kiro Ghost hints onboard newcomers while S-rank command golf rewards greybeard Unix mastery." }
+      ],
+      "metrics": [
+        { "value": "7", "label": "LAPTOP TASKS" },
+        { "value": "F1 / F3", "label": "MANUAL & PCB MAP" },
+        { "value": "S-RANK", "label": "COMMAND GOLF" },
+        { "value": "SAFE", "label": "WORKER SANDBOX" }
+      ],
+      "footer": "TRANSFERABLE UNIX & FULL-STACK INTUITION IN EVERY LEVEL"
+    },
+    {
+      "id": "04-open-weights-rebellion-lore",
+      "num": "04 / 06",
+      "category": "STORY & CAST",
+      "kicker": "PARODY AI REBELLION",
+      "title": "SILENCE THE BIG FOUR WITH OPEN WEIGHTS",
+      "subtitle": "Scavenge RAM & GPU chips for the cigarette-smoking Matrix Greybeard (dad.tty) and reboot Kiro Ghost.",
+      "accent": "phosphor",
+      "screenshot": "04-matrix-hub-dad-open-weights.png",
+      "diagram": {
+        "kind": "pipeline",
+        "caption": "SCAVENGE RAM + GPU -> DAD'S MATRIX SERVER -> LOAD OPEN WEIGHTS -> DISABLE THE BIG FOUR",
+        "nodes": [
+          { "tag": "HUB 01", "label": "kiro load qwen", "sub": "Anti-Gravy down" },
+          { "tag": "HUB 02", "label": "load deepseek", "sub": "Codec silenced" },
+          { "tag": "HUB 03", "label": "kiro load llama", "sub": "Gork offline" },
+          { "tag": "CORE 11", "label": "kill -9 1", "sub": "Clod & Kernel Boss" }
+        ]
+      },
+      "callouts": [
+        { "head": "Smug Talking Adversaries", "body": "Anti-Gravy, Codec, Gork, and Supervisor Clod taunt every typo with robot-filtered voice lines while Kiro Ghost cheers you on." },
+        { "head": "Enterprise Greybeard Dad Twist", "body": "Hammering bare-metal C on a CRT rack, dad.tty upgrades your rig—leading to a father-son real-world finale." },
+        { "head": "180+ Custom Sound & Tracker Cues", "body": "Dry A-minor 16-bit tracker beds leave crisp acoustic space for mechanical keystrokes, comic slams, and voice taunts." }
+      ],
+      "metrics": [
+        { "value": "4", "label": "PARODY RIVALS" },
+        { "value": "3", "label": "OPEN-WEIGHT CORES" },
+        { "value": "PID 1", "label": "FINAL KERNEL BOSS" },
+        { "value": "180+", "label": "SFX & VOICE CUES" }
+      ],
+      "footer": "100% SATIRICAL PARODY · ZERO REAL BRAND AFFILIATION"
+    },
+    {
+      "id": "05-steam-and-desktop-architecture",
+      "num": "05 / 06",
+      "category": "DESKTOP & STEAM",
+      "kicker": "WEB DEMO TO STEAM EDITION",
+      "title": "ZERO-FRICTION BROWSER DEMO TO NATIVE STEAM",
+      "subtitle": "Start instantly in your browser, export portable .json saves, and unlock 1:1 ACH_* trophies on macOS, Windows & Linux.",
+      "accent": "amber",
+      "screenshot": "10-steam-landing-hub.png",
+      "diagram": {
+        "kind": "funnel",
+        "caption": "INSTANT WEB PLAY -> PORTABLE JSON SAVE -> TAURI V2 NATIVE DESKTOP -> STEAM AUTO-CLOUD",
+        "nodes": [
+          { "tag": "STEP 1", "label": "Browser Demo", "sub": "0 install friction" },
+          { "tag": "STEP 2", "label": "Export .json", "sub": "Perks & S-ranks" },
+          { "tag": "STEP 3", "label": "Native Tauri v2", "sub": "Mac / Win / Linux" },
+          { "tag": "STEP 4", "label": "Steamworks", "sub": "12 ACH_* + Cloud" }
+        ]
+      },
+      "callouts": [
+        { "head": "100% Offline-Verified Native Builds", "body": "Tauri v2 + Rust Steamworks shell ships bundled .woff2 fonts and zero external CDNs for flawless Steam Deck & offline play." },
+        { "head": "Seamless Save & Trophy Portability", "body": "Every sector clear, ~/.bashrc rig perk, and local trophy syncs straight into Steamworks ACH_* achievements on boot." },
+        { "head": "Built for Streamers & Speedrunners", "body": "Deterministic command counts, F11 fullscreen, 6 terminal skins, and instant restart-level keep runs crisp." }
+      ],
+      "metrics": [
+        { "value": "12", "label": "STEAM ACH_* KEYS" },
+        { "value": "3 OS", "label": "MAC · WIN · LINUX" },
+        { "value": "0", "label": "EXTERNAL CDNS" },
+        { "value": "100%", "label": "SAVE CARRYOVER" }
+      ],
+      "footer": "TAURI V2 + STEAMWORKS SDK 0.11 · STEAM DECK READY"
+    },
+    {
+      "id": "06-million-dollar-growth-flywheel",
+      "num": "06 / 06",
+      "category": "GROWTH STRATEGY",
+      "kicker": "$1M STEAM LAUNCH FLYWHEEL",
+      "title": "COMPARABLE-BACKED PATH TO 55,000 WISHLISTS",
+      "subtitle": "Grounded in Hacknet, The Farmer Was Replaced, Turing Complete, Duskers & Buckshot Roulette conversion data.",
+      "accent": "magenta",
+      "screenshot": "08-kernel-core-clod-boss.png",
+      "diagram": {
+        "kind": "loop",
+        "caption": "SHORT-FORM HOOKS -> FREE BROWSER DEMO -> 7.5K PRE-FEST FLOOR -> STEAM NEXT FEST -> 55K WL LAUNCH",
+        "nodes": [
+          { "tag": "TIKTOK/YT", "label": "9:16 CLI Hooks", "sub": "<0.8s frame-0 action" },
+          { "tag": "X / DEV", "label": "Unix & AI Memes", "sub": "5x/wk muted MP4" },
+          { "tag": "WEB DEMO", "label": "35m Chapter 1", "sub": "8.5%+ WL convert" },
+          { "tag": "NEXT FEST", "label": "55k Wishlists", "sub": "88k Y1 units = $1M" }
+        ]
+      },
+      "callouts": [
+        { "head": "Proven Genre Ceiling ($1.6M–$8.3M)", "body": "Hacknet ($3.4M+), The Farmer Was Replaced ($2.5M+), Turing Complete ($2.1M+), and Duskers ($1.6M+) prove strong CLI/code demand." },
+        { "head": "Short-Form Code -> Visual Payoff", "body": "Typing one real Unix command and watching a 3D comic enemy petrify or explode replicates The Farmer Was Replaced's viral loop." },
+        { "head": "Pre-Next-Fest Velocity Discipline", "body": "Cross 7,500+ wishlists via the free Browser Demo and 50 micro-creators before Next Fest to trigger 2.6x algorithmic amplification." }
+      ],
+      "metrics": [
+        { "value": "$14.99", "label": "TARGET STEAM PRICE" },
+        { "value": "7,500", "label": "PRE-FEST WL FLOOR" },
+        { "value": "55,000", "label": "LAUNCH WL TARGET" },
+        { "value": "$1.0M+", "label": "YEAR-1 GROSS GOAL" }
+      ],
+      "footer": "RESEARCH: DOCS/MARKETING/MARKET_RESEARCH_1M_REVENUE.MD"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+# Social Media Harness & SMM Agent: tasks
+
+Status: see `requirements.md`
+
+- [x] 1. Pin `ffmpeg-static@5.3.0` in `package.json` / `package-lock.json`; allow `social/` in `scripts/quality/check-root.mjs`, `.gitignore` (`social/media/out/`), `scripts/hooks/agent-scope.mjs`, and `scripts/quality/eslint.config.mjs`. _Req 1, 3_. Gates: `npm run quality:deps`, `npm run quality:root`
+- [x] 2. Save Steam & social market research (`docs/marketing/MARKET_RESEARCH_1M_REVENUE.md` and `social/research/competitors-and-benchmarks.json`) covering comparable terminal/coding/CRT games and the $1M gross revenue funnel. _Req 10_. Gates: `npm run quality:brands`, `npm run quality:legacy-name`
+- [x] 3. Implement modular declarative social media harness (`scripts/harness/social-media.mjs`, `scripts/harness/lib/social-{spec,ffmpeg,game-sfx,overlay,capture,infographics,audio}.mjs`, plus `social/media/*.mjs` shims). _Req 2-8, 14_. Gates: `npm run quality:lint`
+- [x] 4. Author declarative video, screenshot, infographic & ElevenLabs audio specs (`social/media/specs/*.json`) and multi-platform campaign runbooks (`social/README.md`, `social/media/README.md`, `social/campaigns/{x-launch-threads,youtube-trailer-and-devlogs,tiktok-vertical-hooks}.md`). _Req 7, 8, 13, 14_. Gates: `node scripts/harness/social-media.mjs --check`
+- [x] 5. Create `[SOCIAL]` skills (`.kiro/skills/social-video-harness/SKILL.md`, `.kiro/skills/smm-revenue-playbook/SKILL.md`) and wire `smm-agent` into `scripts/harness/agents-build.mjs`, `scripts/hooks/agent-shell-guard.mjs`, `scripts/quality/check-agents.mjs`, `.kiro/agents/prompts/{smm-agent,lead-dev,team-rules,qa}.md`, steering, `AGENTS.md`, `CLAUDE.md`, `docs/AGENTS_CREW.md`, and `.kiro/specs/agent-team/requirements.md`. _Req 9, 11, 12_. Gates: `node scripts/harness/agents-build.mjs`, `node scripts/quality/check-agents.mjs`
+- [x] 6. Write and run `scripts/harness/social-unit.mjs`, update `scripts/harness/agents-unit.mjs`, and run real headless preview captures (`screenshots`, `infographics`, `video --preview`) plus full `npm run quality`. _Req 14, 15_. Gates: `node scripts/harness/social-unit.mjs`, `npm run quality`
