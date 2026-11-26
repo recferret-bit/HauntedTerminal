@@ -7,6 +7,7 @@ import { runLine, type Host } from '../game/shell.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from '../game/types.js';
 import { evaluateBatchEvents, formatAchievementLines } from './achievements.js';
 import { readMetagame, recordTelemetry } from './catalog.js';
+import { fillPids } from './pids.js';
 import type { LevelSpec } from './types.js';
 import { applySkipTutorial, bullyingNote, runTimed, syncTutorial } from './script.js';
 import type { ChapterState, EditorOpenPayload } from './session-state.js';
@@ -115,7 +116,7 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     g.deadNow = false;
     g.reloadedNow = false;
     g.deathText = '';
-    const typed = line.trim();
+    const typed = fillPids(line, g.rt.pids).trim();
     g.commandCue = null;
     if (g.intro) g.intro = false;
 

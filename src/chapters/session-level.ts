@@ -3,11 +3,13 @@ import { endBattle } from '../game/battle.js';
 import { maxHpFor } from '../game/bestiary.js';
 import { World } from '../game/entities.js';
 import type { EnemySpawn, PickupSpawn } from '../game/floors.js';
+import { giveItem, hasItem, holdItem } from '../game/inventory.js';
 import { lookup, makeRoot } from '../game/tree.js';
 import type { LevelSpec } from './types.js';
 import { readMetagame, recordTelemetry } from './catalog.js';
 import { arrivalScript, hiddenEnemyId, isNodeHidden, levelScript } from './script.js';
-import { ensureDirChain, hashSeed, placeFile, resolveTauntAgent, splitParentAndName, type ChapterState, type QuestBackup } from './session-state.js';
+import { applyPids, fillPidsDeep, fixedPids, rollPids } from './pids.js';
+import { ensureDirChain, placeFile, resolveTauntAgent, splitParentAndName, type ChapterState, type QuestBackup } from './session-state.js';
 import { refreshExitGates } from './session-rules.js';
 
 /** Tab-complete and globs skip a tutorial file until its reveal condition is met. */
@@ -24,21 +26,14 @@ export function rebootLevel(g: ChapterState, events: KernelEvent[]): string {
   return arrival;
 }
 
-function levelSpawns(
-  g: ChapterState,
-  spec: LevelSpec,
-  seedHash: number,
-): { enemySpawns: EnemySpawn[]; pickupSpawns: PickupSpawn[] } {
-  const enemySpawns: EnemySpawn[] = spec.enemies.map((e, eIdx) => {
-    let pid = e.pid;
-    if (g.chaosMode && pid && pid !== 1) {
-      pid = 1100 + ((pid * 37 + seedHash + eIdx * 97) % 7800);
-    }
+/** `spec` is the level as played: its enemies already carry their rolled PIDs (`applyPids`). */
+function levelSpawns(spec: LevelSpec): { enemySpawns: EnemySpawn[]; pickupSpawns: PickupSpawn[] } {
+  const enemySpawns: EnemySpawn[] = spec.enemies.map((e) => {
     return {
       id: e.id,
       type: e.type,
       path: e.path,
-      pid,
+      pid: e.pid,
       ppid: e.ppid,
       hidden: e.hidden,
       port: e.port,
@@ -61,9 +56,26 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
     endBattle(g.battle, 'level', events);
     g.kiro.clearRoomTransient();
     g.levelIdx = idx;
-    const spec = g.levels[idx]!;
+    // A new roll on every load, so a retry has new PIDs; a lab keeps the PIDs its author placed.
+    const pids = g.lab ? fixedPids(g.levels[idx]!.enemies) : rollPids(g.levels[idx]!.enemies, g.pidRandom);
+    const spec = applyPids(g.levels[idx]!, pids);
     g.entryRam = g.ram;
     g.entrySsd = g.ssd;
+    if (!isRetry && idx > 0) {
+      for (const grant of g.pack.manifest.grants ?? []) {
+        if (idx < grant.afterLevel) continue;
+        for (const item of grant.items ?? []) {
+          const had = hasItem(g.inventory, item);
+          g.inventory = giveItem(g.inventory, item);
+          if (!had && (item === 'lantern' || g.inventory.held === null)) {
+            g.inventory = holdItem(g.inventory, item);
+          }
+        }
+      }
+      if (g.inventory.held === null && hasItem(g.inventory, 'terminal')) {
+        g.inventory = holdItem(g.inventory, 'terminal');
+      }
+    }
     if (!isRetry) g.entryInventory = g.inventory;
     if (!isRetry && idx === 0) {
       g.hp = maxHpFor(g.ram);
@@ -90,9 +102,8 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       }
     }
 
-    const seedHash = hashSeed(`${g.chaosSeed}:${spec.id}`);
     const cwd = lookup(root, spec.cwd) ?? root;
-    const { enemySpawns, pickupSpawns } = levelSpawns(g, spec, seedHash);
+    const { enemySpawns, pickupSpawns } = levelSpawns(spec);
 
     if (!g.preview) recordTelemetry({ malware: ['hank.tty', 'kiro.d', g.pack.manifest.allyNpc.id, ...spec.enemies.map((e) => e.type)] });
 
@@ -108,6 +119,8 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       talkedSockets: new Set(),
       socketInputs: new Map(),
       loadedCores: new Set(),
+      pids,
+      dialog: fillPidsDeep(g.pack.dialogs?.levels[spec.id], pids),
       hintRung: 0,
       usedSpoilerRung: false,
       levelCommands: 0,
@@ -167,7 +180,7 @@ export function arriveCurrentLevel(g: ChapterState, events: KernelEvent[]): stri
   }
 
 export function levelBannerText(g: ChapterState): string {
-    const entry = g.pack.dialogs?.levels[g.rt.spec.id];
+    const entry = g.rt.dialog;
     const banner = entry?.banner ?? g.rt.spec.title;
     const chaosLine = g.chaosMode
       ? '\n[CHAOS CONTRACT ACTIVE: Randomized PIDs — run `ps` before signaling! +25 Bonus Silicon Scrap]'
