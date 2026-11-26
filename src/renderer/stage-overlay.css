@@ -146,3 +146,47 @@
 /* ---- Coredump tear lettering ---- */
 .st-tear { position: absolute; transform: translate(-50%, -50%); font-weight: 700; white-space: nowrap; font-size: max(30px, calc(var(--u) * 0.8)); color: #fbf6e9; -webkit-text-stroke: max(3px, calc(var(--u) * 0.05)) var(--ink); paint-order: stroke fill; text-shadow: -4px 0 0 #ef476f, 4px 0 0 #4cc9f0, 6px 7px 0 var(--ink); }
 .st-tear small { display: block; text-align: center; font-size: 0.42em; letter-spacing: 0.12em; color: #ffd166; }
+
+/* ---- Comix Zone corner level caption box ---- */
+.st-caption-box {
+  position: absolute;
+  max-width: min(320px, 50vw);
+  border: 3px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 5px 5px 0 var(--ink);
+  transform-origin: 0 100%;
+  color: var(--ink);
+}
+.st-caption-box .cap-kick {
+  padding: 2px 7px;
+  background: #ffd166;
+  border-bottom: 3px solid var(--ink);
+  border-left: 6px solid var(--accent, #ffd166);
+  font-weight: 700;
+  font-size: max(10px, calc(var(--u) * 0.18));
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.st-caption-box .cap-body {
+  padding: 3px 7px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.st-caption-box .cap-body strong {
+  font-weight: 700;
+  font-size: max(12px, calc(var(--u) * 0.22));
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.st-caption-box .cap-body span {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: max(10px, calc(var(--u) * 0.18));
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

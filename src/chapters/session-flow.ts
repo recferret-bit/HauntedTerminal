@@ -18,6 +18,7 @@ import {
   levelScript,
   openingActive,
   runTimed,
+  syncScriptTriggers,
   syncTutorial,
 } from './script.js';
 import type { ChapterState, EditorOpenPayload } from './session-state.js';
@@ -44,8 +45,8 @@ export function applyInitialLoadout(g: ChapterState, startIdx: number): void {
       if (grant.core) core = grant.core;
       for (const item of grant.items ?? []) g.inventory = giveItem(g.inventory, item);
     }
-    // A grant that gives the lantern also puts it in his hand.
-    if (hasItem(g.inventory, 'lantern')) g.inventory = holdItem(g.inventory, 'lantern');
+    // A grant that gives the tube transistor also puts it in his hand.
+    if (hasItem(g.inventory, 'tube_transistor')) g.inventory = holdItem(g.inventory, 'tube_transistor');
     else if (g.inventory.held === null && hasItem(g.inventory, 'terminal')) g.inventory = holdItem(g.inventory, 'terminal');
     if (core) g.kiro.loadCore(core);
 
@@ -108,16 +109,14 @@ export function jumpToLevel(g: ChapterState, levelIdOrIndex: string | number): T
 
 export function arriveLevel(g: ChapterState): TickResult {
     g.intro = false;
-    const events: KernelEvent[] = [];
-    const output = arriveCurrentLevel(g, events);
-    return { output, events, snapshot: snapshot(g) };
+    return settle(g, (events) => arriveCurrentLevel(g, events));
   }
 
 function syncWorldAndGates(g: ChapterState, events: KernelEvent[]): string {
   syncValidatedCodeBugs(g);
   g.rt.world.sync(events);
   refreshExitGates(g, events);
-  return g.rt.world.drain();
+  return g.rt.world.drain() + syncScriptTriggers(g, events);
 }
 
 /** Completes the level's opening Vibecoder + Kiro dialog (`openingSec`), then starts the battle or emits the Big Four taunt. */
@@ -199,6 +198,7 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
       const preTutorialNotes = g.rt.world.drain() + g.rt.completionNote;
       g.rt.completionNote = '';
       combinedOutput += preTutorialNotes;
+      combinedOutput += syncScriptTriggers(g, events);
       combinedOutput += syncTutorial(g, events);
       combinedOutput += bullyingNote(g, allWinRulesMet(g), events);
       // Turn-based: the command was an action; the world answers with one step (an enemy turn in a battle).
@@ -322,6 +322,7 @@ export function restart(g: ChapterState, options?: { intro?: boolean }): TickRes
     g.ended = false;
     g.endedAt = null;
     g.fullRun = true;
+    g.seenPickups.clear();
     g.intro = Boolean(options?.intro);
     applyInitialLoadout(g, 0);
     loadLevel(g, 0, false, options?.intro ? [] : events);
@@ -355,9 +356,7 @@ export function debugDamage(g: ChapterState, amount = 10): TickResult {
   }
 
 export function skipTutorial(g: ChapterState): TickResult {
-    const events: KernelEvent[] = [];
-    const output = applySkipTutorial(g, events);
-    return { output, events, snapshot: snapshot(g) };
+    return settle(g, (events) => applySkipTutorial(g, events));
   }
 
 export function setPaused(g: ChapterState, paused: boolean): void {

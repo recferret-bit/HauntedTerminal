@@ -38,6 +38,7 @@ await withProcgen(async (_procgen, vite) => {
   const { CHAPTER_COMMANDS } = await load('/src/chapters/session-state.ts');
   const applets = await load('/src/game/unix-applets.ts');
   const { allEvents } = await load('/src/renderer/stage-selfcheck.ts');
+  const { LEVEL_TRANSITION_PHASES, LEVEL_TRANSITION_TRANSITIONS } = await load('/src/renderer/stage-level-transition.ts');
   const { fxCuesFor } = await load('/src/renderer/event-fx.ts');
   const { FX_IDS } = await load('/src/renderer/fx-player.ts');
   const { FxCatalog } = await load('/src/procgen/index.ts');
@@ -110,6 +111,16 @@ await withProcgen(async (_procgen, vite) => {
     assert.equal(hiddenOnly.closeOverlays, false);
     lc.deleteReason('hidden');
 
+    lc.addReason('transition');
+    const inTransition = lc.derive({ manualOpen: false, mapOpen: false });
+    assert.equal(inTransition.clockPaused, true);
+    assert.equal(inTransition.stormPaused, true);
+    assert.equal(inTransition.shellBlocked, true);
+    assert.equal(inTransition.hideHud, false);
+    assert.equal(lc.canOpenEscMenu(false), false);
+    assert.equal(lc.canRestartFloor(), false);
+    lc.deleteReason('transition');
+
     assert.equal(lc.beginEndingHold(), true);
     assert.equal(lc.beginEndingHold(), false); // idempotent
     assert.equal(lc.canOpenManualOrMap(), false);
@@ -118,10 +129,12 @@ await withProcgen(async (_procgen, vite) => {
     assert.equal(lc.phase(), 'stats');
     assert.equal(lc.canOpenEscMenu(true), false);
 
+    lc.addReason('transition');
     lc.resetForPlayAgain();
     assert.equal(lc.phase(), 'intro');
     assert.equal(lc.isEndingStarted(), false);
     assert.equal(lc.hasReason('intro'), true);
+    assert.equal(lc.hasReason('transition'), false);
 
     lc.resetForLabSwap(true);
     assert.equal(lc.phase(), 'play');
@@ -549,6 +562,29 @@ await withProcgen(async (_procgen, vite) => {
     }
     assert.equal(ch.snapshot().cwd, startCwd);
     assert.equal(ch.exec('pwd').output.trim(), startCwd);
+  });
+
+  await test('LEVEL_TRANSITION_TRANSITIONS reaches all phases and supports skip from active states', () => {
+    const reached = reachableStates(LEVEL_TRANSITION_TRANSITIONS, 'idle');
+    for (const p of LEVEL_TRANSITION_PHASES) assert.ok(reached.has(p), `unreachable transition phase: ${p}`);
+    const fsm = createStateMachine({ initial: 'idle', transitions: LEVEL_TRANSITION_TRANSITIONS });
+    assert.equal(fsm.send('SKIP'), false);
+    assert.equal(fsm.send('BEGIN'), true);
+    assert.equal(fsm.state, 'exit_walk');
+    assert.equal(fsm.send('ENTER_DOOR'), true);
+    assert.equal(fsm.state, 'gutter_pan');
+    assert.equal(fsm.send('FINISH_PAN'), true);
+    assert.equal(fsm.state, 'entry_walk');
+    assert.equal(fsm.send('LAND'), true);
+    assert.equal(fsm.state, 'idle');
+    for (const ev of ['ENTER_DOOR', 'FINISH_PAN', 'LAND']) {
+      fsm.reset('idle');
+      fsm.send('BEGIN');
+      if (ev === 'FINISH_PAN' || ev === 'LAND') fsm.send('ENTER_DOOR');
+      if (ev === 'LAND') fsm.send('FINISH_PAN');
+      assert.equal(fsm.send('SKIP'), true);
+      assert.equal(fsm.state, 'idle');
+    }
   });
 
   console.log(`\narchitecture-unit OK (${count()} tests)`);

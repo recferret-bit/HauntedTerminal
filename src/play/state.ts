@@ -40,6 +40,9 @@ export const FLOOR_NAMES: Record<number, string> = {
 /** How long a floor title card holds the clock and the keyboard. */
 export const CARD_MS = 1600;
 
+/** Total length of the 3-phase Comix Zone level-exit transition (`exit_walk` + `gutter_pan` + `entry_walk`). */
+export const LEVEL_TRANSITION_MS = 1760;
+
 /** How long the welcome banner takes to type itself out after the terminal powers on. */
 export const BANNER_MS = 520;
 
@@ -109,6 +112,8 @@ export class Play {
   readonly lifecycle: PlayLifecycle;
   readonly events: PlayEventBus = createPlayBus();
   cardTimer = 0;
+  transitionTimer = 0;
+  deferredPostTransition: (() => void)[] = [];
   /** FLOOR_ENTERED that arrived while the intro was running; shown once it ends. */
   stashedFloorCard: Extract<KernelEvent, { type: 'FLOOR_ENTERED' }> | null = null;
   hud: Hud | null = null;

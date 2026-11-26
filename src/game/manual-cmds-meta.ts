@@ -284,7 +284,7 @@ export const MANUAL_TOOLS_AND_META: readonly ManualCommandEntry[] = [
     syntax: 'workshop [buy|toggle <perk-id>]  (alias: rig)',
     summary: 'Spend Silicon Scrap on persistent `~/.bashrc` rig perks or toggle owned perks.',
     realWorld: 'Models customizing `~/.bashrc` startup exports so every new shell inherits your setup.',
-    inGame: 'Unlock +16 GB starter RAM, +256 GB NVMe rescue backup, or auto-lantern goggles.',
+    inGame: 'Unlock +16 GB starter RAM, +256 GB NVMe rescue backup, or auto-sweep dotfile goggles.',
     flags: [
       { flag: 'buy / toggle <perk-id>', kind: 'subcommand', meaning: 'Unlock a perk with Scrap or toggle an owned perk on/off', example: 'workshop perk-overclock-dimm' },
     ],
@@ -301,7 +301,7 @@ export const MANUAL_TOOLS_AND_META: readonly ManualCommandEntry[] = [
     filters: ['game'],
     availability: 'chapter',
     syntax: 'achievements [export | sync | <category|filter>]',
-    summary: 'View all 13 local trophies and their 1:1 `ACH_*` keys, export JSON, or sync with desktop.',
+    summary: 'View all 15 local trophies and their 1:1 `ACH_*` keys, export JSON, or sync with desktop.',
     realWorld: 'Inspects achievement telemetry and portable JSON save export.',
     inGame: 'Filter by `campaign`, `combat`, `craft`, `mastery`, or `export` portable Steamworks payload.',
     flags: [
@@ -310,7 +310,7 @@ export const MANUAL_TOOLS_AND_META: readonly ManualCommandEntry[] = [
       { flag: '<filter>', kind: 'operator', meaning: 'Filter by category (`campaign`, `combat`, `craft`, `mastery`), id, or key', example: 'achievements combat' },
     ],
     pitfalls: ['Still works even after clearing the chapter (`g.ended === true`) so you can export anytime!'],
-    examples: [{ command: 'achievements', outcome: 'Lists all 13 achievements and unlock state.' }],
+    examples: [{ command: 'achievements', outcome: 'Lists all 15 achievements and unlock state.' }],
     related: ['workshop', 'status', 'exit'],
     keywords: ['trophies', 'steam', 'export', 'sync', 'ach'],
   },

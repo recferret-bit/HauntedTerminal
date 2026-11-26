@@ -1,4 +1,4 @@
-# Lantern Item: tasks
+# Tube Transistor Item (formerly Lantern): tasks
 
-- [x] 1. Lantern model & hero integration: maintain `buildLantern` in `src/procgen/archetypes/items/lantern.ts`, verified against `item` size budget and `human` zone rules. _Req 1, 2, 3_. Gates: `validate-model.mjs item.lantern vibecoder.dev --seeds 4`, `npm run quality:fingerprint`
-- [x] 2. Gameplay & stage lighting: ensure `ls -a` raises lantern, triggers reveal events, and provides `ComicStage.light` source position. _Req 4, 5, 6, 7_. Gates: `laptop-unit.mjs`, `generate-chapter.mjs --verify`, `npm run quality`
+- [x] 1. Tube Transistor model & hero integration: maintain `buildTubeTransistor` in `src/procgen/archetypes/items/tube-transistor.ts` (10 parts, 312 tris, replacing `items/lantern.ts`), verified against `item` size budget and `human` zone rules, with ground-laying pickup pose (`laidTransistor`) and `dropToGround` bounce. _Req 1, 2, 3, 5_. Gates: `validate-model.mjs item.tube_transistor vibecoder.dev --seeds 4`, `npm run quality:fingerprint`
+- [x] 2. Gameplay, stage lighting, Level 2/3 flow & achievements: ensure Level 2 drops `tube_transistor` (`appearWhen` + `mv tube_transistor ~` + `script.triggers` + `ssd_256gb.img`), `ls -a` / `ls -la` raises `tube_transistor`, exposes Level 3's all-hidden squad, triggers `LANTERN_REVEAL`, provides `ComicStage.light` source position, and tracks `ACH_FULL_LOADOUT` & `ACH_HARDWARE_HOARDER` (15 total achievements). _Req 4, 6, 7, 8, 9_. Gates: `laptop-unit.mjs`, `generate-chapter.mjs --verify`, `npm run quality`

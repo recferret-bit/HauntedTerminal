@@ -165,6 +165,8 @@ function mergeAchievements(raw: unknown, current: AchievementStore): Achievement
       sRanksEarned: Math.max(current.stats.sRanksEarned, incoming.stats.sRanksEarned),
       clearedMechanics: [...new Set([...current.stats.clearedMechanics, ...incoming.stats.clearedMechanics])],
       loadedCores: [...new Set([...current.stats.loadedCores, ...incoming.stats.loadedCores])],
+      collectedItems: [...new Set([...current.stats.collectedItems, ...incoming.stats.collectedItems])],
+      collectedPickups: [...new Set([...current.stats.collectedPickups, ...incoming.stats.collectedPickups])],
     },
   };
 }

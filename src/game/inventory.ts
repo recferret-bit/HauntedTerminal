@@ -23,10 +23,10 @@ export interface Inventory {
   readonly held: ItemId | null;
 }
 
-/** He walks in with what the chapter's `startItems` name (default: the lantern and terminal); the lantern is held when he has it. */
-export function starterInventory(items: readonly ItemId[] = ['lantern', 'terminal']): Inventory {
+/** He walks in with what the chapter's `startItems` name (default: the tube transistor and terminal); the tube transistor is held when he has it. */
+export function starterInventory(items: readonly ItemId[] = ['tube_transistor', 'terminal']): Inventory {
   const unique = items.filter((id, i) => items.indexOf(id) === i);
-  const held = unique.includes('lantern') ? 'lantern' : unique.includes('terminal') ? 'terminal' : null;
+  const held = unique.includes('tube_transistor') ? 'tube_transistor' : unique.includes('terminal') ? 'terminal' : null;
   return { items: unique, held };
 }
 
@@ -50,7 +50,7 @@ export function heroModel(held: ItemId | null | undefined): string {
 }
 
 function listing(inv: Inventory): string {
-  const rows = inv.items.map((id) => `  ${inv.held === id ? '*' : ' '} ${ITEMS[id].label.padEnd(9)} ${ITEMS[id].use}`);
+  const rows = inv.items.map((id) => `  ${inv.held === id ? '*' : ' '} ${ITEMS[id].label.padEnd(16)} ${ITEMS[id].use}`);
   return `INVENTORY (* in hand)\n${rows.join('\n')}\n`;
 }
 

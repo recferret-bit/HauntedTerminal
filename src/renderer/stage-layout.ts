@@ -85,6 +85,7 @@ export function syncRoomModel(stage: ComicStage, kind: RoomKind, seed = 1): void
 }
 
 export function buildStageScene(stage: ComicStage): void {
+  stage.skipLevelTransition();
   stage.tweens.clear();
   stage.fxPlayer.clear();
   stage.lightning.clear();
@@ -115,7 +116,7 @@ export function buildStageScene(stage: ComicStage): void {
   const theme = themeFor(stage.view?.kind ?? 'attic');
   stage.scene.background = new THREE.Color(0xefe6d2);
 
-  const paper = new THREE.Mesh(new THREE.PlaneGeometry(28, 16), createComicMaterial(0xefe6d2, { halftone: true }));
+  const paper = new THREE.Mesh(new THREE.PlaneGeometry(56, 18), createComicMaterial(0xefe6d2, { halftone: true }));
   paper.rotation.y = Math.PI;
   paper.position.set(0, 2.45, 2.4);
   stage.world.add(paper);

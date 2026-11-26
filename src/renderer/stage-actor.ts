@@ -17,14 +17,33 @@ export function setRest(a: StageActor): void {
   if (a.animator.state !== target) a.animator.setState(target);
 }
 
-export function removeActor(stage: ComicStage, a: StageActor): void {
-  stage.actors.delete(a.id);
-  const box = stage.hitboxes.get(a.id);
+/** Take ownership of an actor's motion. Returns the generation; stale callbacks compare against it. */
+export function claim(a: StageActor): number {
+  a.gen++;
+  a.lock = a.gen;
+  return a.gen;
+}
+
+export function owns(a: StageActor, g: number): boolean {
+  return !a.disposed && a.gen === g;
+}
+
+export function release(a: StageActor, g: number): void {
+  if (a.gen === g) a.lock = 0;
+}
+
+export function dropHitbox(stage: ComicStage, id: string): void {
+  const box = stage.hitboxes.get(id);
   if (box) {
     box.removeFromParent();
     box.dispose();
-    stage.hitboxes.delete(a.id);
+    stage.hitboxes.delete(id);
   }
+}
+
+export function removeActor(stage: ComicStage, a: StageActor): void {
+  stage.actors.delete(a.id);
+  dropHitbox(stage, a.id);
   disposeStageActor(a);
 }
 

@@ -59,7 +59,7 @@ const row = (r: Partial<AnimEventReaction> & Pick<AnimEventReaction, 'event' | '
 
 export const ANIM_EVENT_MAP: readonly AnimEventReaction[] = [
   // cd <dir>, cd ..
-  row({ event: 'ROOM_TRANSITION', variant: 'hop', when: 'upwardPanelsSmashed < 3 and not viaSymlinkLoop', role: 'vibecoder', state: 'walk', hold: false, durationMs: ANIM_TRANSITION_MS, tween: 'x: run to the door (linear); y: + sin(t*PI) * 0.45 over the gutter; setState(idle) on landing', onomatopoeia: 'HOP!', color: '#06d6a0', beatMs: 210 }),
+  row({ event: 'ROOM_TRANSITION', variant: 'hop', when: 'upwardPanelsSmashed < 3 and not viaSymlinkLoop', role: 'vibecoder', state: 'walk', hold: false, durationMs: ANIM_TRANSITION_MS, tween: '3/4 yaw turn (~68 deg) + walk to target door (linear); y: + sin(t*PI) * 0.45 over the gutter; resetHeroPose(idle) on landing', onomatopoeia: 'HOP!', color: '#06d6a0', beatMs: 210 }),
   row({ event: 'ROOM_TRANSITION', variant: 'hop', when: 'same', role: 'page', durationMs: ANIM_TRANSITION_MS, tween: 'camera slides to the new panel with easeOutBack; panel title and room dressing swap on landing' }),
   // cd ../../../
   row({ event: 'ROOM_TRANSITION', variant: 'panel_smash', when: 'upwardPanelsSmashed >= 3', role: 'vibecoder', state: 'attack', durationMs: 504, tween: 'y: + sin(t*PI) * 1.1 through three frames; strike beat = first frame breaks', shake: 1.5, onomatopoeia: 'PANEL SMASH x{n}!!', color: '#ffd166', beatMs: 250 }),

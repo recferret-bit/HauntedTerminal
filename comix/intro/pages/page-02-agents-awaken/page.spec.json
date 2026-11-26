@@ -54,7 +54,7 @@
       "typing": 0.4,
       "restRightArm": true,
       "hideParts": [
-        "lantern"
+        "tube_transistor"
       ]
     },
     {
@@ -65,7 +65,7 @@
       "typing": 0,
       "restRightArm": true,
       "hideParts": [
-        "lantern"
+        "tube_transistor"
       ]
     },
     {

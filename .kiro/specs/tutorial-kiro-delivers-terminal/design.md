@@ -4,14 +4,14 @@ Follows `requirements.md`. Approval: delegated by the user on 2026-11-25 ("do yo
 
 ## Data (chapter, `chapters-designer`)
 
-- `chapter.manifest.json`: `startItems` is `[]`; `grants` becomes progressive: `afterLevel: 1` `["terminal"]`, `afterLevel: 2` `["lantern"]`, `afterLevel: 4` `["map", "manual"]`, `afterLevel: 6` `["laptop"]` (req 10).
+- `chapter.manifest.json`: `startItems` is `[]`; `grants` becomes progressive: `afterLevel: 1` `["terminal"]`, `afterLevel: 2` `["tube_transistor"]` (`ram: 16`, `ssd: 256`), `afterLevel: 4` `["map", "manual"]`, `afterLevel: 6` `["laptop"]` (req 10); `onFirstPickup` holds separate Kiro.d + Vibecoder dialogs for the first `ram` (+10 Max HP) and first `ssd` (auto-Revive backup) pickups.
 - `level-01-tutorial-awakening/level.spec.json -> script.timed` (`openingSec: 60`, patched in place, canonical writer):
-  - 1 s & 7 s: vibecoder waking in pitch darkness with empty hands (no terminal, lantern, map, or manual).
+  - 1 s & 7 s: vibecoder waking in pitch darkness with empty hands (no terminal, Tube Transistor, map, or manual).
   - 13 s: `emote { emote: "shout", text: "HELLOOOO??" }` + `dialog_box vibecoder "HELLOOOO?? Is anybody out there?!"`.
-  - 19 s, 28 s, 37 s: `spawn kiro glide`, `kiro_action scan`, Kiro's intro, whole-chapter mission briefing, and RAM (+Max HP) / SSD (auto-Revive) explanation (`ls` stays locked until `lantern` is rewarded after Sector 02).
+  - 19 s, 28 s, 37 s: `spawn kiro glide`, `kiro_action scan`, Kiro's intro, whole-chapter mission briefing, and Tube Transistor / `ls` flags briefing (plain `ls` shows visible files only; `ls -la` and all `ls` flags stay locked until `tube_transistor` is recovered off the ground in Sector 02; RAM/SSD explanations moved to `manifest.onFirstPickup`).
   - 46 s & 54 s: `carry_item { entityId: "kiro", item: "terminal" }` + Kiro and vibecoder handover lines.
-  - 60 s: `give_item { item: "terminal", from: "kiro" }` + `tutorial_step 1` (`pwd`), followed by Clod's Big Four taunt (`emitLevelTaunt`).
-- `solutionCommands` starts with `pwd` (req 11, 6 commands total).
+  - 60 s: `give_item { item: "terminal", from: "kiro" }` + `tutorial_step 1` (`ls`), followed by Clod's Big Four taunt (`emitLevelTaunt`).
+- `solutionCommands` starts with `ls` (req 11, 6 commands total).
 
 ## Vocabulary (four places, `chapters-designer`; event types in `src/contracts`, `lead-dev`)
 

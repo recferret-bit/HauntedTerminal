@@ -18,6 +18,7 @@ import { mountVisualLab } from '../ui/visual-lab.js';
 import { holdForComix, mountPlayAudio, syncPlayAudio } from './audio-sync.js';
 import { routeModalAction } from './events.js';
 import { recordExec } from './lab.js';
+import { finishPlayLevelTransition } from './loop.js';
 import { mountPlayMenu } from './menu.js';
 import { runOverlay, statsFrom } from './outro.js';
 import { anyModalOpen, chapterBanner, closeOtherModals, FLOOR_NAMES, STORY, writeSkipPref, type Play } from './state.js';
@@ -185,6 +186,7 @@ function playAgain(play: Play, skip: boolean): void {
   writeSkipPref(skip);
   play.hud?.hideStats();
   window.clearTimeout(play.cardTimer);
+  finishPlayLevelTransition(play, true);
   play.stashedFloorCard = null;
   play.lifecycle.resetForPlayAgain();
   const res = play.session.restart({ intro: true });
@@ -318,6 +320,15 @@ export function bindPlayInput(play: Play): void {
   play.dom.toggleBtn.onclick = toggleInspector;
   play.dom.manualBtnEl?.addEventListener('click', () => play.events.emit({ kind: 'modal', modal: 'manual', action: 'toggle' }));
   window.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.repeat && play.lifecycle.hasReason('transition')) {
+      e.preventDefault();
+      e.stopPropagation();
+      finishPlayLevelTransition(play, true);
+      window.setTimeout(() => {
+        if (play.lifecycle.phase() === 'play' && !anyModalOpen(play)) play.shell.focus();
+      }, 0);
+      return;
+    }
     if (e.key === 'F1' || e.key === 'F2' || e.key === 'F3' || e.key === 'F8' || e.key === 'F9' || e.key === 'F10') {
       e.preventDefault();
       e.stopPropagation();

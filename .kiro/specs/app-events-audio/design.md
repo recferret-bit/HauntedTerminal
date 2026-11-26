@@ -22,10 +22,10 @@ Mute and volume stay on the session (`setMuted`, `setVolume`) and on the Esc men
 - `restart`: `arm` or `go`.
 - `manual`: the in-game book opened or closed.
 - `timer`: the battle clock's displayed second, played for 5 down to 1.
-- `dialog`: emitted from `DialogOrchestrator.onOpen` (`{ speaker }`) when a dialog box visually opens on screen so Big Four voice taunts (`taunt_<agent>_{1..10}`), Kiro praise/cheer anti-taunts (`kiro_advice`, `kiro_advice_{2..10}` — randomly picked per speaker with prewarmed buffers and trimmed leading silence), and hero cues play in exact sync with box appearance rather than queue push.
+- `dialog`: emitted from `DialogOrchestrator.onOpen` (`{ speaker }`) when a dialog box visually opens on screen so Big Four voice taunts (`taunt_<agent>_{1..10}`), Kiro praise/cheer anti-taunts (`kiro_advice`, `kiro_advice_{2..10}` — randomly picked per speaker with prewarmed buffers and trimmed leading silence), and hero cues play in exact sync with box appearance rather than queue push. Later change 2026-11-26: speaker `dad` maps to `dad_cheer` (`SPEAKER_CUES` in `src/audio/sfx-kernel.ts`), variants `dad_cheer`, `dad_cheer_2` .. `dad_cheer_10` in `TAUNT_VARIANTS` (`src/audio/engine.ts`).
 - `scene`: the music scene below.
 - `laptop`: laptop lab actions (`open`, `close`, `post`, `disk`, `ready`, `trackpad`, `run`, `loop-guard`, `shutdown`, `key`).
-- `loop`: start or stop `rain_loop`, `low_hp_loop`, or `lap_fan`.
+- `loop`: start or stop `rain_loop`, `low_hp_loop`, `lap_fan`, `dad_typing_loop` or `dad_smoke_loop`.
 - `cine` and `letter`: cinematic beats and lettering.
 - `page`: the comic reader turned a page.
 - `audio-hold`: the cinematic paused or resumed. The graph suspends.
@@ -69,3 +69,5 @@ Cinematic lettering and beats emit `letter` and `cine` events on the shared bus.
 - `scripts/harness/audio-unit.mjs` the gate.
 
 Layers: `audio/` may import `contracts/` only. `play/`, `pages/`, `hub/`, `laptop/` and `terminal-lab/` may import `audio/`. `lead-dev` owns `src/audio/**`.
+- Ambient loops (requirement 10): `syncPlayAudio` (`src/play/audio-sync.ts`) keeps the set of ambient `LoopCue`s of the hero's room (`ambientLoopsFor(room actor models)`, `src/audio/sfx-models.ts`) and publishes `loop` on/off for the difference on every sync; the set is kept per `Play` and reset by `mountPlayAudio`. `startLoop` in `src/audio/engine.ts` reads the per-cue gain from `LOOP_GAINS`.
+

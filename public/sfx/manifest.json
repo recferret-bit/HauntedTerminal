@@ -2617,6 +2617,194 @@
           "bytes": 37032
         }
       ]
+    },
+    {
+      "row": 146,
+      "name": "dad_cheer",
+      "effect": "Old coder dad.tty dialog cheer voice",
+      "listed_seconds": 2.7,
+      "duration_seconds": 2.65,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_cheer.mp3",
+          "bytes": 65245
+        }
+      ],
+      "text": "Nice pipe, kiddo. Clean as ever.",
+      "voice": "Bill"
+    },
+    {
+      "row": 146,
+      "name": "dad_cheer_2",
+      "effect": "Old coder dad.tty dialog cheer voice",
+      "listed_seconds": 2.7,
+      "duration_seconds": 2.87,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_cheer_2.mp3",
+          "bytes": 70261
+        }
+      ],
+      "text": "That grep was pure poetry, son.",
+      "voice": "Bill"
+    },
+    {
+      "row": 146,
+      "name": "dad_cheer_4",
+      "effect": "Old coder dad.tty dialog cheer voice",
+      "listed_seconds": 2.7,
+      "duration_seconds": 2.59,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_cheer_4.mp3",
+          "bytes": 63364
+        }
+      ],
+      "text": "Slow and steady wins the shell.",
+      "voice": "Bill"
+    },
+    {
+      "row": 146,
+      "name": "dad_cheer_3",
+      "effect": "Old coder dad.tty dialog cheer voice",
+      "listed_seconds": 2.7,
+      "duration_seconds": 2.35,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_cheer_3.mp3",
+          "bytes": 57722
+        }
+      ],
+      "text": "We did it this way on real iron.",
+      "voice": "Bill"
+    },
+    {
+      "row": 146,
+      "name": "dad_cheer_5",
+      "effect": "Old coder dad.tty dialog cheer voice",
+      "listed_seconds": 2.7,
+      "duration_seconds": 3.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_cheer_5.mp3",
+          "bytes": 85307
+        }
+      ],
+      "text": "Stuck? Read the manual, then breathe.",
+      "voice": "Bill"
+    },
+    {
+      "row": 146,
+      "name": "dad_cheer_6",
+      "effect": "Old coder dad.tty dialog cheer voice",
+      "listed_seconds": 2.7,
+      "duration_seconds": 2.84,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_cheer_6.mp3",
+          "bytes": 69634
+        }
+      ],
+      "text": "Good job, kid. Your old man's proud.",
+      "voice": "Bill"
+    },
+    {
+      "row": 146,
+      "name": "dad_cheer_7",
+      "effect": "Old coder dad.tty dialog cheer voice",
+      "listed_seconds": 2.7,
+      "duration_seconds": 3.06,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_cheer_7.mp3",
+          "bytes": 74649
+        }
+      ],
+      "text": "Every great hacker started with ls.",
+      "voice": "Bill"
+    },
+    {
+      "row": 146,
+      "name": "dad_cheer_8",
+      "effect": "Old coder dad.tty dialog cheer voice",
+      "listed_seconds": 2.7,
+      "duration_seconds": 2.56,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_cheer_8.mp3",
+          "bytes": 62737
+        }
+      ],
+      "text": "Check your paths, you're doing fine.",
+      "voice": "Bill"
+    },
+    {
+      "row": 146,
+      "name": "dad_cheer_9",
+      "effect": "Old coder dad.tty dialog cheer voice",
+      "listed_seconds": 2.7,
+      "duration_seconds": 2.67,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_cheer_9.mp3",
+          "bytes": 65872
+        }
+      ],
+      "text": "That's the spirit. Keep typing, champ!",
+      "voice": "Bill"
+    },
+    {
+      "row": 146,
+      "name": "dad_cheer_10",
+      "effect": "Old coder dad.tty dialog cheer voice",
+      "listed_seconds": 2.7,
+      "duration_seconds": 2.65,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_cheer_10.mp3",
+          "bytes": 65245
+        }
+      ],
+      "text": "No bug survives a patient coder.",
+      "voice": "Bill"
+    },
+    {
+      "row": 147,
+      "name": "dad_typing_loop",
+      "effect": "Old coder dad.tty typing (ambience while he is in the room, `loop` event)",
+      "listed_seconds": 8.0,
+      "duration_seconds": 8.0,
+      "loop": true,
+      "files": [
+        {
+          "file": "dad_typing_loop.mp3",
+          "bytes": 193768
+        }
+      ]
+    },
+    {
+      "row": 148,
+      "name": "dad_smoke_loop",
+      "effect": "Old coder dad.tty smoking a cigarette (ambience while he is in the room, `loop` event)",
+      "listed_seconds": 12.0,
+      "duration_seconds": 12.0,
+      "loop": true,
+      "files": [
+        {
+          "file": "dad_smoke_loop.mp3",
+          "bytes": 121670
+        }
+      ]
     }
   ],
   "variant_note": "One kept take per cue. The _1/_2/_3 suffix was removed. Near-duplicate clicks, sweeps, page flips and confirm chimes were dropped."

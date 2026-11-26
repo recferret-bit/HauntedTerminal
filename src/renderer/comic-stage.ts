@@ -25,6 +25,7 @@ import { buildStageScene, layoutFill } from './stage-layout.js';
 import { syncRoomInner } from './stage-sync.js';
 import { stepStage } from './stage-frame.js';
 import { say, triggerShake } from './stage-fx.js';
+import { isLevelTransitionActiveOrArmed, skipLevelTransition as stopLevelTransition } from './stage-level-transition.js';
 
 export interface SandboxRenderConfig {
   shakeIntensity: number;
@@ -108,6 +109,7 @@ export class ComicStage {
   panelRight = DESIGN_RIGHT;
   feetY = FEET_Y;
   viewTop = 4.9;
+  camPanX = 0;
   stormOn = true;
   stormIntensity = 0.65;
   stormIn = 1.4;
@@ -124,6 +126,7 @@ export class ComicStage {
   private pixelParams: PixelArtParams | null = null;
   private lastInk = { outline: 1, halftone: 1 };
   private lastNow = 0;
+  private resizeKey = '';
 
   /** Dev: while set, syncRoom ignores every other view (the game's ticks), so a test room stays up. */
   devPin: RoomView | null = null;
@@ -185,6 +188,11 @@ export class ComicStage {
   resize(): void {
     const w = Math.max(1, this.mount.clientWidth);
     const h = Math.max(1, this.mount.clientHeight);
+    const pr = this.renderer.getPixelRatio();
+    const key = `${w}x${h}@${pr}:${this.zoom.toFixed(4)}`;
+    if (this.built && key === this.resizeKey) return;
+    this.resizeKey = key;
+    if (this.isLevelTransitioning()) this.skipLevelTransition();
     const pageH = 5.35 / this.zoom;
     const halfH = pageH / 2;
     const halfW = halfH * (w / h);
@@ -193,13 +201,20 @@ export class ComicStage {
     frameOrtho(this.camera, halfW, halfH);
     this.renderer.setSize(w, h);
     this.composer.setSize(w, h);
-    const pr = this.renderer.getPixelRatio();
     setPixelArtSize(this.pixelPass, w * pr, h * pr);
     if (this.pixelParams) setPixelArtParams(this.pixelPass, this.pixelParams, pr);
     else setPixelArtParams(this.pixelPass, DEFAULT_PIXEL_PARAMS, pr);
     setCrtSize(this.crtPass, w * pr, h * pr, pr);
     layoutFill(this, halfW, halfH);
     if (this.built && this.view) this.syncRoom(this.view);
+  }
+
+  isLevelTransitioning(): boolean {
+    return isLevelTransitionActiveOrArmed(this);
+  }
+
+  skipLevelTransition(): void {
+    stopLevelTransition(this);
   }
 
   setZoom(zoom: number): void {

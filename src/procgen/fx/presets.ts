@@ -142,9 +142,9 @@ const presets: FxPreset[] = [
   },
   {
     id: 'fx.reveal',
-    label: 'Lantern reveal',
+    label: 'Tube Transistor reveal',
     family: 'vibecoder',
-    trigger: { event: 'LANTERN_REVEAL', moment: 'reveal', when: 'always: ls -a lights the lantern cone and a dotfile shows itself' },
+    trigger: { event: 'LANTERN_REVEAL', moment: 'reveal', when: 'always: ls -a lights the Tube Transistor glow and a dotfile shows itself' },
     anchor: 'center',
     durationMs: 660,
     flash: 0.85,

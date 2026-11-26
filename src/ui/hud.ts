@@ -31,7 +31,7 @@ export interface Hud {
   /** Red flash over the stage and a floating damage number on the HP bar. */
   damage(amount: number, source: string): void;
   /** A comic pop next to the field the pickup raised. */
-  pickup(item: 'energy' | 'ram' | 'ssd' | 'lantern' | 'laptop', label: string): void;
+  pickup(item: 'energy' | 'ram' | 'ssd' | 'tube_transistor' | 'laptop', label: string): void;
   /** Pops an inventory slot when an NPC or sector reward hands over an item. */
   itemGiven?(item: ItemId): void;
   /** Big banner: an SSD backup saved the run. */
@@ -318,7 +318,7 @@ function hudApi(view: HudView): Hud {
       }, HERO_OUCH_MS + 10) as unknown as number);
     },
     pickup(item, label) {
-      if (item === 'lantern' || item === 'laptop') {
+      if (item === 'tube_transistor' || item === 'laptop') {
         view.items?.pop(item);
         return;
       }

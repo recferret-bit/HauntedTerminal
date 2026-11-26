@@ -1,3 +1,4 @@
+import type { LoopCue } from '../contracts/app-bus.js';
 import type { SfxId } from './catalog.js';
 
 /** Enemy model id -> attack sample. */
@@ -20,7 +21,7 @@ const PICKUP: Record<string, SfxId> = {
   energy: 'pickup_energy',
   ram: 'pickup_ram',
   ssd: 'pickup_ssd',
-  lantern: 'pickup_lantern',
+  tube_transistor: 'pickup_lantern',
   laptop: 'pickup_ssd',
 };
 
@@ -42,4 +43,16 @@ export function isEnemyModel(model: string): boolean {
 
 export function isBossModel(model: string): boolean {
   return model === 'boss.kernel' || model === 'boss.forkbomb';
+}
+
+/** NPC model id -> the ambience loops that play while that NPC is in the player's room. */
+const AMBIENT_LOOPS_BY_MODEL: Record<string, readonly LoopCue[]> = {
+  'npc.greybeard_rig': ['dad_typing_loop', 'dad_smoke_loop'],
+};
+
+/** Loops to keep on for the models present in the room (every other loop of this table is off). */
+export function ambientLoopsFor(models: readonly (string | undefined)[]): readonly LoopCue[] {
+  const on = new Set<LoopCue>();
+  for (const model of models) for (const cue of (model ? AMBIENT_LOOPS_BY_MODEL[model] : undefined) ?? []) on.add(cue);
+  return [...on];
 }

@@ -26,7 +26,7 @@ export const RIG_PERKS: readonly RigPerkSpec[] = [
   {
     id: 'perk-linter-goggles',
     title: 'Dotfile Linter Goggles',
-    bashrcLine: 'export PS_LANTERN=1',
+    bashrcLine: 'export PS_TRANSISTOR=1',
     costScrap: 50,
     effectSummary: 'Auto-illuminates hidden dotfiles & rootkits upon entering each sector.',
   },
@@ -46,7 +46,7 @@ export const GRIMOIRE_ENTRIES: readonly GrimoireEntry[] = [
     category: 'POSIX',
     syntax: 'ls -la',
     realWorld: 'Lists directory contents including hidden `.dotfiles` and octal/rwx permissions.',
-    comicEffect: 'Raises the Lantern sweep—exposes cloaked `.spycam` spyware & `.poltergeist.lock` rootkits.',
+    comicEffect: 'Raises the Tube Transistor sweep—exposes cloaked `.spycam` spyware & `.poltergeist.lock` rootkits.',
   },
   {
     command: 'cat',
@@ -137,14 +137,14 @@ export const GRIMOIRE_ENTRIES: readonly GrimoireEntry[] = [
     category: 'POSIX',
     syntax: 'inventory | inv',
     realWorld: 'Inspects carried developer equipment and tools.',
-    comicEffect: 'Lists carried gear (* indicates held item in hand): lantern, terminal, laptop, manual, and map.',
+    comicEffect: 'Lists carried gear (* indicates held item in hand): tube transistor, terminal, laptop, manual, and map.',
   },
   {
     command: 'hold',
     category: 'POSIX',
-    syntax: 'hold <lantern|terminal|laptop|manual|map>',
+    syntax: 'hold <tube_transistor|terminal|laptop|manual|map>',
     realWorld: 'Equips or switches active tool into the screen-right hand.',
-    comicEffect: 'Changes developer visual model and active capabilities (lantern casts light; laptop opens coding lab; manual equips field book; map equips motherboard map).',
+    comicEffect: 'Changes developer visual model and active capabilities (tube_transistor casts warm light & unlocks ls flags; laptop opens coding lab; manual equips field book; map equips motherboard map).',
   },
   {
     command: 'achievements',
@@ -179,7 +179,7 @@ export const BESTIARY_DOSSIER: readonly DossierEntry[] = [
     model: 'malware.spyware',
     role: 'MALWARE',
     hostHardware: 'Hidden dotfile camera lens lurking in repo dark corners.',
-    counterplay: 'Reveal with `ls -la` (Lantern), then `rm .spycam`.',
+    counterplay: 'Reveal with `ls -la` (Tube Transistor), then `rm .spycam`.',
   },
   {
     id: 'rootkit',

@@ -8,7 +8,7 @@ import { helpText, manPage, manualTopics, mapTopics, runMan, runManual, runMap }
 import type { Step, Word } from '../game/shell.js';
 import { absPath, resolve } from '../game/tree.js';
 import { runLn, runReadlink } from '../game/tree-links.js';
-import { finishTabCompletion, reverseLines } from '../game/unix-applets.js';
+import { finishTabCompletion, hasLsFlags, LS_FLAGS_LOCKED_MESSAGE, reverseLines } from '../game/unix-applets.js';
 import { CHAPTER_COMMANDS, emptyStep, globToRegExp, okStep, type ChapterState } from './session-state.js';
 import { cmdDocker, cmdEdit, cmdExit, cmdSed, cmdSource } from './session-code.js';
 import { cmdCat, cmdCd, cmdChmod, cmdCp, cmdCut, cmdFind, cmdGrep, cmdHeadTail, cmdLs, cmdMkdir, cmdMv, cmdRm, cmdTouch, cmdWc } from './session-fs.js';
@@ -129,7 +129,7 @@ function cmdRestartLevel(g: ChapterState, args: string[]): Step {
   );
 }
 
-/** A `script.locks` entry refuses the command before it runs (`ls`, `ls -a`, `ls -la`: the first word decides; `kiro.d` shares `kiro`). */
+/** A `script.locks` entry refuses the command before it runs (the first word decides; `kiro.d` shares `kiro`). */
 export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
     const first = argv[0] ?? '';
     const canonical = first === 'kiro.d' ? 'kiro' : first;
@@ -138,9 +138,9 @@ export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
       g.commandCue = 'locked';
       return emptyStep(1, locked.replace(/\n?$/, '\n'));
     }
-    if (!g.lab && first === 'ls' && !hasItem(g.inventory, 'lantern')) {
+    if (!g.lab && first === 'ls' && !hasItem(g.inventory, 'tube_transistor') && hasLsFlags(argv.slice(1))) {
       g.commandCue = 'locked';
-      return emptyStep(1, "ls: it is pitch dark without your oil lantern! Clear Sector 02 to recover your lantern first (use `pwd` and `cat` for now).\n");
+      return emptyStep(1, LS_FLAGS_LOCKED_MESSAGE);
     }
     const step = dispatchCommand(g, argv, stdin);
     if (step.code === 0 && canonical && canonical !== 'ls' && !g.reloadedNow) {
@@ -206,7 +206,7 @@ function dispatchRev(g: ChapterState, args: string[], stdin: string): Step {
 
 function dispatchHelp(g: ChapterState): Step {
   return okStep(
-    `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack] local Unix .gguf daemon Kiro.d (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 13 local trophies & Steamworks ACH_* payload\n  restart-level [--yes]  reload this level (asks twice; alias: retry)\n`,
+    `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack] local Unix .gguf daemon Kiro.d (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 15 local trophies & Steamworks ACH_* payload\n  restart-level [--yes]  reload this level (asks twice; alias: retry)\n`,
   );
 }
 

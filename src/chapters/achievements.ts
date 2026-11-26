@@ -1,4 +1,6 @@
 import type { KernelEvent } from '../contracts/events.js';
+import { ITEM_IDS, isItemId } from '../contracts/inventory.js';
+import { PICKUP_TYPES } from '../game/bestiary.js';
 import { resolveKiroCoreId } from '../game/kiro.js';
 import { isRec } from './record.js';
 import { STEAM_RELEASE_META, scheduleDesktopSaveSync } from './steam-bridge.js';
@@ -34,7 +36,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     id: 'lantern_sweep',
     steamApiName: 'ACH_LANTERN_SWEEP',
     title: 'Dotfile Exorcist',
-    description: 'Sweep a dark directory with `ls -a` or `kiro scan` to expose hidden dotfiles.',
+    description: 'Sweep a dark directory with your Tube Transistor (`ls -a` / `ls -la`) or `kiro scan` to expose hidden dotfiles.',
     category: 'COMBAT',
     icon: 'LS',
   },
@@ -113,6 +115,22 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     statKey: 'STAT_S_RANKS',
   },
   {
+    id: 'full_loadout',
+    steamApiName: 'ACH_FULL_LOADOUT',
+    title: 'Full Loadout',
+    description: 'Obtain all 5 developer inventory items (`tube_transistor`, `terminal`, `laptop`, `manual`, `map`).',
+    category: 'CRAFT',
+    icon: '5/5',
+  },
+  {
+    id: 'hardware_hoarder',
+    steamApiName: 'ACH_HARDWARE_HOARDER',
+    title: 'Hardware Hoarder',
+    description: 'Collect every hardware pickup type (`energy`, `ram`, `ssd`, `tube_transistor`, `laptop`).',
+    category: 'MASTERY',
+    icon: '++',
+  },
+  {
     id: 'campaign_clear',
     steamApiName: 'ACH_CAMPAIGN_CLEAR',
     title: 'Open Weights & Family Ties',
@@ -151,6 +169,8 @@ export interface AchievementStats {
   sRanksEarned: number;
   clearedMechanics: string[];
   loadedCores: string[];
+  collectedItems: string[];
+  collectedPickups: string[];
 }
 
 export interface AchievementStore {
@@ -166,6 +186,8 @@ function freshStats(): AchievementStats {
     sRanksEarned: 0,
     clearedMechanics: [],
     loadedCores: [],
+    collectedItems: [],
+    collectedPickups: [],
   };
 }
 
@@ -195,6 +217,11 @@ function nonNegInt(v: unknown): number {
   return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.floor(v) : 0;
 }
 
+function normalizeLegacyItemList(v: unknown): string[] {
+  const mapped = Array.isArray(v) ? v.map((x) => (x === 'lantern' ? 'tube_transistor' : x)) : [];
+  return sanitizeStringList(mapped);
+}
+
 export function sanitizeAchievementStore(raw: unknown): AchievementStore {
   if (!isRec(raw)) return freshAchievementStore();
   const unlocked: Record<string, UnlockedAchievement> = {};
@@ -217,6 +244,8 @@ export function sanitizeAchievementStore(raw: unknown): AchievementStore {
       sRanksEarned: nonNegInt(st.sRanksEarned),
       clearedMechanics: sanitizeStringList(st.clearedMechanics),
       loadedCores: sanitizeStringList(st.loadedCores),
+      collectedItems: normalizeLegacyItemList(st.collectedItems),
+      collectedPickups: normalizeLegacyItemList(st.collectedPickups),
     },
   };
 }
@@ -299,11 +328,34 @@ export function evaluateBatchEvents(
     }
   };
 
+  const recordItem = (item: string): void => {
+    if (!store.stats.collectedItems.includes(item)) {
+      store.stats.collectedItems.push(item);
+      dirty = true;
+    }
+    if (ITEM_IDS.every((id) => store.stats.collectedItems.includes(id))) {
+      tryGrant('full_loadout');
+    }
+  };
+  const recordPickup = (pickup: string): void => {
+    if (!store.stats.collectedPickups.includes(pickup)) {
+      store.stats.collectedPickups.push(pickup);
+      dirty = true;
+    }
+    if (PICKUP_TYPES.every((p) => store.stats.collectedPickups.includes(p))) {
+      tryGrant('hardware_hoarder');
+    }
+  };
+
   for (const ev of events) {
     if (ev.type === 'LANTERN_REVEAL') {
       if (ev.revealedInodes.length > 0) tryGrant('lantern_sweep');
-    } else if (ev.type === 'ITEM_GIVEN' && ev.item === 'manual') {
-      tryGrant('field_manual');
+    } else if (ev.type === 'ITEM_GIVEN') {
+      if (ev.item === 'manual') tryGrant('field_manual');
+      recordItem(ev.item);
+    } else if (ev.type === 'PICKUP_COLLECTED') {
+      recordPickup(ev.item);
+      if (isItemId(ev.item)) recordItem(ev.item);
     } else if (ev.type === 'ENEMY_KILLED') {
       store.stats.malwareKilled += 1;
       dirty = true;

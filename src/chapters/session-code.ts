@@ -16,7 +16,7 @@ import {
   formatAchievementLines,
 } from './achievements.js';
 import { recordLevelClear, recordTelemetry } from './catalog.js';
-import { runSteps } from './script.js';
+import { isNodeHidden, runSteps, syncScriptTriggers } from './script.js';
 import { validateDockerCompose, validateDockerfile } from './validators.js';
 import { computeLevelRank, computeRunRank, emptyStep, okStep, splitParentAndName, type ChapterState, type EditorOpenPayload } from './session-state.js';
 import { cmdCat, collectPickupNode } from './session-fs.js';
@@ -39,7 +39,7 @@ function commitEdited(g: ChapterState, events: KernelEvent[], inodeId: number, c
 
 export function readEditableFile(g: ChapterState, nameOrPath: string): ({ ok: true } & EditorOpenPayload) | { ok: false; error: string } {
     const res = resolve(g.rt.cwd, nameOrPath, true);
-    if (!res.node) return { ok: false, error: `${nameOrPath}: ${res.error ?? 'No such file or directory'}` };
+    if (!res.node || isNodeHidden(g, res.node)) return { ok: false, error: `${nameOrPath}: ${res.error ?? 'No such file or directory'}` };
     if (res.node.kind !== 'file') return { ok: false, error: `${nameOrPath}: Not a regular file` };
     if ((res.node.mode & 0o400) === 0) return { ok: false, error: `${nameOrPath}: Permission denied` };
     const full = absPath(res.node);
@@ -59,8 +59,8 @@ export function saveEditableFile(g: ChapterState, nameOrPath: string, content: s
     g.deadNow = false;
     const events: KernelEvent[] = [];
     const res = resolve(g.rt.cwd, nameOrPath, true);
-    if (!res.node || res.node.kind !== 'file') {
-      const msg = `edit: ${nameOrPath}: ${res.error ?? (res.node ? 'Not a regular file' : 'cannot save file')}\n`;
+    if (!res.node || isNodeHidden(g, res.node) || res.node.kind !== 'file') {
+      const msg = `edit: ${nameOrPath}: ${res.error ?? (res.node && !isNodeHidden(g, res.node) ? 'Not a regular file' : 'cannot save file')}\n`;
       return {
         output: msg,
         stderr: msg,
@@ -81,7 +81,7 @@ export function saveEditableFile(g: ChapterState, nameOrPath: string, content: s
     commitEdited(g, events, res.node.id, `edit ${res.node.name}`);
 
     const diag = liveLintFeedback(g, res.node);
-    const notes = g.rt.world.drain() + g.rt.completionNote;
+    const notes = g.rt.world.drain() + g.rt.completionNote + syncScriptTriggers(g, events);
     g.rt.completionNote = '';
     const achEvents = evaluateBatchEvents(events, { preview: g.preview, lab: g.lab !== null });
     if (achEvents.length > 0) events.push(...achEvents);
@@ -110,8 +110,8 @@ export function cmdSed(g: ChapterState, args: string[], stdin: string): Step {
     const fileArg = rest[1];
     if (!fileArg) return emptyStep(1, 'sed: -i requires a target file\n');
     const res = resolve(g.rt.cwd, fileArg, true);
-    if (!res.node) {
-      if (res.denied) {
+    if (!res.node || isNodeHidden(g, res.node)) {
+      if (!res.node && res.denied) {
         return okStep('', [{ type: 'PERMISSION_DENIED_RATTLE', targetId: res.denied.id, command: 'sed' }], 1, `sed: ${fileArg}: Permission denied\n`);
       }
       return emptyStep(1, `sed: ${fileArg}: No such file\n`);
@@ -133,7 +133,7 @@ export function cmdSource(g: ChapterState, args: string[]): Step {
     if (!args[0]) return emptyStep(1, 'usage: source FILE\n');
     const events: KernelEvent[] = [];
     const res = resolve(g.rt.cwd, args[0], true);
-    if (!res.node || res.node.kind !== 'file') {
+    if (!res.node || res.node.kind !== 'file' || isNodeHidden(g, res.node)) {
       return emptyStep(1, `source: ${args[0]}: No such file\n`);
     }
     if ((res.node.mode & 0o400) === 0) {

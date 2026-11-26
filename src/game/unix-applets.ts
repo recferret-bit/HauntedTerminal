@@ -378,6 +378,14 @@ export function matchesPkill(proc: ProcRow, spec: PkillSpec): boolean {
   return spec.exact ? hay === spec.pattern : hay.includes(spec.pattern);
 }
 
+export const LS_FLAGS_LOCKED_MESSAGE =
+  'ls: flags (-a, -l, -la, ...) require your Tube Transistor! Basic `ls [path]` shows visible files; recover the Tube Transistor to inspect hidden dotfiles and details.\n';
+
+/** True when `ls` arguments contain any option flag (`-a`, `-A`, `-l`, `-la`, `--all`, etc.; bare `-` is a path). */
+export function hasLsFlags(args: readonly string[]): boolean {
+  return args.some((arg) => arg.startsWith('-') && arg.length > 1);
+}
+
 /** Longest-common-prefix completion formatter shared by both terminal shells. */
 export function finishTabCompletion(
   line: string,

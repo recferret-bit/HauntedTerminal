@@ -31,7 +31,7 @@ function pickupCue(item) {
   if (item === 'energy') return 'pickup_energy';
   if (item === 'ram') return 'pickup_ram';
   if (item === 'ssd') return 'pickup_ssd';
-  if (item === 'lantern') return 'pickup_lantern';
+  if (item === 'tube_transistor') return 'pickup_lantern';
   return null;
 }
 
@@ -92,7 +92,7 @@ export function cuesForKernelEvent(ev) {
     case 'PICKUP_COLLECTED': {
       const p = pickupCue(ev.item);
       const out = p ? [p, 'hero_collect'] : ['hero_collect'];
-      if (ev.item === 'lantern') out.push('sting_lantern', 'lantern_on');
+      if (ev.item === 'tube_transistor') out.push('sting_lantern', 'lantern_on');
       return out;
     }
     case 'LANTERN_REVEAL':

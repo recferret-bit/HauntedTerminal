@@ -1,14 +1,14 @@
 {
   "id": "level-03-task-gpu-salvage",
   "index": 3,
-  "title": "GPU Alley: Lantern ls, Dotfile Riddle & Lockpicks",
+  "title": "GPU Alley: Tube Transistor ls -la, Hidden Squad & Dotfile Riddle",
   "cwd": "/srv/kiroween/gpu_alley",
   "roomKind": "crypt_hall",
   "floorTheme": 2,
   "roomSeed": 33,
   "mechanic": "terminal",
   "exitDir": "/srv/kiroween/gpu_alley/server_hub_1",
-  "summary": "Your newly rewarded Oil Lantern unlocks `ls`! Sweep GPU Alley with `ls -la` to expose `.codec_spycam` (`rm`) and read `.tensor_rune` to solve `lantern_gate.sock`, then kill `keygen.exe`, delete `port_445/worm.bin`, and loot RAM + SSD before visiting the Hub!",
+  "summary": "Codec cloaked EVERY enemy in GPU Alley! Sweep with `ls -la` using your new Tube Transistor to expose `.codec_spycam`, `.keygen.exe`, `port_445/worm.bin`, and `.transistor_rune`, solve `transistor_gate.sock`, neutralize the squad, and loot RAM + GPU before visiting the Hub!",
   "files": [
     {
       "path": "/srv/kiroween/gpu_alley/.codec_spycam",
@@ -17,17 +17,17 @@
       "content": "CODEC_HIDDEN_DOTFILE_SPYCAM\n"
     },
     {
-      "path": "/srv/kiroween/gpu_alley/.tensor_rune",
+      "path": "/srv/kiroween/gpu_alley/.transistor_rune",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "# Hidden Lantern Dotfile\nRUNE_PHRASE=amber_flame\n"
+      "content": "# Hidden Tube Transistor Dotfile\nRUNE_PHRASE=warm_filament\n"
     },
     {
-      "path": "/srv/kiroween/gpu_alley/lantern_gate.sock",
+      "path": "/srv/kiroween/gpu_alley/transistor_gate.sock",
       "kind": "socket",
       "mode": 493,
-      "content": "Sweep hidden dotfiles with ls -la, read .tensor_rune, and echo its RUNE_PHRASE here!"
+      "content": "Sweep hidden dotfiles with ls -la, read .transistor_rune, and echo its RUNE_PHRASE here!"
     },
     {
       "path": "/srv/kiroween/gpu_alley/vram_crate",
@@ -53,10 +53,10 @@
       "content": "CODEC_REPLICATING_PORT_WORM\n"
     },
     {
-      "path": "/srv/kiroween/gpu_alley/keygen.exe",
+      "path": "/srv/kiroween/gpu_alley/.keygen.exe",
       "kind": "file",
       "mode": 493,
-      "content": "CODEC_LOCKPICK_DAEMON\n"
+      "content": "CODEC_HIDDEN_LOCKPICK_DAEMON\n"
     },
     {
       "path": "/srv/kiroween/gpu_alley/ram_16gb.dimm",
@@ -86,16 +86,18 @@
     {
       "id": "crack_l3",
       "type": "crack",
-      "path": "/srv/kiroween/gpu_alley/keygen.exe",
+      "path": "/srv/kiroween/gpu_alley/.keygen.exe",
       "pid": 2104,
       "ppid": 1,
+      "hidden": true,
       "helps": "worm_l3"
     },
     {
       "id": "worm_l3",
       "type": "worm",
       "path": "/srv/kiroween/gpu_alley/port_445/worm.bin",
-      "port": "/srv/kiroween/gpu_alley/port_445"
+      "port": "/srv/kiroween/gpu_alley/port_445",
+      "hidden": true
     }
   ],
   "pickups": [
@@ -121,13 +123,13 @@
     {
       "id": "l3_fet",
       "model": "prop.transistor",
-      "x": 2.82,
+      "x": 4.6,
       "label": "VRM MOSFET"
     },
     {
       "id": "l3_cooler",
       "model": "prop.cooler_tower",
-      "x": -0.32,
+      "x": 3.55,
       "label": "heatsink stack"
     },
     {
@@ -152,17 +154,17 @@
     {
       "kind": "riddle_solved",
       "riddleId": "riddle_l3_ls",
-      "description": "Use `ls -la` to find `.tensor_rune` and solve `lantern_gate.sock` (`echo amber_flame > lantern_gate.sock`)"
+      "description": "Use `ls -la` to find `.transistor_rune` and solve `transistor_gate.sock` (`echo warm_filament > transistor_gate.sock`)"
     },
     {
       "kind": "enemy_neutralized",
       "enemyId": "crack_l3",
-      "description": "Kill `keygen.exe` (`ps` then `kill -9 {pid:crack_l3}`)"
+      "description": "Expose and kill `.keygen.exe` (`ls -la`, `ps`, then `kill -9 {pid:crack_l3}`)"
     },
     {
       "kind": "enemy_neutralized",
       "enemyId": "worm_l3",
-      "description": "Delete `port_445/worm.bin` (`rm port_445/worm.bin`)"
+      "description": "Expose and delete `port_445/worm.bin` (`rm port_445/worm.bin`)"
     },
     {
       "kind": "file_absent",
@@ -177,8 +179,8 @@
   ],
   "solutionCommands": [
     "ls -la",
-    "cat .tensor_rune",
-    "echo amber_flame > lantern_gate.sock",
+    "cat .transistor_rune",
+    "echo warm_filament > transistor_gate.sock",
     "kill -9 {pid:crack_l3}",
     "rm .codec_spycam port_445/worm.bin",
     "mv ram_16gb.dimm ~",
@@ -190,7 +192,7 @@
     "arrival": [
       {
         "kind": "print",
-        "text": "\n[GPU ALLEY — /srv/kiroween/gpu_alley]\nYour rewarded Oil Lantern blazes in your hand—`ls` and `ls -la` are now unlocked! Listen to Kiro.d before Codec attacks.\n"
+        "text": "\n[GPU ALLEY — /srv/kiroween/gpu_alley]\nYour glowing Tube Transistor lights the crypt—`ls -la` and all `ls` flags are unlocked! Yet the room looks eerily empty... Listen to Kiro.d before Codec strikes from stealth.\n"
       }
     ],
     "timed": [
@@ -200,7 +202,7 @@
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "Awesome—winning my Oil Lantern after Cache Vault lights up this whole crypt! I can finally run ls and ls -la!",
+            "text": "Awesome—my Tube Transistor lights up GPU Alley! Wait... where are Codec's enemies? Plain ls does not show a single hostile file!",
             "holdSec": 8
           }
         ]
@@ -211,7 +213,7 @@
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "Now that ls is unlocked, sweep with ls -la right when battle starts! It exposes Codec's hidden .codec_spycam AND reveals the hidden .tensor_rune dotfile that unlocks lantern_gate.sock!",
+            "text": "It is an ambush! Codec cloaked his ENTIRE squad in hidden dotfiles and dark ports! The second battle begins, run ls -la with your Tube Transistor to expose every hidden enemy AND reveal .transistor_rune for transistor_gate.sock!",
             "holdSec": 9
           }
         ]
@@ -222,7 +224,7 @@
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "Got it—ls -la for the spycam and riddle, kill keygen.exe and worm.bin, then bring our RAM + SSD haul to the Matrix Hub! Bring it on, Codec!",
+            "text": "Time to put this Tube Transistor to work—ls -la first to flush out Codec's hidden squad, crack transistor_gate.sock, and haul the hardware to the Matrix Hub!",
             "holdSec": 7
           }
         ]
@@ -258,21 +260,42 @@
       "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
       "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
     },
-    "openingSec": 25
+    "openingSec": 25,
+    "triggers": [
+      {
+        "when": {
+          "kind": "room_swept"
+        },
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "BINGO! ls -la lit up the whole alley—.codec_spycam, .keygen.exe, AND a worm in port_445 popped right out of stealth, plus .transistor_rune!",
+            "holdSec": 7
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "That Tube Transistor paid off immediately! Read cat .transistor_rune for transistor_gate.sock, kill .keygen.exe with ps + kill -9, and rm .codec_spycam and port_445/worm.bin!",
+            "holdSec": 7
+          }
+        ]
+      }
+    ]
   },
   "riddles": [
     {
       "id": "riddle_l3_ls",
-      "path": "/srv/kiroween/gpu_alley/lantern_gate.sock",
-      "speaker": "LANTERN GATE",
-      "prompt": "Only an Oil Lantern bearer may unseal vram_crate! Sweep hidden dotfiles with `ls -la`, read `.tensor_rune`, and echo its RUNE_PHRASE into `lantern_gate.sock`!",
-      "answer": "amber_flame",
+      "path": "/srv/kiroween/gpu_alley/transistor_gate.sock",
+      "speaker": "TRANSISTOR GATE",
+      "prompt": "Only a Tube Transistor bearer may unseal vram_crate! Sweep hidden dotfiles with `ls -la`, read `.transistor_rune`, and echo its RUNE_PHRASE into `transistor_gate.sock`!",
+      "answer": "warm_filament",
       "hints": [
-        "Raise your lantern with `ls -la` to reveal hidden dotfiles starting with \".\"!",
-        "Inspect the hidden rune file: `cat .tensor_rune`",
-        "Write the rune phrase into this socket: `echo amber_flame > lantern_gate.sock`"
+        "Raise your Tube Transistor with `ls -la` to reveal hidden dotfiles starting with \".\"!",
+        "Inspect the hidden rune file: `cat .transistor_rune`",
+        "Write the rune phrase into this socket: `echo warm_filament > transistor_gate.sock`"
       ],
-      "success": "LANTERN GATE: \"The lantern flame reveals `.tensor_rune`! `vram_crate` clicks open!\"",
+      "success": "TRANSISTOR GATE: \"The warm filament glow reveals `.transistor_rune`! `vram_crate` clicks open!\"",
       "opens": "/srv/kiroween/gpu_alley/vram_crate",
       "tokens": ["ls", "cat", "echo"]
     }

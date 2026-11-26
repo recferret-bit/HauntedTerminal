@@ -28,7 +28,7 @@ function fileCues(ev: KernelEvent): SfxId[] {
 
 const SPEAKER_CUES: Record<string, SfxId> = {
   vibecoder: 'dialog_hero',
-  dad: 'socket_crackle',
+  dad: 'dad_cheer',
   antigravy: 'taunt_antigravy_1',
   codec: 'taunt_codec_1',
   gork: 'taunt_gork_1',
@@ -120,7 +120,7 @@ function lifeCues(ev: KernelEvent): SfxId[] {
   if (ev.type === 'PICKUP_COLLECTED') {
     const cue = pickupCue(ev.item);
     const cues: SfxId[] = cue ? [cue, 'hero_collect'] : ['hero_collect'];
-    if (ev.item === 'lantern') cues.push('sting_lantern', 'lantern_on');
+    if (ev.item === 'tube_transistor') cues.push('sting_lantern', 'lantern_on');
     if (ev.item === 'laptop') cues.push('item_lit');
     return cues;
   }

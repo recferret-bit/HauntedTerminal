@@ -5,28 +5,16 @@ import { actorSocket, type StageActor } from './stage-cast.js';
 import { buildSystemHand } from './procgen-cast.js';
 import { easeOutBack, stepped } from './tween.js';
 import { flightPath, smootherstep } from './stage-flight-path.js';
-import { fade, removeActor, setRest } from './stage-actor.js';
+import { claim, fade, owns, release, removeActor, setRest } from './stage-actor.js';
 import { ACTOR_Z, HERO_STEPS, HERO_WALK_MS } from './stage-const.js';
 import { playCues, playFx, say } from './stage-fx.js';
 import { applyLantern } from './stage-layout.js';
 import { launchEnemyProjectile } from './stage-projectile.js';
 import { anchorPoint, findByModel, firstOfKind } from './stage-resolve.js';
+import { HERO_HALF_YAW, poseHeroWalk, resetHeroPose } from './stage-hero-turn.js';
 import type { ComicStage } from './comic-stage.js';
 
-/** Take ownership of an actor's motion. Returns the generation; stale callbacks compare against it. */
-export function claim(a: StageActor): number {
-  a.gen++;
-  a.lock = a.gen;
-  return a.gen;
-}
-
-export function owns(a: StageActor, g: number): boolean {
-  return !a.disposed && a.gen === g;
-}
-
-export function release(a: StageActor, g: number): void {
-  if (a.gen === g) a.lock = 0;
-}
+export { claim, owns, release };
 
 function faceHero(stage: ComicStage, a: StageActor): { dir: number; hero: StageActor | null } {
   const hero = stage.hero();
@@ -68,9 +56,10 @@ export function knockback(stage: ComicStage, a: StageActor, dist: number): void 
 
 export function hopInPlace(stage: ComicStage, a: StageActor, height: number, ms: number): void {
   stage.tweens.add(ms, (t) => {
-    if (!a.disposed) a.offset.y = Math.sin(stepped(t, 5) * Math.PI) * height;
+    if (a.disposed || (a.kind === 'vibecoder' && stage.isLevelTransitioning())) return;
+    a.offset.y = Math.sin(stepped(t, 5) * Math.PI) * height;
   }, () => {
-    if (!a.disposed) a.offset.y = 0;
+    if (!a.disposed && !(a.kind === 'vibecoder' && stage.isLevelTransitioning())) a.offset.y = 0;
   });
 }
 
@@ -113,28 +102,33 @@ export function heroAction(stage: ComicStage, hero: StageActor, action: string, 
   if (walk) hero.animator.setState('walk');
   (hero as StageActor & { moveDir?: number }).moveDir = dir;
   stage.tweens.add(walk ? HERO_WALK_MS : 16, (t) => {
-    if (owns(hero, g)) hero.base.x = startX + (standX - startX) * stepped(t, HERO_STEPS);
+    if (!owns(hero, g)) return;
+    hero.base.x = startX + (standX - startX) * stepped(t, HERO_STEPS);
+    if (walk) poseHeroWalk(hero, dir, t);
   }, () => {
     if (!owns(hero, g)) return;
     hero.base.x = standX;
+    if (walk) hero.body.rotation.y = (dir < 0 ? 1 : -1) * HERO_HALF_YAW;
     hero.animator.setState(action === 'collect' || action === 'read' ? 'idle' : 'attack');
     if (action === 'collect' || action === 'read') hopInPlace(stage, hero, 0.1, 200);
     stage.tweens.delay(action === 'collect' ? 380 : 620, () => {
       if (!owns(hero, g)) return;
       const back = hero.base.x;
       const goHome = Math.abs(hero.home.x - back) > 0.08;
+      const backDir: 1 | -1 = hero.home.x > back ? 1 : -1;
       if (goHome) {
         hero.animator.setState('walk');
-        hero.animator.setFacing(hero.home.x > back ? 1 : -1);
+        hero.animator.setFacing(backDir);
       }
       stage.tweens.add(goHome ? HERO_WALK_MS : 16, (t) => {
-        if (owns(hero, g)) hero.base.x = back + (hero.home.x - back) * stepped(t, HERO_STEPS);
+        if (!owns(hero, g)) return;
+        hero.base.x = back + (hero.home.x - back) * stepped(t, HERO_STEPS);
+        if (goHome) poseHeroWalk(hero, backDir, t);
       }, () => {
         if (!owns(hero, g)) return;
         hero.base.copy(hero.home);
         release(hero, g);
-        hero.animator.setFacing(-1);
-        setRest(hero);
+        resetHeroPose(hero);
       });
     });
   });
@@ -439,6 +433,40 @@ export function flyTo(stage: ComicStage, a: StageActor, to: THREE.Vector3, ms: n
 }
 
 
+/** Drops a floor item pickup (e.g. Tube Transistor) from above onto the ground with a stepped comic bounce. */
+function dropToGround(stage: ComicStage, a: StageActor): void {
+  const g = claim(a);
+  const restRotZ = typeof a.body.userData.restRotZ === 'number' ? a.body.userData.restRotZ : a.body.rotation.z;
+  const dropH = 1.15;
+  a.awaitingSpawn = false;
+  a.offset.set(0, dropH, 0);
+  a.body.rotation.z = restRotZ - 0.55;
+  playCues(stage, [{ id: 'fx.touch-materialize', anchor: 'subject', delayMs: 220, text: 'DROP!' }], a, null);
+  stage.tweens.add(460, (t) => {
+    if (!owns(a, g)) return;
+    const k = stepped(t, 6);
+    if (k < 0.55) {
+      const u = k / 0.55;
+      a.offset.y = dropH * (1 - u * u);
+      a.body.rotation.z = restRotZ - 0.55 * (1 - u);
+    } else if (k < 0.82) {
+      const u = (k - 0.55) / 0.27;
+      a.offset.y = Math.sin(u * Math.PI) * 0.22;
+      a.body.rotation.z = restRotZ + Math.sin(u * Math.PI) * 0.16;
+    } else {
+      const u = (k - 0.82) / 0.18;
+      a.offset.y = Math.sin(u * Math.PI) * 0.06;
+      a.body.rotation.z = restRotZ;
+    }
+  }, () => {
+    if (!owns(a, g)) return;
+    a.offset.set(0, 0, 0);
+    a.body.rotation.z = restRotZ;
+    a.animator.setState('revealed');
+    release(a, g);
+  });
+}
+
 /** Spawn performance: the System Hand draws it in (fork / cron / split), or it materialises (script / touch). */
 export function playSpawn(stage: ComicStage, a: StageActor, reason: string): void {
   if (reason === 'room_enter') {
@@ -446,6 +474,14 @@ export function playSpawn(stage: ComicStage, a: StageActor, reason: string): voi
     return;
   }
   if (reason === 'script') {
+    // Paired FILE_CREATED + ENTITY_SPAWNED for the same actor in one batch must not trigger the drop animation twice.
+    const stamped = a as StageActor & { scriptSpawnAt?: number };
+    if (stamped.scriptSpawnAt === stage.clockMs) return;
+    stamped.scriptSpawnAt = stage.clockMs;
+    if (a.kind === 'pickup' && a.modelId.startsWith('item.')) {
+      dropToGround(stage, a);
+      return;
+    }
     a.awaitingSpawn = true;
     stage.tweens.delay(80, () => {
       if (a.disposed) return;

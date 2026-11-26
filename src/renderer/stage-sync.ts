@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { RoomSocketId } from '../contracts/room-view.js';
 import { ModelCatalog, ZONES } from '../procgen/index.js';
 import { isComic, type ComicMaterial } from '../shaders/comic-material.js';
 import { eventEntityIds } from './event-fx.js';
@@ -12,12 +13,14 @@ import { doorLocked, fade, pendingQueuedSpawn, queuedFor, removeActor, setRest }
 import { clearBubble, playFx, say } from './stage-fx.js';
 import { applyLantern, placeX, syncFlood, syncRoomModel } from './stage-layout.js';
 import { closeDoor, kill, openDoor, playEntrance } from './stage-motion.js';
+import { prepareIncomingLevelRoom } from './stage-level-transition.js';
 import { anchorPoint, roomSocket } from './stage-resolve.js';
 import type { ComicStage } from './comic-stage.js';
 
 export function syncRoomInner(stage: ComicStage, view: RoomView): void {
   stage.view = view;
   if (!stage.built) return;
+  const finishTransition = prepareIncomingLevelRoom(stage);
   stage.currentFloor = view.floor;
   const theme = themeFor(view.kind);
   const color = stage.backdrop?.material;
@@ -37,6 +40,7 @@ export function syncRoomInner(stage: ComicStage, view: RoomView): void {
       if (a.kind !== 'vibecoder' && !(keepKiro && a.id === 'kiro')) removeActor(stage, a);
     }
     clearBubble(stage);
+    if (!view.xray) stage.xrayProcs = [];
   }
 
   const listed = new Set<string>();
@@ -81,6 +85,7 @@ export function syncRoomInner(stage: ComicStage, view: RoomView): void {
   stage.xrayOn = !!view.xray || stage.xrayProcs.length > 0;
   if (!view.xray && stage.xrayProcs.length === 0) stage.xrayOn = false;
   syncOverlays(stage);
+  finishTransition?.();
 }
 
 function createActor(stage: ComicStage, ra: RoomActor): StageActor {
@@ -132,10 +137,12 @@ export function applyActor(stage: ComicStage, a: StageActor, ra: RoomActor, inde
   }
   if (a.kind === 'vibecoder') syncHeroFace(stage, a);
   const y = Number.isFinite(ra.y) ? (ra.y as number) : 0;
-  if (ra.x !== a.viewX || y !== a.viewY || snap) {
+  const socketTagged = a as StageActor & { roomSocket?: RoomSocketId };
+  if (ra.x !== a.viewX || y !== a.viewY || ra.socket !== socketTagged.roomSocket || snap) {
     a.viewX = ra.x;
     a.viewY = y;
-    let x = placeX(stage, ra.x);
+    socketTagged.roomSocket = ra.socket;
+    let x = ra.socket ? (roomSocket(stage, ra.socket)?.x ?? placeX(stage, ra.x)) : placeX(stage, ra.x);
     // The plank bridges the room's own chasm socket.
     if (a.key === 'crate') {
       const bridge = roomSocket(stage, 'bridge');
@@ -205,7 +212,7 @@ export function syncOverlays(stage: ComicStage): void {
   for (const a of stage.actors.values()) {
     const b = a as StageActor & { badge?: { pips: { lit: number; cells: number } | null; plate: { pid: number; name?: string } | null; locked: boolean } };
     const p = a.pid !== undefined ? procs.get(a.pid) : undefined;
-    const plateOn = stage.xrayOn && a.pid !== undefined && !a.exiting && !a.dead && (a.kind === 'enemy' || a.kind === 'boss' || p !== undefined);
+    const plateOn = stage.xrayOn && a.pid !== undefined && !a.exiting && !a.dead && a.rest !== 'hidden' && (a.kind === 'enemy' || a.kind === 'boss' || p !== undefined);
     b.badge = {
       pips: pipState(a),
       plate: plateOn ? { pid: a.pid!, name: p ? `${p.name} ${Math.round(p.cpu)}%` : a.target ?? a.label } : null,

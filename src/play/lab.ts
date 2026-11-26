@@ -60,6 +60,10 @@ function swapLabSession(play: Play, packId: string, levelId: string): boolean {
 
   window.clearTimeout(play.cardTimer);
   play.cardTimer = 0;
+  window.clearTimeout(play.transitionTimer);
+  play.transitionTimer = 0;
+  play.deferredPostTransition.length = 0;
+  play.stage.skipLevelTransition();
   play.stashedFloorCard = null;
   play.eventLog = [];
   play.execLog = [];

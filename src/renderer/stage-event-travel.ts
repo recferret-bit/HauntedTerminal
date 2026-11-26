@@ -1,10 +1,10 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
-import { setRest } from './stage-actor.js';
 import { clearCarried } from './stage-carry.js';
-import { FLOORS } from './stage-const.js';
-import { clearBubble, playCard, playFx, say, triggerShake } from './stage-fx.js';
+import { clearBubble, floorCaptionInfo, playCaptionBox, playCard, playFx, say, triggerShake } from './stage-fx.js';
+import { poseHeroWalk, resetHeroPose } from './stage-hero-turn.js';
 import { applyLantern, syncFlood } from './stage-layout.js';
+import { isLevelTransitionActiveOrArmed } from './stage-level-transition.js';
 import { claim, hopInPlace, owns, rattle, release, slideToHome, suckIntoNull } from './stage-motion.js';
 import { anchorPoint, findByModel } from './stage-resolve.js';
 import { stepped } from './tween.js';
@@ -55,6 +55,7 @@ function onLanternReveal(stage: ComicStage): void {
 }
 
 function onRoomTransition(stage: ComicStage, ev: Extract<KernelEvent, { type: 'ROOM_TRANSITION' }>): void {
+  if (isLevelTransitionActiveOrArmed(stage)) return;
   const hero = stage.hero();
   if (!hero) return;
   if (ev.viaSymlinkLoop) {
@@ -78,12 +79,13 @@ function onRoomTransition(stage: ComicStage, ev: Extract<KernelEvent, { type: 'R
     hero.base.x = from + (hero.home.x - from) * k;
     hero.base.y = hero.home.y;
     hero.offset.y = Math.sin(k * Math.PI) * (smash ? 1.1 : 0.45);
+    if (!smash) poseHeroWalk(hero, Math.sign(hero.home.x - from) || -1, k);
   }, () => {
     if (!owns(hero, g)) return;
     hero.offset.y = 0;
     release(hero, g);
     hero.base.copy(hero.home);
-    setRest(hero);
+    resetHeroPose(hero);
     if (stage.floodPercent > 1) playFx(stage, 'fx.flood-splash', anchorPoint(stage, 'flood', null), {}, 'flood');
   });
 }
@@ -111,9 +113,7 @@ function onFloorCleared(stage: ComicStage, ev: Extract<KernelEvent, { type: 'FLO
 function onFloorEntered(stage: ComicStage, ev: Extract<KernelEvent, { type: 'FLOOR_ENTERED' }>): void {
   clearBubble(stage);
   clearCarried(stage);
-  const floor = FLOORS[ev.floorId] ?? FLOORS[stage.currentFloor] ?? FLOORS[1]!;
-  const accent = `#${floor.accent.toString(16).padStart(6, '0')}`;
-  const path = ev.path || floor.path;
-  const title = (ev.title || floor.name).replace(/^FLOOR\s*0?\d+\s*\/\/\s*/i, '').toUpperCase();
-  playCard(stage, `ENTERING FLOOR ${ev.floorId}: ${path}`, title, path, accent);
+  if (isLevelTransitionActiveOrArmed(stage)) return;
+  const { title, path, accent } = floorCaptionInfo(stage, ev);
+  playCaptionBox(stage, `SECTOR ${String(ev.floorId).padStart(2, '0')}`, title, path, accent, 1180);
 }

@@ -4,7 +4,7 @@ export const PLAY_PHASES = ['boot', 'intro', 'play', 'outro', 'stats'] as const;
 export type Phase = (typeof PLAY_PHASES)[number];
 
 /** Every reason the game clock is stopped. Input is blocked for all of them except a hidden tab. */
-export type PauseReason = 'intro' | 'card' | 'outro' | 'ended' | 'cinematic' | 'hidden' | 'reveal';
+export type PauseReason = 'intro' | 'card' | 'transition' | 'outro' | 'ended' | 'cinematic' | 'hidden' | 'reveal';
 
 export type PlayPhaseEvent =
   | 'ENTER_INTRO'
@@ -22,8 +22,8 @@ export const PLAY_PHASE_TRANSITIONS: TransitionTable<Phase, PlayPhaseEvent> = {
   stats: { PLAY_AGAIN: 'intro', ENTER_INTRO: 'intro', SWAP_LAB: 'play' },
 };
 
-const OVERLAY_STORM_BLOCKERS: readonly PauseReason[] = ['cinematic', 'intro', 'outro', 'ended', 'hidden'];
-const MODAL_BLOCKERS: readonly PauseReason[] = ['intro', 'card', 'outro', 'ended', 'cinematic', 'reveal'];
+const OVERLAY_STORM_BLOCKERS: readonly PauseReason[] = ['cinematic', 'intro', 'transition', 'outro', 'ended', 'hidden'];
+const MODAL_BLOCKERS: readonly PauseReason[] = ['intro', 'card', 'transition', 'outro', 'ended', 'cinematic', 'reveal'];
 
 export interface PlayOverlayState {
   menuOpen: boolean;
@@ -93,6 +93,7 @@ export function createPlayLifecycle(initiallyHidden = false): PlayLifecycle {
     },
     resetForPlayAgain() {
       reasons.delete('card');
+      reasons.delete('transition');
       reasons.delete('reveal');
       reasons.delete('outro');
       reasons.delete('ended');
@@ -117,7 +118,7 @@ export function createPlayLifecycle(initiallyHidden = false): PlayLifecycle {
       return machine.state === 'play' && !anyReason(MODAL_BLOCKERS) && !statsOpen;
     },
     canRestartFloor() {
-      return machine.state === 'play' && !reasons.has('card');
+      return machine.state === 'play' && !reasons.has('card') && !reasons.has('transition');
     },
     derive(overlays) {
       const p = machine.state;

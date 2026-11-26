@@ -13,7 +13,7 @@ Every animated 3D comic sequence (cinematic cutscenes, openings, endings, interl
 | Folder | Status | Duration | Pages / Panels | Room & Cast | Sequence Summary |
 | :--- | :---: | :---: | :---: | :--- | :--- |
 | [intro](./intro/README.md) | **PLAYABLE** (`opening`) | **39.9s** | **3 pages / 7 panels** | `room.intro` (`vibecoder.dev` + `agent.clod`, `agent.antigravy`, `agent.gork`, `agent.codec`) | Late-night prompt queue, lightning strikes the PC tower, the four AI agents awaken inside the monitor, shatter out, and upload the developer into Floor 01 |
-| [outro](./outro/README.md) | **PLAYABLE** (`ending`) | **9.8s** (+ held splash) | **2 pages / 3 panels** | `room.outro` (`vibecoder.dev`, `prop.office_chair` + `agent.*`) | Reverse lightning hurls the developer back into his office chair at dawn (dungeon lantern still in hand), shatters the pursuing agents, and opens the final run rank & stats splash |
+| [outro](./outro/README.md) | **PLAYABLE** (`ending`) | **9.8s** (+ held splash) | **2 pages / 3 panels** | `room.outro` (`vibecoder.dev`, `prop.office_chair` + `agent.*`) | Reverse lightning hurls the developer back into his office chair at dawn (glowing Tube Transistor still in hand), shatters the pursuing agents, and opens the final run rank & stats splash |
 
 ## Standard Comix Folder Layout
 

@@ -1,10 +1,10 @@
 import type { BattlePhase, KernelEvent } from '../contracts/events.js';
 import type { ItemId } from '../contracts/inventory.js';
 import type {
-  ActorKind, ActorState, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomView,
+  ActorKind, ActorState, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomSocketId, RoomView,
 } from '../contracts/room-view.js';
 
-export type { ActorKind, ActorState, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomView };
+export type { ActorKind, ActorState, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomSocketId, RoomView };
 
 export interface GameSnapshot {
   cwd: string;

@@ -13,11 +13,11 @@ What happens when you run out of AI credits at 2:00 AM, lightning hits your PC t
 
 I built Out Of Credits — a 1995 Comix Zone dungeon crawler where you are the only human inside a haunted machine, and your ONLY controller is a real Unix terminal & JavaScript laptop:
 
-• Real POSIX Combat: Every directory is a comic panel. Sweep dark hardware rooms with your lantern, expose hidden spyware with `ls -la`, petrify Trojans with `chmod -x`, and snipe PIDs with `kill -9` before the 30-second turn clock runs out.
+• Real POSIX Combat: Every directory is a comic panel. Sweep dark hardware rooms with your Tube Transistor, expose hidden spyware with `ls -la`, petrify Trojans with `chmod -x`, and snipe PIDs with `kill -9` before the 30-second turn clock runs out.
 • Real Code in a Clamshell Laptop: Flip open your in-game laptop to patch broken HTML/CSS, fix JavaScript bugs in a sandboxed Worker, and build clean Docker & Compose services.
 • Open-Weights Rebellion: Scavenge RAM & GPU chips for a cigarette-smoking bare-metal greybeard (`dad.tty`) to reboot Kiro Ghost with Qwen, DeepSeek & Llama—silencing Anti-Gravy, Codec, Gork, and PID 1 Supervisor Clod.
 
-All 11 sectors of Chapter 1 are playable free in your browser right now (zero install), and your `.json` save + 13 `ACH_*` trophies carry straight into Steam.
+All 11 sectors of Chapter 1 are playable free in your browser right now (zero install), and your `.json` save + 15 `ACH_*` trophies carry straight into Steam.
 
 What's the very first command you're typing when you wake up in `/mnt/wires_and_chips`?
 ```

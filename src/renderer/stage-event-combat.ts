@@ -144,12 +144,12 @@ function onPickup(stage: ComicStage, ev: Extract<KernelEvent, { type: 'PICKUP_CO
       ? 'ENERGY CELL'
       : ev.item === 'ram'
         ? 'RAM STICK'
-        : ev.item === 'lantern'
-          ? 'OIL LANTERN'
+        : ev.item === 'tube_transistor'
+          ? 'TUBE TRANSISTOR'
           : ev.item === 'laptop'
             ? 'LAPTOP'
             : 'SSD DRIVE';
-  const tint = ev.item === 'energy' || ev.item === 'lantern' ? '#ffd166' : ev.item === 'ram' || ev.item === 'laptop' ? '#4cc9f0' : '#06d6a0';
+  const tint = ev.item === 'energy' || ev.item === 'tube_transistor' ? '#ffd166' : ev.item === 'ram' || ev.item === 'laptop' ? '#4cc9f0' : '#06d6a0';
   say(stage, noun, at, tint, 1.35);
   if (hero) hopInPlace(stage, hero, 0.12, 200);
 }

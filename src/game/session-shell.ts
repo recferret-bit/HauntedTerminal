@@ -11,6 +11,7 @@ import { cmdKiro, statusText } from './puzzle.js';
 import { bump, causeOf, elapsedSec, noteAction, portal, push, rank } from './runtime.js';
 import type { Step } from './shell.js';
 import { absPath, resolve } from './tree.js';
+import { hasLsFlags, LS_FLAGS_LOCKED_MESSAGE } from './unix-applets.js';
 
 export interface ClassicShellHost extends Play {
   hint(): string;
@@ -42,8 +43,8 @@ function cmdClassicExit(g: Play): Step {
 const CLASSIC_HANDLERS: Record<string, ClassicHandler> = {
   pwd: (g) => out(`${absPath(g.run.cwd)}\n`),
   ls: (g, args) => {
-    if (!g.lab && !hasItem(g.run.inventory, 'lantern')) {
-      return empty(1, 'ls: it is pitch dark without your oil lantern! Recover your lantern first (use `pwd` and `cat` for now).\n');
+    if (!g.lab && !hasItem(g.run.inventory, 'tube_transistor') && hasLsFlags(args)) {
+      return empty(1, LS_FLAGS_LOCKED_MESSAGE);
     }
     return cmdLs(g, args);
   },

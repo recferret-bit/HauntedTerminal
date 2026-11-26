@@ -322,9 +322,9 @@ try {
   check((await $('window.__game.snapshot().commands')) === 0, 'terminal typing is locked while Kiro & Vibecoder opening dialog is active');
   await $(`document.getElementById('skip-dialog-btn').click()`);
   await browser.waitFor("window.__game.snapshot().openingDialog === false && window.__game.snapshot().inventory.items.includes('terminal')", 5000, 'Skip Dialog unlocks terminal on Level 1');
-  await $("window.__term.submit('ls')");
-  await browser.waitFor("/lantern/i.test(window.__term.text())", 5000, 'ls refused before lantern');
-  check(true, 'ls command is disabled before obtaining the lantern');
+  await $("window.__term.submit('ls -la')");
+  await browser.waitFor("/Tube Transistor/i.test(window.__term.text())", 5000, 'ls -la refused before Tube Transistor');
+  check(true, 'ls -la command is disabled before obtaining the Tube Transistor');
 
   // Verify Level 2 opening dialog -> title-card HUD hide -> rapid Skip Dialog -> Big Four taunt -> prominent #battle-callout banner!
   await browser.open(`${base}/play/${slug}/level-02-task-ram-heist?nointro=1`);
@@ -787,13 +787,13 @@ try {
   // 7. Classic mode (/play/floor/1) starts without manual & map by default, refuses `hold manual`, and /manual/ route resolves
   await browser.open(`${base}/play/floor/1?nointro=1`);
   await browser.waitFor("window.__game && window.__manual && window.__term && !window.__game.snapshot().paused", 30000, 'classic /play/floor/1 booted');
-  check(await $("document.querySelectorAll('.items-strip .item-slot').length === 5 && document.querySelectorAll('.items-strip .item-slot.carried').length === 2"), 'classic mode renders 5-slot strip with only lantern + terminal carried by default');
+  check(await $("document.querySelectorAll('.items-strip .item-slot').length === 5 && document.querySelectorAll('.items-strip .item-slot.carried').length === 2"), 'classic mode renders 5-slot strip with only tube_transistor + terminal carried by default');
   await $(`document.querySelector('#terminal-pane .xterm-helper-textarea')?.focus()`);
   await browser.send('Input.insertText', { text: 'hold manual' });
   await browser.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
   await browser.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
   await browser.waitFor("/not carrying/i.test(window.__term.text())", 5000, 'classic mode hold manual refused without manual item');
-  check(await $("window.__game.snapshot().inventory.held === 'lantern'"), 'classic mode keeps lantern held when unowned manual is requested');
+  check(await $("window.__game.snapshot().inventory.held === 'tube_transistor'"), 'classic mode keeps tube_transistor held when unowned manual is requested');
   for (const route of [`${base}/manual`, `${base}/manual/`]) {
     await browser.open(route);
     await browser.waitFor("Boolean(document.querySelector('#manual-mount .mb-brand'))", 10000, `${route} loads Field Manual`);

@@ -8,6 +8,9 @@ export type LegacyActorKey = 'vibecoder' | 'ghost' | 'crate' | 'socket' | 'gargo
 
 export type ActorKind = 'vibecoder' | 'enemy' | 'boss' | 'pickup' | 'door' | 'prop' | 'npc';
 
+/** Standard room-frame door socket ids in `src/procgen/archetypes/rooms/frame.ts`. */
+export type RoomSocketId = 'door.left' | 'door.right' | 'door.down';
+
 /** Animation state the stage should show (maps onto AnimState in src/procgen/anim). */
 export type ActorState = 'idle' | 'walk' | 'windup' | 'attack' | 'hit' | 'death' | 'hidden' | 'revealed' | 'petrified' | 'frozen' | 'enraged';
 
@@ -25,6 +28,8 @@ export interface RoomActor {
   pid?: number;
   /** VFS name the player types to target it (`worm.bin`, `energy.cell`). */
   target?: string;
+  /** Optional room-frame socket (`door.left`, `door.right`, `door.down`) the stage snaps x to. */
+  socket?: RoomSocketId;
   /** Design-space height offset for hovering or wall-mounted things (0 = on the floor). */
   y?: number;
   x: number;

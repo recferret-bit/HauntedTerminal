@@ -159,8 +159,9 @@ await withProcgen(async (_p, vite) => {
   assert.ok(firstKiroEventIdx >= 2, 'Vibecoder speaks before Kiro glides in');
   assert.ok(clodTauntEventIdx > lastDialogBoxIdx, 'Big Four (Clod) taunts ONLY AFTER every Vibecoder and Kiro opening dialog box has fired');
   const kiroLines = timeline.filter((e) => isBox(e, 'kiro')).map((e) => e.text).join(' ');
-  assert.ok(/MAX HEALTH/i.test(kiroLines) && /REVIVE/i.test(kiroLines), 'Kiro explains RAM (Max HP) and SSD (Revive)');
+  assert.equal(/MAX HEALTH|REVIVE/i.test(kiroLines), false, 'Tutorial opening dialog must NOT explain RAM (Max HP) or SSD (Revive) before first pickup');
   assert.ok(/CHAPTER MISSION|open-weight/i.test(kiroLines), 'Kiro explains the whole-chapter mission');
+  assert.ok(/Tube Transistor/i.test(kiroLines), 'Kiro explains the Tube Transistor ls -la lock');
   assert.ok(timeline.some((e) => e.type === 'ENTITY_SPAWNED' && e.entityId === 'kiro' && e.entrance === 'glide'), 'Kiro glides in');
   assert.ok(timeline.some((e) => e.type === 'ITEM_CARRIED' && e.item === 'terminal'), 'Kiro carries the terminal over');
   assert.ok(timeline.some((e) => e.type === 'ITEM_GIVEN' && e.item === 'terminal' && e.held === true), 'Kiro delivers the terminal into his hand');
@@ -174,16 +175,28 @@ await withProcgen(async (_p, vite) => {
     kiroRealtime.tick();
   }
   assert.equal(kiroRealtime.snapshot().hp, startHp, 'Level 1 tutorial truce must prevent any bug damage');
-  // `ls`, `manual`, and `map` are disabled before their items are obtained!
-  assert.equal(kiroRealtime.exec('ls').code, 1, 'ls must be disabled on Level 1 before obtaining the lantern');
+  // `ls` flags (`-a`, `-l`, `-la`), `manual`, and `map` are disabled before their items are obtained, while basic `ls` works!
+  for (const gated of ['ls -a', 'ls -l', 'ls -la']) {
+    const r = kiroRealtime.exec(gated);
+    assert.equal(r.code, 1, `${gated} must be disabled on Level 1 before obtaining the Tube Transistor`);
+    assert.match(r.stderr ?? r.output, /Tube Transistor/i, `${gated} refusal mentions Tube Transistor`);
+  }
   assert.equal(kiroRealtime.exec('manual').code, 1, 'manual must be disabled before Dad gives it at Hub #1');
   assert.equal(kiroRealtime.exec('map').code, 1, 'map must be disabled before Dad gives it at Hub #1');
-  // Level 1 teaches the 6 core shell commands in order without `ls`: pwd -> mv -> cat -> ps -> kill -> cd hub_uplink
-  const stepPwd = kiroRealtime.exec('pwd');
-  assert.ok(stepPwd.output.includes('/mnt/wires_and_chips'), 'pwd works on Level 1');
-  assert.equal(stepPwd.snapshot.tutorial?.step, 2);
-  assert.equal(stepPwd.snapshot.tutorial?.command, 'mv starter_ram_8gb.dimm ~');
+  // Level 1 teaches the 6 core shell commands in order starting with basic `ls`: ls -> mv -> cat -> ps -> kill -> cd hub_uplink
+  const stepLs = kiroRealtime.exec('ls');
+  assert.equal(stepLs.code, 0, 'basic ls works on Level 1 before obtaining the Tube Transistor');
+  assert.ok(stepLs.output.includes('kiro_story.txt') && stepLs.output.includes('starter_ram_8gb.dimm'), 'basic ls lists visible files on Level 1');
+  assert.equal(stepLs.output.includes('glitch_spark.exe'), false, 'basic ls keeps hidden tutorial bug hidden');
+  assert.equal(stepLs.snapshot.tutorial?.step, 2);
+  assert.equal(stepLs.snapshot.tutorial?.command, 'mv starter_ram_8gb.dimm ~');
   const stepMv = kiroRealtime.exec('mv starter_ram_8gb.dimm ~');
+  assert.ok(
+    stepMv.events.some((e) => isBox(e, 'kiro') && /MAX HEALTH|\+10 Max HP/i.test(e.text)) &&
+      stepMv.events.some((e) => isBox(e, 'vibecoder') && /RAM/i.test(e.text)),
+    'First-ever RAM pickup triggers Kiro.d + Vibecoder RAM explanation dialog',
+  );
+  assert.equal(stepMv.events.some((e) => e.type === 'DIALOG_BOX' && /SSD|REVIVE/i.test(e.text)), false, 'First RAM pickup must NOT show SSD dialog');
   assert.equal(stepMv.snapshot.tutorial?.step, 3);
   assert.equal(stepMv.snapshot.tutorial?.command, 'cat kiro_story.txt');
   const stepCat = kiroRealtime.exec('cat kiro_story.txt');
@@ -207,7 +220,7 @@ await withProcgen(async (_p, vite) => {
     'Once Level 1 tutorial commands are done, Kiro Ghost goes ahead to the Hub',
   );
 
-  // Level 2 opening dialog -> Big Four taunt -> turn-based battle start, visible gargoyle enemy, ls still locked, lantern rewarded on clear!
+  // Level 2 opening dialog -> Big Four taunt -> turn-based battle start, visible gargoyle enemy, Tube Transistor drops on ground after petrification, SSD replaces tensor image!
   const l2 = createChapterSession({ chapterId: 'chapter-01-kiroween', startLevelId: 'level-02-task-ram-heist' });
   const l2Arrival = l2.arriveLevel();
   assert.deepEqual(l2Arrival.snapshot.inventory, { items: ['terminal'], held: 'terminal' }, 'Level 2 opens carrying only the terminal');
@@ -217,6 +230,15 @@ await withProcgen(async (_p, vite) => {
     l2Arrival.snapshot.room.actors.some((a) => a.id === 'trojan_l2' && !a.hidden),
     'Level 2 features a visible Big Four gargoyle minion (`trojan_l2`), not an invisible enemy',
   );
+  assert.equal(
+    l2Arrival.snapshot.room.actors.some((a) => a.id === 'pickup_l2_transistor'),
+    false,
+    'Tube Transistor must stay hidden before trojan_l2 is petrified',
+  );
+  assert.ok(
+    l2Arrival.snapshot.room.actors.some((a) => a.id === 'pickup_l2_ssd' && a.model === 'pickup.ssd'),
+    'Level 2 SSD disk uses pickup.ssd model (replacing tensor GPU image)',
+  );
   const l2Ticks = [];
   for (let t = 0; t < 36; t++) {
     if (t < 35) assert.equal(l2.snapshot().battle, null, 'Battle stays held during opening dialog ticks');
@@ -225,10 +247,22 @@ await withProcgen(async (_p, vite) => {
   assert.equal(l2.snapshot().openingDialog, false, 'Opening dialog completes at openingSec');
   const l2KiroText = l2Ticks.filter((e) => isBox(e, 'kiro')).map((e) => e.text).join(' ');
   assert.ok(/DANGEROUS/i.test(l2KiroText) && /TURN-BASED BATTLE/i.test(l2KiroText) && /30s/i.test(l2KiroText), 'Kiro explains battle danger, turn rules, and 30s timer');
+  assert.equal(/MAX HEALTH|REVIVE/i.test(l2KiroText), false, 'Level 2 opening dialog does not spoil RAM/SSD effects before first pickup');
   assert.ok(l2Arrival.output.includes('vault_notes.txt') && l2KiroText.includes('vault_notes.txt'), 'Level 2 names vault_notes.txt without needing ls');
   assert.ok(l2Ticks.some((e) => e.type === 'BATTLE_STARTED' && e.agent === 'antigravy'), 'When Level 2 dialog finishes, Anti-Gravy taunts and battle begins immediately');
   assert.equal(l2.snapshot().battle?.phase, 'intro', 'Level 2 enters battle intro right after opening dialog');
-  assert.equal(l2.exec('ls').code, 1, 'ls remains locked on Level 2 until the lantern reward');
+  const l2BasicLs = l2.exec('ls');
+  assert.equal(l2BasicLs.code, 0, 'basic ls works on Level 2 without the Tube Transistor');
+  assert.ok(l2BasicLs.output.includes('vault_notes.txt') && l2BasicLs.output.includes('ssd_256gb.img'), 'Level 2 basic ls lists vault_notes.txt and ssd_256gb.img');
+  assert.equal(l2BasicLs.output.includes('tube_transistor'), false, 'tube_transistor is hidden from ls before petrification');
+  assert.equal(l2BasicLs.output.includes('.vault_beacon'), false, '.vault_beacon is hidden from plain ls');
+  assert.equal(l2.exec('ls tube_transistor').code, 1, 'ls tube_transistor must not leak hidden appearWhen pickup before petrification');
+  assert.equal(l2.exec('edit tube_transistor').code, 1, 'edit tube_transistor must not open hidden appearWhen pickup before petrification');
+  assert.equal(l2.exec('touch tube_transistor').code, 1, 'touch tube_transistor must not leak hidden appearWhen pickup before petrification');
+  assert.equal(l2.exec('echo hack > tube_transistor').code, 1, 'redirect must not overwrite hidden appearWhen pickup before petrification');
+  assert.equal(l2.exec('mv tube_transistor ~').code, 1, 'cannot grab tube_transistor before petrifying trojan_l2');
+  assert.equal(l2.exec('ls -la').code, 1, 'ls -la remains locked on Level 2 until grabbing the Tube Transistor');
+  assert.equal(l2.exec('ls -l').code, 1, 'ls -l remains locked on Level 2 until grabbing the Tube Transistor');
 
   // Also test `skipOpeningDialog()` (`Skip Dialog »` button) jumping straight past the opening conversation into battle!
   const l2SkipSess = createChapterSession({ chapterId: 'chapter-01-kiroween', startLevelId: 'level-02-task-ram-heist' });
@@ -239,23 +273,46 @@ await withProcgen(async (_p, vite) => {
   assert.equal(l2Skip.events.some((e) => e.type === 'DIALOG_BOX'), false, 'skipOpeningDialog() discards unread opening dialog boxes');
   assert.ok(l2Skip.events.some((e) => e.type === 'BATTLE_STARTED' && e.agent === 'antigravy'), 'skipOpeningDialog() immediately starts the Big Four battle');
 
-  // Level 3 opens with the rewarded Oil Lantern, `ls` / `ls -la` unlocked, hidden spyware + hidden `.tensor_rune` `ls` riddle!
+  // Level 3 opens with the Tube Transistor, `ls -la` & `ls` flags unlocked, ALL 3 enemies hidden until `ls -la` + `.transistor_rune` riddle!
   const l3 = createChapterSession({ chapterId: 'chapter-01-kiroween', startLevelId: 'level-03-task-gpu-salvage' });
   const l3Arrival = l3.arriveLevel();
-  assert.deepEqual(l3Arrival.snapshot.inventory, { items: ['terminal', 'lantern'], held: 'lantern' }, 'Level 3 opens holding the rewarded lantern');
-  assert.equal(l3Arrival.snapshot.room.dark, false, 'Level 3 is lit by the rewarded lantern');
+  assert.deepEqual(l3Arrival.snapshot.inventory, { items: ['terminal', 'tube_transistor'], held: 'tube_transistor' }, 'Level 3 opens holding the Tube Transistor');
+  assert.equal(l3Arrival.snapshot.room.dark, false, 'Level 3 is lit by the Tube Transistor');
+  const l3HiddenBefore = l3Arrival.snapshot.room.actors.filter((a) => a.kind === 'enemy');
+  assert.ok(l3HiddenBefore.length >= 3 && l3HiddenBefore.every((a) => a.state === 'hidden' && (a.alpha ?? 1) < 0.1), 'All 3 enemies on Level 3 start hidden until ls -la');
   l3.skipOpeningDialog();
   assert.equal(l3.snapshot().battle?.phase, 'intro', 'Level 3 starts Codec battle right after opening dialog');
+  const l3PlainLs = l3.exec('ls');
+  assert.equal(l3PlainLs.output.includes('.codec_spycam') || l3PlainLs.output.includes('.keygen.exe'), false, 'plain ls on Level 3 does not reveal hidden enemies');
   const l3Sweep = l3.exec('ls -la');
-  assert.equal(l3Sweep.code, 0, 'ls -la works on Level 3 with the lantern');
-  assert.ok(l3Sweep.output.includes('.codec_spycam') && l3Sweep.output.includes('.tensor_rune'), 'ls -la exposes hidden spyware and riddle dotfile');
-  const l3Riddle = l3.exec('echo amber_flame > lantern_gate.sock');
-  assert.equal(l3Riddle.code, 0, 'Solving lantern_gate.sock with the dotfile rune succeeds');
-  assert.equal(
-    l3.getChecklist().find((c) => c.description.includes('lantern_gate.sock'))?.done,
-    true,
-    'riddle_solved winRule marks lantern_gate.sock complete',
+  assert.equal(l3Sweep.code, 0, 'ls -la works on Level 3 with the Tube Transistor');
+  assert.ok(
+    l3Sweep.output.includes('.codec_spycam') && l3Sweep.output.includes('.keygen.exe') && l3Sweep.output.includes('.transistor_rune'),
+    'ls -la exposes hidden enemies and riddle dotfile on Level 3',
   );
+  const l3AfterSweepEnemies = l3Sweep.snapshot.room.actors.filter((a) => a.kind === 'enemy');
+  assert.ok(l3AfterSweepEnemies.length >= 3 && l3AfterSweepEnemies.every((a) => a.state !== 'hidden' && (a.alpha ?? 1) === 1), 'ls -la reveals all 3 hidden enemies on stage (including worm_l3)');
+  assert.ok(
+    l3Sweep.events.some((e) => isBox(e, 'vibecoder')) && l3Sweep.events.some((e) => isBox(e, 'kiro')),
+    'ls -la on Level 3 triggers Vibecoder + Kiro.d reaction dialogs',
+  );
+  const l3Riddle = l3.exec('echo warm_filament > transistor_gate.sock');
+  assert.equal(l3Riddle.code, 0, 'Solving transistor_gate.sock with the dotfile rune succeeds');
+  assert.equal(
+    l3.getChecklist().find((c) => c.description.includes('transistor_gate.sock'))?.done,
+    true,
+    'riddle_solved winRule marks transistor_gate.sock complete',
+  );
+
+  // Subdir `ls -la port_445` on a fresh Level 3 must also reveal hidden worm_l3 inside port_445.
+  const l3Sub = createChapterSession({ chapterId: 'chapter-01-kiroween', startLevelId: 'level-03-task-gpu-salvage' });
+  l3Sub.arriveLevel();
+  l3Sub.skipOpeningDialog();
+  const l3SubSweep = l3Sub.exec('ls -la port_445');
+  assert.equal(l3SubSweep.code, 0, 'ls -la port_445 succeeds with Tube Transistor');
+  assert.ok(l3SubSweep.events.some((e) => e.type === 'LANTERN_REVEAL'), 'ls -la port_445 emits LANTERN_REVEAL');
+  const wormAfterSub = l3SubSweep.snapshot.room.actors.find((a) => a.id === 'worm_l3');
+  assert.ok(wormAfterSub && wormAfterSub.state !== 'hidden' && (wormAfterSub.alpha ?? 1) === 1, 'ls -la port_445 reveals hidden worm_l3');
 
   const kiroChap = createChapterSession({
     chapterId: 'chapter-01-kiroween',
@@ -263,8 +320,13 @@ await withProcgen(async (_p, vite) => {
   kiroChap.skipIntro();
   assert.equal(kiroChap.getLevels().length, 11, 'chapter-01-kiroween must have 11 executable levels');
   assert.equal(kiroChap.getCurrentLevel().id, 'level-01-tutorial-awakening');
-  assert.ok(kiroChap.exec('pwd').output.includes('/mnt/wires_and_chips'));
-  assert.ok(kiroChap.exec('mv starter_ram_8gb.dimm ~').output.includes('[COLLECTED]'));
+  assert.equal(kiroChap.exec('ls -la').code, 1, 'ls -la locked on Level 1 without Tube Transistor');
+  const kiroL1Ls = kiroChap.exec('ls');
+  assert.equal(kiroL1Ls.code, 0, 'basic ls works on Level 1');
+  assert.ok(kiroL1Ls.output.includes('kiro_story.txt'));
+  const l1RamCollect = kiroChap.exec('mv starter_ram_8gb.dimm ~');
+  assert.ok(l1RamCollect.output.includes('[COLLECTED]'));
+  assert.ok(l1RamCollect.events.some((e) => isBox(e, 'kiro') && /MAXIMUM HEALTH|\+10 Max HP/i.test(e.text)), 'Level 1 first RAM pickup shows RAM dialog');
   assert.ok(kiroChap.exec('cat kiro_story.txt').output.includes('CHAPTER MISSION'));
   assert.ok(kiroChap.exec('ps').output.includes(String(kiroChap.rt.pids.get('tutorial_virus_1'))));
   const killProbe = kiroChap.exec('kill -9 {pid:tutorial_virus_1}');
@@ -273,26 +335,76 @@ await withProcgen(async (_p, vite) => {
   kiroChap.exec('cd hub_uplink');
   assert.equal(kiroChap.getCurrentLevel().id, 'level-02-task-ram-heist');
   assert.equal(kiroChap.snapshot().inventory.held, 'terminal', 'Level 2 grants and holds the terminal');
-  assert.ok(!kiroChap.snapshot().inventory.items.includes('lantern'), 'Level 2 does not carry the lantern yet');
+  assert.ok(!kiroChap.snapshot().inventory.items.includes('tube_transistor'), 'Level 2 does not carry the Tube Transistor yet');
+  assert.equal(kiroChap.exec('ls -la').code, 1, 'ls -la locked on Level 2 before grabbing the Tube Transistor');
   assert.equal(
     kiroChap.snapshot().room.actors.some((a) => a.id === 'kiro'),
     false,
     'Kiro is waiting at the Hub during Levels 2 & 3',
   );
   kiroChap.exec('cat vault_notes.txt');
-  kiroChap.exec('chmod -x gravy_sentry.bin');
+  const petrifyRes = kiroChap.exec('chmod -x gravy_sentry.bin');
+  assert.ok(
+    petrifyRes.events.some((e) => e.type === 'ENTITY_SPAWNED' && e.entityId === 'pickup_l2_transistor' && e.model === 'item.tube_transistor' && e.reason === 'script'),
+    'Petrifying gravy_sentry.bin drops item.tube_transistor onto the ground',
+  );
+  assert.ok(
+    petrifyRes.snapshot.room.actors.some((a) => a.id === 'pickup_l2_transistor' && a.model === 'item.tube_transistor'),
+    'Fallen Tube Transistor appears on the stage floor',
+  );
+  assert.ok(
+    petrifyRes.events.some((e) => isBox(e, 'vibecoder') && /ground/i.test(e.text)) &&
+      petrifyRes.events.some((e) => isBox(e, 'kiro') && /mv tube_transistor ~/i.test(e.text)),
+    'Petrifying trojan_l2 triggers Vibecoder + Kiro.d ground-drop dialogs',
+  );
+  // Inventory gear pickups cannot be deleted, trashed to /dev/null, or renamed away to bypass file_absent.
+  assert.equal(kiroChap.exec('rm tube_transistor').code, 1, 'rm tube_transistor must be refused so the player cannot destroy their gear');
+  assert.equal(kiroChap.exec('mv tube_transistor /dev/null').code, 1, 'mv tube_transistor /dev/null must be refused');
+  assert.equal(kiroChap.exec('mv tube_transistor renamed_tube').code, 1, 'renaming tube_transistor must be refused');
+  assert.equal(kiroChap.snapshot().inventory.items.includes('tube_transistor'), false, 'failed rm/mv must not grant tube_transistor');
+  const grabTransistor = kiroChap.exec('mv tube_transistor ~');
+  assert.equal(grabTransistor.code, 0, 'mv tube_transistor ~ grabs the Tube Transistor off the ground');
+  assert.ok(grabTransistor.events.some((e) => e.type === 'PICKUP_COLLECTED' && e.item === 'tube_transistor'), 'Grabbing Tube Transistor emits PICKUP_COLLECTED');
+  assert.equal(grabTransistor.snapshot.inventory.held, 'tube_transistor', 'Vibecoder immediately holds the Tube Transistor');
+  assert.equal(grabTransistor.snapshot.room.dark, false, 'Tube Transistor immediately lights up Cache Vault');
+  assert.ok(
+    grabTransistor.events.some((e) => isBox(e, 'vibecoder')) &&
+      grabTransistor.events.some((e) => isBox(e, 'kiro') && /ls -la/i.test(e.text)),
+    'Grabbing Tube Transistor triggers Vibecoder + Kiro.d dialogs encouraging ls -la',
+  );
+  const l2Sweep = kiroChap.exec('ls -la');
+  assert.equal(l2Sweep.code, 0, 'ls -la unlocks immediately after grabbing the Tube Transistor');
+  assert.ok(l2Sweep.output.includes('.vault_beacon'), 'ls -la reveals .vault_beacon on Level 2');
+  assert.ok(
+    l2Sweep.events.some((e) => isBox(e, 'vibecoder') && /\.vault_beacon/i.test(e.text)) &&
+      l2Sweep.events.some((e) => isBox(e, 'kiro') && /gpu_alley/i.test(e.text)),
+    'Running ls -la on Level 2 triggers Vibecoder + Kiro.d reaction dialogs warning about Level 3',
+  );
+  assert.equal(kiroChap.exec('ls -l').code, 0, 'ls -l unlocks immediately after grabbing the Tube Transistor');
   kiroChap.exec("sed -i 's/0000/11434/' ollama_bus.conf");
-  kiroChap.exec('mv ram_16gb.dimm ~');
-  const gpuCollect = kiroChap.exec('mv gpu_tensor_chip_01.img ~');
-  assert.ok(gpuCollect.output.includes('Local GPU Tensor Chip'), 'GPU pickup must report Local GPU Tensor Chip');
-  assert.ok(gpuCollect.events.some((e) => e.type === 'ITEM_GIVEN' && e.item === 'lantern'), 'Completing Level 2 objectives immediately rewards the Oil Lantern on stage');
-  assert.equal(gpuCollect.snapshot.inventory.held, 'lantern', 'Vibecoder holds the rewarded lantern as soon as Level 2 clears');
-  assert.equal(gpuCollect.snapshot.room.dark, false, 'Rewarded lantern immediately lights up Cache Vault');
-  assert.equal(kiroChap.exec('ls').code, 0, 'ls unlocks immediately upon receiving the Level 2 lantern reward');
+  const l2RamCollect = kiroChap.exec('mv ram_16gb.dimm ~');
+  assert.equal(
+    l2RamCollect.events.some((e) => isBox(e, 'kiro') && /MAXIMUM HEALTH|\+10 Max HP/i.test(e.text)),
+    false,
+    'Second RAM pickup must NOT repeat the first-time RAM dialog',
+  );
+  const ssdCollect = kiroChap.exec('mv ssd_256gb.img ~');
+  assert.equal(ssdCollect.output.includes('Local GPU Tensor Chip'), false, 'Level 2 SSD disk is an SSD pickup, not a GPU Tensor Chip');
+  assert.ok(
+    ssdCollect.events.some((e) => isBox(e, 'kiro') && /REVIVE/i.test(e.text)) &&
+      ssdCollect.events.some((e) => isBox(e, 'vibecoder') && /SSD/i.test(e.text)),
+    'First-ever SSD pickup triggers Kiro.d + Vibecoder SSD explanation dialog',
+  );
   const l2Clear = kiroChap.exec('cd gpu_alley');
   assert.equal(kiroChap.getCurrentLevel().id, 'level-03-task-gpu-salvage');
-  assert.equal(l2Clear.events.some((e) => e.type === 'ITEM_GIVEN' && e.item === 'lantern'), false, 'Stepping into Level 3 does not double-emit the lantern reward');
-  assert.equal(kiroChap.snapshot().inventory.held, 'lantern', 'Vibecoder holds the rewarded lantern entering Level 3');
+  assert.equal(l2Clear.events.some((e) => e.type === 'ITEM_GIVEN' && e.item === 'tube_transistor'), false, 'Stepping into Level 3 does not double-emit Tube Transistor');
+  assert.equal(kiroChap.snapshot().inventory.held, 'tube_transistor', 'Vibecoder holds the Tube Transistor entering Level 3');
+  const l3SecondSsd = kiroChap.exec('mv gpu_shader_core_01.img ~');
+  assert.equal(
+    l3SecondSsd.events.some((e) => isBox(e, 'kiro') && /REVIVE/i.test(e.text)),
+    false,
+    'Second SSD pickup must NOT repeat the first-time SSD dialog',
+  );
 
   // Jump to Hub 1 (Level 4): verify Dad gifts map + manual on first Hub enter, unlocks ACH_FIELD_MANUAL, and kiro load qwen disables ANTI-GRAVY
   assert.equal(achievements.isManualUnlocked(), false, 'Field Manual is locked before Hub 1');
@@ -468,7 +580,7 @@ await withProcgen(async (_p, vite) => {
     'zero_panic_run must NOT unlock when levels were skipped via jumpToLevel()',
   );
 
-  // Verify full 11-level 0-death S-rank playthrough unlocks all 11 non-chaos/non-workshop achievements (including field_manual, full_stack_fixer & zero_panic_run)
+  // Verify full 11-level 0-death S-rank playthrough unlocks all 12 non-chaos/non-workshop/non-energy achievements (including full_loadout & zero_panic_run)
   catalog.resetInMemoryStoresForTest();
   const fullRunSession = createChapterSession({ chapterId: 'chapter-01-kiroween' });
   fullRunSession.skipIntro();
@@ -488,11 +600,43 @@ await withProcgen(async (_p, vite) => {
     'full_stack_fixer',
     'big_four_silenced',
     'speed_demon_s',
+    'full_loadout',
     'campaign_clear',
     'zero_panic_run',
   ]) {
     assert.ok(fullRunAch.unlocked[expectedId], `Full 11-level run must unlock "${expectedId}"`);
   }
+  assert.equal(
+    fullRunAch.unlocked.hardware_hoarder,
+    undefined,
+    'hardware_hoarder must NOT unlock until energy pickup is collected too',
+  );
+  // Grabbing energy.cell on Level 11 completes all 5 pickup types and unlocks hardware_hoarder!
+  const energyRun = createChapterSession({ chapterId: 'chapter-01-kiroween', startLevelId: 'level-11-boss-clod-core' });
+  energyRun.skipIntro();
+  const energyRes = energyRun.exec('mv energy.cell ~');
+  assert.ok(
+    energyRes.events.some((e) => e.type === 'ACHIEVEMENT_UNLOCKED' && e.id === 'hardware_hoarder' && e.steamApiName === 'ACH_HARDWARE_HOARDER'),
+    'Collecting the remaining energy pickup unlocks ACH_HARDWARE_HOARDER',
+  );
+  assert.ok(achievements.readAchievements().unlocked.hardware_hoarder, 'hardware_hoarder persists in achievement store');
+  // Regression: clicking Skip Tutorial on Level 1 (`skipTutorial()`) must still record `terminal` in AchievementStore so `full_loadout` remains unlockable.
+  catalog.resetInMemoryStoresForTest();
+  const skipTutAch = createChapterSession({ chapterId: 'chapter-01-kiroween' });
+  skipTutAch.arriveLevel();
+  const skipTutRes = skipTutAch.skipTutorial();
+  assert.ok(skipTutRes.events.some((e) => e.type === 'ITEM_GIVEN' && e.item === 'terminal'), 'skipTutorial() grants terminal');
+  assert.ok(
+    achievements.readAchievements().stats.collectedItems.includes('terminal'),
+    'skipTutorial() records terminal in achievement collectedItems',
+  );
+  // Restore full run achievement store for CLI checks below
+  catalog.resetInMemoryStoresForTest();
+  for (const id of [
+    'first_boot', 'lantern_sweep', 'sigkill_hunter', 'stone_cold_chmod', 'field_manual',
+    'open_weights_init', 'full_stack_fixer', 'big_four_silenced', 'speed_demon_s',
+    'full_loadout', 'hardware_hoarder', 'campaign_clear', 'zero_panic_run',
+  ]) achievements.unlockAchievement(id);
   // Idempotent: unlocking an already-unlocked achievement returns null
   assert.equal(achievements.unlockAchievement('first_boot'), null, 'Duplicate unlock must return null');
 
@@ -504,8 +648,13 @@ await withProcgen(async (_p, vite) => {
   assert.ok(achCombatOut.includes('ACH_SIGKILL_HUNTER') && !achCombatOut.includes('ACH_FIRST_BOOT'));
   const achExport = JSON.parse(kiroChap.exec('achievements export').output);
   assert.equal(achExport.schemaVersion, 1);
-  assert.equal(achExport.totalCount, 13);
-  assert.ok(achExport.steamApiNames.includes('ACH_CAMPAIGN_CLEAR') && achExport.steamApiNames.includes('ACH_FIELD_MANUAL'));
+  assert.equal(achExport.totalCount, 15);
+  assert.ok(
+    achExport.steamApiNames.includes('ACH_CAMPAIGN_CLEAR') &&
+      achExport.steamApiNames.includes('ACH_FIELD_MANUAL') &&
+      achExport.steamApiNames.includes('ACH_FULL_LOADOUT') &&
+      achExport.steamApiNames.includes('ACH_HARDWARE_HOARDER'),
+  );
   assert.ok(kiroChap.exec('achievements sync').output.includes('ACH_*'));
   assert.ok(kiroChap.exec('man achievements').output.includes('achievements export'));
   assert.ok(

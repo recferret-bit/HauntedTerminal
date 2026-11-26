@@ -1,16 +1,10 @@
 import * as THREE from 'three';
 import { el as overlayNode } from '../contracts/dom.js';
 import { TextureCatalog, ZONES, type FxPreset, type ZoneId } from '../procgen/index.js';
-import { fitBalloonText, fitWordWidth, type Item } from './stage-fit.js';
+import { fitBalloonText, fitWordWidth, imgNode, stepped, type Item, type PxRect } from './stage-fit.js';
+import { buildCaptionBox, buildStageCard, buildStageTearText, type CardHost } from './stage-overlay-cards.js';
 import { avoidOffset, CHROME_IDS, hudBottom, tailOffset, type Box } from './stage-avoid.js';
 import './stage-overlay.css';
-
-function imgNode(src: string): HTMLImageElement {
-  const img = document.createElement('img');
-  img.src = src;
-  img.alt = '';
-  return img;
-}
 
 /**
  * The stage's DOM overlay: dialogue, lettering, cards, plates, pips, padlocks and PS_XRAY links,
@@ -29,12 +23,7 @@ export interface OverlayPanel {
   bottom: number;
 }
 
-export interface PxRect {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
+export type { PxRect };
 
 export interface BadgeState {
   /** World point over the actor's head. */
@@ -79,8 +68,6 @@ function zoneCss(zone: ZoneId | string): string {
   const z = (ZONES as Record<string, { color: number }>)[zone];
   return `#${(z?.color ?? 0xffd166).toString(16).padStart(6, '0')}`;
 }
-
-const stepped = (t: number, n: number) => (t >= 1 ? 1 : Math.floor(Math.max(0, t) * n) / n);
 
 export class StageOverlay {
   readonly root: HTMLDivElement;
@@ -391,58 +378,27 @@ export class StageOverlay {
     };
   }
 
+  private cardHost(): CardHost {
+    return {
+      panelRect: () => this.panelRect,
+      pin: (el, life, render) => this.pinCard(el, life, render),
+      textureUrl,
+    };
+  }
+
   /** The page-turn card: swings in around the spine (screen-left edge) in 6 poses, holds, turns away in 5. */
   card(kicker: string, title: string, path: string, accent: string, inMs: number, holdMs: number, outMs: number): { drop(): void } {
-    const el = document.createElement('div');
-    el.className = 'st-card';
-    el.style.setProperty('--accent', accent);
-    el.style.setProperty('--accent-a', `${accent}33`);
-    const bolt = textureUrl('tex.decal.bolt');
-    const halftone = textureUrl('tex.halftone');
-    if (halftone) {
-      el.style.backgroundImage = `url(${halftone})`;
-      el.style.backgroundSize = '48px 48px';
-      el.style.imageRendering = 'pixelated';
-    }
-    const kickChildren: Array<Node> = [overlayNode('span', '', [kicker])];
-    if (bolt) {
-      kickChildren.unshift(imgNode(bolt));
-      kickChildren.push(imgNode(bolt));
-    }
-    el.replaceChildren(
-      overlayNode('div', 'inner', [
-        overlayNode('div', 'kick', kickChildren),
-        overlayNode('h2', '', [title]),
-        overlayNode('div', 'path', [path]),
-      ]),
-    );
-    const total = inMs + holdMs + outMs;
-    const it = this.pinCard(el, total, (_t, ms) => {
-        const r = this.panelRect;
-        el.style.left = `${r.x}px`;
-        el.style.top = `${r.y}px`;
-        el.style.width = `${r.w}px`;
-        el.style.height = `${r.h}px`;
-        let a = 0;
-        if (ms < inMs) a = 90 * (1 - stepped(ms / inMs, 6));
-        else if (ms > inMs + holdMs) a = 90 * stepped((ms - inMs - holdMs) / outMs, 5);
-        el.style.transform = `perspective(${(r.w * 2.2).toFixed(0)}px) rotateY(${(-a).toFixed(1)}deg)`;
-        el.style.visibility = a > 88 ? 'hidden' : '';
-    });
-    return { drop: () => { it.done = true; } };
+    return buildStageCard(this.cardHost(), kicker, title, path, accent, inMs, holdMs, outMs);
   }
 
   /** Lettering over the coredump tear (the torn-page art stays in the canvas). */
   tearText(title: string, sub: string, delayMs: number, showMs: number): void {
-    const el = overlayNode('div', 'st-tear', [title, overlayNode('small', '', [sub])]);
-    this.pinCard(el, delayMs + showMs, (_t, ms) => {
-        const r = this.panelRect;
-        const n = Math.floor(ms / 83);
-        const on = ms >= delayMs;
-        el.style.left = `${r.x + r.w / 2 + (n % 4 === 1 ? 6 : n % 4 === 3 ? -5 : 0)}px`;
-        el.style.top = `${r.y + r.h * 0.42}px`;
-        el.style.visibility = on && n % 7 !== 6 ? '' : 'hidden';
-    });
+    buildStageTearText(this.cardHost(), title, sub, delayMs, showMs);
+  }
+
+  /** Non-blocking Comix Zone yellow caption box docked bottom-left of the panel. */
+  captionBox(kicker: string, title: string, path: string, accent: string, lifeMs = 1180): { drop(): void } {
+    return buildCaptionBox(this.cardHost(), kicker, title, path, accent, lifeMs);
   }
 
   /** HP pips, PID plate and padlock for one actor; diffed by key, re-placed every step. */

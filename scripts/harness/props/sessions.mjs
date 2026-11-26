@@ -6,7 +6,7 @@ import { fileName, shellLine } from './arbitraries.mjs';
 
 /** Commands any level understands, beyond the chapter's own solutions. */
 const GENERIC = [
-  'ls', 'ls -a', 'ls -la', 'ps', 'pwd', 'cd ..', 'cd ~', 'help', 'hank', 'hint', 'inventory', 'inv', 'hold lantern', 'hold terminal',
+  'ls', 'ls -a', 'ls -la', 'ps', 'pwd', 'cd ..', 'cd ~', 'help', 'hank', 'hint', 'inventory', 'inv', 'hold tube_transistor', 'hold terminal',
   'hold laptop', 'hold manual', 'hold map', 'manual chmod', 'map', 'map 4', 'kiro', 'kiro scan', 'kiro load qwen', 'kiro load llama', 'kiro load deepseek', 'kiro load mistral', 'kiro load nope',
   'cat *', 'tutorial skip', 'kill -9 1', 'kill -STOP 1', 'chmod -x *', 'rm -rf *', 'exit',
   // Lines that exit non-zero: a wrong riddle answer, an unknown command, a syntax error.

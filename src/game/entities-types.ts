@@ -104,8 +104,11 @@ export interface EntityView {
   locked?: boolean;
 }
 
-/** Breathing room after a floor loads or a backup restores you. */
-export const GRACE_TICKS = 3;
+/**
+ * Free enemy turns after a floor loads or a backup restores you. Zero: a turn-based battle has its own breathing room
+ * (the player acts first, a tell comes a turn before a strike), and any grace made level 2's gargoyle bite on action 6.
+ */
+export const GRACE_TICKS = 0;
 
 /** Structural view of `World` used by `entities-combat.ts` so combat logic stays decoupled from `World` class definition. */
 export interface WorldLike {

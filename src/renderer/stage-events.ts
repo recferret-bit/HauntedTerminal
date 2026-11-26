@@ -10,6 +10,7 @@ import { handleTravelEvent } from './stage-event-travel.js';
 import { clearBubble, playCues, triggerShake } from './stage-fx.js';
 import { flashActor, strikeFrom } from './stage-motion.js';
 import { findByModel, sourceFor, subjectFor } from './stage-resolve.js';
+import { isLevelTransitionActiveOrArmed, noteFloorCleared, noteFloorEntered, noteGameEnded } from './stage-level-transition.js';
 import type { StageActor } from './stage-cast.js';
 import type { ComicStage } from './comic-stage.js';
 
@@ -18,9 +19,14 @@ export function enqueueStageEvent(stage: ComicStage, ev: KernelEvent): void {
   try {
     if (!ev || typeof ev !== 'object' || typeof (ev as { type?: unknown }).type !== 'string') return;
     if (!stage.built) return;
+    if (ev.type === 'FLOOR_CLEARED') noteFloorCleared(stage);
+    if (ev.type === 'GAME_ENDED') noteGameEnded(stage);
     if (ev.type === 'FLOOR_ENTERED') {
       clearBubble(stage);
       clearCarried(stage);
+      stage.xrayProcs = [];
+      stage.xrayOn = false;
+      noteFloorEntered(stage, ev);
     }
     const now = stage.clockMs;
     let at = Math.max(now, stage.cursor);
@@ -42,6 +48,7 @@ export function runStageEvent(stage: ComicStage, ev: KernelEvent): void {
 }
 
 function runStageEventInner(stage: ComicStage, ev: KernelEvent): void {
+  if (ev.type === 'ROOM_TRANSITION' && isLevelTransitionActiveOrArmed(stage)) return;
   const subject = subjectFor(stage, ev);
   const reactions = animReactionsFor(ev);
   const spawnLike = ev.type === 'ENTITY_SPAWNED' || ev.type === 'FILE_CREATED' || ev.type === 'SYSTEM_HAND_SPAWN';

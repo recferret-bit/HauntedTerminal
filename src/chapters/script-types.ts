@@ -1,5 +1,6 @@
 import type { PosixSignal } from '../contracts/events.js';
 import type { ItemId } from '../contracts/inventory.js';
+import type { PickupType } from '../game/bestiary.js';
 
 /**
  * Declarative level behaviour. Everything a level says, shows or reacts to is data in `level.spec.json`
@@ -25,6 +26,18 @@ export interface ScriptLock {
   message: string;
 }
 
+/** Steps that run once per level load as soon as `when` holds (after commands, saves, or ticks). */
+export interface ScriptTrigger {
+  when: ScriptCond;
+  steps: ScriptStep[];
+}
+
+/** Steps that run once per session the very first time a pickup of `pickup` type is collected. */
+export interface FirstPickupScript {
+  pickup: PickupType;
+  steps: ScriptStep[];
+}
+
 /** A condition over live level state. `any` / `all` nest. */
 export type ScriptCond =
   | { kind: 'ran_command'; name: string }
@@ -34,6 +47,7 @@ export type ScriptCond =
   | { kind: 'any_enemy_dead' }
   | { kind: 'core_loaded'; core: string }
   | { kind: 'has_item'; item: ItemId }
+  | { kind: 'room_swept' }
   | { kind: 'tutorial_skipped' }
   | { kind: 'any'; of: ScriptCond[] }
   | { kind: 'all'; of: ScriptCond[] };
@@ -137,6 +151,8 @@ export interface LevelScript {
   openingSec?: number;
   /** Steps fired once by the level tick counter (`tick()`), each at its `afterSec`. */
   timed?: ScriptTimed[];
+  /** Steps fired once per level load as soon as their condition `when` holds. */
+  triggers?: ScriptTrigger[];
   /** Commands refused until a condition holds. */
   locks?: ScriptLock[];
   /** Name used by `hank` / `dad` here (default: the ally id). */
@@ -162,7 +178,7 @@ export interface ChapterGrant {
   ssd?: number;
   /** Open-weight core loaded into Kiro. The last matching grant wins. */
   core?: string;
-  /** Items he owns from this point on (the lantern for a player who skips the level that gives it). */
+  /** Items he owns from this point on (the tube transistor for a player who skips the level that gives it). */
   items?: ItemId[];
 }
 

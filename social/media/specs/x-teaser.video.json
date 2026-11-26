@@ -68,7 +68,7 @@
           "dur": 4.3,
           "pos": "top-left",
           "accent": "phosphor",
-          "items": ["item.lantern · Dark Sweep", "$ ls -la", "$ ps && kill -9 <pid>"]
+          "items": ["item.tube_transistor · Dark Sweep", "$ ls -la", "$ ps && kill -9 <pid>"]
         }
       ],
       "bursts": [
@@ -78,7 +78,7 @@
         {
           "n": "02",
           "tag": "TURN-BASED CLI BATTLES · 30S CLOCK",
-          "head": "SWEEP WITH YOUR LANTERN & SNIPE PIDS",
+          "head": "SWEEP WITH YOUR TUBE TRANSISTOR & SNIPE PIDS",
           "sub": "Real ls, chmod, ps, sed, and kill -9 trigger deterministic 3D comic combat.",
           "at": 0.2,
           "dur": 4.4,
@@ -158,7 +158,7 @@
           "n": "05",
           "tag": "FINAL SECTOR · /SYS/CLOD_OVERLORD_CORE",
           "head": "SHATTER PID 1 & ESCAPE THE MACHINE",
-          "sub": "11 zero-death-verified sectors, 13 Steam ACH_* trophies, and portable browser saves.",
+          "sub": "11 zero-death-verified sectors, 15 Steam ACH_* trophies, and portable browser saves.",
           "at": 0.15,
           "dur": 1.9,
           "accent": "magenta"

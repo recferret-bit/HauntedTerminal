@@ -28,7 +28,8 @@ export default async function terminalSuite({ load }) {
   const { openLabSession } = await load('/src/terminal-lab/node-driver.ts');
   const { newLabScript } = await load('/src/terminal-lab/lab-pack.ts');
   const { COMMANDS } = await load('/src/game/manual.ts');
-  const { applyChmodMode, reverseLines, wcStats } = await load('/src/game/unix-applets.ts');
+  const { applyChmodMode, LS_FLAGS_LOCKED_MESSAGE, reverseLines, wcStats } = await load('/src/game/unix-applets.ts');
+  const { giveItem, starterInventory } = await load('/src/game/inventory.ts');
   const { CHAPTER_COMMANDS } = await load('/src/chapters/session-state.ts');
   const {
     BOOK_PAGES,
@@ -461,6 +462,64 @@ export default async function terminalSuite({ load }) {
               else if (op === '-') expect(after === (before & ~bits), `op - mismatch at shift ${shift}`);
               else expect(after === bits, `op = mismatch at shift ${shift}`);
             }
+          },
+        ),
+    },
+    {
+      name: 'without tube_transistor, basic `ls [path]` shows visible entries only while any `ls` option flag is refused until tube_transistor is carried (both shells)',
+      build: () =>
+        fc.property(
+          shellKind,
+          fc.constantFrom('-a', '-A', '-l', '-la', '-al', '-F', '--all', 'PATH_WITH_FLAG'),
+          (kind, rawFlag) => {
+            const subPath = kind === 'classic' ? '../drive_bay' : 'sub_prop';
+            const subFile = kind === 'classic' ? 'labels.txt' : 'in.txt';
+            const flagArg = rawFlag === 'PATH_WITH_FLAG' ? `${subPath} -a` : rawFlag;
+            const session = kind === 'classic'
+              ? (() => {
+                  const s = createSession();
+                  s.run.inventory = starterInventory(['terminal']);
+                  s.exec('touch vis_prop.txt');
+                  s.exec('touch .sec_prop');
+                  return s;
+                })()
+              : mapWorld.openWith(0, (p) => {
+                  p.manifest.startItems = ['terminal'];
+                  p.manifest.grants = [];
+                  const cwd = p.levels[0].cwd;
+                  p.levels[0].files.push(
+                    { path: `${cwd}/vis_prop.txt`, kind: 'file', mode: 420, content: 'v\n' },
+                    { path: `${cwd}/sub_prop`, kind: 'dir', mode: 493 },
+                    { path: `${cwd}/sub_prop/in.txt`, kind: 'file', mode: 420, content: 's\n' },
+                    { path: `${cwd}/.sec_prop`, kind: 'file', mode: 420, content: 'h\n' },
+                  );
+                });
+            const gated = session.exec(`ls ${flagArg}`);
+            expect(gated.code === 1, `${kind}: ls ${flagArg} without lantern gave code ${gated.code}`);
+            expect((gated.stderr || gated.output).includes(LS_FLAGS_LOCKED_MESSAGE.trim()), `${kind}: ls ${flagArg} missed refusal text`);
+            expect(!gated.events.some((e) => e.type === 'LANTERN_REVEAL'), `${kind}: gated ls emitted LANTERN_REVEAL`);
+            expect(!gated.events.some((e) => e.type === 'VIBECODER_ACTION' && e.action === 'lantern'), `${kind}: gated ls triggered lantern action`);
+            if (kind === 'chapter') expect(!session.rt.commandsRun.has('ls'), 'chapter: gated ls was recorded in commandsRun');
+
+            const plain = session.exec('ls');
+            expect(plain.code === 0 && plain.output.includes('vis_prop.txt'), `${kind}: bare ls missed vis_prop.txt (${JSON.stringify(plain.output)})`);
+            expect(!plain.output.includes('.sec_prop'), `${kind}: bare ls leaked hidden dotfile`);
+            expect(!plain.events.some((e) => e.type === 'LANTERN_REVEAL'), `${kind}: bare ls emitted LANTERN_REVEAL`);
+
+            const sub = session.exec(`ls ${subPath}`);
+            expect(sub.code === 0 && sub.output.includes(subFile), `${kind}: ls ${subPath} failed`);
+
+            if (kind === 'classic') session.run.inventory = giveItem(session.run.inventory, 'tube_transistor');
+            else session.inventory = giveItem(session.inventory, 'tube_transistor');
+
+            const longOnly = session.exec('ls -l');
+            expect(longOnly.code === 0 && longOnly.output.includes('vis_prop.txt') && /-rw-/.test(longOnly.output), `${kind}: ls -l failed with tube_transistor`);
+            expect(!longOnly.output.includes('.sec_prop'), `${kind}: ls -l leaked hidden dotfile without -a`);
+
+            const sweep = session.exec('ls -la');
+            expect(sweep.code === 0 && sweep.output.includes('.sec_prop'), `${kind}: ls -la did not reveal hidden dotfile with tube_transistor`);
+            expect(sweep.snapshot.inventory.held === 'tube_transistor', `${kind}: ls -la did not hold tube_transistor`);
+            expect(sweep.events.some((e) => e.type === 'LANTERN_REVEAL'), `${kind}: ls -la did not emit LANTERN_REVEAL`);
           },
         ),
     },

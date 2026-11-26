@@ -1,21 +1,21 @@
 {
   "id": "level-02-task-ram-heist",
   "index": 2,
-  "title": "Cache Vault: Gargoyle Sentry & Lantern Reward",
+  "title": "Cache Vault: Gargoyle Sentry & Tube Transistor",
   "cwd": "/srv/kiroween/cache_vault",
   "roomKind": "crypt_entrance",
   "floorTheme": 2,
   "roomSeed": 22,
   "mechanic": "terminal",
   "exitDir": "/srv/kiroween/cache_vault/gpu_alley",
-  "summary": "A visible Big Four gargoyle minion (`gravy_sentry.bin`) guards Cache Vault! Finish talking with Kiro.d to learn how turn-based battles, RAM (+Max HP), and SSD (Revive) work, read `cat vault_notes.txt`, petrify `gravy_sentry.bin` (`chmod -x`), fix `ollama_bus.conf`, and loot RAM + SSD to win back your Oil Lantern!",
+  "summary": "Anti-Gravy's visible gargoyle minion (`gravy_sentry.bin`) clutches your Tube Transistor! Read `cat vault_notes.txt`, petrify `gravy_sentry.bin` (`chmod -x`) so the Tube Transistor lands on the ground, grab it (`mv tube_transistor ~`) to unlock `ls -la`, fix `ollama_bus.conf`, and loot RAM + SSD!",
   "files": [
     {
       "path": "/srv/kiroween/cache_vault/vault_notes.txt",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. COUNTERPLAY: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`.\n3. BUS FIX: Restore port `11434` in `ollama_bus.conf`: `sed -i 's/0000/11434/' ollama_bus.conf`.\n4. HARDWARE SURVIVAL: Pocket `ram_16gb.dimm` (+10 Max HP) and `gpu_tensor_chip_01.img` (+256GB SSD auto-Revive backup + Hub part) with `mv <file> ~`, then `cd gpu_alley` to claim your OIL LANTERN!\n"
+      "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. TEST `ls -la`: Try `ls -la` once you hold the Tube Transistor to spot hidden dotfiles before entering GPU Alley.\n4. BUS & HARDWARE: Restore port `11434` in `ollama_bus.conf` (`sed -i 's/0000/11434/' ollama_bus.conf`), pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n"
     },
     {
       "path": "/srv/kiroween/cache_vault/gravy_sentry.bin",
@@ -37,10 +37,22 @@
       "content": "DDR5_ECC_16GB_MODULE_01\n"
     },
     {
-      "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img",
+      "path": "/srv/kiroween/cache_vault/ssd_256gb.img",
       "kind": "file",
       "mode": 420,
-      "content": "GPU_TENSOR_CORE_CHIP_24GB_VRAM_01\n"
+      "content": "NVME_SSD_256GB_BACKUP_DISK_01\n"
+    },
+    {
+      "path": "/srv/kiroween/cache_vault/tube_transistor",
+      "kind": "file",
+      "mode": 420,
+      "content": "#!/bin/transistor\n# TUBE TRANSISTOR: glowing vacuum-tube light & ls -la unlock.\nexport LIGHT=\"on\"\n"
+    },
+    {
+      "path": "/srv/kiroween/cache_vault/.vault_beacon",
+      "kind": "file",
+      "mode": 420,
+      "content": "# Hidden Cache Vault Dotfile\nTUBE_TRANSISTOR_CHECK=ok\nWARNING=Codec cloaked his entire squad in gpu_alley — open with ls -la!\n"
     },
     {
       "path": "/srv/kiroween/cache_vault/gpu_alley",
@@ -62,10 +74,18 @@
       "path": "/srv/kiroween/cache_vault/ram_16gb.dimm"
     },
     {
-      "id": "pickup_l2_gpu",
+      "id": "pickup_l2_ssd",
       "type": "ssd",
-      "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img",
-      "model": "pickup.gpu"
+      "path": "/srv/kiroween/cache_vault/ssd_256gb.img"
+    },
+    {
+      "id": "pickup_l2_transistor",
+      "type": "tube_transistor",
+      "path": "/srv/kiroween/cache_vault/tube_transistor",
+      "appearWhen": {
+        "kind": "enemy_dead",
+        "enemyId": "trojan_l2"
+      }
     }
   ],
   "patches": [
@@ -80,7 +100,7 @@
     {
       "id": "l2_ram_bank",
       "model": "prop.ram_bank",
-      "x": 3.18,
+      "x": 3.45,
       "label": "cache DIMM bank"
     },
     {
@@ -117,7 +137,12 @@
     {
       "kind": "enemy_neutralized",
       "enemyId": "trojan_l2",
-      "description": "Petrify Anti-Gravy's visible gargoyle minion (`chmod -x gravy_sentry.bin`)"
+      "description": "Petrify Anti-Gravy's visible gargoyle minion (`chmod -x gravy_sentry.bin`) so it drops the Tube Transistor"
+    },
+    {
+      "kind": "file_absent",
+      "path": "/srv/kiroween/cache_vault/tube_transistor",
+      "description": "Grab the fallen Tube Transistor off the ground (`mv tube_transistor ~`)"
     },
     {
       "kind": "file_contains",
@@ -128,20 +153,21 @@
     {
       "kind": "file_absent",
       "path": "/srv/kiroween/cache_vault/ram_16gb.dimm",
-      "description": "Collect the 16GB RAM stick for +10 Max HP (`mv ram_16gb.dimm ~`)"
+      "description": "Collect the 16GB RAM stick (`mv ram_16gb.dimm ~`)"
     },
     {
       "kind": "file_absent",
-      "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img",
-      "description": "Collect the 256GB SSD/GPU image for auto-Revive & Hub reboot (`mv gpu_tensor_chip_01.img ~`)"
+      "path": "/srv/kiroween/cache_vault/ssd_256gb.img",
+      "description": "Collect the 256GB SSD disk (`mv ssd_256gb.img ~`)"
     }
   ],
   "solutionCommands": [
     "cat vault_notes.txt",
     "chmod -x gravy_sentry.bin",
+    "mv tube_transistor ~",
     "sed -i 's/0000/11434/' ollama_bus.conf",
     "mv ram_16gb.dimm ~",
-    "mv gpu_tensor_chip_01.img ~",
+    "mv ssd_256gb.img ~",
     "cd gpu_alley"
   ],
   "script": {
@@ -149,7 +175,7 @@
     "arrival": [
       {
         "kind": "print",
-        "text": "\n[CACHE VAULT — /srv/kiroween/cache_vault]\nA stone-winged gargoyle binary (`gravy_sentry.bin`) crouches beside `vault_notes.txt` and the RAM bank! Listen to Kiro.d before engaging (or click Skip Dialog »).\n"
+        "text": "\n[CACHE VAULT — /srv/kiroween/cache_vault]\nA stone-winged gargoyle binary (`gravy_sentry.bin`) crouches beside `vault_notes.txt`, clutching your glowing Tube Transistor! Listen to Kiro.d before engaging (or click Skip Dialog »).\n"
       }
     ],
     "timed": [
@@ -159,24 +185,24 @@
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "Whoa—that winged gargoyle (`gravy_sentry.bin`) is staring right at me! What is that thing, Kiro.d?!",
+            "text": "Whoa—that winged gargoyle (gravy_sentry.bin) is staring right at me! Wait... is it clutching my glowing Tube Transistor?!",
+            "holdSec": 7
+          }
+        ]
+      },
+      {
+        "afterSec": 8,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Careful, Vibecoder! Big Four minions are DANGEROUS—they hurl blazing red Matrix fireballs! And yes, that Tube Transistor lights dark sectors and unlocks ls -la!",
             "holdSec": 8
           }
         ]
       },
       {
-        "afterSec": 9,
-        "steps": [
-          {
-            "kind": "dialog_box",
-            "speaker": "kiro",
-            "text": "Careful, Vibecoder! Big Four minions are DANGEROUS—they hurl blazing red Matrix fireballs that shred your health! Wait till we finish talking before your terminal unlocks!",
-            "holdSec": 9
-          }
-        ]
-      },
-      {
-        "afterSec": 18,
+        "afterSec": 16,
         "steps": [
           {
             "kind": "dialog_box",
@@ -187,13 +213,24 @@
         ]
       },
       {
-        "afterSec": 28,
+        "afterSec": 26,
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "I wish I could run ls -la right now to check the shadows, but every ls flag is locked without that Tube Transistor!",
+            "holdSec": 5
+          }
+        ]
+      },
+      {
+        "afterSec": 31,
         "steps": [
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "Read cat vault_notes.txt and petrify it with chmod -x gravy_sentry.bin! Grab RAM (+10 MAX HEALTH) and SSD/GPU (256GB = automatic REVIVE on death + Hub parts for our chapter mission)—clear this sector to earn your OIL LANTERN!",
-            "holdSec": 8
+            "text": "Read cat vault_notes.txt and petrify gravy_sentry.bin with chmod -x gravy_sentry.bin! Once it turns to stone, the Tube Transistor lands on the ground—grab it with mv tube_transistor ~ and try ls -la!",
+            "holdSec": 5
           }
         ]
       }
@@ -229,14 +266,65 @@
       "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
     },
     "openingSec": 36,
-    "locks": [
+    "triggers": [
       {
-        "command": "ls",
-        "until": {
-          "kind": "has_item",
-          "item": "lantern"
+        "when": {
+          "kind": "enemy_dead",
+          "enemyId": "trojan_l2"
         },
-        "message": "ls: still locked without your Oil Lantern! Clear Cache Vault to win your lantern as a reward (read `cat vault_notes.txt` instead)."
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "CLANG! gravy_sentry.bin froze into solid stone—and the Tube Transistor just landed right on the ground!",
+            "holdSec": 6
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Grab it off the floor with mv tube_transistor ~! That glowing vacuum tube will light the vault and unlock ls -la!",
+            "holdSec": 7
+          }
+        ]
+      },
+      {
+        "when": {
+          "kind": "has_item",
+          "item": "tube_transistor"
+        },
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "WHOA! The Tube Transistor warmed right up in my hand—the whole vault just lit up amber!",
+            "holdSec": 6
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "All ls flags are unlocked now! Try running ls -la right here to sweep the shadows for hidden dotfiles before heading to gpu_alley!",
+            "holdSec": 7
+          }
+        ]
+      },
+      {
+        "when": {
+          "kind": "room_swept"
+        },
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Whoa—ls -la exposed a hidden .vault_beacon dotfile that plain ls completely missed!",
+            "holdSec": 6
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Awesome test! Codec cloaked his enemies in gpu_alley next—open Sector 03 with ls -la the moment you step inside!",
+            "holdSec": 7
+          }
+        ]
       }
     ]
   }

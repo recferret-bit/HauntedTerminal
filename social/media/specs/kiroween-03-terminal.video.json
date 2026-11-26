@@ -45,7 +45,7 @@
         { "t": 0.2, "do": "typeAndSubmit", "line": "ls -la", "cps": 26 }
       ],
       "pills": [
-        { "at": 0.08, "dur": 2.0, "pos": "top-left", "accent": "amber", "items": ["TERMINAL.APP · LANTERN REVEAL", "$ ls -la"] }
+        { "at": 0.08, "dur": 2.0, "pos": "top-left", "accent": "amber", "items": ["TERMINAL.APP · TUBE TRANSISTOR REVEAL", "$ ls -la"] }
       ]
     },
     {

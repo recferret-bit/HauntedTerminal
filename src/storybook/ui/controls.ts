@@ -24,7 +24,7 @@ const RENDER_TOGGLES: ToggleDef[] = [
 
 const TEST_TOGGLES: ToggleDef[] = [
   { key: 'silhouette', label: 'Silhouette', hint: 'Flat ink on paper: the readability test' },
-  { key: 'lantern', label: 'Lantern dark', hint: 'Dim room, lantern cone follows the pointer' },
+  { key: 'lantern', label: 'Tube glow dark', hint: 'Dim room, Tube Transistor cone follows the pointer' },
   { key: 'flash', label: 'Hold flash', hint: 'Lightning uniform held on, for screenshots' },
   { key: 'sockets', label: 'Sockets', hint: 'Labelled attach points' },
   { key: 'plinth', label: 'Plinth', hint: 'The floor strip actors stand on' },

@@ -7,7 +7,7 @@
   "badge": "KIROWEEN SPECIAL ISSUE",
   "estimatedMinutes": 35,
   "clientName": "Kiro.d & The Bearded Matrix Coder (Dad)",
-  "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal, explains why RAM (+10 Max HP) and SSD/GPU images (auto-Revive backup + local server parts) keep him alive, and lays out the chapter mission: raid 6 sectors, reboot Kiro.d at the Matrix Hub with 3 open-weight models to silence Anti-Gravy, Codec, and Gork, then defeat Clod and PID 1 to exit home! Clear Sector 02 to win your oil lantern (unlocking ls in Sector 03), receive the Motherboard Map & Field Manual from the Old Bearded Coder on your first Hub visit (Sector 04), recover your clamshell laptop in Logic Cell (Sector 06), and uncover the father-son unicorn twist!",
+  "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal and lays out the chapter mission: raid 6 sectors, reboot Kiro.d at the Matrix Hub with 3 open-weight models to silence Anti-Gravy, Codec, and Gork, then defeat Clod and PID 1 to exit home! Basic ls works from the start for visible files; petrify the gargoyle in Sector 02 so your glowing Tube Transistor lands on the ground (grab it with mv to unlock ls -la and reveal hidden enemies in Sector 03), receive the Motherboard Map & Field Manual from the Old Bearded Coder on your first Hub visit (Sector 04), recover your clamshell laptop in Logic Cell (Sector 06), and uncover the father-son unicorn twist!",
   "allyNpc": {
     "id": "dad.tty",
     "name": "Old Bearded Matrix Coder (dad.tty)",
@@ -30,8 +30,8 @@
     "pageCount": 6
   },
   "mechanicsSummary": [
-    "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, finish talking with Kiro.d (who brings your terminal and explains your chapter mission + RAM Max HP & SSD Revive), then practice pwd, mv, cat, ps, and kill while ls stays locked without a lantern",
-    "Levels 2-3, 5-6, 8-9 Tasks: Finish Vibecoder + Kiro.d opening dialog (or Skip Dialog) before Big Four taunt & turn-based battle! Petrify a visible gargoyle minion in Level 2 to win your Oil Lantern, unlock ls + dotfile riddle in Level 3, and recover your laptop in Level 6",
+    "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, finish talking with Kiro.d (who brings your terminal and explains your chapter mission), then practice ls, mv, cat, ps, and kill while ls flags stay locked without a Tube Transistor",
+    "Levels 2-3, 5-6, 8-9 Tasks: Finish Vibecoder + Kiro.d opening dialog (or Skip Dialog) before Big Four taunt & turn-based battle! Petrify the gargoyle minion in Level 2 so the Tube Transistor drops onto the ground (`mv tube_transistor ~`), test `ls -la`, expose Codec's hidden squad & dotfile riddle in Level 3, and recover your laptop in Level 6",
     "Levels 4, 7, 10 Hub: On your first Hub visit (Level 4), the Old Bearded Coder hands you the Motherboard Map & Unix Field Manual (unlocking ACH_FIELD_MANUAL and /manual), then reboots Kiro.d with Qwen, DeepSeek, and Llama to silence Anti-Gravy, Codec, and Gork",
     "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro.d as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
   ],
@@ -44,9 +44,9 @@
       "roomKind": "attic",
       "floorTheme": 1,
       "mechanic": "terminal",
-      "mechanicLabel": "Intro Tutorial (pwd / mv / cat / ps / kill)",
+      "mechanicLabel": "Intro Tutorial (ls / mv / cat / ps / kill)",
       "difficulty": 1,
-      "teaches": ["pwd", "mv", "cat", "ps", "kill -9", "cd"],
+      "teaches": ["ls", "mv", "cat", "ps", "kill -9", "cd"],
       "enemies": ["virus"],
       "classicFloor": 1,
       "specPath": "levels/level-01-tutorial-awakening/level.spec.json"
@@ -54,14 +54,14 @@
     {
       "index": 2,
       "id": "level-02-task-ram-heist",
-      "title": "Cache Vault: Gargoyle Sentry & Lantern Reward",
+      "title": "Cache Vault: Gargoyle Sentry & Tube Transistor",
       "cwd": "/srv/kiroween/cache_vault",
       "roomKind": "crypt_entrance",
       "floorTheme": 2,
       "mechanic": "terminal",
-      "mechanicLabel": "Task 1 (Battle Rules / chmod -x / sed / Lantern Reward)",
+      "mechanicLabel": "Task 1 (Battle Rules / chmod -x / Ground Drop / sed)",
       "difficulty": 1,
-      "teaches": ["cat", "chmod -x", "sed -i", "mv"],
+      "teaches": ["cat", "chmod -x", "mv", "ls -la", "sed -i"],
       "enemies": ["trojan"],
       "classicFloor": 2,
       "specPath": "levels/level-02-task-ram-heist/level.spec.json"
@@ -69,7 +69,7 @@
     {
       "index": 3,
       "id": "level-03-task-gpu-salvage",
-      "title": "GPU Alley: Lantern ls, Dotfile Riddle & Lockpicks",
+      "title": "GPU Alley: Tube Transistor ls -la, Hidden Squad & Dotfile Riddle",
       "cwd": "/srv/kiroween/gpu_alley",
       "roomKind": "crypt_hall",
       "floorTheme": 2,
@@ -213,7 +213,7 @@
       "afterLevel": 2,
       "ram": 16,
       "ssd": 256,
-      "items": ["lantern"]
+      "items": ["tube_transistor"]
     },
     {
       "afterLevel": 3,
@@ -275,6 +275,42 @@
       "role": "ALLY",
       "hostHardware": "Veteran enterprise coder with a chest-length beard & lit cigarette hammering bare-metal code on a Matrix-display CRT server rack.",
       "counterplay": "`cat dad.tty.sock` / `hank` to talk; bring scavenged RAM + GPU chips to the Hub and run `kiro load <qwen|deepseek|llama>` so he reboots Kiro.d and disables one of the Big Four!"
+    }
+  ],
+  "onFirstPickup": [
+    {
+      "pickup": "ram",
+      "steps": [
+        {
+          "kind": "dialog_box",
+          "speaker": "kiro",
+          "text": "Nice—your first RAM stick! Every 16GB RAM module you pocket boosts your MAXIMUM HEALTH (+10 Max HP) and restores +10 HP right away!",
+          "holdSec": 8
+        },
+        {
+          "kind": "dialog_box",
+          "speaker": "vibecoder",
+          "text": "Whoa, more RAM literally upgrades my HP bar! I am pocketing every .dimm stick I find!",
+          "holdSec": 6
+        }
+      ]
+    },
+    {
+      "pickup": "ssd",
+      "steps": [
+        {
+          "kind": "dialog_box",
+          "speaker": "kiro",
+          "text": "Your first SSD disk! Every 256GB SSD image gives you an automatic REVIVE BACKUP if your HP hits 0—plus storage capacity to reboot me at the Matrix Hub!",
+          "holdSec": 8
+        },
+        {
+          "kind": "dialog_box",
+          "speaker": "vibecoder",
+          "text": "An automatic revive snapshot on flash storage?! Okay, SSD disks are basically extra lives—never skipping one!",
+          "holdSec": 6
+        }
+      ]
     }
   ]
 }

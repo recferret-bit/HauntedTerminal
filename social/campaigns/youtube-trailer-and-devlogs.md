@@ -15,7 +15,7 @@ Grounded in [`docs/marketing/MARKET_RESEARCH_1M_REVENUE.md`](../../docs/marketin
 |---|---|---|---|
 | `0:00–0:06` | `yt-01-midnight-lightning` | 3D Intro Comix: storm outside desk window, lightning bolt hits PC tower, Vibecoder pulled into motherboard. | *"Lightning strikes your tower at midnight and pulls you straight into the motherboard."* |
 | `0:06–0:12.8` | `yt-02-kiro-awakening` | Sector 01: Vibecoder in wires & chips; types `ps`; opens `F1` hardcover comic Field Manual to `kill`. | *"In Out Of Credits, every comic panel is a real directory and your terminal is the only way out."* |
-| `0:12.8–0:20` | `yt-03-lantern-and-battles` | Sector 03 GPU Alley: lantern glow, `ls -la` reveals hidden malware, `FIGHT!` burst, VT100 -> PuTTY skin switch. | *"Sweep dark sectors with your lantern, petrify trojans with chmod,"* |
+| `0:12.8–0:20` | `yt-03-lantern-and-battles` | Sector 03 GPU Alley: Tube Transistor glow, `ls -la` reveals hidden malware, `FIGHT!` burst, VT100 -> PuTTY skin switch. | *"Sweep dark sectors with your tube transistor, petrify trojans with chmod,"* |
 | `0:20–0:27.2` | `yt-04-chmod-and-laptop` | Clamshell Laptop Studio open on desktop with JS Pad & Web Weaver + comic dossier callout card. | *"patch broken JavaScript and Docker containers on your laptop,"* |
 | `0:27.2–0:34` | `yt-05-matrix-hub-dad` | Sector 04 Matrix Hub: `dad.tty` smoking at his CRT rack + `F3` PCB Motherboard Map deploy view. | *"upgrade open-weight servers at the Matrix Hub,"* |
 | `0:34–0:41` | `yt-06-clod-kernel-boss` | Sector 11 Kernel Core: Supervisor Clod cameo + towering `boss.kernel` (`PID 1!`) battle. | *"and silence Clod at the kernel core."* |

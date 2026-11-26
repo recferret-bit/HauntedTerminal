@@ -270,7 +270,7 @@ async function verifyAchievementsPage(cdp, evalJs, base, externalUrls) {
     bar: ['export-save-btn', 'import-save-btn', 'import-save-input', 'save-portability-feedback'].every((id) => document.getElementById(id)),
     osCards: document.querySelectorAll('.os-card').length,
   }))()`);
-  assert.equal(fresh.trophyCards, 13, '/achievements.html must render all 13 local achievement cards');
+  assert.equal(fresh.trophyCards, 15, '/achievements.html must render all 15 local achievement cards');
   assert.equal(fresh.hasProgressTag, true, 'Trophy rack must use native <progress> bar');
   assert.equal(fresh.secretMasked, 2, 'Both secret achievements must mask their titles when locked');
   assert.equal(fresh.bar, true, '/achievements.html must carry the save export/import bar with its ids');
@@ -299,8 +299,8 @@ async function verifyAchievementsPage(cdp, evalJs, base, externalUrls) {
       ipcCalls: window.__ipcCalls,
     };
   })()`);
-  assert.ok(importCheck.feedback.includes('2/13 achievements unlocked'));
-  assert.ok(importCheck.exportFeedback.includes('Exported out-of-credits-save-2.json (2/13 ACH_*'));
+  assert.ok(importCheck.feedback.includes('2/15 achievements unlocked'));
+  assert.ok(importCheck.exportFeedback.includes('Exported out-of-credits-save-2.json (2/15 ACH_*'));
   assert.equal(importCheck.unlockedShown, 2);
   assert.ok(
     importCheck.ipcCalls.some((c) => c.cmd === 'desktop_export_json_file' && c.args?.filename === 'out-of-credits-save.json'),
@@ -468,13 +468,13 @@ async function verifyChaptersAchievementsBinder(cdp, evalJs, base) {
       ipcCalls: window.__ipcCalls,
     };
   })()`);
-  assert.equal(binderAfter.cards, 13);
+  assert.equal(binderAfter.cards, 15);
   assert.equal(binderAfter.hasExportBtn, true, '/chapters.html?tab=achievements must render Export Save (.json) button');
   assert.equal(binderAfter.hasImportBtn, true, '/chapters.html?tab=achievements must render Import Save (.json) button');
   assert.equal(binderAfter.hasWishlistLink, true, '/chapters.html must expose ★ Wishlist on Steam CTA');
   assert.equal(chaptersTab.activeAfterExport, 'chapters-export-save-btn', 'Exporting on /chapters.html must preserve keyboard focus');
   assert.ok(bossTagContrast >= 4.5, `.mech-tag.boss must meet WCAG AA >= 4.5:1 contrast, got ${bossTagContrast.toFixed(2)}`);
-  assert.ok(binderAfter.flash.includes('4/13 LOCAL ACHIEVEMENTS UNLOCKED'));
+  assert.ok(binderAfter.flash.includes('4/15 LOCAL ACHIEVEMENTS UNLOCKED'));
   assert.ok(
     binderAfter.ipcCalls.some((c) => c.cmd === 'steam_unlock_achievement' && c.args?.apiName === 'ACH_BASHRC_ARTISAN'),
     'Purchasing a Workshop perk on /chapters.html must forward ACH_BASHRC_ARTISAN to Tauri DesktopBridge',

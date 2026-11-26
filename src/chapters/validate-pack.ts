@@ -1,6 +1,6 @@
 import type { RoomKind } from '../contracts/room-view.js';
 import { ITEM_IDS, isItemId } from '../contracts/inventory.js';
-import { BESTIARY, type EnemyType, type PickupType } from '../game/bestiary.js';
+import { BESTIARY, PICKUP_TYPES, type EnemyType, type PickupType } from '../game/bestiary.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
 import { allStrings, pidRefs, RESERVED_PIDS } from './pids.js';
 import { isRec } from './record.js';
@@ -18,7 +18,7 @@ export interface PackIssue {
 export const ROOM_KINDS = ['desk', 'attic', 'crypt_entrance', 'crypt_hall', 'chasm', 'cell', 'lab_hall', 'catwalk', 'furnace', 'core', 'outro'] as const satisfies readonly RoomKind[];
 export const MECHANICS = ['hub', 'terminal', 'html-css', 'terminal-code', 'docker-image', 'docker-compose', 'boss'] as const satisfies readonly ChapterMechanic[];
 export const ENEMY_TYPES = ['virus', 'worm', 'trojan', 'bug', 'exploit', 'crack', 'ransomware', 'spyware', 'rootkit', 'zombie', 'forkbomb', 'kernel'] as const satisfies readonly EnemyType[];
-export const PICKUP_TYPES = ['energy', 'ram', 'ssd', 'lantern', 'laptop'] as const satisfies readonly PickupType[];
+export { PICKUP_TYPES };
 const SPEAKERS: readonly string[] = ['clod', 'gork', 'codec', 'antigravy', 'kiro', 'dad'];
 const KIRO_HIDE_WHEN = ['intro', 'exit_open', 'before_spawn'] as const;
 const SIGNALS = ['SIGTERM', 'SIGKILL', 'SIGSTOP', 'SIGCONT'];
@@ -63,7 +63,12 @@ class LevelCheck {
   /** Entity ids any `spawn` step of this level's script creates. */
   spawnedIds(): Set<string> {
     const sc = this.spec.script;
-    const all = [...(sc?.arrival ?? []), ...(sc?.timed ?? []).flatMap((t) => t.steps), ...(sc?.onBossKill ?? [])];
+    const all = [
+      ...(sc?.arrival ?? []),
+      ...(sc?.timed ?? []).flatMap((t) => t.steps),
+      ...(sc?.triggers ?? []).flatMap((tr) => tr.steps),
+      ...(sc?.onBossKill ?? []),
+    ];
     return new Set(all.flatMap((s) => (s.kind === 'spawn' ? [s.entityId] : [])));
   }
 
@@ -179,6 +184,11 @@ function checkScript(c: LevelCheck): void {
     if (t.unless) c.cond('script', `script.timed[${i}].unless`, t.unless);
     c.steps(`script.timed[${i}]`, t.steps);
   });
+  script.triggers?.forEach((tr, i) => {
+    if (tr.steps.length === 0) c.add('warn', 'script', `script.triggers[${i}] has no steps`);
+    c.cond('script', `script.triggers[${i}].when`, tr.when);
+    c.steps(`script.triggers[${i}]`, tr.steps);
+  });
   script.locks?.forEach((l, i) => {
     if (!l.command.trim()) c.add('error', 'script', `script.locks[${i}]: command is empty`);
     if (!l.message.trim()) c.add('warn', 'script', `script.locks[${i}]: empty message, the player gets no hint`);
@@ -248,7 +258,10 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack, winnable: boolean): Pack
     c.needPath('entities', `enemy "${e.id}"`, e.path, e.type === 'zombie' ? 'dir' : 'file');
     if (e.helps) c.needEnemy('entities', `enemy "${e.id}" helps`, e.helps);
   }
-  for (const p of spec.pickups) c.needPath('entities', `pickup "${p.id}"`, p.path, 'file');
+  for (const p of spec.pickups) {
+    c.needPath('entities', `pickup "${p.id}"`, p.path, 'file');
+    if (p.appearWhen) c.cond('entities', `pickup "${p.id}".appearWhen`, p.appearWhen);
+  }
   for (const p of spec.patches) {
     if (![...c.paths.keys()].some((f) => baseName(f) === p.file)) c.add('error', 'entities', `patch "${p.label}": file "${p.file}" is not in files[]`);
   }
@@ -359,6 +372,27 @@ export function validatePack(pack: ChapterPack, { winnable = true }: ValidateOpt
       issues.push({ severity: 'warn', where: 'chapter', tab: 'manifest', message: `${where}: lists an item twice` });
     }
   }
+  const seenFirst = new Set<string>();
+  pack.manifest.onFirstPickup?.forEach((fp, i) => {
+    if (!(PICKUP_TYPES as readonly string[]).includes(fp.pickup)) {
+      issues.push({ severity: 'error', where: 'chapter', tab: 'manifest', message: `onFirstPickup[${i}]: unknown pickup "${String(fp.pickup)}"` });
+    } else if (seenFirst.has(fp.pickup)) {
+      issues.push({ severity: 'warn', where: 'chapter', tab: 'manifest', message: `onFirstPickup[${i}]: duplicate entry for "${fp.pickup}"` });
+    } else {
+      seenFirst.add(fp.pickup);
+    }
+    if (fp.steps.length === 0) {
+      issues.push({ severity: 'warn', where: 'chapter', tab: 'manifest', message: `onFirstPickup[${i}] has no steps` });
+    }
+    for (const s of fp.steps) {
+      if (s.kind === 'dialog_box') {
+        if (!s.text.trim()) issues.push({ severity: 'error', where: 'chapter', tab: 'manifest', message: `onFirstPickup[${i}]: dialog_box has no text` });
+        if (s.speaker !== 'vibecoder' && !SPEAKERS.includes(s.speaker)) {
+          issues.push({ severity: 'error', where: 'chapter', tab: 'manifest', message: `onFirstPickup[${i}]: unknown dialog_box speaker "${s.speaker}"` });
+        }
+      }
+    }
+  });
   return issues;
 }
 

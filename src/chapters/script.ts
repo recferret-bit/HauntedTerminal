@@ -1,4 +1,5 @@
 import type { KernelEvent } from '../contracts/events.js';
+import type { PickupType } from '../game/bestiary.js';
 import { dialogueEvent } from '../game/dialogue.js';
 import { giveItem, heroModel, holdItem, ITEMS } from '../game/inventory.js';
 import { lookup, type VNode } from '../game/tree.js';
@@ -43,6 +44,8 @@ export function evalCond(g: ChapterState, c: ScriptCond): boolean {
       return g.rt.loadedCores.has(c.core);
     case 'has_item':
       return g.inventory.items.includes(c.item);
+    case 'room_swept':
+      return g.rt.roomSwept;
     case 'tutorial_skipped':
       return g.rt.tutorialSkipped;
     case 'any':
@@ -343,9 +346,45 @@ export function hiddenEnemyId(g: ChapterState): string {
   return hide && !isHiddenRevealed(g) ? hide.enemyId : '';
 }
 
+export function isPickupHidden(g: ChapterState, pickupId: string): boolean {
+  const p = g.rt.spec.pickups.find((x) => x.id === pickupId);
+  return Boolean(p?.appearWhen && !g.rt.droppedPickups.has(pickupId) && !evalCond(g, p.appearWhen));
+}
+
 export function isNodeHidden(g: ChapterState, node: VNode): boolean {
   const hide = levelScript(g).tutorial?.hide;
-  return Boolean(hide && node.name === hide.node && !isHiddenRevealed(g));
+  if (hide && node.name === hide.node && !isHiddenRevealed(g)) return true;
+  const pickup = g.rt.world?.pickupByInode(node.id);
+  return Boolean(pickup && isPickupHidden(g, pickup.id));
+}
+
+/** Drops any `appearWhen` pickups whose condition now holds and runs unfired `script.triggers`. */
+export function syncScriptTriggers(g: ChapterState, events: KernelEvent[]): string {
+  if (g.ended) return '';
+  let out = '';
+  for (const p of g.rt.spec.pickups) {
+    if (!p.appearWhen || g.rt.droppedPickups.has(p.id) || !evalCond(g, p.appearWhen)) continue;
+    g.rt.droppedPickups.add(p.id);
+    const live = g.rt.world.pickups.find((x) => x.id === p.id && !x.collected);
+    if (live) {
+      events.push({ type: 'FILE_CREATED', inodeId: live.inode, name: live.name, entityId: live.id });
+      events.push({ type: 'ENTITY_SPAWNED', entityId: live.id, model: live.model, reason: 'script' });
+    }
+  }
+  (levelScript(g).triggers ?? []).forEach((tr, i) => {
+    if (g.rt.triggersFired.has(i) || !evalCond(g, tr.when)) return;
+    g.rt.triggersFired.add(i);
+    out += runSteps(g, tr.steps, events);
+  });
+  return out;
+}
+
+/** Runs `manifest.onFirstPickup` steps once per session the very first time `pickupType` is collected. */
+export function firstPickupScript(g: ChapterState, pickupType: PickupType, events: KernelEvent[]): string {
+  if (g.lab || g.seenPickups.has(pickupType)) return '';
+  g.seenPickups.add(pickupType);
+  const entry = g.pack.manifest.onFirstPickup?.find((e) => e.pickup === pickupType);
+  return entry ? runSteps(g, entry.steps, events) : '';
 }
 
 function revealHidden(g: ChapterState, events: KernelEvent[]): void {

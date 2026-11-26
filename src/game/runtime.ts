@@ -2,8 +2,8 @@ import { SKIN_IDS } from '../contracts/terminal-skins.js';
 import type { KernelEvent } from '../contracts/events.js';
 import { BESTIARY, PICKUP_INFO, RAM_PER_STEP, SSD_PER_BACKUP, maxHpFor, type PickupType } from './bestiary.js';
 import { World, type KillHow, type Pickup } from './entities.js';
-import { FLOOR_PATHS, FLOOR_TITLES, buildFloor } from './floors.js';
-import { giveItem, holdItem } from './inventory.js';
+import { CLASSIC_START_CWD, FLOOR_PATHS, FLOOR_TITLES, buildFloor } from './floors.js';
+import { giveItem, hasItem, holdItem } from './inventory.js';
 import { ensureLabDirChain, placeLabFile } from './lab-support.js';
 import { freshLabLevelState } from './lab-types.js';
 import { COMMANDS, manualTopics, mapTopics } from './manual.js';
@@ -134,6 +134,7 @@ export function facts(g: Play): SceneFacts {
     cwd,
     ended: g.run.ended,
     lantern: g.run.lantern,
+    entryDoor: g.run.floor > 1 && cwd === CLASSIC_START_CWD[g.run.floor],
     held: g.run.inventory.held,
     hp: g.run.hp,
     maxHp: maxHp(g),
@@ -242,7 +243,10 @@ export function applyPickup(g: Play, type: PickupType, amount: number, entityId:
     g.run.ssd += amount;
   }
   push(g, events, { type: 'PICKUP_COLLECTED', entityId, item: type, amount: gained, label: info.label(gained) });
-  if (type === 'lantern') return 'The lantern is already yours.\n';
+  if (type === 'tube_transistor') {
+    g.run.inventory = holdItem(giveItem(g.run.inventory, 'tube_transistor'), 'tube_transistor');
+    return 'You hold the glowing Tube Transistor.\n';
+  }
   if (type === 'laptop') {
     g.run.inventory = holdItem(giveItem(g.run.inventory, 'laptop'), 'laptop');
     return 'You pack the laptop.\n';
@@ -274,8 +278,9 @@ export function target(g: Play, node: VNode): void {
 
 export function noteAction(g: Play, argv: string[]): void {
   const name = argv[0] ?? '';
-  if (name === 'ls' && argv.some((arg) => /^-[a-zA-Z]*a/.test(arg))) bump(g, 'lantern');
-  else if (READERS.has(name)) bump(g, 'read');
+  if (name === 'ls' && (g.lab || hasItem(g.run.inventory, 'tube_transistor')) && argv.some((arg) => /^-[a-zA-Z]*a/.test(arg))) {
+    bump(g, 'lantern');
+  } else if (READERS.has(name)) bump(g, 'read');
   else if (WRITERS.has(name)) bump(g, 'write');
 }
 

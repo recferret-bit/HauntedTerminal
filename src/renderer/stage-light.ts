@@ -18,10 +18,10 @@ import {
 export type LightMode = 'off' | 'lantern' | 'monitor' | 'blacklight' | 'neon' | 'storm';
 
 export const LIGHT_MODES: readonly { id: LightMode; label: string; hint: string }[] = [
-  { id: 'lantern', label: 'LANTERN', hint: 'Warm pool of light from the lantern in a dark room' },
+  { id: 'lantern', label: 'TUBE GLOW', hint: 'Warm pool of light from the Tube Transistor in a dark room' },
   { id: 'monitor', label: 'PHOSPHOR', hint: 'Green terminal glow rising from below, with scanlines' },
-  { id: 'blacklight', label: 'BLACKLIGHT', hint: 'UV lantern: malware fluoresces where the light reaches it' },
-  { id: 'neon', label: 'NEON', hint: 'Cyan on one side of the lantern, magenta on the other' },
+  { id: 'blacklight', label: 'BLACKLIGHT', hint: 'UV Tube Transistor: malware fluoresces where the light reaches it' },
+  { id: 'neon', label: 'NEON', hint: 'Cyan on one side of the Tube Transistor, magenta on the other' },
   { id: 'storm', label: 'STORM', hint: 'Cold light from above that stutters with the lightning' },
   { id: 'off', label: 'FLAT', hint: 'No scene light: the classic flat comic look' },
 ];

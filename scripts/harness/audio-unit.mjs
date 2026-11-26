@@ -190,7 +190,7 @@ await withProcgen(async (_procgen, vite) => {
       );
     }
     assert.deepEqual(
-      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'VIBECODER_ACTION', action: 'collect', command: 'hold lantern' } }),
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'VIBECODER_ACTION', action: 'collect', command: 'hold tube_transistor' } }),
       ['item_lit'],
     );
     assert.deepEqual(
@@ -253,7 +253,7 @@ await withProcgen(async (_procgen, vite) => {
     );
     assert.deepEqual(
       sfxMod.sfxFor({ kind: 'dialog', speaker: 'dad' }),
-      ['socket_crackle'],
+      ['dad_cheer'],
     );
     assert.deepEqual(
       sfxMod.sfxFor({ kind: 'kernel', event: { type: 'AGENT_TAUNT', agent: 'codec', model: 'agent.codec', text: 'ha', mood: 'smug' } }),
@@ -281,7 +281,7 @@ await withProcgen(async (_procgen, vite) => {
       ['term_boot'],
     );
     assert.deepEqual(
-      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'ITEM_GIVEN', item: 'lantern', model: 'item.lantern' } }),
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'ITEM_GIVEN', item: 'tube_transistor', model: 'item.tube_transistor' } }),
       ['item_lit'],
     );
     assert.deepEqual(sfxMod.sfxFor({ kind: 'cine', cue: 'boot' }), ['term_boot']);
@@ -392,6 +392,70 @@ await withProcgen(async (_procgen, vite) => {
     assert.equal(models.attackCue('malware.trojan', 12), 'atk_trojan');
   });
 
+  await test('ambientLoopsFor maps the greybeard rig to his two loops and every other model to none', async () => {
+    const models = await vite.ssrLoadModule('/src/audio/sfx-models.ts');
+    assert.deepEqual([...models.ambientLoopsFor(['npc.greybeard_rig'])], ['dad_typing_loop', 'dad_smoke_loop']);
+    assert.deepEqual([...models.ambientLoopsFor(['malware.bug', undefined, 'npc.greybeard_rig', 'npc.greybeard_rig'])], ['dad_typing_loop', 'dad_smoke_loop'], 'no duplicates');
+    assert.deepEqual([...models.ambientLoopsFor(['malware.bug', 'boss.kernel', undefined])], []);
+    assert.deepEqual([...models.ambientLoopsFor([])], []);
+  });
+
+  await test('the play page turns the old coder loops on when he is in the hero\'s room and off when he leaves or the surface is not play', async () => {
+    const sync = await vite.ssrLoadModule('/src/play/audio-sync.ts');
+    const emitted = [];
+    let actors = [];
+    const held = null;
+    let ended = false;
+    const play = {
+      session: {
+        bus: { emit: (e) => emitted.push(e) },
+        snapshot: () => ({
+          battle: null, ended, rank: ended ? 'A' : null, hp: 100, maxHp: 100, floor: 1, hub: false,
+          inventory: { held }, room: { actors },
+        }),
+      },
+      lifecycle: { phase: () => 'play' },
+      holdMusic: false,
+      terminalLab: false,
+      menu: { isOpen: () => false },
+      manualBook: { isOpen: () => false },
+    };
+    const loops = () => emitted.splice(0).filter((e) => e.kind === 'loop').map((e) => `${e.cue}:${e.on}`);
+    sync.syncPlayAudio(play);
+    assert.deepEqual(loops(), [], 'no dad, no loops');
+    actors = [{ key: 'socket', model: 'npc.greybeard_rig' }];
+    sync.syncPlayAudio(play);
+    assert.deepEqual(loops(), ['dad_typing_loop:true', 'dad_smoke_loop:true']);
+    sync.syncPlayAudio(play);
+    assert.deepEqual(loops(), [], 'steady state publishes nothing');
+    actors = [{ key: 'ghost', model: 'malware.bug' }];
+    sync.syncPlayAudio(play);
+    assert.deepEqual(loops(), ['dad_typing_loop:false', 'dad_smoke_loop:false'], 'he left the room');
+    actors = [{ key: 'socket', model: 'npc.greybeard_rig' }];
+    sync.syncPlayAudio(play);
+    loops();
+    ended = true;
+    sync.syncPlayAudio(play);
+    assert.deepEqual(loops(), ['dad_typing_loop:false', 'dad_smoke_loop:false'], 'the rank screen is not the play surface');
+  });
+
+  await test('loop events for the dad loops start and stop their cue on the graph', async () => {
+    const orchMod = await vite.ssrLoadModule('/src/audio/orchestrators.ts');
+    const bus = busMod.createAppBus();
+    const calls = [];
+    const fakePlayer = { live: true, muted: false, volume: 1, play() {}, loop(id, on) { calls.push([id, on]); }, bed() {}, hold() {}, setMuted() {}, setVolume() {}, dispose() {} };
+    const off = orchMod.attachOrchestrators(bus, fakePlayer);
+    try {
+      for (const cue of ['dad_typing_loop', 'dad_smoke_loop']) {
+        bus.emit({ kind: 'loop', cue, on: true });
+        bus.emit({ kind: 'loop', cue, on: false });
+      }
+    } finally {
+      off();
+    }
+    assert.deepEqual(calls, [['dad_typing_loop', true], ['dad_typing_loop', false], ['dad_smoke_loop', true], ['dad_smoke_loop', false]]);
+  });
+
   await test('hp_tier_drop fires on first tier drop from full HP and post-heal tier drop', async () => {
     const orchMod = await vite.ssrLoadModule('/src/audio/orchestrators.ts');
     const bus = busMod.createAppBus();
@@ -496,6 +560,29 @@ await withProcgen(async (_procgen, vite) => {
       globalThis.window = prevWin; globalThis.fetch = prevFetch; globalThis.document = prevDoc; globalThis.localStorage = prevLS;
     }
   };
+
+  await test('WebAudio starts each dad loop as a looping voice and a loop-off stops it', async () => {
+    const engineMod = await vite.ssrLoadModule('/src/audio/engine.ts');
+    await withFakeWindow(async (env) => {
+      const eng = engineMod.createGraph(10);
+      env.state().listeners.get('pointerdown')();
+      await new Promise((r) => setTimeout(r, 10));
+      for (const cue of ['dad_typing_loop', 'dad_smoke_loop']) {
+        const before = env.state().starts.length;
+        const stopsBefore = env.state().stopped;
+        eng.loop(cue, true);
+        await new Promise((r) => setTimeout(r, 25));
+        const started = env.state().starts.slice(before);
+        assert.equal(started.length, 1, `${cue} starts one voice`);
+        assert.ok(started[0].url.includes(cue) && started[0].loop === true, `${cue} plays its file on loop`);
+        eng.loop(cue, false);
+        assert.equal(env.state().stopped, stopsBefore + 1, `${cue} off stops its voice`);
+        eng.loop(cue, false);
+        assert.equal(env.state().stopped, stopsBefore + 1, `${cue} off twice stops nothing more`);
+      }
+      eng.dispose();
+    });
+  });
 
   await test('WebAudio hold pauses loops and beds while allowing UI one-shots and holding deferred beds', async () => {
     const engineMod = await vite.ssrLoadModule('/src/audio/engine.ts');
@@ -932,7 +1019,8 @@ await withProcgen(async (_procgen, vite) => {
       bus.emit({ kind: 'dialog', speaker: 'clod' });
       bus.emit({ kind: 'dialog', speaker: 'kiro' });
       bus.emit({ kind: 'dialog', speaker: 'vibecoder' });
-      assert.deepEqual(played, ['taunt_antigravy_1', 'taunt_clod_1', 'kiro_advice', 'dialog_hero']);
+      bus.emit({ kind: 'dialog', speaker: 'dad' });
+      assert.deepEqual(played, ['taunt_antigravy_1', 'taunt_clod_1', 'kiro_advice', 'dialog_hero', 'dad_cheer']);
     } finally {
       off();
     }
@@ -976,6 +1064,16 @@ await withProcgen(async (_procgen, vite) => {
         }
       }
       assert.ok(env.state().stopped >= 46, 'starting the next dialog voice fades out the previous active speech cleanly');
+      const before = env.state().starts.length;
+      for (let i = 0; i < 200; i += 1) eng.play('dad_cheer');
+      await new Promise((r) => setTimeout(r, 25));
+      const dadUrls = env.state().starts.slice(before).filter((s) => s.url.includes('/sfx/dad_cheer')).map((s) => s.url);
+      assert.equal(dadUrls.length, 200);
+      assert.ok(dadUrls.every((u) => /^\/sfx\/dad_cheer(?:|_[2-9]|_10)\.mp3$/.test(u)), 'the old coder plays only dad_cheer variants');
+      for (let i = 1; i < dadUrls.length; i += 1) {
+        assert.notEqual(dadUrls[i], dadUrls[i - 1], 'the old coder avoids repeating the same cheer back-to-back');
+      }
+      assert.equal(new Set(dadUrls).size, 10, 'every one of the ten old coder cheers is reachable');
       eng.dispose();
     });
   });

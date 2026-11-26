@@ -54,7 +54,7 @@ const realChaptersBefore = treeHash(join(projectRoot, 'chapters'));
 try {
   await test('list_assets: the catalogs the game uses (models with category, rooms, fx)', async () => {
     const all = await run('list_assets', {});
-    assert.ok(all.models.some((m) => m.id === 'item.lantern' && m.category === 'item'));
+    assert.ok(all.models.some((m) => m.id === 'item.tube_transistor' && m.category === 'item'));
     assert.ok(all.rooms.includes('desk') && all.fx.length > 5 && all.fx.every((p) => p.id.startsWith('fx.')));
     assert.deepEqual(Object.keys(await run('list_assets', { kind: 'rooms' })), ['rooms']);
     await refusal(run('list_assets', { kind: 'sprites' }), 'invalid_input');

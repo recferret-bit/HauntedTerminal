@@ -36,7 +36,7 @@ export type LaptopAction =
   | 'run' | 'loop-guard' | 'shutdown' | 'key'
   | 'solved' | 'check-fail' | 'win-open' | 'win-min' | 'win-close';
 
-export type LoopCue = 'rain_loop' | 'low_hp_loop' | 'lap_fan';
+export type LoopCue = 'rain_loop' | 'low_hp_loop' | 'lap_fan' | 'dad_typing_loop' | 'dad_smoke_loop';
 
 export type CineCue = 'thunder' | 'thunder-far' | 'burst' | 'zap' | 'shatter' | 'lightning' | 'boot';
 

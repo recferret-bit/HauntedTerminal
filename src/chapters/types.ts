@@ -3,7 +3,7 @@ import type { ItemId } from '../contracts/inventory.js';
 import type { EnemySpawn } from '../game/floors.js';
 import type { ClassicLabFile } from '../game/lab-types.js';
 import type { FloorId, RoomKind } from '../game/types.js';
-import type { ChapterGrant, ChapterOutro, LevelScript } from './script-types.js';
+import type { ChapterGrant, ChapterOutro, FirstPickupScript, LevelScript, ScriptCond } from './script-types.js';
 
 export type * from './script-types.js';
 
@@ -81,8 +81,10 @@ export interface ChapterManifest {
   mechanicsSummary: string[];
   /** Hardware and cores owned when a level is entered directly (see `ChapterGrant`). */
   grants?: ChapterGrant[];
-  /** Items he carries when a run starts (default `['lantern', 'terminal']`). */
+  /** Items he carries when a run starts (default `['tube_transistor', 'terminal']`). */
   startItems?: ItemId[];
+  /** Dialogs or beats fired once per session the very first time each pickup type is collected. */
+  onFirstPickup?: FirstPickupScript[];
   /** Closing card shown after the last level. */
   outro?: ChapterOutro;
   /** Codex cards this chapter adds to the `bestiary` command and the binder. */
@@ -103,6 +105,8 @@ export interface LevelPickupSpec {
   locked?: boolean;
   /** Optional ModelCatalog override (e.g. `pickup.gpu` on GPU salvage items). */
   model?: string;
+  /** Optional condition: pickup and its file stay hidden until this holds, then land on the ground. */
+  appearWhen?: ScriptCond;
 }
 
 export interface LevelPropSpec {

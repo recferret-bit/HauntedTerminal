@@ -1,5 +1,6 @@
 import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import type { BattleHold, BattleState } from '../game/battle.js';
+import type { PickupType } from '../game/bestiary.js';
 import type { RestartPending } from '../game/commands-proc.js';
 import type { World, WorldHost } from '../game/entities.js';
 import type { Inventory } from '../game/inventory.js';
@@ -147,6 +148,12 @@ export interface LevelRuntime {
   dialog: LevelDialogEntry | undefined;
   /** Indexes of `script.timed` entries that already fired. */
   timedFired: Set<number>;
+  /** True once the player swept the room with `ls -a` / `ls -la` / `ls -A` on this level. */
+  roomSwept: boolean;
+  /** Pickup ids whose `appearWhen` condition has triggered and dropped onto the ground. */
+  droppedPickups: Set<string>;
+  /** Indexes of `script.triggers` entries that already fired on this level load. */
+  triggersFired: Set<number>;
   /** True once the opening Vibecoder + Kiro conversation (`openingSec`) has finished or been skipped. */
   openingDone: boolean;
   /** Battles started in this level runtime (used to wire the level's Big Four `agentTaunt` onto Battle #1). */
@@ -205,6 +212,8 @@ export interface ChapterState {
   inventory: Inventory;
   /** What he carried when this level was entered; a floor restart puts it back. */
   entryInventory: Inventory;
+  /** Pickup types already collected once during this session (drives `manifest.onFirstPickup`). */
+  seenPickups: Set<PickupType>;
   pendingEditor: EditorOpenPayload | null;
   pendingManual: string | null;
   pendingMap: string | null;

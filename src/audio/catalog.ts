@@ -32,6 +32,9 @@ export const SFX_IDS = [
   'cine_shake', 'cine_sfx_slam', 'cine_caption_in', 'cine_bubble_pop', 'sting_clear', 'sting_kiro',
   'sting_lantern', 'dialog_hero',
   'key_press_2', 'key_press_3', 'key_backspace_2', 'term_boot',
+  'dad_cheer', 'dad_cheer_2', 'dad_cheer_4', 'dad_cheer_3', 'dad_cheer_5',
+  'dad_cheer_6', 'dad_cheer_7', 'dad_cheer_8', 'dad_cheer_9', 'dad_cheer_10',
+  'dad_typing_loop', 'dad_smoke_loop',
 ] as const;
 
 export type SfxId = (typeof SFX_IDS)[number];

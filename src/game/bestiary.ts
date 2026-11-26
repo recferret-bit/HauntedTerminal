@@ -9,7 +9,8 @@ export type EnemyType =
   | 'virus' | 'worm' | 'trojan' | 'bug' | 'exploit' | 'crack' | 'ransomware'
   | 'spyware' | 'rootkit' | 'zombie' | 'forkbomb' | 'kernel';
 
-export type PickupType = 'energy' | 'ram' | 'ssd' | 'lantern' | 'laptop';
+export const PICKUP_TYPES = ['energy', 'ram', 'ssd', 'tube_transistor', 'laptop'] as const;
+export type PickupType = (typeof PICKUP_TYPES)[number];
 
 export interface EnemyInfo {
   type: EnemyType;
@@ -84,7 +85,7 @@ export const BESTIARY: Record<EnemyType, EnemyInfo> = {
     man: [
       'ROOTKIT(6)  a ghost hiding as a dotfile',
       'It does not bite. It holds doors shut and hides from ls and even from ps.',
-      'Light the lantern with ls -a (or ls -la) and it shows. Then rm it by name.',
+      'Light your Tube Transistor with ls -a (or ls -la) and it shows. Then rm it by name.',
     ],
   },
   worm: {
@@ -218,10 +219,10 @@ export const PICKUP_INFO: Record<PickupType, PickupInfo> = {
     label: (n) => `+${n}GB SSD`,
     blurb: '#!/bin/ssd\n# SSD IMAGE: 256 GB = one backup. Die with a backup and you restore in place at half HP.\n# use: source <file>\nexport SWAP="$SWAP+256G"\n',
   },
-  lantern: {
-    type: 'lantern', model: 'item.lantern', amount: 1,
-    label: () => 'LANTERN',
-    blurb: '#!/bin/lantern\n# LANTERN: light for a dark room.\n# use: mv <file> ~   (it goes in your hand)\nexport LIGHT="on"\n',
+  tube_transistor: {
+    type: 'tube_transistor', model: 'item.tube_transistor', amount: 1,
+    label: () => 'TUBE TRANSISTOR',
+    blurb: '#!/bin/transistor\n# TUBE TRANSISTOR: warm vacuum-tube glow for dark sectors & ls -la.\n# use: mv <file> ~   (it goes in your hand)\nexport LIGHT="on"\n',
   },
   laptop: {
     type: 'laptop', model: 'item.laptop', amount: 1,

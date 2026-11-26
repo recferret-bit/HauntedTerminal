@@ -1,6 +1,7 @@
 import type { KernelEvent } from '../contracts/events.js';
 import type { Step } from '../game/shell.js';
 import { hasWrite, makeNode, resolve } from '../game/tree.js';
+import { isNodeHidden } from './script.js';
 import { cmdHank, cmdHankAudit } from './session-meta.js';
 import { riddleWrite } from './session-riddle.js';
 import { refreshExitGates, sinkIntoNull, syncValidatedCodeBugs } from './session-rules.js';
@@ -24,6 +25,9 @@ export function writeRedirect(g: ChapterState, path: string, data: string, appen
 
   const existing = resolve(g.rt.cwd, path, true);
   if (existing.node) {
+    if (isNodeHidden(g, existing.node)) {
+      return emptyStep(1, `bash: ${path}: Permission denied\n`);
+    }
     if (existing.node.kind === 'socket') {
       const riddle = riddleWrite(g, existing.node, data);
       if (riddle) return riddle;

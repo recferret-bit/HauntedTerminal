@@ -5,6 +5,7 @@ import type { FxId } from './fx-player.js';
 import { playPageTear } from './stage-cards.js';
 import type { StageActor } from './stage-cast.js';
 import { reportStage } from './stage-actor.js';
+import { FLOORS } from './stage-const.js';
 import { anchorPoint } from './stage-resolve.js';
 import type { ComicStage } from './comic-stage.js';
 
@@ -71,6 +72,27 @@ export function playCard(stage: ComicStage, kicker: string, title: string, path:
   stage.cardKill?.();
   const card = stage.overlay.card(kicker, title, path, accent, 420, holdMs, 380);
   stage.cardKill = () => card.drop();
+}
+
+/** Extracts accent, path, and normalized uppercase title from a `FLOOR_ENTERED` event. */
+export function floorCaptionInfo(
+  stage: ComicStage,
+  ev: Extract<KernelEvent, { type: 'FLOOR_ENTERED' }>,
+): { title: string; path: string; accent: string } {
+  const floor = FLOORS[ev.floorId] ?? FLOORS[stage.currentFloor] ?? FLOORS[1]!;
+  const accent = `#${floor.accent.toString(16).padStart(6, '0')}`;
+  const path = ev.path || floor.path;
+  const title = (ev.title || floor.name).replace(/^(?:FLOOR|LEVEL)\s*0?\d+\s*(?:\/\/|[—–-])\s*/i, '').toUpperCase();
+  return { title, path, accent };
+}
+
+/** Non-blocking corner Comix Zone yellow caption box shown during level transitions. */
+export function playCaptionBox(stage: ComicStage, kicker: string, title: string, path: string, accent: string, lifeMs = 1180): () => void {
+  stage.cardKill?.();
+  const box = stage.overlay.captionBox(kicker, title, path, accent, lifeMs);
+  const drop = () => box.drop();
+  stage.cardKill = drop;
+  return drop;
 }
 
 export function playTear(stage: ComicStage, text: string): void {

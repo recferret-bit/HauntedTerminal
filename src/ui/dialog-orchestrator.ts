@@ -100,6 +100,26 @@ function countOpenDialogs(parent: HTMLElement, selector: string): number {
   return parent.querySelector(selector) ? 1 : 0;
 }
 
+function trimQueueForPriority(box: DialogBox, priority: DialogPriority, isBattleIntro: boolean): void {
+  if (priority === 'script' || priority === 'prompt') {
+    box.filterQueue((q) => (q.priority ?? 'script') !== 'chatter');
+    const activePrio = box.activeLine()?.priority;
+    if (activePrio === 'chatter') box.shortenHold(320);
+    else if (priority === 'script' && !isBattleIntro && activePrio === 'prompt') box.shortenHold(120);
+    return;
+  }
+  const chatterCount = box.queuedLines().filter((q) => (q.priority ?? 'script') === 'chatter').length;
+  if (chatterCount < MAX_CHATTER_QUEUE) return;
+  let toDrop = chatterCount - MAX_CHATTER_QUEUE + 1;
+  box.filterQueue((q) => {
+    if ((q.priority ?? 'script') === 'chatter' && toDrop > 0) {
+      toDrop -= 1;
+      return false;
+    }
+    return true;
+  });
+}
+
 /**
  * Single orchestrator for all in-game corner dialogs (`DIALOG_BOX`, `AGENT_TAUNT`), coordinating left/right
  * turn-taking (`maxConcurrent <= 1`), `#tutorial-card` pass-through,
@@ -111,6 +131,7 @@ export function mountDialogOrchestrator(
   opts: DialogOrchestratorOptions = {},
 ): DialogOrchestrator {
   const socketFsm = createDialogSocketMachine();
+  const battleIntroLines = new WeakSet<DialogLine>();
   let shown = 0;
   let maxConcurrent = 0;
   let maxRightConcurrent = 0;
@@ -128,37 +149,29 @@ export function mountDialogOrchestrator(
     },
   });
 
-  const enqueue = (raw: DialogLine): void => {
+  const dismissBattleIntro = (): void => {
+    box.filterQueue((q) => !battleIntroLines.has(q));
+    const active = box.activeLine();
+    if (active && battleIntroLines.has(active)) box.shortenHold(120);
+  };
+
+  const enqueueLine = (raw: DialogLine, isBattleIntro = false): void => {
     const text = String(raw.text ?? '').trim().slice(0, MAX_TEXT_LEN);
     if (!text) return;
     const priority: DialogPriority = raw.priority ?? 'script';
     const line: DialogLine = { ...raw, text, priority };
+    if (isBattleIntro) battleIntroLines.add(line);
 
     const queued = box.queuedLines();
     const last = queued[queued.length - 1] ?? box.activeLine();
     if (last && cleanSpeakerId(last.speaker) === cleanSpeakerId(line.speaker) && last.text === line.text) {
       return;
     }
-
-    if (priority === 'script' || priority === 'prompt') {
-      box.filterQueue((q) => (q.priority ?? 'script') !== 'chatter');
-      if (box.activeLine()?.priority === 'chatter') box.shortenHold(320);
-    } else {
-      const chatterCount = queued.filter((q) => (q.priority ?? 'script') === 'chatter').length;
-      if (chatterCount >= MAX_CHATTER_QUEUE) {
-        let toDrop = chatterCount - MAX_CHATTER_QUEUE + 1;
-        box.filterQueue((q) => {
-          if ((q.priority ?? 'script') === 'chatter' && toDrop > 0) {
-            toDrop -= 1;
-            return false;
-          }
-          return true;
-        });
-      }
-    }
-
+    trimQueueForPriority(box, priority, isBattleIntro);
     box.show(line);
   };
+
+  const enqueue = (raw: DialogLine): void => enqueueLine(raw, false);
 
   const clear = (): void => {
     socketFsm.send('CLEAR');
@@ -173,7 +186,8 @@ export function mountDialogOrchestrator(
     handleEvent(ev) {
       switch (ev.type) {
         case 'DIALOG_BOX':
-          enqueue({
+          dismissBattleIntro();
+          enqueueLine({
             speaker: ev.speaker,
             name: ev.name,
             model: ev.model,
@@ -184,13 +198,16 @@ export function mountDialogOrchestrator(
           break;
         case 'AGENT_TAUNT': {
           const line = toAgentDialogLine(ev);
-          if (line) enqueue(line);
+          if (line) enqueueLine(line);
           break;
         }
         case 'BATTLE_STARTED':
           // The battle intro (INTRO_SEC, 10 s): the agent's taunt, then Kiro's advice, ahead of any chatter.
-          enqueue({ speaker: ev.agent, name: AGENTS[ev.agent]?.name ?? ev.agent.toUpperCase(), model: ev.model, text: ev.taunt, holdMs: BATTLE_LINE_MS, mood: 'laugh', priority: 'script' });
-          enqueue({ speaker: 'kiro', name: AGENTS.kiro?.name ?? 'KIRO.D', model: AGENT_MODELS.kiro, text: ev.advice, holdMs: BATTLE_LINE_MS, priority: 'script' });
+          enqueueLine({ speaker: ev.agent, name: AGENTS[ev.agent]?.name ?? ev.agent.toUpperCase(), model: ev.model, text: ev.taunt, holdMs: BATTLE_LINE_MS, mood: 'laugh', priority: 'script' }, true);
+          enqueueLine({ speaker: 'kiro', name: AGENTS.kiro?.name ?? 'KIRO.D', model: AGENT_MODELS.kiro, text: ev.advice, holdMs: BATTLE_LINE_MS, priority: 'script' }, true);
+          break;
+        case 'BATTLE_ENDED':
+          dismissBattleIntro();
           break;
         case 'TUTORIAL_STEP':
           opts.tutorial?.step(ev);

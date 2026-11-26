@@ -12,34 +12,34 @@
   },
   "levels": {
     "level-01-tutorial-awakening": {
-      "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro.d brings your terminal & explains your chapter mission, RAM (Max HP) & SSD (Revive)!",
+      "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro.d brings your terminal & explains your chapter mission!",
       "hankRungs": [
-        "Kiro.d: \"Without your lantern, `ls` is locked in the dark! Check where you stand with `pwd`, then pocket the starter RAM stick (+Max HP) using `mv starter_ram_8gb.dimm ~`!\"",
-        "Kiro.d: \"Remember our chapter mission: scavenge RAM (+10 Max HP) and SSD/GPU parts (256GB = auto-Revive backup + Hub server parts) across 6 sectors! Read `cat kiro_story.txt`, then run `ps`.\"",
-        "Kiro.d: \"Run `pwd`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}`, then step through `cd hub_uplink`!\""
+        "Kiro.d: \"Basic `ls` shows visible files here (while `ls -la` and flags stay locked until you recover your Tube Transistor in Sector 02)! Look around with `ls`, then pocket the starter RAM stick using `mv starter_ram_8gb.dimm ~`!\"",
+        "Kiro.d: \"Remember our chapter mission: scavenge hardware across 6 sectors to reboot me at the Matrix Hub! Read `cat kiro_story.txt`, then run `ps`.\"",
+        "Kiro.d: \"Run `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}`, then step through `cd hub_uplink`!\""
       ],
-      "agentTaunt": "CLOD: \"Hohoho! Look at the Vibecoder clutching a bare terminal in the dark—without a lantern you cannot even run ls, and you must type every command by hand!\"",
-      "completion": "Kiro.d: \"Awesome! You mastered pwd, mv, cat, ps, and kill! Head into Cache Vault next—watch out, Big Four minions will attack you in turn-based battle!\""
+      "agentTaunt": "CLOD: \"Hohoho! Look at the Vibecoder clutching a bare terminal in the dark—without a Tube Transistor you only have plain ls, no -la or flags to see what hides in the dark!\"",
+      "completion": "Kiro.d: \"Awesome! You mastered ls, mv, cat, ps, and kill! Head into Cache Vault next—watch out, Big Four minions will attack you in turn-based battle!\""
     },
     "level-02-task-ram-heist": {
-      "banner": "LEVEL 02 // CACHE VAULT: Listen to Kiro.d first! Petrify gravy_sentry.bin, fix ollama_bus.conf, loot RAM+SSD & win your Lantern!",
+      "banner": "LEVEL 02 // CACHE VAULT: Petrify gravy_sentry.bin so the Tube Transistor drops to the ground (`mv tube_transistor ~`), try `ls -la`, fix ollama_bus.conf & loot RAM+SSD!",
       "hankRungs": [
-        "Kiro.d: \"`ls` is still locked until you win your lantern after this sector! Read `cat vault_notes.txt` first, and watch the turn-based battle banner—petrify `gravy_sentry.bin` with `chmod -x gravy_sentry.bin`!\"",
-        "Kiro.d: \"Once `gravy_sentry.bin` turns to stone (`chmod -x gravy_sentry.bin`), patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` with `sed -i`, then grab both RAM (+10 Max HP) and SSD/GPU (auto-Revive backup)!\"",
-        "Kiro.d: \"Run `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_01.img ~`, then `cd gpu_alley` to claim your Oil Lantern!\""
+        "Kiro.d: \"Read `cat vault_notes.txt` first, then petrify `gravy_sentry.bin` with `chmod -x gravy_sentry.bin` so the Tube Transistor lands on the ground!\"",
+        "Kiro.d: \"Grab the fallen Tube Transistor with `mv tube_transistor ~` (try `ls -la` right away!), patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` with `sed -i`, then pocket `ram_16gb.dimm` and `ssd_256gb.img`!\"",
+        "Kiro.d: \"Run `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `mv tube_transistor ~`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv ssd_256gb.img ~`, then `cd gpu_alley`!\""
       ],
-      "agentTaunt": "ANTI-GRAVY: \"HAHAHA! My gargoyle minion gravy_sentry.bin is right in front of you—eat red Matrix fireballs, Vibecoder!\"",
-      "completion": "Cache Vault cleared! RAM (+10 Max HP) and 256GB SSD/GPU Revive Backup secured—and you recovered your OIL LANTERN for GPU Alley!"
+      "agentTaunt": "ANTI-GRAVY: \"HAHAHA! My gargoyle minion gravy_sentry.bin has your precious Tube Transistor—eat red Matrix fireballs, Vibecoder!\"",
+      "completion": "Cache Vault cleared! You grabbed the Tube Transistor off the ground (unlocking `ls -la` and all `ls` flags) plus RAM and a 256GB SSD disk—ready for GPU Alley!"
     },
     "level-03-task-gpu-salvage": {
-      "banner": "LEVEL 03 // GPU ALLEY: Your Oil Lantern unlocks `ls`! Sweep `.codec_spycam` & `.tensor_rune` (`ls -la`), solve `lantern_gate.sock`, and crush `keygen.exe`!",
+      "banner": "LEVEL 03 // GPU ALLEY: Your Tube Transistor unlocks `ls -la`! Sweep Codec's hidden squad (`.codec_spycam`, `.keygen.exe`, `port_445/worm.bin`) & `.transistor_rune`, then solve `transistor_gate.sock`!",
       "hankRungs": [
-        "Kiro.d: \"Your new Oil Lantern unlocks `ls`! Run `ls -la` first to expose Codec's hidden `.codec_spycam` AND uncover the hidden `.tensor_rune` dotfile!\"",
-        "Kiro.d: \"Remove `.codec_spycam` (`rm .codec_spycam`), read `cat .tensor_rune` and `cat lantern_gate.sock`, then echo `amber_flame` into `lantern_gate.sock` to unlock `vram_crate`!\"",
-        "Kiro.d: \"Run `ls -la`, `rm .codec_spycam`, `cat .tensor_rune`, `echo amber_flame > lantern_gate.sock`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
+        "Kiro.d: \"Codec cloaked EVERY enemy in this alley! Run `ls -la` with your Tube Transistor first to expose `.codec_spycam`, `.keygen.exe`, `port_445/worm.bin`, AND `.transistor_rune`!\"",
+        "Kiro.d: \"Remove `.codec_spycam` (`rm .codec_spycam`), read `cat .transistor_rune` and `cat transistor_gate.sock`, then echo `warm_filament` into `transistor_gate.sock` to unlock `vram_crate`!\"",
+        "Kiro.d: \"Run `ls -la`, `rm .codec_spycam`, `cat .transistor_rune`, `echo warm_filament > transistor_gate.sock`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
       ],
-      "agentTaunt": "CODEC: \"LMAO! So you won back your lantern? Let us see if you can spot my hidden dotfile spycam and unlock lantern_gate.sock under fire!\"",
-      "completion": "Dotfile riddle solved, GPU Alley cleared, and two full sets of RAM + SSD/GPU parts ready for the Matrix Server Hub!"
+      "agentTaunt": "CODEC: \"LMAO! So you grabbed your Tube Transistor off the floor? Good luck finding my cloaked squad or unlocking transistor_gate.sock without ls -la!\"",
+      "completion": "Hidden squad exposed with `ls -la`, dotfile riddle solved, GPU Alley cleared, and two full sets of hardware ready for the Matrix Server Hub!"
     },
     "level-04-hub-model-one": {
       "banner": "LEVEL 04 // THE MATRIX HUB: The Old Bearded Coder gifts you the Motherboard Map & Field Manual, then reboots Kiro.d!",

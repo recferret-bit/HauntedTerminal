@@ -1,13 +1,19 @@
 import { attachAudio } from '../audio/attach.js';
 import { sceneFor } from '../audio/music-for.js';
 import { bindPointerEvents } from '../audio/page.js';
-import { isBossModel } from '../audio/sfx-models.js';
-import type { MusicScene, MusicSurface } from '../contracts/app-bus.js';
+import { ambientLoopsFor, isBossModel } from '../audio/sfx-models.js';
+import type { LoopCue, MusicScene, MusicSurface } from '../contracts/app-bus.js';
 import type { ComixRole } from '../cinematic/spec-types.js';
 import type { GameSnapshot } from '../game/types.js';
 import type { Play } from './state.js';
 
-const remembered = new WeakMap<Play, { key: string; menu: boolean; reading: boolean; tick: number | null; held: boolean }>();
+interface Remembered { key: string; menu: boolean; reading: boolean; tick: number | null; held: boolean; ambient: readonly LoopCue[] }
+
+const remembered = new WeakMap<Play, Remembered>();
+
+function freshMemory(): Remembered {
+  return { key: '', menu: false, reading: false, tick: null, held: false, ambient: [] };
+}
 
 function bossFight(snap: GameSnapshot): boolean {
   if (snap.bossLevel) return true;
@@ -53,7 +59,7 @@ export function mountPlayAudio(play: Play): void {
 export function syncPlayAudio(play: Play): void {
   const bus = play.session.bus;
   if (!bus) return;
-  const mem = remembered.get(play) ?? { key: '', menu: false, reading: false, tick: null, held: false };
+  const mem = remembered.get(play) ?? freshMemory();
   const phase = play.lifecycle.phase();
   if (play.holdMusic || phase === 'boot' || phase === 'intro' || phase === 'outro') {
     mem.held = true;
@@ -69,6 +75,11 @@ export function syncPlayAudio(play: Play): void {
     mem.key = key;
     bus.emit({ kind: 'scene', scene });
   }
+  // Ambience of NPCs in the hero's room (the old coder's typing and cigarette): on while he is there, off when he leaves.
+  const ambient = scene.surface === 'play' ? ambientLoopsFor(snap.room.actors.map((actor) => actor.model)) : [];
+  for (const cue of mem.ambient) if (!ambient.includes(cue)) bus.emit({ kind: 'loop', cue, on: false });
+  for (const cue of ambient) if (!mem.ambient.includes(cue)) bus.emit({ kind: 'loop', cue, on: true });
+  mem.ambient = ambient;
   if (mem.menu !== scene.menu) {
     bus.emit({ kind: 'menu', action: scene.menu ? 'open' : 'close' });
     mem.menu = scene.menu;
@@ -95,7 +106,7 @@ const CINE_BED: Record<ComixRole, MusicSurface> = {
 
 /** Hold the play bed, then let the comix play on the same bus. */
 export function holdForComix(play: Play, role: ComixRole): void {
-  const mem = remembered.get(play) ?? { key: '', menu: false, reading: false, tick: null, held: false };
+  const mem = remembered.get(play) ?? freshMemory();
   mem.held = true;
   remembered.set(play, mem);
   play.session.bus?.emit({ kind: 'scene', scene: sceneFor(CINE_BED[role]) });

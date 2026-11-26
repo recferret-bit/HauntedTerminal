@@ -1,6 +1,7 @@
 import type { KernelEvent } from '../contracts/events.js';
 import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import { createBattle, type BattleHold, type BattleState } from '../game/battle.js';
+import type { PickupType } from '../game/bestiary.js';
 import type { WorldHost } from '../game/entities.js';
 import { starterInventory } from '../game/inventory.js';
 import { KiroCompanion } from '../game/kiro.js';
@@ -81,6 +82,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   battle: BattleState = createBattle();
   inventory = starterInventory();
   entryInventory = starterInventory();
+  seenPickups = new Set<PickupType>();
   pendingEditor: EditorOpenPayload | null = null;
   pendingManual: string | null = null;
   pendingMap: string | null = null;

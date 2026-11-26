@@ -115,8 +115,8 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
       if (ev.state === 'revealed') return [cue('fx.reveal', 'subject', 80, ' ')];
       return [];
     case 'PICKUP_COLLECTED': {
-      // The lantern or laptop: the energy burst, then the reveal starburst once equipped (existing presets only).
-      if (ev.item === 'lantern' || ev.item === 'laptop') return [cue('fx.pickup-energy', 'subject', 0, ev.label || undefined), cue('fx.reveal', 'vibecoder', 220, ' ')];
+      // The tube transistor or laptop: the energy burst, then the reveal starburst once equipped (existing presets only).
+      if (ev.item === 'tube_transistor' || ev.item === 'laptop') return [cue('fx.pickup-energy', 'subject', 0, ev.label || undefined), cue('fx.reveal', 'vibecoder', 220, ' ')];
       const id: FxId = ev.item === 'ram' ? 'fx.pickup-ram' : ev.item === 'ssd' ? 'fx.pickup-ssd' : 'fx.pickup-energy';
       return [cue(id, 'subject', 0, ev.label || undefined)];
     }

@@ -2,7 +2,7 @@
  * Item types and descriptors for the developer's inventory.
  * Pure data and contracts shared across procgen (3D models, hero variants) and game (inventory state, shell).
  */
-export const ITEM_IDS = ['lantern', 'terminal', 'laptop', 'manual', 'map'] as const;
+export const ITEM_IDS = ['tube_transistor', 'terminal', 'laptop', 'manual', 'map'] as const;
 export type ItemId = (typeof ITEM_IDS)[number];
 
 export interface ItemDef {
@@ -27,17 +27,17 @@ export interface ItemDef {
 }
 
 export const ITEMS: Readonly<Record<ItemId, ItemDef>> = {
-  lantern: {
-    id: 'lantern',
-    label: 'lantern',
-    model: 'item.lantern',
+  tube_transistor: {
+    id: 'tube_transistor',
+    label: 'tube transistor',
+    model: 'item.tube_transistor',
     heroModel: 'vibecoder.dev',
     heroLabel: 'The developer',
     gameKey: 'vibecoder',
     light: true,
-    lore: 'The oil lantern he brought in from the desk. ls -a lights it, and dotfiles and hiding malware show.',
-    heroLore: 'The only human in the machine: a tired developer in an orange hoodie, carrying a lantern. The player.',
-    use: 'ls -a lights it: dotfiles and hiding malware show.',
+    lore: 'A glowing vacuum-tube transistor with three gold leads. Unlocks ls flags (-a, -l, -la): ls -a lights its warm filament so dotfiles and hiding malware show.',
+    heroLore: 'The only human in the machine: a tired developer in an orange hoodie, carrying a glowing tube transistor. The player.',
+    use: 'unlocks ls flags (-a, -l, -la): dotfiles, details, and hiding malware show.',
   },
   terminal: {
     id: 'terminal',
@@ -86,8 +86,8 @@ export const isItemId = (v: string): v is ItemId => Object.prototype.hasOwnPrope
 /** The developer with empty hands (ModelCatalog id): what he looks like while he holds nothing. */
 export const BARE_HERO_MODEL = 'vibecoder.dev_bare';
 
-/** The hero model for the item in his hand: `null` is empty hands; `undefined` (no inventory) is the lantern. */
+/** The hero model for the item in his hand: `null` is empty hands; `undefined` (no inventory) is the tube transistor. */
 export function heroModelFor(held: ItemId | null | undefined): string {
   if (held === null) return BARE_HERO_MODEL;
-  return ITEMS[held ?? 'lantern']?.heroModel ?? 'vibecoder.dev';
+  return ITEMS[held ?? 'tube_transistor']?.heroModel ?? 'vibecoder.dev';
 }

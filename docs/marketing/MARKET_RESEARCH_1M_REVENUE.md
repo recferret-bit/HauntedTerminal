@@ -25,7 +25,7 @@ Revenue and unit figures below use standard Boxleiter / Steam review-multiplier 
 | **Hacknet** | $9.99 | 26,000+ | 94% | 400k – 1.1M+ | **$3.4M – $8.3M** | Proved non-coders love typing real Unix commands when paired with thriller pacing, visual GUI/stage feedback, and a driving electronic soundtrack. |
 | **The Farmer Was Replaced** | $9.99 | 18,000+ | 96% | 250k – 500k+ | **$2.5M – $4.8M** | **#1 Short-Form Benchmark:** Exploded from a quiet Early Access launch into millions of dollars at 1.0 via **TikTok & YouTube Shorts** showing real code on one side triggering instant, hypnotic visual action on the other — which then pulled in mainstream YouTubers (*CallMeKevin*, *Real Civil Engineer*, *Olexa*). |
 | **Turing Complete** | $19.99 | 5,900+ | 96% | 140k – 220k | **$2.1M – $4.1M** | Inside-the-computer hardware/PCB progression commands a full **$14.99–$19.99** price point with 96% positive reviews because players feel genuinely smarter after every sector. |
-| **Duskers** | $19.99 | 2,800+ | 90% | 95k – 140k | **$1.6M – $2.5M** | Typing CLI commands under haunted CRT pressure creates visceral **streamer-bait tension** (mirrored by *Out Of Credits*' 30-second battle turn timer and dark lanternless rooms). |
+| **Duskers** | $19.99 | 2,800+ | 90% | 95k – 140k | **$1.6M – $2.5M** | Typing CLI commands under haunted CRT pressure creates visceral **streamer-bait tension** (mirrored by *Out Of Credits*' 30-second battle turn timer and dark unlit rooms before the Tube Transistor). |
 | **Grey Hack** | $19.99 | 1,850+ | 90% | 55k – 100k | **$1.1M – $1.3M** | Authentic Unix commands (`ls -la`, `chmod`, `ps`, `kill`, `sed`) + terminal skins (`iTerm2`, `VT100`, `PuTTY`) unlock organic evergreen posts across Linux, sysadmin, and CS communities. |
 | **TIS-100** | $6.99 | 3,400+ | 97% | 120k – 220k | **$800k – $950k** | In-universe reference manual (mirrored by *Out Of Credits*' hardcover **Terminal Field Manual**) + command-count `S`-rank optimization fuels competitive developer word-of-mouth. |
 | **EXAPUNKS** | $19.99 | 1,900+ | 95% | 58k – 65k | **$800k – $1.05M** | 1990s counterculture comic/zine framing turns technical puzzles into a memorable world. |
@@ -51,7 +51,7 @@ Using Chris Zukowski (*How To Market A Game*) and GameDiscoverCo Steam conversio
 |---|---:|---|---|
 | **Stage 1: Coming Soon + Browser Demo Loop** | **0 -> 7,500 WL** | Live Chapter 1 Browser Demo (`/play`) with portable `.json` save/trophy export to Steam + daily TikTok/Shorts/X clips + `r/linux`, `r/programming`, Hacker News "Show HN" | Cross Zukowski's **7,000+ WL Popular Upcoming floor** *before* entering Steam Next Fest (pre-fest velocity correlates `r = 0.825` with Next Fest lift). |
 | **Stage 2: Micro-Creator & Tech YouTuber Seeding** | **7,500 -> 22,000 WL** | 40–60 coding/Linux/indie micro-creators (TikTok/Shorts/YouTube) playing Chapter 1 ("Dev Beats Malware With Real Linux Commands") + themed Steam festivals (Programming Fest, Turn-Based Carnival, Cyberpunk/Retro Fest) | Maintain `> 22 min` median Demo playtime (Chapter 1 is ~35 min, 11 zero-death-verified sectors) and `> 8.5%` browser-player -> Steam Wishlist click-through. |
-| **Stage 3: Steam Next Fest Multiplier** | **22,000 -> 45,000 WL** | Enter Steam Next Fest in the top tier of playable demos -> hit Next Fest category charts -> 2.0x–2.6x wishlist amplification | Demo carries all 13 `ACH_*` trophies + Steam Auto-Cloud save carryover into the full game. |
+| **Stage 3: Steam Next Fest Multiplier** | **22,000 -> 45,000 WL** | Enter Steam Next Fest in the top tier of playable demos -> hit Next Fest category charts -> 2.0x–2.6x wishlist amplification | Demo carries all 15 `ACH_*` trophies + Steam Auto-Cloud save carryover into the full game. |
 | **Stage 4: Launch-Month Blitz & Creator Embargo** | **45,000 -> 55,000+ WL -> Launch** | Variety & tech creator embargo drop 48h pre-launch + Spark Ads on top 3 organic TikToks + Steam "New & Trending" -> **1,000 Steam reviews** rapid push ("Overwhelmingly Positive" halo) | Cross **500 reviews in Week 1** to lock algorithmic Discovery Queue traffic across Year 1 seasonal sales. |
 
 ---
@@ -68,7 +68,7 @@ Using Chris Zukowski (*How To Market A Game*) and GameDiscoverCo Steam conversio
    - *"30 seconds on the turn timer. One typo and PID 1 wipes your RAM."*
 2. **Visual Rhythm (*The Farmer Was Replaced* + *Buckshot Roulette* Formula):**
    - Cut every **2.5–3.8 seconds**.
-   - Show the **exact keystrokes** (`$ ls -la`, `$ chmod -x skimmer.sh`, `$ kill -9 1`) in `IBM Plex Mono` pills and the xterm dock, followed within `0.4s` by the 3D cel-shaded comic payoff (hidden `.spycam` revealed by lantern, trojan petrified to stone, lightning bolt shattering malware, comic `ZAP!` burst).
+   - Show the **exact keystrokes** (`$ ls -la`, `$ chmod -x skimmer.sh`, `$ kill -9 1`) in `IBM Plex Mono` pills and the xterm dock, followed within `0.4s` by the 3D cel-shaded comic payoff (hidden `.spycam` revealed by the Tube Transistor, trojan petrified to stone, lightning bolt shattering malware, comic `ZAP!` burst).
 3. **Audio Strategy:** Pair dry A-minor tracker beds (`battle_boss`, `title_theme`, `floor_crypt`) with crisp in-game mechanical keystrokes (`key_press`), comic slams (`cine_sfx_slam`), and ElevenLabs robot voice taunts (`taunt_clod_1`, `kiro_advice`) or punchy ElevenLabs narration.
 4. **Seamless Loop Ending:** End the final 0.5s with a lightning flash or terminal prompt reset that loops seamlessly back into Frame 0 to push average watch time past 105%.
 
@@ -88,10 +88,10 @@ Using Chris Zukowski (*How To Market A Game*) and GameDiscoverCo Steam conversio
 
 1. **The 50-Second Steam & YouTube Trailer Structure (`youtube-trailer.video.json`):**
    - **`0:00–0:05` Cold Open Hook:** Lightning hits the PC tower (`intro` comix) -> Vibecoder lands inside `/mnt/wires_and_chips` -> types `ls` & `kill -9` -> instant 3D lightning kill. Zero studio logo delay.
-   - **`0:05–0:16` Core Terminal Loop:** Lantern reveals hidden `.spycam` -> `chmod -x` petrifies a Trojan -> 30-second turn-based battle against malware with Kiro Ghost advising.
+   - **`0:05–0:16` Core Terminal Loop:** Tube Transistor reveals hidden `.spycam` -> `chmod -x` petrifies a Trojan -> 30-second turn-based battle against malware with Kiro Ghost advising.
    - **`0:16–0:28` Escalation (Laptop Code + Matrix Hub):** Clamshell Laptop opens (`mv laptop ~`) to patch broken JS/CSS & spin up Docker containers -> Dad (`dad.tty`) at the Matrix Hub reboots Kiro with open-weight cores (`Qwen`, `DeepSeek`, `Llama`) to silence Anti-Gravy, Codec, and Gork.
    - **`0:28–0:40` Climax (Clod & PID 1 Kernel Boss + Tools):** Hardcover Field Manual (`F1`), PCB Motherboard Map (`F3`), 6 Terminal Skins -> Final showdown in `/sys/clod_overlord_core` (`kill -9 1`).
-   - **`0:40–0:50` End Slate CTA:** **PLAY CHAPTER 1 FREE IN BROWSER · WISHLIST ON STEAM** + 13 `ACH_*` Trophies & Portable Save Carryover.
+   - **`0:40–0:50` End Slate CTA:** **PLAY CHAPTER 1 FREE IN BROWSER · WISHLIST ON STEAM** + 15 `ACH_*` Trophies & Portable Save Carryover.
 2. **Engineering Devlogs & Creator Kit:** Ship a press/creator kit in `social/` with clean `1920x1080` screenshots, high-DPI infographics, GIFs under 5 MB, and zero-setup browser URLs so YouTubers can try the game in 5 seconds before requesting a Steam build.
 
 ---

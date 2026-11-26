@@ -26,16 +26,16 @@ Lightning pulls a developer straight through his CRT into his own motherboard. H
 
 ### Gameplay — Turn-Based Terminal Combat (`/play`)
 
-Sector 03 (*GPU Alley*) running with the lantern item lit, five-slot inventory strip, Anti-Gravy dialog box, live `YOUR TURN 0:29` battle clock, skeleton key + worm malware, and the macOS iTerm2 terminal bezel. Also ships with a full 6-page comic issue ([contact sheet](docs/media/comic-issue-contact-sheet.png)).
+Sector 03 (*GPU Alley*) running with the Tube Transistor lit, five-slot inventory strip, Anti-Gravy dialog box, live `YOUR TURN 0:29` battle clock, skeleton key + worm malware, and the macOS iTerm2 terminal bezel. Also ships with a full 6-page comic issue ([contact sheet](docs/media/comic-issue-contact-sheet.png)).
 
-![Gameplay in Sector 03 GPU Alley: lantern glow, turn-based malware battle, Anti-Gravy dialog box, and live iTerm2 terminal](docs/media/gameplay-battle.png)
+![Gameplay in Sector 03 GPU Alley: Tube Transistor glow, turn-based malware battle, Anti-Gravy dialog box, and live iTerm2 terminal](docs/media/gameplay-battle.png)
 
 ### Studios, Emulators & Asset Lab
 
 | Asset Storybook (`/storybook.html`) | Terminal Lab (`/terminal-lab`) |
 |---|---|
 | ![Asset Storybook inspecting boss.kernel under cel, ink, pixel-art, and CRT passes](docs/media/storybook.png) | ![Terminal Lab running the enemy-worm scenario with live stage, transcript, steps, and inspector](docs/media/terminal-lab.png) |
-| **Interactive 3D PCG gallery.** Inspects all `77` procedural models, `32` textures, and `31` FX under live pixel/CRT/ink shaders, silhouettes, dark-lantern lighting, and attack/death poses. | **Deterministic terminal & puzzle test bench.** Place 12 enemy types, pickups, riddles, and NPCs, record or step scripts (`31` `.lab.json` fixtures) with zero damage absorbed (`no damage`), and compare browser vs Node transcripts. |
+| **Interactive 3D PCG gallery.** Inspects all `77` procedural models, `32` textures, and `31` FX under live pixel/CRT/ink shaders, silhouettes, Tube Transistor dark lighting, and attack/death poses. | **Deterministic terminal & puzzle test bench.** Place 12 enemy types, pickups, riddles, and NPCs, record or step scripts (`31` `.lab.json` fixtures) with zero damage absorbed (`no damage`), and compare browser vs Node transcripts. |
 
 | Laptop Lab (`/laptop-lab`) | Chapter Lab / Editor (`/editor`) |
 |---|---|
@@ -74,7 +74,7 @@ npm stop
 Out Of Credits uses a zero-CAC **browser-demo-to-Steam conversion funnel** backed by a native **Tauri v2** shell and optional Rust **Steamworks** bindings (`steamworks = "0.11.0"`):
 
 - **100% offline native bundles:** `npm run desktop:generate` (`scripts/desktop/generate-tauri-steam.mjs`) synthesizes git-ignored `src-tauri/` and app icons (`~4 MB` macOS `.dmg`, `< 15 MB` Windows `.msi` / `-setup.exe`, Linux / Steam Deck `.AppImage` / `.deb`, plus a zero-Rust `--portable-only` `.tar.gz` web bundle with `SHA256SUMS.txt`). `npm run desktop:verify` rejects any external CDN URL and verifies self-hosted SIL OFL 1.1 `.woff2` fonts (`public/fonts/`). Launches full screen by default (`F11` / Esc toggle).
-- **13 `ACH_*` Steamworks achievements (1:1 parity):** Every trophy in [`src/chapters/achievements.ts`](src/chapters/achievements.ts) maps 1:1 to a Steamworks API key (`ACH_FIRST_BOOT` through `ACH_ZERO_PANIC_RUN`, verified by `desktop:verify` and `desktop:test`). In-game commands: `achievements`, `achievements export` (Steamworks JSON), and `achievements sync` (push to the Tauri/Steam bridge).
+- **15 `ACH_*` Steamworks achievements (1:1 parity):** Every trophy in [`src/chapters/achievements.ts`](src/chapters/achievements.ts) maps 1:1 to a Steamworks API key (`ACH_FIRST_BOOT` through `ACH_ZERO_PANIC_RUN`, verified by `desktop:verify` and `desktop:test`). In-game commands: `achievements`, `achievements export` (Steamworks JSON), and `achievements sync` (push to the Tauri/Steam bridge).
 - **Portable JSON saves & Steam Auto-Cloud:** Web players export `out-of-credits-save.json` from `/` and import it into the desktop build. Tauri persists saves and trophy ledgers atomically in `app_data_dir` (`dev.outofcredits.app`) so **Steam Auto-Cloud** (`*.json`) carries progress across Windows, macOS, Linux, and between the free Steam Demo App and Full Main App.
 - **Automated multi-OS releases & Steam cutover:** Pushing a `v*` tag triggers [`.github/workflows/desktop-release.yml`](.github/workflows/desktop-release.yml) to run `npm run quality`, `generate-chapter.mjs --verify`, desktop verification, and publish all OS installers + `SHA256SUMS.txt` to GitHub Releases. Once Valve assigns App IDs (checklist in [`docs/STEAM_RELEASE_PLAYBOOK.md`](docs/STEAM_RELEASE_PLAYBOOK.md), draft spec [`.kiro/specs/steamworks-store-release/`](.kiro/specs/steamworks-store-release/requirements.md)), flipping `steamAppId`, `steamDemoAppId`, `steamStoreUrl`, and `status: 'live'` in [`src/chapters/steam-bridge.ts`](src/chapters/steam-bridge.ts) switches every Wishlist CTA on `/` directly to the Steam store page.
 

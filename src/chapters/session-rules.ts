@@ -21,7 +21,7 @@ export function grantManifestItemsUpTo(
       const had = hasItem(g.inventory, item);
       g.inventory = giveItem(g.inventory, item);
       if (!had) newlyGranted.push(item);
-      if (!had && (item === 'lantern' || g.inventory.held === null)) {
+      if (!had && (item === 'tube_transistor' || g.inventory.held === null)) {
         g.inventory = holdItem(g.inventory, item);
       }
     }
@@ -33,8 +33,8 @@ export function grantManifestItemsUpTo(
   let note = '';
   for (const item of newlyGranted) {
     events.push({ type: 'ITEM_GIVEN', item, model: ITEMS[item].model, held: g.inventory.held === item });
-    if (item === 'lantern' || item === 'laptop') {
-      events.push({ type: 'PICKUP_COLLECTED', entityId: `reward:${item}`, item, amount: 1, label: item.toUpperCase() });
+    if (item === 'tube_transistor' || item === 'laptop') {
+      events.push({ type: 'PICKUP_COLLECTED', entityId: `reward:${item}`, item, amount: 1, label: ITEMS[item].label.toUpperCase() });
     }
     note += `\n[SECTOR REWARD] Obtained ${ITEMS[item].label.toUpperCase()} — ${ITEMS[item].use}\n`;
   }

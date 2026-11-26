@@ -4,7 +4,7 @@ import { absPath } from '../game/tree.js';
 import type { GameSnapshot, LevelInfo, RoomActor, RoomView } from '../game/types.js';
 import { buildRoom, roomSeedForPath, type SceneFacts, type ViewThing } from '../game/view.js';
 import { computeRunRank, splitParentAndName, type ChapterState } from './session-state.js';
-import { hiddenEnemyId, isNodeHidden, kiroStage, openingActive, tutorialState } from './script.js';
+import { hiddenEnemyId, isNodeHidden, isPickupHidden, kiroStage, openingActive, tutorialState } from './script.js';
 import { chapterHintGoals } from './session-hints.js';
 import { allWinRulesMet, computeBossPhase, getChecklist } from './session-rules.js';
 
@@ -131,7 +131,7 @@ export function snapshot(g: ChapterState): GameSnapshot {
     const rawEntities = g.rt.world.views(cwdPath);
     const entityTargets = new Set(rawEntities.map((e) => e.target));
     const hiddenId = hiddenEnemyId(g);
-    const entities = hiddenId ? rawEntities.filter((e) => e.id !== hiddenId) : rawEntities;
+    const entities = rawEntities.filter((e) => e.id !== hiddenId && !(e.kind === 'pickup' && isPickupHidden(g, e.id)));
     const effectiveCounts = hiddenId
       ? { left: Math.max(0, counts.left - 1), total: Math.max(0, counts.total - 1) }
       : counts;
@@ -153,7 +153,8 @@ export function snapshot(g: ChapterState): GameSnapshot {
       cwd: cwdPath,
       ended: g.ended,
       lantern: g.rt.lantern,
-      dark: !g.inventory.items.includes('lantern'),
+      dark: !g.inventory.items.includes('tube_transistor'),
+      entryDoor: g.rt.spec.index > 1 && cwdPath === g.rt.spec.cwd,
       held: g.inventory.held,
       hp: g.hp,
       maxHp,

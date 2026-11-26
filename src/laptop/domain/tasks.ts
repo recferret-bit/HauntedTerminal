@@ -95,14 +95,14 @@ export const TASKS: readonly LaptopTask[] = [
     id: 'web-list',
     title: 'Inventory list',
     app: 'weaver',
-    brief: 'List what you carry: a <ul id="inventory"> with one <li> for lantern and one for laptop.',
+    brief: 'List what you carry: a <ul id="inventory"> with one <li> for tube transistor and one for laptop.',
     hint: '<ul id="inventory"><li>...</li></ul>',
     starter: page('<h2>My inventory</h2>\n'),
-    solution: page('<h2>My inventory</h2>\n<ul id="inventory">\n  <li>lantern</li>\n  <li>laptop</li>\n</ul>\n'),
+    solution: page('<h2>My inventory</h2>\n<ul id="inventory">\n  <li>tube transistor</li>\n  <li>laptop</li>\n</ul>\n'),
     checks: [
       { kind: 'element', selector: 'ul#inventory', label: 'There is a <ul id="inventory">' },
       { kind: 'element', selector: '#inventory li', min: 2, label: 'It holds at least two items' },
-      { kind: 'element', selector: '#inventory li:first-child', text: 'lantern', label: 'The lantern comes first' },
+      { kind: 'element', selector: '#inventory li:first-child', text: 'tube transistor', label: 'The tube transistor comes first' },
     ],
   },
   {

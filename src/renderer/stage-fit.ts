@@ -6,6 +6,13 @@
 
 import type * as THREE from 'three';
 
+export interface PxRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 /** One piece of overlay DOM placed from a world point (or a px position) every stage step. */
 export interface Item {
   wrap: HTMLDivElement;
@@ -32,6 +39,15 @@ export interface Item {
 }
 
 const MIN_FONT_PX = 10;
+
+export const stepped = (t: number, n: number): number => (t >= 1 ? 1 : Math.floor(Math.max(0, t) * n) / n);
+
+export function imgNode(src: string): HTMLImageElement {
+  const img = document.createElement('img');
+  img.src = src;
+  img.alt = '';
+  return img;
+}
 
 /** Make `el` at most `room` px tall: shrink the font, then clip at a whole number of lines. */
 export function fitBalloonText(el: HTMLElement, room: number): void {

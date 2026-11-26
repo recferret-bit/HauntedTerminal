@@ -82,19 +82,19 @@
     {
       "id": "l11_rack",
       "model": "prop.gpu_server",
-      "x": 3.83,
+      "x": 2.72,
       "label": "overlord compute cage"
     },
     {
       "id": "l11_pipe",
       "model": "prop.water_pipe",
-      "x": 4.68,
+      "x": 4.78,
       "label": "core coolant line"
     },
     {
       "id": "l11_aio",
       "model": "prop.cooler_aio",
-      "x": 2.86,
+      "x": -0.1,
       "label": "die chiller"
     }
   ],

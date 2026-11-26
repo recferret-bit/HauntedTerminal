@@ -22,7 +22,7 @@ export function helpText(hint: string): string {
     '  loot   source <file>  or  . <file>   (*.cell heal, *.dimm RAM, *.img SSD backup)',
     '  ghost  kiro [scan | load <qwen|mistral|deepseek|llama> | crack <lock>]   cat <file> | kiro',
     '  shell  ;  &&  ||  |  >  >>   globs *.log   braces {a,b,c}.rune   Tab completes',
-    '  carry  inventory (inv)   hold <item>   (ls -a raises the lantern)',
+    '  carry  inventory (inv)   hold <item>   (tube_transistor unlocks ls flags; ls -a raises it)',
     '  level  restart-level (retry) [--yes]   reload this level; run it twice to confirm',
     '  look   skin [<id>]   terminal window skin: iterm2, terminal-app, putty, windows-terminal, gnome-terminal, vt100',
     '  tutorial  the agents\' current prompt   (tutorial skip skips the onboarding)',
@@ -36,8 +36,9 @@ export function helpText(hint: string): string {
 const MAN: Record<string, string[]> = {
   pwd: ['pwd: print the room you are standing in (the working directory).'],
   ls: [
-    'ls [-a] [-l] [path...]: list a room.',
-    '  -a  light the lantern: dotfiles show, and so does malware hiding as one.',
+    'ls [-a] [-l] [path...]: list a room. Plain `ls [path]` works from the start for visible files.',
+    '  Flags (-a, -A, -l, -la, ...) require your Tube Transistor.',
+    '  -a  light the Tube Transistor: dotfiles show, and so does malware hiding as one.',
     '  -l  long format: mode (rwx), owner, size, symlink targets (mirrors that lie).',
   ],
   cd: [
@@ -129,7 +130,7 @@ const MAN: Record<string, string[]> = {
   whoami: ['whoami: who you are in here.'],
   inventory: ['inventory (inv): what you carry; * marks the item in your hand.'],
   inv: ['inv: short for inventory.'],
-  hold: ['hold <item>: take an item you carry in your hand (hold lantern, hold terminal, hold manual, hold map, hold laptop).'],
+  hold: ['hold <item>: take an item you carry in your hand (hold tube_transistor, hold terminal, hold manual, hold map, hold laptop).'],
   tutorial: ['tutorial: show the agents\' current prompt.   tutorial skip: skip the onboarding.'],
   clear: ['clear: wipe the terminal (Ctrl+L).'],
   exit: [
@@ -164,7 +165,7 @@ const MAN: Record<string, string[]> = {
   workshop: ['workshop [<perk>]: view Silicon Scrap and toggle ~/.bashrc Rig Perks.'],
   achievements: [
     'achievements [export | sync | <category>]  (aliases: ach, trophies):',
-    '  achievements            list all 13 local trophies and their 1:1 Steamworks ACH_* keys.',
+    '  achievements            list all 15 local trophies and their 1:1 Steamworks ACH_* keys.',
     '  achievements <filter>   filter by category (campaign, combat, craft, mastery) or title.',
     '  achievements export     print Steamworks-ready JSON payload for desktop/Steam migration.',
     '  achievements sync       push unlocked ACH_* keys to the Tauri + Steamworks bridge.',

@@ -18,6 +18,8 @@ export interface SceneFacts {
   lantern: boolean;
   /** True while he does not hold the lantern: the room is almost black (set by the chapter session). */
   dark?: boolean;
+  /** True in the entry room of a floor/level after the first: places an unlocked entrance port at `door.left`. */
+  entryDoor?: boolean;
   /** The item in his hand: picks the hero model. `null` is empty hands; default: the lantern. */
   held?: ItemId | null;
   hp?: number;
@@ -140,8 +142,8 @@ export const LAYOUTS: Record<string, Layout> = {
   [F2]: {
     hero: 2.4,
     props: [
-      { id: 'prop:tomb1', model: 'prop.tombstone', x: 4.7, label: 'FATAL' },
-      { id: 'prop:tomb2', model: 'prop.tombstone', x: 4.15, label: 'FATAL' },
+      { id: 'prop:tomb1', model: 'prop.tombstone', x: 4.78, label: 'FATAL' },
+      { id: 'prop:tomb2', model: 'prop.tombstone', x: 3.85, label: 'FATAL' },
       { id: 'prop:bat', model: 'prop.bat', x: 4.45, y: 2.95 },
       { id: 'prop:cobweb', model: 'prop.cobweb', x: -0.98, y: 3.05 },
     ],
@@ -190,7 +192,7 @@ export const LAYOUTS: Record<string, Layout> = {
   },
   [`${F3}/wing_a/floor_3/cell_9`]: {
     hero: 1.8,
-    props: [{ id: 'prop:capacitor', model: 'prop.capacitor', x: 4.6 }],
+    props: [{ id: 'prop:capacitor', model: 'prop.capacitor', x: 4.78 }],
     slots: {
       'energy.cell': { x: 3.3 },
       north_exit: { x: 0.95, key: 'mirror', model: 'door.loopback' },
@@ -244,14 +246,14 @@ export const LAYOUTS: Record<string, Layout> = {
   [`${F4}/catwalk`]: {
     hero: 2.2,
     props: [
-      { id: 'prop:fan', model: 'prop.fan', x: 4.7 },
-      { id: 'prop:heatsink', model: 'prop.heatsink', x: 4.1 },
-      { id: 'prop:water_pipe', model: 'prop.water_pipe', x: 4.4, label: 'coolant line' },
+      { id: 'prop:fan', model: 'prop.fan', x: 4.78 },
+      { id: 'prop:heatsink', model: 'prop.heatsink', x: 3.68 },
+      { id: 'prop:water_pipe', model: 'prop.water_pipe', x: 3.92, label: 'coolant line' },
       { id: 'prop:cooler_tower', model: 'prop.cooler_tower', x: 3.05, label: 'fin tower' },
       { id: 'door:furnace_hall', model: 'door.hdmi', x: -0.95, kind: 'door', target: 'furnace_hall', label: 'furnace_hall (sealed)', when: (f) => !f.valveOpen },
     ],
     slots: {
-      'energy.cell': { x: 3.4 },
+      'energy.cell': { x: 3.25 },
       'boiler.dump': { x: 1.5, key: 'scroll' },
       'valve_lock.sock': { x: 0.95, key: 'socket' },
       'ransom.exe': { x: 0.35 },
@@ -285,9 +287,9 @@ export const LAYOUTS: Record<string, Layout> = {
       { id: 'door:portal', model: 'door.ethernet', x: 0.2, kind: 'door', target: 'exit', label: 'exit', when: (f) => f.portal },
     ],
     slots: {
-      'energy.cell': { x: 4.6 },
-      'energy2.cell': { x: 4.05 },
-      'chaos.stream': { x: 3.35 },
+      'energy.cell': { x: 3.88 },
+      'energy2.cell': { x: 3.52 },
+      'chaos.stream': { x: 3.05 },
       'core_dump.log': { x: 1.55, key: 'scroll' },
       'reality_anchor.conf': { x: 1.0 },
       'overlord.ko': { x: 0.2, key: 'boss' },
@@ -313,29 +315,35 @@ export const LAYOUTS: Record<string, Layout> = {
   '/srv/kiroween/cache_vault': {
     hero: 2.5,
     props: [
-      { id: 'prop:cache-chip', model: 'prop.chip', x: 4.55, label: 'cache controller' },
+      { id: 'prop:cache-chip', model: 'prop.chip', x: 4.78, label: 'cache controller' },
       { id: 'prop:cache-cables', model: 'prop.cables', x: 3.85, label: 'vault bus' },
     ],
     slots: {
-      'ollama_bus.conf': { x: 1.65, key: 'scroll' },
+      '.vault_beacon': { x: 2.95, key: 'scroll' },
+      'vault_notes.txt': { x: 2.05, key: 'scroll' },
+      'ollama_bus.conf': { x: 1.55, key: 'scroll' },
       'ram_16gb.dimm': { x: 1.05 },
-      'gpu_tensor_chip_01.img': { x: 0.45 },
-      '.gravy_spycam': { x: -0.25 },
+      'ssd_256gb.img': { x: 0.55 },
+      tube_transistor: { x: 0.05 },
+      'gravy_sentry.bin': { x: -0.35 },
       gpu_alley: { x: -0.95, key: 'gate', model: 'door.ethernet' },
     },
   },
   '/srv/kiroween/gpu_alley': {
-    hero: 2.5,
+    hero: 2.35,
     props: [
-      { id: 'prop:gpu-heatsink', model: 'prop.heatsink', x: 4.55, label: 'vram heatsink' },
+      { id: 'prop:gpu-heatsink', model: 'prop.heatsink', x: 4.78, label: 'vram heatsink' },
     ],
     slots: {
-      vram_crate: { x: 3.75, model: 'door.usb' },
-      port_445: { x: 3.15, model: 'door.usb' },
-      lantern: { x: 2.05 },
-      'ram_16gb.dimm': { x: 1.55 },
-      'gpu_shader_core_01.img': { x: 0.95 },
-      'keygen.exe': { x: 0.25 },
+      vram_crate: { x: 3.82, model: 'door.usb' },
+      port_445: { x: 3.25, model: 'door.usb' },
+      'worm.bin': { x: 2.82 },
+      'transistor_gate.sock': { x: 1.88, key: 'socket' },
+      '.transistor_rune': { x: 1.48, key: 'scroll' },
+      'ram_16gb.dimm': { x: 1.05 },
+      'gpu_shader_core_01.img': { x: 0.55 },
+      '.keygen.exe': { x: 0.05 },
+      '.codec_spycam': { x: -0.42 },
       server_hub_1: { x: -0.88, key: 'gate', model: 'door.ethernet' },
     },
   },
@@ -360,7 +368,7 @@ export const LAYOUTS: Record<string, Layout> = {
   '/srv/kiroween/ui_dashboard': {
     hero: 2.5,
     props: [
-      { id: 'prop:ui-crt', model: 'prop.crt', x: 4.55, label: 'telemetry monitor' },
+      { id: 'prop:ui-crt', model: 'prop.crt', x: 4.78, label: 'telemetry monitor' },
     ],
     slots: {
       'index.html': { x: 3.85, key: 'scroll' },
@@ -374,7 +382,7 @@ export const LAYOUTS: Record<string, Layout> = {
   '/srv/kiroween/logic_cell': {
     hero: 2.5,
     props: [
-      { id: 'prop:logic-chip', model: 'prop.chip', x: 4.55, label: 'ALU logic die' },
+      { id: 'prop:logic-chip', model: 'prop.chip', x: 4.78, label: 'ALU logic die' },
     ],
     slots: {
       laptop: { x: 3.65 },
@@ -388,7 +396,7 @@ export const LAYOUTS: Record<string, Layout> = {
   '/srv/kiroween/docker_forge': {
     hero: 2.5,
     props: [
-      { id: 'prop:forge-fan', model: 'prop.fan', x: 4.55, label: 'forge blower' },
+      { id: 'prop:forge-fan', model: 'prop.fan', x: 4.78, label: 'forge blower' },
     ],
     slots: {
       'server.js': { x: 3.85 },
@@ -402,11 +410,11 @@ export const LAYOUTS: Record<string, Layout> = {
   '/srv/kiroween/compose_furnace': {
     hero: 2.5,
     props: [
-      { id: 'prop:compose-heatsink', model: 'prop.heatsink', x: 4.65, label: 'furnace heatsink' },
+      { id: 'prop:compose-heatsink', model: 'prop.heatsink', x: 4.78, label: 'furnace heatsink' },
     ],
     slots: {
-      'proxy.buf': { x: 4.1, key: 'scroll' },
-      'docker-compose.yml': { x: 3.55 },
+      'proxy.buf': { x: 3.88, key: 'scroll' },
+      'docker-compose.yml': { x: 3.35 },
       'ram_16gb.dimm': { x: 1.85 },
       'gpu_h100_core_03.img': { x: 1.35 },
       'port_hijack.bin': { x: 0.8 },
@@ -416,7 +424,7 @@ export const LAYOUTS: Record<string, Layout> = {
   '/home/dev': {
     hero: 2.5,
     props: [
-      { id: 'prop:matrix-crt', model: 'prop.crt', x: 4.45, label: 'matrix server CRT' },
+      { id: 'prop:matrix-crt', model: 'prop.crt', x: 4.78, label: 'matrix server CRT' },
       { id: 'prop:server-cables', model: 'prop.cables', x: 3.75, label: 'open-weights bus' },
     ],
     slots: {
@@ -436,8 +444,8 @@ export const LAYOUTS: Record<string, Layout> = {
   '/srv/byterig/checkout_core': {
     hero: 2.35,
     slots: {
-      'energy.cell': { x: 4.55 },
-      'hank.tty.sock': { x: 3.75, key: 'socket' },
+      'energy.cell': { x: 3.88 },
+      'hank.tty.sock': { x: 3.35, key: 'socket' },
       'chaos_webhook.stream': { x: 1.62 },
       'stripe_audit.log': { x: 1.18, key: 'scroll' },
       'checkout_anchor.conf': { x: 0.74 },
@@ -448,8 +456,8 @@ export const LAYOUTS: Record<string, Layout> = {
   '/sys/clod_overlord_core': {
     hero: 2.3,
     slots: {
-      'dad.tty.sock': { x: 4.25, key: 'socket' },
-      'energy.cell': { x: 3.42 },
+      'dad.tty.sock': { x: 3.75, key: 'socket' },
+      'energy.cell': { x: 3.15 },
       'clod_prompt_flood.stream': { x: 1.62 },
       'open_weights_advisor.log': { x: 1.22, key: 'scroll' },
       'core_anchor.conf': { x: 0.82 },

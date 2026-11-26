@@ -10,6 +10,8 @@ import { runStageEvent } from './stage-events.js';
 import { playFx } from './stage-fx.js';
 import type { FxId } from './fx-player.js';
 import { popOut } from './stage-motion.js';
+import { stepHeroYaw, yawForDx } from './stage-hero-turn.js';
+import { isLevelTransitionPhase, stepLevelTransition } from './stage-level-transition.js';
 import { applyActor } from './stage-sync.js';
 import type { ComicStage } from './comic-stage.js';
 
@@ -31,6 +33,7 @@ export function stepStage(stage: ComicStage, dt: number): void {
   }
   for (const [id, p] of stage.pendingSpawn) if (stage.clockMs - p.at > 4000) stage.pendingSpawn.delete(id);
   stage.tweens.update(dtMs);
+  stepLevelTransition(stage, dtMs);
   stepActors(stage, dt);
   stepAgentAmbientFx(stage, dt);
   heroFidget(stage, dt);
@@ -98,8 +101,8 @@ function lightFrame(stage: ComicStage, dt: number): void {
   stage.light.update(dt, {
     lantern,
     feetY: stage.feetY,
-    panelLeft: stage.panelLeft,
-    panelRight: stage.panelRight,
+    panelLeft: stage.panelLeft + stage.camPanX,
+    panelRight: stage.panelRight + stage.camPanX,
     panelTop: stage.viewTop,
     dark: !!stage.view?.dark,
     heroGlow: h && !h.disposed && h.group.visible ? new THREE.Vector3(h.group.position.x, stage.feetY + 0.85, 0) : null,
@@ -190,12 +193,13 @@ function walkActor(stage: ComicStage, a: StageActor, dtMs: number): void {
   if (Math.abs(dx) > 0.02) {
     (a as StageActor & { moveDir?: number }).moveDir = Math.sign(dx);
     if (a.kind === 'vibecoder') {
-      // Stepped walk: one 0.24 jump every 83 ms (12 poses per second).
+      // Stepped walk: one 0.24 jump every 83 ms (12 poses per second), turned 3/4 toward travel.
       a.stepClock += dtMs;
       if (a.animator.state !== 'walk') {
         a.animator.setState('walk');
         a.animator.setFacing(dx > 0 ? 1 : -1);
       }
+      stepHeroYaw(a, yawForDx(dx), dtMs);
       while (a.stepClock >= 83) {
         a.stepClock -= 83;
         a.base.x += Math.sign(dx) * Math.min(Math.abs(a.home.x - a.base.x), 0.24);
@@ -211,9 +215,12 @@ function walkActor(stage: ComicStage, a: StageActor, dtMs: number): void {
     }
   } else {
     a.base.x = a.home.x;
-    if (a.kind === 'vibecoder' && a.animator.state === 'walk') {
-      a.animator.setFacing(-1);
-      setRest(a);
+    if (a.kind === 'vibecoder') {
+      if (Math.abs(a.body.rotation.y) > 1e-3) stepHeroYaw(a, 0, dtMs);
+      if (a.animator.state === 'walk') {
+        a.animator.setFacing(-1);
+        setRest(a);
+      }
     }
   }
   a.base.y = a.home.y;
@@ -264,7 +271,7 @@ function updateHitboxes(stage: ComicStage): void {
 function updateXrayLinks(stage: ComicStage): void {
   const pairs: [StageActor, StageActor][] = [];
   if (stage.xrayOn) {
-    const live = [...stage.actors.values()].filter((a) => !a.exiting && !a.dead && a.group.visible && a.pid !== undefined);
+    const live = [...stage.actors.values()].filter((a) => !a.exiting && !a.dead && a.group.visible && a.rest !== 'hidden' && a.pid !== undefined);
     const byPid = new Map(live.map((a) => [a.pid!, a]));
     const fromProcs = stage.xrayProcs.length > 0;
     if (fromProcs) {
@@ -287,43 +294,51 @@ function updateXrayLinks(stage: ComicStage): void {
 
 /** Per-actor badges (pips, PID plate, padlock) placed over the projected actor every step. */
 function updateBadges(stage: ComicStage): void {
+  const hideForPan = isLevelTransitionPhase(stage, 'exit_walk') || isLevelTransitionPhase(stage, 'gutter_pan');
   const live = new Set<string>();
   for (const a of stage.actors.values()) {
     if (a.disposed) continue;
     live.add(a.id);
     const b = (a as StageActor & { badge?: { pips: { lit: number; cells: number } | null; plate: { pid: number; name?: string } | null; locked: boolean } }).badge;
     if (!b) continue;
-    const visible = a.group.visible && !a.exiting && !a.dead;
+    const visible = !hideForPan && a.group.visible && !a.exiting && !a.dead;
     const top = new THREE.Vector3(a.group.position.x, a.group.position.y + a.height + 0.12 + a.animator.hoverOffset, a.group.position.z);
     stage.overlay.badge(a.id, {
       top,
-      visible: visible || (b.locked && a.group.visible),
+      visible: visible || (!hideForPan && b.locked && a.group.visible),
       pips: visible ? b.pips : null,
       plate: visible ? b.plate : null,
-      lock: b.locked && a.group.visible ? actorSocket(a, a.model.sockets.lock ? 'lock' : 'fx') : null,
+      lock: !hideForPan && b.locked && a.group.visible ? actorSocket(a, a.model.sockets.lock ? 'lock' : 'fx') : null,
     });
   }
   stage.overlay.pruneBadges(live);
 }
 
-/** Re-project the DOM overlay with this frame's camera (shake included) and panel. */
+/** Re-project the DOM overlay with this frame's camera (shake and pan included) and panel. */
 function syncOverlayFrame(stage: ComicStage): void {
   const h = Math.max(1, stage.mount.clientHeight);
-  stage.overlay.sync(stage.camera, stage.panelBounds(), h / (5.35 / stage.zoom));
+  const bounds = stage.panelBounds();
+  stage.overlay.sync(
+    stage.camera,
+    { ...bounds, left: bounds.left + stage.camPanX, right: bounds.right + stage.camPanX },
+    h / (5.35 / stage.zoom),
+  );
 }
 
 function applyShake(stage: ComicStage): void {
+  const camX = CAM_HOME.x + stage.camPanX;
+  const lookX = LOOK_HOME.x + stage.camPanX;
   if (stage.shakeLeft <= 0) {
-    stage.camera.position.copy(CAM_HOME);
-    stage.camera.lookAt(LOOK_HOME);
+    stage.camera.position.set(camX, CAM_HOME.y, CAM_HOME.z);
+    stage.camera.lookAt(lookX, LOOK_HOME.y, LOOK_HOME.z);
     return;
   }
   stage.shakeLeft -= 16;
   const amp = stage.shakeAmp * Math.max(0, stage.shakeLeft / 280);
   stage.camera.position.set(
-    CAM_HOME.x + (Math.random() - 0.5) * 2 * amp,
+    camX + (Math.random() - 0.5) * 2 * amp,
     CAM_HOME.y + (Math.random() - 0.5) * 2 * amp,
     CAM_HOME.z,
   );
-  stage.camera.lookAt(LOOK_HOME);
+  stage.camera.lookAt(lookX, LOOK_HOME.y, LOOK_HOME.z);
 }

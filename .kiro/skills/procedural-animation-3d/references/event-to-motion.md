@@ -24,7 +24,7 @@ Times are from the moment the event arrives.
 
 | Event (command) | Variant: condition | Who | State | Group tween | Shake | Lettering @ beat |
 |---|---|---|---|---|---|---|
-| `ROOM_TRANSITION` (`cd <dir>`, `cd ..`) | `hop`: fewer than 3 levels up, no loop | vibecoder | `walk`, then `idle` on landing | x to the door, linear, T; y + sin(t·π)·0.45 over the gutter | 0 | `HOP!` green @ 210 ms |
+| `ROOM_TRANSITION` (`cd <dir>`, `cd ..`) | `hop`: fewer than 3 levels up, no loop | vibecoder | `walk`, then `idle` on landing | x to the door with 12 fps 3/4 yaw turn (±1.18 rad), T; y + sin(t·π)·0.45 over the gutter | 0 | `HOP!` green @ 210 ms |
 | | | page | | Camera slides to the new panel, easeOutBack, T; title and dressing swap on landing | | |
 | `ROOM_TRANSITION` (`cd ../../..`) | `panel_smash`: `upwardPanelsSmashed >= 3` | vibecoder | `attack` | y + sin(t·π)·1.1 through three frames, 504 ms | 1.5 | `PANEL SMASH x{n}!!` yellow @ 250 ms |
 | | | page | | Camera pulls back; frame shards at 250, 330, 410 ms | | |
@@ -54,8 +54,8 @@ Times are from the moment the event arrives.
 | | | door (the unlocked one) | | Plays `INODE_MODE_CHANGED` / `open` after 200 ms | | |
 | `PLAYER_DAMAGED` | `damaged` | source (the attacker) | `attack` | Its own lunge is in the attack pose | 0 | |
 | | | vibecoder | `hit` @ 250 ms (the attacker's `strike`) | | 1.1 | `-{n} HP` red @ 250 ms |
-| `FLOOR_CLEARED` | `cleared` | page | | Page turn to the next floor card, 900 ms | 0 | `FLOOR CLEARED!` green @ 0 |
-| | | vibecoder | `idle` | One hop in place (y + 0.3, 300 ms) | | |
+| `FLOOR_CLEARED` | `cleared` | page | | Paired with `FLOOR_ENTERED`: 1760 ms panel-to-panel scroll (`exit_walk` into `door.right`, horizontal camera pan across `#efe6d2` gutter + `.st-caption-box`, `entry_walk` out of `door.left`) | 0 | `FLOOR CLEARED!` green @ 0 |
+| | | vibecoder | `walk` (paired) / `idle` (standalone) | Paired: walks in 3/4 yaw (±1.18 rad) into `door.right` and out of `door.left`; standalone: one hop in place (y + 0.3, 300 ms) | | |
 
 ## The vibecoder's vocabulary
 
@@ -64,7 +64,7 @@ The vibecoder (`vibecoder.dev`) has no attacks of his own: every move is a react
 
 | Move | Trigger | How |
 |---|---|---|
-| Walk to a door | `cd <dir>` | `setState('walk')`, stage tweens `group.position.x` linearly, `setState('idle')` on arrival |
+| Walk to a door | `cd <dir>` | `setState('walk')`, 12 fps stepped 3/4 3D yaw turn (`body.rotation.y` up to `±1.18` rad), linear x tween, `rotation.y = 0` + `setState('idle')` on arrival |
 | Hop the gutter | `cd`, same event | Stage adds `y + sin(t·π)·0.45` to the same tween; `HOP!` at the top |
 | PANEL SMASH | `cd ../../..` (3+ levels) | `setState('attack')` with a `y + sin(t·π)·1.1` tween; shake 1.5 and shards on `strike` |
 | Lantern raise | `ls -a` | Stage tweens the `lantern` zone emissive 0.35 → 1.6; hidden actors play `revealed` 80 ms later |
@@ -93,7 +93,7 @@ give it a row in `ANIM_EVENT_MAP` with these values instead of inventing new one
 |---|---|---|---|---|
 | `touch <file>` materialises a scroll or fuse | the new prop | `revealed` (500 ms) | Drawn in by the System Hand if it was restored by cron; otherwise pops in place | `TOUCH!` yellow on the `pop` beat (80 ms) |
 | `rm <file>` burns an obstacle to ink ash | the removed actor | `death` (700 ms) | No Group tween. FX: ink-ash particles from the `fx` socket, emitted from the `collapse` beat (250 ms) to `gone` (700 ms), rate following `deathProgress` | `RM!` red on `impact` |
-| Floor transition (enter the floor exit) | page, vibecoder | vibecoder `walk` into the door, then page turn | Run T, page turn 900 ms, floor card held 1200 ms, vibecoder `revealed` in the new room | `ENTERING FLOOR n: <path>` |
+| Floor transition (enter the floor exit) | page, vibecoder | vibecoder `walk` into `door.right`, camera gutter pan, `walk` out of `door.left` to `home` | 1760 ms (`exit_walk` 0..520 ms with doorway tuck, `gutter_pan` 520..1200 ms across `#efe6d2` gutter + `.st-caption-box`, `entry_walk` 1200..1760 ms to `idle`) | `ENTERING SECTOR n` |
 | Wrong answer `> x.sock` | `door.socket` | `hit` (300 ms) | Bubble shakes x ±0.05 for 200 ms; next hint page | bubble text, no lettering |
 | `kill -CONT <pid>` thaws a frozen process | subject | `idle` (or `enraged` if it was enraged before) | none | `SIGCONT!` cyan |
 | `chmod +x` on a petrified enemy | subject | `revealed`, then `idle` | none | `CHMOD +X // AWAKE!` magenta |

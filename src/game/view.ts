@@ -4,12 +4,21 @@
  * a per-room layout table that fixes positions and set dressing. Design x runs from 4.9 (screen-left)
  * to -1.15 (screen-right); the hero stands near 2.4.
  */
-import type { ActorKind, FloorId, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomView } from './types.js';
+import type { ActorKind, FloorId, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomSocketId, RoomView } from './types.js';
 import { hashSeed } from '../procgen/core/rng.js';
 import { heroModel } from './inventory.js';
 import { F3, LAYOUTS, type Layout, type SceneFacts, type ViewThing } from './view-layouts.js';
 
 export type { SceneFacts, ViewThing };
+
+/** Design-space x matching room-frame socket `door.left` (`roomX = +3.3`). */
+const ENTRY_SOCKET_X = 4.37;
+/** Design-space x matching room-frame socket `door.right` (`roomX = -3.55`). */
+const EXIT_SOCKET_X = -0.81;
+
+function socketAttr(socket: RoomSocketId | undefined): { socket?: RoomSocketId } {
+  return socket ? { socket } : {};
+}
 
 /** Deterministic positive room seed derived from a VFS path and floor/level salt. */
 export function roomSeedForPath(cwd: string, salt = 1): number {
@@ -111,6 +120,19 @@ export function buildRoom(facts: SceneFacts): RoomView {
   const AUTO = Number.NaN;
   const heroX = place.take(layout.hero ?? 2.4);
   actors.push({ key: 'vibecoder', id: 'vibecoder', model: heroModel(facts.held), kind: 'vibecoder', state: 'idle', hp: facts.hp, maxHp: facts.maxHp, x: heroX, hidden: false, label: 'dev' });
+  if (facts.entryDoor) {
+    actors.push({
+      key: 'entity',
+      id: 'door:entry',
+      model: 'door.serial',
+      kind: 'door',
+      state: 'idle',
+      ...socketAttr('door.left'),
+      x: place.take(ENTRY_SOCKET_X),
+      hidden: false,
+      label: 'sector_in',
+    });
+  }
   if (facts.kiro) {
     const slotX = facts.kiro.target ? slots[facts.kiro.target]?.x : undefined;
     actors.push({
@@ -126,7 +148,7 @@ export function buildRoom(facts: SceneFacts): RoomView {
       label: facts.kiro.label,
     });
   }
-  const maxThingsActors = facts.kiro ? 15 : 14;
+  const maxThingsActors = 14 + (facts.kiro ? 1 : 0) + (facts.entryDoor ? 1 : 0);
 
   for (const prop of layout.props ?? []) {
     if (prop.when && !prop.when(facts)) continue;
@@ -216,7 +238,8 @@ function placeThings(
       kind: look.kind,
       state: 'idle',
       target: thing.name,
-      x: slot ? place.take(slot.x) : autoX,
+      ...socketAttr(exit ? 'door.right' : undefined),
+      x: exit ? place.take(EXIT_SOCKET_X) : slot ? place.take(slot.x) : autoX,
       y: slot?.y,
       hidden: false,
       label: slot?.label ?? (lockedDoor ? `${thing.name} [locked]` : thing.name),

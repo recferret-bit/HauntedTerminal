@@ -33,16 +33,21 @@ export default async function gameplaySuite(ctx) {
     if (!at.length) throw new Error(`gameplay suite: no manifest grant gives \`${item}\`; the jump-grant property needs one`);
     return Math.min(...at);
   };
-  const lanternFrom = grantedFrom('lantern');
+  const transistorFrom = grantedFrom('tube_transistor');
   const mapFrom = grantedFrom('map');
   const manualFrom = grantedFrom('manual');
   const laptopFrom = grantedFrom('laptop');
 
   const pickupLevelsOf = (type) =>
     world.levels
-      .map((l, index) => ({ index, pickup: (l.pickups ?? []).find((p) => p.type === type) }))
+      .map((l, index) => ({ index, level: l, pickup: (l.pickups ?? []).find((p) => p.type === type) }))
       .filter((l) => l.pickup)
-      .map((l) => ({ index: l.index, name: l.pickup.path.split('/').pop() }));
+      .map((l) => {
+        const name = l.pickup.path.split('/').pop();
+        const sol = l.level.solutionCommands ?? [];
+        const mvIdx = sol.findIndex((cmd) => cmd === `mv ${name} ~`);
+        return { index: l.index, name, prep: l.pickup.appearWhen && mvIdx > 0 ? sol.slice(0, mvIdx) : [] };
+      });
   const pickupIdempotentProp = (type, list) => ({
     name: `the ${type} pickup is idempotent: collecting it again (any way, any number of times) changes nothing`,
     build: () =>
@@ -58,6 +63,7 @@ export default async function gameplaySuite(ctx) {
                 p.levels[1].pickups.push({ id: `prop_${type}`, type, path: `${cwd}/${type}` });
               });
           const name = list.length ? list[l].name : type;
+          for (const prepCmd of list.length ? list[l].prep : []) session.exec(prepCmd);
           const first = session.exec(`mv ${name} ~`);
           expect(first.events.filter((e) => e.type === 'PICKUP_COLLECTED' && e.item === type).length === 1, `\`mv ${name} ~\` did not collect ${type} exactly once`);
           const kept = JSON.stringify(session.snapshot().inventory);
@@ -70,7 +76,7 @@ export default async function gameplaySuite(ctx) {
         },
       ),
   });
-  const lanternLevels = pickupLevelsOf('lantern');
+  const transistorLevels = pickupLevelsOf('tube_transistor');
   const laptopLevels = pickupLevelsOf('laptop');
   const itemId = fc.constantFrom(...inv.ITEM_IDS);
 
@@ -285,7 +291,7 @@ export default async function gameplaySuite(ctx) {
           }
         }),
     },
-    pickupIdempotentProp('lantern', lanternLevels),
+    pickupIdempotentProp('tube_transistor', transistorLevels),
     pickupIdempotentProp('laptop', laptopLevels),
     {
       name: 'the inventory functions are idempotent: giving an owned item, or holding the held item, changes nothing',
@@ -314,7 +320,7 @@ export default async function gameplaySuite(ctx) {
             const { items, held } = session.snapshot().inventory;
             expect(new Set(items).size === items.length, `an item is in the inventory twice: ${JSON.stringify(items)} (startItems ${JSON.stringify(startItems)}, grants ${JSON.stringify(grants)})`);
             expect(held === null || items.includes(held), `holds ${held}, owns ${JSON.stringify(items)}`);
-            const wantHeld = items.includes('lantern') ? 'lantern' : items.includes('terminal') ? 'terminal' : null;
+            const wantHeld = items.includes('tube_transistor') ? 'tube_transistor' : items.includes('terminal') ? 'terminal' : null;
             expect(held === wantHeld, `holds ${held}, expected ${wantHeld} from ${JSON.stringify(items)}`);
             for (const id of startItems ?? []) expect(items.includes(id), `startItems ${id} is missing from ${JSON.stringify(items)}`);
             const allowed = new Set([...(startItems ?? inv.starterInventory().items), ...grants.flatMap((g) => g.items ?? [])]);
@@ -338,16 +344,16 @@ export default async function gameplaySuite(ctx) {
     {
       // The thresholds come from the manifest's grants (`afterLevel`), so the examples sit on both sides of each one.
       name: 'starting at a later level (a jump) grants only the tools already unlocked up to that level',
-      examples: [...new Set([1, lanternFrom - 1, lanternFrom, mapFrom - 1, mapFrom, laptopFrom - 1, laptopFrom, world.levels.length - 1])].filter((i) => i >= 1 && i < world.levels.length).map((i) => [i]),
+      examples: [...new Set([1, transistorFrom - 1, transistorFrom, mapFrom - 1, mapFrom, laptopFrom - 1, laptopFrom, world.levels.length - 1])].filter((i) => i >= 1 && i < world.levels.length).map((i) => [i]),
       build: () =>
         fc.property(fc.integer({ min: 1, max: world.levels.length - 1 }), (levelIdx) => {
           const { items, held } = world.open(levelIdx).snapshot().inventory;
           expect(items.includes('terminal'), `a jump to level ${levelIdx + 1} does not carry the terminal: ${JSON.stringify(items)}`);
-          if (levelIdx < lanternFrom) {
-            expect(!items.includes('lantern') && held === 'terminal', `a jump to level ${levelIdx + 1} holds ${held} and owns ${JSON.stringify(items)}`);
+          if (levelIdx < transistorFrom) {
+            expect(!items.includes('tube_transistor') && held === 'terminal', `a jump to level ${levelIdx + 1} holds ${held} and owns ${JSON.stringify(items)}`);
           } else {
-            expect(items.includes('lantern') && held === 'lantern', `a jump to level ${levelIdx + 1} holds ${held} and owns ${JSON.stringify(items)}`);
-            expect(items.filter((i) => i === 'lantern').length === 1, `the lantern is in the inventory ${items.filter((i) => i === 'lantern').length} times`);
+            expect(items.includes('tube_transistor') && held === 'tube_transistor', `a jump to level ${levelIdx + 1} holds ${held} and owns ${JSON.stringify(items)}`);
+            expect(items.filter((i) => i === 'tube_transistor').length === 1, `the tube_transistor is in the inventory ${items.filter((i) => i === 'tube_transistor').length} times`);
           }
           expect(items.includes('map') === (levelIdx >= mapFrom), `map grant mismatch at level ${levelIdx + 1}: ${JSON.stringify(items)}`);
           expect(items.includes('manual') === (levelIdx >= manualFrom), `manual grant mismatch at level ${levelIdx + 1}: ${JSON.stringify(items)}`);

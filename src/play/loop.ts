@@ -6,7 +6,7 @@ import { colourise } from '../ui/terminal.js';
 import { mountTutorial, taunt } from '../ui/tutorial.js';
 import { syncPlayAudio } from './audio-sync.js';
 import { exposeLabHooks } from './lab.js';
-import { CARD_MS, closeOtherModals, type Play } from './state.js';
+import { LEVEL_TRANSITION_MS, closeOtherModals, type Play } from './state.js';
 import { syncTerminalPresence } from './term-reveal.js';
 
 const EVENT_LOG_CAP = 400;
@@ -56,14 +56,34 @@ function paint(play: Play, snap: GameSnapshot): void {
   syncPlayAudio(play);
 }
 
-function holdForCard(play: Play): void {
-  play.lifecycle.addReason('card');
-  window.clearTimeout(play.cardTimer);
-  play.cardTimer = window.setTimeout(() => {
-    play.lifecycle.deleteReason('card');
-    syncPause(play);
-  }, CARD_MS);
+/** Completes or skips an active level-exit comic transition and flushes any deferred arrival chatter. */
+export function finishPlayLevelTransition(play: Play, skipStage = false): void {
+  window.clearTimeout(play.transitionTimer);
+  play.transitionTimer = 0;
+  if (skipStage) play.stage.skipLevelTransition();
+  const hadReason = play.lifecycle.hasReason('transition');
+  if (hadReason) play.lifecycle.deleteReason('transition');
+  const pending = play.deferredPostTransition.splice(0);
+  for (const run of pending) run();
+  if (hadReason || pending.length > 0) syncPause(play);
+}
+
+function holdForLevelTransition(play: Play): void {
+  play.lifecycle.addReason('transition');
+  window.clearTimeout(play.transitionTimer);
+  play.transitionTimer = window.setTimeout(() => {
+    finishPlayLevelTransition(play, false);
+  }, LEVEL_TRANSITION_MS);
   syncPause(play);
+}
+
+function applyTutorialUi(play: Play, ev: Extract<KernelEvent, { type: 'TUTORIAL_STEP' }>, snap: GameSnapshot): void {
+  if (play.dialogs) play.dialogs.handleEvent(ev);
+  else play.tutorial.step(ev);
+  if (ev.done && snap.tutorial === null) {
+    play.dialogs?.clear();
+    play.tutorial.hide();
+  }
 }
 
 function forward(play: Play, ev: KernelEvent): void {
@@ -96,23 +116,42 @@ function enemySlices(events: KernelEvent[]): KernelEvent[][] {
 function applyEvents(play: Play, events: KernelEvent[], snap: GameSnapshot, printed = ''): void {
   play.eventLog.push(...events);
   if (play.eventLog.length > EVENT_LOG_CAP) play.eventLog.splice(0, play.eventLog.length - EVENT_LOG_CAP);
+  const isLevelExit = events.some((e) => e.type === 'FLOOR_CLEARED')
+    && events.some((e) => e.type === 'FLOOR_ENTERED')
+    && !play.stage.reducedMotion.on
+    && play.lifecycle.phase() === 'play';
+  if (!isLevelExit && events.some((e) => e.type === 'FLOOR_ENTERED') && play.lifecycle.hasReason('transition')) {
+    finishPlayLevelTransition(play, true);
+  }
   const seq = ++play.applySeq;
   const slices = enemySlices(events);
   const last = slices.length - 1;
   slices.forEach((slice, i) => {
-    const run = (): void => applySlice(play, slice, snap, printed, i === last && seq === play.applySeq);
+    const run = (): void => applySlice(play, slice, snap, printed, i === last && seq === play.applySeq, isLevelExit);
     if (i === 0) run();
     else globalThis.setTimeout(run, i * ENEMY_STAGGER_MS);
   });
 }
 
-function applySlice(play: Play, events: KernelEvent[], snap: GameSnapshot, printed: string, paintNow: boolean): void {
+function applySlice(
+  play: Play,
+  events: KernelEvent[],
+  snap: GameSnapshot,
+  printed: string,
+  paintNow: boolean,
+  isLevelExit: boolean,
+): void {
+  let afterFloorEntered = false;
   for (const ev of events) {
     if (ev.type === 'FLOOR_ENTERED' && play.lifecycle.phase() === 'intro') {
       play.stashedFloorCard = ev;
       continue;
     }
     forward(play, ev);
+    const runOrDefer = (fn: () => void): void => {
+      if (isLevelExit && afterFloorEntered) play.deferredPostTransition.push(fn);
+      else fn();
+    };
     switch (ev.type) {
       case 'PLAYER_DAMAGED':
         play.hud?.damage(ev.amount, ev.sourceName);
@@ -127,29 +166,27 @@ function applySlice(play: Play, events: KernelEvent[], snap: GameSnapshot, print
         if (ev.from === 'ssd_backup') play.hud?.backupUsed(ev.hp);
         break;
       case 'DIALOG_BOX':
+        runOrDefer(() => play.dialogs?.handleEvent(ev));
+        break;
       case 'OBSTACLE_DIALOGUE_RENDERED':
       case 'PUZZLE_DOOR_RESOLVED':
       case 'ROOM_TRANSITION':
         play.dialogs?.handleEvent(ev);
         break;
       case 'FLOOR_ENTERED':
+        afterFloorEntered = true;
         play.levelEntryCommands = snap.commands;
         play.dialogs?.handleEvent(ev);
-        if (play.lifecycle.phase() === 'play') holdForCard(play);
+        if (isLevelExit) holdForLevelTransition(play);
         break;
       case 'AGENT_TAUNT':
-        play.dialogs?.handleEvent(ev);
+        runOrDefer(() => play.dialogs?.handleEvent(ev));
         if (printed.includes(ev.text)) break;
         if (play.execTaunts) play.execTaunts.push(taunt(ev));
         else play.shell.printAbove(taunt(ev));
         break;
       case 'TUTORIAL_STEP':
-        if (play.dialogs) play.dialogs.handleEvent(ev);
-        else play.tutorial.step(ev);
-        if (ev.done && snap.tutorial === null) {
-          play.dialogs?.clear();
-          play.tutorial.hide();
-        }
+        runOrDefer(() => applyTutorialUi(play, ev, snap));
         break;
       case 'GAME_ENDED':
         play.events.emit({ kind: 'ending-begin', stats: { rank: ev.rank, timeSec: ev.timeSec, commands: ev.commands, shortcuts: snap.shortcuts } });
@@ -159,7 +196,8 @@ function applySlice(play: Play, events: KernelEvent[], snap: GameSnapshot, print
         void forwardSteamAchievement(ev.steamApiName);
         break;
       case 'BATTLE_STARTED':
-        play.dialogs?.handleEvent(ev);
+      case 'BATTLE_ENDED':
+        runOrDefer(() => play.dialogs?.handleEvent(ev));
         break;
       default:
         break;

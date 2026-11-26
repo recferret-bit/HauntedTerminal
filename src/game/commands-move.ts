@@ -164,7 +164,7 @@ export function cmdLs(g: Play, args: string[]): Step {
     chunks.push(head + body);
   }
   if (all && !g.run.lantern) g.run.lantern = true;
-  if (all) g.run.inventory = holdItem(g.run.inventory, 'lantern');
+  if (all) g.run.inventory = holdItem(g.run.inventory, 'tube_transistor');
   if (all) push(g, events, { type: 'LANTERN_REVEAL', dirId: g.run.cwd.id, revealedInodes: revealed });
   const fileBlock = files.length ? files.join(long ? '\n' : '  ') : '';
   const text = [fileBlock, ...chunks].filter((chunk) => chunk.length > 0).join('\n\n');

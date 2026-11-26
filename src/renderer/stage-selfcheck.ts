@@ -13,7 +13,10 @@ export interface StageLike {
   readonly errors: string[];
   readonly fxPlayer: { played: Set<string>; counts: Map<string, number> };
   readonly reducedMotion: { readonly on: boolean; set(on: boolean): void };
-  hero(): { all: { uniforms: Record<string, { value: unknown } | undefined> }[] } | null;
+  hero(): { all: { uniforms: Record<string, { value: unknown } | undefined> }[]; body?: { rotation: { y: number } } } | null;
+  isLevelTransitioning?: () => boolean;
+  skipLevelTransition?: () => void;
+  camPanX?: number;
   devNoStorm?: boolean;
   debugState(): {
     actors: { id: string; visible: boolean; exiting: boolean; dead: boolean }[]; queued: number; fx: number; played: string[]; errors: string[];
@@ -433,6 +436,45 @@ function checkCommandFeedback(stage: StageLike, advance: (ms: number) => void): 
   return out;
 }
 
+function transitionView(path: string, kind: RoomView['kind'], entry: boolean): RoomView {
+  const actors: RoomActor[] = [
+    { key: 'vibecoder', x: 2.5, hidden: false },
+    { key: 'entity', id: 'door:exit', model: 'door.ethernet', kind: 'door', x: -0.81, socket: 'door.right', hidden: false, label: 'exit' },
+  ];
+  if (entry) actors.push({ key: 'entity', id: 'door:entry', model: 'door.serial', kind: 'door', x: 4.37, socket: 'door.left', hidden: false, label: 'sector_in' });
+  return { floor: entry ? 2 : 1, path, title: path, kind, flood: 0, lantern: true, xray: false, caption: '', neighbors: [], actors };
+}
+
+function checkLevelTransition(stage: StageLike, advance: (ms: number) => void): string[] {
+  const out: string[] = [];
+  const a = transitionView('/selfcheck/a', 'attic', false);
+  const b = transitionView('/selfcheck/b', 'furnace', true);
+  const fire = () => {
+    stage.handleEvent({ type: 'FLOOR_CLEARED', floorId: 1, speedrunBonus: false, commandsCount: 5 });
+    stage.handleEvent({ type: 'FLOOR_ENTERED', floorId: 2, title: 'NEXT SECTOR', path: '/selfcheck/b' });
+    stage.syncRoom(b);
+  };
+  stage.syncRoom(a); advance(60); fire(); advance(180);
+  if (!stage.isLevelTransitioning?.() || (stage.camPanX ?? 0) <= 0) out.push('transition: expected active gutter pan');
+  if (Math.abs(stage.hero()?.body?.rotation.y ?? 0) <= 0.4) out.push('transition: hero did not turn during exit walk');
+  advance(1900);
+  if (stage.isLevelTransitioning?.() || (stage.camPanX ?? 0) !== 0) out.push('transition: did not settle to camPanX=0');
+  if (Math.abs(stage.hero()?.body?.rotation.y ?? 0) >= 1e-3) out.push('transition: hero yaw did not reset to 0');
+  stage.syncRoom(a); advance(60); fire(); advance(650);
+  stage.skipLevelTransition?.();
+  if (stage.isLevelTransitioning?.() || (stage.camPanX ?? 0) !== 0) out.push('transition skip: did not settle');
+  if (Math.abs(stage.hero()?.body?.rotation.y ?? 0) >= 1e-3) out.push('transition skip: hero yaw did not reset');
+  const was = stage.reducedMotion.on;
+  stage.reducedMotion.set(true);
+  try {
+    stage.syncRoom(a); advance(60); fire();
+    if (stage.isLevelTransitioning?.()) out.push('transition reducedMotion: must cut immediately');
+  } finally {
+    stage.reducedMotion.set(was);
+  }
+  return out;
+}
+
 /**
  * Feeds the stage every event variant twice, garbage, ids that already left, a room change in the
  * middle of effects, then steps frames and checks: no errors caught anywhere, every preset played,
@@ -463,6 +505,7 @@ function runStageSelfCheck(stage: StageLike, restore?: RoomView | null): StageSe
   const count = runEventRounds(stage, allEvents(), advance, cast, checkVisible)
     + runPairPass(stage, advance, cast, checkVisible, pairFailures);
   pairFailures.push(...checkCommandFeedback(stage, advance));
+  pairFailures.push(...checkLevelTransition(stage, advance));
   const { live, expected } = runSwapFinale(stage, advance, cast);
   // The DOM overlay must not leak: transient lettering, balloons and cards drain back to zero, and
   // there is at most one badge holder per live actor.

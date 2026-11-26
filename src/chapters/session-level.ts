@@ -6,7 +6,7 @@ import type { EnemySpawn, PickupSpawn } from '../game/floors.js';
 import { lookup, makeRoot } from '../game/tree.js';
 import type { LevelSpec } from './types.js';
 import { readMetagame, recordTelemetry } from './catalog.js';
-import { arrivalScript, hiddenEnemyId, levelScript } from './script.js';
+import { arrivalScript, evalCond, hiddenEnemyId, isPickupHidden, levelScript } from './script.js';
 import { applyPids, fillPidsDeep, fixedPids, rollPids } from './pids.js';
 import { ensureDirChain, placeFile, resolveTauntAgent, splitParentAndName, type ChapterState, type QuestBackup } from './session-state.js';
 import { grantManifestItemsUpTo, refreshExitGates } from './session-rules.js';
@@ -127,12 +127,18 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       spawned: new Set(),
       levelTicks: 0,
       timedFired: new Set(),
+      roomSwept: false,
+      droppedPickups: new Set(),
+      triggersFired: new Set(),
       openingDone: false,
       levelBattles: 0,
       restartPending: null,
       lab: { absorbed: {}, solved: new Set(), attempts: {}, hits: new Set() },
     };
     g.rt.world = new World(g.host, enemySpawns, pickupSpawns);
+    for (const p of spec.pickups) {
+      if (p.appearWhen && evalCond(g, p.appearWhen)) g.rt.droppedPickups.add(p.id);
+    }
     if (autoLantern) {
       g.rt.world.reveal(cwd, events);
     }
@@ -145,7 +151,7 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       path: spec.cwd,
     });
     for (const present of g.rt.world.presentIn(spec.cwd)) {
-      if (present.id === hiddenEnemyId(g)) continue;
+      if (present.id === hiddenEnemyId(g) || isPickupHidden(g, present.id)) continue;
       events.push({
         type: 'ENTITY_SPAWNED',
         entityId: present.id,

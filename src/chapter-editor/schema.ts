@@ -36,6 +36,7 @@ const COND_VARIANTS = (): Variants<ScriptCond['kind']> => ({
   any_enemy_dead: [],
   core_loaded: [t('core', 'Core', { suggest: 'cores' })],
   has_item: [sel('item', 'Item', ITEM_IDS)],
+  room_swept: [],
   tutorial_skipped: [],
   any: [{ type: 'array', key: 'of', label: 'Any of', item: { union: COND_VARIANTS, title: condTitle } }],
   all: [{ type: 'array', key: 'of', label: 'All of', item: { union: COND_VARIANTS, title: condTitle } }],
@@ -139,6 +140,7 @@ export const PICKUP_FIELDS: Field[] = [
   t('path', 'File', { suggest: 'paths', mono: true }),
   opt(b('locked', 'Starts encrypted')),
   opt(t('model', 'Override pickup model', { suggest: 'models' })),
+  opt({ type: 'union', key: 'appearWhen', label: 'Appears when (drops onto ground)', union: COND_VARIANTS }),
 ];
 
 export const PROP_FIELDS: Field[] = [
@@ -260,6 +262,16 @@ export const SCRIPT: Field[] = [
     item: {
       title: (e) => `after ${String(e.afterSec)}s: ${Array.isArray(e.steps) ? e.steps.length : 0} step(s)`,
       fields: [n('afterSec', 'After seconds'), { type: 'union', key: 'unless', label: 'Skip when this holds', union: COND_VARIANTS, optional: true }, stepsField('steps', 'Steps')],
+    },
+  },
+  {
+    type: 'array',
+    key: 'triggers',
+    label: 'Triggers (fire once per level load when a condition holds)',
+    optional: true,
+    item: {
+      title: (tr) => `when ${condTitle((tr.when ?? {}) as Record<string, unknown>)}: ${Array.isArray(tr.steps) ? tr.steps.length : 0} step(s)`,
+      fields: [{ type: 'union', key: 'when', label: 'When', union: COND_VARIANTS }, stepsField('steps', 'Steps')],
     },
   },
   {
@@ -396,10 +408,20 @@ export const MANIFEST: Field[] = [
     optional: true,
     item: {
       title: (g) => `after level ${String(g.afterLevel)}: ${[g.ram ? `+${String(g.ram)}GB RAM` : '', g.ssd ? `+${String(g.ssd)}GB SSD` : '', g.core ? `core ${String(g.core)}` : ''].filter(Boolean).join(', ')}`,
-      fields: [n('afterLevel', 'After level'), opt(n('ram', 'RAM GB')), opt(n('ssd', 'SSD GB')), opt(t('core', 'Kiro.d core', { suggest: 'cores' })), opt({ type: 'strings', key: 'items', label: 'Items (lantern, terminal, laptop, manual, map; one per line)' })],
+      fields: [n('afterLevel', 'After level'), opt(n('ram', 'RAM GB')), opt(n('ssd', 'SSD GB')), opt(t('core', 'Kiro.d core', { suggest: 'cores' })), opt({ type: 'strings', key: 'items', label: 'Items (tube_transistor, terminal, laptop, manual, map; one per line)' })],
     },
   },
-  opt({ type: 'strings', key: 'startItems', label: 'Items he carries at the start (default lantern, terminal; one per line)' }),
+  opt({ type: 'strings', key: 'startItems', label: 'Items he carries at the start (default tube_transistor, terminal; one per line)' }),
+  {
+    type: 'array',
+    key: 'onFirstPickup',
+    label: 'First-time pickup dialogs (run once per session on first pickup of each type)',
+    optional: true,
+    item: {
+      title: (fp) => `first ${String(fp.pickup)}: ${Array.isArray(fp.steps) ? fp.steps.length : 0} step(s)`,
+      fields: [sel('pickup', 'Pickup type', PICKUP_TYPES), stepsField('steps', 'Steps')],
+    },
+  },
   {
     type: 'array',
     key: 'dossier',

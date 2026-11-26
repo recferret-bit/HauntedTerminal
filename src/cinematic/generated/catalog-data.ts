@@ -171,7 +171,7 @@ export const GENERATED_COMIX_MANIFESTS: ComixManifest[] = [
     "id": "outro",
     "title": "Exit Code 0 — Dawn Return",
     "subtitle": "Reverse lightning ejects the developer back to his desk at dawn",
-    "summary": "The storm runs backwards, flinging the Vibecoder out of the monitor into his office chair while the pursuing AI agents shatter in mid-air. Morning breaks over a green build — and the dungeon lantern still glowing in his hand — before the final campaign scorecard.",
+    "summary": "The storm runs backwards, flinging the Vibecoder out of the monitor into his office chair while the pursuing AI agents shatter in mid-air. Morning breaks over a green build — and the Tube Transistor still glowing in his hand — before the final campaign scorecard.",
     "role": "ending",
     "status": "playable",
     "durationSec": 9.8,
@@ -482,7 +482,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
               "typing": 1,
               "restRightArm": true,
               "hideParts": [
-                "lantern"
+                "tube_transistor"
               ]
             },
             {
@@ -883,7 +883,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
               "typing": 0.4,
               "restRightArm": true,
               "hideParts": [
-                "lantern"
+                "tube_transistor"
               ]
             }
           ]
@@ -946,7 +946,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
           "typing": 0.4,
           "restRightArm": true,
           "hideParts": [
-            "lantern"
+            "tube_transistor"
           ]
         },
         {
@@ -957,7 +957,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
           "typing": 0,
           "restRightArm": true,
           "hideParts": [
-            "lantern"
+            "tube_transistor"
           ]
         },
         {
@@ -1962,7 +1962,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
           "typing": 0,
           "restRightArm": true,
           "hideParts": [
-            "lantern"
+            "tube_transistor"
           ]
         },
         {

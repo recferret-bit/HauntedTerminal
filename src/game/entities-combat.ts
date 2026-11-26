@@ -7,17 +7,18 @@ import { absPath, baseName, findId, hasExec, hasWrite, makeNode, parentDir, type
 
 const SIGNAL_HOW: Record<PosixSignal, KillHow> = { SIGKILL: 'SIGKILL', SIGTERM: 'SIGTERM', SIGSTOP: 'other', SIGCONT: 'other' };
 
-/** `ls -a` on `dir`: hidden enemies there show themselves. Returns the inodes revealed. */
+/** `ls -a` on `dir`: hidden enemies in `dir` (or whose active zone reaches `dir`) show themselves. Returns the inodes revealed. */
 export function reveal(world: WorldLike, dir: VNode, events: KernelEvent[]): number[] {
   const path = absPath(dir);
   const shown: number[] = [];
   for (const e of world.enemies) {
     if (e.dead || e.revealed) continue;
     const node = world.file(e);
-    if (!node?.parent || absPath(node.parent) !== path) continue;
+    const inDir = Boolean(node?.parent && absPath(node.parent) === path);
+    if (!inDir && !world.zone(e).includes(path)) continue;
     e.revealed = true;
     e.revealTick = world.ticks;
-    shown.push(node.id);
+    if (node) shown.push(node.id);
   }
   sync(world, events);
   return shown;

@@ -104,7 +104,7 @@
           "dur": 6.6,
           "pos": "top-left",
           "accent": "amber",
-          "items": ["item.lantern · Dark Room Sweep", "6 Terminal Skins (iTerm2 · VT100 · PuTTY)"]
+          "items": ["item.tube_transistor · Dark Room Sweep", "6 Terminal Skins (iTerm2 · VT100 · PuTTY)"]
         }
       ],
       "bursts": [
@@ -236,7 +236,7 @@
         {
           "n": "07",
           "tag": "CHAPTER 1 PLAYABLE NOW · STEAM EDITION INCOMING",
-          "head": "11 SECTORS · 13 ACH_* TROPHIES · PORTABLE SAVES",
+          "head": "11 SECTORS · 15 ACH_* TROPHIES · PORTABLE SAVES",
           "sub": "Start instantly in your browser and carry every trophy straight into Steam.",
           "at": 0.1,
           "dur": 1.6,
@@ -253,7 +253,7 @@
         "sub": "Play all 11 sectors of Chapter 1 free in your browser today—export your .json save & trophies straight to Steam.",
         "steps": [
           "PLAY CHAPTER 1 IN BROWSER",
-          "UNLOCK 13 ACH_* TROPHIES",
+          "UNLOCK 15 ACH_* TROPHIES",
           "WISHLIST ON STEAM"
         ],
         "cta": "WISHLIST ON STEAM & PLAY FREE DEMO ▸",

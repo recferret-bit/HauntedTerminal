@@ -7,14 +7,14 @@
 import { ITEMS, type ItemId } from '../../contracts/inventory.js';
 import { ModelCatalog } from '../core/catalog.js';
 import type { ModelSpec } from '../core/types.js';
-import { buildLantern } from './items/lantern.js';
+import { buildTubeTransistor } from './items/tube-transistor.js';
 import { buildLaptop } from './items/laptop.js';
 import { buildManual } from './items/manual.js';
 import { buildMap } from './items/map.js';
 import { buildTerminal } from './items/terminal.js';
 
 export const ITEM_BUILDERS: Record<ItemId, (seed: number) => ModelSpec> = {
-  lantern: buildLantern,
+  tube_transistor: buildTubeTransistor,
   terminal: buildTerminal,
   laptop: buildLaptop,
   manual: buildManual,

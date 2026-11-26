@@ -184,5 +184,5 @@ if (isDirectCliRun(import.meta.url)) {
     for (const issue of issues) console.error(`  - ${issue}`);
     process.exit(1);
   }
-  console.log('desktop bundle verification OK (dist/ is 100% offline-ready, fonts/icons/CSP valid, 13 ACH_* keys & 9 IPC commands synced)');
+  console.log('desktop bundle verification OK (dist/ is 100% offline-ready, fonts/icons/CSP valid, 15 ACH_* keys & 9 IPC commands synced)');
 }

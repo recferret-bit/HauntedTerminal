@@ -347,11 +347,24 @@ await withProcgen(async (_p, vite) => {
 
     const classic = createSession();
     classic.run.inventory = starterInventory(['terminal']);
-    const classicDarkLs = classic.exec('ls');
-    assert.equal(classicDarkLs.code, 1, 'classic ls is refused without lantern');
-    assert.match(classicDarkLs.stderr ?? '', /lantern/i);
-    classic.run.inventory = giveItem(classic.run.inventory, 'lantern');
-    assert.equal(classic.exec('ls').code, 0, 'classic ls works once lantern is carried');
+    const classicBasicLs = classic.exec('ls');
+    assert.equal(classicBasicLs.code, 0, 'classic basic ls works without tube transistor');
+    assert.ok(classicBasicLs.output.includes('todo.note'), 'classic basic ls lists visible files');
+    assert.equal(classic.exec('ls ..').code, 0, 'classic ls <path> works without tube transistor');
+    assert.equal(classic.exec('ls ..').output.includes('readme.txt'), true, 'classic ls .. lists visible parent files');
+    assert.equal(classic.exec('ls ..').output.includes('.spycam'), false, 'classic ls .. hides dotfiles without tube transistor');
+    assert.equal(classic.exec('ls ..').output.includes('.poltergeist.lock'), false, 'classic ls .. hides rootkit dotfiles without tube transistor');
+    for (const flagCmd of ['ls -a', 'ls -l', 'ls -la', 'ls -la ..']) {
+      const gated = classic.exec(flagCmd);
+      assert.equal(gated.code, 1, `classic \`${flagCmd}\` is refused without tube transistor`);
+      assert.match(gated.stderr ?? '', /Tube Transistor/i);
+      assert.equal(gated.events.some((e) => e.type === 'LANTERN_REVEAL'), false, `\`${flagCmd}\` without tube transistor must not emit LANTERN_REVEAL`);
+    }
+    classic.run.inventory = giveItem(classic.run.inventory, 'tube_transistor');
+    assert.equal(classic.exec('ls -l').code, 0, 'classic ls -l works once tube transistor is carried');
+    const classicLitSweep = classic.exec('ls -la ..');
+    assert.equal(classicLitSweep.code, 0, 'classic ls -la .. works once tube transistor is carried');
+    assert.ok(classicLitSweep.output.includes('.spycam'), 'classic ls -la exposes hidden dotfiles once tube transistor is carried');
     assert.equal(classic.exec('map 2').code, 1, 'classic map command is locked before carrying map');
     assert.equal(classic.consumeMapRequest(), null);
     classic.run.inventory = giveItem(classic.run.inventory, 'map');
@@ -395,7 +408,7 @@ await withProcgen(async (_p, vite) => {
     const lockPack = structuredClone(getChapterPack(slug));
     lockPack.levels[1].script = {
       ...lockPack.levels[1].script,
-      locks: [{ command: 'kiro', until: { kind: 'has_item', item: 'lantern' }, message: 'kiro: locked in the dark!' }],
+      locks: [{ command: 'kiro', until: { kind: 'has_item', item: 'tube_transistor' }, message: 'kiro: locked in the dark!' }],
     };
     const lockedA = createChapterSession({ chapterId: slug, pack: structuredClone(lockPack), startLevelId: lockPack.levels[1].id, pidSeed: 42, preview: true });
     const lockedB = createChapterSession({ chapterId: slug, pack: structuredClone(lockPack), startLevelId: lockPack.levels[1].id, pidSeed: 42, preview: true });

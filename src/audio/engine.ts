@@ -34,6 +34,7 @@ const TAUNT_VARIANTS: Partial<Record<SfxId, readonly SfxId[]>> = {
   taunt_gork_1: ['taunt_gork_1', 'taunt_gork_2', 'taunt_gork_3', 'taunt_gork_4', 'taunt_gork_5', 'taunt_gork_6', 'taunt_gork_7', 'taunt_gork_8', 'taunt_gork_9', 'taunt_gork_10'],
   taunt_clod_1: ['taunt_clod_1', 'taunt_clod_2', 'taunt_clod_3', 'taunt_clod_4', 'taunt_clod_5', 'taunt_clod_6', 'taunt_clod_7', 'taunt_clod_8', 'taunt_clod_9', 'taunt_clod_10'],
   kiro_advice: ['kiro_advice', 'kiro_advice_2', 'kiro_advice_3', 'kiro_advice_4', 'kiro_advice_5', 'kiro_advice_6', 'kiro_advice_7', 'kiro_advice_8', 'kiro_advice_9', 'kiro_advice_10'],
+  dad_cheer: ['dad_cheer', 'dad_cheer_2', 'dad_cheer_3', 'dad_cheer_4', 'dad_cheer_5', 'dad_cheer_6', 'dad_cheer_7', 'dad_cheer_8', 'dad_cheer_9', 'dad_cheer_10'],
 };
 
 const SPEECH_SFX: ReadonlySet<SfxId> = new Set<SfxId>([
@@ -42,6 +43,8 @@ const SPEECH_SFX: ReadonlySet<SfxId> = new Set<SfxId>([
 
 const KEY_RATES = [1.0, 1.045, 0.96, 1.02, 0.975, 1.06, 0.945] as const;
 const KEY_GAINS = [0.9, 0.84, 0.94, 0.87, 0.92] as const;
+/** Loop gain per cue (default 0.35): ambience sits under the music and the voices. */
+const LOOP_GAINS: Partial<Record<SfxId, number>> = { 'rain_loop': 0.22, 'lap_fan': 0.28, 'dad_typing_loop': 0.16, 'dad_smoke_loop': 0.14 };
 
 /** Active windows (seconds) trimmed from leading and trailing silence so keystrokes and dialog voices fire at 0ms latency. */
 const SFX_TRIM: Partial<Record<SfxId, { offset: number; duration?: number }>> = {
@@ -286,7 +289,7 @@ function makeSlots(
   const startLoop = (id: string): void => {
     void load('sfx', id).then((buffer) => {
       if (!buffer || !alive() || ctx.state === 'closed' || held || !loopOn.has(id) || loops.has(id)) return;
-      const gain = id === 'rain_loop' ? 0.22 : id === 'lap_fan' ? 0.28 : 0.35;
+      const gain = LOOP_GAINS[id as SfxId] ?? 0.35;
       const offset = buffer.duration > 0 ? (loopPos.get(id) ?? 0) % buffer.duration : 0;
       const { node } = spawnVoice(ctx, master, buffer, gain, true, offset);
       loops.set(id, { node, buffer, startedAt: ctx.currentTime, pos: offset });

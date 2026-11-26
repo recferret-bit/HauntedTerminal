@@ -281,9 +281,9 @@ await withProcgen(async (_p, vite) => {
   });
 
   // ---- the game inventory ----
-  await test('the inventory starts with the lantern and terminal (no manual or map by default) and holds only what it has', () => {
+  await test('the inventory starts with the tube transistor and terminal (no manual or map by default) and holds only what it has', () => {
     const start = inv.starterInventory();
-    assert.deepEqual(start, { items: ['lantern', 'terminal'], held: 'lantern' });
+    assert.deepEqual(start, { items: ['tube_transistor', 'terminal'], held: 'tube_transistor' });
     assert.equal(inv.holdItem(start, 'manual'), start);
     assert.equal(inv.holdItem(start, 'map'), start);
     assert.equal(inv.holdItem(start, 'laptop'), start);
@@ -301,7 +301,7 @@ await withProcgen(async (_p, vite) => {
   });
   await test('inventory / hold commands and Tab completion', () => {
     const start = inv.giveItem(inv.giveItem(inv.giveItem(inv.starterInventory(), 'manual'), 'map'), 'laptop');
-    assert.match(inv.inventoryCommand(start, 'inv', []).step.stdout, /\* lantern[\s\S]*terminal[\s\S]*manual[\s\S]*map[\s\S]*laptop/);
+    assert.match(inv.inventoryCommand(start, 'inv', []).step.stdout, /\* tube transistor[\s\S]*terminal[\s\S]*manual[\s\S]*map[\s\S]*laptop/);
     const held = inv.inventoryCommand(start, 'hold', ['laptop']);
     assert.equal(held.inv.held, 'laptop');
     assert.equal(held.step.code, 0);
@@ -316,9 +316,9 @@ await withProcgen(async (_p, vite) => {
     assert.equal(heldTerm.step.code, 0);
     assert.equal(inv.inventoryCommand(start, 'hold', ['toString']).step.code, 1, 'prototype keys are not items');
     assert.equal(inv.inventoryCommand(start, 'hold', []).step.code, 1);
-    assert.deepEqual(inv.completeHold(start, 't'), ['terminal']);
+    assert.deepEqual(inv.completeHold(start, 't'), ['tube_transistor', 'terminal']);
     assert.deepEqual(inv.completeHold(start, 'm'), ['manual', 'map']);
-    assert.deepEqual(inv.completeHold(start, 'l'), ['lantern', 'laptop']);
+    assert.deepEqual(inv.completeHold(start, 'l'), ['laptop']);
   });
 });
 console.log(`\nlaptop unit: ${count()} tests passed`);

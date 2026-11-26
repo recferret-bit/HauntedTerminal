@@ -254,16 +254,24 @@ export function buildStageActor(ra: RoomActor, seed: number): StageActor {
   group.add(body);
   const rawBox = new THREE.Box3().setFromObject(model.group);
   const isPickup = modelId.startsWith('pickup.');
+  const laidTransistor = kind === 'pickup' && modelId === 'item.tube_transistor';
   const scale = legacy && modelId === legacy.model && legacy.scale
     ? legacy.scale
     : isPickup
       ? PICKUP_STAGE_SCALE
-      : 1;
+      : laidTransistor
+        ? 1.45
+        : 1;
   body.scale.setScalar(scale);
   // Pickups bake ~0.5 hover into geometry; compensate so 2.4x scale keeps them near waist height instead of floating too high.
   if (isPickup && Number.isFinite(rawBox.min.y)) {
     body.position.y = PICKUP_FLOOR_CLEARANCE - rawBox.min.y * scale;
+  } else if (laidTransistor && Number.isFinite(rawBox.max.x) && Number.isFinite(rawBox.max.y)) {
+    // Lay the Tube Transistor on its side flush on the floor (y = 0), centered on its slot.
+    body.rotation.z = Math.PI / 2;
+    body.position.set(((rawBox.min.y + rawBox.max.y) * 0.5) * scale, ((rawBox.max.x - rawBox.min.x) * 0.5) * scale, 0);
   }
+  body.userData.restRotZ = body.rotation.z;
 
   let vortex: THREE.ShaderMaterial | undefined;
   let vortexMesh: THREE.Mesh | undefined;
@@ -279,7 +287,11 @@ export function buildStageActor(ra: RoomActor, seed: number): StageActor {
     if (voidPart) voidPart.visible = false;
   }
 
-  const rawTop = Number.isFinite(rawBox.max.y) ? rawBox.max.y : 1;
+  const rawTop = laidTransistor && Number.isFinite(rawBox.max.x)
+    ? (rawBox.max.x - rawBox.min.x) * 0.5
+    : Number.isFinite(rawBox.max.y)
+      ? rawBox.max.y
+      : 1;
   const height = Math.max(0.3, rawTop * scale + body.position.y);
   const sheet = ANIM_MALWARE_ACTING[modelId];
   const actor: StageActor = {

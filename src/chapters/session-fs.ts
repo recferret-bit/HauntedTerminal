@@ -1,4 +1,5 @@
 import type { KernelEvent } from '../contracts/events.js';
+import { isItemId } from '../contracts/inventory.js';
 import { PICKUP_INFO, maxHpFor } from '../game/bestiary.js';
 import type { Pickup } from '../game/entities.js';
 import { giveItem, holdItem } from '../game/inventory.js';
@@ -18,7 +19,7 @@ import { evaluateLevelClearAchievements, formatAchievementLines } from './achiev
 import { recordLevelClear } from './catalog.js';
 import { computeLevelRank, creatableParent, emptyStep, ensureDirChain, globToRegExp, okStep, splitParentAndName, type ChapterState } from './session-state.js';
 import { writeRedirect } from './session-redirect.js';
-import { finishTutorial, isNodeHidden } from './script.js';
+import { finishTutorial, firstPickupScript, isNodeHidden } from './script.js';
 import { levelBannerText, loadLevel } from './session-level.js';
 import { cmdHank } from './session-meta.js';
 import { allWinRulesMet, refreshExitGates, sinkIntoNull, unfinishedObjectives } from './session-rules.js';
@@ -37,7 +38,7 @@ export function cmdLs(g: ChapterState, args: string[]): Step {
     let longFmt = false;
     const paths: string[] = [];
     for (const a of args) {
-      if (a.startsWith('-')) {
+      if (a.startsWith('-') && a.length > 1) {
         if (a.includes('a') || a.includes('A')) showAll = true;
         if (a.includes('l')) longFmt = true;
       } else {
@@ -46,9 +47,9 @@ export function cmdLs(g: ChapterState, args: string[]): Step {
     }
     const targetPath = paths[0] ?? '.';
     const res = resolve(g.rt.cwd, targetPath, true);
-    if (!res.node) {
-      if (res.denied) events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.denied.id, command: 'ls' });
-      return okStep('', events, 1, `ls: cannot access '${targetPath}': ${res.error}\n`);
+    if (!res.node || isNodeHidden(g, res.node)) {
+      if (!res.node && res.denied) events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.denied.id, command: 'ls' });
+      return okStep('', events, 1, `ls: cannot access '${targetPath}': ${res.error ?? 'No such file or directory'}\n`);
     }
     if (res.node.kind !== 'dir') {
       return okStep(`${longFmt ? longRow(res.node) : res.node.name}\n`);
@@ -58,9 +59,12 @@ export function cmdLs(g: ChapterState, args: string[]): Step {
       return okStep('', events, 1, `ls: cannot open directory '${targetPath}': Permission denied\n`);
     }
 
-    if (showAll && res.node === g.rt.cwd) {
-      g.rt.lantern = true;
-      g.inventory = holdItem(g.inventory, 'lantern');
+    if (showAll) {
+      if (res.node === g.rt.cwd) {
+        g.rt.lantern = true;
+        g.rt.roomSwept = true;
+      }
+      g.inventory = holdItem(g.inventory, 'tube_transistor');
       const revealed = g.rt.world.reveal(res.node, events);
       for (const child of res.node.children.values()) {
         if (!isNodeHidden(g, child) && child.name.startsWith('.') && !revealed.includes(child.id)) revealed.push(child.id);
@@ -272,7 +276,12 @@ export function cmdTouch(g: ChapterState, args: string[]): Step {
     const events: KernelEvent[] = [];
     for (const a of args) {
       const ex = resolve(g.rt.cwd, a, true);
-      if (ex.node) continue;
+      if (ex.node) {
+        if (isNodeHidden(g, ex.node)) {
+          return okStep('', events, 1, `touch: cannot touch '${a}': Permission denied\n`);
+        }
+        continue;
+      }
       const placed = creatableParent(g.rt.root, g.rt.cwd, a);
       if (!placed) {
         const full = a.startsWith('/') ? a : `${absPath(g.rt.cwd)}/${a}`;
@@ -338,6 +347,11 @@ export function cmdRm(g: ChapterState, args: string[]): Step {
         errors.push(`rm: cannot remove '${t}': Operation not permitted`);
         continue;
       }
+      if (isItemPickup(g, res.node)) {
+        rattleVeto(events, res.node.id, 'rm');
+        errors.push(`rm: cannot remove '${t}': pocket your gear with \`mv ${res.node.name} ~\``);
+        continue;
+      }
       const veto = g.rt.world.vetoRemove(res.node, events);
       if (veto) {
         rattleVeto(events, res.node.id, 'rm');
@@ -360,8 +374,8 @@ export function cmdCp(g: ChapterState, args: string[]): Step {
     const clean = args.filter((a) => !a.startsWith('-'));
     if (clean.length < 2) return emptyStep(1, 'usage: cp SRC DEST\n');
     const src = resolve(g.rt.cwd, clean[0]!, true);
-    if (!src.node) {
-      if (src.denied) {
+    if (!src.node || isNodeHidden(g, src.node)) {
+      if (!src.node && src.denied) {
         return okStep('', [{ type: 'PERMISSION_DENIED_RATTLE', targetId: src.denied.id, command: 'cp' }], 1, `cp: cannot stat '${clean[0]}': Permission denied\n`);
       }
       return emptyStep(1, `cp: cannot stat '${clean[0]}'\n`);
@@ -389,9 +403,9 @@ export function collectPickupNode(g: ChapterState, pickup: Pickup, node: VNode, 
       g.hp = Math.min(maxHpFor(g.ram), g.hp + 10);
     } else if (pickup.type === 'ssd') {
       g.ssd += pickup.amount;
-    } else if (pickup.type === 'lantern') {
-      // The lantern: he gets it and holds it; taking it again changes nothing.
-      g.inventory = holdItem(giveItem(g.inventory, 'lantern'), 'lantern');
+    } else if (pickup.type === 'tube_transistor') {
+      // The tube transistor: he gets it and holds it; taking it again changes nothing.
+      g.inventory = holdItem(giveItem(g.inventory, 'tube_transistor'), 'tube_transistor');
     } else {
       // The laptop: he gets it and holds it; taking it again changes nothing.
       g.inventory = holdItem(giveItem(g.inventory, 'laptop'), 'laptop');
@@ -408,10 +422,20 @@ export function collectPickupNode(g: ChapterState, pickup: Pickup, node: VNode, 
     events.push({ type: 'FILE_REMOVED', inodeId: node.id, name: node.name, entityId: pickup.id });
     events.push({ type: 'VIBECODER_ACTION', action: 'collect', command, targetEntityId: pickup.id });
     refreshExitGates(g, events);
-    return okStep(`[COLLECTED] ${node.name} (${label})\n`, events);
+    const firstNote = firstPickupScript(g, pickup.type, events);
+    return okStep(`[COLLECTED] ${node.name} (${label})\n${firstNote}`, events);
   }
 
 const HOME_DESTS = new Set(['~', '~/', '$HOME', '/home/dev', '/home/dev/']);
+
+function isItemPickup(g: ChapterState, node: VNode): boolean {
+  const pickup = g.rt.world.pickupByInode(node.id);
+  return Boolean(pickup && isItemId(pickup.type));
+}
+
+function isHomeDest(destRaw: string, fileName: string): boolean {
+  return HOME_DESTS.has(destRaw) || destRaw === `/home/dev/${fileName}` || destRaw === `~/${fileName}`;
+}
 
 function rattleVeto(events: KernelEvent[], targetId: number, command: string): void {
   if (!events.some((e) => e.type === 'ENEMY_HIT' || e.type === 'ENTITY_SPAWNED')) {
@@ -433,7 +457,7 @@ export function cmdMv(g: ChapterState, args: string[]): Step {
 
     const destRaw = clean[1]!;
     // Pocketing hardware pickups into `/home/dev` (`mv ram_16gb.dimm ~`), matching Classic mode & Feature 01 SPEC!
-    if (HOME_DESTS.has(destRaw)) {
+    if (isHomeDest(destRaw, src.node.name)) {
       const pickup = g.rt.world.pickupByInode(src.node.id);
       if (pickup) {
         return collectPickupNode(g, pickup, src.node, 'mv', events);
@@ -441,6 +465,11 @@ export function cmdMv(g: ChapterState, args: string[]): Step {
       if (g.rt.spec.mechanic !== 'hub') {
         return emptyStep(1, `mv: '${destRaw}': only hardware pickups (*.cell, *.dimm, *.img) can be pocketed to ~\n`);
       }
+    }
+
+    if (isItemPickup(g, src.node)) {
+      rattleVeto(events, src.node.id, 'mv');
+      return okStep('', events, 1, `mv: '${clean[0]}': pocket your gear into ~ instead (\`mv ${src.node.name} ~\`)\n`);
     }
 
     if (destRaw === '/dev/null') {
@@ -497,8 +526,8 @@ export function cmdChmod(g: ChapterState, args: string[]): Step {
 
     for (const t of targets) {
       const res = resolve(g.rt.cwd, t, true);
-      if (!res.node) {
-        if (res.denied) {
+      if (!res.node || isNodeHidden(g, res.node)) {
+        if (!res.node && res.denied) {
           events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.denied.id, command: 'chmod' });
           return okStep('', events, 1, `chmod: cannot access '${t}': Permission denied\n`);
         }

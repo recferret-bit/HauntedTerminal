@@ -187,7 +187,7 @@ body {
   text-align: left;
   gap: 4px;
   flex: 0 0 auto;
-  width: clamp(190px, 24vw, 270px);
+  width: clamp(240px, 26vw, 320px);
   padding: 6px 10px;
   box-sizing: border-box;
 }
@@ -700,7 +700,8 @@ body.hud-enter #sandbox-toggle-btn {
   #tutorial-card .tut-cmd { flex-wrap: wrap; gap: 2px 6px; padding: 0 8px; }
   #tutorial-card .tut-cmd code { font-size: 11px; padding: 1px 6px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
   #titleblock { max-width: min(320px, 46%); }
-  .hero-dialog-inner { width: clamp(140px, 22vw, 210px); }
+  .hero-dialog-inner { width: clamp(220px, 31vw, 320px); padding: 5px 8px; }
+  .hero-dialog-inner .dialog-text { font-size: 11.5px; line-height: 1.24; }
   #tutorial-card header { gap: 5px; padding: 2px 6px; }
   .tut-kind { display: none; }
   .tut-agent { flex: 1; }

@@ -1108,8 +1108,8 @@ await withProcgen(async (_p, vite) => {
       );
       assert.ok(Math.max(...brightCounts) - Math.min(...brightCounts) >= 20, `${blinkModel} 64px portrait must blink its focal eye/cursor across frames`);
     }
-    const itemFrames = Array.from({ length: PORTRAIT_FRAMES }, (_, f) => rasterPortraitFrame('item.lantern', 36, f));
-    for (const f of itemFrames.slice(1)) assert.equal(sameBytes(itemFrames[0], f), true, 'item.lantern icon stays static');
+    const itemFrames = Array.from({ length: PORTRAIT_FRAMES }, (_, f) => rasterPortraitFrame('item.tube_transistor', 36, f));
+    for (const f of itemFrames.slice(1)) assert.equal(sameBytes(itemFrames[0], f), true, 'item.tube_transistor icon stays static');
   });
 
   await test('portrait filter & Doom/Quake HP face tiers: macro-pixels + distinct tier expressions', () => {
@@ -1367,6 +1367,29 @@ await withProcgen(async (_p, vite) => {
 
       orch.clear();
       assert.equal(orch.box.pending(), 0);
+
+      // 6. BATTLE_ENDED and reactive DIALOG_BOX dismiss stale BATTLE_STARTED intro lines immediately
+      orch.handleEvent({
+        type: 'BATTLE_STARTED',
+        battle: 1,
+        agent: 'antigravy',
+        model: 'agent.antigravy',
+        taunt: 'My gargoyle has your Tube Transistor!',
+        advice: 'TROJAN: chmod -x petrifies it.',
+        enemyIds: ['trojan_l2'],
+        introSec: 10,
+      });
+      assert.equal(orch.box.activeLine()?.text, 'My gargoyle has your Tube Transistor!');
+      assert.equal(orch.box.queuedLines().length, 1);
+      orch.handleEvent({ type: 'BATTLE_ENDED', battle: 1, reason: 'cleared' });
+      orch.handleEvent({ type: 'DIALOG_BOX', speaker: 'vibecoder', name: 'VIBECODER', model: 'vibecoder.dev_terminal', text: 'Tube Transistor landed on the ground!', holdMs: 120 });
+      assert.deepEqual(orch.box.queuedLines().map((l) => l.text), ['Tube Transistor landed on the ground!'], 'BATTLE_ENDED drops stale queued battle-intro advice');
+      await wait(120 + EXIT_MS + 40);
+      assert.equal(orch.box.activeLine()?.text, 'Tube Transistor landed on the ground!', 'reactive DIALOG_BOX opens promptly once battle ends');
+      await wait(120 + EXIT_MS + 40);
+
+      orch.clear();
+      assert.equal(orch.box.pending(), 0);
       assert.equal(orch.stats().maxConcurrent, 1);
       assert.equal(orch.stats().maxRightConcurrent, 1);
     });
@@ -1459,16 +1482,16 @@ await withProcgen(async (_p, vite) => {
     labSess.exec('echo 42 > gate.sock');
     assert.equal(labSess.snapshot().hintGoals.exitReady, true, 'all lab checks/riddles complete flips exitReady');
 
-    // Lantern pickup covered by a file_absent winRule must not duplicate the lantern task.
-    const lanternDoc = newLabScript('lantern-dedupe', 'Lantern Dedupe');
-    lanternDoc.setup.push(
-      { op: 'pickup', id: 'p_lan', type: 'lantern', path: '/lab/lantern' },
-      { op: 'task', id: 't_lan', rule: { kind: 'file_absent', path: '/lab/lantern', description: 'Pick up lantern' } },
+    // Tube Transistor pickup covered by a file_absent winRule must not duplicate the task.
+    const transistorDoc = newLabScript('transistor-dedupe', 'Transistor Dedupe');
+    transistorDoc.setup.push(
+      { op: 'pickup', id: 'p_tt', type: 'tube_transistor', path: '/lab/tube_transistor' },
+      { op: 'task', id: 't_tt', rule: { kind: 'file_absent', path: '/lab/tube_transistor', description: 'Pick up Tube Transistor' } },
     );
-    const builtLantern = buildLabPack(lanternDoc);
-    const lanternSess = createChapterSession({ pack: builtLantern.pack, preview: true, lab: builtLantern.config });
-    const lanternTasks = lanternSess.snapshot().hintGoals.tasks.filter((t) => /lantern/i.test(t.label));
-    assert.equal(lanternTasks.length, 1, 'lantern pickup + file_absent winRule must produce exactly one lantern task');
+    const builtTransistor = buildLabPack(transistorDoc);
+    const transistorSess = createChapterSession({ pack: builtTransistor.pack, preview: true, lab: builtTransistor.config });
+    const transistorTasks = transistorSess.snapshot().hintGoals.tasks.filter((t) => /tube transistor/i.test(t.label));
+    assert.equal(transistorTasks.length, 1, 'tube_transistor pickup + file_absent winRule must produce exactly one task');
 
     const chap = createChapterSession({ chapterId: CHAPTER_MANIFESTS[0].id, preview: true });
     for (const lvl of chap.getLevels()) {

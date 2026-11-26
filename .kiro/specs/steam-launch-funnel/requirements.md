@@ -2,7 +2,7 @@
 
 Status: done (requirements, design, tasks delegated by the user "/boost lets do it all", 2026-11-17)
 
-Capability: Turn Out Of Credits into an offline-ready indie startup product with a browser-demo-to-Steam conversion funnel on `/`, a 13-trophy local achievements system carrying 1:1 Steamworks API keys (`ACH_*`) and JSON portability, self-hosted SIL OFL runtime fonts (`public/fonts/`), deterministic Tauri v2 + `steamworks` desktop generator/verifier scripts (`scripts/desktop/`), and a dedicated GitHub Release tag workflow (`.github/workflows/desktop-release.yml`) producing downloadable macOS, Windows, Linux, and portable offline builds on `v*` tags. External Steamworks Partner registration and live store cutover questions are tracked separately in `.kiro/specs/steamworks-store-release/`.
+Capability: Turn Out Of Credits into an offline-ready indie startup product with a browser-demo-to-Steam conversion funnel on `/`, a 15-trophy local achievements system (originally 13; expanded 2026-11-26 with `full_loadout` / `ACH_FULL_LOADOUT` and `hardware_hoarder` / `ACH_HARDWARE_HOARDER`) carrying 1:1 Steamworks API keys (`ACH_*`) and JSON portability, self-hosted SIL OFL runtime fonts (`public/fonts/`), deterministic Tauri v2 + `steamworks` desktop generator/verifier scripts (`scripts/desktop/`), and a dedicated GitHub Release tag workflow (`.github/workflows/desktop-release.yml`) producing downloadable macOS, Windows, Linux, and portable offline builds on `v*` tags. External Steamworks Partner registration and live store cutover questions are tracked separately in `.kiro/specs/steamworks-store-release/`.
 
 ## Requirements
 

@@ -109,7 +109,7 @@
           "rect": [0.52, 0, 0.48, 0.48],
           "bgHex": "#141828",
           "room": "room.crypt_entrance",
-          "caption": "AT LEVEL 3 GPU ALLEY, HE GRABS HIS LANTERN & FIGHTS BACK!",
+          "caption": "WITH HIS TUBE TRANSISTOR, HE EXPOSES HIDDEN FOES & FIGHTS BACK!",
           "cast": [
             { "model": "vibecoder.dev", "x": -0.5, "scale": 0.94 },
             { "model": "malware.spyware", "x": 0.08, "scale": 0.9 },

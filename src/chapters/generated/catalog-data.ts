@@ -11,7 +11,7 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
     "badge": "KIROWEEN SPECIAL ISSUE",
     "estimatedMinutes": 35,
     "clientName": "Kiro.d & The Bearded Matrix Coder (Dad)",
-    "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal, explains why RAM (+10 Max HP) and SSD/GPU images (auto-Revive backup + local server parts) keep him alive, and lays out the chapter mission: raid 6 sectors, reboot Kiro.d at the Matrix Hub with 3 open-weight models to silence Anti-Gravy, Codec, and Gork, then defeat Clod and PID 1 to exit home! Clear Sector 02 to win your oil lantern (unlocking ls in Sector 03), receive the Motherboard Map & Field Manual from the Old Bearded Coder on your first Hub visit (Sector 04), recover your clamshell laptop in Logic Cell (Sector 06), and uncover the father-son unicorn twist!",
+    "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal and lays out the chapter mission: raid 6 sectors, reboot Kiro.d at the Matrix Hub with 3 open-weight models to silence Anti-Gravy, Codec, and Gork, then defeat Clod and PID 1 to exit home! Basic ls works from the start for visible files; petrify the gargoyle in Sector 02 so your glowing Tube Transistor lands on the ground (grab it with mv to unlock ls -la and reveal hidden enemies in Sector 03), receive the Motherboard Map & Field Manual from the Old Bearded Coder on your first Hub visit (Sector 04), recover your clamshell laptop in Logic Cell (Sector 06), and uncover the father-son unicorn twist!",
     "allyNpc": {
       "id": "dad.tty",
       "name": "Old Bearded Matrix Coder (dad.tty)",
@@ -34,8 +34,8 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       "pageCount": 6
     },
     "mechanicsSummary": [
-      "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, finish talking with Kiro.d (who brings your terminal and explains your chapter mission + RAM Max HP & SSD Revive), then practice pwd, mv, cat, ps, and kill while ls stays locked without a lantern",
-      "Levels 2-3, 5-6, 8-9 Tasks: Finish Vibecoder + Kiro.d opening dialog (or Skip Dialog) before Big Four taunt & turn-based battle! Petrify a visible gargoyle minion in Level 2 to win your Oil Lantern, unlock ls + dotfile riddle in Level 3, and recover your laptop in Level 6",
+      "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, finish talking with Kiro.d (who brings your terminal and explains your chapter mission), then practice ls, mv, cat, ps, and kill while ls flags stay locked without a Tube Transistor",
+      "Levels 2-3, 5-6, 8-9 Tasks: Finish Vibecoder + Kiro.d opening dialog (or Skip Dialog) before Big Four taunt & turn-based battle! Petrify the gargoyle minion in Level 2 so the Tube Transistor drops onto the ground (`mv tube_transistor ~`), test `ls -la`, expose Codec's hidden squad & dotfile riddle in Level 3, and recover your laptop in Level 6",
       "Levels 4, 7, 10 Hub: On your first Hub visit (Level 4), the Old Bearded Coder hands you the Motherboard Map & Unix Field Manual (unlocking ACH_FIELD_MANUAL and /manual), then reboots Kiro.d with Qwen, DeepSeek, and Llama to silence Anti-Gravy, Codec, and Gork",
       "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro.d as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
     ],
@@ -48,10 +48,10 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
         "roomKind": "attic",
         "floorTheme": 1,
         "mechanic": "terminal",
-        "mechanicLabel": "Intro Tutorial (pwd / mv / cat / ps / kill)",
+        "mechanicLabel": "Intro Tutorial (ls / mv / cat / ps / kill)",
         "difficulty": 1,
         "teaches": [
-          "pwd",
+          "ls",
           "mv",
           "cat",
           "ps",
@@ -67,18 +67,19 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       {
         "index": 2,
         "id": "level-02-task-ram-heist",
-        "title": "Cache Vault: Gargoyle Sentry & Lantern Reward",
+        "title": "Cache Vault: Gargoyle Sentry & Tube Transistor",
         "cwd": "/srv/kiroween/cache_vault",
         "roomKind": "crypt_entrance",
         "floorTheme": 2,
         "mechanic": "terminal",
-        "mechanicLabel": "Task 1 (Battle Rules / chmod -x / sed / Lantern Reward)",
+        "mechanicLabel": "Task 1 (Battle Rules / chmod -x / Ground Drop / sed)",
         "difficulty": 1,
         "teaches": [
           "cat",
           "chmod -x",
-          "sed -i",
-          "mv"
+          "mv",
+          "ls -la",
+          "sed -i"
         ],
         "enemies": [
           "trojan"
@@ -89,7 +90,7 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       {
         "index": 3,
         "id": "level-03-task-gpu-salvage",
-        "title": "GPU Alley: Lantern ls, Dotfile Riddle & Lockpicks",
+        "title": "GPU Alley: Tube Transistor ls -la, Hidden Squad & Dotfile Riddle",
         "cwd": "/srv/kiroween/gpu_alley",
         "roomKind": "crypt_hall",
         "floorTheme": 2,
@@ -304,7 +305,7 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
         "ram": 16,
         "ssd": 256,
         "items": [
-          "lantern"
+          "tube_transistor"
         ]
       },
       {
@@ -373,6 +374,42 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
         "hostHardware": "Veteran enterprise coder with a chest-length beard & lit cigarette hammering bare-metal code on a Matrix-display CRT server rack.",
         "counterplay": "`cat dad.tty.sock` / `hank` to talk; bring scavenged RAM + GPU chips to the Hub and run `kiro load <qwen|deepseek|llama>` so he reboots Kiro.d and disables one of the Big Four!"
       }
+    ],
+    "onFirstPickup": [
+      {
+        "pickup": "ram",
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Nice—your first RAM stick! Every 16GB RAM module you pocket boosts your MAXIMUM HEALTH (+10 Max HP) and restores +10 HP right away!",
+            "holdSec": 8
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Whoa, more RAM literally upgrades my HP bar! I am pocketing every .dimm stick I find!",
+            "holdSec": 6
+          }
+        ]
+      },
+      {
+        "pickup": "ssd",
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Your first SSD disk! Every 256GB SSD image gives you an automatic REVIVE BACKUP if your HP hits 0—plus storage capacity to reboot me at the Matrix Hub!",
+            "holdSec": 8
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "An automatic revive snapshot on flash storage?! Okay, SSD disks are basically extra lives—never skipping one!",
+            "holdSec": 6
+          }
+        ]
+      }
     ]
   }
 ];
@@ -389,14 +426,14 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "roomSeed": 11,
       "mechanic": "terminal",
       "exitDir": "/mnt/wires_and_chips/hub_uplink",
-      "summary": "Sucked into your computer empty-handed, listen to Kiro.d explain your chapter mission plus why RAM (+Max HP) and SSD (auto-Revive) matter, receive your terminal, then practice pwd, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 {pid:tutorial_virus_1} (`ls` stays locked until you earn your lantern after Sector 02!).",
+      "summary": "Sucked into your computer empty-handed, listen to Kiro.d explain your chapter mission, receive your terminal, then practice ls, mv starter_ram_8gb.dimm ~, cat kiro_story.txt, ps, and kill -9 {pid:tutorial_virus_1} (basic ls works for visible files; ls -la and flags unlock with your Tube Transistor in Sector 02!).",
       "files": [
         {
           "path": "/mnt/wires_and_chips/kiro_story.txt",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== KIRO.D // CHAPTER MISSION & SURVIVAL BRIEFING ===\n1. YOUR CHAPTER GOAL: Raid 6 sectors for hardware, visit the Matrix Server Hub 3 times so the Old Bearded Coder can reboot Kiro.d with open-weight models (silencing Anti-Gravy, Codec, and Gork), then defeat Clod + PID 1 and run `exit` to return home!\n2. WHY YOU NEED RAM & SSD:\n   - RAM (`*.dimm`, 16GB) -> Raises your MAXIMUM HEALTH (+10 Max HP) and heals +10 HP!\n   - SSD / GPU Images (`*.img`, 256GB) -> Grants 1 automatic REVIVE BACKUP if your HP hits 0, AND powers Kiro.d's Hub reboots!\n3. TOOLS LOCKED IN THE DARK: You dropped your Oil Lantern, Map, and Field Manual. `ls` is disabled until you clear Sector 02 (Cache Vault) to win back your lantern!\n4. SURVIVAL COMMANDS HERE: `pwd`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`.\n"
+          "content": "=== KIRO.D // CHAPTER MISSION & SURVIVAL BRIEFING ===\n1. YOUR CHAPTER GOAL: Raid 6 sectors for hardware, visit the Matrix Server Hub 3 times so the Old Bearded Coder can reboot Kiro.d with open-weight models (silencing Anti-Gravy, Codec, and Gork), then defeat Clod + PID 1 and run `exit` to return home!\n2. TOOLS & TUBE TRANSISTOR GATE: You dropped your Tube Transistor, Map, and Field Manual. Basic `ls` shows visible files in the room, while `ls -la` and all `ls` flags stay locked until you recover your glowing Tube Transistor in Sector 02 (Cache Vault)!\n3. SURVIVAL COMMANDS HERE: `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`.\n"
         },
         {
           "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
@@ -477,7 +514,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         }
       ],
       "solutionCommands": [
-        "pwd",
+        "ls",
         "mv starter_ram_8gb.dimm ~",
         "cat kiro_story.txt",
         "ps",
@@ -526,7 +563,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "It is pitch dark and my hands are empty—no terminal, no lantern, no map, no manual!",
+                "text": "It is pitch dark and my hands are empty—no terminal, no Tube Transistor, no map, no manual!",
                 "holdSec": 6
               }
             ]
@@ -587,7 +624,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "WHY YOU NEED RAM & SSD: every 16GB RAM stick boosts your MAX HEALTH (+10 Max HP), and every 256GB SSD/GPU image gives you an automatic REVIVE if your HP hits 0! Without your lantern, ls is disabled until you clear Sector 02!",
+                "text": "You lost your Tube Transistor in the fall, so this place is pitch dark! Plain ls shows visible files here, while ls -la and every ls flag stay locked until you recover your Tube Transistor in Sector 02!",
                 "holdSec": 9
               }
             ]
@@ -614,7 +651,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "My terminal slate! Hand it over, Kiro.d—let us check our directory with pwd and start scavenging!",
+                "text": "My terminal slate! Hand it over, Kiro.d—let us look around with ls and start scavenging!",
                 "holdSec": 6
               }
             ]
@@ -640,13 +677,13 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "model": "npc.kiro_ghost",
           "steps": [
             {
-              "prompt": "KIRO.D TUTORIAL #1: Without a lantern, ls is disabled! Check which directory you are standing in with pwd.",
-              "command": "pwd",
-              "doneText": "KIRO.D: \"You are in /mnt/wires_and_chips! Next, pocket starter_ram_8gb.dimm (+Max HP) into ~ with mv!\"",
+              "prompt": "KIRO.D TUTORIAL #1: Basic ls shows visible files in this folder (ls -la and flags need your Tube Transistor later). Run ls to look around.",
+              "command": "ls",
+              "doneText": "KIRO.D: \"Nice! Basic ls showed the visible files here (kiro_story.txt, starter_ram_8gb.dimm, hub_uplink/)! Next, pocket starter_ram_8gb.dimm into ~ with mv!\"",
               "doneWhen": [
                 {
                   "kind": "ran_command",
-                  "name": "pwd"
+                  "name": "ls"
                 },
                 {
                   "kind": "file_absent",
@@ -667,9 +704,9 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             },
             {
-              "prompt": "KIRO.D TUTORIAL #2: RAM raises your Maximum Health (+10 Max HP per 16GB)! Pocket starter_ram_8gb.dimm with mv.",
+              "prompt": "KIRO.D TUTORIAL #2: Pocket starter_ram_8gb.dimm into your home rig (~) using mv.",
               "command": "mv starter_ram_8gb.dimm ~",
-              "doneText": "KIRO.D: \"Nice! +8GB DDR5 RAM pocketed! Now use cat to read my full story about the Big Four.\"",
+              "doneText": "KIRO.D: \"Awesome! Now use cat to read my full briefing about the Big Four in kiro_story.txt!\"",
               "doneWhen": [
                 {
                   "kind": "file_absent",
@@ -706,7 +743,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             {
               "prompt": "KIRO.D TUTORIAL #5: Terminate glitch_spark.exe (PID {pid:tutorial_virus_1}) using kill -9 {pid:tutorial_virus_1}.",
               "command": "kill -9 {pid:tutorial_virus_1}",
-              "doneText": "KIRO.D: \"BOOM! You mastered pwd, mv, cat, ps, and kill! Step through cd hub_uplink into Sector 02—watch out for live Big Four minions!\"",
+              "doneText": "KIRO.D: \"BOOM! You mastered ls, mv, cat, ps, and kill! Step through cd hub_uplink into Sector 02—watch out for live Big Four minions!\"",
               "doneWhen": [
                 {
                   "kind": "enemy_dead",
@@ -754,7 +791,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               ]
             }
           },
-          "skipText": "[KIRO.D]: \"Skipping tutorial prompts! Finish the sector checks (`pwd`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`) and step through `cd hub_uplink`!\"\n"
+          "skipText": "[KIRO.D]: \"Skipping tutorial prompts! Finish the sector checks (`ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`) and step through `cd hub_uplink`!\"\n"
         },
         "kiro": {
           "stage": "show",
@@ -768,37 +805,27 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
           "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
         },
-        "openingSec": 60,
-        "locks": [
-          {
-            "command": "ls",
-            "until": {
-              "kind": "has_item",
-              "item": "lantern"
-            },
-            "message": "ls: it is pitch dark without your oil lantern! Clear Sector 02 to recover your lantern first (use `pwd` and `cat kiro_story.txt` here)."
-          }
-        ]
+        "openingSec": 60
       }
     },
     {
       "id": "level-02-task-ram-heist",
       "index": 2,
-      "title": "Cache Vault: Gargoyle Sentry & Lantern Reward",
+      "title": "Cache Vault: Gargoyle Sentry & Tube Transistor",
       "cwd": "/srv/kiroween/cache_vault",
       "roomKind": "crypt_entrance",
       "floorTheme": 2,
       "roomSeed": 22,
       "mechanic": "terminal",
       "exitDir": "/srv/kiroween/cache_vault/gpu_alley",
-      "summary": "A visible Big Four gargoyle minion (`gravy_sentry.bin`) guards Cache Vault! Finish talking with Kiro.d to learn how turn-based battles, RAM (+Max HP), and SSD (Revive) work, read `cat vault_notes.txt`, petrify `gravy_sentry.bin` (`chmod -x`), fix `ollama_bus.conf`, and loot RAM + SSD to win back your Oil Lantern!",
+      "summary": "Anti-Gravy's visible gargoyle minion (`gravy_sentry.bin`) clutches your Tube Transistor! Read `cat vault_notes.txt`, petrify `gravy_sentry.bin` (`chmod -x`) so the Tube Transistor lands on the ground, grab it (`mv tube_transistor ~`) to unlock `ls -la`, fix `ollama_bus.conf`, and loot RAM + SSD!",
       "files": [
         {
           "path": "/srv/kiroween/cache_vault/vault_notes.txt",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. COUNTERPLAY: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`.\n3. BUS FIX: Restore port `11434` in `ollama_bus.conf`: `sed -i 's/0000/11434/' ollama_bus.conf`.\n4. HARDWARE SURVIVAL: Pocket `ram_16gb.dimm` (+10 Max HP) and `gpu_tensor_chip_01.img` (+256GB SSD auto-Revive backup + Hub part) with `mv <file> ~`, then `cd gpu_alley` to claim your OIL LANTERN!\n"
+          "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. TEST `ls -la`: Try `ls -la` once you hold the Tube Transistor to spot hidden dotfiles before entering GPU Alley.\n4. BUS & HARDWARE: Restore port `11434` in `ollama_bus.conf` (`sed -i 's/0000/11434/' ollama_bus.conf`), pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n"
         },
         {
           "path": "/srv/kiroween/cache_vault/gravy_sentry.bin",
@@ -820,10 +847,22 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "content": "DDR5_ECC_16GB_MODULE_01\n"
         },
         {
-          "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img",
+          "path": "/srv/kiroween/cache_vault/ssd_256gb.img",
           "kind": "file",
           "mode": 420,
-          "content": "GPU_TENSOR_CORE_CHIP_24GB_VRAM_01\n"
+          "content": "NVME_SSD_256GB_BACKUP_DISK_01\n"
+        },
+        {
+          "path": "/srv/kiroween/cache_vault/tube_transistor",
+          "kind": "file",
+          "mode": 420,
+          "content": "#!/bin/transistor\n# TUBE TRANSISTOR: glowing vacuum-tube light & ls -la unlock.\nexport LIGHT=\"on\"\n"
+        },
+        {
+          "path": "/srv/kiroween/cache_vault/.vault_beacon",
+          "kind": "file",
+          "mode": 420,
+          "content": "# Hidden Cache Vault Dotfile\nTUBE_TRANSISTOR_CHECK=ok\nWARNING=Codec cloaked his entire squad in gpu_alley — open with ls -la!\n"
         },
         {
           "path": "/srv/kiroween/cache_vault/gpu_alley",
@@ -845,10 +884,18 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "path": "/srv/kiroween/cache_vault/ram_16gb.dimm"
         },
         {
-          "id": "pickup_l2_gpu",
+          "id": "pickup_l2_ssd",
           "type": "ssd",
-          "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img",
-          "model": "pickup.gpu"
+          "path": "/srv/kiroween/cache_vault/ssd_256gb.img"
+        },
+        {
+          "id": "pickup_l2_transistor",
+          "type": "tube_transistor",
+          "path": "/srv/kiroween/cache_vault/tube_transistor",
+          "appearWhen": {
+            "kind": "enemy_dead",
+            "enemyId": "trojan_l2"
+          }
         }
       ],
       "patches": [
@@ -863,7 +910,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "id": "l2_ram_bank",
           "model": "prop.ram_bank",
-          "x": 3.18,
+          "x": 3.45,
           "label": "cache DIMM bank"
         },
         {
@@ -900,7 +947,12 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "kind": "enemy_neutralized",
           "enemyId": "trojan_l2",
-          "description": "Petrify Anti-Gravy's visible gargoyle minion (`chmod -x gravy_sentry.bin`)"
+          "description": "Petrify Anti-Gravy's visible gargoyle minion (`chmod -x gravy_sentry.bin`) so it drops the Tube Transistor"
+        },
+        {
+          "kind": "file_absent",
+          "path": "/srv/kiroween/cache_vault/tube_transistor",
+          "description": "Grab the fallen Tube Transistor off the ground (`mv tube_transistor ~`)"
         },
         {
           "kind": "file_contains",
@@ -911,20 +963,21 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "kind": "file_absent",
           "path": "/srv/kiroween/cache_vault/ram_16gb.dimm",
-          "description": "Collect the 16GB RAM stick for +10 Max HP (`mv ram_16gb.dimm ~`)"
+          "description": "Collect the 16GB RAM stick (`mv ram_16gb.dimm ~`)"
         },
         {
           "kind": "file_absent",
-          "path": "/srv/kiroween/cache_vault/gpu_tensor_chip_01.img",
-          "description": "Collect the 256GB SSD/GPU image for auto-Revive & Hub reboot (`mv gpu_tensor_chip_01.img ~`)"
+          "path": "/srv/kiroween/cache_vault/ssd_256gb.img",
+          "description": "Collect the 256GB SSD disk (`mv ssd_256gb.img ~`)"
         }
       ],
       "solutionCommands": [
         "cat vault_notes.txt",
         "chmod -x gravy_sentry.bin",
+        "mv tube_transistor ~",
         "sed -i 's/0000/11434/' ollama_bus.conf",
         "mv ram_16gb.dimm ~",
-        "mv gpu_tensor_chip_01.img ~",
+        "mv ssd_256gb.img ~",
         "cd gpu_alley"
       ],
       "script": {
@@ -932,7 +985,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "arrival": [
           {
             "kind": "print",
-            "text": "\n[CACHE VAULT — /srv/kiroween/cache_vault]\nA stone-winged gargoyle binary (`gravy_sentry.bin`) crouches beside `vault_notes.txt` and the RAM bank! Listen to Kiro.d before engaging (or click Skip Dialog »).\n"
+            "text": "\n[CACHE VAULT — /srv/kiroween/cache_vault]\nA stone-winged gargoyle binary (`gravy_sentry.bin`) crouches beside `vault_notes.txt`, clutching your glowing Tube Transistor! Listen to Kiro.d before engaging (or click Skip Dialog »).\n"
           }
         ],
         "timed": [
@@ -942,24 +995,24 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "Whoa—that winged gargoyle (`gravy_sentry.bin`) is staring right at me! What is that thing, Kiro.d?!",
+                "text": "Whoa—that winged gargoyle (gravy_sentry.bin) is staring right at me! Wait... is it clutching my glowing Tube Transistor?!",
+                "holdSec": 7
+              }
+            ]
+          },
+          {
+            "afterSec": 8,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Careful, Vibecoder! Big Four minions are DANGEROUS—they hurl blazing red Matrix fireballs! And yes, that Tube Transistor lights dark sectors and unlocks ls -la!",
                 "holdSec": 8
               }
             ]
           },
           {
-            "afterSec": 9,
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "kiro",
-                "text": "Careful, Vibecoder! Big Four minions are DANGEROUS—they hurl blazing red Matrix fireballs that shred your health! Wait till we finish talking before your terminal unlocks!",
-                "holdSec": 9
-              }
-            ]
-          },
-          {
-            "afterSec": 18,
+            "afterSec": 16,
             "steps": [
               {
                 "kind": "dialog_box",
@@ -970,13 +1023,24 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             ]
           },
           {
-            "afterSec": 28,
+            "afterSec": 26,
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "I wish I could run ls -la right now to check the shadows, but every ls flag is locked without that Tube Transistor!",
+                "holdSec": 5
+              }
+            ]
+          },
+          {
+            "afterSec": 31,
             "steps": [
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "Read cat vault_notes.txt and petrify it with chmod -x gravy_sentry.bin! Grab RAM (+10 MAX HEALTH) and SSD/GPU (256GB = automatic REVIVE on death + Hub parts for our chapter mission)—clear this sector to earn your OIL LANTERN!",
-                "holdSec": 8
+                "text": "Read cat vault_notes.txt and petrify gravy_sentry.bin with chmod -x gravy_sentry.bin! Once it turns to stone, the Tube Transistor lands on the ground—grab it with mv tube_transistor ~ and try ls -la!",
+                "holdSec": 5
               }
             ]
           }
@@ -1012,14 +1076,65 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
         },
         "openingSec": 36,
-        "locks": [
+        "triggers": [
           {
-            "command": "ls",
-            "until": {
-              "kind": "has_item",
-              "item": "lantern"
+            "when": {
+              "kind": "enemy_dead",
+              "enemyId": "trojan_l2"
             },
-            "message": "ls: still locked without your Oil Lantern! Clear Cache Vault to win your lantern as a reward (read `cat vault_notes.txt` instead)."
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "CLANG! gravy_sentry.bin froze into solid stone—and the Tube Transistor just landed right on the ground!",
+                "holdSec": 6
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Grab it off the floor with mv tube_transistor ~! That glowing vacuum tube will light the vault and unlock ls -la!",
+                "holdSec": 7
+              }
+            ]
+          },
+          {
+            "when": {
+              "kind": "has_item",
+              "item": "tube_transistor"
+            },
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "WHOA! The Tube Transistor warmed right up in my hand—the whole vault just lit up amber!",
+                "holdSec": 6
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "All ls flags are unlocked now! Try running ls -la right here to sweep the shadows for hidden dotfiles before heading to gpu_alley!",
+                "holdSec": 7
+              }
+            ]
+          },
+          {
+            "when": {
+              "kind": "room_swept"
+            },
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "Whoa—ls -la exposed a hidden .vault_beacon dotfile that plain ls completely missed!",
+                "holdSec": 6
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Awesome test! Codec cloaked his enemies in gpu_alley next—open Sector 03 with ls -la the moment you step inside!",
+                "holdSec": 7
+              }
+            ]
           }
         ]
       }
@@ -1027,14 +1142,14 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
     {
       "id": "level-03-task-gpu-salvage",
       "index": 3,
-      "title": "GPU Alley: Lantern ls, Dotfile Riddle & Lockpicks",
+      "title": "GPU Alley: Tube Transistor ls -la, Hidden Squad & Dotfile Riddle",
       "cwd": "/srv/kiroween/gpu_alley",
       "roomKind": "crypt_hall",
       "floorTheme": 2,
       "roomSeed": 33,
       "mechanic": "terminal",
       "exitDir": "/srv/kiroween/gpu_alley/server_hub_1",
-      "summary": "Your newly rewarded Oil Lantern unlocks `ls`! Sweep GPU Alley with `ls -la` to expose `.codec_spycam` (`rm`) and read `.tensor_rune` to solve `lantern_gate.sock`, then kill `keygen.exe`, delete `port_445/worm.bin`, and loot RAM + SSD before visiting the Hub!",
+      "summary": "Codec cloaked EVERY enemy in GPU Alley! Sweep with `ls -la` using your new Tube Transistor to expose `.codec_spycam`, `.keygen.exe`, `port_445/worm.bin`, and `.transistor_rune`, solve `transistor_gate.sock`, neutralize the squad, and loot RAM + GPU before visiting the Hub!",
       "files": [
         {
           "path": "/srv/kiroween/gpu_alley/.codec_spycam",
@@ -1043,17 +1158,17 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "content": "CODEC_HIDDEN_DOTFILE_SPYCAM\n"
         },
         {
-          "path": "/srv/kiroween/gpu_alley/.tensor_rune",
+          "path": "/srv/kiroween/gpu_alley/.transistor_rune",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "# Hidden Lantern Dotfile\nRUNE_PHRASE=amber_flame\n"
+          "content": "# Hidden Tube Transistor Dotfile\nRUNE_PHRASE=warm_filament\n"
         },
         {
-          "path": "/srv/kiroween/gpu_alley/lantern_gate.sock",
+          "path": "/srv/kiroween/gpu_alley/transistor_gate.sock",
           "kind": "socket",
           "mode": 493,
-          "content": "Sweep hidden dotfiles with ls -la, read .tensor_rune, and echo its RUNE_PHRASE here!"
+          "content": "Sweep hidden dotfiles with ls -la, read .transistor_rune, and echo its RUNE_PHRASE here!"
         },
         {
           "path": "/srv/kiroween/gpu_alley/vram_crate",
@@ -1079,10 +1194,10 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "content": "CODEC_REPLICATING_PORT_WORM\n"
         },
         {
-          "path": "/srv/kiroween/gpu_alley/keygen.exe",
+          "path": "/srv/kiroween/gpu_alley/.keygen.exe",
           "kind": "file",
           "mode": 493,
-          "content": "CODEC_LOCKPICK_DAEMON\n"
+          "content": "CODEC_HIDDEN_LOCKPICK_DAEMON\n"
         },
         {
           "path": "/srv/kiroween/gpu_alley/ram_16gb.dimm",
@@ -1112,16 +1227,18 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "id": "crack_l3",
           "type": "crack",
-          "path": "/srv/kiroween/gpu_alley/keygen.exe",
+          "path": "/srv/kiroween/gpu_alley/.keygen.exe",
           "pid": 2104,
           "ppid": 1,
+          "hidden": true,
           "helps": "worm_l3"
         },
         {
           "id": "worm_l3",
           "type": "worm",
           "path": "/srv/kiroween/gpu_alley/port_445/worm.bin",
-          "port": "/srv/kiroween/gpu_alley/port_445"
+          "port": "/srv/kiroween/gpu_alley/port_445",
+          "hidden": true
         }
       ],
       "pickups": [
@@ -1147,13 +1264,13 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "id": "l3_fet",
           "model": "prop.transistor",
-          "x": 2.82,
+          "x": 4.6,
           "label": "VRM MOSFET"
         },
         {
           "id": "l3_cooler",
           "model": "prop.cooler_tower",
-          "x": -0.32,
+          "x": 3.55,
           "label": "heatsink stack"
         },
         {
@@ -1178,17 +1295,17 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "kind": "riddle_solved",
           "riddleId": "riddle_l3_ls",
-          "description": "Use `ls -la` to find `.tensor_rune` and solve `lantern_gate.sock` (`echo amber_flame > lantern_gate.sock`)"
+          "description": "Use `ls -la` to find `.transistor_rune` and solve `transistor_gate.sock` (`echo warm_filament > transistor_gate.sock`)"
         },
         {
           "kind": "enemy_neutralized",
           "enemyId": "crack_l3",
-          "description": "Kill `keygen.exe` (`ps` then `kill -9 {pid:crack_l3}`)"
+          "description": "Expose and kill `.keygen.exe` (`ls -la`, `ps`, then `kill -9 {pid:crack_l3}`)"
         },
         {
           "kind": "enemy_neutralized",
           "enemyId": "worm_l3",
-          "description": "Delete `port_445/worm.bin` (`rm port_445/worm.bin`)"
+          "description": "Expose and delete `port_445/worm.bin` (`rm port_445/worm.bin`)"
         },
         {
           "kind": "file_absent",
@@ -1203,8 +1320,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       ],
       "solutionCommands": [
         "ls -la",
-        "cat .tensor_rune",
-        "echo amber_flame > lantern_gate.sock",
+        "cat .transistor_rune",
+        "echo warm_filament > transistor_gate.sock",
         "kill -9 {pid:crack_l3}",
         "rm .codec_spycam port_445/worm.bin",
         "mv ram_16gb.dimm ~",
@@ -1216,7 +1333,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "arrival": [
           {
             "kind": "print",
-            "text": "\n[GPU ALLEY — /srv/kiroween/gpu_alley]\nYour rewarded Oil Lantern blazes in your hand—`ls` and `ls -la` are now unlocked! Listen to Kiro.d before Codec attacks.\n"
+            "text": "\n[GPU ALLEY — /srv/kiroween/gpu_alley]\nYour glowing Tube Transistor lights the crypt—`ls -la` and all `ls` flags are unlocked! Yet the room looks eerily empty... Listen to Kiro.d before Codec strikes from stealth.\n"
           }
         ],
         "timed": [
@@ -1226,7 +1343,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "Awesome—winning my Oil Lantern after Cache Vault lights up this whole crypt! I can finally run ls and ls -la!",
+                "text": "Awesome—my Tube Transistor lights up GPU Alley! Wait... where are Codec's enemies? Plain ls does not show a single hostile file!",
                 "holdSec": 8
               }
             ]
@@ -1237,7 +1354,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "Now that ls is unlocked, sweep with ls -la right when battle starts! It exposes Codec's hidden .codec_spycam AND reveals the hidden .tensor_rune dotfile that unlocks lantern_gate.sock!",
+                "text": "It is an ambush! Codec cloaked his ENTIRE squad in hidden dotfiles and dark ports! The second battle begins, run ls -la with your Tube Transistor to expose every hidden enemy AND reveal .transistor_rune for transistor_gate.sock!",
                 "holdSec": 9
               }
             ]
@@ -1248,7 +1365,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "Got it—ls -la for the spycam and riddle, kill keygen.exe and worm.bin, then bring our RAM + SSD haul to the Matrix Hub! Bring it on, Codec!",
+                "text": "Time to put this Tube Transistor to work—ls -la first to flush out Codec's hidden squad, crack transistor_gate.sock, and haul the hardware to the Matrix Hub!",
                 "holdSec": 7
               }
             ]
@@ -1284,21 +1401,42 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "weakNote": "[KIRO.D STANDBY] Active Core: kiro-tiny-1b-q4.gguf (weak — scavenge RAM + GPU chips and reboot Kiro.d at the Hub server!)\n",
           "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
         },
-        "openingSec": 25
+        "openingSec": 25,
+        "triggers": [
+          {
+            "when": {
+              "kind": "room_swept"
+            },
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "BINGO! ls -la lit up the whole alley—.codec_spycam, .keygen.exe, AND a worm in port_445 popped right out of stealth, plus .transistor_rune!",
+                "holdSec": 7
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "That Tube Transistor paid off immediately! Read cat .transistor_rune for transistor_gate.sock, kill .keygen.exe with ps + kill -9, and rm .codec_spycam and port_445/worm.bin!",
+                "holdSec": 7
+              }
+            ]
+          }
+        ]
       },
       "riddles": [
         {
           "id": "riddle_l3_ls",
-          "path": "/srv/kiroween/gpu_alley/lantern_gate.sock",
-          "speaker": "LANTERN GATE",
-          "prompt": "Only an Oil Lantern bearer may unseal vram_crate! Sweep hidden dotfiles with `ls -la`, read `.tensor_rune`, and echo its RUNE_PHRASE into `lantern_gate.sock`!",
-          "answer": "amber_flame",
+          "path": "/srv/kiroween/gpu_alley/transistor_gate.sock",
+          "speaker": "TRANSISTOR GATE",
+          "prompt": "Only a Tube Transistor bearer may unseal vram_crate! Sweep hidden dotfiles with `ls -la`, read `.transistor_rune`, and echo its RUNE_PHRASE into `transistor_gate.sock`!",
+          "answer": "warm_filament",
           "hints": [
-            "Raise your lantern with `ls -la` to reveal hidden dotfiles starting with \".\"!",
-            "Inspect the hidden rune file: `cat .tensor_rune`",
-            "Write the rune phrase into this socket: `echo amber_flame > lantern_gate.sock`"
+            "Raise your Tube Transistor with `ls -la` to reveal hidden dotfiles starting with \".\"!",
+            "Inspect the hidden rune file: `cat .transistor_rune`",
+            "Write the rune phrase into this socket: `echo warm_filament > transistor_gate.sock`"
           ],
-          "success": "LANTERN GATE: \"The lantern flame reveals `.tensor_rune`! `vram_crate` clicks open!\"",
+          "success": "TRANSISTOR GATE: \"The warm filament glow reveals `.transistor_rune`! `vram_crate` clicks open!\"",
           "opens": "/srv/kiroween/gpu_alley/vram_crate",
           "tokens": [
             "ls",
@@ -1636,7 +1774,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "Anti-Gravy is silenced, and I have my Lantern, Map (F3), and Field Manual (F1) now! What broke in this UI Grid, Kiro.d?",
+                "text": "Anti-Gravy is silenced, and I have my Tube Transistor, Map (F3), and Field Manual (F1) now! What broke in this UI Grid, Kiro.d?",
                 "holdSec": 8
               }
             ]
@@ -2728,19 +2866,19 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "id": "l11_rack",
           "model": "prop.gpu_server",
-          "x": 3.83,
+          "x": 2.72,
           "label": "overlord compute cage"
         },
         {
           "id": "l11_pipe",
           "model": "prop.water_pipe",
-          "x": 4.68,
+          "x": 4.78,
           "label": "core coolant line"
         },
         {
           "id": "l11_aio",
           "model": "prop.cooler_aio",
-          "x": 2.86,
+          "x": -0.1,
           "label": "die chiller"
         }
       ],
@@ -3038,7 +3176,7 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
             ],
             "bgHex": "#141828",
             "room": "room.crypt_entrance",
-            "caption": "AT LEVEL 3 GPU ALLEY, HE GRABS HIS LANTERN & FIGHTS BACK!",
+            "caption": "WITH HIS TUBE TRANSISTOR, HE EXPOSES HIDDEN FOES & FIGHTS BACK!",
             "cast": [
               {
                 "model": "vibecoder.dev",
@@ -3695,34 +3833,34 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = {
     },
     "levels": {
       "level-01-tutorial-awakening": {
-        "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro.d brings your terminal & explains your chapter mission, RAM (Max HP) & SSD (Revive)!",
+        "banner": "LEVEL 01 // DARK WIRES & CHIPS: Kiro.d brings your terminal & explains your chapter mission!",
         "hankRungs": [
-          "Kiro.d: \"Without your lantern, `ls` is locked in the dark! Check where you stand with `pwd`, then pocket the starter RAM stick (+Max HP) using `mv starter_ram_8gb.dimm ~`!\"",
-          "Kiro.d: \"Remember our chapter mission: scavenge RAM (+10 Max HP) and SSD/GPU parts (256GB = auto-Revive backup + Hub server parts) across 6 sectors! Read `cat kiro_story.txt`, then run `ps`.\"",
-          "Kiro.d: \"Run `pwd`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}`, then step through `cd hub_uplink`!\""
+          "Kiro.d: \"Basic `ls` shows visible files here (while `ls -la` and flags stay locked until you recover your Tube Transistor in Sector 02)! Look around with `ls`, then pocket the starter RAM stick using `mv starter_ram_8gb.dimm ~`!\"",
+          "Kiro.d: \"Remember our chapter mission: scavenge hardware across 6 sectors to reboot me at the Matrix Hub! Read `cat kiro_story.txt`, then run `ps`.\"",
+          "Kiro.d: \"Run `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, and `kill -9 {pid:tutorial_virus_1}`, then step through `cd hub_uplink`!\""
         ],
-        "agentTaunt": "CLOD: \"Hohoho! Look at the Vibecoder clutching a bare terminal in the dark—without a lantern you cannot even run ls, and you must type every command by hand!\"",
-        "completion": "Kiro.d: \"Awesome! You mastered pwd, mv, cat, ps, and kill! Head into Cache Vault next—watch out, Big Four minions will attack you in turn-based battle!\""
+        "agentTaunt": "CLOD: \"Hohoho! Look at the Vibecoder clutching a bare terminal in the dark—without a Tube Transistor you only have plain ls, no -la or flags to see what hides in the dark!\"",
+        "completion": "Kiro.d: \"Awesome! You mastered ls, mv, cat, ps, and kill! Head into Cache Vault next—watch out, Big Four minions will attack you in turn-based battle!\""
       },
       "level-02-task-ram-heist": {
-        "banner": "LEVEL 02 // CACHE VAULT: Listen to Kiro.d first! Petrify gravy_sentry.bin, fix ollama_bus.conf, loot RAM+SSD & win your Lantern!",
+        "banner": "LEVEL 02 // CACHE VAULT: Petrify gravy_sentry.bin so the Tube Transistor drops to the ground (`mv tube_transistor ~`), try `ls -la`, fix ollama_bus.conf & loot RAM+SSD!",
         "hankRungs": [
-          "Kiro.d: \"`ls` is still locked until you win your lantern after this sector! Read `cat vault_notes.txt` first, and watch the turn-based battle banner—petrify `gravy_sentry.bin` with `chmod -x gravy_sentry.bin`!\"",
-          "Kiro.d: \"Once `gravy_sentry.bin` turns to stone (`chmod -x gravy_sentry.bin`), patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` with `sed -i`, then grab both RAM (+10 Max HP) and SSD/GPU (auto-Revive backup)!\"",
-          "Kiro.d: \"Run `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_01.img ~`, then `cd gpu_alley` to claim your Oil Lantern!\""
+          "Kiro.d: \"Read `cat vault_notes.txt` first, then petrify `gravy_sentry.bin` with `chmod -x gravy_sentry.bin` so the Tube Transistor lands on the ground!\"",
+          "Kiro.d: \"Grab the fallen Tube Transistor with `mv tube_transistor ~` (try `ls -la` right away!), patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` with `sed -i`, then pocket `ram_16gb.dimm` and `ssd_256gb.img`!\"",
+          "Kiro.d: \"Run `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `mv tube_transistor ~`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv ssd_256gb.img ~`, then `cd gpu_alley`!\""
         ],
-        "agentTaunt": "ANTI-GRAVY: \"HAHAHA! My gargoyle minion gravy_sentry.bin is right in front of you—eat red Matrix fireballs, Vibecoder!\"",
-        "completion": "Cache Vault cleared! RAM (+10 Max HP) and 256GB SSD/GPU Revive Backup secured—and you recovered your OIL LANTERN for GPU Alley!"
+        "agentTaunt": "ANTI-GRAVY: \"HAHAHA! My gargoyle minion gravy_sentry.bin has your precious Tube Transistor—eat red Matrix fireballs, Vibecoder!\"",
+        "completion": "Cache Vault cleared! You grabbed the Tube Transistor off the ground (unlocking `ls -la` and all `ls` flags) plus RAM and a 256GB SSD disk—ready for GPU Alley!"
       },
       "level-03-task-gpu-salvage": {
-        "banner": "LEVEL 03 // GPU ALLEY: Your Oil Lantern unlocks `ls`! Sweep `.codec_spycam` & `.tensor_rune` (`ls -la`), solve `lantern_gate.sock`, and crush `keygen.exe`!",
+        "banner": "LEVEL 03 // GPU ALLEY: Your Tube Transistor unlocks `ls -la`! Sweep Codec's hidden squad (`.codec_spycam`, `.keygen.exe`, `port_445/worm.bin`) & `.transistor_rune`, then solve `transistor_gate.sock`!",
         "hankRungs": [
-          "Kiro.d: \"Your new Oil Lantern unlocks `ls`! Run `ls -la` first to expose Codec's hidden `.codec_spycam` AND uncover the hidden `.tensor_rune` dotfile!\"",
-          "Kiro.d: \"Remove `.codec_spycam` (`rm .codec_spycam`), read `cat .tensor_rune` and `cat lantern_gate.sock`, then echo `amber_flame` into `lantern_gate.sock` to unlock `vram_crate`!\"",
-          "Kiro.d: \"Run `ls -la`, `rm .codec_spycam`, `cat .tensor_rune`, `echo amber_flame > lantern_gate.sock`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
+          "Kiro.d: \"Codec cloaked EVERY enemy in this alley! Run `ls -la` with your Tube Transistor first to expose `.codec_spycam`, `.keygen.exe`, `port_445/worm.bin`, AND `.transistor_rune`!\"",
+          "Kiro.d: \"Remove `.codec_spycam` (`rm .codec_spycam`), read `cat .transistor_rune` and `cat transistor_gate.sock`, then echo `warm_filament` into `transistor_gate.sock` to unlock `vram_crate`!\"",
+          "Kiro.d: \"Run `ls -la`, `rm .codec_spycam`, `cat .transistor_rune`, `echo warm_filament > transistor_gate.sock`, `ps`, `kill -9 {pid:crack_l3}`, `rm port_445/worm.bin`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_01.img ~`, and `cd server_hub_1`.\""
         ],
-        "agentTaunt": "CODEC: \"LMAO! So you won back your lantern? Let us see if you can spot my hidden dotfile spycam and unlock lantern_gate.sock under fire!\"",
-        "completion": "Dotfile riddle solved, GPU Alley cleared, and two full sets of RAM + SSD/GPU parts ready for the Matrix Server Hub!"
+        "agentTaunt": "CODEC: \"LMAO! So you grabbed your Tube Transistor off the floor? Good luck finding my cloaked squad or unlocking transistor_gate.sock without ls -la!\"",
+        "completion": "Hidden squad exposed with `ls -la`, dotfile riddle solved, GPU Alley cleared, and two full sets of hardware ready for the Matrix Server Hub!"
       },
       "level-04-hub-model-one": {
         "banner": "LEVEL 04 // THE MATRIX HUB: The Old Bearded Coder gifts you the Motherboard Map & Field Manual, then reboots Kiro.d!",

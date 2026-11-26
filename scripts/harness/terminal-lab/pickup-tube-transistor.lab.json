@@ -1,13 +1,13 @@
 {
-  "id": "pickup-lantern",
-  "title": "Pickup: lantern",
+  "id": "pickup-tube-transistor",
+  "title": "Pickup: tube_transistor",
   "room": {
     "roomKind": "lab_hall",
     "floorTheme": 1,
     "mechanic": "terminal",
     "cwd": "/lab",
-    "title": "Pickup: lantern",
-    "summary": "mv lantern ~ puts the lantern in his hand. Taking it again changes nothing."
+    "title": "Pickup: tube_transistor",
+    "summary": "mv tube_transistor ~ puts the Tube Transistor in his hand. Taking it again changes nothing."
   },
   "player": {
     "ram": 0,
@@ -19,9 +19,9 @@
   "setup": [
     {
       "op": "pickup",
-      "id": "lantern-1",
-      "type": "lantern",
-      "path": "/lab/lantern"
+      "id": "tube-transistor-1",
+      "type": "tube_transistor",
+      "path": "/lab/tube_transistor"
     }
   ],
   "steps": [
@@ -29,12 +29,12 @@
       "op": "run",
       "line": "ls",
       "expect": {
-        "stdout": "lantern"
+        "stdout": "tube_transistor"
       }
     },
     {
       "op": "run",
-      "line": "mv lantern ~",
+      "line": "mv tube_transistor ~",
       "expect": {
         "code": 0,
         "events": [

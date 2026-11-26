@@ -128,7 +128,7 @@ function lockAndTimedProps(world) {
   // Commands that cannot take the gated pickup, delete its file or move the hero away from it.
   const idle = fc.oneof(
     { weight: 3, arbitrary: fc.constantFrom('ls', 'ls -a', 'ls -la', 'ls -l') },
-    { weight: 3, arbitrary: fc.constantFrom('pwd', 'ps', 'help', 'hint', 'inventory', 'inv', 'hold lantern', 'hold terminal', 'hold laptop', 'cat *', 'kiro', 'kiro scan') },
+    { weight: 3, arbitrary: fc.constantFrom('pwd', 'ps', 'help', 'hint', 'inventory', 'inv', 'hold tube_transistor', 'hold terminal', 'hold laptop', 'cat *', 'kiro', 'kiro scan') },
     { weight: 1, arbitrary: fc.integer({ min: 1, max: 3 }).map((tick) => ({ tick })) },
   );
   const kept = (lock, pickup) => (s) => {

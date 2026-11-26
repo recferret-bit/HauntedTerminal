@@ -26,7 +26,7 @@ function fileAbsentLabel(g: ChapterState, path: string): string {
   if (pickup?.type === 'ram') return `Collect RAM stick (${name})`;
   if (pickup?.type === 'ssd') return `Collect SSD drive (${name})`;
   if (pickup?.type === 'energy') return `Collect energy cell (${name})`;
-  if (pickup?.type === 'lantern') return 'Pick up the lantern';
+  if (pickup?.type === 'tube_transistor') return 'Pick up the Tube Transistor';
   if (pickup?.type === 'laptop') return 'Pick up the laptop';
   if (name.startsWith('.')) return `Find and remove hidden file (${name})`;
   return `Remove ${relTarget(g.rt.spec.cwd, path)}`;
@@ -114,9 +114,9 @@ export function chapterHintGoals(g: ChapterState): HintGoals {
   const spec = g.rt.spec;
   const tasks: HintTask[] = [];
   const ruleAbsentPaths = new Set(spec.winRules.filter((r) => r.kind === 'file_absent').map((r) => r.path));
-  const lanternPickup = spec.pickups.find((p) => p.type === 'lantern' && !ruleAbsentPaths.has(p.path));
-  if (lanternPickup) {
-    tasks.push({ label: 'Pick up the lantern to light the room', done: hasItem(g.inventory, 'lantern') });
+  const transistorPickup = spec.pickups.find((p) => p.type === 'tube_transistor' && !ruleAbsentPaths.has(p.path));
+  if (transistorPickup) {
+    tasks.push({ label: 'Pick up the Tube Transistor to light the room', done: hasItem(g.inventory, 'tube_transistor') });
   }
   const laptopPickup = spec.pickups.find((p) => p.type === 'laptop' && !ruleAbsentPaths.has(p.path));
   if (laptopPickup) {

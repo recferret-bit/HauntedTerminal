@@ -28,7 +28,7 @@ const EXAMPLES: Record<string, string> = {
   ln: 'ln -s readme.txt link', echo: 'echo hello', grep: 'grep -i lab readme.txt', wc: 'wc -l readme.txt', cut: 'cut -d: -f1 readme.txt',
   rev: 'rev readme.txt', sed: "sed 's/lab/LAB/' readme.txt", head: 'head -n 1 readme.txt', tail: 'tail -n 1 readme.txt', ps: 'ps', top: 'top',
   kill: 'kill -l', pkill: 'pkill nothing', source: 'source readme.txt', '.': '. readme.txt', kiro: 'kiro', 'kiro.d': 'kiro.d', help: 'help', man: 'man ls', manual: 'manual chmod', map: 'map',
-  status: 'status', whoami: 'whoami', inventory: 'inventory', inv: 'inv', hold: 'hold lantern', tutorial: 'tutorial', clear: 'clear', exit: 'exit', logout: 'logout', edit: 'edit readme.txt',
+  status: 'status', whoami: 'whoami', inventory: 'inventory', inv: 'inv', hold: 'hold tube_transistor', tutorial: 'tutorial', clear: 'clear', exit: 'exit', logout: 'logout', edit: 'edit readme.txt',
   nano: 'nano readme.txt', docker: 'docker images', hank: 'hank', grimoire: 'grimoire', bestiary: 'bestiary', workshop: 'workshop', achievements: 'achievements',
   'restart-level': 'restart-level --yes', retry: 'restart-level --yes', skin: 'skin',
 };
