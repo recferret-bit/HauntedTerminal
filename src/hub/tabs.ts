@@ -33,7 +33,7 @@ export const HOME_HREF = TAB_PATHS.home;
 export function tabOfPath(pathname: string): HubTabId | null {
   return (Object.keys(TAB_PATHS) as HubTabId[]).find((tab) => TAB_PATHS[tab] === pathname) ?? null;
 }
-export const WISHLIST_HREF = '/?wishlist=1';
+const WISHLIST_HREF = '/?wishlist=1';
 
 /** The game entry: the first chapter of the catalog (no chapter id is written in code). */
 function playHref(): string {

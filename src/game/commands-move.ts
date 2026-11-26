@@ -9,7 +9,7 @@ import { absPath, findId, hasExec, modeString, resolve, type VNode } from './tre
 import { runReadlink } from './tree-links.js';
 import type { FloorId } from './types.js';
 
-export function transition(g: Play, from: number, ups: number, loop: boolean): KernelEvent {
+function transition(g: Play, from: number, ups: number, loop: boolean): KernelEvent {
   return {
     type: 'ROOM_TRANSITION',
     fromDir: from,
@@ -20,7 +20,7 @@ export function transition(g: Play, from: number, ups: number, loop: boolean): K
   };
 }
 
-export function advance(g: Play, next: FloorId, cleared: FloorId, bonus: boolean): Step {
+function advance(g: Play, next: FloorId, cleared: FloorId, bonus: boolean): Step {
   const events: KernelEvent[] = [];
   const from = g.run.cwd.id;
   const kills = g.run.world.counts();
@@ -107,11 +107,11 @@ export function cmdCd(g: Play, path: string | undefined): Step {
   return out(say, events);
 }
 
-export function owner(_g: Play, node: VNode): string {
+function owner(_g: Play, node: VNode): string {
   return node.uid === 0 ? 'root' : 'dev ';
 }
 
-export function longLine(g: Play, node: VNode, label: string): string {
+function longLine(g: Play, node: VNode, label: string): string {
   const arrow = node.kind === 'symlink' && node.link ? ` -> ${node.link}` : '';
   const size = String(node.kind === 'dir' ? 4096 : node.content.length).padStart(5);
   return `${modeString(node)} 1 ${owner(g, node)} mansion ${size} ${label}${arrow}`;

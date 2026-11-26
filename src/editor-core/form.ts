@@ -11,7 +11,7 @@ import {
 } from './form-state.js';
 import type { ArrayItem, Field, Option } from './schema.js';
 
-export { blankOf, blankUnion, remapArrayPaths, syncSelectedDetailsDom, type FormCtx };
+export { blankUnion, syncSelectedDetailsDom, type FormCtx };
 
 type Of<T extends Field['type']> = Extract<Field, { type: T }>;
 

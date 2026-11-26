@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createVortexMaterial, type ComicMaterial } from '../shaders/comic-material.js';
+import type { ComicMaterial } from '../shaders/comic-material.js';
 
 export function stampMaterialBases(mats: Iterable<ComicMaterial>): void {
   for (const mat of mats) {
@@ -8,7 +8,7 @@ export function stampMaterialBases(mats: Iterable<ComicMaterial>): void {
     mat.userData.baseEmissive = mat.uniforms.uEmissive!.value as number;
   }
 }
-import { buildModel, createAnimator, ModelCatalog, type AnimState, type BuiltModel, type ModelAnimator, type ZoneId } from '../procgen/index.js';
+import { buildModel, createAnimator, ModelCatalog, type BuiltModel, type ModelAnimator, type ZoneId } from '../procgen/index.js';
 
 /**
  * The game's cast, built from the procgen catalog (src/procgen) instead of the hand-made meshes in
@@ -50,7 +50,6 @@ export interface CastDef {
   glow?: ZoneId;
   /** Uniform scale so the actor matches the size the room layout was authored for. */
   scale?: number;
-  state?: AnimState;
 }
 
 /** Which procgen model plays each legacy RoomActor key (the stage's dynamic cast reads this too). */
@@ -67,53 +66,6 @@ export const LEGACY_CAST: Record<keyof HauntedCast, CastDef> = {
   mirror: { model: 'door.loopback', kind: 'door', body: 'pcb' },
   scroll: { model: 'prop.file', kind: 'prop', body: 'paper' },
 };
-const DEFS = LEGACY_CAST;
-
-function buildActor(key: keyof HauntedCast, seed: number): BuiltActor {
-  const def = DEFS[key];
-  const model = buildModel(ModelCatalog.build(def.model, seed), { seed });
-  const all = model.allMaterials;
-  stampMaterialBases(all);
-  const body = model.materials.get(def.body) ?? all[0]!;
-  const group = new THREE.Group();
-  group.name = key;
-  group.add(model.group);
-  if (def.scale) model.group.scale.setScalar(def.scale);
-  model.group.userData.assetKey = key;
-
-  if (key === 'hole') {
-    // /dev/null: the shader vortex sits in the ring's mouth; the ink disc of the model is hidden behind it.
-    const v = model.sockets.vortex ?? [0, 0.75, -0.2];
-    const vortex = createVortexMaterial();
-    const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 16), vortex);
-    sphere.position.set(v[0], v[1], v[2] - 0.12);
-    sphere.userData.assetKey = 'black_hole';
-    group.add(sphere);
-    group.userData.vortex = vortex;
-    group.userData.vortexMesh = sphere;
-    const voidPart = model.parts.get('void');
-    if (voidPart) voidPart.visible = false;
-  }
-
-  const animator = createAnimator(model, def.state ? { state: def.state } : undefined);
-  return { key, group, body, all, extras: [], glow: def.glow ? model.materials.get(def.glow) : undefined, model, animator };
-}
-
-export function buildHauntedCast(seed = 1): HauntedCast {
-  return {
-    vibecoder: buildActor('vibecoder', seed),
-    ghost: buildActor('ghost', seed),
-    crate: buildActor('crate', seed),
-    socket: buildActor('socket', seed),
-    gargoyle: buildActor('gargoyle', seed),
-    gate: buildActor('gate', seed),
-    boss: buildActor('boss', seed),
-    minion: buildActor('minion', seed),
-    hole: buildActor('hole', seed),
-    mirror: buildActor('mirror', seed),
-    scroll: buildActor('scroll', seed),
-  };
-}
 
 /**
  * The System Hand. Origin at the palm with the pencil point about half a unit below it and the palm

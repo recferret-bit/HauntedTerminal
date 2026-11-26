@@ -24,9 +24,12 @@ export interface LineState {
   cancelType: (() => void) | null;
 }
 
+const ESC = String.fromCharCode(0x1b);
+const ANSI_CSI_RX = new RegExp(`${ESC}\\[[0-9;?]*[A-Za-z]`, 'g');
+
 /** Visible width of a string (ANSI stripped, every code point is one cell). */
 function visibleLength(s: string): number {
-  return [...s.replace(/\x1b\[[0-9;?]*[A-Za-z]/g, '')].length;
+  return [...s.replace(ANSI_CSI_RX, '')].length;
 }
 
 export function createLineState(term: Terminal, hooks: ShellHooks): LineState {
@@ -110,7 +113,7 @@ export function commitInputLine(st: LineState): void {
 }
 
 /** Run one line. `echoed`: the Enter handler already left it on screen. */
-export function runLine(st: LineState, line: string, echoed: boolean): void {
+function runLine(st: LineState, line: string, echoed: boolean): void {
   if (!echoed) {
     st.buffer = line;
     st.cursor = line.length;

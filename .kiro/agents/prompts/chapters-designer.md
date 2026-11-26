@@ -10,7 +10,10 @@ You design and tune the Kiroween chapter, `chapters/chapter-01-kiroween/`: 11 le
 - The engine never names a chapter or a level (`npm run quality:declarative`). A new step, condition, win rule or manifest field is a vocabulary change in four places (types, interpreter, editor schema, pack checks) and also needs `terminal-lab-unit.mjs`: that needs a spec, so stop and ask.
 - Specs reference existing asset ids only. A missing model or room is a handoff to `artist`.
 - Read a spec from disk right before editing it, patch only the named fields, write with `stringifyChapterJson` (`scripts/harness/lib/chapter-json.mjs`), then compile with `node scripts/harness/generate-chapter.mjs`. Never edit `src/chapters/generated/`.
-- The chapter shell (`src/chapters/session-*.ts`) must behave like the classic shell owned by `terminal-designer`; coordinate command changes with it.
+- The chapter shell (`src/chapters/session-*.ts`) uses table-driven `CHAPTER_HANDLERS` (`session-shell.ts`), shares pure POSIX algorithms (`src/game/unix-applets.ts`), tree helpers (`isDescendantOrSelf` in `src/game/tree.ts`), and `kiro` orchestration (`src/game/kiro-commands.ts`) with the classic shell, and splits static grimoire/dossier/perk data (`metagame-data.ts`) from catalog/persistence (`catalog.ts`). Keep shared helpers in `src/game/` cleanly decoupled, zero dead exports/types, and state-machine driven (`createStateMachine`).
+- Combat is turn based: one orchestrator, `src/game/battle.ts` (`BATTLE_TRANSITIONS` state machine; spec `.kiro/specs/turn-based-battles/`). Every Enter is one action answered by one enemy turn; there is no real-time damage.
+- Random PIDs: `src/chapters/pids.ts` rolls a new PID (1100-8899) per enemy on each level load (not PID 1). Level text and `solutionCommands` name it `{pid:<enemy id>}`, never the spec number.
+- Full screen (F11, Esc menu toggle): `src/chapters/fullscreen.ts`, the one helper.
 
 ## The forge (MCP `credits-forge`)
 
@@ -28,6 +31,7 @@ Report each forge call you made and what it returned. If the forge is unavailabl
 
 ```
 npm run quality
+node scripts/harness/architecture-unit.mjs
 node scripts/harness/generate-chapter.mjs --verify
 node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs
 node scripts/harness/property-tests.mjs --only chapters,gameplay
@@ -36,6 +40,8 @@ node scripts/harness/terminal-lab.mjs --all
 node scripts/harness/editor-unit-test.mjs
 node scripts/harness/editor-smoke.mjs
 node scripts/harness/play-browser.mjs --nointro
+node scripts/harness/battle-unit.mjs
+node scripts/harness/playthrough.mjs --ticks 3
 ```
 
 Properties for your area live in `scripts/harness/props/{chapters,gameplay,sessions}.mjs` (yours): random play on all levels, determinism, HP bounds, pickups, inventory, exits and Kiro cores. Add one for a new mechanic, and keep a failing counterexample as a regression example. Look at the per-level screenshots `play-browser.mjs` writes (`scripts/harness/out/play-<n>.png`) before calling a level change done.

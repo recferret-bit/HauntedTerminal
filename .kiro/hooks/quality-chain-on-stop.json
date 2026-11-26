@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Static quality chain on stop",
+      "trigger": "Stop",
+      "description": "Final static analysis gate when the agent stops: typecheck, exact pinned deps, ESLint, size limits, layer boundaries, 0 runtime cycles, 0 dead exports/types/CSS, declarative rules, 0 duplicate blocks, legacy-name guard, and brand guard.",
+      "action": {
+        "type": "command",
+        "command": "npx tsc --noEmit && node scripts/quality/check-deps.mjs && npm run quality:lint && node scripts/quality/check-size.mjs src scripts/desktop && node scripts/quality/check-layers.mjs && node scripts/quality/check-cycles.mjs && node scripts/quality/check-deadcode.mjs && node scripts/quality/check-declarative.mjs && npm run quality:dup && node scripts/quality/check-legacy-name.mjs && node scripts/quality/check-brands.mjs",
+        "timeout": 90
+      }
+    }
+  ]
+}

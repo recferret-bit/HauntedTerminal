@@ -2,7 +2,7 @@
  * Part slots: for every part mesh its authored base transform, tag, look/hover flags and death-scatter
  * direction, plus the split-emissive material clones that let one LED blink alone.
  */
-import * as THREE from 'three';
+import type * as THREE from 'three';
 import type { BuiltModel } from '../build.js';
 import { hashSeed } from '../../core/rng.js';
 import type { AnimTag } from '../../core/types.js';
@@ -44,7 +44,7 @@ export interface PartRig {
 
 const DRIVES_EMISSIVE = new Set(['blink', 'pulse', 'jitter']);
 
-export function readBase(mesh: THREE.Mesh): AnimBase {
+function readBase(mesh: THREE.Mesh): AnimBase {
   const b = mesh.userData.base as AnimBase | undefined;
   if (b) return { pos: [...b.pos], rot: [...b.rot], scale: [...b.scale] };
   return {

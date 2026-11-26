@@ -1,4 +1,5 @@
 import { GENERATED_COMIX_MANIFESTS, GENERATED_COMIX_PAGES_BY_ID } from './generated/catalog-data.js';
+import type * as GeneratedComixMod from './generated/catalog-data.js';
 import type { ComixManifest, ComixPack, ComixPageSpec, ComixRole } from './spec-types.js';
 
 const manifests: ComixManifest[] = [...GENERATED_COMIX_MANIFESTS];
@@ -9,13 +10,13 @@ export const COMIX_MANIFESTS: readonly ComixManifest[] = manifests;
 if (import.meta.hot) {
   import.meta.hot.accept('./generated/catalog-data.js', (next) => {
     if (!next) return;
-    const mod = next as unknown as typeof import('./generated/catalog-data.js');
+    const mod = next as unknown as typeof GeneratedComixMod;
     manifests.splice(0, manifests.length, ...mod.GENERATED_COMIX_MANIFESTS);
     pagesById = mod.GENERATED_COMIX_PAGES_BY_ID;
   });
 }
 
-export function getComixManifest(id: string): ComixManifest | undefined {
+function getComixManifest(id: string): ComixManifest | undefined {
   return COMIX_MANIFESTS.find((m) => m.id === id);
 }
 

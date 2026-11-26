@@ -14,12 +14,15 @@ import { projectRoot } from './lib/load.mjs';
 export function assess(f) {
   const out = [];
   const add = (level, what, fix) => out.push({ level, what, ...(fix ? { fix } : {}) });
-  f.kiroCli ? add('ok', `kiro-cli ${f.kiroCli}`) : add('fail', 'kiro-cli not found', 'install Kiro CLI');
-  f.kirocrew ? add('ok', `kirocrew ${f.kirocrew}`) : add('fail', 'kirocrew not found', 'install Kiro Crew (kiro.dev/docs/crew)');
+  if (f.kiroCli) add('ok', `kiro-cli ${f.kiroCli}`);
+  else add('fail', 'kiro-cli not found', 'install Kiro CLI');
+  if (f.kirocrew) add('ok', `kirocrew ${f.kirocrew}`);
+  else add('fail', 'kirocrew not found', 'install Kiro Crew (kiro.dev/docs/crew)');
   const missing = TEAM_NAMES.filter((n) => f.agentLinks[n] !== 'ours');
   if (!missing.length && f.promptsLink === 'ours') add('ok', `all ${TEAM_NAMES.length} agents and the prompts folder are linked into ~/.kiro/agents`);
   else add('fail', `not linked to this repo: ${[...missing, ...(f.promptsLink === 'ours' ? [] : ['prompts'])].join(', ')}`, 'npm run agents:install');
-  f.agentsValid.length === TEAM_NAMES.length ? add('ok', 'kiro-cli agent validate passes for every agent') : add('fail', `kiro-cli agent validate fails for: ${TEAM_NAMES.filter((n) => !f.agentsValid.includes(n)).join(', ')}`, 'node scripts/harness/agents-build.mjs, then npm run quality:agents');
+  if (f.agentsValid.length === TEAM_NAMES.length) add('ok', 'kiro-cli agent validate passes for every agent');
+  else add('fail', `kiro-cli agent validate fails for: ${TEAM_NAMES.filter((n) => !f.agentsValid.includes(n)).join(', ')}`, 'node scripts/harness/agents-build.mjs, then npm run quality:agents');
   if (!f.crewConfig) add('fail', 'no Kiro Crew config (~/.kiro/crew/config.json)', 'run kirocrew setup');
   else {
     const ws = Object.entries(f.crewConfig.workspaces ?? {}).find(([, w]) => resolveDir(w?.dir) === f.repo);
@@ -30,13 +33,19 @@ export function assess(f) {
     if (bound) add('ok', `Crew member "${bound[0]}" runs lead-dev in that workspace`);
     else if (members.length) add('fail', 'a Crew member runs lead-dev, but not in the repo workspace', `kirocrew agent update ${members[0][0]} --workspace ${ws?.[0] ?? '<workspace>'}`);
     else add('fail', 'no Crew member runs lead-dev', 'kirocrew agent create --name haunted-lead --workspace <workspace>; kirocrew agent update haunted-lead --kiro-agent lead-dev');
-    f.crewConfig.agent?.approval_mode === 'auto' ? add('ok', 'Crew approval mode is Automatic (rules decide, nothing waits for a prompt)') : add('warn', `Crew approval mode is "${f.crewConfig.agent?.approval_mode}": nobody is there to answer prompts, so work would stall`, 'Settings -> Security -> Automatic');
-    f.autoApproveListed ? add('fail', 'an autoApprove list is set in an agent or mcp.json: it skips Crew\'s tool gate AND PreToolUse hooks, which disables the shell guard', 'remove autoApprove') : add('ok', 'no autoApprove list (the shell guard hook is not bypassed)');
+    if (f.crewConfig.agent?.approval_mode === 'auto') add('ok', 'Crew approval mode is Automatic (rules decide, nothing waits for a prompt)');
+    else add('warn', `Crew approval mode is "${f.crewConfig.agent?.approval_mode}": nobody is there to answer prompts, so work would stall`, 'Settings -> Security -> Automatic');
+    if (f.autoApproveListed) add('fail', 'an autoApprove list is set in an agent or mcp.json: it skips Crew\'s tool gate AND PreToolUse hooks, which disables the shell guard', 'remove autoApprove');
+    else add('ok', 'no autoApprove list (the shell guard hook is not bypassed)');
   }
-  f.gateway ? add('ok', 'the Crew gateway is running') : add('warn', 'the Crew gateway is not running', `cd ${f.repo} && kirocrew gateway   (or kirocrew service install to keep it running)`);
-  f.branch === 'main' ? add('ok', 'on main (lead-dev creates its own agent/<task> branch)') : add('ok', `on branch ${f.branch}`);
-  f.dirty === 0 ? add('ok', 'the working tree is clean (lead-dev stops on changes it did not make)') : add('warn', `${f.dirty} uncommitted path(s): lead-dev will stop and ask`, 'commit or stash them first');
-  f.remote ? add('ok', `origin: ${f.remote}`) : add('fail', 'no git remote "origin": lead-dev cannot push', 'git remote add origin <url>');
+  if (f.gateway) add('ok', 'the Crew gateway is running');
+  else add('warn', 'the Crew gateway is not running', `cd ${f.repo} && kirocrew gateway   (or kirocrew service install to keep it running)`);
+  if (f.branch === 'main') add('ok', 'on main (lead-dev creates its own agent/<task> branch)');
+  else add('ok', `on branch ${f.branch}`);
+  if (f.dirty === 0) add('ok', 'the working tree is clean (lead-dev stops on changes it did not make)');
+  else add('warn', `${f.dirty} uncommitted path(s): lead-dev will stop and ask`, 'commit or stash them first');
+  if (f.remote) add('ok', `origin: ${f.remote}`);
+  else add('fail', 'no git remote "origin": lead-dev cannot push', 'git remote add origin <url>');
   if (f.protection === 'yes') add('ok', 'GitHub branch protection is on for main');
   else if (f.protection === 'no') add('fail', 'main is not protected on GitHub: the one barrier that holds even if a hook does not run', 'GitHub -> Settings -> Branches -> require a pull request, block force pushes');
   else add('warn', 'could not check branch protection (gh missing, not logged in, or no access)', 'check GitHub -> Settings -> Branches by hand');

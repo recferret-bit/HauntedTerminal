@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Static analysis on save",
+      "trigger": "PostFileSave",
+      "description": "Report-only: runs ESLint across src and quality/hooks/desktop/mcp/harness scripts, circular import check, layer boundary check, and size limits when source or quality/harness scripts are saved.",
+      "matcher": "^src/.*\\.ts$|/src/.*\\.ts$|^scripts/(quality|hooks|desktop|mcp|harness)/.*\\.mjs$",
+      "action": {
+        "type": "command",
+        "command": "npm run quality:lint && node scripts/quality/check-cycles.mjs && node scripts/quality/check-layers.mjs && node scripts/quality/check-size.mjs src scripts/desktop",
+        "timeout": 60
+      }
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import * as THREE from 'three';
  * flash point, so the look does not depend on Three.js light nodes.
  * Local meshes are built facing −z (toward a camera that sits on −z).
  */
-export const COMIC_VERT = /* glsl */ `
+const COMIC_VERT = /* glsl */ `
 varying vec3 vNormal;
 varying vec3 vWorld;
 varying vec2 vUv;
@@ -278,7 +278,7 @@ export function createComicMaterial(color: number, opts: ComicOptions = {}): Com
   return mat;
 }
 
-export const VORTEX_FRAG = /* glsl */ `
+const VORTEX_FRAG = /* glsl */ `
 uniform float uTime;
 varying vec3 vNormal;
 varying vec3 vWorld;
@@ -321,7 +321,7 @@ export function createVortexMaterial(): THREE.ShaderMaterial {
   });
 }
 
-export const FLOOD_FRAG = /* glsl */ `
+const FLOOD_FRAG = /* glsl */ `
 uniform float uTime;
 varying vec2 vUv;
 void main() {

@@ -1,9 +1,10 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { maxHpFor } from '../game/bestiary.js';
-import { KIRO_CORE_ORDER, inspectTextWithKiro } from '../game/kiro.js';
+import { KIRO_CORE_ORDER } from '../game/kiro.js';
+import { runKiroCommand, stepKiroCrackOnRoot } from '../game/kiro-commands.js';
 import type { Step } from '../game/shell.js';
 import { kiroEnemyRow, kiroFileRow, psXrayToggle } from '../game/puzzle.js';
-import { absPath, lookup, modeString, resolve, type VNode } from '../game/tree.js';
+import { absPath, type VNode } from '../game/tree.js';
 import { emptyStep, okStep, type ChapterState } from './session-state.js';
 import { coreMatches, coreReaction, fillTemplate, hiddenEnemyId, isNodeHidden, kiroIsWeak, levelScript } from './script.js';
 import { refreshExitGates } from './session-rules.js';
@@ -15,25 +16,10 @@ function chapterLocked(child: VNode): boolean {
 }
 
 export function stepKiroCrack(g: ChapterState, events: KernelEvent[]): string {
-    const adv = g.kiro.advanceCrack(absPath(g.rt.cwd));
-    events.push(...adv.events);
-    if (adv.completedTargetPath) {
-      const node = lookup(g.rt.root, adv.completedTargetPath);
-      if (node && ((node.kind === 'dir' && (node.mode & 0o111) === 0) || (node.kind === 'file' && (node.mode & 0o400) === 0))) {
-        const old = node.mode;
-        node.mode = node.kind === 'dir' ? 0o755 : 0o644;
-        events.push({ type: 'INODE_MODE_CHANGED', inodeId: node.id, oldMode: old, newMode: node.mode });
-        events.push({
-          type: 'PUZZLE_DOOR_RESOLVED',
-          socketInodeId: node.id,
-          unlockedInodeId: node.id,
-          solvedViaInput: 'kiro_crack',
-        });
-      }
-      refreshExitGates(g, events);
-    }
-    return adv.note;
-  }
+  const res = stepKiroCrackOnRoot(g.kiro, g.rt.root, absPath(g.rt.cwd), 0o400, (ev) => events.push(ev));
+  if (res.completed) refreshExitGates(g, events);
+  return res.note;
+}
 
 function kiroLoad(g: ChapterState, args: string[]): Step {
       const want = args[1];
@@ -104,66 +90,25 @@ function kiroScan(g: ChapterState): Step {
 }
 
 export function cmdKiro(g: ChapterState, args: string[], stdin: string): Step {
-    const sub = (args[0] ?? '').toLowerCase();
-    if (!sub && stdin) {
-      return okStep(inspectTextWithKiro(stdin, 'stdin', g.kiro.activeCore), [
-        { type: 'VIBECODER_ACTION', action: 'read', command: 'kiro' },
-      ]);
-    }
-    if (!sub || sub === 'status' || sub === 'cores' || sub === 'list') {
-      const weakNote = kiroIsWeak(g) ? (levelScript(g).kiro?.weakNote ?? '') : '';
-      return okStep(weakNote + g.kiro.formatStatus(g.ram), [
-        { type: 'VIBECODER_ACTION', action: 'read', command: 'kiro' },
-      ]);
-    }
-    if (sub === 'load' || sub === 'pull' || sub === 'use' || sub === 'swap') return kiroLoad(g, args);
-    if (sub === 'scan' || sub === 'sweep') return kiroScan(g);
-    if (sub === 'crack' || sub === 'decrypt' || sub === 'hack') {
-      const targetArg = args[1];
-      if (!targetArg) return emptyStep(1, 'kiro crack: specify a locked gate or encrypted file\n');
-      const found = resolve(g.rt.cwd, targetArg, false);
-      if (!found.node) return emptyStep(1, `kiro crack: ${targetArg}: No such file or directory\n`);
-      const node = found.node;
-      const fullPath = absPath(node);
-      if (g.kiro.isUnlocked(fullPath)) {
-        return okStep(`[KIRO.D] ${node.name} is already decrypted.\n`);
-      }
-      const isLocked =
-        (node.kind === 'dir' && (node.mode & 0o111) === 0) ||
-        (node.kind === 'file' && (node.mode & 0o400) === 0);
-      if (!isLocked) {
-        return okStep(`[KIRO.D] ${node.name} is already unlocked (${modeString(node)}).\n`);
-      }
-      const started = g.kiro.startCrack(absPath(g.rt.cwd), node.name, fullPath);
-      return okStep(started.stdout, [
-        { type: 'VIBECODER_ACTION', action: 'cast', command: `kiro crack ${node.name}` },
-        ...started.events,
-      ]);
-    }
-    if (sub === 'inspect' || sub === 'audit') {
-      const targetArg = args[1];
-      if (!targetArg) return emptyStep(1, 'kiro inspect: specify a file (or pipe via `cat <file> | kiro`)\n');
-      const found = resolve(g.rt.cwd, targetArg, true);
-      if (!found.node) {
-        if (found.denied) {
-          return okStep('', [{ type: 'PERMISSION_DENIED_RATTLE', targetId: found.denied.id, command: 'kiro inspect' }], 1, `kiro inspect: ${targetArg}: Permission denied\n`);
-        }
-        return emptyStep(1, `kiro inspect: ${targetArg}: No such file\n`);
-      }
-      if (found.node.kind !== 'file') return emptyStep(1, `kiro inspect: ${targetArg}: Not a regular file\n`);
-      if ((found.node.mode & 0o400) === 0) {
-        return okStep('', [{ type: 'PERMISSION_DENIED_RATTLE', targetId: found.node.id, command: 'kiro inspect' }], 1, `kiro inspect: ${targetArg}: Permission denied\n`);
-      }
-      return okStep(inspectTextWithKiro(found.node.content, found.node.name, g.kiro.activeCore), [
-        { type: 'VIBECODER_ACTION', action: 'read', command: `kiro inspect ${found.node.name}` },
-      ]);
-    }
-    if (sub === 'disclaimer' || sub === 'legal' || sub === 'brands') {
-      const res = g.kiro.formatDisclaimer();
-      return okStep(res.stdout, [
-        { type: 'VIBECODER_ACTION', action: 'read', command: `kiro ${sub}` },
-        ...res.events,
-      ]);
-    }
-    return emptyStep(1, `kiro: unknown subcommand '${sub}'. Try: kiro | kiro scan | kiro load <core> | kiro crack <lock> | kiro disclaimer\n`);
-  }
+  return runKiroCommand(
+    {
+      cwd: g.rt.cwd,
+      readMask: 0o400,
+      ramGb: g.ram,
+      weakNote: kiroIsWeak(g) ? (levelScript(g).kiro?.weakNote ?? '') : '',
+      checkAlreadyDecrypted: true,
+      noFileMessage: 'No such file',
+      onAction(action, command, events) {
+        events.push({ type: 'VIBECODER_ACTION', action, command });
+      },
+      onDenied(node, _command, msg) {
+        return okStep('', [{ type: 'PERMISSION_DENIED_RATTLE', targetId: node.id, command: 'kiro inspect' }], 1, msg);
+      },
+      loadCore: (loadArgs) => kiroLoad(g, loadArgs),
+      scanRoom: () => kiroScan(g),
+    },
+    g.kiro,
+    args,
+    stdin,
+  );
+}

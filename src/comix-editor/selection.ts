@@ -181,7 +181,7 @@ export function resolveSelectionFromPath(pack: ComixPack, rawPath: string): Comi
     return { kind: 'fixture', itemPath, itemIndex: idx, fixtureId: fx?.id, label: `fixture:${fx?.id ?? idx}` };
   }
 
-  m = itemPath.match(/^manifest\.stage\.stage\.points\.([^.\[\]]+)$/);
+  m = itemPath.match(/^manifest\.stage\.stage\.points\.([^.[\]]+)$/);
   if (m) {
     const pointId = m[1]!;
     return { kind: 'point', itemPath, pointId, label: `point:${pointId}` };
@@ -358,6 +358,24 @@ function firstVisibleStageSec(pack: ComixPack): number {
   }
 }
 
+function actorVisibilityJump(pack: ComixPack, actorId: string, currentSec: number): number | null | undefined {
+  for (const page of pack.pages) {
+    const cues = mergedCues(pack, page);
+    for (const panel of page.panels) {
+      const pFrom = safeResolveTime(panel.from, page.from, cues, page.from);
+      const pUntil = Math.min(page.until, safeResolveTime(panel.until, page.from, cues, page.until));
+      for (const tr of panel.tracks ?? []) {
+        if (tr.kind === 'actor_visibility' && tr.actor === actorId && tr.visible) {
+          const from = safeResolveTime(tr.from, pFrom, cues, pFrom);
+          const until = tr.until ? safeResolveTime(tr.until, pFrom, cues, pUntil) : page.until;
+          return jumpIfOutside(from, until, currentSec);
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
 /**
  * If an element selected in the Inspector is not visible at `currentSec`, return a timestamp inside its active
  * visibility window so the viewport can seek to show and highlight it; returns `null` if already visible.
@@ -367,20 +385,8 @@ export function visibilityJumpForElement(pack: ComixPack, ref: ComixElementRef, 
     if (ref.kind === 'actor' && ref.actorId) {
       const actor = pack.manifest.cast.find((a) => a.id === ref.actorId);
       if (actor && actor.visible === false) {
-        for (const page of pack.pages) {
-          const cues = mergedCues(pack, page);
-          for (const panel of page.panels) {
-            const pFrom = safeResolveTime(panel.from, page.from, cues, page.from);
-            const pUntil = Math.min(page.until, safeResolveTime(panel.until, page.from, cues, page.until));
-            for (const tr of panel.tracks ?? []) {
-              if (tr.kind === 'actor_visibility' && tr.actor === actor.id && tr.visible) {
-                const from = safeResolveTime(tr.from, pFrom, cues, pFrom);
-                const until = tr.until ? safeResolveTime(tr.until, pFrom, cues, pUntil) : page.until;
-                return jumpIfOutside(from, until, currentSec);
-              }
-            }
-          }
-        }
+        const jump = actorVisibilityJump(pack, actor.id, currentSec);
+        if (jump !== undefined) return jump;
       }
     }
     const onAnyPage = pack.pages.some((p) => currentSec >= p.from && currentSec < p.until - 0.01);

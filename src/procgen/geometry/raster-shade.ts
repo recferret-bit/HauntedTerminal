@@ -9,7 +9,7 @@ import type { BakedPart } from './geometry.js';
 export type Rgb = [number, number, number];
 export type RasterView = 'front' | 'side' | 'top';
 
-export const LIGHT: [number, number, number] = normalize([-0.35, 0.82, -0.48]);
+const LIGHT: [number, number, number] = normalize([-0.35, 0.82, -0.48]);
 const INK_RGB = hexToRgb(INK);
 
 function normalize(v: [number, number, number]): [number, number, number] {

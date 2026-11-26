@@ -5,8 +5,8 @@
  * whatever changed in the VFS into ENEMY_* events, so every way of deleting or changing a file counts.
  * Enemies only act while the hero stands in their zone; nothing here is random.
  */
-import type { KernelEvent, PosixSignal, ProcState } from '../contracts/events.js';
-import { BESTIARY, PICKUP_INFO, type EnemyType, type PickupType } from './bestiary.js';
+import type { KernelEvent, PosixSignal } from '../contracts/events.js';
+import { BESTIARY, PICKUP_INFO } from './bestiary.js';
 import {
   calm as calmWorld,
   reveal as revealWorld,
@@ -21,113 +21,31 @@ import {
   vetoRemove as vetoRemoveWorld,
 } from './entities-combat.js';
 import type { EnemySpawn, PickupSpawn } from './floors.js';
+import {
+  GRACE_TICKS,
+  type Enemy,
+  type EntityView,
+  type KillHow,
+  type Pickup,
+  type ProcRow,
+  type SignalResult,
+  type WorldHost,
+  type WorldLike,
+} from './entities-types.js';
 import { absPath, baseName, findId, hasExec, lookup, parentDir, type VNode } from './tree.js';
 import type { ActorState } from './types.js';
 
-export type KillHow = Extract<KernelEvent, { type: 'ENEMY_KILLED' }>['how'];
-type ShownState = Extract<KernelEvent, { type: 'ENEMY_STATE' }>['state'];
+export {
+  type Enemy,
+  type EntityView,
+  type KillHow,
+  type Pickup,
+  type ProcRow,
+  type SignalResult,
+  type WorldHost,
+} from './entities-types.js';
 
-export interface WorldHost {
-  root(): VNode;
-  cwdPath(): string;
-  push(events: KernelEvent[], ev: KernelEvent): void;
-  /** Damage the hero; returns terminal text (a death message when it kills). */
-  hurt(amount: number, source: string, events: KernelEvent[]): string;
-  /** False once the hero died (and maybe the floor reloaded) during the current call: stop at once. */
-  alive(): boolean;
-  /** KERNEL_OVERLORD phases broken so far, 0..3. */
-  kernelPhase(): number;
-  /** True while the tutorial runs: enemies hold their fire so a new player can read. */
-  truce(): boolean;
-  /** The fork bomb was frozen, thawed or killed (opens the elevator, records shortcuts). */
-  bossDown(id: string, how: 'frozen' | 'thawed' | 'killed'): void;
-}
-
-export interface Enemy {
-  id: string;
-  type: EnemyType;
-  model: string;
-  boss: boolean;
-  /** Spawned at runtime (zombie, virus copy): not counted in enemiesLeft / enemiesTotal. */
-  minion: boolean;
-  /** What the player types to target it: its file name, or its PID for zombies. */
-  name: string;
-  inode: number | null;
-  /** Absolute path of the room it lives in when it has no file. */
-  home: string;
-  pid: number | null;
-  ppid: number;
-  user: 'dev' | 'root';
-  hp: number;
-  maxHp: number;
-  dead: boolean;
-  frozen: boolean;
-  enraged: boolean;
-  revealed: boolean;
-  /** Ticks its port has been closed (worm). */
-  sealed: number;
-  clock: number;
-  told: boolean;
-  deathTicks: number;
-  revealTick: number;
-  port: number | null;
-  buffer: number | null;
-  bufferPath: string | null;
-  helps: string | null;
-  showIn: string[];
-  family: number;
-  /** Rooms it was in when it died (the stage plays the death there). */
-  deathZone: string[];
-  shown: ShownState;
-  shownHp: number;
-}
-
-export interface Pickup {
-  id: string;
-  type: PickupType;
-  model: string;
-  inode: number;
-  name: string;
-  amount: number;
-  collected: boolean;
-}
-
-export interface ProcRow {
-  pid: number;
-  ppid: number;
-  name: string;
-  user: string;
-  cpu: number;
-  state: ProcState;
-  entityId?: string;
-}
-
-export interface SignalResult {
-  code: number;
-  stdout: string;
-  stderr: string;
-}
-
-/** What the stage needs to draw an enemy or a pickup in the current room. */
-export interface EntityView {
-  id: string;
-  model: string;
-  kind: 'enemy' | 'boss' | 'pickup';
-  target: string;
-  state: ActorState;
-  hp?: number;
-  maxHp?: number;
-  pid?: number;
-  /** Present but unseen (dotfile before the lantern, a worm sunk into its port). */
-  unseen: boolean;
-  label: string;
-  locked?: boolean;
-}
-
-/** Breathing room after a floor loads or a backup restores you. */
-export const GRACE_TICKS = 3;
-
-export class World {
+export class World implements WorldLike {
   readonly enemies: Enemy[] = [];
   readonly pickups: Pickup[] = [];
   /** Default cause of death for the command being run. */

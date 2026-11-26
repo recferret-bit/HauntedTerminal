@@ -44,7 +44,7 @@ export function pillar(b: RoomBuilder, x: number, height: number, radius: number
  * An arch as one outline, origin at the middle of its foot line. `sharp` 0 is a round port-shell arch,
  * 1 is a pointed gothic one. `rise` is the height of the curved part.
  */
-export function archOutline(width: number, height: number, thick: number, sharp = 0.6, rise = width * 0.6, steps = 6): Vec2[] {
+function archOutline(width: number, height: number, thick: number, sharp = 0.6, rise = width * 0.6, steps = 6): Vec2[] {
   const curve = (halfW: number, top: number, shoulder: number): Vec2[] => {
     const pts: Vec2[] = [];
     const span = (Math.PI / 2) * (1 - 0.35 * sharp);
@@ -88,7 +88,7 @@ export function combOutline(width: number, height: number, teeth: number, fill =
 }
 
 /** A polyline with thickness, mitred: PCB traces and bus lines. */
-export function traceOutline(path: Vec2[], width: number): Vec2[] {
+function traceOutline(path: Vec2[], width: number): Vec2[] {
   const left: Vec2[] = [];
   const right: Vec2[] = [];
   const normal = (a: Vec2, c: Vec2): Vec2 => {

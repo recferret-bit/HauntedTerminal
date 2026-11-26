@@ -47,6 +47,45 @@ await test('guard: a redirect outside the agent\'s paths is blocked, inside or /
   assert.equal(violation('node scripts/harness/property-tests.mjs --only laptop 2>&1 | tail -20', ctx), null);
 });
 
+await test('guard: every agent may redirect into the shared scripts/harness/out/, never through a `..` segment', () => {
+  const ctx = { globs: ownWrites('artist'), branch: 'agent/x', isLead: false };
+  assert.equal(violation('npm run quality:fingerprint > scripts/harness/out/fp-before.txt', ctx), null);
+  assert.equal(violation('node scripts/harness/visual-audit.mjs --selftest 2> ./scripts/harness/out/va.log', ctx), null);
+  assert.match(violation('echo x > scripts/harness/out/../../hooks/agent-scope.mjs', ctx), /outside this agent's write paths/);
+  assert.match(violation('echo x > src/procgen/../../package.json', ctx), /outside this agent's write paths/);
+  assert.match(violation('echo x > scripts/harness/outside.txt', ctx), /outside this agent's write paths/);
+});
+
+await test('guard: the shared output allows only relative top-level *.txt|*.log, never its subfolders or a script', () => {
+  for (const name of TEAM_NAMES) {
+    const ctx = { globs: ownWrites(name), branch: 'agent/x', isLead: name === LEAD };
+    for (const ok of ['npm run quality:fingerprint > scripts/harness/out/fp-before.txt', 'npm run quality:fingerprint > scripts/harness/out/fp-after.txt', 'npm run build 2>&1 > scripts/harness/out/build.log'])
+      assert.equal(violation(ok, ctx), null, `${name}: ${ok}`);
+    for (const bad of [
+      'echo x > scripts/harness/out/x.mjs', 'echo x > scripts/harness/out/x.js', 'echo {} > scripts/harness/out/ship/last-preview.json', 'echo {} > scripts/harness/out/ship/site.json',
+      'echo {} >> scripts/harness/out/stack/stack.json', 'echo x > scripts/harness/out/sub/a.txt', `echo x > ${projectRoot}/scripts/harness/out/a.txt`,
+    ]) assert.match(violation(bad, ctx) ?? '', /outside this agent's write paths/, `${name}: ${bad}`);
+    for (const bad of ['node scripts/harness/out/x.mjs', 'node ./scripts/harness/out/x.txt', 'node --test scripts/harness/out/a.log'])
+      assert.match(violation(bad, ctx) ?? '', /scripts\/harness\/out/, `${name}: ${bad}`);
+  }
+});
+
+await test('guard: in a line with cd or pushd, only /dev/null|stdout|stderr may be a redirect target', () => {
+  const ctx = { globs: ownWrites('artist'), branch: 'agent/x', isLead: false };
+  for (const ok of ['cd src && ls > /dev/null', 'pushd src; ls 2> /dev/stderr', 'cd src && ls 2>&1 | tail -3'])
+    assert.equal(violation(ok, ctx), null, ok);
+  for (const bad of ['cd src && ls > scripts/harness/out/a.txt', 'cd scripts && echo x > harness/out/a.txt', 'cd src/procgen && echo x > a.txt', 'ls > scripts/harness/out/a.txt && cd src', 'pushd .kiro && echo x >> hooks/a.json', 'cd src/procgen && echo x > src/procgen/a.ts'])
+    assert.match(violation(bad, ctx) ?? '', /line with cd/, bad);
+});
+
+await test('guard: node runs from the repo root with a script path written out (no cd before it, no globs, no `..`)', () => {
+  const ctx = { globs: ownWrites('qa'), branch: 'agent/x', isLead: false };
+  for (const ok of ['node scripts/harness/property-tests.mjs --only terminal', 'node scripts/harness/visual-audit.mjs --screens hub,level-* --sizes 1280x820', 'node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs', 'cd src && ls', 'ls && node scripts/harness/hub-unit.mjs'])
+    assert.equal(violation(ok, ctx), null, ok);
+  for (const bad of ['cd .kiro/powers/credits-ship/skills/ship && node scripts/ship.mjs prod', 'cd .k*o/p*s/credits-ship/skills/ship; node scripts/sh?p.mjs prod', 'cd src && ls && node scripts/x.mjs', 'node scripts/desktop/build-t*.mjs', 'node scripts/harness/agents-inst{all,x}.mjs', 'node scripts/../.kiro/powers/credits-ship/skills/ship/scripts/ship.mjs prod', 'node "scripts/$X.mjs"'])
+    assert.ok(violation(bad, ctx), `should block: ${bad}`);
+});
+
 await test('guard: git history is the lead\'s, only on agent/<task>, never on main, never forced or amended', () => {
   const lead = { globs: ownWrites(LEAD), branch: 'agent/tune', isLead: true };
   for (const ok of ['git switch -c agent/tune', 'git add -- src/a.ts docs/qa/r.md', 'git commit -m "x: y"', 'git push -u origin agent/tune', 'git push origin agent/maintenance-x', 'git status', 'git diff --stat'])
@@ -66,11 +105,31 @@ await test('shell rules: an allow-list that also refuses everything else, per ag
   assert.equal(shellVerdict(agents['qa'], 'cp scripts/harness/out/play-1.png docs/qa/media/a.png'), 'allow');
   assert.equal(shellVerdict(agents[LEAD], 'cp scripts/harness/out/play-1.png docs/qa/media/a.png'), 'allow', 'the lead session must cover its sub-agents');
   assert.equal(shellVerdict(agents['artist'], 'cp scripts/harness/out/play-1.png docs/qa/media/a.png'), 'deny');
+  // The user's commands stay out of reach through `..`, a cd into a power, or command substitution; SKILL.md reads do not.
+  for (const name of TEAM_NAMES) {
+    for (const c of ['node scripts/../.kiro/powers/credits-ship/skills/ship/scripts/ship.mjs prod', 'node .kiro/skills/../powers/credits-release/skills/release/scripts/release.mjs release 0.1.0 --yes', 'cd .kiro/powers/credits-ship/skills/ship && node scripts/ship.mjs prod', 'node scripts/desktop/build-tauri-steam.mjs', 'node scripts/harness/agents-install.mjs', 'echo $(node x)'])
+      assert.equal(shellVerdict(agents[name], c), 'deny', `${name}: ${c}`);
+    for (const c of ['node scripts/desktop/desktop-unit.mjs', 'diff scripts/harness/out/a.txt scripts/harness/out/b.txt', 'cat .kiro/powers/credits-ship/skills/ship/SKILL.md'])
+      assert.equal(shellVerdict(agents[name], c), 'allow', `${name}: ${c}`);
+    // The script names are denied after `node` only: reading them and naming them in a log query stay allowed.
+    for (const c of ['cat scripts/desktop/build-tauri-steam.mjs', 'git log -- .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs', 'grep -n yes .kiro/powers/credits-release/skills/release/scripts/release.mjs', 'head -20 scripts/harness/agents-install.mjs', 'npx tsc --noEmit'])
+      assert.equal(shellVerdict(agents[name], c), 'allow', `${name}: ${c}`);
+    for (const c of ['cd .kiro/powers/credits-tauri-local/skills/tauri-local && node scripts/tauri-local.mjs', 'node scripts/release.mjs release 1.0.0 --yes', 'npx tsc --noEmit -p x', 'npx tsc', 'npx eslint .', 'npx -y netlify-cli@27.20.0 status'])
+      assert.equal(shellVerdict(agents[name], c), 'deny', `${name}: ${c}`);
+    // Credentials of the user's CLIs (netlify login, gh auth login, ~/.netrc) are never read.
+    for (const c of ['cat ~/Library/Preferences/netlify/config.json', 'grep token ~/.config/gh/hosts.yml', 'cat ~/.netrc', 'tail -5 /Users/x/.config/gh/hosts.yml'])
+      assert.equal(shellVerdict(agents[name], c), 'deny', `${name}: ${c}`);
+    const reads = agents[name].permissions.rules.filter((r) => r.capability === 'fs_read' && r.effect === 'deny').flatMap((r) => r.match);
+    for (const secret of ['~/Library/Preferences/netlify/**', '~/.config/gh/**']) assert.ok(reads.includes(secret), `${name}: fs_read must deny ${secret}`);
+  }
+  assert.equal(shellVerdict(agents[LEAD], 'git commit -m "docs: release.mjs checks the Netlify login first"'), 'allow', 'a commit message may name a power script');
 });
 
 await test('ownership: one owner per path in the table, designers cannot write compiled output', () => {
   const owners = (p) => TEAM_NAMES.filter((n) => ownWrites(n).some((g) => globToRegExp(g).test(p)));
   for (const p of ['src/laptop/domain/tasks.ts', 'src/game/shell.ts', 'src/game/session.ts', 'src/chapters/session-fs.ts', 'comix/intro/comix.manifest.json', 'src/procgen/index.ts', 'docs/qa/README.md', 'docs/AGENTS_CREW.md', 'AGENTS.md', '.kiro/specs/agent-team/design.md', 'scripts/harness/props/laptop.mjs', 'scripts/harness/props/kit.mjs']) assert.equal(owners(p).length, 1, `${p}: ${owners(p)}`);
+  for (const [p, who] of [['scripts/harness/manual-unit.mjs', 'terminal-designer'], ['scripts/harness/manual-smoke.mjs', 'terminal-designer'], ['scripts/harness/audio-unit.mjs', LEAD], ['scripts/harness/audio-smoke.mjs', LEAD], ['scripts/harness/hub-unit.mjs', LEAD], ['scripts/harness/battle-unit.mjs', 'chapters-designer'], ['scripts/harness/terminal-lab/skin.lab.json', 'terminal-designer']])
+    assert.deepEqual(owners(p), [who], p);
   for (const p of ['.kiro/agents/qa.json', '.kiro/hooks/x.json', 'package.json', 'scripts/hooks/agent-scope.mjs']) assert.equal(owners(p).length, 0, `${p} must be nobody's`);
   for (const name of TEAM_NAMES.filter((n) => n !== LEAD)) {
     const deny = agents[name].permissions.rules.find((r) => r.capability === 'fs_write' && r.effect === 'deny' && r.match.includes('src/chapters/generated/**'));

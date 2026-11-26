@@ -25,12 +25,13 @@ const SIGNALS = ['SIGTERM', 'SIGKILL', 'SIGSTOP', 'SIGCONT'];
 
 /** Compile-time proof that the lists above name every member of the game's unions: a new RoomKind or EnemyType breaks the build here. */
 type Complete<Missing extends never> = Missing;
-export type AllListsComplete = [
+type AllListsComplete = [
   Complete<Exclude<RoomKind, (typeof ROOM_KINDS)[number]>>,
   Complete<Exclude<ChapterMechanic, (typeof MECHANICS)[number]>>,
   Complete<Exclude<EnemyType, (typeof ENEMY_TYPES)[number]>>,
   Complete<Exclude<PickupType, (typeof PICKUP_TYPES)[number]>>,
 ];
+const assertAllListsComplete = (_proof?: AllListsComplete): void => {};
 
 const baseName = (p: string): string => p.slice(p.lastIndexOf('/') + 1);
 
@@ -305,6 +306,7 @@ export interface ValidateOptions {
 
 /** Static checks over the draft. The headless playthrough (`solvePack`) covers behaviour; this covers references. */
 export function validatePack(pack: ChapterPack, { winnable = true }: ValidateOptions = {}): PackIssue[] {
+  assertAllListsComplete();
   const issues: PackIssue[] = [];
   const ids = new Set<string>();
   pack.levels.forEach((spec, i) => {

@@ -7,7 +7,7 @@ import type { ClockMode } from '../subjects/part-animator.js';
 /** Panels per frame whose subject may be built; the rest wait for the next frame so the page stays responsive. */
 const BUILDS_PER_FRAME = 6;
 /** Pixels per world unit of a gallery panel when no scale is chosen. */
-export const GALLERY_PPU = 72;
+const GALLERY_PPU = 72;
 
 export interface PaintContext {
   stage: LabStage;

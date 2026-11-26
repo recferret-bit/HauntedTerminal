@@ -234,9 +234,6 @@ const stats: ComixStats = {
 const previewBaseOpts = { muted: params.get('muted') === '1', skippable: params.get('skippable') !== '0' };
 const freeze = params.has('t') ? Number(params.get('t')) : undefined;
 let previewBus: AppBus | null = null;
-export function setCinematicPreviewBus(bus: AppBus | null): void {
-  previewBus = bus;
-}
 const debug: DebugOptions = {
   onRunner: (r) => {
     activeRunner = r;

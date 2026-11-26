@@ -72,6 +72,18 @@ export function ensureStyle(): void {
   document.head.appendChild(style);
 }
 
-export function switchButton(id: 'crt' | 'pixel' | 'ink' | 'storm', label: string): string {
-  return `<button type="button" class="hl-sw" data-fx="${id}" role="switch" aria-pressed="false"><i class="pd-dot" data-dot="${id}"></i><span>${label}</span></button>`;
+export function switchButton(id: 'crt' | 'pixel' | 'ink' | 'storm', label: string): HTMLButtonElement {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'hl-sw';
+  btn.dataset.fx = id;
+  btn.setAttribute('role', 'switch');
+  btn.setAttribute('aria-pressed', 'false');
+  const dot = document.createElement('i');
+  dot.className = 'pd-dot';
+  dot.dataset.dot = id;
+  const span = document.createElement('span');
+  span.textContent = label;
+  btn.append(dot, span);
+  return btn;
 }

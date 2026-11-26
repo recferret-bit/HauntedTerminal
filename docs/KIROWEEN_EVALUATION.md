@@ -8,7 +8,7 @@ Strong entry, with Technological Implementation (how deeply Kiro is used) as its
 
 | Criterion | Estimate | One line |
 |---|---|---|
-| Technological Implementation (Kiro) | 8.5 to 9.5 | Specs (15), steering, skills, hooks, seven custom agents with enforced ownership, 34 property tests that found real bugs; a project power with the Netlify MCP server |
+| Technological Implementation (Kiro) | 8.5 to 9.5 | Specs (31), steering, skills, hooks, seven custom agents with enforced ownership, 81 property tests that found real bugs; three project powers (deploy with the Netlify MCP server, release, local desktop build) |
 | Design | 8 to 9 | A coherent, polished comic look, offline-ready typography, startup conversion funnel, and a full 11-level campaign; judged from screenshots and the video |
 | Innovation / Idea | 8 to 9 | A terminal as the only controller, code-generated Comix Zone art, a declarative engine with its own editors and Tauri + Steamworks desktop pipeline |
 | Potential Impact | 7.5 to 8.5 | Teaches real unix, HTML, JS and Docker through play, paired with a $0-server-CAC browser-demo-to-Steam commercial funnel targeting Zachtronics/terminal-puzzle fans & CS learners |
@@ -20,22 +20,22 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 
 | Kiro feature | Evidence | Strength |
 |---|---|---|
-| **Spec-driven development** | 15 specs in `.kiro/specs/` (including the 3 inventory item specs, `steam-launch-funnel`, and `steamworks-store-release`), EARS requirements, design, tasks, a `Status:` gate; user answers recorded as `**A (user, date):**`; a hook blocks new source areas until a spec is approved | Strong. The `agent-team`, `property-based-tests`, and `steam-launch-funnel` specs show the whole loop, including designs revised after independent review |
+| **Spec-driven development** | 31 specs in `.kiro/specs/` (including `steam-launch-funnel` and the draft `steamworks-store-release`) plus 5 inventory item child specs, EARS requirements, design, tasks, a `Status:` gate; user answers recorded as `**A (user, date):**`; a hook blocks new source areas until a spec is approved | Strong. The `agent-team`, `property-based-tests`, and `steam-launch-funnel` specs show the whole loop, including designs revised after independent review |
 | **Steering** | 15 files; always-on facts, path-scoped rules, a glossary of exact vocabulary; `quality:declarative`, `quality:layers`, `quality:size` enforce them | Strong. Steering is checked by scripts, not trusted |
 | **Skills** | 24 skills in three categories, each paired with a validator | Strong |
 | **Hooks** | 16 in `.kiro/hooks/` (spec guard, brand guard, validators on save, gates on stop, property tests, agent gate) plus three per team agent (baseline, shell guard, scope) | Strong, and the agent hooks were probed against the real CLI |
 | **Custom agents** | 7 agents, generated from one table, with an `fs_write` fence, a shell allow-list, a guard hook, a scope hook, one owner per file; verified with real agents under auto-approve | Strong, with a stated limit: a guard against mistakes, not a sandbox |
-| **Property-based testing** | 34 fast-check properties in `npm run quality`; found 7 real bugs; planted-bug checks per feature; guards against vacuous properties | Strong. The write-up question "did PBT catch issues unit tests missed?" has a concrete answer |
+| **Property-based testing** | 81 fast-check properties in `npm run quality`; found 7 real bugs; planted-bug checks per feature; guards against vacuous properties | Strong. The write-up question "did PBT catch issues unit tests missed?" has a concrete answer |
 | **Sub-agents** | `lead-dev` delegates to six named agents; `semantic_reviewer` reviewed the work independently and found blockers | Good |
 | **Kiro CLI, Crew** | CLI path tested end to end; Crew prepared (agents installed, member on `lead-dev` in the repo workspace, `npm run crew:check`); the gateway honours the agents' rules; a real chat with the member is not done | Partial: needs the two-minute first test and one real task in the app |
 | **MCP** | Our own `credits-forge` server (validate, solve, save levels), Chrome DevTools MCP for `qa`, the Netlify server in the power; exact per-agent tool lists checked by the gate and probed in the real CLI | Strong: the forge enforces the 0-death rule as a tool contract |
-| **Powers** | `credits-ship`: manifest, keywords, Netlify MCP, a `ship` skill whose script gates every deploy and plays the chapter on the preview | Good once the first real deploy is done |
+| **Powers** | `credits-ship`: manifest, keywords, Netlify MCP, a `ship` skill whose script gates every deploy and plays the chapter on the preview; plus `credits-release` (tag-driven release) and `credits-tauri-local` (local desktop build) | Good: the first preview and production deploy ran through it on 2026-11-17 (https://out-of-credits.netlify.app) |
 | **Kiro IDE / Web** | Hooks and steering are written for the IDE; nothing shows it was used | Add two honest paragraphs on what each surface was used for |
 
 ### What makes this more than a feature list
 
 1. **The enforcement is tested against the real tool.** The agent fences were probed on Kiro CLI 3.3.0, and the probes changed the design: a command that matches no rule runs under auto-approve; shell rules ignore redirects; a sub-agent's call is also checked against its parent. Each finding became a gate, a test or a documented limit.
-2. **Quality gates replace trust.** `npm run quality` runs 11 gates (types, root layout, size, layers, declarative, specs, duplicates, agents, brands, MCP, properties). Agents "report only gates they ran".
+2. **Quality gates replace trust.** `npm run quality` runs 16 gates (types, dependencies, lint, root layout, size, layers, cycles, dead code, declarative, specs, duplicates, agents, legacy name, brands, MCP, properties). Agents "report only gates they ran".
 3. **The loop was closed on itself.** The property tests found bugs in the game; an independent review found bugs in the agent setup and in the tests; both were fixed and re-verified. The commit-ready record is in the specs' `tasks.md`.
 
 ## Gaps, in the order they cost points
@@ -59,7 +59,7 @@ This is the criterion the rules describe as "how thoroughly and skillfully does 
 ## Do before you submit (ranked)
 
 1. Commit and push the setup; enable branch protection on `main`.
-2. Deploy; set the About website, description and topics (licence shows as MIT).
+2. Deployed 2026-11-17 (https://out-of-credits.netlify.app). The About description is set; the website still points at the old site name (which returns 404): set it to that URL, and add topics (none yet). Confirm the licence shows as MIT.
 3. Run the first test and one real task through `lead-dev` in the Kiro Crew app; update `docs/AGENTS_CREW.md` with what happened.
 4. Record the video; fill `KIRO_USAGE.md`'s personal part.
 5. Publish the blog post and the social post; fill the Devpost form from `SUBMISSION.md`.

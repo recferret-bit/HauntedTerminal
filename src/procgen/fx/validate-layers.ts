@@ -5,7 +5,7 @@ import type { FxKey, FxLayer, FxPreset, FxRole } from './types.js';
 
 const L = FX_LIMITS;
 
-export function isZone(id: string): id is ZoneId {
+function isZone(id: string): id is ZoneId {
   return Object.prototype.hasOwnProperty.call(ZONES, id);
 }
 

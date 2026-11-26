@@ -1,21 +1,18 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { endBattle } from '../game/battle.js';
-import { maxHpFor } from '../game/bestiary.js';
+import { SSD_PER_BACKUP, maxHpFor } from '../game/bestiary.js';
 import { World } from '../game/entities.js';
 import type { EnemySpawn, PickupSpawn } from '../game/floors.js';
 import { giveItem, hasItem, holdItem } from '../game/inventory.js';
 import { lookup, makeRoot } from '../game/tree.js';
 import type { LevelSpec } from './types.js';
 import { readMetagame, recordTelemetry } from './catalog.js';
-import { arrivalScript, hiddenEnemyId, isNodeHidden, levelScript } from './script.js';
+import { arrivalScript, hiddenEnemyId, levelScript } from './script.js';
 import { applyPids, fillPidsDeep, fixedPids, rollPids } from './pids.js';
 import { ensureDirChain, placeFile, resolveTauntAgent, splitParentAndName, type ChapterState, type QuestBackup } from './session-state.js';
 import { refreshExitGates } from './session-rules.js';
 
-/** Tab-complete and globs skip a tutorial file until its reveal condition is met. */
-export const isHiddenTutorialNode = isNodeHidden;
-
-export function rebootLevel(g: ChapterState, events: KernelEvent[]): string {
+function rebootLevel(g: ChapterState, events: KernelEvent[]): string {
   g.ram = g.entryRam;
   g.ssd = g.entrySsd;
   g.hp = maxHpFor(g.ram);
@@ -179,6 +176,12 @@ export function arriveCurrentLevel(g: ChapterState, events: KernelEvent[]): stri
     return arrivalScript(g, events);
   }
 
+export function restartChapterLevel(g: ChapterState, events: KernelEvent[]): string {
+  g.bus.emit({ kind: 'restart', step: 'go' });
+  const arrival = rebootLevel(g, events);
+  return `[RETRY] Reloaded ${g.rt.spec.title}.\n${arrival}`;
+}
+
 export function levelBannerText(g: ChapterState): string {
     const entry = g.rt.dialog;
     const banner = entry?.banner ?? g.rt.spec.title;
@@ -194,3 +197,43 @@ export function levelBannerText(g: ChapterState): string {
     g.rt.arrivalNote = '';
     return `\n=== ${banner} ===\nObjective: ${g.rt.spec.summary}${chaosLine}${clapback}${arrivalBlock}\n(Type \`hank\` for Socratic hints, or \`kiro scan\` for a local Ghost sweep.)\n`;
   }
+
+/**
+ * Applies damage. A death sets `g.deathText` and returns ''. `exec` and `internalTick` (session-flow.ts) append
+ * `g.deathText` once to stdout and stderr, so callers must not embed it themselves.
+ */
+export function hurt(g: ChapterState, amount: number, source: string, events: KernelEvent[]): string {
+  if (g.rt.spec.mechanic === 'hub' || levelScript(g).safe || amount <= 0) {
+    return '';
+  }
+  const { amount: mitigated } = g.kiro.mitigateDamage(amount);
+  if (g.lab) {
+    g.rt.lab.absorbed[source] = (g.rt.lab.absorbed[source] ?? 0) + mitigated;
+    return '';
+  }
+  g.hp = Math.max(0, g.hp - mitigated);
+  events.push({
+    type: 'PLAYER_DAMAGED',
+    amount: mitigated,
+    hpRemaining: g.hp,
+    sourceName: source,
+  });
+
+  if (g.hp > 0) return '';
+
+  g.deaths += 1;
+  g.rt.levelDeaths += 1;
+  g.deadNow = true;
+  if (g.ssd >= SSD_PER_BACKUP) {
+    g.ssd -= SSD_PER_BACKUP;
+    g.hp = Math.ceil(maxHpFor(g.ram) * 0.6);
+    events.push({ type: 'PLAYER_RESPAWNED', from: 'ssd_backup', hp: g.hp });
+    g.deathText = `\n[SSD SNAPSHOT RESTORED] ${source} crashed your shell, but your 256GB NVMe backup restored you in place!\n`;
+    return '';
+  }
+
+  const arrival = rebootLevel(g, events);
+  events.push({ type: 'PLAYER_RESPAWNED', from: 'floor_restart', hp: g.hp });
+  g.deathText = `\n[KERNEL PANIC] ${source} wiped your session! Rebooted at ${g.rt.spec.cwd}.\n${arrival}`;
+  return '';
+}

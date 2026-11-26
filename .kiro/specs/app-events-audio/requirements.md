@@ -14,6 +14,7 @@ Capability: one internal app bus. Every game action and click publishes an event
 6. WHILE a music scene is current, THE SYSTEM SHALL play at most one music bed, chosen by the scene priority in the design. A scene change SHALL crossfade. The Esc menu bed SHALL NOT pause the game clock or the battle turn timer.
 7. WHEN the session mute or volume changes, THE SYSTEM SHALL apply it to the sample graph at once. Headless runs SHALL publish events and SHALL NOT require an audio device.
 8. THE SYSTEM SHALL NOT send analytics, and SHALL NOT change how damage is calculated. `PLAYER_DAMAGED` on the bus is the event a later presenter subscribes to.
+9. WHEN a dialog box visually opens on the play screen (`DialogOrchestrator` `onOpen`), THE SYSTEM SHALL publish one `dialog` app event `{ speaker }` and play that speaker's voice line from it: for `antigravy`, `codec`, `gork` and `clod` one of `taunt_<agent>_1` .. `taunt_<agent>_10`; for `kiro`, and for any speaker without a mapping, one of `kiro_advice`, `kiro_advice_2` .. `kiro_advice_10`; for `vibecoder` `dialog_hero`. THE SYSTEM SHALL pick the taunt or cheer variant at random and SHALL NOT pick the same variant twice in a row for that speaker. A new voice line SHALL fade out the voice line still playing. The `DIALOG_BOX` and `AGENT_TAUNT` kernel events SHALL play no voice line themselves, so the voice starts with the box and not when the line is queued. *(from code, commit a98ab95: `src/audio/sfx-kernel.ts` `SPEAKER_CUES` / `speakerCue`, `src/audio/engine.ts` `TAUNT_VARIANTS` / `nextPlayStyle`, `src/audio/orchestrators.ts`, `src/play/input.ts` `onDialogOpen`)*
 
 ## Decisions
 
@@ -22,6 +23,7 @@ Capability: one internal app bus. Every game action and click publishes an event
 - **C (user, 2026-11-25):** Every SFX file and every music file we have is used.
 - **D (user, 2026-11-25):** Sound sources are configurable. Start with 10.
 - **E (user, 2026-11-25):** Refactor the apps and the orchestrators onto this bus, and update the Kiro spec.
+- **F (from commit a98ab95; user to confirm):** Each of the Big Four agents has 10 random robot taunt voice lines and Kiro has 10 cheers; the line plays when its dialog box opens (requirement 9).
 
 ## Open questions
 

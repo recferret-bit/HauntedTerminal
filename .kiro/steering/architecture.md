@@ -5,7 +5,7 @@ Code follows clean architecture: dependencies point inward, and the rules are en
 ## Layers (inner to outer)
 
 ```
-contracts/            pure types shared by game and tools (events, the app bus, room view), the project name (`brand.ts`) and the saved-key migration (`legacy-keys.ts`; every page entry imports `migrate-storage.ts` first)
+contracts/            pure types, `createStateMachine` (`state-machine.ts`), `AppBus` (`app-bus.ts`), `brand.ts`, and saved-key migration (`legacy-keys.ts`)
 audio/                sample playback. Imports contracts only. The SFX orchestrator and the music orchestrator subscribe to the app bus. One-shot voices default to 10 (`SOUND_SOURCES`). Game and chapters emit; they do not import this layer.
 procgen/core          domain: palette, rng, types, catalogs, pixel buffers. No three.
 procgen/geometry      shape -> geometry, software raster (three math only)
@@ -15,8 +15,8 @@ procgen/runtime       adapters: comic materials, ink shells, animator, FX emitte
 shaders/              GLSL materials and post passes. Imports nothing from procgen
 storybook/            storybook: domain <- subjects <- stage <- ui <- app (entry: storybook/storybook.ts)
 assets/               optional PNG albedo loader (three). No other src imports.
-game/                 world, VFS, shell, session, the battle orchestrator (`battle.ts`: the turn-based state machine, pure). Three-free. Room view types come from contracts.
-chapters/             level runtime. Imports game and contracts. generated/ is compiled data.
+game/                 world, VFS (`tree.ts` with `isDescendantOrSelf`), shell (`session-shell.ts` `CLASSIC_HANDLERS`), shared services (`unix-applets.ts`, `kiro-commands.ts`), FSM controllers (`battle.ts`, `kiro.ts`, `agents.ts`). Three-free.
+chapters/             level runtime (session orchestrator + `session-*` modules + table-driven `CHAPTER_HANDLERS`, `metagame-data.ts`). Imports game and contracts. generated/ is compiled data.
 renderer/             comic stage. Three, procgen, shaders, assets. Not the game rules.
 cinematic/            generic 3D comix runtime. Three, procgen, shaders. generated/ is compiled data.
 editor-core/          shared workstation framework for spec editors: schema form builder, schema walker, HTTP/etag baseline tracker, dock layout, workspace persistence, resizable viewport stage, the game preview shell and play frame (`game-preview.ts`, `play-frame.ts`), the console dock, and chrome helpers (contracts only).
@@ -39,11 +39,12 @@ Exact allowed imports live in `scripts/quality/check-layers.mjs`. Change the rul
 - No source file over 600 lines. No function over 130 lines. Split by responsibility, not by line count. `src/chapters/generated/` and `src/cinematic/generated/` are compiled data and are outside the size gate; regenerate them, do not hand-edit them.
 - No duplicated blocks (`jscpd`, 4 lines / 35 tokens). Extract the shared helper into the innermost layer that both callers may import. `src/chapters/generated/` and `src/cinematic/generated/` are compiled data and are excluded.
 - KISS: plain functions and data tables before classes; no indirection that only exists to survive a missing module.
-- No `any`.
+- **Patterns & hygiene**: state machines via `createStateMachine` + declarative `TransitionTable` (`src/contracts/state-machine.ts`) across gameplay and UI/modal orchestrators (`battle`, `kiro`, `agents`, `lifecycle`, `esc-menu`, `code-editor`, `dialog-box`, `dialog-orchestrator`, `modal-dialog`, `manual-book`, `chapter-map`, `run-control`), typed events (`AppBus` / `PlayEventBus` modal routing via `routeModalAction`), shared services (`unix-applets.ts` / `kiro-commands.ts` / `tree.ts`), zero `any`, zero `innerHTML`, zero runtime cycles (`check-cycles.mjs`), zero dead exports/types/CSS/modules (`check-deadcode.mjs`), exact pinned deps across all sections + lockfile root (`check-deps.mjs`), and ESLint hygiene across `src` and `scripts` (`quality:lint`).
 
 ## Gates (run before saying a change is done)
 
-- `npm run quality` : typecheck, root layout, size, layers, declarative (no chapter, level, or comix page named in code), specs (every spec has a valid `Status:`, no open questions past `draft`, every new `src/<area>/` or page is named by an approved spec; `spec-first.md`), duplicates, agents (`check-agents.mjs`: the team agents match their table and every source file has one owner), brands (`quality:brands` / `check-brands.mjs`: no real AI agent brand names in tracked files), properties (`property-tests.mjs`: fast-check properties per feature, fixed seed).
+- `npm run quality` : typecheck, exact pinned deps (`check-deps.mjs`), ESLint (`quality:lint` across `src/` + `scripts/{quality,hooks,desktop,mcp,harness}/`), root layout, size, layers, runtime cycles, dead exports/types/CSS, declarative, specs, duplicates, agents, brands, MCP, properties (`property-tests.mjs`).
+- `node scripts/harness/architecture-unit.mjs` & `node scripts/harness/classic-unit.mjs` : shared core, FSMs, `PlayLifecycle`, `PlayEventBus` modal routing, `isDescendantOrSelf`, `CHAPTER_HANDLERS`, and classic floor verification.
 - `node scripts/harness/generate-chapter.mjs --verify` : compile chapters, static spec checks, 0-death headless playthrough.
 - `node scripts/harness/generate-comix.mjs --verify` & `node scripts/harness/validate-comix.mjs` : compile comix sequences, static + connected-folder checks, 60fps headless timeline simulation.
 - `node scripts/harness/editor-unit-test.mjs`, `node scripts/harness/editor-smoke.mjs` & `node scripts/harness/comix-editor-smoke.mjs` : unit/corner-case suite + chapter and comix editors in headless Chrome.

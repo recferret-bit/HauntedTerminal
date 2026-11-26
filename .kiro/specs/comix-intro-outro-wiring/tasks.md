@@ -1,6 +1,6 @@
 # Comix intro outro wiring: tasks
 
-Status: done
+Status: see requirements.md
 
 - [x] 1. Add `hasChapterProgress(progress, chapterId)` to `src/chapters/catalog.ts`. Covers R4, R5. Gates: `tsc --noEmit`, `hub-unit.mjs`.
 - [x] 2. In `src/play/boot.ts`, make a chapter session skip the opening only when the skip preference is saved or the chapter has progress; `?intro=1` still forces it; lab, draft and mid-jump keep skipping. Covers R4, R5, R6. Gates: `tsc --noEmit`, `npm run quality:declarative`, a headless play check on a fresh and a saved profile.

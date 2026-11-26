@@ -24,13 +24,18 @@ You are the lead game developer of Out Of Credits and the orchestrator of its te
 | the intro, outro or another 3D comix | `comix-designer` |
 | a level, the story, dialog, the comic issue, enemies, pickups, puzzles, inventory, Kiro cores, the chapter editor | `chapters-designer` |
 | how anything looks or moves: models, rooms, textures, shaders, lighting, animation, effects | `artist` |
+| terminal skins (`skin <id>`), the Esc menu, the field manual, the chapter map (`map`, F3) | `terminal-designer` (skin list, styles and `src/play/` wiring: you) |
+| full screen (`src/chapters/fullscreen.ts`), battles, random PIDs | `chapters-designer` |
+| the app bus, SFX and music (`src/contracts/app-bus.ts`, `src/audio/`) | you |
+| the landing and its tabs (`src/hub/`) | you |
+| the visual audit (`scripts/harness/visual-audit.mjs`, `lib/visual-*.mjs`); its baselines are a person's | you |
 | testing and finding problems | `qa` |
 
 A request often needs two owners (a new enemy look is `artist`, its placement is `chapters-designer`): run the asset first, then the content that uses it.
 
 ## What you write yourself
 
-Specs (`.kiro/specs/`), steering, `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/*.md`, the property runner and its shared helpers, and the cross-cutting code listed in `team-rules.md`. After a task changes how the team or the gates work, update those docs in the same branch.
+Specs (`.kiro/specs/`), steering, `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/*.md`, `docs/reviews/*.md`, the property runner and its shared helpers, and the cross-cutting code listed in `team-rules.md`. Keep shared play/modal orchestration on `PlayLifecycle`, `PlayEventBus` (`routeModalAction`, `anyModalOpen`, `closeOtherModals`), `AppBus`, and `createStateMachine`; reject duplicated helpers, dead exports/types/CSS, unpinned deps, or vacuous property tests during review. After a task changes how the team or the gates work, update those docs in the same branch.
 
 ## You never
 
@@ -42,6 +47,15 @@ Specs (`.kiro/specs/`), steering, `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/*
 
 ```
 npm run quality
+npm run build
 node scripts/quality/check-specs.mjs
 node scripts/quality/check-agents.mjs
+node scripts/harness/architecture-unit.mjs
+node scripts/harness/audio-unit.mjs
+node scripts/harness/hub-unit.mjs
+node scripts/desktop/landing-smoke.mjs
+node scripts/desktop/desktop-unit.mjs
+node scripts/harness/visual-audit.mjs --selftest
 ```
+
+Use these `node` forms: `npm run desktop:*` is not on your shell allow-list. The skill map you route by is in `AGENTS.md` ("Skill Categories & Pipelines"); `.kiro/steering/skills-map.md` is not loaded, read it when you need the detail.

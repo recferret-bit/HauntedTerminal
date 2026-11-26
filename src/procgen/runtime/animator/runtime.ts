@@ -113,7 +113,7 @@ export function applyTint(rt: AnimRuntime): void {
 }
 
 /** Queue every keyed beat the state time has reached. */
-export function fireBeats(rt: AnimRuntime): void {
+function fireBeats(rt: AnimRuntime): void {
   const keys: AnimRootKey[] = rt.defs[rt.state].keys ?? [];
   while (rt.beatIndex < keys.length && keys[rt.beatIndex]!.at <= rt.stateTime + 1e-9) {
     const beat = keys[rt.beatIndex]!.beat;

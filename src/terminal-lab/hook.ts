@@ -1,7 +1,6 @@
 import type { LabGoal, LabInspect } from '../chapters/session-lab-types.js';
 import type { PackIssue } from '../chapters/validate-pack.js';
-import type { WorkstationHook } from '../editor-core/workspace.js';
-import { createWorkstationHookApi } from '../editor-core/workspace.js';
+import { createWorkstationHookApi, type WorkstationHook } from '../editor-core/workspace.js';
 import type { LabApp } from './app.js';
 import { paletteGroups } from './catalog.js';
 import type { LabDockId } from './chrome.js';
@@ -11,7 +10,7 @@ import type { LabDriverKind, LabScript, LabStep, LabStepKind } from './lab-types
 import type { StepResult } from './runner.js';
 
 /** `window.__terminalLab`: the lab for tests and tools, like `window.__chapterEditor`. */
-export interface TerminalLabHook extends WorkstationHook<LabDockId> {
+interface TerminalLabHook extends WorkstationHook<LabDockId> {
   ready: boolean;
   state(): {
     labId: string;

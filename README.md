@@ -66,8 +66,8 @@ External Steam registration & store cutover checklist: [`docs/STEAM_RELEASE_PLAY
 Deterministic scripts, no LLM in the loop:
 
 ```bash
-npm run quality                                  # 11 gates: types, root, size, layers, declarative, specs, dup, agents, brands, mcp, props
-node scripts/harness/property-tests.mjs          # 34 fast-check properties (--only terminal,laptop,comix,chapters,gameplay)
+npm run quality                                  # 16 gates: types, deps, lint, root, size, layers, cycles, deadcode, declarative, specs, dup, agents, legacy-name, brands, mcp, props
+node scripts/harness/property-tests.mjs          # 81 fast-check properties, seed 20261117 (--only terminal,laptop,comix,chapters,gameplay)
 node scripts/harness/play-browser.mjs --nointro  # the whole chapter in real Chrome, to the stats screen
 node scripts/harness/generate-chapter.mjs --verify   # compile + headless playthrough of all 11 levels, 0 deaths
 node scripts/harness/generate-comix.mjs --verify     # compile + 60 fps timeline simulation of intro and outro
@@ -81,7 +81,7 @@ More suites (headless Chrome smoke tests, model and animation validators) are li
 
 ## How Kiro built this
 
-The whole project is organised for Kiro in [`.kiro/`](./.kiro): **7 custom agents**, **15 steering files**, **24 skills**, **16 hooks** and **15 specs** for every large feature, with scripts that fail the build when the rules are broken. Full account: [`docs/KIRO_USAGE.md`](docs/KIRO_USAGE.md).
+The whole project is organised for Kiro in [`.kiro/`](./.kiro): **7 custom agents**, **15 steering files**, **24 skills**, **18 hooks** and **31 specs** for every large feature, with scripts that fail the build when the rules are broken. Full account: [`docs/KIRO_USAGE.md`](docs/KIRO_USAGE.md).
 
 - **Agent team** (`.kiro/agents/`): a lead game developer that orchestrates four feature designers (terminal, laptop, comix, chapters), an artist and a QA agent. Each writes only its own folders (a fence, a shell allow-list and two hooks enforce it), and `qa` plays the game after every change. Run it from the CLI (`kiro-cli --agent lead-dev`); the Kiro Crew app runs the same team through a member bound to this repo (set up and checked with `npm run crew:check`; the first real chat is the open step): [`docs/AGENTS_CREW.md`](docs/AGENTS_CREW.md).
 - **Specs**: new features start as `.kiro/specs/<name>/` (requirements in EARS, design, tasks) and a hook blocks new source areas until the spec is approved.
@@ -91,7 +91,7 @@ The whole project is organised for Kiro in [`.kiro/`](./.kiro): **7 custom agent
 - **Power** (`.kiro/powers/credits-ship/`): a project Kiro power that bundles the Netlify MCP server with a gated `ship` skill. A deploy runs the quality gates and the 0-death chapter verify, uploads a preview, plays the whole chapter on it in Chrome, and only then offers production, which gets exactly the build that was played. The agent team cannot deploy.
 - **Powers** (`.kiro/powers/credits-release/`, `.kiro/powers/credits-tauri-local/`): `credits-release` checks a clean `main`, runs the gates and pushes tag `v<version>` so GitHub builds the desktop installers and Release, then makes the Netlify preview. `credits-tauri-local` builds the desktop app on this machine, unversioned and unpublished. Both are the user's command only.
 - **Hooks**: typecheck and validators on save, spec-first reminder on prompt, verification gate on stop.
-- **Property-based tests**: 34 fast-check properties across the terminal (both shells), laptop, comix, chapters/achievements/saves and gameplay elements, inside `npm run quality`. They found seven real bugs; how to use them: [`docs/PROPERTY_TESTS.md`](docs/PROPERTY_TESTS.md). Our own assessment against the Kiroween criteria: [`docs/KIROWEEN_EVALUATION.md`](docs/KIROWEEN_EVALUATION.md).
+- **Property-based tests**: 81 fast-check properties (fixed seed 20261117) across the terminal (both shells), laptop, comix, chapters/achievements/saves and gameplay elements, inside `npm run quality`. They found seven real bugs; how to use them: [`docs/PROPERTY_TESTS.md`](docs/PROPERTY_TESTS.md). Our own assessment against the Kiroween criteria: [`docs/KIROWEEN_EVALUATION.md`](docs/KIROWEEN_EVALUATION.md).
 
 ## Layout
 

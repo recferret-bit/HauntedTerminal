@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import type * as THREE from 'three';
 import { eventEntityIds } from './event-fx.js';
 import { disposeStageActor, type StageActor } from './stage-cast.js';
 import { lockedNames, normName } from './stage-const.js';

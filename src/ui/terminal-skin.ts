@@ -47,7 +47,7 @@ export function defaultSkinFor(platform: string): TerminalSkinId {
 }
 
 /** The platform string of this browser, or '' outside a browser. */
-export function currentPlatform(): string {
+function currentPlatform(): string {
   if (typeof navigator === 'undefined') return '';
   const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
   return nav.userAgentData?.platform || nav.platform || nav.userAgent || '';

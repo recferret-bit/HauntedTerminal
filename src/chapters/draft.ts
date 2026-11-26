@@ -47,11 +47,3 @@ export function readDraftPack(chapterId: string): ChapterPack | null {
     return null;
   }
 }
-
-export function clearDraftPack(chapterId: string): void {
-  try {
-    localStorage.removeItem(KEY + chapterId);
-  } catch {
-    /* nothing to clear */
-  }
-}

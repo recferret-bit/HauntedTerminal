@@ -45,8 +45,8 @@ export const ACTOR_BAND = {
 export const BAND_ZONES: readonly ZoneId[] = ['silicon', 'pcbDark', 'rubber', 'ink'];
 
 /** The design-space x range `src/game/view.ts` places actors in (copies of DESIGN_LEFT / DESIGN_RIGHT in comic-stage.ts). */
-export const DESIGN_LEFT = 4.9;
-export const DESIGN_RIGHT = -1.15;
+const DESIGN_LEFT = 4.9;
+const DESIGN_RIGHT = -1.15;
 
 /** A `RoomActor.x` from src/game/view.ts as a room-frame x. Same linear map as ComicStage.placeX, onto the room width. */
 export function designToRoomX(designX: number): number {
@@ -65,7 +65,7 @@ export function roomIdForKind(kind: RoomKind): RoomId {
 }
 
 /** Which floor's palette and motifs a room belongs to. `outro` is the real world and reports floor 5's slot. */
-export function floorForKind(kind: RoomKind): FloorId {
+function floorForKind(kind: RoomKind): FloorId {
   if (kind === 'desk' || kind === 'attic') return 1;
   if (kind === 'crypt_entrance' || kind === 'crypt_hall' || kind === 'chasm') return 2;
   if (kind === 'cell' || kind === 'lab_hall') return 3;

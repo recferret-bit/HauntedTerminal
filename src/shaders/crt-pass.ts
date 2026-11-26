@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import type * as THREE from 'three';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { postBaseUniforms } from './post-common.js';
 
@@ -115,10 +115,6 @@ export function createCrtPass(width: number, height: number, params: CrtParams =
 export function setCrtSize(pass: ShaderPass, width: number, height: number, dpr = 1): void {
   (pass.uniforms.uResolution.value as THREE.Vector2).set(Math.max(1, width), Math.max(1, height));
   pass.uniforms.uDpr.value = Math.max(0.5, dpr);
-}
-
-export function setCrtMix(pass: ShaderPass, mix: number): void {
-  pass.uniforms.uMix.value = mix;
 }
 
 export function setCrtParams(pass: ShaderPass, params: CrtParams): void {

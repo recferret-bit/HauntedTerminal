@@ -54,7 +54,8 @@ export function syncPlayAudio(play: Play): void {
   const bus = play.session.bus;
   if (!bus) return;
   const mem = remembered.get(play) ?? { key: '', menu: false, reading: false, tick: null, held: false };
-  if (play.holdMusic || play.phase === 'boot' || play.phase === 'intro' || play.phase === 'outro') {
+  const phase = play.lifecycle.phase();
+  if (play.holdMusic || phase === 'boot' || phase === 'intro' || phase === 'outro') {
     mem.held = true;
     remembered.set(play, mem);
     return;

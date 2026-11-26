@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import type * as THREE from 'three';
 import { collectTopFxLights, createFxEmitter, FxCatalog, type FxEmitter, type FxPreset } from '../procgen/index.js';
 import { MAX_COMIC_FX_LIGHTS, type ComicFxLight } from '../shaders/comic-material.js';
 
@@ -72,7 +72,7 @@ export interface FxPlayOptions {
 const GLYPHS = new Set('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?+-/.x()>_#% '.split(''));
 
 /** Fit any string to the FX lettering: upper-case (a lower-case `x` before a digit stays), known glyphs, 18 chars. */
-export function fxText(text: string): string {
+function fxText(text: string): string {
   let out = '';
   for (let i = 0; i < text.length; i++) {
     const ch = text[i]!;

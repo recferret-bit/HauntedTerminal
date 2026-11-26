@@ -18,7 +18,7 @@ import { hashSeed, type ChapterState } from './session-state.js';
 import { enemiesHeld, worldStep } from './session-world.js';
 
 /** The enemies that would fight the hero now; none while the level holds its enemies. */
-export function currentThreats(g: ChapterState): BattleThreat[] {
+function currentThreats(g: ChapterState): BattleThreat[] {
   if (enemiesHeld(g)) return [];
   return g.rt.world.threats().map((e) => ({ id: e.id, type: e.type, boss: e.boss }));
 }

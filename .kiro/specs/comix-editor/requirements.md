@@ -12,3 +12,11 @@ The Comix Editor (`/comix-editor`) is a workstation studio in `src/comix-editor/
 4. **Live draft viewport, zoom, pan & Apply Shot.** WHEN scrubbing or playing the preview, THE PREVIEW SHALL push unsaved drafts to `/cinematic.html?draft=1&editor=1` (`localStorage`), sync playhead/active-panel highlights at runtime, support page zoom (`Fit` / `40%–250%`), orthographic 3D camera zoom (`0.25×–6.0×`) and pan, and write the framed shot back to `camera.from`, `camera.to`, or `camera.portrait` (`Apply Shot`).
 5. **Bidirectional viewport <-> Inspector selection.** WHEN clicking a 2D letter, 2D title overlay, panel background, 3D cast actor, 3D prop, or 3D fixture in the Comix Viewport — or selecting/focusing an element row, panel section, or mini-map box in the Inspector — THE EDITOR SHALL highlight the element in the Viewport (`EditorSelectionOverlay` marquee + `.cx-sel-pill`), reveal & expand the corresponding `<details class="item is-selected">` / `.panel-sec.is-selected` / `.layout-box.is-selected` row in the Inspector, seek the preview if an Inspector-picked item is currently hidden, and preserve focused `<input>`/`<select>`/`<textarea>` elements during in-pane selection.
 6. **Accessibility & verification gates.** THE EDITOR SHALL build DOM strictly with `h()`, label multi-control fields via `role="group"`, support keyboard controls across splitters/tabs/resizers/mini-map/issue jumps (`Ctrl/Cmd+S`, `Ctrl/Cmd+Shift+S`), stay within file/function size & duplicate limits (`npm run quality`), and pass `scripts/harness/editor-unit-test.mjs` and headless Chrome checks in `scripts/harness/comix-editor-smoke.mjs`.
+
+## Decisions
+
+None (legacy).
+
+## Open questions
+
+None (legacy).

@@ -82,7 +82,7 @@
           "chapters/**",
           "src/chapters/**",
           "src/chapter-editor/**",
-          "src/game/{entities,entities-combat,bestiary,puzzle,inventory,kiro,dialogue,agents,battle}.ts",
+          "src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,dialogue,agents,battle}.ts",
           "scripts/harness/props/{chapters,gameplay,sessions}.mjs",
           "scripts/harness/battle-unit.mjs"
         ],
@@ -94,7 +94,7 @@
           "chapters/**",
           "src/chapters/**",
           "src/chapter-editor/**",
-          "src/game/{entities,entities-combat,bestiary,puzzle,inventory,kiro,dialogue,agents,battle}.ts",
+          "src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,dialogue,agents,battle}.ts",
           "scripts/harness/props/{chapters,gameplay,sessions}.mjs",
           "scripts/harness/battle-unit.mjs"
         ],
@@ -126,7 +126,9 @@
           "~/.kiro/crew/.env",
           "~/.kiro/crew/auth*",
           "~/.ssh/**",
-          "~/.aws/**"
+          "~/.aws/**",
+          "~/Library/Preferences/netlify/**",
+          "~/.config/gh/**"
         ],
         "effect": "deny"
       },
@@ -159,6 +161,7 @@
           "git diff --name-only*",
           "git diff --cached --stat*",
           "git diff -- *",
+          "diff scripts/harness/out/*",
           "npm run quality",
           "npm run quality:*",
           "npm run build",
@@ -170,7 +173,8 @@
           "STACK_PORT=5174 npm stop",
           "STACK_PORT=5174 npm run status",
           "node scripts/*",
-          "node .kiro/skills/*"
+          "node .kiro/skills/*",
+          "npx tsc --noEmit"
         ],
         "effect": "allow"
       },
@@ -206,6 +210,7 @@
           "git diff --name-only*",
           "git diff --cached --stat*",
           "git diff -- *",
+          "diff scripts/harness/out/*",
           "npm run quality",
           "npm run quality:*",
           "npm run build",
@@ -217,7 +222,8 @@
           "STACK_PORT=5174 npm stop",
           "STACK_PORT=5174 npm run status",
           "node scripts/*",
-          "node .kiro/skills/*"
+          "node .kiro/skills/*",
+          "npx tsc --noEmit"
         ],
         "effect": "deny"
       },
@@ -238,7 +244,18 @@
           "npm publish*",
           "*visual-audit*--update*",
           "*docs/qa/baselines*",
-          "cp *..*"
+          "cp *..*",
+          "node *..*",
+          "cd *..*",
+          "node *.kiro/powers*",
+          "cd *.kiro/powers*",
+          "*$(*",
+          "*`*",
+          "node *ship.mjs*",
+          "node *release.mjs*",
+          "node *tauri-local.mjs*",
+          "node *build-tauri-steam*",
+          "node *agents-install*"
         ],
         "effect": "deny"
       },
@@ -249,7 +266,10 @@
           "*.pem*",
           "*/.ssh/*",
           "*/.aws/*",
-          "*.kiro/crew/.env*"
+          "*.kiro/crew/.env*",
+          "*netlify/config.json*",
+          "*/.config/gh/*",
+          "*.netrc*"
         ],
         "effect": "deny"
       },

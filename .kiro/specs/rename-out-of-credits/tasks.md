@@ -1,6 +1,6 @@
 # Rename out of credits: tasks
 
-Status: done
+Status: see requirements.md
 
 Branch: `agent/rename-out-of-credits` from `main`. Commit only when the user asks. Req numbers refer to `requirements.md`.
 

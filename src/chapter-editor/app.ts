@@ -38,7 +38,7 @@ const CHAPTER_DOCK_BUTTONS: readonly DockButtonDef<ChapterDockId>[] = [
   { id: 'top', label: '▴ Top', title: 'Hide Top Bar (restorable from floating pill)' },
 ];
 
-export interface ChapterEditorHook extends WorkstationHook<ChapterDockId> {
+interface ChapterEditorHook extends WorkstationHook<ChapterDockId> {
   ready: boolean;
   state(): {
     slug: string;

@@ -10,7 +10,7 @@ import type { TexEntry } from './toolkit.js';
  * file's list, then run `npm run procgen:textures` and look at the sheet.
  * Skill: .kiro/skills/procedural-texture-synthesis
  */
-export const TEXTURE_ENTRIES: readonly TexEntry[] = [...SURFACE_TEXTURES, ...BACKDROP_TEXTURES, ...DECAL_TEXTURES];
+const TEXTURE_ENTRIES: readonly TexEntry[] = [...SURFACE_TEXTURES, ...BACKDROP_TEXTURES, ...DECAL_TEXTURES];
 
 for (const entry of TEXTURE_ENTRIES) {
   if (!TextureCatalog.has(entry.id)) TextureCatalog.register(entry);

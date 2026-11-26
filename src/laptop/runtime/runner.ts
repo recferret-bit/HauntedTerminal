@@ -8,7 +8,7 @@ import { emptyReport, NO_FILES, plainRequest, type LogLine, type RunReport, type
 import { pageSource, workerSource } from './bridge.js';
 
 /** A run that has not reported by then is stopped and reported as timed out. */
-export const RUN_TIMEOUT_MS = 2500;
+const RUN_TIMEOUT_MS = 2500;
 
 type BridgeMessage =
   | { t: 'log'; level: LogLine['level']; text: string }
@@ -79,30 +79,40 @@ export interface PreviewSlot {
   cancel?: () => void;
 }
 
+function replaceFrame(slot: PreviewSlot, frame: HTMLIFrameElement, srcdoc?: string): void {
+  const fresh = frame.cloneNode(false) as HTMLIFrameElement;
+  if (srcdoc !== undefined) fresh.srcdoc = srcdoc;
+  frame.replaceWith(fresh);
+  slot.frame = fresh;
+}
+
 /** Renders the page into the slot's frame (the visible preview) and reports from inside it. */
 function renderPage(req: RunRequest, slot: PreviewSlot, onLog: ((line: LogLine) => void) | undefined, limitMs: number): Promise<RunReport> {
   slot.cancel?.();
   const frame = slot.frame;
   const token = `run-${++runs}-${Math.random().toString(36).slice(2)}`;
   let cancelled = false;
+  let settled = false;
   const listen = (ev: MessageEvent): void => {
     if (cancelled) return;
     const data = ev.data as (BridgeMessage & { token?: string }) | null;
     if (ev.source === frame.contentWindow && data?.token === token) feed(data);
   };
   const { feed, result, cancel } = collector(onLog, (timedOut) => {
+    settled = true;
     window.removeEventListener('message', listen);
     if (!timedOut || cancelled) return;
     // Drop the stuck frame: a fresh one says it was stopped.
-    const fresh = frame.cloneNode(false) as HTMLIFrameElement;
-    fresh.srcdoc = STOPPED_PAGE;
-    frame.replaceWith(fresh);
-    slot.frame = fresh;
+    replaceFrame(slot, frame, STOPPED_PAGE);
   }, limitMs);
   slot.cancel = () => {
     cancelled = true;
     window.removeEventListener('message', listen);
     cancel();
+    if (!settled) {
+      settled = true;
+      replaceFrame(slot, frame);
+    }
   };
   window.addEventListener('message', listen);
   if (frame.getAttribute('sandbox') !== 'allow-scripts') frame.setAttribute('sandbox', 'allow-scripts');

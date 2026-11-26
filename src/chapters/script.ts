@@ -129,7 +129,7 @@ export function stepOutput(s: ScriptStep, env: StepEnv): { events: KernelEvent[]
 }
 
 /** The tutorial card event for step `n` (1-based) and the terminal line announcing it. */
-export function tutorialCard(tut: ScriptTutorial | undefined, n: number, done: boolean): { events: KernelEvent[]; print: string } {
+function tutorialCard(tut: ScriptTutorial | undefined, n: number, done: boolean): { events: KernelEvent[]; print: string } {
   const def = tut?.steps[n - 1];
   if (!tut || !def) return { events: [], print: '' };
   const event: KernelEvent = {
@@ -209,7 +209,7 @@ function announceTutorialStep(g: ChapterState, n: number, done: boolean, events:
 }
 
 /** Current step (1-based): the first one whose `doneWhen` does not hold. */
-export function tutorialStepNumber(g: ChapterState): number {
+function tutorialStepNumber(g: ChapterState): number {
   const steps = levelScript(g).tutorial?.steps ?? [];
   for (let i = 0; i < steps.length; i++) {
     const done = steps[i]!.doneWhen;
@@ -282,7 +282,7 @@ export function applySkipTutorial(g: ChapterState, events: KernelEvent[]): strin
 
 // ---- hidden enemy ------------------------------------------------------------------------------------------
 
-export function isHiddenRevealed(g: ChapterState): boolean {
+function isHiddenRevealed(g: ChapterState): boolean {
   const hide = levelScript(g).tutorial?.hide;
   return !hide || g.rt.hiddenRevealed || evalCond(g, hide.revealWhen);
 }
@@ -298,7 +298,7 @@ export function isNodeHidden(g: ChapterState, node: VNode): boolean {
   return Boolean(hide && node.name === hide.node && !isHiddenRevealed(g));
 }
 
-export function revealHidden(g: ChapterState, events: KernelEvent[]): void {
+function revealHidden(g: ChapterState, events: KernelEvent[]): void {
   const hide = levelScript(g).tutorial?.hide;
   if (!hide) return;
   g.rt.hiddenRevealed = true;

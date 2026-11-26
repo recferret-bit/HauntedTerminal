@@ -1,11 +1,10 @@
 import { playBed, type BedHandle } from './bed-loop.js';
-import type { MusicId, SfxId } from './catalog.js';
-import { musicAsset, musicLoops, sampleUrl } from './catalog.js';
+import { musicAsset, musicLoops, sampleUrl, type MusicId, type SfxId } from './catalog.js';
 import { SOUND_SOURCES, TYPING_MIN_INTERVAL_MS, TYPING_SOUND_SOURCES } from './limits.js';
 import { pickCappedSlot } from './voices.js';
 
 /** One-shot cues capped to `TYPING_SOUND_SOURCES` simultaneous voices. */
-export const TYPING_SFX: ReadonlySet<SfxId> = new Set<SfxId>([
+const TYPING_SFX: ReadonlySet<SfxId> = new Set<SfxId>([
   'key_press',
   'key_press_2',
   'key_press_3',

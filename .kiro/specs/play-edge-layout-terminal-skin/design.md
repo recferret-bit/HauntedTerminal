@@ -1,6 +1,6 @@
 # Play page edge-to-edge layout and terminal skin: design
 
-Status: approved (by the user 2026-11-25)
+Status: see requirements.md
 
 ## Pieces
 

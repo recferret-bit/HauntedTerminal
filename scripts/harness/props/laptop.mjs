@@ -131,7 +131,8 @@ export default async function laptopSuite({ load }) {
         }),
     },
     {
-      name: 'guarded code with loops still compiles, and every loop with a condition gets a line-numbered check',
+      name: 'guarded code with loops still compiles, and every loop with a condition gets a check naming its own line',
+      examples: [[[['if (a) { for (let j = 0; j < 2; j++) { while (false) {} } }', 2], ['a = 1;', 0], ['do { a--; } while (a > 0);', 1]]]],
       build: () =>
         fc.property(fc.array(fc.oneof(loopStatement, loopFreeStatement.map((code) => [code, 0])), { minLength: 1, maxLength: 8 }), (parts) => {
           // Each statement in its own block, so two `let`s of the same name never clash.
@@ -140,11 +141,14 @@ export default async function laptopSuite({ load }) {
           try {
             new Script(out);
           } catch (err) {
-            throw new Error(`guarded code does not compile (${err.message}):\n${out}`);
+            throw new Error(`guarded code does not compile (${err.message}):\n${out}`, { cause: err });
           }
-          const loops = parts.reduce((n, [, k]) => n + k, 0);
-          const checks = (out.match(/__lg\(\d+\)/g) ?? []).length;
-          expect(checks === loops, `${loops} loop(s) but ${checks} check(s):\n${out}`);
+          // Line 1 is `let a = 0;`; part j is `{` on line 3j+2, its one-line statement on 3j+3, `}` on 3j+4. Every loop of
+          // part j must report line 3j+3, in source order (`__lg(N)`, N = the loop's line in the player's file).
+          const want = parts.flatMap(([, k], j) => Array(k).fill(3 * j + 3));
+          const got = [...out.matchAll(/__lg\((\d+)\)/g)].map((m) => Number(m[1]));
+          expect(got.length === want.length, `${want.length} loop(s) but ${got.length} check(s):\n${out}`);
+          expect(got.every((n, i) => n === want[i]), `checks name lines ${JSON.stringify(got)}, want ${JSON.stringify(want)}:\n${out}`);
         }),
     },
     {

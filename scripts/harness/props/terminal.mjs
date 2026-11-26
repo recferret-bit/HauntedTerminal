@@ -4,7 +4,8 @@
 import fc from 'fast-check';
 import { readFileSync } from 'node:fs';
 import { fileName, readableMode, shellLine, twoNames } from './arbitraries.mjs';
-import { expect } from './kit.mjs';
+import { expect, fakeDom } from './kit.mjs';
+import { chapterWorld } from './sessions.mjs';
 
 const ROOM = '/lab';
 const notReadme = (n) => n !== 'readme.txt';
@@ -20,75 +21,6 @@ const shellKind = fc.constantFrom('chapter', 'classic');
 export function modeText(octal) {
   const bits = 'rwx';
   return `-${[...octal].map((d) => [0, 1, 2].map((i) => (Number(d) & (4 >> i) ? bits[i] : '-')).join('')).join('')}`;
-}
-
-/**
- * A tiny DOM for the Esc menu checks: nodes, capture / target / bubble events, focus (fires `focusin`), `hidden`, and
- * timers that run only when `flush()` is called. `install()` sets the globals the menu uses; `uninstall()` restores them.
- */
-function fakeDom() {
-  const timers = [];
-  const make = (tag) => {
-    let text = null;
-    const classes = new Set();
-    const attrs = new Map();
-    const node = {
-      tagName: tag.toUpperCase(), children: [], parentNode: null, dataset: {}, hidden: false, disabled: false, value: '', id: '', title: '', onclick: null, listeners: new Map(),
-      get className() { return [...classes].join(' '); },
-      set className(v) { classes.clear(); for (const c of String(v).split(/\s+/).filter(Boolean)) classes.add(c); },
-      classList: { add: (...xs) => xs.forEach((x) => classes.add(x)), remove: (...xs) => xs.forEach((x) => classes.delete(x)), contains: (x) => classes.has(x) },
-      setAttribute: (k, v) => void attrs.set(k, String(v)),
-      getAttribute: (k) => attrs.get(k) ?? null,
-      append: (...xs) => xs.forEach((x) => node.appendChild(typeof x === 'string' ? { textContent: x, parentNode: null, children: [] } : x)),
-      appendChild: (x) => { x.parentNode = node; node.children.push(x); text = null; return x; },
-      replaceChildren: (...xs) => { node.children = []; node.append(...xs); },
-      get textContent() { return text ?? node.children.map((c) => c.textContent).join(''); },
-      set textContent(v) { node.children = []; text = String(v); },
-      addEventListener: (type, fn, capture) => void node.listeners.set(type, [...(node.listeners.get(type) ?? []), { fn, capture: !!capture }]),
-      removeEventListener: (type, fn, capture) => void node.listeners.set(type, (node.listeners.get(type) ?? []).filter((l) => l.fn !== fn || l.capture !== !!capture)),
-      focus: () => { doc.activeElement = node; fire(node, { type: 'focusin' }); },
-      click: () => { node.onclick?.(); fire(node, { type: 'click' }); },
-    };
-    return node;
-  };
-  const doc = make('#document');
-  doc.createElement = make;
-  doc.body = doc.appendChild(make('body'));
-  doc.activeElement = doc.body;
-  const fire = (target, ev) => {
-    const e = {
-      ...ev, target, defaultPrevented: false, stopped: false, immediate: false,
-      preventDefault() { e.defaultPrevented = true; },
-      stopPropagation() { e.stopped = true; },
-      stopImmediatePropagation() { e.stopped = e.immediate = true; },
-    };
-    const path = [];
-    for (let n = target; n; n = n.parentNode) path.unshift(n);
-    const run = (n, capture) => {
-      for (const l of [...(n.listeners.get(e.type) ?? [])]) if (!e.immediate && (capture === null || l.capture === capture)) l.fn(e);
-    };
-    for (const n of path.slice(0, -1)) if (!e.stopped) run(n, true);
-    if (!e.stopped) run(target, null);
-    for (const n of path.slice(0, -1).reverse()) if (!e.stopped) run(n, false);
-    return e;
-  };
-  const find = (root, id) => (root.id === id ? root : root.children.reduce((hit, c) => hit ?? find(c, id), null));
-  const saved = {};
-  return {
-    doc, make, fire, find: (id) => find(doc, id),
-    flush: () => { while (timers.length) timers.shift()(); },
-    install() {
-      saved.document = globalThis.document;
-      saved.setTimeout = globalThis.setTimeout;
-      globalThis.document = doc;
-      globalThis.setTimeout = (fn) => timers.push(fn);
-    },
-    uninstall() {
-      if (saved.document === undefined) delete globalThis.document;
-      else globalThis.document = saved.document;
-      globalThis.setTimeout = saved.setTimeout;
-    },
-  };
 }
 
 const MENU_ACTIONS = fc.oneof(
@@ -231,6 +163,7 @@ export default async function terminalSuite({ load }) {
   const { openLabSession } = await load('/src/terminal-lab/node-driver.ts');
   const { newLabScript } = await load('/src/terminal-lab/lab-pack.ts');
   const { COMMANDS } = await load('/src/game/manual.ts');
+  const { applyChmodMode, reverseLines, wcStats } = await load('/src/game/unix-applets.ts');
   const { CHAPTER_COMMANDS } = await load('/src/chapters/session-state.ts');
   const {
     BOOK_PAGES,
@@ -239,6 +172,11 @@ export default async function terminalSuite({ load }) {
     resolveManualPageIndex,
     searchManual,
   } = await load('/src/game/manual-catalog.ts');
+  const { resolveLevelByQuery } = await load('/src/ui/chapter-map-model.ts');
+  // `map` on the real chapter (its manifest is what the map resolves against); one session per level, opened on first use.
+  const mapWorld = await chapterWorld({ load });
+  const mapSessions = new Map();
+  const mapSession = (i) => mapSessions.get(i) ?? mapSessions.set(i, mapWorld.open(i)).get(i);
 
   /** A fresh session on `kind` holding `files` (`{ name: oneLineContent }`), each file's content being `<line>\n`. */
   const room = (kind, files = {}) => {
@@ -267,7 +205,12 @@ export default async function terminalSuite({ load }) {
     session.skipIntro();
     return session;
   };
-  const advance = (session, kind, n) => { for (let i = 0; i < n; i++) kind === 'chapter' ? session.labTick() : session.tick(); };
+  const advance = (session, kind, n) => {
+    for (let i = 0; i < n; i++) {
+      if (kind === 'chapter') session.labTick();
+      else session.tick();
+    }
+  };
   const jumpLevel = (session, kind) => (kind === 'chapter' ? session.jumpToLevel(0) : session.debugTeleport(3));
 
   const LINES = { arm: 'restart-level', retry: 'retry', yes: 'restart-level --yes', retryYes: 'retry --yes', other: 'pwd', bad: 'restart-level now' };
@@ -332,7 +275,15 @@ export default async function terminalSuite({ load }) {
     return log;
   };
 
-  const { mountEscMenu, LEAVE_CONFIRM_TEXT } = await load('/src/ui/esc-menu.ts');
+  const { mountEscMenu, ESC_MENU_TRANSITIONS, LEAVE_CONFIRM_TEXT } = await load('/src/ui/esc-menu.ts');
+  const { DIALOG_TRANSITIONS } = await load('/src/ui/dialog-box.ts');
+  const { CHAPTER_MAP_TRANSITIONS } = await load('/src/ui/chapter-map.ts');
+  const { MANUAL_BOOK_TRANSITIONS } = await load('/src/ui/manual-book.ts');
+  const { NATIVE_MODAL_TRANSITIONS } = await load('/src/ui/modal-dialog.ts');
+  const { DIALOG_SOCKET_TRANSITIONS, mountDialogOrchestrator } = await load('/src/ui/dialog-orchestrator.ts');
+  const { VISUAL_LAB_TRANSITIONS } = await load('/src/ui/visual-lab-panel.ts');
+  const { SEARCH_DRAWER_TRANSITIONS } = await load('/src/ui/manual-book-search.ts');
+  const { createStateMachine, nextMachineState, reachableStates } = await load('/src/contracts/state-machine.ts');
   const { readSoundPref, writeSoundPref } = await load('/src/ui/sound-pref.ts');
   const { readSkinPref, writeSkinPref, defaultSkinFor, initialSkin } = await load('/src/ui/terminal-skin.ts');
   const { SKIN_IDS } = await load('/src/contracts/terminal-skins.ts');
@@ -481,9 +432,8 @@ export default async function terminalSuite({ load }) {
     },
     {
       name: 'restart-level: `retry`, `man restart-level`, bad arguments and Tab completion on both shells',
-      examples: [['chapter'], ['classic']],
-      build: () =>
-        fc.property(shellKind, (kind) => {
+      check: () => {
+        for (const kind of ['chapter', 'classic']) {
           const session = openClock(kind);
           const done = kind === 'chapter' ? '[RETRY]' : 'Floor restarted';
           expect(RESTART_CONFIRM_TICKS === CONFIRM_TICKS, `RESTART_CONFIRM_TICKS is ${RESTART_CONFIRM_TICKS}, R17 says ${CONFIRM_TICKS}`);
@@ -498,7 +448,8 @@ export default async function terminalSuite({ load }) {
           expect(tab.line.trim() === 'restart-level' && tab.matches.includes('restart-level'), `${kind}: Tab on restart-l gave ${JSON.stringify(tab)}`);
           expect(session.complete('ret').matches.includes('retry'), `${kind}: Tab on ret misses retry`);
           expect(session.exec('help').output.includes('restart-level'), `${kind}: help does not list restart-level`);
-        }),
+        }
+      },
     },
     {
       name: 'Esc menu: any sequence of actions keeps keys out of the terminal, focus inside, steps in sync and focus returned on close',
@@ -600,16 +551,289 @@ export default async function terminalSuite({ load }) {
       },
     },
     {
-      name: 'every command and flag documented resolves cleanly and `formatChmodPreview` matches POSIX mode bits for all 000..777',
+      name: '`formatChmodPreview` gives the octal and the POSIX rwx text of every mode 000..777 (exhaustive)',
+      check: () => {
+        // Independent oracle: one rwx triplet per octal digit, owner first, built from the bits of m (not from the code's octal).
+        const rwx = (d) => `${d & 4 ? 'r' : '-'}${d & 2 ? 'w' : '-'}${d & 1 ? 'x' : '-'}`;
+        for (let m = 0; m <= 0o777; m++) {
+          const octal = m.toString(8).padStart(3, '0');
+          const text = `-${rwx((m >> 6) & 7)}${rwx((m >> 3) & 7)}${rwx(m & 7)}`;
+          const p = formatChmodPreview(m);
+          expect(p.octal === octal && p.modeText === text, `mode ${octal}: got ${p.octal} ${p.modeText}, want ${octal} ${text}`);
+        }
+      },
+    },
+    {
+      name: 'every command of both shells (COMMANDS and CHAPTER_COMMANDS) has a manual entry with syntax and an example (exhaustive)',
+      check: () => {
+        const all = [...new Set([...COMMANDS, ...CHAPTER_COMMANDS])];
+        expect(all.length > 0, 'no commands to check');
+        const missing = all.filter((c) => { const d = findCommandDoc(c); return !(d && d.syntax && d.examples.length >= 1); });
+        expect(missing.length === 0, `undocumented: ${missing.join(', ')}`);
+      },
+    },
+    {
+      name: '`map <query>` exits 0 and hands the query to the page exactly once; the map resolves any query to a chapter level and `map <n>` to the level with index n',
+      examples: [[0, '0'], [3, '1'], [0, '11'], [5, '-3'], [0, 'boss'], [2, 'hub'], [4, 'boot'], [1, ''], [0, '#3'], [0, '3 4']],
+      build: () => {
+        const levels = mapWorld.pack.manifest.levels;
+        const query = fc.oneof(
+          fc.integer({ min: -3, max: 30 }).map(String),
+          fc.constantFrom('boot', 'hub', 'boss', 'core', 'tutorial', ...levels.map((l) => l.id)),
+          fc.stringMatching(/^[a-z0-9 #-]{0,10}$/),
+        );
+        return fc.property(fc.nat(mapWorld.levels.length - 1), query, (at, q) => {
+          const session = mapSession(at);
+          const r = session.exec(q ? `map ${q}` : 'map');
+          expect(r.code === 0, `map ${q} exited ${r.code}: ${JSON.stringify(r.output)}`);
+          const req = session.consumeMapRequest();
+          expect(typeof req === 'string', `map ${q} left no request (${JSON.stringify(req)})`);
+          expect(session.consumeMapRequest() === null, `map ${q}: the request was handed over twice`);
+          if (!q.includes('#')) expect(req === q.trim().split(/\s+/).filter(Boolean).join(' '), `map ${q} handed over ${JSON.stringify(req)}`);
+          const cur = mapWorld.levels[at].id;
+          for (const asked of [req, q]) {
+            const lvl = resolveLevelByQuery(mapWorld.pack.manifest, asked, cur);
+            expect(levels.includes(lvl), `query ${JSON.stringify(asked)} resolved outside the manifest`);
+          }
+          const n = Number(q);
+          if (/^\d+$/.test(q) && n >= 1 && n <= levels.length) {
+            for (const asked of [req, n]) {
+              const lvl = resolveLevelByQuery(mapWorld.pack.manifest, asked, cur);
+              expect(lvl.index === n, `query ${JSON.stringify(asked)} resolved to level ${lvl.index}, want ${n}`);
+            }
+          }
+        });
+      },
+    },
+    {
+      name: 'classic and chapter shells agree on POSIX unix applets (wc, grep -c, head, tail, cut, sed, rev, chmod)',
+      examples: [
+        ['alpha.log', [[true, 'foo', 'one'], [false, 'bar', 'foo'], [true, 'baz', 'two']], '640'],
+        ['zero.log', [[true, 'bar', 'one']], '640'],
+      ],
+      build: () =>
+        fc.property(
+          fileName.filter(usable),
+          fc.array(fc.tuple(fc.boolean(), fc.constantFrom('foo', 'bar', 'baz'), fc.stringMatching(/^[a-z0-9]{1,8}$/)), { minLength: 1, maxLength: 5 }),
+          readableMode,
+          (name, pairs, mode) => {
+            const c = room('chapter');
+            const g = room('classic');
+            for (const [idx, [withDelim, k, v]] of pairs.entries()) {
+              const op = idx === 0 ? '>' : '>>';
+              const row = withDelim ? `${k}:${v}` : `${k}_${v}`;
+              const write = `echo '${row}' ${op} ${name}`;
+              c.exec(write);
+              g.exec(write);
+            }
+            const checks = [
+              `wc -l ${name}`,
+              `grep -c foo ${name}`,
+              `head -n 1 ${name}`,
+              `tail -n 1 ${name}`,
+              `cut -d: -f2 ${name}`,
+              `sed 's/foo/FIXED/' ${name}`,
+              `rev ${name}`,
+              `chmod ${mode} ${name}`,
+            ];
+            for (const cmd of checks) {
+              const rc = c.exec(cmd);
+              const rg = g.exec(cmd);
+              expect(rc.code === rg.code && rc.output === rg.output, `${cmd} diverged: chapter=(${rc.code}, ${JSON.stringify(rc.output)}) vs classic=(${rg.code}, ${JSON.stringify(rg.output)})`);
+            }
+          },
+        ),
+    },
+    {
+      name: '`reverseLines` is an involution over arbitrary line arrays (including Unicode) and preserves line counts',
+      examples: [[['hello', 'a😀b', '']], [['one']]],
+      build: () =>
+        fc.property(
+          fc.array(fc.string({ minLength: 0, maxLength: 20 }).map((s) => s.replace(/[\r\n]/g, '')), { minLength: 1, maxLength: 6 }),
+          (rows) => {
+            const text = `${rows.join('\n')}\n`;
+            const rev = reverseLines(text);
+            expect(reverseLines(rev) === text, `reverseLines is not an involution on ${JSON.stringify(text)}`);
+            expect(wcStats(rev).lines === wcStats(text).lines, `line count changed across reverseLines`);
+          },
+        ),
+    },
+    {
+      name: '`applyChmodMode` symbolic clauses mutate only targeted u/g/o bits and leave untouched bits invariant',
+      examples: [[0o644, 'u', '+', 'x'], [0o755, 'go', '-', 'w'], [0o000, 'a', '=', 'rw']],
       build: () =>
         fc.property(
           fc.integer({ min: 0, max: 0o777 }),
-          fc.constantFrom(...COMMANDS, ...CHAPTER_COMMANDS),
-          (mode, cmdName) => {
-            const p = formatChmodPreview(mode);
-            expect(p.modeText === modeText(p.octal), `mode ${mode}: ${p.modeText} !== ${modeText(p.octal)}`);
-            const doc = findCommandDoc(cmdName);
-            expect(Boolean(doc && doc.syntax && doc.examples.length >= 1), `missing doc for ${cmdName}`);
+          fc.constantFrom('u', 'g', 'o', 'ug', 'go', 'a'),
+          fc.constantFrom('+', '-', '='),
+          fc.constantFrom('r', 'w', 'x', 'rx', 'rw', 'rwx', ''),
+          (mode, who, op, perm) => {
+            const out = applyChmodMode(mode, `${who}${op}${perm}`);
+            expect(out !== null, `valid clause ${who}${op}${perm} returned null`);
+            let bits = 0;
+            for (const ch of perm) bits |= ch === 'r' ? 4 : ch === 'w' ? 2 : 1;
+            const targets = [who.includes('u') || who === 'a' ? 6 : null, who.includes('g') || who === 'a' ? 3 : null, who.includes('o') || who === 'a' ? 0 : null].filter((s) => s !== null);
+            for (const shift of [6, 3, 0]) {
+              const before = (mode >> shift) & 7;
+              const after = (out >> shift) & 7;
+              if (!targets.includes(shift)) expect(after === before, `untouched shift ${shift} changed`);
+              else if (op === '+') expect(after === (before | bits), `op + mismatch at shift ${shift}`);
+              else if (op === '-') expect(after === (before & ~bits), `op - mismatch at shift ${shift}`);
+              else expect(after === bits, `op = mismatch at shift ${shift}`);
+            }
+          },
+        ),
+    },
+    {
+      name: 'UI FSM transition tables (DIALOG, CHAPTER_MAP, ESC_MENU, NATIVE_MODAL, MANUAL_BOOK, DIALOG_SOCKET, VISUAL_LAB, SEARCH_DRAWER) only reach valid states and fire callbacks only on valid edges',
+      examples: [[0, ['OPEN', 'ARM_DEPLOY', 'SELECT', 'CLOSE', 'reset']]],
+      build: () => {
+        const specs = [
+          ['DIALOG_TRANSITIONS', DIALOG_TRANSITIONS, 'idle', ['START', 'SETTLE', 'EXIT', 'CLOSE']],
+          ['CHAPTER_MAP_TRANSITIONS', CHAPTER_MAP_TRANSITIONS, 'closed', ['OPEN', 'CLOSE', 'SELECT', 'ARM_DEPLOY', 'CANCEL_DEPLOY']],
+          ['ESC_MENU_TRANSITIONS', ESC_MENU_TRANSITIONS, 'closed', ['OPEN', 'CLOSE', 'ARM_RESTART', 'CANCEL_RESTART', 'ARM_LEAVE', 'CANCEL_LEAVE']],
+          ['NATIVE_MODAL_TRANSITIONS', NATIVE_MODAL_TRANSITIONS, 'closed', ['OPEN', 'CLOSE']],
+          ['MANUAL_BOOK_TRANSITIONS', MANUAL_BOOK_TRANSITIONS, 'closed', ['OPEN', 'CLOSE']],
+          ['DIALOG_SOCKET_TRANSITIONS', DIALOG_SOCKET_TRANSITIONS, 'free', ['LOCK', 'UNLOCK', 'CLEAR']],
+          ['VISUAL_LAB_TRANSITIONS', VISUAL_LAB_TRANSITIONS, 'closed', ['OPEN', 'CLOSE', 'DESTROY']],
+          ['SEARCH_DRAWER_TRANSITIONS', SEARCH_DRAWER_TRANSITIONS, 'closed', ['OPEN', 'CLOSE', 'SUPPRESS', 'ALLOW_FOCUS']],
+        ];
+        return fc.property(
+          fc.integer({ min: 0, max: specs.length - 1 }),
+          fc.array(fc.oneof(fc.nat(12), fc.constant('reset')), { maxLength: 30 }),
+          (specIdx, ops) => {
+            const [label, table, initial, events] = specs[specIdx];
+            const reached = reachableStates(table, initial);
+            for (const s of Object.keys(table)) {
+              expect(reached.has(s), `${label}: unreachable state ${s}`);
+            }
+            const hookLog = [];
+            const subLog = [];
+            const fsm = createStateMachine({
+              initial,
+              transitions: table,
+              onTransition: (to, from, ev) => hookLog.push(`${from}->${to}:${ev}`),
+            });
+            fsm.subscribe((to, from, ev) => subLog.push(`${from}->${to}:${ev}`));
+            let model = initial;
+            for (const op of ops) {
+              if (op === 'reset') {
+                fsm.reset();
+                model = initial;
+                expect(fsm.state === initial, `${label}: reset() did not restore ${initial}`);
+                continue;
+              }
+              const ev = events[op % events.length];
+              const want = nextMachineState(table, model, ev);
+              expect(fsm.can(ev) === (want !== null), `${label}: can(${ev}) disagreed in ${model}`);
+              const beforeLen = hookLog.length;
+              const ok = fsm.send(ev);
+              expect(ok === (want !== null), `${label}: send(${ev}) returned ${ok} in ${model}`);
+              if (want !== null) {
+                expect(hookLog.length === beforeLen + 1 && subLog.at(-1) === `${model}->${want}:${ev}`, `${label}: transition callback mismatch`);
+                model = want;
+              } else {
+                expect(hookLog.length === beforeLen, `${label}: invalid send(${ev}) fired onTransition`);
+              }
+              expect(fsm.state === model && reached.has(fsm.state), `${label}: state ${fsm.state} != ${model}`);
+            }
+          },
+        );
+      },
+    },
+    {
+      name: 'mountDialogOrchestrator enforces maxConcurrent <= 1, chatter queue cap <= 3, and socket_locked gating over arbitrary event streams',
+      examples: [[['lock', 'taunt:smug:1', 'taunt:smug:2', 'taunt:smug:3', 'taunt:smug:4', 'unlock', 'flush']]],
+      build: () =>
+        fc.property(
+          fc.array(
+            fc.constantFrom(
+              'taunt:smug:1',
+              'taunt:smug:2',
+              'taunt:order:1',
+              'script:1',
+              'script:2',
+              'lock',
+              'unlock',
+              'room',
+              'floor',
+              'flush',
+            ),
+            { minLength: 1, maxLength: 35 },
+          ),
+          (ops) => {
+            const dom = fakeDom();
+            dom.install();
+            try {
+              const host = dom.doc.body.appendChild(dom.make('div'));
+              const orch = mountDialogOrchestrator(host, () => dom.make('canvas'));
+              let socketModel = 'free';
+              for (let i = 0; i < ops.length; i++) {
+                const op = ops[i];
+                const wasLocked = socketModel === 'socket_locked';
+                const prevActive = orch.box.activeLine();
+                if (op.startsWith('taunt:')) {
+                  const [, mood, tag] = op.split(':');
+                  orch.handleEvent({
+                    type: 'AGENT_TAUNT',
+                    agent: 'clod',
+                    model: 'agent.clod',
+                    mood,
+                    text: `Line ${tag} (${i})`,
+                  });
+                } else if (op.startsWith('script:')) {
+                  orch.handleEvent({
+                    type: 'DIALOG_BOX',
+                    speaker: 'vibecoder',
+                    name: 'VIBECODER',
+                    model: 'vibecoder.dev',
+                    text: `Script ${op} ${i}`,
+                    holdMs: 900,
+                  });
+                } else if (op === 'lock') {
+                  orch.handleEvent({
+                    type: 'OBSTACLE_DIALOGUE_RENDERED',
+                    payload: {
+                      obstacleId: 'sock',
+                      speakerName: 'Hank',
+                      portraitSprite: 'door.socket',
+                      mood: 'hinting',
+                      bubbleStyle: 'COMIX_CLASSIC',
+                      anchorInodeId: 1,
+                      pages: [{ text: 'hello', highlightedUnixTokens: [] }],
+                      ansiTerminalBanner: '',
+                    },
+                  });
+                  socketModel = nextMachineState(DIALOG_SOCKET_TRANSITIONS, socketModel, 'LOCK') ?? socketModel;
+                } else if (op === 'unlock' || op === 'room') {
+                  orch.handleEvent(
+                    op === 'unlock'
+                      ? { type: 'PUZZLE_DOOR_RESOLVED', socketInodeId: 1, unlockedInodeId: 2, solvedViaInput: 'ok' }
+                      : { type: 'ROOM_TRANSITION', fromDir: 1, toDir: 2, toPath: '/next', upwardPanelsSmashed: 0, viaSymlinkLoop: false },
+                  );
+                  socketModel = nextMachineState(DIALOG_SOCKET_TRANSITIONS, socketModel, 'UNLOCK') ?? socketModel;
+                } else if (op === 'floor') {
+                  orch.handleEvent({ type: 'FLOOR_ENTERED', floorId: 1, title: 'Sector', path: '/lab' });
+                  socketModel = nextMachineState(DIALOG_SOCKET_TRANSITIONS, socketModel, 'CLEAR') ?? socketModel;
+                } else if (op === 'flush') {
+                  dom.flush();
+                }
+
+                const st = orch.stats();
+                expect(st.maxConcurrent <= 1 && st.maxRightConcurrent <= 1, `concurrent dialogs exceeded 1: ${JSON.stringify(st)}`);
+                expect(st.socketOpen === (socketModel === 'socket_locked'), `socketOpen ${st.socketOpen} != ${socketModel}`);
+                const queuedChatter = orch.box.queuedLines().filter((l) => (l.priority ?? 'script') === 'chatter').length;
+                expect(queuedChatter <= 3, `chatter queue exceeded cap 3: ${queuedChatter}`);
+                const active = orch.box.activeLine();
+                if (wasLocked && st.socketOpen && active && active !== prevActive) {
+                  // Only script/prompt lines may newly open while socketOpen is true (existing active chatter gets shortened).
+                  expect((active.priority ?? 'script') !== 'chatter', `chatter line newly opened while socket locked: ${active.text}`);
+                }
+              }
+              orch.clear();
+            } finally {
+              dom.uninstall();
+            }
           },
         ),
     },

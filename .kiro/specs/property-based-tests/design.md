@@ -7,7 +7,8 @@ Follows `requirements.md` (approved 2026-11-17).
 ```
 scripts/harness/property-tests.mjs   runner: --seed, --runs, --only; Vite SSR load; prints each property, time, failures
 scripts/harness/props/
-  kit.mjs                             fc.assert wrapper (seed, numRuns, examples), result printing, fake clock
+  kit.mjs                             fc.check wrapper (seed, numRuns, examples; refuses async), failure message, fake clock, runnerSelfCheck, watchdog, fakeDom
+  sessions.mjs                        chapterWorld: the compiled chapter opened like the solver, random play (commands and ticks)
   arbitraries.mjs                     shared generators: file names, modes, command lines, JSON values
   terminal.mjs                        terminal properties
   laptop.mjs                          laptop properties
@@ -17,7 +18,7 @@ scripts/harness/props/
 package.json                          devDependency "fast-check": "4.10.2"; script quality:props, added to quality
 ```
 
-Each suite exports `{ feature, properties: [{ name, run(ctx) }] }`, and each property holds its own `examples` list of regression counterexamples (Req 6).
+Each suite's default export is an async function of `ctx` (`ctx.load` loads a source module through Vite SSR) that returns `[{ name, build | check, examples? }]`: `build()` returns a synchronous `fc.property`, `check()` is a synchronous guard with no generated input that throws to fail, and `examples` holds the property's regression counterexamples (Req 6).
 
 ## Properties and the code they drive
 

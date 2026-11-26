@@ -7,7 +7,7 @@
     "name": "Out Of Credits",
     "url": "https://github.com/recferret-bit/OutOfCredits"
   },
-  "keywords": ["deploy", "netlify", "ship", "publish", "release", "live url", "production", "preview deploy", "hosting", "go live"],
+  "keywords": ["deploy", "netlify", "ship", "publish", "live url", "production", "preview deploy", "hosting", "go live"],
   "homepage": "https://github.com/recferret-bit/OutOfCredits/tree/main/.kiro/powers/credits-ship",
   "repository": "https://github.com/recferret-bit/OutOfCredits",
   "license": "MIT"

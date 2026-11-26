@@ -3,11 +3,13 @@
 //
 //   node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs preview [--site-name <name>]
 //   node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs prod        (only after the user's explicit yes)
-//   node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs --dry-run   (gates + build, no login, no upload)
+//   node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs preview --dry-run   (gates + build, no login, no upload; `--dry-run` alone means the same)
+//   node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs prod --dry-run      (the promote checks against the stamp, no login, no upload)
 //   node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs --selftest  (pure checks, no network)
 //
-// preview: login check -> npm run quality -> generate-chapter --verify -> npm run build -> draft deploy of dist/
-//          -> the whole chapter played on the preview URL -> stamp in scripts/harness/out/ship/last-preview.json.
+// `--dry-run` is a modifier: it works in any position and never uploads. One command per run; a second one is refused.
+// preview: delete the old stamp -> login check -> npm run quality -> generate-chapter --verify -> npm run build -> draft
+//          deploy of dist/ -> the whole chapter played on the preview URL -> stamp in scripts/harness/out/ship/last-preview.json.
 // prod:    refuses unless the stamp is from a clean tree, the commit and the dist/ hash are unchanged; then a
 //          production deploy of the same dist/ and the chapter played again on the production URL.
 // Credentials: `netlify login` or NETLIFY_AUTH_TOKEN in the environment. The token is never read, stored or printed.
@@ -31,19 +33,34 @@ const GATES = [
   ['npm', ['run', 'build']],
 ];
 
-/** Parse argv into a command and options. Pure. */
+/** Parse argv into a command and options. `--dry-run` is a modifier of the one command. Pure. */
 export function parseCli(argv) {
-  const opts = { command: null, siteName: null, problems: [] };
+  const opts = { command: null, dryRun: false, siteName: null, problems: [] };
+  const commands = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '--site-name') opts.siteName = argv[++i] ?? null;
-    else if (a === '--dry-run' || a === '--selftest') opts.command = opts.command ?? a.slice(2);
-    else if (a === 'preview' || a === 'prod') opts.command = opts.command ?? a;
+    if (a === '--site-name') {
+      const value = argv[i + 1];
+      if (value === undefined || value.startsWith('-')) opts.problems.push('--site-name needs a value');
+      else opts.siteName = argv[++i];
+    } else if (a === '--dry-run') opts.dryRun = true;
+    else if (a === '--selftest' || a === 'preview' || a === 'prod') commands.push(a.replace(/^--/, ''));
     else opts.problems.push(`unknown argument: ${a}`);
   }
+  if (commands.length > 1) opts.problems.push(`one command per run, got: ${commands.join(', ')}`);
+  opts.command = commands[0] ?? (opts.dryRun ? 'preview' : null);
   if (!opts.command) opts.problems.push('missing command: preview, prod, --dry-run or --selftest');
+  if (opts.command === 'selftest' && opts.dryRun) opts.problems.push('--selftest takes no --dry-run');
   if (opts.siteName !== null && !/^[a-z0-9-]{1,63}$/.test(opts.siteName)) opts.problems.push('--site-name must be lowercase letters, digits and dashes');
+  if (opts.siteName !== null && opts.command !== null && opts.command !== 'preview') opts.problems.push(`--site-name is for preview only (${opts.command} uses the site of the played preview)`);
   return opts;
+}
+
+/** What a parsed command line does: preview, preview-dry-run, prod, prod-dry-run, selftest; null when refused. Pure. */
+export function action(opts) {
+  if (opts.problems.length || !opts.command) return null;
+  if (opts.command === 'selftest') return 'selftest';
+  return opts.dryRun ? `${opts.command}-dry-run` : opts.command;
 }
 
 /** Hide every secret value of `env` that appears in `text`. Pure. */
@@ -132,13 +149,23 @@ function writeJson(path, data) {
   writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`);
 }
 
-function loggedIn() {
-  const res = spawnSync('npx', [...NETLIFY, 'status', '--json'], { cwd: root, env: process.env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+/**
+ * Whether the Netlify CLI is logged in, read with `exec(cmd, args) -> { status, stdout }` from `netlify status --json`.
+ * Pure given `exec`; also used by credits-release before it tags.
+ */
+export function loggedInWith(exec) {
+  const stdout = String(exec('npx', [...NETLIFY, 'status', '--json'])?.stdout ?? '');
+  const start = stdout.indexOf('{');
+  if (start < 0) return false;
   try {
-    return JSON.parse(res.stdout.slice(res.stdout.indexOf('{'))).loggedIn === true;
+    return JSON.parse(stdout.slice(start)).loggedIn === true;
   } catch {
     return false;
   }
+}
+
+function loggedIn() {
+  return loggedInWith((cmd, args) => spawnSync(cmd, args, { cwd: root, env: process.env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }));
 }
 
 function runGates() {
@@ -172,7 +199,21 @@ function play(url) {
   return ok;
 }
 
+/** Delete a stamp left by an earlier preview, so a failed preview can never be promoted. */
+export function clearStamp(path = stampPath) {
+  rmSync(path, { force: true });
+}
+
+/** The stamp at `path` if production may get its build now, else null after printing why not. */
+function promotableStamp(path = stampPath, current = currentState(), log = console.error) {
+  const stamp = readJson(path);
+  const problems = promoteProblems(stamp, current);
+  for (const p of problems) log(`REFUSE   ${p}`);
+  return problems.length ? null : stamp;
+}
+
 function preview(opts) {
+  clearStamp();
   if (!loggedIn()) {
     console.error('SETUP    not logged in to Netlify. Run once:  npx netlify-cli@27.20.0 login   (or set NETLIFY_AUTH_TOKEN in your shell)');
     return 2;
@@ -196,35 +237,62 @@ function prod() {
     console.error('SETUP    not logged in to Netlify. Run once:  npx netlify-cli@27.20.0 login');
     return 2;
   }
-  const stamp = readJson(stampPath);
-  const problems = promoteProblems(stamp, currentState());
-  if (problems.length) {
-    for (const p of problems) console.error(`REFUSE   ${p}`);
-    return 1;
-  }
+  const stamp = promotableStamp();
+  if (!stamp) return 1;
   const record = deploy(['--site', stamp.siteId], { prod: true });
   if (!record) return 1;
   const url = record.url ?? record.deployUrl;
-  if (!play(url)) return 1;
+  if (!play(url)) {
+    console.error(`ROLLBACK production now serves deploy ${record.deployId}, which did not play. To restore the previous one: Netlify app > the site > Deploys > the last good production deploy > "Publish deploy", or  npx netlify-cli@27.20.0 api restoreSiteDeploy --data '{"site_id":"${record.siteId}","deploy_id":"<previous deploy id>"}'`);
+    return 1;
+  }
   console.log(`\nPASS     production ${url}  (the build played on preview ${stamp.url})`);
-  console.log('NEXT     replace <LIVE_URL> in README.md (2 places) and set the GitHub About website to this URL.');
+  console.log(`NEXT     check that README.md and the GitHub About website point at ${url}`);
   return 0;
 }
 
-function dryRun() {
+function previewDryRun() {
   if (!runGates()) return 1;
   const state = currentState();
   console.log(`\nPASS     dry run: gates and build passed. Would upload dist/ (${state.distHash}) from ${short(state.commit)}${state.dirty ? ' (uncommitted changes)' : ''} as a draft deploy, then play it.`);
   return 0;
 }
 
+function prodDryRun() {
+  const stamp = promotableStamp();
+  if (!stamp) return 1;
+  console.log(`\nPASS     dry run: would promote the build played on ${stamp.url} (site ${stamp.siteId}) to production. Nothing was uploaded.`);
+  return 0;
+}
+
 function selftest() {
   const problems = [];
-  const expect = (cond, what) => { if (!cond) problems.push(what); };
+  let checks = 0;
+  const expect = (cond, what) => { checks++; if (!cond) problems.push(what); };
   expect(parseCli(['preview']).command === 'preview' && parseCli(['preview']).problems.length === 0, 'parses preview');
   expect(parseCli([]).problems.length === 1, 'refuses a missing command');
   expect(parseCli(['prod', '--force']).problems.length === 1, 'refuses an unknown flag');
   expect(parseCli(['preview', '--site-name', 'Bad Name']).problems.length === 1, 'refuses a bad site name');
+  expect(action(parseCli(['prod', '--dry-run'])) === 'prod-dry-run', 'prod --dry-run is not a real prod run');
+  expect(action(parseCli(['--dry-run', 'prod'])) === 'prod-dry-run', '--dry-run before prod is not a real prod run');
+  expect(action(parseCli(['preview', '--dry-run'])) === 'preview-dry-run', 'preview --dry-run uploads nothing');
+  expect(action(parseCli(['--dry-run', 'preview'])) === 'preview-dry-run', '--dry-run before preview uploads nothing');
+  expect(action(parseCli(['--dry-run'])) === 'preview-dry-run', '--dry-run alone is the preview dry run');
+  expect(action(parseCli(['prod'])) === 'prod' && action(parseCli(['preview'])) === 'preview', 'real runs without --dry-run');
+  expect(action(parseCli(['preview', 'prod'])) === null && action(parseCli(['prod', 'preview'])) === null, 'refuses two commands');
+  expect(action(parseCli(['--selftest', 'prod'])) === null && action(parseCli(['--selftest', '--dry-run'])) === null, 'refuses --selftest with more');
+  expect(action(parseCli(['preview', '--site-name'])) === null, 'refuses --site-name without a value');
+  expect(action(parseCli(['preview', '--site-name', '--dry-run'])) === null, 'refuses --site-name followed by a flag');
+  expect(action(parseCli(['preview', '--site-name', '-x'])) === null, 'refuses a --site-name value starting with -');
+  expect(parseCli(['preview', '--site-name', 'my-site']).siteName === 'my-site', 'keeps a good site name');
+  expect(action(parseCli(['preview', '--dry-run', '--site-name', 'my-site'])) === 'preview-dry-run', '--site-name with a preview dry run');
+  expect(action(parseCli(['prod', '--site-name', 'my-site'])) === null && action(parseCli(['--site-name', 'my-site', 'prod', '--dry-run'])) === null, 'refuses --site-name with prod');
+  expect(action(parseCli(['--selftest', '--site-name', 'my-site'])) === null, 'refuses --site-name with --selftest');
+  let asked = null;
+  expect(loggedInWith((cmd, args) => { asked = [cmd, ...args].join(' '); return { status: 0, stdout: 'x\n{"loggedIn":true}' }; }) === true, 'reads a login');
+  expect(asked === 'npx -y netlify-cli@27.20.0 status --json', 'asks the pinned CLI');
+  expect(loggedInWith(() => ({ status: 0, stdout: '{"loggedIn":false}' })) === false, 'reads a missing login');
+  expect(loggedInWith(() => ({ status: 1, stdout: '' })) === false && loggedInWith(() => ({ status: 0, stdout: '{bad' })) === false, 'an unreadable status is not a login');
   const env = { NETLIFY_AUTH_TOKEN: 'nfp_secret123456' };
   expect(!redact('token nfp_secret123456 --auth nfp_x', env).includes('nfp_'), 'redacts the token and --auth values');
   expect(parseDeployJson('Deploying...\n{"site_id":"s","deploy_id":"d","deploy_url":"https://d--x.netlify.app"}').deployUrl === 'https://d--x.netlify.app', 'parses the deploy record');
@@ -238,6 +306,12 @@ function selftest() {
   expect(promoteProblems(stamp, { commit: 'a1', dirty: false, distHash: 'h2' }).length === 1, 'refuses a changed dist/');
   const tmp = mkdtempSync(join(tmpdir(), 'ship-selftest-'));
   try {
+    const oldStamp = join(tmp, 'last-preview.json');
+    writeFileSync(oldStamp, JSON.stringify(stamp));
+    clearStamp(oldStamp);
+    expect(!existsSync(oldStamp), 'preview deletes the old stamp');
+    clearStamp(oldStamp);
+    expect(promotableStamp(oldStamp, { commit: 'a1', dirty: false, distHash: 'h1' }, () => {}) === null, 'prod refuses with no stamp');
     mkdirSync(join(tmp, 'a'));
     writeFileSync(join(tmp, 'a/x.js'), '1');
     const h1 = hashDir(tmp);
@@ -248,7 +322,7 @@ function selftest() {
     rmSync(tmp, { recursive: true, force: true });
   }
   for (const p of problems) console.error(`FAIL     selftest: ${p}`);
-  console.log(problems.length ? `selftest FAIL (${problems.length})` : 'selftest PASS (15 checks)');
+  console.log(problems.length ? `selftest FAIL (${problems.length})` : `selftest PASS (${checks} checks)`);
   return problems.length ? 1 : 0;
 }
 
@@ -259,7 +333,7 @@ if (isMain) {
     for (const p of opts.problems) console.error(`usage    ${p}`);
     process.exitCode = 1;
   } else {
-    const commands = { preview: () => preview(opts), prod, 'dry-run': dryRun, selftest };
-    process.exitCode = commands[opts.command]();
+    const runs = { preview: () => preview(opts), 'preview-dry-run': previewDryRun, prod, 'prod-dry-run': prodDryRun, selftest };
+    process.exitCode = runs[action(opts)]();
   }
 }

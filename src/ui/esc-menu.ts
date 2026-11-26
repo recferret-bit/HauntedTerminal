@@ -25,10 +25,11 @@
  * Return: `{ open(snap: GameSnapshot): void; close(): void; isOpen(): boolean; update(snap: GameSnapshot): void }`.
  * `update` is cheap and does nothing while closed; call it with every snapshot.
  */
+import { createStateMachine, type StateMachine, type TransitionTable } from '../contracts/state-machine.js';
 import { TERMINAL_SKINS, isSkinId, type TerminalSkinId } from '../contracts/terminal-skins.js';
 import type { GameSnapshot } from '../game/types.js';
 import { clampVolume } from './sound-pref.js';
-import { el } from './dom-lite.js';
+import { el, setText } from './dom-lite.js';
 
 export interface EscMenuHandlers {
   onMute(): void;
@@ -62,10 +63,6 @@ function button(id: string, text: string, className = 'esc-btn'): HTMLButtonElem
   b.type = 'button';
   b.id = id;
   return b;
-}
-
-function setText(node: HTMLElement, text: string): void {
-  if (node.textContent !== text) node.textContent = text;
 }
 
 function inside(root: Node, node: Node | null): boolean {
@@ -199,14 +196,31 @@ function focus(node: HTMLElement | null | undefined): void {
   node?.focus?.({ preventScroll: true });
 }
 
-function showRestartStep(p: Parts, on: boolean): void {
-  p.restart.hidden = on;
-  p.restartConfirm.hidden = !on;
+export type EscMenuMode = 'closed' | 'idle' | 'confirm_restart' | 'confirm_leave';
+export type EscMenuEvent = 'OPEN' | 'CLOSE' | 'ARM_RESTART' | 'CANCEL_RESTART' | 'ARM_LEAVE' | 'CANCEL_LEAVE';
+
+export const ESC_MENU_TRANSITIONS: TransitionTable<EscMenuMode, EscMenuEvent> = {
+  closed: { OPEN: 'idle' },
+  idle: { CLOSE: 'closed', ARM_RESTART: 'confirm_restart', ARM_LEAVE: 'confirm_leave' },
+  confirm_restart: { CLOSE: 'closed', CANCEL_RESTART: 'idle', ARM_LEAVE: 'confirm_leave' },
+  confirm_leave: { CLOSE: 'closed', CANCEL_LEAVE: 'idle', ARM_RESTART: 'confirm_restart' },
+};
+
+export function createEscMenuMachine(): StateMachine<EscMenuMode, EscMenuEvent> {
+  return createStateMachine({ initial: 'closed', transitions: ESC_MENU_TRANSITIONS });
 }
 
-function showLeaveStep(p: Parts, on: boolean): void {
-  p.leave.hidden = on;
-  p.leaveConfirm.hidden = !on;
+function syncMenuModeDom(p: Parts, mode: EscMenuMode): void {
+  const isOpen = mode !== 'closed';
+  p.backdrop.hidden = !isOpen;
+  p.backdrop.classList.toggle('open', isOpen);
+  p.backdrop.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+  const restartArmed = mode === 'confirm_restart';
+  p.restart.hidden = restartArmed;
+  p.restartConfirm.hidden = !restartArmed;
+  const leaveArmed = mode === 'confirm_leave';
+  p.leave.hidden = leaveArmed;
+  p.leaveConfirm.hidden = !leaveArmed;
 }
 
 function renderFullscreen(p: Parts, on: boolean): void {
@@ -235,7 +249,12 @@ function renderSnapshot(p: Parts, snap: GameSnapshot): void {
 }
 
 /** Button clicks of the two-step Restart level, the leave confirm, the sound controls and the close button. */
-function wireControls(p: Parts, handlers: EscMenuHandlers, close: () => void): void {
+function wireControls(
+  p: Parts,
+  fsm: StateMachine<EscMenuMode, EscMenuEvent>,
+  handlers: EscMenuHandlers,
+  close: () => void,
+): void {
   p.close.onclick = close;
   p.fullscreen.onclick = () => {
     handlers.onFullscreen();
@@ -260,13 +279,12 @@ function wireControls(p: Parts, handlers: EscMenuHandlers, close: () => void): v
   });
   p.restart.onclick = () => {
     handlers.onMove?.();
-    showLeaveStep(p, false);
-    showRestartStep(p, true);
+    fsm.send('ARM_RESTART');
     focus(p.restartNo);
   };
   p.restartNo.onclick = () => {
     handlers.onMove?.();
-    showRestartStep(p, false);
+    fsm.send('CANCEL_RESTART');
     focus(p.restart);
   };
   p.restartYes.onclick = () => {
@@ -278,13 +296,12 @@ function wireControls(p: Parts, handlers: EscMenuHandlers, close: () => void): v
   };
   p.leave.onclick = () => {
     handlers.onMove?.();
-    showRestartStep(p, false);
-    showLeaveStep(p, true);
+    fsm.send('ARM_LEAVE');
     focus(p.leaveNo);
   };
   p.leaveNo.onclick = () => {
     handlers.onMove?.();
-    showLeaveStep(p, false);
+    fsm.send('CANCEL_LEAVE');
     focus(p.leave);
   };
   p.leaveYes.onclick = () => {
@@ -296,28 +313,26 @@ function wireControls(p: Parts, handlers: EscMenuHandlers, close: () => void): v
 export function mountEscMenu(host: HTMLElement, handlers: EscMenuHandlers): EscMenu {
   const p = build();
   host.appendChild(p.backdrop);
-  let open = false;
+  const fsm = createEscMenuMachine();
   let returnFocus: HTMLElement | null = null;
+  fsm.subscribe((to) => syncMenuModeDom(p, to));
 
-  const resetSteps = (): void => {
-    showRestartStep(p, false);
-    showLeaveStep(p, false);
-  };
+  const isOpen = (): boolean => fsm.state !== 'closed';
 
   const update = (snap: GameSnapshot): void => {
-    if (!open) return;
+    if (!isOpen()) return;
     renderSnapshot(p, snap);
     renderFullscreen(p, handlers.isFullscreen());
     const id = handlers.currentSkin();
     if (p.skin.value !== id) p.skin.value = id;
   };
   const strayFocus = (ev: Event): void => {
-    if (!open || inside(p.card, ev.target as Node | null)) return;
+    if (!isOpen() || inside(p.card, ev.target as Node | null)) return;
     focus(p.controls.find((c) => shown(p.card, c)));
   };
 
   const swallow = (ev: Event): void => {
-    if (!open || inside(p.card, ev.target as Node | null)) return;
+    if (!isOpen() || inside(p.card, ev.target as Node | null)) return;
     if ((ev as KeyboardEvent).key === 'Escape') return;
     ev.stopImmediatePropagation();
     ev.stopPropagation();
@@ -343,33 +358,24 @@ export function mountEscMenu(host: HTMLElement, handlers: EscMenuHandlers): EscM
   };
 
   const close = (): void => {
-    if (!open) return;
-    open = false;
+    if (!fsm.send('CLOSE')) return;
     listen(false);
-    resetSteps();
-    p.backdrop.hidden = true;
-    p.backdrop.classList.remove('open');
-    p.backdrop.setAttribute('aria-hidden', 'true');
     const back = returnFocus;
     returnFocus = null;
     globalThis.setTimeout(() => {
-      if (!open) focus(back);
+      if (!isOpen()) focus(back);
     }, 0);
     handlers.onClose?.();
   };
 
   p.card.addEventListener('keydown', onTab as EventListener);
-  wireControls(p, handlers, close);
+  wireControls(p, fsm, handlers, close);
 
   return {
     open(snap) {
-      if (open) return update(snap);
-      open = true;
+      if (isOpen()) return update(snap);
       returnFocus = (document.activeElement as HTMLElement | null) ?? null;
-      resetSteps();
-      p.backdrop.hidden = false;
-      p.backdrop.classList.add('open');
-      p.backdrop.setAttribute('aria-hidden', 'false');
+      fsm.send('OPEN');
       listen(true);
       update(snap);
       focus(p.close);
@@ -377,7 +383,7 @@ export function mountEscMenu(host: HTMLElement, handlers: EscMenuHandlers): EscM
       handlers.onOpen?.();
     },
     close,
-    isOpen: () => open,
+    isOpen,
     update,
   };
 }

@@ -30,7 +30,7 @@ export interface EnemyInfo {
 }
 
 /** Attack cadence from the animation sheet, or `fallback` when the sheet says 0 / has no entry. */
-export function sheetCadence(model: string, fallback: number): number {
+function sheetCadence(model: string, fallback: number): number {
   const n = ANIM_MALWARE_ACTING[model]?.attackEveryTicks;
   return typeof n === 'number' && n > 0 ? n : fallback;
 }
@@ -230,19 +230,11 @@ export const PICKUP_INFO: Record<PickupType, PickupInfo> = {
   },
 };
 
-/** Pickup type from a file name (`*.cell`, `*.dimm`, `*.img`). */
-export function pickupTypeOf(name: string): PickupType | null {
-  if (name.endsWith('.cell')) return 'energy';
-  if (name.endsWith('.dimm')) return 'ram';
-  if (name.endsWith('.img')) return 'ssd';
-  return null;
-}
-
 /** GB of SSD that make one backup. */
 export const SSD_PER_BACKUP = 256;
 /** GB of RAM per +10 max HP. */
 export const RAM_PER_STEP = 16;
-export const BASE_MAX_HP = 100;
+const BASE_MAX_HP = 100;
 
 export function maxHpFor(ramGb: number): number {
   return BASE_MAX_HP + 10 * Math.floor(ramGb / RAM_PER_STEP);

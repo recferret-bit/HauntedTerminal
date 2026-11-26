@@ -1,5 +1,5 @@
 import { isRec } from './dom.js';
-import type { ArrayItem, Field } from './schema.js';
+import type { Field } from './schema.js';
 
 export interface WalkIssue {
   severity: 'error' | 'warn';
@@ -133,11 +133,6 @@ export class SchemaWalk {
     });
   }
 
-  /** A root list (letters, beats, camera): same rules as an array field. */
-  items(value: unknown, item: ArrayItem, path: string): void {
-    this.list(value, { type: 'array', key: 'items', label: '', item }, path);
-  }
-
   private record(v: unknown, f: Extract<Field, { type: 'record' }>, path: string): void {
     if (!isRec(v)) {
       this.add('error', path, 'expected a map');
@@ -167,12 +162,5 @@ function taken(walk: SchemaWalk): ShapeIssue[] {
 export function objectShape(value: unknown, fields: Field[], path: string, extra: readonly string[] = []): ShapeIssue[] {
   const walk = new SchemaWalk(path, 'check');
   walk.object(value, fields, path, extra);
-  return taken(walk);
-}
-
-/** A JSON array at the root of a file. */
-export function listShape(value: unknown, item: ArrayItem, path: string): ShapeIssue[] {
-  const walk = new SchemaWalk(path, 'check');
-  walk.items(value, item, path);
   return taken(walk);
 }

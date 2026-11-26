@@ -83,20 +83,28 @@ function historyMove(st: LineState, dir: -1 | 1, repeat: boolean): void {
   }
 }
 
+const ESC = String.fromCharCode(0x1b);
+const DEL = String.fromCharCode(0x7f);
+const CTL_END = String.fromCharCode(0x1f);
+const CTL_START = String.fromCharCode(0x00);
+const BRACKETED_PASTE_RX = new RegExp(`${ESC}\\[20[01]~`, 'g');
+const CONTROL_CHARS_RX = new RegExp(`[${CTL_START}-${CTL_END}${DEL}]`, 'g');
+const ESC_KEY_SPLIT_RX = new RegExp(`${ESC}\\[[0-9;]*[A-Za-z~]|${ESC}O[A-Za-z]|${ESC}[bf]|[^${ESC}]+`, 'g');
+
 function strip(text: string): string {
-  return text.replace(/\x1b\[20[01]~/g, '').replace(/\t/g, ' ').replace(/[\x00-\x1f\x7f]/g, '');
+  return text.replace(BRACKETED_PASTE_RX, '').replace(/\t/g, ' ').replace(CONTROL_CHARS_RX, '');
 }
 
 function insertText(st: LineState, data: string, repeat: boolean): void {
   if (data.startsWith('\x1b') && !data.startsWith('\x1b[200~')) {
     // Several keys in one chunk (key repeat, automation): split into single sequences.
-    const keys = data.match(/\x1b\[[0-9;]*[A-Za-z~]|\x1bO[A-Za-z]|\x1b[bf]|[^\x1b]+/g);
+    const keys = data.match(ESC_KEY_SPLIT_RX);
     if (keys && keys.length > 1) keys.forEach((k) => handleKey(st, k, repeat));
     return;
   }
   // Paste (or fast typing) may hold several lines: each complete line runs, the tail stays in the input.
   if (/[\r\n]/.test(data)) {
-    const parts = data.replace(/\x1b\[20[01]~/g, '').split(/\r\n|\r|\n/);
+    const parts = data.replace(BRACKETED_PASTE_RX, '').split(/\r\n|\r|\n/);
     const lines = [st.buffer.slice(0, st.cursor) + (parts[0] ?? ''), ...parts.slice(1, -1)];
     const tail = (parts[parts.length - 1] ?? '') + st.buffer.slice(st.cursor);
     st.buffer = '';

@@ -243,19 +243,19 @@ export class LabApp {
   // ---- edits -------------------------------------------------------------------------------------------------------
 
   private formCtx(): FormCtx {
-    const app = this;
+    const { model } = this;
     return {
-      suggest: (name) => makeSuggest(() => buildLabPack(app.model.script).pack.levels[0])(name),
-      changed: () => app.edited(),
-      restructure: () => app.inspector.drawForm(),
+      suggest: (name) => makeSuggest(() => buildLabPack(model.script).pack.levels[0])(name),
+      changed: () => this.edited(),
+      restructure: () => this.inspector.drawForm(),
       get selectedPath() {
-        return app.model.selectedPath ?? undefined;
+        return model.selectedPath ?? undefined;
       },
-      selectPath: (path) => app.select(path),
+      selectPath: (path) => this.select(path),
       remapSelection: (map) => {
-        const now = app.model.selectedPath;
+        const now = model.selectedPath;
         const next = now ? map(now) : null;
-        if (now && next !== now) app.select(next);
+        if (now && next !== now) this.select(next);
       },
       open: new Set<string>(),
     };

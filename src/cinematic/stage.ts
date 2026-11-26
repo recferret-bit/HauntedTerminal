@@ -320,7 +320,7 @@ export function hash(n: number): number {
   return s - Math.floor(s);
 }
 
-export const clamp01 = (v: number): number => Math.min(1, Math.max(0, v));
+const clamp01 = (v: number): number => Math.min(1, Math.max(0, v));
 export const lerp = (a: number, b: number, k: number): number => a + (b - a) * k;
 /** 0..1 progress of t through [t0, t1]. */
 export const span = (t: number, t0: number, t1: number): number => clamp01((t - t0) / Math.max(1e-6, t1 - t0));

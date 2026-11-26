@@ -10,25 +10,25 @@ export interface GalleryItem {
   category: string;
 }
 
-export const CATEGORY_ORDER: readonly string[] = MODEL_CATEGORIES;
+const CATEGORY_ORDER: readonly string[] = MODEL_CATEGORIES;
 
 function categoryRank(category: string): number {
   const i = CATEGORY_ORDER.indexOf(category);
   return i < 0 ? CATEGORY_ORDER.length : i;
 }
 
-export function modelItems(category: string): GalleryItem[] {
+function modelItems(category: string): GalleryItem[] {
   return ModelCatalog.list()
     .filter((e) => category === 'all' || e.category === category)
     .map((e) => ({ kind: 'model' as const, id: e.id, label: e.label, category: e.category }))
     .sort((a, b) => categoryRank(a.category) - categoryRank(b.category));
 }
 
-export function textureItems(): GalleryItem[] {
+function textureItems(): GalleryItem[] {
   return TextureCatalog.list().map((e) => ({ kind: 'texture' as const, id: e.id, label: e.label, category: e.usage }));
 }
 
-export function fxItems(): GalleryItem[] {
+function fxItems(): GalleryItem[] {
   return FxCatalog.list()
     .map((p) => ({ kind: 'fx' as const, id: p.id, label: p.label, category: p.family }))
     .sort((a, b) => a.category.localeCompare(b.category));

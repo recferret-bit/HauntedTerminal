@@ -29,6 +29,7 @@ Ported and refactored to the architecture rules: `src/procgen`, `src/shaders`, `
 ## Rules
 
 - Prefer deterministic, zero-LLM validators for anything that decides pass/fail.
-- Pin dependency versions when adding packages.
+- Pin dependency versions when adding packages (enforced across `dependencies`, `devDependencies`, `optionalDependencies`, `peerDependencies` and `package-lock.json` `packages[""]` by `scripts/quality/check-deps.mjs`).
+- Static analysis (`scripts/quality/eslint.config.mjs`) covers `src/**/*.ts` and `scripts/{quality,hooks,desktop,mcp,harness}/**/*.mjs` and is wired into `.kiro/hooks/static-analysis-on-save.json` and `.kiro/hooks/quality-chain-on-stop.json`.
 - Chapters and Comixes are declarative (`declarative-chapters.md`, `declarative-comix.md`): `npm run quality:declarative` rejects chapter ids, level ids, comix sequence/page ids, and `spec.index === N` in `src/`.
 - Keep generated files (`src/chapters/generated/`, `src/cinematic/generated/`, rendered PNGs) reproducible from the specs; regenerate, do not hand-edit.

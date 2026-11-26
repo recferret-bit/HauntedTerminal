@@ -1,29 +1,27 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { AgentDirector } from './agents.js';
 import { PICKUP_INFO, type PickupType } from './bestiary.js';
-import { cmdChmod, cmdCp, cmdLn, cmdMv, cmdRm, cmdTouch, redirect } from './commands-fs.js';
-import { cmdCd, cmdFind, cmdLs, cmdReadlink } from './commands-move.js';
-import { cmdKill, cmdPkill, cmdPs, cmdSource, armMessage, decideRestart, parseRestartArgs, runSkin, type RestartPending } from './commands-proc.js';
+import { executeRestartCommand, type RestartPending } from './commands-proc.js';
 import type { TerminalSkinId } from '../contracts/terminal-skins.js';
-import { cmdCat, cmdCut, cmdEcho, cmdGrep, cmdHeadTail, cmdRev, cmdSed, cmdWc } from './commands-text.js';
 import { World, type WorldHost } from './entities.js';
 import { FLOOR_TITLES } from './floors.js';
-import { runInventory, starterInventory } from './inventory.js';
+import { starterInventory } from './inventory.js';
 import { KiroCompanion } from './kiro.js';
 import { observeLab } from './lab-checks.js';
 import { applyLabInjection, buildLabInspect } from './lab-support.js';
 import { freshLabLevelState, type LabConfig, type LabInjection, type LabInspect, type LabSession } from './lab-types.js';
-import { helpText, runMan, runManual, runMap } from './manual.js';
-import { brace, empty, out, thisPlaceholder, type HeroAction, type Run } from './play.js';
-import { classicHintGoals, cmdKiro, puzzleHint, statusText, stepKiroCrack, threatHint } from './puzzle.js';
+import { brace, thisPlaceholder, type HeroAction, type Run } from './play.js';
+import { classicHintGoals, puzzleHint, stepKiroCrack, threatHint } from './puzzle.js';
 import {
-  applyPickup, backups, bossDown, bump, causeOf, completions, elapsedSec, enterFloorEvents, facts, find, glob, hurt,
-  kernelPhase, load, maxHp, noteAction, portal, push, rank, restoreQuests,
+  applyPickup, backups, bossDown, completions, elapsedSec, enterFloorEvents, facts, find, glob, hurt,
+  kernelPhase, load, maxHp, portal, push, rank, restoreQuests,
 } from './runtime.js';
+import { dispatchClassicCommand, writeClassicRedirect, type ClassicShellHost } from './session-shell.js';
 import { runLine, type Host, type Step, type Word } from './shell.js';
 import { createAppBus, publishKernel, type AppBus } from '../contracts/app-bus.js';
 import { createSfx, type Sfx } from './sfx.js';
-import { absPath, resolve } from './tree.js';
+import { absPath } from './tree.js';
+import { finishTabCompletion } from './unix-applets.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from './types.js';
 import { buildRoom } from './view.js';
 
@@ -68,7 +66,7 @@ export function createSession(options?: ClassicSessionOptions): LabSession {
   return new Game(options);
 }
 
-class Game implements LabSession, Host {
+class Game implements LabSession, Host, ClassicShellHost {
   readonly sfx: Sfx = createSfx();
   readonly bus: AppBus = createAppBus();
   private volume = 1;
@@ -191,11 +189,27 @@ class Game implements LabSession, Host {
     const id = this.pendingSkin; this.pendingSkin = null; return id;
   }
 
-  private quietSkip(): { text: string; events: KernelEvent[] } {
+  quietSkip(): { text: string; events: KernelEvent[] } {
     const tutoring = this.agents.active();
     const chatter = this.agents.skip();
     if (tutoring) this.run.world.calm();
     return chatter;
+  }
+
+  recordLineArgs(argv: string[]): void {
+    this.lineArgs.push(argv);
+  }
+
+  setManualQuery(query: string | null): void {
+    this.pendingManual = query;
+  }
+
+  setMapQuery(query: string | null): void {
+    this.pendingMap = query;
+  }
+
+  setSkinRequest(id: TerminalSkinId): void {
+    this.pendingSkin = id;
   }
 
   skipTutorial(): TickResult {
@@ -328,16 +342,7 @@ class Game implements LabSession, Host {
     const words = lead.trim() ? lead.trim().split(/\s+/) : [];
     const command = words.length === 0 || /[;|&]$/.test(lead.trim());
     const matches = completions(this, token, command, words[0] ?? '');
-    if (matches.length === 0) return { line, matches };
-    if (matches.length === 1) {
-      const only = matches[0] ?? '';
-      return { line: lead + only + (only.endsWith('/') ? '' : ' '), matches };
-    }
-    let prefix = matches[0] ?? '';
-    for (const item of matches) {
-      while (prefix && !item.startsWith(prefix)) prefix = prefix.slice(0, -1);
-    }
-    return { line: lead + (prefix.length >= token.length ? prefix : token), matches };
+    return finishTabCompletion(line, lead, token, matches);
   }
 
   hint(): string {
@@ -390,22 +395,26 @@ class Game implements LabSession, Host {
   }
 
   /** `restart-level` / `retry`: arm, then confirm on the next line (or `--yes`). Same rule as the chapter shell. */
-  private cmdRestartLevel(args: string[]): Step {
-    const parsed = parseRestartArgs(args);
-    if ('error' in parsed) return empty(2, parsed.error);
-    const now = { commands: this.run.commands, ticks: this.ticks };
-    if (decideRestart(this.restartPending, now, parsed.yes) === 'arm') {
-      this.restartPending = { armedAtCommand: now.commands, armedAtTick: now.ticks };
-      this.bus.emit({ kind: 'restart', step: 'arm' });
-      return out(armMessage(FLOOR_TITLES[this.run.floor] ?? `Floor ${this.run.floor}`));
-    }
-    this.run.ended = false;
-    this.run.ram = this.run.entryRam;
-    this.run.ssd = this.run.entrySsd;
-    const res = this.floorEvents(this.run.floor, 'Floor restarted.\n');
-    this.reloadedNow = true;
-    this.bus.emit({ kind: 'restart', step: 'go' });
-    return { stdout: res.output, stderr: '', code: 0, events: res.events };
+  restartLevel(args: string[]): Step {
+    return executeRestartCommand(
+      this.restartPending,
+      { commands: this.run.commands, ticks: this.ticks },
+      args,
+      FLOOR_TITLES[this.run.floor] ?? `Floor ${this.run.floor}`,
+      (next) => {
+        this.restartPending = next;
+        this.bus.emit({ kind: 'restart', step: 'arm' });
+      },
+      () => {
+        this.run.ended = false;
+        this.run.ram = this.run.entryRam;
+        this.run.ssd = this.run.entrySsd;
+        const res = this.floorEvents(this.run.floor, 'Floor restarted.\n');
+        this.reloadedNow = true;
+        this.bus.emit({ kind: 'restart', step: 'go' });
+        return { stdout: res.output, stderr: '', code: 0, events: res.events };
+      },
+    );
   }
 
   debugTeleport(floor: FloorId): TickResult {
@@ -444,7 +453,7 @@ class Game implements LabSession, Host {
     return brace(text).flatMap((part) => glob(this, part));
   }
 
-  private finish(step: Step): Step {
+  finishStep(step: Step): Step {
     this.run.world.sync(step.events);
     const notes = this.run.world.drain();
     if (notes) step.info = (step.info ?? '') + notes;
@@ -452,81 +461,11 @@ class Game implements LabSession, Host {
   }
 
   dispatch(argv: string[], stdin: string): Step {
-    this.lineArgs.push(argv);
-    this.run.world.cause = causeOf(this, argv);
-    noteAction(this, argv);
-    return this.finish(this.command(argv, stdin));
+    return dispatchClassicCommand(this, argv, stdin);
   }
 
   writeRedirect(path: string, data: string, append: boolean, argv: string[]): Step {
-    const found = resolve(this.run.cwd, path, false);
-    const node = found.node;
-    this.run.world.cause = node?.device === 'null' || path === '/dev/null' ? 'devnull' : 'other';
-    bump(this, 'write');
-    return this.finish(redirect(this, node, path, data, append, argv));
-  }
-
-  private command(argv: string[], stdin: string): Step {
-    const name = argv[0] ?? '';
-    const args = argv.slice(1);
-    switch (name) {
-      case 'pwd': return out(`${absPath(this.run.cwd)}\n`);
-      case 'ls': return cmdLs(this, args);
-      case 'cd': return cmdCd(this, args[0]);
-      case 'cat': return cmdCat(this, args, stdin);
-      case 'readlink': return cmdReadlink(this, args);
-      case 'find': return cmdFind(this, args);
-      case 'touch': return cmdTouch(this, args);
-      case 'rm': return cmdRm(this, args);
-      case 'mv': return cmdMv(this, args);
-      case 'cp': return cmdCp(this, args);
-      case 'chmod': return cmdChmod(this, args);
-      case 'ln': return cmdLn(this, args);
-      case 'echo': return cmdEcho(this, args);
-      case 'grep': return cmdGrep(this, args, stdin);
-      case 'wc': return cmdWc(this, args, stdin);
-      case 'cut': return cmdCut(this, args, stdin);
-      case 'rev': return cmdRev(this, args, stdin);
-      case 'sed': return cmdSed(this, args, stdin);
-      case 'head': return cmdHeadTail(this, args, stdin, true);
-      case 'tail': return cmdHeadTail(this, args, stdin, false);
-      case 'ps': return cmdPs(this, args, false);
-      case 'top': return cmdPs(this, args, true);
-      case 'kill': return cmdKill(this, args);
-      case 'pkill': return cmdPkill(this, args);
-      case 'source':
-      case '.': return cmdSource(this, args);
-      case 'kiro': return cmdKiro(this, args, stdin);
-      case 'help': return out(`${helpText(this.hint())}\n`);
-      case 'man': return this.cmdMan(args);
-      case 'restart-level':
-      case 'retry': return this.cmdRestartLevel(args);
-      case 'manual': {
-        const m = runManual(args);
-        this.pendingManual = m.query;
-        return m.step;
-      }
-      case 'map': {
-        const m = runMap(args);
-        this.pendingMap = m.query;
-        return m.step;
-      }
-      case 'skin': { const r = runSkin(args); if (r.request) this.pendingSkin = r.request; return r.step; }
-      case 'status': return out(statusText(this));
-      case 'tutorial': {
-        if (args[0] === 'skip' || args[0] === 'off') {
-          const chatter = this.quietSkip();
-          return { stdout: chatter.text || 'No tutorial running.\n', stderr: '', code: 0, events: chatter.events };
-        }
-        return out(this.agents.describe());
-      }
-      case 'whoami': return out('dev\n(worker #1 of the agents, apparently. You did not sign anything.)\n');
-      case 'inventory': case 'inv': case 'hold': return runInventory(this.run, name, args);
-      case 'clear': return { stdout: '', stderr: '', code: 0, events: [], clear: true };
-      case 'exit':
-      case 'logout': return this.cmdExit();
-      default: return empty(127, `${name}: command not found${name === 'sudo' ? ' (nice try: the agents hold root)' : ''}\n`);
-    }
+    return writeClassicRedirect(this, path, data, append, argv);
   }
 
   private blank(muted: boolean): Run {
@@ -577,23 +516,5 @@ class Game implements LabSession, Host {
     }
     this.run.hp = maxHp(this);
     return this.run;
-  }
-
-  private cmdMan(args: string[]): Step {
-    return runMan(args);
-  }
-
-  private cmdExit(): Step {
-    if (!portal(this)) return empty(1, 'exit: the core still has its hooks in you\n');
-    const time = elapsedSec(this);
-    this.run.ended = true;
-    this.run.endedAt = Date.now();
-    const grade = rank(this);
-    const events: KernelEvent[] = [];
-    push(this, events, { type: 'GAME_ENDED', rank: grade, timeSec: time, commands: this.run.commands });
-    return out(
-      `The lightning reverses. You yank your hands off the keyboard: the agents can do their own work.\nDawn, at your desk. Rank ${grade}. Time ${time}s. Commands ${this.run.commands}.\n`,
-      events,
-    );
   }
 }

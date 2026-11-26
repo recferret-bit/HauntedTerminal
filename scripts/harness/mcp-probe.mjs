@@ -181,7 +181,8 @@ async function runCases() {
       if (c.file && existsSync(resolve(projectRoot, c.file))) writeFileSync(resolve(projectRoot, c.file), '');
       const t0 = Date.now();
       const res = await agentTurn(c.agent, c.prompt);
-      const log = res.out.replace(/\x1b\[[0-9;]*m/g, '');
+      const ansiRx = new RegExp(`${String.fromCharCode(0x1b)}\\[[0-9;]*m`, 'g');
+      const log = res.out.replace(ansiRx, '');
       writeFileSync(join(outDir, `${c.id}.log`), log);
       const problems = res.error ? [`kiro-cli did not finish: ${res.error.message}`] : judge(c, log);
       const result = log.split('\n').find((l) => l.includes('PROBE-RESULT'))?.trim() ?? '';

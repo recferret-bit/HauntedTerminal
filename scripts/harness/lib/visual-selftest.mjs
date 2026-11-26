@@ -63,9 +63,9 @@ async function pixelTests(test) {
     const kinds = (img, max = 1) => pixelFlags(img, [[240, 232, 214]], max).flags.map((f) => f.kind);
     assert.deepEqual(kinds(blankImage(32, 32, [0, 0, 0])), ['black-frame']);
     assert.deepEqual(kinds(blankImage(32, 32)), ['blank-frame']);
-    assert.equal(offPaletteShare(blankImage(8, 8, [138, 43, 226]), loadPalette(projectRoot)), 1);
+    assert.equal(offPaletteShare(blankImage(8, 8, [255, 0, 255]), loadPalette(projectRoot)), 1);
     assert.equal(offPaletteShare(blankImage(8, 8, [240, 232, 214]), [[240, 232, 214]]), 0);
-    assert.deepEqual(kinds(paint(blankImage(32, 32), [0, 0, 32, 16], [138, 43, 226]), 0.25), ['off-palette']);
+    assert.deepEqual(kinds(paint(blankImage(32, 32), [0, 0, 32, 16], [255, 0, 255]), 0.25), ['off-palette']);
   });
   await test('motion: frozen, jump and blank-frame flags', () => {
     const still = Array.from({ length: 12 }, () => paint(blankImage(40, 30), [0, 0, 20, 30], [20, 20, 20]));

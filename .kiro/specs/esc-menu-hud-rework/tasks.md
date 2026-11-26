@@ -1,6 +1,6 @@
 # Esc menu hud rework: tasks
 
-Status: done (all tasks ticked 2026-11-25; handoffs H1 to H5 stay open for the user)
+Status: see requirements.md
 
 Amendments recorded with the approval: T15 stops at the local commit (no push, no merge to `main`, no deploy). H1 stays an open handoff to the user: nobody edits `scripts/harness/terminal-lab-smoke.mjs`, and `terminal-lab-smoke.mjs` is reported as a known failing gate.
 
@@ -91,9 +91,9 @@ Covers `requirements.md` items R1 to R20 and `design.md` sections 3 to 14 (decis
 ## Handoffs to the user
 
 - [x] **H1. `scripts/harness/terminal-lab-smoke.mjs:200`** updated on `main` (2026-11-25) to toggle mute via `window.__menu.open()` -> `#esc-mute` -> `window.__menu.close()`.
-- [ ] **H2. Baselines** in `docs/qa/baselines/`: you approve them with `visual-audit.mjs --update`, after T12.
+- [ ] **H2. Baselines** in `docs/qa/baselines/`: you approve them with `visual-audit.mjs --update`, after T12. Needs the user: look at the play screens in `scripts/harness/out/visual/` and, if they are right, run `node scripts/harness/visual-audit.mjs --update <screen>[@<WxH>]` yourself (every team agent's shell denies `--update`).
 - [x] **H3. `scripts/harness/terminal-lab-unit.mjs:1283-1288`** removed the obsolete `orch.onHintOpened()` assertion on `main` (2026-11-25).
-- [ ] **H4. Where the locked-exit caption shows** (found by `qa` 2026-11-25, finding 4). R13 says the missing win rule is named "through the existing sector caption (`room.caption`)". `chapters-designer` fills `room.caption` with `LOCKED: <first missing> (+N more)` (D7), but `#stage-caption` stays hidden (`D11`).
+- [ ] **H4. Where the locked-exit caption shows** (found by `qa` 2026-11-25, finding 4). R13 says the missing win rule is named "through the existing sector caption (`room.caption`)". `chapters-designer` fills `room.caption` with `LOCKED: <first missing> (+N more)` (D7), but `#stage-caption` stays hidden (`D11`). Needs the user (checked in code 2026-11-26): no UI reads `room.caption` (`src/chapters/session-snapshot.ts:47` sets it); `#stage-caption` is `display: none` (`src/styles/esc-menu.css:4`); it gets the theme title and path when the stage is built (`src/renderer/stage-layout.ts:143-144`) and then `snap.room.title` (tooltip `snap.cwd`) on every snapshot (`src/play/loop.ts:44-45`), never `room.caption`; the Esc menu shows the first unfinished win rule in `#esc-level-objective` (`levelInfo`, `session-snapshot.ts:22`; `src/ui/esc-menu.ts:114-115`). Choose (a) build a visible surface for `room.caption` while the exit is locked, or (b) amend R13 to name the missing win rule through the Esc menu objective.
 - [x] **H5. `qa` finding 7** resolved on `main` (2026-11-25): `#tutorial-card` moved into `#titleblock` on the left below `.items-strip`, freeing the exit door padlock at the right edge on level 1.
 
 ## Follow-up fixes on `main` (2026-11-25)

@@ -221,7 +221,7 @@ export class StageLight {
     const baseDark = def.dark > 0 ? def.dark : 0.3 * Math.min(1, k);
     const flicker = 1 + (hash(Math.floor(this.time * 12)) - 0.5) * (dark ? 0.1 : this.modeId === 'lantern' || this.modeId === 'blacklight' ? 0.14 : 0.05);
     let power = basePower * flicker * (1 + 0.85 * k);
-    let radius = def.radius * (1 + 0.5 * k);
+    const radius = def.radius * (1 + 0.5 * k);
     if (this.modeId === 'storm' && !dark) {
       // The sky stutters: mostly dim, with stepped surges, and it follows real strikes.
       const surge = hash(Math.floor(this.time * 3)) > 0.8 ? 1 : 0;

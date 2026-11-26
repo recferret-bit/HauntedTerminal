@@ -1,6 +1,6 @@
 # Comix intro outro wiring: design
 
-Status: done
+Status: see requirements.md
 
 ## Findings from the code
 

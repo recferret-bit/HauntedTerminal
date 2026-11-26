@@ -3,7 +3,6 @@ import {
   clampFloatRect,
   clampSideWidth,
   cloneLayout,
-  DEFAULT_LAYOUT,
   MIN_BOTTOM_H,
   MIN_SIDE_W,
   makeDefaultLayout,
@@ -20,7 +19,6 @@ import { h } from './dom.js';
 import { bindPointerGesture, clampNum, type GestureSession } from './drag.js';
 
 export {
-  DEFAULT_LAYOUT,
   sanitizeLayout,
   type DockSizeDefaults,
   type DockSlot,
@@ -363,6 +361,7 @@ export class DockLayoutController {
         onStart: () => {
           if (this.state.slots[id] !== 'float') return false;
           startRect = { ...this.state.floats[id] };
+          return undefined;
         },
         onMove: (s) => {
           const minW = id === 'timeline' ? 320 : 220;

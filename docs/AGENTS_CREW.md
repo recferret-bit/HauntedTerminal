@@ -117,7 +117,7 @@ TODO (you): after the first test, write here the date, whether the redirect and 
 ## Checks
 
 ```bash
-npm run quality:agents                     # the gate and 10 unit tests: table, rules, hooks, git rights, one owner per file, installer
+npm run quality:agents                     # the gate and the unit tests (agents-unit.mjs): table, rules, hooks, git rights, one owner per file, installer
 node scripts/harness/agents-build.mjs      # rewrite the agent files after editing the table
 kiro-cli agent validate --path .kiro/agents/lead-dev.json
 npm run crew:check                         # is this Mac ready for Kiro Crew

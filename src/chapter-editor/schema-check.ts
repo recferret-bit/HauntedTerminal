@@ -1,10 +1,8 @@
 import type { ChapterPack } from '../chapters/types.js';
 import type { PackIssue } from '../chapters/validate-pack.js';
 import type { Rec } from '../editor-core/dom.js';
-import { SchemaWalk, listShape, objectShape, type ShapeIssue } from '../editor-core/schema-check.js';
+import { SchemaWalk } from '../editor-core/schema-check.js';
 import { COMIX_PAGE, DIALOG_CAST, DIALOG_ENTRY, ENTITIES, FILES, MANIFEST, OVERVIEW, RULES, SCRIPT, type Field } from './schema.js';
-
-export { listShape, objectShape, type ShapeIssue };
 
 const LEVEL_FIELDS: Field[] = [...OVERVIEW, ...FILES, ...ENTITIES, ...RULES, { type: 'object', key: 'script', label: '', optional: true, fields: SCRIPT }];
 

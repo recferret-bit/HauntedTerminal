@@ -1,9 +1,23 @@
+import { createStateMachine, type StateMachine, type TransitionTable } from '../contracts/state-machine.js';
 import { searchManual, tokenizeSearchQuery } from '../game/manual-catalog.js';
 import type { ManualSearchHit, ManualSkillFilter } from '../game/manual-types.js';
 import { el } from './dom-lite.js';
 import { btn, inlineCodeFragment } from './manual-book-dom.js';
 
-export const SKILL_FILTERS: ReadonlyArray<{ id: ManualSkillFilter; label: string }> = [
+export type SearchDrawerMode = 'closed' | 'suppressed' | 'open';
+export type SearchDrawerEvent = 'OPEN' | 'CLOSE' | 'SUPPRESS' | 'ALLOW_FOCUS';
+
+export const SEARCH_DRAWER_TRANSITIONS: TransitionTable<SearchDrawerMode, SearchDrawerEvent> = {
+  closed: { OPEN: 'open', SUPPRESS: 'suppressed' },
+  suppressed: { ALLOW_FOCUS: 'closed', OPEN: 'open' },
+  open: { CLOSE: 'closed', SUPPRESS: 'suppressed' },
+};
+
+export function createSearchDrawerMachine(): StateMachine<SearchDrawerMode, SearchDrawerEvent> {
+  return createStateMachine({ initial: 'closed', transitions: SEARCH_DRAWER_TRANSITIONS });
+}
+
+const SKILL_FILTERS: ReadonlyArray<{ id: ManualSkillFilter; label: string }> = [
   { id: 'all', label: 'All' },
   { id: 'beginner', label: 'Beginner' },
   { id: 'flags-numbers', label: 'Flags & Numbers' },
@@ -122,16 +136,19 @@ export function createSearchPanel(opts: {
 }): SearchPanel {
   let query = '';
   let filter: ManualSkillFilter = 'all';
-  let drawerOpen = false;
-  let allowFocusOpen = true;
+  const drawerMode = createSearchDrawerMachine();
+  const hasCriteria = (): boolean => query.trim().length > 0 || filter !== 'all';
+  const setDrawerOpen = (open: boolean): void => {
+    drawerMode.send('ALLOW_FOCUS');
+    drawerMode.send(open ? 'OPEN' : 'CLOSE');
+  };
 
   const input = createSearchInput();
   const clearBtn = btn('×', 'mb-search-clear hidden', () => {
     query = '';
     filter = 'all';
     input.value = '';
-    drawerOpen = false;
-    allowFocusOpen = true;
+    setDrawerOpen(false);
     opts.onHighlightTokens([]);
     renderResults();
     input.focus();
@@ -140,7 +157,7 @@ export function createSearchPanel(opts: {
   const countBadge = el('span', 'mb-search-count');
   const filters = buildFilterButtons((id) => {
     filter = id;
-    drawerOpen = id !== 'all' || query.trim().length > 0;
+    setDrawerOpen(hasCriteria());
     renderResults();
   });
 
@@ -154,8 +171,7 @@ export function createSearchPanel(opts: {
 
   const activeTokens = (): string[] => tokenizeSearchQuery(query);
   const pickHit = (hit: ManualSearchHit): void => {
-    allowFocusOpen = false;
-    drawerOpen = false;
+    drawerMode.send('SUPPRESS');
     resultsEl.classList.add('hidden');
     input.blur();
     opts.onSelectHit(hit, activeTokens());
@@ -167,7 +183,7 @@ export function createSearchPanel(opts: {
 
     const tokens = activeTokens();
     opts.onHighlightTokens(tokens);
-    if ((tokens.length === 0 && filter === 'all') || !drawerOpen) {
+    if ((tokens.length === 0 && filter === 'all') || drawerMode.state !== 'open') {
       resultsEl.classList.add('hidden');
       countBadge.textContent = '';
       return;
@@ -180,28 +196,27 @@ export function createSearchPanel(opts: {
       query = s;
       filter = 'all';
       input.value = s;
-      drawerOpen = true;
+      drawerMode.send('OPEN');
       renderResults();
     }, pickHit);
   }
 
   wireSearchInputEvents(input, {
     onPointerDown: () => {
-      allowFocusOpen = true;
-      if (!drawerOpen && document.activeElement === input && (query.trim().length > 0 || filter !== 'all')) {
-        drawerOpen = true;
+      drawerMode.send('ALLOW_FOCUS');
+      if (drawerMode.state === 'closed' && document.activeElement === input && hasCriteria()) {
+        drawerMode.send('OPEN');
         renderResults();
       }
     },
     onInput: () => {
-      allowFocusOpen = true;
       query = input.value;
-      drawerOpen = query.trim().length > 0 || filter !== 'all';
+      setDrawerOpen(hasCriteria());
       renderResults();
     },
     onFocus: () => {
-      if (allowFocusOpen && (query.trim().length > 0 || filter !== 'all')) {
-        drawerOpen = true;
+      if (drawerMode.state !== 'suppressed' && hasCriteria()) {
+        drawerMode.send('OPEN');
         renderResults();
       }
     },
@@ -217,26 +232,25 @@ export function createSearchPanel(opts: {
     barEl,
     resultsEl,
     focusInput: (openDrawer = true) => {
-      allowFocusOpen = openDrawer;
+      drawerMode.send(openDrawer ? 'ALLOW_FOCUS' : 'SUPPRESS');
       input.focus();
       input.select();
     },
     setQuery: (next, openDrawer = true) => {
       query = next;
       input.value = next;
-      allowFocusOpen = openDrawer;
-      drawerOpen = openDrawer && (next.trim().length > 0 || filter !== 'all');
+      if (openDrawer) setDrawerOpen(hasCriteria());
+      else drawerMode.send('SUPPRESS');
       renderResults();
     },
     setFilter: (next) => {
       filter = next;
-      drawerOpen = next !== 'all' || query.trim().length > 0;
+      setDrawerOpen(hasCriteria());
       renderResults();
     },
-    isResultsOpen: () => drawerOpen && !resultsEl.classList.contains('hidden'),
+    isResultsOpen: () => drawerMode.state === 'open' && !resultsEl.classList.contains('hidden'),
     closeResults: () => {
-      allowFocusOpen = false;
-      drawerOpen = false;
+      drawerMode.send('SUPPRESS');
       resultsEl.classList.add('hidden');
     },
   };

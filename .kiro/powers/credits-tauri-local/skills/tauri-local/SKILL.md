@@ -12,7 +12,7 @@ Spec: `.kiro/specs/release-tags-power/` (requirements 1 to 4).
 ```
 node .kiro/powers/credits-tauri-local/skills/tauri-local/scripts/tauri-local.mjs            build, then open
 node .kiro/powers/credits-tauri-local/skills/tauri-local/scripts/tauri-local.mjs --no-open  build only
-node .kiro/powers/credits-tauri-local/skills/tauri-local/scripts/tauri-local.mjs --dry-run  gates and web build, no native build
+node .kiro/powers/credits-tauri-local/skills/tauri-local/scripts/tauri-local.mjs --dry-run  web build, Tauri generation and offline bundle verify; no native build, no quality gates
 ```
 
 It wraps `scripts/desktop/build-tauri-steam.mjs` for this machine only, without Steamworks. The output goes to `scripts/harness/out/tauri-local/local-<sha>[-dirty]/` with a `LOCAL-BUILD.txt` marker. The label is a folder name, not a version.

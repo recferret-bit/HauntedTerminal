@@ -40,7 +40,7 @@ export type Tagged = PartSpec & { anim: AnimTag };
 export const HINGED = new Set(['swing', 'legWalk', 'armSwing']);
 
 export const pivotOf = (part: Tagged): Vec3 => part.anim.pivot ?? part.pos;
-export const pivotKey = (part: Tagged): string => pivotOf(part).map((v) => v.toFixed(3)).join(',');
+const pivotKey = (part: Tagged): string => pivotOf(part).map((v) => v.toFixed(3)).join(',');
 
 /** Key that groups the parts of one limb: same tag type on the same pivot. */
 export const limbKey = (part: Tagged): string => `${part.anim.type}:${pivotKey(part)}`;

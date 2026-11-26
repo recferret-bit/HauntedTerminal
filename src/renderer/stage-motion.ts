@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import type * as THREE from 'three';
 import { disposeModel } from '../procgen/index.js';
 import type { FxCue } from './event-fx.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
@@ -379,7 +379,7 @@ function faceDir(a: StageActor, dir: number): void {
 }
 
 /** Turn to look at the hero (the way he is from here); keeps the facing when there is no hero. */
-export function faceHeroNow(stage: ComicStage, a: StageActor): void {
+function faceHeroNow(stage: ComicStage, a: StageActor): void {
   const hero = stage.hero();
   if (hero && hero !== a) faceDir(a, Math.sign(hero.base.x - a.base.x));
 }

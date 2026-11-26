@@ -1,9 +1,9 @@
 import type { KernelEvent, PosixSignal } from '../contracts/events.js';
-import { matchesPkill, parsePkillArgs, parseSignalToken } from '../game/commands-proc.js';
 import type { KillHow } from '../game/entities.js';
 import { SIGNAL_LIST } from '../game/manual.js';
 import type { Step } from '../game/shell.js';
 import { psXrayToggle } from '../game/puzzle.js';
+import { matchesPkill, parseKillArgs, parsePkillArgs } from '../game/unix-applets.js';
 import { WEAK_GGUF, kiroIsWeak, levelScript, runSteps } from './script.js';
 import { emptyStep, okStep, type ChapterState } from './session-state.js';
 import { computeBossPhase, refreshExitGates } from './session-rules.js';
@@ -30,30 +30,12 @@ export function cmdPs(g: ChapterState, cmd: string): Step {
   }
 
 export function cmdKill(g: ChapterState, args: string[]): Step {
-    if (args[0] === '-l' || args[0] === '-L') return okStep(`${SIGNAL_LIST}\n`);
+    const parsed = parseKillArgs(args, 'usage: kill [-9 | -15 | -STOP | -CONT] PID...\n', 1);
+    if (parsed.kind === 'list') return okStep(`${SIGNAL_LIST}\n`);
+    if (parsed.kind === 'error') return emptyStep(parsed.code, parsed.error);
     const events: KernelEvent[] = [];
-    let sig: PosixSignal = 'SIGTERM';
-    const pids: number[] = [];
-
-    for (let i = 0; i < args.length; i += 1) {
-      const a = args[i] ?? '';
-      if (a === '-s') {
-        const tok = args[++i];
-        const parsed = tok ? parseSignalToken(tok) : null;
-        if (!parsed) return emptyStep(1, `kill: ${tok ?? '-s'}: invalid signal specification\n`);
-        sig = parsed;
-        continue;
-      }
-      const parsed = a.startsWith('-') ? parseSignalToken(a) : null;
-      if (parsed) sig = parsed;
-      else {
-        const n = Number(a);
-        if (!Number.isInteger(n)) return emptyStep(1, `kill: ${a}: arguments must be process IDs\n`);
-        pids.push(n);
-      }
-    }
-    if (pids.length === 0) return emptyStep(1, 'usage: kill [-9 | -15 | -STOP | -CONT] PID...\n');
-    sig = levelScript(g).signalAliases?.[sig] ?? sig;
+    const pids = parsed.pids;
+    const sig: PosixSignal = levelScript(g).signalAliases?.[parsed.signal] ?? parsed.signal;
 
     const HowMap: Record<PosixSignal, KillHow> = {
       SIGKILL: 'SIGKILL',

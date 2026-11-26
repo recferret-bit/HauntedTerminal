@@ -16,7 +16,7 @@ import { startComix, type ComixPlayResult, type DebugOptions } from './play-pack
 import type { ComixStats } from './reel.js';
 import type { ComixRole } from './spec-types.js';
 
-export { COMIX_MANIFESTS, findComixByRole, getComixPack };
+export { COMIX_MANIFESTS, findComixByRole };
 export type { ComixPlayResult, ComixRole, ComixStats, DebugOptions };
 
 export interface CinematicOptions {

@@ -13,8 +13,6 @@ export interface PrefStore {
   setItem(key: string, value: string): void;
 }
 
-export const DEFAULT_SOUND_PREF: SoundPref = { muted: false, volume: 1 };
-
 export function clampVolume(v: number): number {
   return Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 1;
 }

@@ -1,4 +1,47 @@
-import { wireLightDismissFallback } from './hint-dialog.js';
+import { createStateMachine, type StateMachine, type TransitionTable } from '../contracts/state-machine.js';
+
+export type NativeModalMode = 'closed' | 'open';
+export type NativeModalEvent = 'OPEN' | 'CLOSE';
+
+export const NATIVE_MODAL_TRANSITIONS: TransitionTable<NativeModalMode, NativeModalEvent> = {
+  closed: { OPEN: 'open' },
+  open: { CLOSE: 'closed' },
+};
+
+export function createNativeModalMachine(): StateMachine<NativeModalMode, NativeModalEvent> {
+  return createStateMachine({ initial: 'closed', transitions: NATIVE_MODAL_TRANSITIONS });
+}
+
+/** Safari fallback for `closedby="any"`: require pointerdown and pointerup outside the dialog box. */
+export function wireLightDismissFallback(
+  dialog: HTMLDialogElement,
+  onDismiss: () => void,
+  forceFallback = false,
+): void {
+  const hasNative = !forceFallback && typeof HTMLDialogElement !== 'undefined' && 'closedBy' in HTMLDialogElement.prototype;
+  if (hasNative || typeof dialog.addEventListener !== 'function') return;
+  const isOutside = (ev: Event): boolean => {
+    const pe = ev as PointerEvent;
+    if (typeof dialog.getBoundingClientRect !== 'function') return false;
+    const r = dialog.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) return false;
+    return pe.clientX < r.left || pe.clientX > r.right || pe.clientY < r.top || pe.clientY > r.bottom;
+  };
+  let pressedOutside = false;
+  dialog.addEventListener('pointerdown', (ev) => {
+    pressedOutside = ev.target === dialog && isOutside(ev);
+  });
+  dialog.addEventListener('pointerup', (ev) => {
+    if (pressedOutside && ev.target === dialog && isOutside(ev)) onDismiss();
+    pressedOutside = false;
+  });
+  dialog.addEventListener('pointercancel', () => {
+    pressedOutside = false;
+  });
+  dialog.addEventListener('close', () => {
+    pressedOutside = false;
+  });
+}
 
 export interface NativeModal {
   open(focusEl?: HTMLElement | null): void;
@@ -16,14 +59,13 @@ export function createNativeModal(
   onClose?: (returnFocus: HTMLElement | null) => void,
 ): NativeModal {
   const hasShowModal = typeof dialog.showModal === 'function';
-  let open = false;
+  const fsm = createNativeModalMachine();
   let returnFocus: HTMLElement | null = null;
 
-  const isOpen = (): boolean => (hasShowModal ? Boolean(open && dialog.open) : open);
+  const isOpen = (): boolean => (hasShowModal ? Boolean(fsm.state === 'open' && dialog.open) : fsm.state === 'open');
 
   const markClosed = (): void => {
-    if (!open) return;
-    open = false;
+    if (!fsm.send('CLOSE')) return;
     dialog.returnValue = '';
     dialog.classList.remove('open');
     const back = returnFocus;
@@ -32,7 +74,7 @@ export function createNativeModal(
   };
 
   const close = (): void => {
-    if (!open && (!hasShowModal || !dialog.open)) return;
+    if (fsm.state === 'closed' && (!hasShowModal || !dialog.open)) return;
     if (typeof dialog.close === 'function') {
       if (dialog.open) dialog.close();
       markClosed();
@@ -58,9 +100,8 @@ export function createNativeModal(
 
   return {
     open(focusEl) {
-      if (open && hasShowModal && !dialog.open) open = false;
-      if (!open) {
-        open = true;
+      if (fsm.state === 'open' && hasShowModal && !dialog.open) fsm.send('CLOSE');
+      if (fsm.send('OPEN')) {
         returnFocus = typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null;
         dialog.classList.add('open');
         if (hasShowModal) {

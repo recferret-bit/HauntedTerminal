@@ -14,12 +14,9 @@ import { buildCell, buildLabHall } from './rooms/floor3.js';
 import { buildCatwalk, buildFurnace } from './rooms/floor4.js';
 import { buildCore } from './rooms/floor5.js';
 import { buildOutro } from './rooms/outro.js';
-import { roomIdForKind } from './rooms/frame.js';
+import { ROOM, roomIdForKind } from './rooms/frame.js';
 
-export {
-  ACTOR_BAND, BAND_ZONES, DESIGN_LEFT, DESIGN_RIGHT, ROOM, ROOM_KINDS, RoomBuilder,
-  designToRoomX, floorForKind, roomIdForKind, type RoomId,
-} from './rooms/frame.js';
+export { ROOM, roomIdForKind };
 
 interface RoomDef {
   label: string;
@@ -27,7 +24,7 @@ interface RoomDef {
   build: (seed: number) => ModelSpec;
 }
 
-export const ROOM_DEFS: Record<RoomKind, RoomDef> = {
+const ROOM_DEFS: Record<RoomKind, RoomDef> = {
   desk: {
     label: 'Desk nook',
     lore: 'Floor 1 start: the desk he fell asleep at, rebuilt by the machine out of drive bays and a dead CRT.',

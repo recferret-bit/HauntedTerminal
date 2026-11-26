@@ -40,7 +40,7 @@ interface TextoliteBoardConfig {
 }
 
 /** Shared 128 px colored-textolite generator (45-deg trace bundles, pads, vias, silkscreen refs). */
-export function drawTextolitePcb(rng: Rng, cfg: TextoliteBoardConfig): PixelBuffer {
+function drawTextolitePcb(rng: Rng, cfg: TextoliteBoardConfig): PixelBuffer {
   const buf = texNew(128, 128, C(cfg.base));
   const ringHex = C(cfg.viaRing);
   for (let lane = 0; lane < 2; lane++) {

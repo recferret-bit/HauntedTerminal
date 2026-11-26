@@ -14,7 +14,7 @@ import { doorSockets, realRoomShell, shelfBooks, windowFrame } from '../rooms/re
  * the desk beside the monitor (the lightning hits it), the office chair just screen-right of the desk
  * (the vibecoder sits there, socket `vibecoder`), the storm window above and behind him.
  */
-export const INTRO_LAYOUT = {
+const INTRO_LAYOUT = {
   deskX: 2.7,
   deskTop: 0.8,
   monitor: { x: 2.55, y: 1.36, w: 1.12, h: 0.84 },
@@ -24,7 +24,7 @@ export const INTRO_LAYOUT = {
   window: { x: -0.7, y: 3.0, w: 2.4, h: 1.7 },
 } as const;
 
-export function buildIntroRoom(seed: number): ModelSpec {
+function buildIntroRoom(seed: number): ModelSpec {
   const rng = makeRng(seed);
   // RoomBuilder is typed to the game's RoomKinds; the intro is a cinematic-only set, so the id is set below.
   const b = new RoomBuilder('intro' as RoomKind, 'The desk at night');

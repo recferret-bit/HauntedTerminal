@@ -2,15 +2,13 @@ import type { KernelEvent, PosixSignal } from '../contracts/events.js';
 import {
   BESTIARY, FORKBOMB_RAGE_DAMAGE, KERNEL_PHASE_DAMAGE, ZOMBIE_CAP, kernelPhaseCadence,
 } from './bestiary.js';
-import { GRACE_TICKS, type Enemy, type KillHow, type SignalResult, type World } from './entities.js';
+import { GRACE_TICKS, type Enemy, type KillHow, type ShownState, type SignalResult, type WorldLike } from './entities-types.js';
 import { absPath, baseName, findId, hasExec, hasWrite, makeNode, parentDir, type VNode } from './tree.js';
-
-type ShownState = Extract<KernelEvent, { type: 'ENEMY_STATE' }>['state'];
 
 const SIGNAL_HOW: Record<PosixSignal, KillHow> = { SIGKILL: 'SIGKILL', SIGTERM: 'SIGTERM', SIGSTOP: 'other', SIGCONT: 'other' };
 
 /** `ls -a` on `dir`: hidden enemies there show themselves. Returns the inodes revealed. */
-export function reveal(world: World, dir: VNode, events: KernelEvent[]): number[] {
+export function reveal(world: WorldLike, dir: VNode, events: KernelEvent[]): number[] {
   const path = absPath(dir);
   const shown: number[] = [];
   for (const e of world.enemies) {
@@ -26,7 +24,7 @@ export function reveal(world: World, dir: VNode, events: KernelEvent[]): number[
 }
 
 /** `ps` / `top`: processes cannot hide from the table, except rootkits. */
-export function revealProcesses(world: World, events: KernelEvent[]): void {
+export function revealProcesses(world: WorldLike, events: KernelEvent[]): void {
   for (const e of world.enemies) {
     if (e.dead || e.revealed || e.type === 'rootkit' || e.pid === null) continue;
     e.revealed = true;
@@ -39,7 +37,7 @@ export function revealProcesses(world: World, events: KernelEvent[]): void {
  * About to delete `node` (rm, rm -r, mv over it, mv to /dev/null). Returns an error line to refuse
  * (and may react, e.g. a running virus splits), or null to allow. Pickups are allowed: they are lost.
  */
-export function vetoRemove(world: World, node: VNode, events: KernelEvent[]): string | null {
+export function vetoRemove(world: WorldLike, node: VNode, events: KernelEvent[]): string | null {
   const e = world.enemyByInode(node.id);
   if (!e) return null;
   const running = !e.frozen;
@@ -62,14 +60,14 @@ export function vetoRemove(world: World, node: VNode, events: KernelEvent[]): st
 }
 
 /** About to chmod `node`: root-owned malware refuses. */
-export function vetoChmod(world: World, node: VNode): string | null {
+export function vetoChmod(world: WorldLike, node: VNode): string | null {
   const e = world.enemyByInode(node.id);
   if (!e) return null;
   if (e.type === 'exploit' || e.type === 'forkbomb' || e.type === 'kernel') return `${node.name}: Operation not permitted (owned by root)`;
   return null;
 }
 
-function split(world: World, e: Enemy, node: VNode, events: KernelEvent[]): string {
+function split(world: WorldLike, e: Enemy, node: VNode, events: KernelEvent[]): string {
   const root = world.enemies.find((x) => x.pid === e.ppid && x.type === 'virus' && !x.dead) ?? e;
   const kin = world.enemies.filter((x) => x.type === 'virus' && !x.dead && (x === root || x.ppid === root.pid)).length;
   world.host.push(events, { type: 'ENEMY_HIT', entityId: e.id, model: e.model, damage: 0, hpRemaining: e.hp, command: `rm ${node.name}` });
@@ -89,7 +87,7 @@ function split(world: World, e: Enemy, node: VNode, events: KernelEvent[]): stri
 }
 
 /** Deliver a signal to the enemy with this PID. Null when no enemy owns the PID. */
-export function signal(world: World, pid: number, sig: PosixSignal, events: KernelEvent[]): SignalResult | null {
+export function signal(world: WorldLike, pid: number, sig: PosixSignal, events: KernelEvent[]): SignalResult | null {
   const e = world.enemyByPid(pid);
   if (!e) return null;
   const ok = (stdout = ''): SignalResult => ({ code: 0, stdout, stderr: '' });
@@ -151,7 +149,7 @@ export function signal(world: World, pid: number, sig: PosixSignal, events: Kern
   return ok('');
 }
 
-function kill(world: World, e: Enemy, how: KillHow, events: KernelEvent[]): void {
+function kill(world: WorldLike, e: Enemy, how: KillHow, events: KernelEvent[]): void {
   if (e.dead) return;
   const node = world.file(e);
   e.deathZone = world.zone(e);
@@ -174,7 +172,7 @@ function kill(world: World, e: Enemy, how: KillHow, events: KernelEvent[]): void
   }
 }
 
-function epitaph(_world: World, e: Enemy, how: KillHow): string {
+function epitaph(_world: WorldLike, e: Enemy, how: KillHow): string {
   switch (e.type) {
     case 'bug': return `Bug squashed: ${e.name} is patched. Ship it.`;
     case 'worm': return how === 'chmod' ? 'Quarantined: worm.bin starves behind a closed port.' : 'worm.bin unthreads and falls apart.';
@@ -192,7 +190,7 @@ function epitaph(_world: World, e: Enemy, how: KillHow): string {
  * Compare the world with what was last reported: files that vanished, a bug that got patched, a buffer
  * made read-only, kernel phases, state changes (petrified, frozen, revealed...).
  */
-export function sync(world: World, events: KernelEvent[], how: KillHow = world.cause): void {
+export function sync(world: WorldLike, events: KernelEvent[], how: KillHow = world.cause): void {
   const root = world.host.root();
   for (const e of world.enemies) {
     if (e.dead) continue;
@@ -242,7 +240,7 @@ export function sync(world: World, events: KernelEvent[], how: KillHow = world.c
   }
 }
 
-function shownState(world: World, e: Enemy): ShownState {
+function shownState(world: WorldLike, e: Enemy): ShownState {
   if (!e.revealed) return 'hidden';
   if (world.petrified(e)) return 'petrified';
   if (e.frozen) return 'frozen';
@@ -252,7 +250,7 @@ function shownState(world: World, e: Enemy): ShownState {
 }
 
 /** After an in-place respawn: everyone takes a breath, no queued hits. */
-export function calm(world: World): void {
+export function calm(world: WorldLike): void {
   world.grace = GRACE_TICKS;
   for (const e of world.enemies) {
     e.clock = 0;
@@ -260,7 +258,7 @@ export function calm(world: World): void {
   }
 }
 
-export function tick(world: World, events: KernelEvent[]): string {
+export function tick(world: WorldLike, events: KernelEvent[]): string {
   world.ticks += 1;
   const resting = world.grace > 0;
   if (resting) world.grace -= 1;
@@ -290,13 +288,13 @@ export function tick(world: World, events: KernelEvent[]): string {
  * Enemies that would fight the hero now: alive, able to act, in his room, hurting him, with no truce on.
  * A battle runs while this is not empty (`src/game/battle.ts`). Grace does not count: it only delays attacks.
  */
-export function threats(world: World): Enemy[] {
+export function threats(world: WorldLike): Enemy[] {
   if (world.host.truce()) return [];
   return world.enemies.filter((e) => active(world, e) && here(world, e) && cadence(world, e) > 0 && damage(world, e) > 0);
 }
 
 /** Things that happen wherever the hero is: a closed port starves its worm, a buffer grows back. */
-function passive(world: World, e: Enemy, events: KernelEvent[]): string {
+function passive(world: WorldLike, e: Enemy, events: KernelEvent[]): string {
   if (e.type === 'worm') {
     if (world.sealedPort(e)) {
       e.sealed += 1;
@@ -323,7 +321,7 @@ function passive(world: World, e: Enemy, events: KernelEvent[]): string {
 }
 
 /** Is this enemy able to act at all right now? */
-function active(world: World, e: Enemy): boolean {
+function active(world: WorldLike, e: Enemy): boolean {
   if (e.dead || e.frozen || world.petrified(e) || world.sealedPort(e)) return false;
   if (e.type === 'rootkit') return false;
   if (e.type === 'zombie') {
@@ -333,12 +331,12 @@ function active(world: World, e: Enemy): boolean {
   return true;
 }
 
-export function cadence(world: World, e: Enemy): number {
+export function cadence(world: WorldLike, e: Enemy): number {
   if (e.type === 'kernel') return kernelPhaseCadence(Math.min(2, world.host.kernelPhase()));
   return BESTIARY[e.type].every;
 }
 
-function damage(world: World, e: Enemy): number {
+function damage(world: WorldLike, e: Enemy): number {
   if (e.type === 'kernel') return KERNEL_PHASE_DAMAGE[Math.min(2, world.host.kernelPhase())] ?? 3;
   return BESTIARY[e.type].damage;
 }
@@ -349,7 +347,7 @@ function damage(world: World, e: Enemy): number {
  * Mirrors `tick` and `act`, so tools can show the countdown the game really runs on. Indirect actors (ransomware, forkbomb)
  * tell only when they have something to do, so with nothing to do the answer is null.
  */
-export function ticksToTell(world: World, e: Enemy): number | null {
+export function ticksToTell(world: WorldLike, e: Enemy): number | null {
   const every = cadence(world, e);
   if (e.dead || every <= 0 || !active(world, e) || !here(world, e) || !wants(world, e)) return null;
   // A crack is reactive: it tells on the first tick it has a lock to pick, strikes on the next, then may tell again.
@@ -364,7 +362,7 @@ export function ticksToTell(world: World, e: Enemy): number | null {
 }
 
 /** Indirect actors only tell when they have something to do. */
-function wants(world: World, e: Enemy): string | null {
+function wants(world: WorldLike, e: Enemy): string | null {
   if (e.type === 'crack') {
     const target = e.helps ? world.get(e.helps) : undefined;
     return target && !target.dead && world.sealedPort(target) ? 'lock pick' : null;
@@ -380,7 +378,7 @@ function wants(world: World, e: Enemy): string | null {
   return damage(world, e) > 0 ? BESTIARY[e.type].attack : null;
 }
 
-function preyOf(world: World, e: Enemy): VNode | null {
+function preyOf(world: WorldLike, e: Enemy): VNode | null {
   const room = world.zone(e)[0];
   for (const p of world.pickups) {
     if (p.collected) continue;
@@ -390,7 +388,7 @@ function preyOf(world: World, e: Enemy): VNode | null {
   return null;
 }
 
-function act(world: World, e: Enemy, events: KernelEvent[]): string {
+function act(world: WorldLike, e: Enemy, events: KernelEvent[]): string {
   const every = cadence(world, e);
   if (every <= 0 || !active(world, e) || !here(world, e)) {
     e.clock = 0;
@@ -427,7 +425,7 @@ function act(world: World, e: Enemy, events: KernelEvent[]): string {
   return out;
 }
 
-function strike(world: World, e: Enemy, events: KernelEvent[]): string {
+function strike(world: WorldLike, e: Enemy, events: KernelEvent[]): string {
   if (e.type === 'crack') {
     const target = e.helps ? world.get(e.helps) : undefined;
     const port = target?.port != null ? findId(world.host.root(), target.port) : null;
@@ -451,7 +449,7 @@ function strike(world: World, e: Enemy, events: KernelEvent[]): string {
   return world.host.hurt(damage(world, e), label, events);
 }
 
-function fork(world: World, boss: Enemy, events: KernelEvent[]): string {
+function fork(world: WorldLike, boss: Enemy, events: KernelEvent[]): string {
   const alive = world.enemies.filter((z) => z.type === 'zombie' && !z.dead && z.ppid === boss.pid).length;
   if (alive >= ZOMBIE_CAP) return '';
   const pid = world.nextZombie++;
@@ -461,7 +459,7 @@ function fork(world: World, boss: Enemy, events: KernelEvent[]): string {
   return `necromancer_forkd forked zombie_worker (${pid})\n`;
 }
 
-function here(world: World, e: Enemy): boolean {
+function here(world: WorldLike, e: Enemy): boolean {
   return world.zone(e).includes(world.host.cwdPath());
 }
 

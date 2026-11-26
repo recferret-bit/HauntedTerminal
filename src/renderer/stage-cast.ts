@@ -77,7 +77,7 @@ export interface StageActor {
   retint: () => void;
 }
 
-export function kindForModel(modelId: string): ActorKind {
+function kindForModel(modelId: string): ActorKind {
   if (modelId.startsWith('vibecoder.')) return 'vibecoder';
   if (modelId.startsWith('boss.')) return 'boss';
   if (modelId.startsWith('malware.')) return 'enemy';
@@ -90,7 +90,7 @@ export function actorId(ra: RoomActor): string {
   return ra.id ?? ra.key;
 }
 
-export function modelIdFor(ra: RoomActor): string {
+function modelIdFor(ra: RoomActor): string {
   const legacy = ra.key !== 'entity' ? LEGACY_CAST[ra.key as keyof HauntedCast] : undefined;
   if (ra.model && ModelCatalog.has(ra.model)) return ra.model;
   if (legacy && ModelCatalog.has(legacy.model)) return legacy.model;
@@ -111,7 +111,7 @@ export function restStateFor(ra: RoomActor): AnimState {
 // ---- Textures for state looks and decals (built once, never disposed: userData.keep). ----
 
 const texCache = new Map<string, THREE.DataTexture>();
-export function procTexture(id: string, tileable = true): THREE.DataTexture | null {
+function procTexture(id: string, tileable = true): THREE.DataTexture | null {
   if (!TextureCatalog.has(id)) return null;
   let tex = texCache.get(id);
   if (!tex) {
@@ -344,10 +344,6 @@ export function actorSocket(actor: StageActor, socket: string, out = new THREE.V
   return actor.group.localToWorld(out);
 }
 
-export function actorFeet(actor: StageActor, out = new THREE.Vector3()): THREE.Vector3 {
-  return out.copy(actor.group.position);
-}
-
 export function disposeStageActor(actor: StageActor): void {
   if (actor.disposed) return;
   actor.disposed = true;
@@ -376,9 +372,4 @@ export function pipState(actor: StageActor): { lit: number; cells: number } | nu
   if (!show) return null;
   const cells = Math.min(8, Math.max(1, Math.round(max)));
   return { lit: Math.max(1, Math.ceil((hp / max) * cells)), cells };
-}
-
-/** Every comic material of every model the actor owns (fx and room excluded). */
-export function actorMaterials(actor: StageActor): ComicMaterial[] {
-  return actor.model.allMaterials;
 }

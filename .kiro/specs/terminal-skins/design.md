@@ -1,6 +1,6 @@
 # Terminal skins: design
 
-Status: approved (by the user 2026-11-25)
+Status: see requirements.md
 
 ## Pieces
 

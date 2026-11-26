@@ -4,7 +4,7 @@ import { wireExternalLinksForDesktop, wireSteamWishlistLink } from '../chapters/
 import { heroModel, type ItemId } from '../game/inventory.js';
 import type { GameSnapshot } from '../game/types.js';
 import {
-  el, heroFaceTierForHp, PORTRAIT_FRAMES, type DrawPortrait, type HeroFaceTier,
+  dom, el, heroFaceTierForHp, PORTRAIT_FRAMES, replayClass, type DrawPortrait, type HeroFaceTier,
 } from './dom-lite.js';
 import { mountItemsStrip, type ItemsStrip } from './items-strip.js';
 
@@ -38,17 +38,10 @@ export interface Hud {
   hideStats(): void;
 }
 
-export function clock(sec: number): string {
+function clock(sec: number): string {
   const s = Math.max(0, Math.floor(sec));
   const m = Math.floor(s / 60);
   return `${m}:${String(s % 60).padStart(2, '0')}`;
-}
-
-/** Restart a CSS animation by toggling its class. */
-function replay(el: HTMLElement, cls: string): void {
-  el.classList.remove(cls);
-  void el.offsetWidth;
-  el.classList.add(cls);
 }
 
 function q<T extends HTMLElement>(sel: string, from: ParentNode): T {
@@ -67,52 +60,57 @@ function unrefTimer(id: number): number {
   return id;
 }
 
-const HUD_HTML = (maxFloors: number) => `
-    <div class="hud-cell" id="hud-ram-cell" title="RAM collected: every 16 GB adds max HP">
-      <span class="hud-k">RAM</span><b id="hud-ram">0</b><span class="hud-u">GB</span>
-    </div>
-    <div class="hud-cell" id="hud-ssd-cell" title="SSD collected: 256 GB = one backup">
-      <span class="hud-k">SSD</span><b id="hud-ssd">0</b><span class="hud-u">GB</span>
-      <span class="pips" id="hud-pips"></span>
-    </div>
-    <div class="hud-cell" id="hud-enemy-cell" title="Malware left on this floor">
-      <span class="hud-k">BUGS</span><b id="hud-enemies">0/0</b>
-    </div>
-    <div class="hud-cell" title="Floor / Sector">
-      <span class="hud-k">FL</span><b id="hud-floor">1</b><span class="hud-u">/${maxFloors}</span>
-    </div>
-    <div class="hud-cell" title="Commands typed">
-      <span class="hud-k">CMD</span><b id="hud-cmd">0</b>
-    </div>
-    <div class="hud-cell" title="Time">
-      <b id="hud-time">0:00</b><span class="hud-pause" id="hud-pause">II</span>
-    </div>
-    <div class="hud-btns">
-      <button type="button" id="hud-map" title="Open Chapter Motherboard Map (F3)">Map</button>
-      <button type="button" id="hud-hint" title="Tasks & goals for this room">? Hint</button>
-    </div>
-  `;
+function buildHudNodes(maxFloors: number): HTMLElement[] {
+  return [
+    dom('div', { class: 'hud-cell', id: 'hud-ram-cell', title: 'RAM collected: every 16 GB adds max HP' }, [
+      dom('span', { class: 'hud-k' }, ['RAM']), dom('b', { id: 'hud-ram' }, ['0']), dom('span', { class: 'hud-u' }, ['GB']),
+    ]),
+    dom('div', { class: 'hud-cell', id: 'hud-ssd-cell', title: 'SSD collected: 256 GB = one backup' }, [
+      dom('span', { class: 'hud-k' }, ['SSD']), dom('b', { id: 'hud-ssd' }, ['0']), dom('span', { class: 'hud-u' }, ['GB']),
+      dom('span', { class: 'pips', id: 'hud-pips' }),
+    ]),
+    dom('div', { class: 'hud-cell', id: 'hud-enemy-cell', title: 'Malware left on this floor' }, [
+      dom('span', { class: 'hud-k' }, ['BUGS']), dom('b', { id: 'hud-enemies' }, ['0/0']),
+    ]),
+    dom('div', { class: 'hud-cell', title: 'Floor / Sector' }, [
+      dom('span', { class: 'hud-k' }, ['FL']), dom('b', { id: 'hud-floor' }, ['1']), dom('span', { class: 'hud-u' }, [`/${maxFloors}`]),
+    ]),
+    dom('div', { class: 'hud-cell', title: 'Commands typed' }, [
+      dom('span', { class: 'hud-k' }, ['CMD']), dom('b', { id: 'hud-cmd' }, ['0']),
+    ]),
+    dom('div', { class: 'hud-cell', title: 'Time' }, [
+      dom('b', { id: 'hud-time' }, ['0:00']), dom('span', { class: 'hud-pause', id: 'hud-pause' }, ['II']),
+    ]),
+    dom('div', { class: 'hud-btns' }, [
+      dom('button', { type: 'button', id: 'hud-map', title: 'Open Chapter Motherboard Map (F3)' }, ['Map']),
+      dom('button', { type: 'button', id: 'hud-hint', title: 'Tasks & goals for this room' }, ['? Hint']),
+    ]),
+  ];
+}
 
-const STATS_HTML = `
-    <div class="card">
-      <p class="kicker">DAWN // RUN COMPLETE</p>
-      <h2>YOU EXITED</h2>
-      <div class="rank" id="outro-rank">C</div>
-      <dl>
-        <dt>Time</dt><dd id="outro-time">0:00</dd>
-        <dt>Commands</dt><dd id="outro-cmd">0</dd>
-        <dt>Shortcuts</dt><dd id="outro-cuts">none</dd>
-        <dt>Trophies</dt><dd id="outro-ach">0/${ACHIEVEMENT_SPECS.length}</dd>
-      </dl>
-      <label class="skip-row"><input type="checkbox" id="outro-skip" /> Skip the intro next time</label>
-      <div class="outro-actions">
-        <button type="button" id="outro-again">Play Again</button>
-        <a class="hud-link hud-steam" id="outro-wishlist" href="/?wishlist=1">* Wishlist on Steam</a>
-        <button type="button" id="outro-export">Export Save (.json)</button>
-        <a class="hud-link" href="/">Home</a>
-      </div>
-    </div>
-  `;
+function buildStatsCard(): HTMLElement {
+  return dom('div', { class: 'card' }, [
+    dom('p', { class: 'kicker' }, ['DAWN // RUN COMPLETE']),
+    dom('h2', {}, ['YOU EXITED']),
+    dom('div', { class: 'rank', id: 'outro-rank' }, ['C']),
+    dom('dl', {}, [
+      dom('dt', {}, ['Time']), dom('dd', { id: 'outro-time' }, ['0:00']),
+      dom('dt', {}, ['Commands']), dom('dd', { id: 'outro-cmd' }, ['0']),
+      dom('dt', {}, ['Shortcuts']), dom('dd', { id: 'outro-cuts' }, ['none']),
+      dom('dt', {}, ['Trophies']), dom('dd', { id: 'outro-ach' }, [`0/${ACHIEVEMENT_SPECS.length}`]),
+    ]),
+    dom('label', { class: 'skip-row' }, [
+      dom('input', { type: 'checkbox', id: 'outro-skip' }),
+      ' Skip the intro next time',
+    ]),
+    dom('div', { class: 'outro-actions' }, [
+      dom('button', { type: 'button', id: 'outro-again' }, ['Play Again']),
+      dom('a', { class: 'hud-link hud-steam', id: 'outro-wishlist', href: '/?wishlist=1' }, ['* Wishlist on Steam']),
+      dom('button', { type: 'button', id: 'outro-export' }, ['Export Save (.json)']),
+      dom('a', { class: 'hud-link', href: '/' }, ['Home']),
+    ]),
+  ]);
+}
 
 interface HudView {
   root: HTMLElement;
@@ -240,9 +238,10 @@ function updateHud(view: HudView, snap: GameSnapshot): void {
   const key = `${backups}:${progress}`;
   if (key !== view.lastPips) {
     view.lastPips = key;
-    const full = Array.from({ length: Math.min(backups, 6) }, () => '<i class="pip on"></i>').join('');
-    const more = backups > 6 ? `<em>+${backups - 6}</em>` : '';
-    view.pips.innerHTML = `${full}${more}<i class="pip part" style="--fill:${Math.round(progress * 100)}%"></i>`;
+    const full = Array.from({ length: Math.min(backups, 6) }, () => dom('i', { class: 'pip on' }));
+    const more = backups > 6 ? dom('em', {}, [`+${backups - 6}`]) : null;
+    const part = dom('i', { class: 'pip part', style: `--fill:${Math.round(progress * 100)}%` });
+    view.pips.replaceChildren(...full, ...(more ? [more] : []), part);
     view.pips.title = `${backups} backup${backups === 1 ? '' : 's'}`;
   }
   view.enemies.textContent = `${snap.enemiesLeft ?? 0}/${snap.enemiesTotal ?? 0}`;
@@ -276,8 +275,8 @@ function hudApi(view: HudView): Hud {
   return {
     update: (snap) => updateHud(view, snap),
     damage(amount, source) {
-      replay(view.flash, 'hit');
-      replay(view.hpCell, 'shake');
+      replayClass(view.flash, 'hit');
+      replayClass(view.hpCell, 'shake');
       pop(view.hpCell, `-${amount}`, 'pop-dmg');
       view.flash.title = source;
       view.ouchUntil = Date.now() + HERO_OUCH_MS;
@@ -297,12 +296,12 @@ function hudApi(view: HudView): Hud {
         return;
       }
       const anchor = item === 'ram' ? q('#hud-ram-cell', view.root) : item === 'ssd' ? q('#hud-ssd-cell', view.root) : view.hpCell;
-      replay(anchor, 'bump');
+      replayClass(anchor, 'bump');
       pop(anchor, label, `pop-${item}`);
     },
     backupUsed(hp) {
       q('span', view.backup).textContent = `SSD backup loaded. HP ${hp}.`;
-      replay(view.backup, 'show');
+      replayClass(view.backup, 'show');
     },
     achievement(item) {
       view.achQueue.push(item);
@@ -318,7 +317,7 @@ function hudApi(view: HudView): Hud {
         q('.ach-title', view.achToast).textContent = next.title;
         q('.ach-key', view.achToast).textContent = next.steamApiName;
         q('.ach-desc', view.achToast).textContent = next.description;
-        replay(view.achToast, 'open');
+        replayClass(view.achToast, 'open');
         view.achTimer = globalThis.setTimeout(showNext, 3400) as unknown as number;
       };
       showNext();
@@ -364,31 +363,29 @@ function mountLeftItemsStrip(
 function mountFx(stageWrap: HTMLElement): HTMLElement {
   stageWrap.querySelector<HTMLElement>('#titleblock > #fx-hint')?.remove();
   stageWrap.querySelector<HTMLElement>('.hud-fx-layer')?.remove();
-  const fx = document.createElement('div');
-  fx.className = 'hud-fx-layer';
-  fx.innerHTML = `
-    <div class="damage-flash" id="fx-damage"></div>
-    <div class="backup-banner" id="fx-backup"><b>BACKUP RESTORED!</b><span></span></div>
-    <div class="achievement-toast" id="fx-achievement" aria-live="polite">
-      <span class="ach-icon"></span>
-      <div class="ach-body">
-        <div class="ach-head"><b>TROPHY UNLOCKED</b><code class="ach-key"></code></div>
-        <strong class="ach-title"></strong>
-        <small class="ach-desc"></small>
-      </div>
-    </div>
-  `;
+  const fx = dom('div', { class: 'hud-fx-layer' }, [
+    dom('div', { class: 'damage-flash', id: 'fx-damage' }),
+    dom('div', { class: 'backup-banner', id: 'fx-backup' }, [dom('b', {}, ['BACKUP RESTORED!']), dom('span')]),
+    dom('div', { class: 'achievement-toast', id: 'fx-achievement', 'aria-live': 'polite' }, [
+      dom('span', { class: 'ach-icon' }),
+      dom('div', { class: 'ach-body' }, [
+        dom('div', { class: 'ach-head' }, [dom('b', {}, ['TROPHY UNLOCKED']), dom('code', { class: 'ach-key' })]),
+        dom('strong', { class: 'ach-title' }),
+        dom('small', { class: 'ach-desc' }),
+      ]),
+    ]),
+  ]);
   stageWrap.appendChild(fx);
   return fx;
 }
 
 export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLElement, handlers: HudHandlers): Hud {
   heroHudCleanup.get(stageWrap)?.();
-  root.innerHTML = HUD_HTML(handlers.maxFloors ?? 5);
+  root.replaceChildren(...buildHudNodes(handlers.maxFloors ?? 5));
   const hero = mountHeroHud(stageWrap, handlers.drawPortrait);
   const fx = mountFx(stageWrap);
   bindHud(root, handlers);
-  stats.innerHTML = STATS_HTML;
+  stats.replaceChildren(buildStatsCard());
   const skipBox = q<HTMLInputElement>('#outro-skip', stats);
   q<HTMLButtonElement>('#outro-again', stats).onclick = () => handlers.onPlayAgain(skipBox.checked);
   wireExternalLinksForDesktop(stats);

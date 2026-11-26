@@ -17,6 +17,7 @@ export * from './validate/textures.js';
 export * from './anim/index.js';
 export * from './fx/index.js';
 export * from './runtime/index.js';
+export { ACTOR_BAND, BAND_ZONES } from './archetypes/rooms/frame.js';
 
 // Importing these registers their entries in ModelCatalog / TextureCatalog.
 import './textures/index.js';

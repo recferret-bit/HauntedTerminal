@@ -23,7 +23,7 @@ export function limbPivotGaps(tagged: Tagged[], rests: Map<string, Box>): Map<st
 }
 
 /** Gait limbs (legWalk, then armSwing) grouped by pivot: the parts of one leg or arm. */
-export function groupGaitLimbs(tagged: Tagged[]): Map<string, Tagged[]> {
+function groupGaitLimbs(tagged: Tagged[]): Map<string, Tagged[]> {
   const legs = tagged.filter((p) => p.anim.type === 'legWalk');
   const arms = tagged.filter((p) => p.anim.type === 'armSwing');
   const limbs = new Map<string, Tagged[]>();

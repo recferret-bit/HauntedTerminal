@@ -1,8 +1,13 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { SOURCE_MALWARE_DAMAGE } from '../game/bestiary.js';
-import { SED_EMPTY_PATTERN, emptySedPattern } from '../game/commands-text.js';
+import {
+  SED_EMPTY_PATTERN,
+  compileSedScript,
+  emptySedPattern,
+  parseSedArgs,
+} from '../game/unix-applets.js';
 import type { Step } from '../game/shell.js';
-import { absPath, hasWrite, makeNode, resolve } from '../game/tree.js';
+import { absPath, hasWrite, resolve } from '../game/tree.js';
 import type { CommandResult } from '../game/types.js';
 import {
   evaluateBatchEvents,
@@ -13,12 +18,11 @@ import {
 import { recordLevelClear, recordTelemetry } from './catalog.js';
 import { runSteps } from './script.js';
 import { validateDockerCompose, validateDockerfile } from './validators.js';
-import { computeLevelRank, computeRunRank, creatableParent, emptyStep, okStep, splitParentAndName, type ChapterState, type EditorOpenPayload } from './session-state.js';
+import { computeLevelRank, computeRunRank, emptyStep, okStep, splitParentAndName, type ChapterState, type EditorOpenPayload } from './session-state.js';
 import { cmdCat, collectPickupNode } from './session-fs.js';
-import { cmdHank, cmdHankAudit } from './session-meta.js';
-import { allWinRulesMet, hurt, liveLintFeedback, refreshExitGates, sinkIntoNull, syncValidatedCodeBugs, unfinishedObjectives } from './session-rules.js';
+import { hurt } from './session-level.js';
+import { allWinRulesMet, liveLintFeedback, refreshExitGates, syncValidatedCodeBugs, unfinishedObjectives } from './session-rules.js';
 import { snapshot } from './session-snapshot.js';
-import { riddleWrite } from './session-riddle.js';
 
 function commitEdited(g: ChapterState, events: KernelEvent[], inodeId: number, command: string): void {
   events.push({
@@ -85,108 +89,14 @@ export function saveEditableFile(g: ChapterState, nameOrPath: string, content: s
     return { output, events, snapshot: snapshot(g) };
   }
 
-export function writeRedirect(g: ChapterState, path: string, data: string, append: boolean, argv: string[]): Step {
-    const events: KernelEvent[] = [];
-    if (path === '/dev/null') {
-      // Sinking a .stream file into /dev/null (`cat chaos_webhook.stream > /dev/null`) drains the stream!
-      if (argv[0] === 'cat' && argv[1]) {
-        const src = resolve(g.rt.cwd, argv[1], true).node;
-        if (src && src.name.endsWith('.stream')) {
-          src.content = '';
-          g.rt.streamDrained = true;
-          sinkIntoNull(g, events, src.id);
-          return okStep('[STDERR STREAM DRAINED INTO /dev/null]\n', events);
-        }
-      }
-      return okStep('', events);
-    }
-
-    const existing = resolve(g.rt.cwd, path, true);
-    if (existing.node) {
-      if (existing.node.kind === 'socket') {
-        const riddle = riddleWrite(g, existing.node, data);
-        if (riddle) return riddle;
-        const trimmed = data.trim();
-        g.rt.socketInputs.set(existing.node.name, trimmed);
-        if (existing.node.name.includes('hank') || existing.node.name.includes('dad')) {
-          if (/^(status|check|audit|review)\b/i.test(trimmed)) {
-            return cmdHankAudit(g);
-          }
-          return cmdHank(g, []);
-        }
-        events.push({
-          type: 'PUZZLE_DOOR_RESOLVED',
-          socketInodeId: existing.node.id,
-          unlockedInodeId: existing.node.id,
-          solvedViaInput: trimmed,
-        });
-        g.rt.world.sync(events);
-        refreshExitGates(g, events);
-        return okStep(`[SOCKET ${existing.node.name}] ACK <- "${trimmed}"\n`, events);
-      }
-      if (existing.node.kind === 'dir') {
-        return emptyStep(1, `bash: ${path}: Is a directory\n`);
-      }
-      if (!hasWrite(existing.node)) {
-        events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: existing.node.id, command: '>' });
-        return okStep('', events, 1, `bash: ${path}: Permission denied\n`);
-      }
-      existing.node.content = append ? existing.node.content + data : data;
-      events.push({
-        type: 'VIBECODER_ACTION',
-        action: 'write',
-        command: argv[0] ?? '>',
-        targetEntityId: g.rt.world.entityOf(existing.node.id),
-      });
-      syncValidatedCodeBugs(g);
-      g.rt.world.sync(events);
-      refreshExitGates(g, events);
-      return okStep('', events);
-    }
-
-    const placed = creatableParent(g.rt.root, g.rt.cwd, path);
-    if (!placed) return emptyStep(1, `bash: ${path}: No such directory or permission denied\n`);
-    const created = makeNode(placed.parent, placed.name, 'file', 0o644);
-    created.content = data;
-    events.push({ type: 'FILE_CREATED', inodeId: created.id, name: created.name });
-    return okStep('', events);
-  }
-
 export function cmdSed(g: ChapterState, args: string[], stdin: string): Step {
-    let inPlace = false;
-    let extended = false;
-    const rest: string[] = [];
-    for (const a of args) {
-      if (a === '-i' || a.startsWith('-i')) inPlace = true;
-      else if (a === '-E' || a === '-r') extended = true;
-      else if (a === '-e') continue;
-      else rest.push(a);
-    }
+    const { inPlace, extended, rest } = parseSedArgs(args);
     const expr = rest[0] ?? '';
     if (emptySedPattern(expr)) return emptyStep(1, SED_EMPTY_PATTERN);
-    const m = /^s(.)((?:\\.|(?!\1).)*)\1((?:\\.|(?!\1).)*)\1([gi]*)$/.exec(expr);
-    if (!m) return emptyStep(1, "sed: expected s/old/new/[g] expression (e.g. sed -i 's/0000/3000/' file)\n");
-
-    const delim = m[1]!;
-    const escDelimRx = new RegExp(`\\\\${delim.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
-    const unescapedPat = m[2]!.replace(escDelimRx, delim);
-    // In POSIX basic sed (without -E/-r), +, ?, (, ), {, } match literally unless backslash-escaped.
-    const jsPat = extended ? unescapedPat : unescapedPat.replace(/([+?(){}])/g, '\\$1');
-    const replacement = m[3]!.replace(escDelimRx, delim).replace(/\$/g, '$$$$');
-    const flags = m[4]!.includes('g') ? (m[4]!.includes('i') ? 'gi' : 'g') : m[4]!.includes('i') ? 'i' : '';
-
-    const applyLineByLine = (text: string): string => {
-      let rx: RegExp;
-      try {
-        rx = new RegExp(jsPat, flags);
-      } catch {
-        rx = new RegExp(unescapedPat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags);
-      }
-      return text
-        .split('\n')
-        .map((line) => line.replace(rx, replacement))
-        .join('\n');
-    };
+    const applyLineByLine = compileSedScript(expr, { extended, escapeBasicQuantifiers: true });
+    if (!applyLineByLine) {
+      return emptyStep(1, "sed: expected s/old/new/[g] expression (e.g. sed -i 's/0000/3000/' file)\n");
+    }
 
     if (!inPlace) {
       if (rest[1]) {

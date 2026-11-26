@@ -7,11 +7,8 @@ import {
   opt,
   sel,
   t,
-  type ArrayItem,
   type Field,
   type FieldBase,
-  type Option,
-  type SuggestName,
 } from '../editor-core/schema.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
 
@@ -19,7 +16,7 @@ import { KIRO_CORE_ORDER } from '../game/kiro.js';
  * The editor is driven by these tables, not by per-chapter code. A new spec field is: one line in
  * `src/chapters/script-types.ts` (or types.ts), one interpreter branch in `script.ts`, one entry here.
  */
-export { b, n, opt, sel, t, type ArrayItem, type Field, type Option, type SuggestName };
+export type { Field };
 
 export const AGENTS = ['kiro', 'clod', 'gork', 'codec', 'antigravy'] as const;
 export const MOODS = ['laugh', 'order', 'smug', 'annoyed'] as const;
@@ -31,7 +28,7 @@ const KIRO_ACTIONS = ['scan', 'load', 'crack_start', 'crack_step', 'crack_done']
 /** One entry per `kind` of the union, enforced by the type: adding a kind to the spec types fails the build until the form exists. */
 type Variants<K extends string> = Record<K, Field[]>;
 
-export const COND_VARIANTS = (): Variants<ScriptCond['kind']> => ({
+const COND_VARIANTS = (): Variants<ScriptCond['kind']> => ({
   ran_command: [t('name', 'Command', { mono: true, hint: 'first word the player typed, e.g. ls or ps' })],
   file_absent: [t('path', 'Path', { suggest: 'paths', mono: true })],
   file_read: [t('path', 'Path', { suggest: 'paths', mono: true })],

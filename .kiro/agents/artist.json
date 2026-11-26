@@ -119,7 +119,9 @@
           "~/.kiro/crew/.env",
           "~/.kiro/crew/auth*",
           "~/.ssh/**",
-          "~/.aws/**"
+          "~/.aws/**",
+          "~/Library/Preferences/netlify/**",
+          "~/.config/gh/**"
         ],
         "effect": "deny"
       },
@@ -152,6 +154,7 @@
           "git diff --name-only*",
           "git diff --cached --stat*",
           "git diff -- *",
+          "diff scripts/harness/out/*",
           "npm run quality",
           "npm run quality:*",
           "npm run build",
@@ -163,7 +166,8 @@
           "STACK_PORT=5174 npm stop",
           "STACK_PORT=5174 npm run status",
           "node scripts/*",
-          "node .kiro/skills/*"
+          "node .kiro/skills/*",
+          "npx tsc --noEmit"
         ],
         "effect": "allow"
       },
@@ -199,6 +203,7 @@
           "git diff --name-only*",
           "git diff --cached --stat*",
           "git diff -- *",
+          "diff scripts/harness/out/*",
           "npm run quality",
           "npm run quality:*",
           "npm run build",
@@ -210,7 +215,8 @@
           "STACK_PORT=5174 npm stop",
           "STACK_PORT=5174 npm run status",
           "node scripts/*",
-          "node .kiro/skills/*"
+          "node .kiro/skills/*",
+          "npx tsc --noEmit"
         ],
         "effect": "deny"
       },
@@ -231,7 +237,18 @@
           "npm publish*",
           "*visual-audit*--update*",
           "*docs/qa/baselines*",
-          "cp *..*"
+          "cp *..*",
+          "node *..*",
+          "cd *..*",
+          "node *.kiro/powers*",
+          "cd *.kiro/powers*",
+          "*$(*",
+          "*`*",
+          "node *ship.mjs*",
+          "node *release.mjs*",
+          "node *tauri-local.mjs*",
+          "node *build-tauri-steam*",
+          "node *agents-install*"
         ],
         "effect": "deny"
       },
@@ -242,7 +259,10 @@
           "*.pem*",
           "*/.ssh/*",
           "*/.aws/*",
-          "*.kiro/crew/.env*"
+          "*.kiro/crew/.env*",
+          "*netlify/config.json*",
+          "*/.config/gh/*",
+          "*.netrc*"
         ],
         "effect": "deny"
       },

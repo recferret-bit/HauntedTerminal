@@ -14,3 +14,11 @@ The 3D animated Comix engine (`src/cinematic/`) is a generic comic-page renderer
 6. **Declarative skip and end-hold policy.** WHEN the player hits a skip input or reaches `durationSec`, THE RUNNER SHALL consult `manifest.skip` (`"end"` or stepped `SkipRule[]`), `acceptsKeyFrom`, `inputGraceMs`, and `holdAtEnd` rather than hardcoding sequence skip tables.
 7. **Deterministic freeze-frame & editor preview.** WHEN `/cinematic.html` runs with `?t=<sec>`, `?draft=1`, or `?editor=1`, THE PREVIEW HOST SHALL step deterministically at `1/60s` (`debug.freezeAt`), read live drafts from `localStorage`, support zoom/pan camera view state (`applySceneView`), tag DOM letters/overlays with `data-comix-*` attributes, and expose 2D/3D hit-testing and marquee selection (`editor-select.ts`).
 8. **Zero hardcode & 60fps simulation gates.** WHEN validating sequences with `generate-comix.mjs --verify` or `npm run quality`, THE HARNESS SHALL verify connected layout, catalog asset references, `check-declarative.mjs` isolation, and a full `60fps` headless timeline simulation (`simulateComixPack`) before any release.
+
+## Decisions
+
+None (legacy).
+
+## Open questions
+
+None (legacy).

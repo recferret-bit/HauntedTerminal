@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import type * as THREE from 'three';
 import type { KernelEvent } from '../contracts/events.js';
 import type { FxAnchor, FxCue } from './event-fx.js';
 import type { FxId } from './fx-player.js';

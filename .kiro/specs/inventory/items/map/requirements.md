@@ -58,6 +58,8 @@ Capability: `map` is the 5th typed **Inventory** tool under `.kiro/specs/invento
 
 ## Open questions
 
+None.
+
 ## Verification
 
 - Unit suites: `node scripts/harness/manual-unit.mjs` (covers `ITEM_IDS`, `ITEMS.map`, `findCommandDoc('map')`, `exec('map')`, `consumeMapRequest()`, and `buildMotherboardTopology` across all 11 Kiroween levels), `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/battle-unit.mjs`.

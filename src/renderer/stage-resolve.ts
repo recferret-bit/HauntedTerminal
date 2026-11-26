@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import type { KernelEvent } from '../contracts/events.js';
-import { eventEntityIds } from './event-fx.js';
-import type { FxAnchor } from './event-fx.js';
+import { eventEntityIds, type FxAnchor } from './event-fx.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
 import { isLocked } from './stage-actor.js';
 import { ACTOR_Z } from './stage-const.js';
@@ -22,7 +21,7 @@ export function firstOfKind(stage: ComicStage, kind: StageActor['kind'], pred?: 
   return null;
 }
 
-export function findByName(stage: ComicStage, name: string | undefined, exact = false): StageActor | null {
+function findByName(stage: ComicStage, name: string | undefined, exact = false): StageActor | null {
   if (!name) return null;
   const n = name.toLowerCase();
   for (const a of stage.actors.values()) {
@@ -38,7 +37,7 @@ export function findByName(stage: ComicStage, name: string | undefined, exact = 
   return null;
 }
 
-export function byPid(stage: ComicStage, pid: number): StageActor | null {
+function byPid(stage: ComicStage, pid: number): StageActor | null {
   for (const a of stage.actors.values()) if (a.pid === pid && !a.exiting) return a;
   return null;
 }

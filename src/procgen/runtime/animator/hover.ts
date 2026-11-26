@@ -17,7 +17,7 @@ export interface HoverRig {
   ctx: AnimContext;
 }
 
-export const sameBob = (x: AnimTag, y: AnimTag): boolean => x.speed === y.speed && x.amp === y.amp && (x.phase ?? 0) === (y.phase ?? 0);
+const sameBob = (x: AnimTag, y: AnimTag): boolean => x.speed === y.speed && x.amp === y.amp && (x.phase ?? 0) === (y.phase ?? 0);
 
 const isYBob = (tag: AnimTag | undefined): boolean => tag?.type === 'bob' && (tag.axis ?? 'y') === 'y';
 

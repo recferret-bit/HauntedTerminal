@@ -7,8 +7,8 @@ import '../styles/comix-reader.css';
 import { buildPlayUrl, CHAPTER_MANIFESTS, getChapterComix, getChapterManifest } from '../chapters/catalog.js';
 import { wireExternalLinksForDesktop, wireSteamWishlistLink } from '../chapters/steam-bridge.js';
 import type { ComixPageSpec, ComixStorySpec } from '../chapters/types.js';
-import { escHtml as esc } from '../renderer/html-escape.js';
-import { sheetHtml, shellHtml } from './comix-dom.js';
+import { dom, replayClass } from '../ui/dom-lite.js';
+import { buildComixSheet, buildComixShell } from './comix-dom.js';
 import { disposePanels, mountPagePanels, type LivePanel } from './comix-panel.js';
 
 interface Reader {
@@ -59,7 +59,7 @@ function openPage(root: HTMLElement, reader: Reader): void {
   disposePanels(reader.panels);
   const spec = pageSpec(reader.comix, reader.page);
   const wrap = root.querySelector<HTMLElement>('#comix-sheet-wrap')!;
-  wrap.innerHTML = sheetHtml(reader.comix, spec);
+  wrap.replaceChildren(buildComixSheet(reader.comix, spec));
   reader.cursor = 0;
   reader.panels = mountPagePanels(wrap, spec.panels);
   for (const panel of reader.panels) panel.resize();
@@ -121,9 +121,7 @@ function bind(root: HTMLElement, reader: Reader): void {
     const panel = reader.panels[Number(article.dataset.i)];
     if (!panel?.complete() || !panel.started()) return;
     panel.replay();
-    article.classList.remove('playing');
-    void article.offsetWidth;
-    article.classList.add('playing');
+    replayClass(article, 'playing');
   });
   window.addEventListener('keydown', (event) => {
     if (event.key !== ' ' && event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
@@ -135,7 +133,9 @@ function bind(root: HTMLElement, reader: Reader): void {
 }
 
 function missing(mount: HTMLElement, chapterId: string): void {
-  mount.innerHTML = `<div class="pill-box"><p>No comix for <code>${esc(chapterId)}</code> yet.</p></div>`;
+  mount.replaceChildren(
+    dom('div', { class: 'pill-box' }, [dom('p', {}, ['No comix for ', dom('code', {}, [chapterId]), ' yet.'])]),
+  );
 }
 
 function boot(): void {
@@ -169,7 +169,7 @@ function boot(): void {
     raf: 0,
     last: performance.now(),
   };
-  mount.innerHTML = shellHtml();
+  mount.replaceChildren(...buildComixShell());
   bind(mount, reader);
   openPage(mount, reader);
   reader.raf = window.requestAnimationFrame((t) => frame(mount, reader, t));

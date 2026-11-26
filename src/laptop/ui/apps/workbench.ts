@@ -55,6 +55,8 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
   let tab: CodeFile = cfg.files[0]!;
   let task: LaptopTask | null = null;
   let timer = 0;
+  let initTimer = 0;
+  let hasRun = false;
   const mode = modeOf(cfg.app);
   const consolePane = createConsolePane();
   const strip = taskStrip();
@@ -109,6 +111,7 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
   const el = h('div', { class: `lt-bench ${cfg.app}` }, toolbar, strip.el, work, consolePane.el);
 
   const exec = async (report: Promise<RunReport>): Promise<RunReport> => {
+    hasRun = true;
     ctx.sound.note('run');
     const r = await report;
     consolePane.finish(r);
@@ -154,10 +157,11 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
     },
     dispose() {
       window.clearTimeout(timer);
+      window.clearTimeout(initTimer);
       preview?.cancel?.();
     },
   };
   select(tab);
-  if (mode === 'page') void bench.run();
+  if (mode === 'page') initTimer = window.setTimeout(() => { if (!hasRun) void bench.run(); }, 0);
   return bench;
 }

@@ -6,9 +6,14 @@ import { SHELL_PID, empty, out, type Play } from './play.js';
 import { backups, bump, collectStep, denied, hurt, maxHp, push } from './runtime.js';
 import type { Step } from './shell.js';
 import type { ProcRow } from './entities.js';
+import {
+  matchesPkill,
+  parseKillArgs,
+  parsePkillArgs,
+} from './unix-applets.js';
 import { resolve } from './tree.js';
 
-export function procs(g: Play): ProcRow[] {
+function procs(g: Play): ProcRow[] {
   const rows: ProcRow[] = [];
   if (g.run.floor !== 5) rows.push({ pid: 1, ppid: 0, name: 'agentd --orchestrate', user: 'root', cpu: 0.3, state: 'RUNNING' });
   rows.push({ pid: 10, ppid: 1, name: 'cron_restorer', user: 'root', cpu: 0.1, state: 'RUNNING' });
@@ -46,106 +51,16 @@ export function cmdPs(g: Play, args: string[], top: boolean): Step {
   return out(`${text}\n`, events);
 }
 
-export function parseSignalToken(token: string | undefined): PosixSignal | null {
-  if (!token) return 'SIGTERM';
-  const name = token.replace(/^-/, '').toUpperCase().replace(/^SIG/, '');
-  if (name === '9' || name === 'KILL') return 'SIGKILL';
-  if (name === '15' || name === 'TERM') return 'SIGTERM';
-  if (name === 'STOP' || name === '19' || name === '17' || name === '23') return 'SIGSTOP';
-  if (name === 'CONT' || name === '18' || name === '19C') return 'SIGCONT';
-  return null;
-}
-
-export function signalOf(_g: Play, token: string | undefined): PosixSignal | null {
-  return parseSignalToken(token);
-}
-
-export interface PkillSpec {
-  signal: PosixSignal;
-  sigFlag: string;
-  full: boolean;
-  exact: boolean;
-  ppid: number | null;
-  pattern: string | null;
-}
-
-export function parsePkillArgs(args: string[]): ({ ok: true } & PkillSpec) | { ok: false; error: string } {
-  let signal: PosixSignal = 'SIGTERM';
-  let sigFlag = '-15';
-  let full = false;
-  let exact = false;
-  let ppid: number | null = null;
-  const patterns: string[] = [];
-
-  for (let i = 0; i < args.length; i += 1) {
-    const arg = args[i] ?? '';
-    if (arg === '--') {
-      patterns.push(...args.slice(i + 1));
-      break;
-    }
-    if (arg === '-s') {
-      const tok = args[++i];
-      const sig = tok ? parseSignalToken(tok) : null;
-      if (!sig) return { ok: false, error: `pkill: ${tok ?? '-s'}: invalid signal\n` };
-      signal = sig;
-      sigFlag = `-${sig}`;
-    } else if (arg === '-P' || (arg.startsWith('-P') && arg.length > 2)) {
-      const raw = arg === '-P' ? args[++i] : arg.slice(2);
-      const n = raw !== undefined && raw !== '' ? Number(raw) : NaN;
-      if (!Number.isInteger(n) || n < 0) return { ok: false, error: `pkill: invalid parent process ID '${raw ?? ''}'\n` };
-      ppid = n;
-    } else if (/^-[fx]+$/.test(arg)) {
-      if (arg.includes('f')) full = true;
-      if (arg.includes('x')) exact = true;
-    } else if (arg.startsWith('-')) {
-      const sig = parseSignalToken(arg);
-      if (!sig) return { ok: false, error: `pkill: ${arg}: invalid signal\n` };
-      signal = sig;
-      sigFlag = `-${sig}`;
-    } else {
-      patterns.push(arg);
-    }
-  }
-  if (patterns.length > 1) return { ok: false, error: 'pkill: only one pattern can be provided\n' };
-  const pattern = patterns[0] ?? null;
-  if (pattern === null && ppid === null) return { ok: false, error: 'pkill: no matching criteria specified\n' };
-  return { ok: true, signal, sigFlag, full, exact, ppid, pattern };
-}
-
-export function matchesPkill(proc: ProcRow, spec: PkillSpec): boolean {
-  if (spec.ppid !== null && proc.ppid !== spec.ppid) return false;
-  if (spec.pattern === null) return true;
-  const hay = spec.full ? proc.name : (proc.name.split(/\s+/)[0] ?? proc.name);
-  return spec.exact ? hay === spec.pattern : hay.includes(spec.pattern);
-}
-
 export function cmdKill(g: Play, args: string[]): Step {
-  if (args[0] === '-l' || args[0] === '-L') return out(`${SIGNAL_LIST}\n`);
-  let signal: PosixSignal = 'SIGTERM';
-  const pids: number[] = [];
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i] ?? '';
-    if (arg === '-s') {
-      const parsed = signalOf(g, args[++i]);
-      if (!parsed) return empty(1, `kill: ${args[i]}: invalid signal specification\n`);
-      signal = parsed;
-    } else if (arg.startsWith('-')) {
-      const parsed = signalOf(g, arg);
-      if (!parsed) return empty(1, `kill: ${arg}: invalid signal specification\n`);
-      signal = parsed;
-    } else {
-      const pid = Number(arg);
-      if (!Number.isInteger(pid)) return empty(1, `kill: ${arg}: arguments must be process IDs\n`);
-      pids.push(pid);
-    }
-  }
-  if (pids.length === 0) return empty(2, 'kill: usage: kill [-s sigspec | -signum | -sigspec] pid\n');
+  const parsed = parseKillArgs(args, 'kill: usage: kill [-s sigspec | -signum | -sigspec] pid\n', 2);
+  if (parsed.kind === 'list') return out(`${SIGNAL_LIST}\n`);
+  if (parsed.kind === 'error') return empty(parsed.code, parsed.error);
   const events: KernelEvent[] = [];
   let stdout = '';
   let stderr = '';
   let code = 0;
-  for (const pid of pids) {
-    const step = signalPid(g, pid, signal);
+  for (const pid of parsed.pids) {
+    const step = signalPid(g, pid, parsed.signal);
     stdout += step.stdout;
     stderr += step.stderr;
     events.push(...step.events);
@@ -155,7 +70,7 @@ export function cmdKill(g: Play, args: string[]): Step {
   return { stdout, stderr, code, events };
 }
 
-export function signalPid(g: Play, pid: number, signal: PosixSignal): Step {
+function signalPid(g: Play, pid: number, signal: PosixSignal): Step {
   const events: KernelEvent[] = [];
   const enemy = g.run.world.enemyByPid(pid);
   if (enemy) bump(g, 'cast', enemy.id);
@@ -229,7 +144,7 @@ export interface RestartNow {
  * `armMessage(title)` with exit code 0; on 'restart' clear the pending state and
  * reload the level. Keep the state on the level runtime so a level load drops it.
  */
-export function parseRestartArgs(args: string[]): { yes: boolean } | { error: string } {
+function parseRestartArgs(args: string[]): { yes: boolean } | { error: string } {
   let yes = false;
   for (const a of args) {
     if (a !== '--yes') return { error: `restart-level: unknown argument '${a}' (usage: restart-level [--yes])\n` };
@@ -238,7 +153,7 @@ export function parseRestartArgs(args: string[]): { yes: boolean } | { error: st
   return { yes };
 }
 
-export function decideRestart(pending: RestartPending | null, now: RestartNow, yes: boolean): 'arm' | 'restart' {
+function decideRestart(pending: RestartPending | null, now: RestartNow, yes: boolean): 'arm' | 'restart' {
   if (yes) return 'restart';
   if (pending && now.commands === pending.armedAtCommand + 1 && now.ticks - pending.armedAtTick <= RESTART_CONFIRM_TICKS) {
     return 'restart';
@@ -246,8 +161,26 @@ export function decideRestart(pending: RestartPending | null, now: RestartNow, y
   return 'arm';
 }
 
-export function armMessage(title: string): string {
+function armMessage(title: string): string {
   return `[RESTART] This reloads "${title}" and drops its progress. Run restart-level again, or restart-level --yes, to confirm.\n`;
+}
+
+/** Shared two-step `restart-level` command handler used by both Classic and Chapter shells. */
+export function executeRestartCommand(
+  pending: RestartPending | null,
+  now: RestartNow,
+  args: string[],
+  title: string,
+  onArm: (nextPending: RestartPending) => void,
+  onConfirm: () => Step,
+): Step {
+  const parsed = parseRestartArgs(args);
+  if ('error' in parsed) return empty(2, parsed.error);
+  if (decideRestart(pending, now, parsed.yes) === 'arm') {
+    onArm({ armedAtCommand: now.commands, armedAtTick: now.ticks });
+    return out(armMessage(title));
+  }
+  return onConfirm();
 }
 
 /**

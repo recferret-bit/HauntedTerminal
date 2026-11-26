@@ -8,17 +8,6 @@ export type BattleAgent = 'clod' | 'gork' | 'codec' | 'antigravy';
 /** Who is acting in a battle: nobody (`idle`), the intro, the player, or the enemies. */
 export type BattlePhase = 'idle' | 'intro' | 'player' | 'enemy';
 
-export type SpriteArchetype =
-  | 'room_panel'
-  | 'locked_gate'
-  | 'poltergeist'
-  | 'gargoyle'
-  | 'crate_bridge'
-  | 'mirror_door'
-  | 'black_hole'
-  | 'socket_guardian'
-  | 'item_scroll';
-
 export type BubbleStyle =
   | 'COMIX_CLASSIC'
   | 'JAGGED_SCREAM'

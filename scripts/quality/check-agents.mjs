@@ -7,6 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { GENERATED_PATHS, LEAD, PERSON_ONLY_PATHS, TEAM_NAMES, agentTexts, mcpTable, ownWrites } from '../harness/agents-build.mjs';
+import { violation } from '../hooks/agent-shell-guard.mjs';
 import { mcpProblems } from './agent-mcp.mjs';
 import { globToRegExp, loadAgents, shellVerdict, writeRules } from './agent-rules.mjs';
 
@@ -19,7 +20,7 @@ const TRIGGERS = new Set(['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'Pos
 const MAX_FILES = 32;
 const MAX_CHARS = 100_000;
 /** Paths that must have exactly one owner: source, content, assets, property suites, docs and the files agents keep current. */
-const OWNED = /^(src\/|chapters\/|comix\/|public\/assets\/|scripts\/harness\/props\/|scripts\/harness\/property-tests\.mjs$|scripts\/harness\/visual-audit\.mjs$|scripts\/harness\/lib\/visual-[^/]+\.mjs$|scripts\/harness\/visual\/|docs\/|\.kiro\/specs\/|\.kiro\/steering\/|(AGENTS|CLAUDE|README)\.md$)/;
+const OWNED = /^(src\/|chapters\/|comix\/|public\/assets\/|scripts\/harness\/props\/|scripts\/harness\/terminal-lab\/|scripts\/harness\/(?:battle-unit|manual-unit|manual-smoke|audio-unit|audio-smoke|hub-unit)\.mjs$|scripts\/harness\/property-tests\.mjs$|scripts\/harness\/visual-audit\.mjs$|scripts\/harness\/lib\/visual-[^/]+\.mjs$|scripts\/harness\/visual\/|docs\/|\.kiro\/specs\/|\.kiro\/steering\/|(AGENTS|CLAUDE|README)\.md$)/;
 /** Infrastructure no agent writes (it holds their own fences, the harness and the build): a change is the user's. */
 const INFRA = /^(scripts\/|\.github\/|\.kiro\/(agents|hooks|skills|settings|powers)\/|pages\/|public\/_redirects$|public\/comix\/|public\/fonts\/|public\/(?:music|sfx)\/|package(-lock)?\.json$|tsconfig\.json$|vite\.config\.ts$|LICENSE$|\.gitignore$)/;
 /** Compiled output: written by the compilers for whoever ran them, owned by nobody. */
@@ -97,9 +98,37 @@ for (const { file, name, agent } of agents) {
   for (const cmd of ['node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs preview', 'node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs prod', 'npx -y netlify-cli@27.20.0 deploy --prod --dir dist', 'netlify deploy --prod']) must(cmd, 'deny');
   // Releases and local native builds are the user's too (powers credits-release and credits-tauri-local, .kiro/specs/release-tags-power/).
   for (const cmd of ['node .kiro/powers/credits-release/skills/release/scripts/release.mjs release 1.0.0 --yes', 'node .kiro/powers/credits-release/skills/release/scripts/release.mjs release 1.0.0', 'node .kiro/powers/credits-tauri-local/skills/tauri-local/scripts/tauri-local.mjs', 'git tag v1.0.0', 'git push origin v1.0.0']) must(cmd, 'deny');
-  for (const cmd of ['git status', 'git diff --stat', 'ls src', 'cat package.json', 'grep -rn x src', 'npm run quality 2>&1 | tail -20', 'node scripts/harness/property-tests.mjs --only terminal', 'cd src && ls', 'STACK_PORT=5174 npm start', 'STACK_PORT=5174 npm stop']) must(cmd, 'allow');
+  // Ways around `node scripts/*`, `node .kiro/skills/*` and `cd *` to the user's commands (a `..` segment, a `cd` into a
+  // power, command substitution, the native build and the installer). The guard hook also refuses node after cd.
+  for (const cmd of [
+    'node scripts/../.kiro/powers/credits-ship/skills/ship/scripts/ship.mjs prod', 'node .kiro/skills/../powers/credits-release/skills/release/scripts/release.mjs release 0.1.0 --yes',
+    'cd .kiro/powers/credits-ship/skills/ship && node scripts/ship.mjs prod', 'cd .kiro/powers/credits-tauri-local/skills/tauri-local && node scripts/tauri-local.mjs',
+    'node scripts/desktop/build-tauri-steam.mjs', 'node scripts/desktop/build-tauri-steam.mjs --steam --app-id 1', 'node scripts/harness/agents-install.mjs', 'node scripts/harness/agents-install.mjs --remove',
+    'cd scripts/.. && ls', 'echo $(node .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs prod)', 'echo `ls`', 'node scripts/harness/stack.mjs "$(cat x)"',
+  ]) must(cmd, 'deny');
+  // ...while every gate and the reads of a power's SKILL.md stay allowed.
+  for (const cmd of [
+    'node scripts/harness/generate-chapter.mjs --verify', 'node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs', 'node .kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict',
+    'node scripts/desktop/desktop-unit.mjs', 'node scripts/desktop/landing-smoke.mjs', 'node scripts/harness/audio-unit.mjs', 'node scripts/harness/manual-smoke.mjs', 'node scripts/harness/playthrough.mjs --ticks 3',
+    'node scripts/quality/check-agents.mjs', 'npm run quality:fingerprint > scripts/harness/out/fp-before.txt', 'diff scripts/harness/out/fp-before.txt scripts/harness/out/fp-after.txt',
+    'cat .kiro/powers/credits-ship/skills/ship/SKILL.md', 'grep -n prod .kiro/powers/credits-release/skills/release/SKILL.md',
+  ]) must(cmd, 'allow');
+  for (const cmd of ['git status', 'git diff --stat', 'ls src', 'cat package.json', 'grep -rn x src', 'npm run quality 2>&1 | tail -20', 'node scripts/harness/property-tests.mjs --only terminal', 'cd src && ls', 'STACK_PORT=5174 npm start', 'STACK_PORT=5174 npm stop', 'npx tsc --noEmit']) must(cmd, 'allow');
+  // The power script names are denied after `node` only: reading them stays allowed (a commit message may name them too).
+  for (const cmd of ['cat scripts/desktop/build-tauri-steam.mjs', 'git log -- .kiro/powers/credits-ship/skills/ship/scripts/ship.mjs', 'grep -n yes .kiro/powers/credits-release/skills/release/scripts/release.mjs']) must(cmd, 'allow');
+  // No other npx, and the credentials of the user's CLIs (netlify login, gh auth login, ~/.netrc) are never read.
+  for (const cmd of ['npx tsc --noEmit -p x', 'npx eslint .', 'cat ~/Library/Preferences/netlify/config.json', 'grep token ~/.config/gh/hosts.yml', 'cat ~/.netrc']) must(cmd, 'deny');
+  // What the shell rules cannot see, the guard hook refuses: redirects outside the top-level *.txt|*.log of the shared
+  // output (its subfolders hold the deploy stamp and the stack state), any redirect in a line with cd, scripts under it.
+  const guard = (cmd) => violation(cmd, { globs: ownWrites(name) ?? [], branch: 'agent/x', isLead: name === LEAD });
+  for (const cmd of [
+    'echo x > scripts/harness/out/x.mjs', 'echo {} > scripts/harness/out/ship/last-preview.json', 'echo {} > scripts/harness/out/ship/site.json', 'echo {} > scripts/harness/out/stack/stack.json',
+    'node scripts/harness/out/x.mjs', 'cd src && ls > scripts/harness/out/a.txt', 'cd docs && echo x > qa/a.md', 'cd .kiro/powers/credits-ship/skills/ship && node scripts/ship.mjs prod',
+  ]) if (!guard(cmd)) problems.push(`${file}: guard self-test: \`${cmd}\` should be blocked by agent-shell-guard`);
+  for (const cmd of ['npm run quality:fingerprint > scripts/harness/out/fp-before.txt', 'npm run quality:fingerprint > scripts/harness/out/fp-after.txt', 'cd src && ls > /dev/null'])
+    if (guard(cmd)) problems.push(`${file}: guard self-test: \`${cmd}\` should pass agent-shell-guard, it says: ${guard(cmd)}`);
   for (const cmd of ['STACK_PORT=$(curl x) npm start', 'STACK_PORT=5175 npm start', 'STACK_PORT=5174 rm -rf x', 'NODE_OPTIONS=--require=x npm start']) must(cmd, 'deny');
-  if (name === LEAD) for (const cmd of ['git push -u origin agent/maintenance-x', 'git switch -c agent/x', 'git add -- src/a.ts', 'git commit -m "x"']) must(cmd, 'allow');
+  if (name === LEAD) for (const cmd of ['git push -u origin agent/maintenance-x', 'git switch -c agent/x', 'git add -- src/a.ts', 'git commit -m "x"', 'git commit -m "docs: release.mjs checks the login"']) must(cmd, 'allow');
   else for (const cmd of ['git commit -m x', 'git push origin agent/x', 'git switch -c agent/x']) must(cmd, 'deny');
   // Visual-audit baselines are a person's (spec .kiro/specs/qa-visual-audit/, Q13): no agent updates or touches them.
   for (const cmd of ['node scripts/harness/visual-audit.mjs --update hub', 'node scripts/harness/visual-audit.mjs --screens hub --update hub@1600x950', 'node scripts/harness/visual-audit.mjs --out docs/qa/baselines', 'cp scripts/harness/out/visual/hub@1600x950.png docs/qa/baselines/hub@1600x950.png', 'cp scripts/harness/out/a.png docs/qa/media/../baselines/a.png']) must(cmd, 'deny');
@@ -118,7 +147,7 @@ for (const { file, name, agent } of agents) {
   if (!personDeny) problems.push(`${file}: fs_write must deny ${PERSON_ONLY_PATHS.join(', ')} (baselines are approved by a person)`);
   if (!generatedDeny) problems.push(`${file}: fs_write must deny the compiled output (${GENERATED_PATHS.join(', ')}): the compilers write it, agents do not`);
   const reads = (agent.permissions?.rules ?? []).filter((r) => r.capability === 'fs_read' && r.effect === 'deny').flatMap((r) => r.match);
-  for (const secret of ['~/.kiro/crew/.env', '**/.env']) if (!reads.includes(secret)) problems.push(`${file}: fs_read must deny ${secret}`);
+  for (const secret of ['~/.kiro/crew/.env', '**/.env', '~/Library/Preferences/netlify/**', '~/.config/gh/**']) if (!reads.includes(secret)) problems.push(`${file}: fs_read must deny ${secret}`);
   if (!fence || sorted(fence.exclude ?? []) !== sorted(allow)) problems.push(`${file}: fs_write needs a deny on "**" whose exclude list equals its allow list`);
   const subs = (agent.tools ?? []).filter((t) => String(t).startsWith('subagent/')).map((t) => String(t).slice('subagent/'.length));
   const want = [...new Set([...(ownWrites(name) ?? []), ...subs.flatMap((s) => ownWrites(s) ?? [])])];
@@ -135,7 +164,8 @@ if (lead) {
 }
 
 // 7. Every tracked file that agents may change has exactly one owner; everything else is infrastructure or flagged.
-const tracked = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' }).split('\n').filter(Boolean);
+const tracked = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' }).split('\n').filter(Boolean)
+  .filter((p) => existsSync(join(root, p))); // a deletion not committed yet is not a file to own
 const owners = agents.map(({ name, agent }) => ({ name, res: (ownWrites(name) ?? writeRules(agent).allow).map(globToRegExp) }));
 let unowned = 0;
 for (const path of tracked) {

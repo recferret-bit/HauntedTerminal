@@ -7,70 +7,73 @@ import { findComixByRole, playComix, type ComixRole } from '../cinematic/index.j
 import { mountDevInspector } from '../sandbox/dev-inspector.js';
 import { mountChapterMap } from '../ui/chapter-map.js';
 import { mountCodeEditor } from '../ui/code-editor.js';
-import { mountManualBook } from '../ui/manual-book.js';
 import { mountDialogOrchestrator } from '../ui/dialog-orchestrator.js';
 import { mountHintDialog } from '../ui/hint-dialog.js';
-import { drawPortrait } from '../renderer/portrait.js';
 import { mountHud } from '../ui/hud.js';
+import { mountManualBook } from '../ui/manual-book.js';
+import { drawPortrait } from '../renderer/portrait.js';
 import { powerOff, powerOn } from '../ui/screen.js';
 import { colourise, mountShell } from '../ui/terminal.js';
 import { mountVisualLab } from '../ui/visual-lab.js';
-import { recordExec } from './lab.js';
 import { holdForComix, mountPlayAudio, syncPlayAudio } from './audio-sync.js';
-import { chapterBanner } from './boot.js';
-import { mountPlayMenu, setPlaySkin } from './menu.js';
-import { statsFrom } from './outro.js';
-import { FLOOR_NAMES, STORY, writeSkipPref, type PauseReason, type Play } from './state.js';
+import { routeModalAction } from './events.js';
+import { recordExec } from './lab.js';
+import { mountPlayMenu } from './menu.js';
+import { runOverlay, statsFrom } from './outro.js';
+import { anyModalOpen, chapterBanner, closeOtherModals, FLOOR_NAMES, STORY, writeSkipPref, type Play } from './state.js';
 
 /** Enter during the battle intro skips it; the typed line stays on the prompt and does not run (Req 12). */
 function skipBattleIntroOnEnter(play: Play): boolean {
-  if (play.phase !== 'play' || !isChapterSession(play.session)) return false;
+  if (play.lifecycle.phase() !== 'play' || !isChapterSession(play.session)) return false;
   const res = play.session.skipBattleIntro();
   if (!res) return false;
-  play.applyTick(res);
+  play.events.emit({ kind: 'apply-tick', res });
   return true;
 }
 
 function runShellLine(play: Play, line: string): { output: string; clear?: boolean; stderr?: string } {
-  if (play.phase !== 'play') return { output: '' };
+  if (play.lifecycle.phase() !== 'play') return { output: '' };
   const session = play.session;
   const res = session.exec(line);
   recordExec(play, line, res);
   play.execTaunts = [];
+  let extra: string[];
   try {
-    play.apply(res.events, res.snapshot, res.output);
+    play.events.emit({ kind: 'apply-events', events: res.events, snap: res.snapshot, printed: res.output });
     if (isChapterSession(session) && play.codeEditor) {
       const edReq = session.consumeEditorRequest();
       if (edReq) {
-        // The battle turn timer waits while he writes code (turn-based-battles Req 17).
         session.holdTurnTimer('editor', true);
         play.codeEditor.open(edReq);
         play.session.bus?.emit({ kind: 'menu', action: 'open' });
       }
     }
     const skinReq = session.consumeSkinRequest?.();
-    if (skinReq) setPlaySkin(play, skinReq);
+    if (skinReq) play.events.emit({ kind: 'skin-change', id: skinReq });
     const manualReq = session.consumeManualRequest?.();
-    if (manualReq !== null && manualReq !== undefined && !play.terminalLab) openManualModal(play, manualReq);
-    const mapReq = session.consumeMapRequest?.();
-    if (mapReq !== null && mapReq !== undefined && !play.terminalLab) openChapterMap(play, mapReq);
-  } finally {
-    const extra = play.execTaunts ?? [];
-    play.execTaunts = null;
-    if (extra.length) {
-      const sep = res.output && !res.output.endsWith('\n') ? '\n' : '';
-      // Taunts carry their own colour, so colourise() leaves them alone.
-      return { output: `${res.output}${sep}${extra.join('\n')}\n`, clear: res.clear, stderr: res.stderr };
+    if (manualReq !== null && manualReq !== undefined && !play.terminalLab) {
+      play.events.emit({ kind: 'modal', modal: 'manual', action: 'open', query: manualReq });
     }
+    const mapReq = session.consumeMapRequest?.();
+    if (mapReq !== null && mapReq !== undefined && !play.terminalLab) {
+      play.events.emit({ kind: 'modal', modal: 'map', action: 'open', query: mapReq });
+    }
+  } finally {
+    extra = play.execTaunts ?? [];
+    play.execTaunts = null;
+  }
+  if (extra.length > 0) {
+    const sep = res.output && !res.output.endsWith('\n') ? '\n' : '';
+    return { output: `${res.output}${sep}${extra.join('\n')}\n`, clear: res.clear, stderr: res.stderr };
   }
   return { output: res.output, clear: res.clear, stderr: res.stderr };
 }
 
 function handleNonPausingModalClose(play: Play): void {
-  play.syncPause();
+  play.events.emit({ kind: 'sync-pause' });
   syncPlayAudio(play);
   window.setTimeout(() => {
-    if (play.phase === 'play' && !play.codeEditor?.isOpen() && !play.menu?.isOpen() && !play.hintDialog?.isOpen() && !play.manualBook?.isOpen() && !play.chapterMap?.isOpen()) {
+    if (play.lifecycle.phase() === 'play' && !anyModalOpen(play)) {
       play.shell.focus();
     }
   }, 0);
@@ -98,13 +101,13 @@ export function mountPlayShell(play: Play): void {
         const res = play.session.saveEditableFile(fileName, content);
         play.session.bus?.emit({ kind: 'command', result: res.stderr ? 'fail' : 'ok' });
         if (res.output) play.shell.printAbove(colourise(res.output, res.stderr));
-        play.apply(res.events, res.snapshot, res.output);
+        play.events.emit({ kind: 'apply-events', events: res.events, snap: res.snapshot, printed: res.output });
       },
       onMove: () => play.session.bus?.emit({ kind: 'menu', action: 'move' }),
       onClose: () => {
         play.session.bus?.emit({ kind: 'menu', action: 'close' });
         if (isChapterSession(play.session)) play.session.holdTurnTimer('editor', false);
-        if (play.phase === 'play') window.setTimeout(() => play.shell.focus(), 0);
+        if (play.lifecycle.phase() === 'play') window.setTimeout(() => play.shell.focus(), 0);
       },
       onLayoutChange: () => {
         window.requestAnimationFrame(() => {
@@ -122,7 +125,7 @@ export function mountPlayShell(play: Play): void {
       },
       onSearchDismiss: () => play.session.bus?.emit({ kind: 'menu', action: 'move' }),
       onInsertCommand: (cmd) => {
-        play.manualBook?.close();
+        play.events.emit({ kind: 'modal', modal: 'manual', action: 'close' });
         play.shell.setInput(cmd);
         window.setTimeout(() => play.shell.focus(), 0);
       },
@@ -131,92 +134,63 @@ export function mountPlayShell(play: Play): void {
   }
 }
 
-const HINT_BLOCKERS: readonly PauseReason[] = ['intro', 'card', 'outro', 'ended', 'cinematic', 'reveal'];
-
-function canOpenManual(play: Play): boolean {
-  return (play.phase === 'play' && !play.endingStarted) || play.phase === 'stats';
-}
-
-function canOpenHint(play: Play): boolean {
-  return (
-    play.phase === 'play' &&
-    !play.endingStarted &&
-    !play.dom.statsEl.classList.contains('open') &&
-    !HINT_BLOCKERS.some((r) => play.reasons.has(r))
-  );
-}
-
-export function openHintDialog(play: Play): void {
-  if (!play.hintDialog || !canOpenHint(play)) return;
-  if (play.menu?.isOpen()) play.menu.close();
-  if (play.manualBook?.isOpen()) play.manualBook.close();
-  if (play.chapterMap?.isOpen()) play.chapterMap.close();
+function openHintDialog(play: Play): void {
+  if (!play.hintDialog || !play.lifecycle.canOpenHint(play.dom.statsEl.classList.contains('open'))) return;
+  closeOtherModals(play, 'hint');
   play.hintDialog.open(play.session.snapshot());
 }
 
-function toggleHintDialog(play: Play): void {
-  if (!play.hintDialog) return;
-  if (play.hintDialog.isOpen()) play.hintDialog.close();
-  else openHintDialog(play);
+function openMenuModal(play: Play): void {
+  if (!play.menu) return;
+  const statsOpen = play.dom.statsEl.classList.contains('open');
+  if (!play.lifecycle.canOpenEscMenu(statsOpen) || play.codeEditor?.isOpen()) return;
+  closeOtherModals(play, 'menu');
+  play.menu.open(play.session.snapshot());
 }
 
-export function openManualModal(play: Play, queryOrPage?: string | number): void {
-  if (!play.manualBook || !canOpenManual(play)) return;
-  if (play.menu?.isOpen()) play.menu.close();
-  if (play.hintDialog?.isOpen()) play.hintDialog.close();
-  if (play.chapterMap?.isOpen()) play.chapterMap.close();
+function openManualModal(play: Play, queryOrPage?: string | number): void {
+  if (!play.manualBook || !play.lifecycle.canOpenManualOrMap()) return;
+  closeOtherModals(play, 'manual');
   play.manualBook.open(queryOrPage);
-  play.syncPause();
+  play.events.emit({ kind: 'sync-pause' });
   syncPlayAudio(play);
 }
 
-function toggleManualModal(play: Play): void {
-  if (!canOpenManual(play)) return;
-  if (play.manualBook?.isOpen()) {
-    play.manualBook.close();
-    syncPlayAudio(play);
-  } else openManualModal(play);
+function closeManualModal(play: Play): void {
+  if (!play.manualBook?.isOpen()) return;
+  play.manualBook.close();
+  syncPlayAudio(play);
 }
 
-export function openChapterMap(play: Play, queryOrIndex?: string | number): void {
-  if (!play.chapterMap || !canOpenManual(play)) return;
-  if (play.menu?.isOpen()) play.menu.close();
-  if (play.hintDialog?.isOpen()) play.hintDialog.close();
-  if (play.manualBook?.isOpen()) play.manualBook.close();
+function openChapterMap(play: Play, queryOrIndex?: string | number): void {
+  if (!play.chapterMap || !play.lifecycle.canOpenManualOrMap()) return;
+  closeOtherModals(play, 'map');
   play.chapterMap.open(queryOrIndex);
-  play.syncPause();
+  play.events.emit({ kind: 'sync-pause' });
   syncPlayAudio(play);
 }
 
-function toggleChapterMap(play: Play): void {
-  if (!canOpenManual(play)) return;
-  if (play.chapterMap?.isOpen()) {
-    play.chapterMap.close();
-    syncPlayAudio(play);
-  } else openChapterMap(play);
+function closeChapterMap(play: Play): void {
+  if (!play.chapterMap?.isOpen()) return;
+  play.chapterMap.close();
+  syncPlayAudio(play);
 }
 
 function playAgain(play: Play, skip: boolean): void {
-  if (play.phase !== 'stats') return;
+  if (play.lifecycle.phase() !== 'stats') return;
   play.skipIntroPref = skip;
   writeSkipPref(skip);
   play.hud?.hideStats();
   window.clearTimeout(play.cardTimer);
   play.stashedFloorCard = null;
-  play.reasons.delete('card');
-  play.reasons.delete('reveal');
-  play.reasons.delete('outro');
-  play.reasons.delete('ended');
-  play.reasons.add('intro');
-  play.phase = 'intro';
-  play.endingStarted = false;
+  play.lifecycle.resetForPlayAgain();
   const res = play.session.restart({ intro: true });
   play.activeBanner = isChapterSession(play.session)
     ? chapterBanner(play.session, getChapterPack(play.session.chapterId)?.manifest)
     : STORY;
   play.shell.reset();
-  play.apply(res.events, res.snapshot);
-  void play.startRun();
+  play.events.emit({ kind: 'apply-events', events: res.events, snap: res.snapshot });
+  play.events.emit({ kind: 'run-start' });
 }
 
 export function mountPlayHud(play: Play): void {
@@ -230,7 +204,7 @@ export function mountPlayHud(play: Play): void {
     onClose: (returnFocus) => {
       play.session.bus?.emit({ kind: 'menu', action: 'move' });
       window.setTimeout(() => {
-        if (play.menu?.isOpen() || play.manualBook?.isOpen() || play.hintDialog?.isOpen() || play.chapterMap?.isOpen()) return;
+        if (anyModalOpen(play, ['editor'])) return;
         if (play.codeEditor?.isOpen()) {
           const editorTarget = returnFocus?.isConnected && returnFocus.closest('#code-editor-pane')
             ? returnFocus
@@ -238,7 +212,7 @@ export function mountPlayHud(play: Play): void {
           editorTarget?.focus({ preventScroll: true });
           return;
         }
-        if (play.phase === 'play') play.shell.focus();
+        if (play.lifecycle.phase() === 'play') play.shell.focus();
       }, 0);
     },
   });
@@ -256,7 +230,7 @@ export function mountPlayHud(play: Play): void {
         play.levelEntryCommands = arr.snapshot.commands;
         const printed = [res.output, arr.output].filter(Boolean).join('');
         if (printed) play.shell.printAbove(colourise(printed, arr.stderr ?? res.stderr));
-        play.apply([...res.events, ...arr.events], arr.snapshot, printed);
+        play.events.emit({ kind: 'apply-events', events: [...res.events, ...arr.events], snap: arr.snapshot, printed });
         const params = new URLSearchParams(location.search);
         const nextUrl = buildPlayUrl(play.session.chapterId, level.id, true, {
           chaos: params.get('chaos') === '1',
@@ -265,7 +239,7 @@ export function mountPlayHud(play: Play): void {
         });
         window.history.replaceState(null, '', nextUrl);
         window.setTimeout(() => {
-          if (play.phase === 'play') play.shell.focus();
+          if (play.lifecycle.phase() === 'play') play.shell.focus();
         }, 0);
       } else {
         window.location.assign(buildPlayUrl(chapterId, level.id, true));
@@ -276,14 +250,38 @@ export function mountPlayHud(play: Play): void {
   play.hud = mountHud(play.dom.hudEl, play.dom.stageWrap, play.dom.statsEl, {
     drawPortrait,
     maxFloors: chapter ? chapter.getLevels().length : 5,
-    onHint: () => toggleHintDialog(play),
-    onMap: () => toggleChapterMap(play),
-    onPlayAgain: (skip) => playAgain(play, skip),
+    onHint: () => play.events.emit({ kind: 'modal', modal: 'hint', action: 'toggle' }),
+    onMap: () => play.events.emit({ kind: 'modal', modal: 'map', action: 'toggle' }),
+    onPlayAgain: (skip) => play.events.emit({ kind: 'play-again', skipIntro: skip }),
   });
-  play.paint(play.session.snapshot());
+  play.events.emit({ kind: 'paint', snap: play.session.snapshot() });
 }
 
 export function bindPlayInput(play: Play): void {
+  const modalTarget = {
+    openManual: (q?: string | number) => openManualModal(play, q),
+    closeManual: () => closeManualModal(play),
+    isManualOpen: () => Boolean(play.manualBook?.isOpen()),
+    openMap: (q?: string | number) => openChapterMap(play, q),
+    closeMap: () => closeChapterMap(play),
+    isMapOpen: () => Boolean(play.chapterMap?.isOpen()),
+    openHint: () => openHintDialog(play),
+    closeHint: () => play.hintDialog?.close(),
+    isHintOpen: () => Boolean(play.hintDialog?.isOpen()),
+    openMenu: () => openMenuModal(play),
+    closeMenu: () => play.menu?.close(),
+    isMenuOpen: () => Boolean(play.menu?.isOpen()),
+  };
+  play.events.subscribe((ev) => {
+    if (ev.kind === 'session-swapped') {
+      mountPlayHud(play);
+    } else if (ev.kind === 'play-again') {
+      playAgain(play, ev.skipIntro);
+    } else if (ev.kind === 'modal') {
+      routeModalAction(modalTarget, ev);
+    }
+  });
+
   play.lab = mountVisualLab({
     setPixel: (on, params) => {
       play.stage.pixelOn = on;
@@ -306,16 +304,16 @@ export function bindPlayInput(play: Play): void {
     play.session.bus?.emit({ kind: 'menu', action: 'move' });
   };
   play.dom.toggleBtn.onclick = toggleInspector;
-  play.dom.manualBtnEl?.addEventListener('click', () => toggleManualModal(play));
+  play.dom.manualBtnEl?.addEventListener('click', () => play.events.emit({ kind: 'modal', modal: 'manual', action: 'toggle' }));
   window.addEventListener('keydown', (e) => {
     if (e.key === 'F1' || e.key === 'F2' || e.key === 'F3' || e.key === 'F8' || e.key === 'F9' || e.key === 'F10') {
       e.preventDefault();
       e.stopPropagation();
       if (e.repeat) return;
     }
-    if (e.key === 'F1') toggleManualModal(play);
+    if (e.key === 'F1') play.events.emit({ kind: 'modal', modal: 'manual', action: 'toggle' });
     else if (e.key === 'F2') toggleInspector();
-    else if (e.key === 'F3') toggleChapterMap(play);
+    else if (e.key === 'F3') play.events.emit({ kind: 'modal', modal: 'map', action: 'toggle' });
     else if (e.key === 'F8') {
       play.lab.toggle();
       play.session.bus?.emit({ kind: 'menu', action: 'move' });
@@ -339,51 +337,50 @@ export function bindPlayInput(play: Play): void {
   window.addEventListener('resize', refit);
   new ResizeObserver(refit).observe(play.dom.termEl);
 
-  // A clicked HUD / dev-panel button takes keyboard focus; hand it back to the shell so typing keeps working.
   document.addEventListener('click', (e) => {
     const el = e.target as Element | null;
     if (!el?.closest('button, .item-slot.clickable') || el.closest('#outro, #cinematic, #code-editor-pane, #manual-book-modal, #esc-menu, #hint-dialog, #hud-hint, #chapter-map-dialog, #hud-map, .item-slot.item-map')) return;
-    if (play.phase === 'play' && !play.codeEditor?.isOpen() && !play.menu?.isOpen() && !play.manualBook?.isOpen() && !play.hintDialog?.isOpen() && !play.chapterMap?.isOpen()) {
+    if (play.lifecycle.phase() === 'play' && !anyModalOpen(play)) {
       window.setTimeout(() => play.shell.focus(), 0);
     }
   });
 
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) play.reasons.add('hidden');
-    else play.reasons.delete('hidden');
-    play.syncPause();
+    if (document.hidden) play.lifecycle.addReason('hidden');
+    else play.lifecycle.deleteReason('hidden');
+    play.events.emit({ kind: 'sync-pause' });
   });
   mountPlayMenu(play);
 }
 
 async function devCinematic(play: Play, role: ComixRole): Promise<void> {
-  if (play.phase !== 'play' || play.reasons.has('cinematic')) return;
+  if (play.lifecycle.phase() !== 'play' || play.lifecycle.hasReason('cinematic')) return;
   const seq = findComixByRole(role);
   if (!seq) return;
-  play.reasons.add('cinematic');
-  play.syncPause();
+  play.lifecycle.addReason('cinematic');
+  play.events.emit({ kind: 'sync-pause' });
   const muted = play.session.snapshot().muted;
   if (role === 'ending') await powerOff();
   const stats = role === 'ending' ? statsFrom(play.session.snapshot()) : undefined;
-  await play.runCinematic(() => {
+  await runOverlay(play, () => {
     holdForComix(play, role);
     return playComix(seq.id, play.dom.cineEl, { muted, bus: play.session.bus }, stats);
   });
   syncPlayAudio(play);
   await powerOn(true);
-  play.reasons.delete('cinematic');
-  play.syncPause();
+  play.lifecycle.deleteReason('cinematic');
+  play.events.emit({ kind: 'sync-pause' });
 }
 
-export function emitKernelEvent(play: Play, ev: KernelEvent): void {
-  play.apply([ev], play.session.snapshot());
+function emitKernelEvent(play: Play, ev: KernelEvent): void {
+  play.events.emit({ kind: 'apply-events', events: [ev], snap: play.session.snapshot() });
   if (play.session.bus) publishKernel(play.session.bus, [ev]);
 }
 
 export function mountPlayDev(play: Play): void {
   mountDevInspector(play.dom.inspectorEl, play.stage, {
     onTeleport: (floor) => {
-      if (play.phase !== 'play') return;
+      if (play.lifecycle.phase() !== 'play') return;
       const res = play.session.debugTeleport(floor as 1 | 2 | 3 | 4 | 5);
       play.shell.printAbove(res.output);
       const entered = res.events.some((e) => e.type === 'FLOOR_ENTERED');
@@ -391,15 +388,15 @@ export function mountPlayDev(play: Play): void {
       const events = entered
         ? res.events
         : [...res.events, { type: 'FLOOR_ENTERED' as const, floorId: snap.floor, title: FLOOR_NAMES[snap.floor] ?? '', path: snap.cwd }];
-      play.apply(events, snap);
+      play.events.emit({ kind: 'apply-events', events, snap });
     },
     onHeal: () => {
-      play.paint(play.session.debugHeal());
+      play.events.emit({ kind: 'paint', snap: play.session.debugHeal() });
       play.shell.printAbove('\x1b[32mHP restored.\x1b[0m');
     },
     onDamage: (amount = 10) => {
       const res = play.session.debugDamage(amount);
-      play.apply(res.events, res.snapshot);
+      play.events.emit({ kind: 'apply-events', events: res.events, snap: res.snapshot });
       play.shell.printAbove(`\x1b[31m-${amount} HP (dev panel).\x1b[0m`);
     },
     onGive: (item) => {
@@ -407,16 +404,16 @@ export function mountPlayDev(play: Play): void {
       const r = play.debugGive(item);
       if ('snapshot' in r) {
         if (r.output) play.shell.printAbove(r.output);
-        play.apply(r.events, r.snapshot);
-      } else play.paint(r);
+        play.events.emit({ kind: 'apply-events', events: r.events, snap: r.snapshot });
+      } else play.events.emit({ kind: 'paint', snap: r });
     },
     onDialogue: () => {
-      if (play.phase === 'play') void play.shell.submit('cat intercom.sock');
+      if (play.lifecycle.phase() === 'play') void play.shell.submit('cat intercom.sock');
     },
     onTerminalLog: (msg) => play.shell.printAbove(msg),
     onPlayIntro: () => void devCinematic(play, 'opening'),
     onPlayOutro: () => void devCinematic(play, 'ending'),
-    onAssetsReloaded: () => play.paint(play.session.snapshot()),
+    onAssetsReloaded: () => play.events.emit({ kind: 'paint', snap: play.session.snapshot() }),
     emit: (ev) => emitKernelEvent(play, ev),
   });
 }

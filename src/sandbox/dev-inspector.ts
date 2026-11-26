@@ -1,5 +1,6 @@
 import type { KernelEvent } from '../contracts/events.js';
 import type { ComicStage } from '../renderer/comic-stage.js';
+import { dom } from '../ui/dom-lite.js';
 
 export interface InspectorActions {
   onTeleport(floor: number): void;
@@ -17,81 +18,68 @@ export interface InspectorActions {
   onGive?: (item: 'energy' | 'ram' | 'ssd') => void;
 }
 
-function inspectorMarkup(stage: ComicStage, give: InspectorActions['onGive']): string {
-  const statuses = stage.registry.listStatuses();
-  return `
-      <div class="insp-section">
-        <h3>F2 // FLOORS</h3>
-        <div class="btn-grid">
-          <button class="insp-btn" data-floor="1">1: Attic</button>
-          <button class="insp-btn" data-floor="2">2: Crypt</button>
-          <button class="insp-btn" data-floor="3">3: Symlinks</button>
-          <button class="insp-btn" data-floor="4">4: Boiler</button>
-          <button class="insp-btn" data-floor="5">5: Kernel</button>
-          <button class="insp-btn" id="btn-heal">Heal HP</button>
-          <button class="insp-btn" id="btn-damage">+10 DMG</button>
-          <button class="insp-btn" id="btn-lightning">Intro flash</button>
-          <button class="insp-btn" id="btn-hitboxes">Hitboxes: ${stage.config.showHitboxes ? 'ON' : 'OFF'}</button>
-          <button class="insp-btn" id="btn-hot-reload-top">Hot-Reload Assets</button>
-        </div>
-      </div>
-      <div class="insp-section">
-        <h3>PICKUPS</h3>
-        <div class="btn-grid three">
-          <button class="insp-btn" data-give="energy" ${give ? '' : 'disabled'}>+ Energy</button>
-          <button class="insp-btn" data-give="ram" ${give ? '' : 'disabled'}>+16 GB RAM</button>
-          <button class="insp-btn" data-give="ssd" ${give ? '' : 'disabled'}>+256 GB SSD</button>
-        </div>
-        ${give ? '' : '<p class="insp-note">Session has no debugGive() yet: pickups can only be collected in game.</p>'}
-      </div>
-      <div class="insp-section">
-        <h3>CINEMATICS</h3>
-        <div class="btn-grid">
-          <button class="insp-btn" id="btn-intro">Play intro</button>
-          <button class="insp-btn" id="btn-outro">Play outro</button>
-        </div>
-      </div>
-      <div class="insp-section">
-        <h3>KERNEL EVENTS</h3>
-        <div class="btn-grid">
-          <button class="insp-btn" data-ev="lantern">ls -la</button>
-          <button class="insp-btn" data-ev="hop">cd hop</button>
-          <button class="insp-btn" data-ev="smash3">cd ../../../</button>
-          <button class="insp-btn" data-ev="eloop">ELOOP flood</button>
-          <button class="insp-btn" data-ev="denied">Rattle 000</button>
-          <button class="insp-btn" data-ev="chmod_open">chmod +rx</button>
-          <button class="insp-btn" data-ev="petrify">chmod -x</button>
-          <button class="insp-btn" data-ev="bridge">mv bridge</button>
-          <button class="insp-btn" data-ev="null_sink">/dev/null</button>
-          <button class="insp-btn" data-ev="hand_fork">System Hand</button>
-          <button class="insp-btn" data-ev="dialogue">Socket bubble</button>
-          <button class="insp-btn" data-ev="xray">ps/top X-Ray</button>
-          <button class="insp-btn" data-ev="freeze">kill -STOP</button>
-          <button class="insp-btn" data-ev="kill9">kill -9</button>
-          <button class="insp-btn" data-ev="damage">Player hit</button>
-          <button class="insp-btn" data-ev="clear">Floor clear</button>
-        </div>
-      </div>
-      <div class="insp-section">
-        <h3>STAGE</h3>
-        <div class="slider-row">
-          <span>Shake (${stage.config.shakeIntensity})</span>
-          <input type="range" min="0" max="28" value="${stage.config.shakeIntensity}" id="sl-shake" />
-        </div>
-        <div class="slider-row">
-          <span>Tween ms (${stage.config.transitionMs})</span>
-          <input type="range" min="140" max="1000" step="20" value="${stage.config.transitionMs}" id="sl-ms" />
-        </div>
-      </div>
-      <div class="insp-section">
-        <h3>ALBEDO</h3>
-        ${statuses
-          .map(
-            (s) => `<div class="asset-badge"><span>${s.key}</span><span class="${s.source === 'PNG' ? 'tag-png' : 'tag-proc'}">[${s.source}]</span></div>`,
-          )
-          .join('')}
-      </div>
-    `;
+function inspSection(title: string, children: ReadonlyArray<HTMLElement>): HTMLElement {
+  return dom('div', { class: 'insp-section' }, [dom('h3', {}, [title]), ...children]);
+}
+
+function buildInspectorNodes(stage: ComicStage, give: InspectorActions['onGive']): HTMLElement[] {
+  const floors: Array<[string, string]> = [
+    ['1', '1: Attic'], ['2', '2: Crypt'], ['3', '3: Symlinks'], ['4', '4: Boiler'], ['5', '5: Kernel'],
+  ];
+  const floorBtns = floors.map(([f, label]) => dom('button', { class: 'insp-btn', 'data-floor': f }, [label]));
+  floorBtns.push(
+    dom('button', { class: 'insp-btn', id: 'btn-heal' }, ['Heal HP']),
+    dom('button', { class: 'insp-btn', id: 'btn-damage' }, ['+10 DMG']),
+    dom('button', { class: 'insp-btn', id: 'btn-lightning' }, ['Intro flash']),
+    dom('button', { class: 'insp-btn', id: 'btn-hitboxes' }, [`Hitboxes: ${stage.config.showHitboxes ? 'ON' : 'OFF'}`]),
+    dom('button', { class: 'insp-btn', id: 'btn-hot-reload-top' }, ['Hot-Reload Assets']),
+  );
+
+  const pickups: Array<[string, string]> = [['energy', '+ Energy'], ['ram', '+16 GB RAM'], ['ssd', '+256 GB SSD']];
+  const pickupRow = dom('div', { class: 'btn-grid three' }, pickups.map(([k, label]) =>
+    dom('button', { class: 'insp-btn', 'data-give': k, disabled: !give }, [label]),
+  ));
+  const pickupChildren: HTMLElement[] = give
+    ? [pickupRow]
+    : [pickupRow, dom('p', { class: 'insp-note' }, ['Session has no debugGive() yet: pickups can only be collected in game.'])];
+
+  const evs: Array<[string, string]> = [
+    ['lantern', 'ls -la'], ['hop', 'cd hop'], ['smash3', 'cd ../../../'], ['eloop', 'ELOOP flood'],
+    ['denied', 'Rattle 000'], ['chmod_open', 'chmod +rx'], ['petrify', 'chmod -x'], ['bridge', 'mv bridge'],
+    ['null_sink', '/dev/null'], ['hand_fork', 'System Hand'], ['dialogue', 'Socket bubble'], ['xray', 'ps/top X-Ray'],
+    ['freeze', 'kill -STOP'], ['kill9', 'kill -9'], ['damage', 'Player hit'], ['clear', 'Floor clear'],
+  ];
+  const statuses = stage.registry.listStatuses().map((s) =>
+    dom('div', { class: 'asset-badge' }, [
+      dom('span', {}, [s.key]),
+      dom('span', { class: s.source === 'PNG' ? 'tag-png' : 'tag-proc' }, [`[${s.source}]`]),
+    ]),
+  );
+
+  return [
+    inspSection('F2 // FLOORS', [dom('div', { class: 'btn-grid' }, floorBtns)]),
+    inspSection('PICKUPS', pickupChildren),
+    inspSection('CINEMATICS', [
+      dom('div', { class: 'btn-grid' }, [
+        dom('button', { class: 'insp-btn', id: 'btn-intro' }, ['Play intro']),
+        dom('button', { class: 'insp-btn', id: 'btn-outro' }, ['Play outro']),
+      ]),
+    ]),
+    inspSection('KERNEL EVENTS', [
+      dom('div', { class: 'btn-grid' }, evs.map(([k, label]) => dom('button', { class: 'insp-btn', 'data-ev': k }, [label]))),
+    ]),
+    inspSection('STAGE', [
+      dom('div', { class: 'slider-row' }, [
+        dom('span', {}, [`Shake (${stage.config.shakeIntensity})`]),
+        dom('input', { type: 'range', min: 0, max: 28, value: stage.config.shakeIntensity, id: 'sl-shake' }),
+      ]),
+      dom('div', { class: 'slider-row' }, [
+        dom('span', {}, [`Tween ms (${stage.config.transitionMs})`]),
+        dom('input', { type: 'range', min: 140, max: 1000, step: 20, value: stage.config.transitionMs, id: 'sl-ms' }),
+      ]),
+    ]),
+    inspSection('ALBEDO', statuses),
+  ];
 }
 
 function debugEvent(kind: string): KernelEvent | 'dialogue' | null {
@@ -204,7 +192,7 @@ export function mountDevInspector(
   const give = actions.onGive;
   const fire = actions.emit ?? ((ev: KernelEvent) => stage.handleEvent(ev));
   const render = (): void => {
-    container.innerHTML = inspectorMarkup(stage, give);
+    container.replaceChildren(...buildInspectorNodes(stage, give));
     wireInspector(container, stage, actions, give, fire, render);
   };
   render();

@@ -1,11 +1,9 @@
 import type { KernelEvent } from '../contracts/events.js';
-import { SSD_PER_BACKUP, maxHpFor } from '../game/bestiary.js';
 import { absPath, lookup, type VNode } from '../game/tree.js';
 import { levelScript } from './script.js';
 import type { WinRule } from './types.js';
 import { validateCartJs, validateDockerCompose, validateDockerfile, validateStorefrontHtmlCss } from './validators.js';
 import { splitParentAndName, type ChapterState } from './session-state.js';
-import { rebootLevel } from './session-level.js';
 
 export function getChecklist(g: ChapterState): Array<{ description: string; done: boolean }> {
     return g.rt.spec.winRules.map((rule) => ({
@@ -187,42 +185,3 @@ export function sinkIntoNull(g: ChapterState, events: KernelEvent[], inodeId: nu
   refreshExitGates(g, events);
 }
 
-/**
- * Applies damage. A death sets `g.deathText` and returns ''. `exec` and `internalTick` (session-flow.ts) append
- * `g.deathText` once to stdout and stderr, so callers must not embed it themselves.
- */
-export function hurt(g: ChapterState, amount: number, source: string, events: KernelEvent[]): string {
-    if (g.rt.spec.mechanic === 'hub' || levelScript(g).safe || amount <= 0) {
-      return '';
-    }
-    const { amount: mitigated } = g.kiro.mitigateDamage(amount);
-    if (g.lab) {
-      g.rt.lab.absorbed[source] = (g.rt.lab.absorbed[source] ?? 0) + mitigated;
-      return '';
-    }
-    g.hp = Math.max(0, g.hp - mitigated);
-    events.push({
-      type: 'PLAYER_DAMAGED',
-      amount: mitigated,
-      hpRemaining: g.hp,
-      sourceName: source,
-    });
-
-    if (g.hp > 0) return '';
-
-    g.deaths += 1;
-    g.rt.levelDeaths += 1;
-    g.deadNow = true;
-    if (g.ssd >= SSD_PER_BACKUP) {
-      g.ssd -= SSD_PER_BACKUP;
-      g.hp = Math.ceil(maxHpFor(g.ram) * 0.6);
-      events.push({ type: 'PLAYER_RESPAWNED', from: 'ssd_backup', hp: g.hp });
-      g.deathText = `\n[SSD SNAPSHOT RESTORED] ${source} crashed your shell, but your 256GB NVMe backup restored you in place!\n`;
-      return '';
-    }
-
-    const arrival = rebootLevel(g, events);
-    events.push({ type: 'PLAYER_RESPAWNED', from: 'floor_restart', hp: g.hp });
-    g.deathText = `\n[KERNEL PANIC] ${source} wiped your session! Rebooted at ${g.rt.spec.cwd}.\n${arrival}`;
-    return '';
-  }

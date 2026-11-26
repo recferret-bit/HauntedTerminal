@@ -2,23 +2,17 @@ import { createChapterSession, isChapterSession } from '../chapters/chapter-sess
 import { readDraftPack } from '../chapters/draft.js';
 import { readLabConfig } from '../chapters/lab-config.js';
 import { isLabSession, type LabConfig, type LabInjection } from '../chapters/session-lab-types.js';
-import type { ExecRecord } from '../contracts/exec-record.js';
 import { publishKernel } from '../contracts/app-bus.js';
+import type { ExecRecord } from '../contracts/exec-record.js';
 import { createSession, type Session } from '../game/session.js';
-import type { CommandResult } from '../game/types.js';
+import type { CommandResult, TickResult } from '../game/types.js';
 import { resetScreen } from '../ui/screen.js';
-import { chapterBanner } from './boot.js';
 import { mountPlayAudio, syncPlayAudio } from './audio-sync.js';
-import { mountPlayHud } from './input.js';
-import { FLOOR_NAMES, type DebugGive, type Play, type SkipTutorial } from './state.js';
+import { chapterBanner, FLOOR_NAMES, type DebugGive, type Play, type SkipTutorial } from './state.js';
 
 /** Lines kept for the lab; the lab reads them as they come, so old ones only matter for a late reader. */
 const EXEC_LOG_CAP = 400;
 
-/**
- * `?lab=1` turns a draft run into a Terminal Lab game: the session gets the lab's config (nobody is hurt, manual clock,
- * props, riddles, checks). Without a draft pack it stays a normal game, so the flag alone changes nothing.
- */
 export function labConfigFor(params: URLSearchParams, hasDraft: boolean, packId: string): LabConfig | null {
   return params.get('lab') === '1' && hasDraft ? readLabConfig(packId) : null;
 }
@@ -67,7 +61,6 @@ function swapLabSession(play: Play, packId: string, levelId: string): boolean {
   window.clearTimeout(play.cardTimer);
   play.cardTimer = 0;
   play.stashedFloorCard = null;
-  play.endingStarted = false;
   play.eventLog = [];
   play.execLog = [];
   play.execCount = 0;
@@ -91,12 +84,10 @@ function swapLabSession(play: Play, packId: string, levelId: string): boolean {
     play.dom.mastheadSubEl.textContent = manifest ? `${manifest.badge} // ${manifest.title}` : 'CLASSIC FLOORS';
   }
 
-  mountPlayHud(play);
+  play.events.emit({ kind: 'session-swapped' });
   next.skipIntro();
-  play.phase = 'play';
-  play.reasons.clear();
-  if (document.hidden) play.reasons.add('hidden');
-  play.syncPause();
+  play.lifecycle.resetForLabSwap(document.hidden);
+  play.events.emit({ kind: 'sync-pause' });
   play.shell.reset(play.activeBanner);
 
   const snap = next.snapshot();
@@ -108,15 +99,15 @@ function swapLabSession(play: Play, packId: string, levelId: string): boolean {
       : (FLOOR_NAMES[snap.floor] ?? `Floor ${snap.floor}`),
     path: snap.cwd,
   };
-  play.apply([card], snap);
+  play.events.emit({ kind: 'apply-events', events: [card], snap });
   publishKernel(next.bus, [card]);
   window.clearTimeout(play.cardTimer);
   play.cardTimer = 0;
-  play.reasons.delete('card');
+  play.lifecycle.deleteReason('card');
   if (isChapterSession(next)) {
-    play.applyTick(next.arriveLevel());
+    play.events.emit({ kind: 'apply-tick', res: next.arriveLevel() });
   }
-  play.syncPause();
+  play.events.emit({ kind: 'sync-pause' });
   if (hadFocus) play.shell.focus();
   return true;
 }
@@ -128,8 +119,8 @@ export function exposeLabHooks(play: Play): void {
     if (!isLabSession(play.session)) throw new Error('the active session is not a lab session');
     return play.session;
   };
-  const applied = <T extends Parameters<Play['applyTick']>[0]>(res: T): T => {
-    play.applyTick(res);
+  const applied = (res: TickResult): TickResult => {
+    play.events.emit({ kind: 'apply-tick', res });
     return res;
   };
   const api = {

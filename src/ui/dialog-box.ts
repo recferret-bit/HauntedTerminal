@@ -1,4 +1,15 @@
+import { createStateMachine, type StateMachine, type TransitionTable } from '../contracts/state-machine.js';
 import { el, PORTRAIT_FRAMES, replayClass, type DrawPortrait } from './dom-lite.js';
+
+export type DialogPhase = 'idle' | 'entering' | 'hold' | 'exiting';
+export type DialogTransition = 'START' | 'SETTLE' | 'EXIT' | 'CLOSE';
+
+export const DIALOG_TRANSITIONS: TransitionTable<DialogPhase, DialogTransition> = {
+  idle: { START: 'entering' },
+  entering: { START: 'entering', SETTLE: 'hold', EXIT: 'exiting', CLOSE: 'idle' },
+  hold: { START: 'entering', EXIT: 'exiting', CLOSE: 'idle' },
+  exiting: { START: 'entering', CLOSE: 'idle' },
+};
 
 export type DialogPriority = 'script' | 'prompt' | 'chatter';
 export type DialogMood = 'laugh' | 'order' | 'smug' | 'annoyed';
@@ -58,7 +69,7 @@ export function cleanSpeakerId(speaker: string): string {
   return speaker.replace(/[^a-z0-9_-]/gi, '').toLowerCase() || 'unknown';
 }
 
-export function sideForSpeaker(speaker: string): 'left' | 'right' {
+function sideForSpeaker(speaker: string): 'left' | 'right' {
   return cleanSpeakerId(speaker) === 'vibecoder' ? 'left' : 'right';
 }
 
@@ -80,7 +91,7 @@ interface DialogView {
   current: DialogLine | null;
   currentSide: 'left' | 'right' | null;
   usingHeroDrawer: boolean;
-  phase: 'idle' | 'entering' | 'hold' | 'exiting';
+  phase: StateMachine<DialogPhase, DialogTransition>;
 }
 
 interface HeroDrawerEls {
@@ -139,7 +150,7 @@ function closeView(v: DialogView): void {
   v.current = null;
   v.currentSide = null;
   v.usingHeroDrawer = false;
-  v.phase = 'idle';
+  v.phase.send('CLOSE');
   v.root.classList.remove('open', 'entering', 'exiting');
   v.root.setAttribute('aria-hidden', 'true');
   v.root.style.top = '';
@@ -153,8 +164,7 @@ function beginExit(v: DialogView): void {
   v.enterTimer = 0;
   v.holdTimer = 0;
   v.holdDeadline = 0;
-  if (!v.current || v.phase === 'exiting') return;
-  v.phase = 'exiting';
+  if (!v.current || !v.phase.send('EXIT')) return;
   const target = v.usingHeroDrawer ? findHeroDrawer(v.parent)?.hud ?? v.root : v.root;
   target.classList.remove('entering');
   target.classList.add('exiting');
@@ -221,7 +231,7 @@ function advanceQueue(v: DialogView): void {
   v.current = line;
   v.currentSide = side;
   v.usingHeroDrawer = hero !== null;
-  v.phase = 'entering';
+  v.phase.send('START');
   v.headFrame = 0;
 
   if (hero) showInHeroDrawer(v, hero, line);
@@ -230,7 +240,7 @@ function advanceQueue(v: DialogView): void {
 
   v.enterTimer = globalThis.setTimeout(() => {
     v.enterTimer = 0;
-    if (v.phase === 'entering') v.phase = 'hold';
+    v.phase.send('SETTLE');
     v.root.classList.remove('entering');
     findHeroDrawer(v.parent)?.hud.classList.remove('entering');
   }, ENTER_MS);
@@ -278,7 +288,7 @@ export function mountDialogBox(
     current: null,
     currentSide: null,
     usingHeroDrawer: false,
-    phase: 'idle',
+    phase: createStateMachine({ initial: 'idle', transitions: DIALOG_TRANSITIONS }),
   };
 
   return {
@@ -295,7 +305,7 @@ export function mountDialogBox(
     activeLine: () => v.current,
     activeSide: () => v.currentSide,
     shortenHold(maxRemainingMs) {
-      if (!v.current || v.phase === 'exiting' || v.phase === 'idle') return;
+      if (!v.current || v.phase.state === 'exiting' || v.phase.state === 'idle') return;
       const delay = Math.max(0, maxRemainingMs);
       const nextDeadline = Date.now() + delay;
       if (v.holdTimer && v.holdDeadline > 0 && nextDeadline >= v.holdDeadline) return;

@@ -208,7 +208,6 @@ function applyTrack(world: ComixWorld, tr: ResolvedTrack, t: number): void {
       const eased = EASE[spec.ease ?? 'linear'](span(t, tr.from, until));
       const k = spec.steps ? stepped(eased, spec.steps) : eased;
       stage.setPixelSize(lerp(spec.sizeFrom, spec.sizeTo, k));
-      return;
     }
   }
 }

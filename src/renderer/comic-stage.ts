@@ -25,8 +25,6 @@ import { syncRoomInner } from './stage-sync.js';
 import { stepStage } from './stage-frame.js';
 import { say, triggerShake } from './stage-fx.js';
 
-export { HERO_WALK_MS } from './stage-const.js';
-
 export interface SandboxRenderConfig {
   shakeIntensity: number;
   transitionMs: number;

@@ -6,9 +6,9 @@ Out Of Credits is built around one idea: **Kiro works best when knowledge, proce
 |---|---|---|
 | People | `.kiro/agents/` | 7 custom agents (a lead, 4 feature designers, an artist, QA) |
 | Facts | `.kiro/steering/` | 15 files |
-| Capabilities | `.kiro/specs/<name>/` | 15 spec folders (including inventory's 3 child specs, Steam launch funnel & Steamworks release checklist) |
+| Capabilities | `.kiro/specs/<name>/` | 31 spec folders plus 5 inventory child specs (lantern, laptop, manual, map, terminal) |
 | Procedures | `.kiro/skills/` | 24 skills, each with validator scripts |
-| Enforcement | `.kiro/hooks/` + `scripts/quality/` | 16 hooks plus 3 per agent, 11 quality gates (types, root, size, layers, declarative, specs, duplicates, agents, brands, MCP, and 34 properties) |
+| Enforcement | `.kiro/hooks/` + `scripts/quality/` | 18 hooks plus 3 per agent, 16 chained gates in `npm run quality` (types, dependencies, lint, root, size, layers, cycles, dead code, declarative, specs, duplicates, agents, legacy name, brands, MCP, and 81 properties) |
 
 ## Custom agents
 
@@ -34,7 +34,7 @@ What we learned from Kiro CLI 3.3.0 while building it (each one is checked by th
 
 ## Property-based testing
 
-34 fast-check properties cover the five major features, run inside `npm run quality` with a fixed seed (spec `.kiro/specs/property-based-tests/`):
+81 fast-check properties cover the five major features, run inside `npm run quality` with a fixed seed (spec `.kiro/specs/property-based-tests/`):
 
 - **Terminal:** the shell never throws on any line; `cp`, `mv`, `chmod` and `rm` keep their unix meaning.
 - **Laptop:** the state machine with timers firing at any moment; the window manager; the loop guard; saved progress.
@@ -56,7 +56,7 @@ A planted bug in each feature makes its property fail, and a planted hang is kil
 
 ## Spec-driven development
 
-Every new feature or big refactor starts as a spec (`requirements.md` in EARS syntax, `design.md`, `tasks.md`) with a `Status:` that moves `draft` → `requirements-approved` → `design-approved` → `approved` → `done`. The `feature-spec-grill` skill interviews the user in rounds of at most five questions with a recommended default, records answers under `## Decisions`, and never fills gaps with guesses. All 15 spec folders in `.kiro/specs/`: declarative chapter runtime, chapter editor, declarative comix runtime, comix editor, inventory (plus lantern, terminal, and laptop child specs), agent team, property-based tests, parody brand guard, MCP devtools & forge, Netlify deploy power, Steam launch funnel, and Steamworks store release.
+Every new feature or big refactor starts as a spec (`requirements.md` in EARS syntax, `design.md`, `tasks.md`) with a `Status:` that moves `draft` → `requirements-approved` → `design-approved` → `approved` → `done`. The `feature-spec-grill` skill interviews the user in rounds of at most five questions with a recommended default, records answers under `## Decisions`, and never fills gaps with guesses. `.kiro/specs/` holds 31 spec folders plus 5 inventory child specs (lantern, laptop, manual, map, terminal). Among them: declarative chapter runtime, chapter editor, declarative comix runtime, comix editor, inventory, agent team, property-based tests, turn-based battles, parody brand guard, MCP devtools & forge, Netlify deploy power, release tags power, Steam launch funnel, and the draft Steamworks store release.
 
 Compared with vibe coding: the specs became the contract that the validators check. The `inventory` spec family, for example, was implemented task by task and closed only after every quality gate passed.
 
@@ -70,14 +70,15 @@ Steering holds only short, non-overlapping facts and one exact vocabulary (`glos
 
 ## Hooks
 
-16 hooks in `.kiro/hooks/` (and three per team agent):
+18 hooks in `.kiro/hooks/` (and three per team agent):
 
 - `spec-first-on-prompt`: reminds the agent when a prompt reads like a feature.
 - `guard-spec-first`: blocks new `src/<area>/` and `pages/*.html` until a spec is approved.
 - `guard-chapter-files`: protects compiled `generated/` files and the four-place vocabulary rule.
 - `typecheck-on-save`, `validate-chapters-on-save`, `validate-comix-on-save`, `validate-labs-on-save`, `check-agents-on-save`, `check-brands-on-save`: validators run when source, specs, labs, agents, or docs are saved.
 - `asset-dryrun-*` (model, texture, effect, character): dry-run an asset before it is accepted.
-- `chapter-gates-on-stop`, `spec-status-on-stop`, `property-tests-on-stop`: verification gate, spec status report, and property suite at the end of a turn.
+- `static-analysis-on-save`: report-only ESLint, import cycles, layers and size when source or quality scripts are saved.
+- `chapter-gates-on-stop`, `spec-status-on-stop`, `property-tests-on-stop`, `quality-chain-on-stop`: verification gate, spec status report, property suite, and the static chain (pinned deps, ESLint, cycles, dead code, duplicates) at the end of a turn.
 
 ## What was verified by machines, not by eye
 
@@ -88,7 +89,7 @@ Steering holds only short, non-overlapping facts and one exact vocabulary (`glos
 
 ## Evidence judges can check in the repo
 
-- `.kiro/specs/inventory/` (and its three child specs): every design choice is a `**A (user, 2026-11-17):**` line, the record of a grill round.
+- `.kiro/specs/inventory/` (and its five child specs): every design choice is a `**A (user, 2026-11-17):**` line, the record of a grill round.
 - `git log`: 50+ commits with spec, steering and hook changes next to the code they govern.
 - `npm run quality` and the `--verify` scripts: the gates the hooks call.
 
@@ -97,9 +98,9 @@ Steering holds only short, non-overlapping facts and one exact vocabulary (`glos
 | Feature | State | Plan |
 |---|---|---|
 | Custom agents | done: 7 agents in `.kiro/agents/` | TODO (you): note one real task you ran through `lead-dev` |
-| Property-based testing | done: 34 properties, 7 bugs found | none |
+| Property-based testing | done: 81 properties (seed 20261117), 7 bugs found | none |
 | MCP | `credits-forge` (ours: validate, solve and save levels through tools; a level that fails or dies is never written), Chrome DevTools MCP for `qa` (it looks at the real game), the Netlify MCP server in the `credits-ship` power. Per-agent exact tool lists; `.kiro/settings/mcp.json` stays empty | Probed in the real CLI (`mcp-probe.mjs`, 9/9). What MCP made possible: an agent cannot save a level that does not clear with 0 deaths, and QA claims about the screen come from screenshots the agent took. |
-| Powers | `credits-ship` (`.kiro/powers/credits-ship/`): plugin manifest, keywords, Netlify MCP, `ship` skill with a gated deploy script | TODO (you): note the first real preview and production deploy |
+| Powers | Three project powers in `.kiro/powers/`: `credits-ship` (plugin manifest, keywords, Netlify MCP, `ship` skill with a gated deploy script), `credits-release` (tag-driven release: checks, gates, tag push, GitHub Release, Netlify preview) and `credits-tauri-local` (local unversioned desktop build) | First real preview and production deploy on 2026-11-17 to https://out-of-credits.netlify.app, both played to the stats screen (`netlify-deploy-power` task 6) |
 
 TODO (you): add the parts only you know.
 - Which Kiro surfaces you used (IDE, CLI, Web, Crew), what each was good and bad at, and which one wrote what.

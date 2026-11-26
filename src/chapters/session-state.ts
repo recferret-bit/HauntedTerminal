@@ -241,13 +241,7 @@ export const ensureDirChain = ensureLabDirChain;
 export const placeFile = placeLabFile;
 export const splitParentAndName = splitLabParentAndName;
 
-export function globToRegExp(pattern: string): RegExp {
-  const esc = pattern
-    .split('')
-    .map((c) => (c === '*' ? '.*' : c === '?' ? '.' : c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
-    .join('');
-  return new RegExp(`^${esc}$`);
-}
+export { globToRegExp } from '../game/unix-applets.js';
 
 export function computeRunRank(commands: number, deaths: number, levelCount: number): RankGrade {
   const par = Math.max(12, levelCount * 6);

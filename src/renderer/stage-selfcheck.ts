@@ -147,6 +147,7 @@ export function allEvents(): KernelEvent[] {
     { type: 'ITEM_CARRIED', entityId: 'socket', item: 'terminal', model: 'item.terminal' },
     { type: 'ITEM_GIVEN', item: 'terminal', model: 'item.terminal', from: 'socket', held: true },
     { type: 'ITEM_GIVEN', item: 'terminal', model: 'item.terminal', held: true },
+    { type: 'BATTLE_TURN', battle: 1, actor: 'player', first: true, reason: 'start' },
   ];
 }
 
@@ -426,7 +427,7 @@ function checkCommandFeedback(stage: StageLike, advance: (ms: number) => void): 
  * middle of effects, then steps frames and checks: no errors caught anywhere, every preset played,
  * and the cast matches the last view. Run in the browser: `__stage.selfCheck()`.
  */
-export function runStageSelfCheck(stage: StageLike, restore?: RoomView | null): StageSelfCheckReport {
+function runStageSelfCheck(stage: StageLike, restore?: RoomView | null): StageSelfCheckReport {
   const errorsBefore = stage.errors.length;
   const stormWas = stage.devNoStorm ?? false;
   stage.devNoStorm = true;

@@ -3,11 +3,21 @@ import { PICKUP_INFO, maxHpFor } from '../game/bestiary.js';
 import type { Pickup } from '../game/entities.js';
 import { giveItem, holdItem } from '../game/inventory.js';
 import type { Step } from '../game/shell.js';
-import { absPath, hasExec, hasWrite, lookup, makeNode, modeString, resolve, walk, type VNode } from '../game/tree.js';
+import { absPath, hasExec, hasWrite, isDescendantOrSelf, lookup, makeNode, modeString, resolve, walk, type VNode } from '../game/tree.js';
+import {
+  applyChmodMode,
+  applyCutText,
+  formatWc,
+  parseCutArgs,
+  parseGrepArgs,
+  parseHeadTailArgs,
+  runGrepSources,
+  sliceHeadTail,
+} from '../game/unix-applets.js';
 import { evaluateLevelClearAchievements, formatAchievementLines } from './achievements.js';
 import { recordLevelClear } from './catalog.js';
 import { computeLevelRank, creatableParent, emptyStep, ensureDirChain, globToRegExp, okStep, splitParentAndName, type ChapterState } from './session-state.js';
-import { writeRedirect } from './session-code.js';
+import { writeRedirect } from './session-redirect.js';
 import { finishTutorial, isNodeHidden } from './script.js';
 import { levelBannerText, loadLevel } from './session-level.js';
 import { cmdHank } from './session-meta.js';
@@ -199,59 +209,28 @@ function catOrStdin(g: ChapterState, file: string | undefined, stdin: string): S
 }
 
 export function cmdHeadTail(g: ChapterState, cmd: 'head' | 'tail', args: string[], stdin: string): Step {
-    let n = 10;
-    const files: string[] = [];
-    for (let i = 0; i < args.length; i++) {
-      if (args[i] === '-n' && args[i + 1]) {
-        n = Math.max(1, Number(args[++i]) || 10);
-      } else {
-        files.push(args[i]!);
-      }
-    }
-    const content = catOrStdin(g, files[0], stdin);
+    const spec = parseHeadTailArgs(args, cmd);
+    if ('error' in spec) return emptyStep(1, spec.error);
+    const content = catOrStdin(g, spec.files[0], stdin);
     if (typeof content !== 'string') return content;
-    const lines = content.split('\n');
-    if (lines[lines.length - 1] === '') lines.pop();
-    const sliced = cmd === 'head' ? lines.slice(0, n) : lines.slice(-n);
-    return okStep(sliced.length ? `${sliced.join('\n')}\n` : '');
+    return okStep(sliceHeadTail(content, cmd, spec.n));
   }
 
 export function cmdGrep(g: ChapterState, args: string[], stdin: string): Step {
-    let ignoreCase = false;
-    let invert = false;
-    let countOnly = false;
-    const positional: string[] = [];
-    for (const a of args) {
-      if (a.startsWith('-') && a.length > 1) {
-        if (a.includes('i')) ignoreCase = true;
-        if (a.includes('v')) invert = true;
-        if (a.includes('c')) countOnly = true;
-      } else {
-        positional.push(a);
-      }
-    }
-    const pattern = positional[0];
-    if (!pattern) return emptyStep(2, 'usage: grep [-ivc] PATTERN [FILE...]\n');
+    const spec = parseGrepArgs(args);
+    if ('error' in spec) return emptyStep(2, 'usage: grep [-ivc] PATTERN [FILE...]\n');
 
     let haystack = stdin;
-    if (positional.length > 1) {
-      const catRes = cmdCat(g, positional.slice(1), '');
+    if (spec.files.length > 0) {
+      const catRes = cmdCat(g, spec.files, '');
       if (catRes.code !== 0) return catRes;
       haystack = catRes.stdout;
     }
 
-    let rx: RegExp;
-    try {
-      rx = new RegExp(pattern, ignoreCase ? 'i' : '');
-    } catch {
-      rx = new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), ignoreCase ? 'i' : '');
-    }
-    const lines = haystack.split('\n');
-    if (lines[lines.length - 1] === '') lines.pop();
-    const matched = lines.filter((l) => (invert ? !rx.test(l) : rx.test(l)));
-    if (countOnly) return okStep(`${matched.length}\n`);
-    if (matched.length === 0) return emptyStep(1, '');
-    return okStep(`${matched.join('\n')}\n`);
+    const { stdout, hits } = runGrepSources([{ name: '', text: haystack }], { ...spec, hide: true, numbers: false, files: [] });
+    if (spec.count) return { stdout: `${hits}\n`, stderr: '', code: hits > 0 ? 0 : 1, events: [] };
+    if (hits === 0) return emptyStep(1, '');
+    return okStep(stdout);
   }
 
 export function cmdWc(g: ChapterState, args: string[], stdin: string): Step {
@@ -263,32 +242,15 @@ export function cmdWc(g: ChapterState, args: string[], stdin: string): Step {
       if (c.code !== 0) return c;
       text = c.stdout;
     }
-    const lineCount = text ? text.split('\n').length - (text.endsWith('\n') ? 1 : 0) : 0;
-    const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-    if (flags.includes('l')) return okStep(`${lineCount}\n`);
-    if (flags.includes('w')) return okStep(`${wordCount}\n`);
-    if (flags.includes('c')) return okStep(`${text.length}\n`);
-    return okStep(`${lineCount} ${wordCount} ${text.length}\n`);
+    return okStep(formatWc(text, flags));
   }
 
 export function cmdCut(g: ChapterState, args: string[], stdin: string): Step {
-    let delim = '\t';
-    let field = 1;
-    const files: string[] = [];
-    for (let i = 0; i < args.length; i++) {
-      const a = args[i]!;
-      if (a === '-d' && args[i + 1]) delim = args[++i]!;
-      else if (a.startsWith('-d')) delim = a.slice(2);
-      else if (a === '-f' && args[i + 1]) field = Math.max(1, Number(args[++i]) || 1);
-      else if (a.startsWith('-f')) field = Math.max(1, Number(a.slice(2)) || 1);
-      else files.push(a);
-    }
-    const text = catOrStdin(g, files[0], stdin);
+    const spec = parseCutArgs(args);
+    if ('error' in spec) return emptyStep(1, spec.error);
+    const text = catOrStdin(g, spec.files[0], stdin);
     if (typeof text !== 'string') return text;
-    const lines = text.split('\n');
-    if (lines[lines.length - 1] === '') lines.pop();
-    const out = lines.map((l) => l.split(delim)[field - 1] ?? '');
-    return okStep(out.length ? `${out.join('\n')}\n` : '');
+    return okStep(applyCutText(text, spec));
   }
 
 export function cmdFind(g: ChapterState, args: string[]): Step {
@@ -362,6 +324,10 @@ export function cmdRm(g: ChapterState, args: string[]): Step {
           continue;
         }
         if (!force) errors.push(`rm: cannot remove '${t}': No such file or directory`);
+        continue;
+      }
+      if (res.node === g.rt.root || !res.node.parent || isDescendantOrSelf(g.rt.cwd, res.node)) {
+        errors.push(`rm: refusing to remove '${t}'`);
         continue;
       }
       if (res.node.kind === 'dir' && !recursive) {
@@ -445,12 +411,6 @@ export function collectPickupNode(g: ChapterState, pickup: Pickup, node: VNode, 
     return okStep(`[COLLECTED] ${node.name} (${label})\n`, events);
   }
 
-/** True when `node` is `ancestor` or lies below it: moving `ancestor` there would make the tree a loop. */
-function isWithin(node: VNode, ancestor: VNode): boolean {
-  for (let cur: VNode | null = node; cur; cur = cur.parent) if (cur === ancestor) return true;
-  return false;
-}
-
 const HOME_DESTS = new Set(['~', '~/', '$HOME', '/home/dev', '/home/dev/']);
 
 function rattleVeto(events: KernelEvent[], targetId: number, command: string): void {
@@ -502,9 +462,9 @@ export function cmdMv(g: ChapterState, args: string[]): Step {
 
     const dst = resolve(g.rt.cwd, destRaw, true);
     const into = dst.node && dst.node.kind === 'dir' ? dst.node : lookup(g.rt.root, splitParentAndName(destRaw.startsWith('/') ? destRaw : `${absPath(g.rt.cwd)}/${destRaw}`).parentPath);
-    if (into && isWithin(into, src.node)) return emptyStep(1, `mv: cannot move '${clean[0]}' into itself\n`);
+    if (into && isDescendantOrSelf(into, src.node)) return emptyStep(1, `mv: cannot move '${clean[0]}' into itself\n`);
     const fromDir = src.node.parent?.id ?? g.rt.cwd.id;
-    let toDir = fromDir;
+    let toDir: number;
     if (dst.node && dst.node.kind === 'dir') {
       src.node.parent?.children.delete(src.node.name);
       src.node.parent = dst.node;
@@ -551,17 +511,8 @@ export function cmdChmod(g: ChapterState, args: string[]): Step {
       }
 
       const oldMode = res.node.mode;
-      let newMode = oldMode;
-      if (/^[0-7]{3,4}$/.test(modeSpec)) {
-        newMode = Number.parseInt(modeSpec, 8);
-      } else {
-        const m = /^([ugoa]*)([+-=])([rwx]+)$/.exec(modeSpec);
-        if (!m) return emptyStep(1, `chmod: invalid mode: '${modeSpec}'\n`);
-        const bits = (m[3]!.includes('r') ? 0o444 : 0) | (m[3]!.includes('w') ? 0o222 : 0) | (m[3]!.includes('x') ? 0o111 : 0);
-        if (m[2] === '+') newMode = oldMode | bits;
-        else if (m[2] === '-') newMode = oldMode & ~bits;
-        else newMode = bits;
-      }
+      const newMode = applyChmodMode(oldMode, modeSpec);
+      if (newMode === null) return emptyStep(1, `chmod: invalid mode: '${modeSpec}'\n`);
 
       res.node.mode = newMode;
       events.push({ type: 'INODE_MODE_CHANGED', inodeId: res.node.id, oldMode, newMode });

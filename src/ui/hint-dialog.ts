@@ -1,7 +1,9 @@
 import { stripCommandsFromText } from '../game/puzzle.js';
 import type { GameSnapshot, HintGoals, HintTask } from '../game/types.js';
 import { el, setText } from './dom-lite.js';
-import { createNativeModal } from './modal-dialog.js';
+import { createNativeModal, wireLightDismissFallback } from './modal-dialog.js';
+
+export { wireLightDismissFallback };
 
 export interface HintDialogHandlers {
   onClose?(returnFocus: HTMLElement | null): void;
@@ -116,37 +118,6 @@ function renderHintGoals(p: HintParts, snap: GameSnapshot): void {
       return el('li', cls, [t.label]);
     }),
   );
-}
-
-/** Safari fallback for `closedby="any"`: require pointerdown and pointerup outside the dialog box. */
-export function wireLightDismissFallback(
-  dialog: HTMLDialogElement,
-  onDismiss: () => void,
-  forceFallback = false,
-): void {
-  const hasNative = !forceFallback && typeof HTMLDialogElement !== 'undefined' && 'closedBy' in HTMLDialogElement.prototype;
-  if (hasNative || typeof dialog.addEventListener !== 'function') return;
-  const isOutside = (ev: Event): boolean => {
-    const pe = ev as PointerEvent;
-    if (typeof dialog.getBoundingClientRect !== 'function') return false;
-    const r = dialog.getBoundingClientRect();
-    if (r.width <= 0 || r.height <= 0) return false;
-    return pe.clientX < r.left || pe.clientX > r.right || pe.clientY < r.top || pe.clientY > r.bottom;
-  };
-  let pressedOutside = false;
-  dialog.addEventListener('pointerdown', (ev) => {
-    pressedOutside = ev.target === dialog && isOutside(ev);
-  });
-  dialog.addEventListener('pointerup', (ev) => {
-    if (pressedOutside && ev.target === dialog && isOutside(ev)) onDismiss();
-    pressedOutside = false;
-  });
-  dialog.addEventListener('pointercancel', () => {
-    pressedOutside = false;
-  });
-  dialog.addEventListener('close', () => {
-    pressedOutside = false;
-  });
 }
 
 /**

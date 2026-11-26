@@ -10,13 +10,12 @@ import {
   wireExternalLinksForDesktop,
   wireSteamWishlistLink,
 } from '../chapters/steam-bridge.js';
-import type { ChapterManifest } from '../chapters/types.js';
 import { createSession, type Session } from '../game/session.js';
 import { ComicStage } from '../renderer/comic-stage.js';
 import { readInitialShaderState } from '../ui/visual-lab.js';
 import { labConfigFor } from './lab.js';
 import { readPlayRoute } from './route.js';
-import { Play, STORY, readSkipPref, type DebugGive, type PlayDom, type SkipTutorial } from './state.js';
+import { Play, chapterBanner, readSkipPref, type DebugGive, type PlayDom, type SkipTutorial } from './state.js';
 
 function requirePlayDom(): PlayDom {
   const mount = document.getElementById('stage-mount');
@@ -41,19 +40,6 @@ function requirePlayDom(): PlayDom {
   return {
     mount, stageWrap, termDockEl, editorPaneEl, termEl, inspectorEl, toggleBtn, hudEl, statsEl, captionEl, cineEl, mastheadSubEl, manualBtnEl, manualModalEl,
   };
-}
-
-export function chapterBanner(session: Session, manifest: ChapterManifest | undefined): string {
-  if (!isChapterSession(session)) return STORY;
-  const level = session.getCurrentLevel();
-  return [
-    `\x1b[1;93m${manifest?.badge ?? 'ISSUE #1'}: ${manifest?.title ?? 'FREELANCE NIGHTMARE'}\x1b[0m`,
-    `${manifest?.subtitle ?? ''}`,
-    `Level ${level.index}/${session.getLevels().length}: \x1b[1;96m${level.title}\x1b[0m (${level.cwd})`,
-    `Goal: ${level.summary}`,
-    'Type \x1b[1;93mhank\x1b[0m for Socratic hints, \x1b[1;93medit <file>\x1b[0m for Split Code Editor, or \x1b[1;93mhelp\x1b[0m.',
-    '',
-  ].join('\n');
 }
 
 async function loadStage(mount: HTMLElement): Promise<ComicStage> {

@@ -1,6 +1,6 @@
 # Esc menu hud rework: design
 
-Status: done (written 2026-11-25 from `requirements.md`; updated 2026-11-25 with post-merge user UI adjustments)
+Status: see requirements.md
 
 Every claim below was read in the code on 2026-11-25. Where I did not read something, it says "not verified". Items marked **D#** are decisions that need the user's call (section 13).
 

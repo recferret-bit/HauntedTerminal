@@ -108,6 +108,12 @@ Probed with scratch agents on Kiro CLI 3.3.0, under `--trust-all-tools` (the ana
 - **`autoApprove` lists skip `PreToolUse` hooks** (Crew security docs), so `crew:check` fails on them.
 - Not verifiable from a script (it needs the app or a signed-in dashboard session): whether a member chat runs an agent's own hooks. The guide's first test answers it in two minutes and says what each outcome means.
 
+## Found by the second review and fixed
+
+- **`node scripts/*`, `node .kiro/skills/*` and `cd *` reached the user's commands** (`node scripts/../.kiro/powers/...`, `cd .kiro/powers/... && node scripts/ship.mjs prod`, `node scripts/desktop/build-tauri-steam.mjs`, `node scripts/harness/agents-install.mjs`). Fix: deny words for a `..` segment or `.kiro/powers` in a `node`/`cd` command, for command substitution (`$(`, backticks) and for the script names; the guard hook also refuses `node` after a `cd` and a glob in a script path, which a rule cannot see. Reading a power's `SKILL.md` stays allowed. `check-agents.mjs` probes each bypass.
+- **Redirects into the shared, git-ignored `scripts/harness/out/`** are allowed for every agent (a `..` segment never is), and `diff scripts/harness/out/*` is a read, so the artist can compare fingerprints.
+- **Resources:** `lead-dev` no longer loads `skills-map.md` (`AGENTS.md` has the same map) and `terminal-designer` no longer loads the manual's `design.md` (spec done), so both stay under the 100,000-character limit.
+
 ## Layers and gates
 
 - No `src/` code changes, no layer rule, no page, no vocabulary change. Fingerprint unaffected.

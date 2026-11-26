@@ -10,7 +10,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { launchBrowser } from './lib/browser.mjs';
-import { stringifyChapterJson } from './lib/chapter-json.mjs';
 import { listChapterSlugs, readChapter, chaptersDir } from './lib/chapter-compile.mjs';
 import { parseArgs, projectRoot, startPageServer } from './lib/load.mjs';
 

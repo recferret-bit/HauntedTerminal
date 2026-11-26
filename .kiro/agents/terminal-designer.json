@@ -24,7 +24,6 @@
     "file://.kiro/specs/inventory/items/terminal/requirements.md",
     "file://.kiro/specs/inventory/items/terminal/design.md",
     "file://.kiro/specs/inventory/items/manual/requirements.md",
-    "file://.kiro/specs/inventory/items/manual/design.md",
     "skill://.kiro/skills/chapter-level-generator/SKILL.md"
   ],
   "hooks": [
@@ -62,22 +61,24 @@
           "**"
         ],
         "exclude": [
-          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts",
+          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts",
           "src/ui/**",
           "src/terminal-lab/**",
           "scripts/harness/terminal-lab/**",
-          "scripts/harness/props/terminal.mjs"
+          "scripts/harness/props/terminal.mjs",
+          "scripts/harness/{manual-unit,manual-smoke}.mjs"
         ],
         "effect": "deny"
       },
       {
         "capability": "fs_write",
         "match": [
-          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts",
+          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts",
           "src/ui/**",
           "src/terminal-lab/**",
           "scripts/harness/terminal-lab/**",
-          "scripts/harness/props/terminal.mjs"
+          "scripts/harness/props/terminal.mjs",
+          "scripts/harness/{manual-unit,manual-smoke}.mjs"
         ],
         "effect": "allow"
       },
@@ -107,7 +108,9 @@
           "~/.kiro/crew/.env",
           "~/.kiro/crew/auth*",
           "~/.ssh/**",
-          "~/.aws/**"
+          "~/.aws/**",
+          "~/Library/Preferences/netlify/**",
+          "~/.config/gh/**"
         ],
         "effect": "deny"
       },
@@ -140,6 +143,7 @@
           "git diff --name-only*",
           "git diff --cached --stat*",
           "git diff -- *",
+          "diff scripts/harness/out/*",
           "npm run quality",
           "npm run quality:*",
           "npm run build",
@@ -151,7 +155,8 @@
           "STACK_PORT=5174 npm stop",
           "STACK_PORT=5174 npm run status",
           "node scripts/*",
-          "node .kiro/skills/*"
+          "node .kiro/skills/*",
+          "npx tsc --noEmit"
         ],
         "effect": "allow"
       },
@@ -187,6 +192,7 @@
           "git diff --name-only*",
           "git diff --cached --stat*",
           "git diff -- *",
+          "diff scripts/harness/out/*",
           "npm run quality",
           "npm run quality:*",
           "npm run build",
@@ -198,7 +204,8 @@
           "STACK_PORT=5174 npm stop",
           "STACK_PORT=5174 npm run status",
           "node scripts/*",
-          "node .kiro/skills/*"
+          "node .kiro/skills/*",
+          "npx tsc --noEmit"
         ],
         "effect": "deny"
       },
@@ -219,7 +226,18 @@
           "npm publish*",
           "*visual-audit*--update*",
           "*docs/qa/baselines*",
-          "cp *..*"
+          "cp *..*",
+          "node *..*",
+          "cd *..*",
+          "node *.kiro/powers*",
+          "cd *.kiro/powers*",
+          "*$(*",
+          "*`*",
+          "node *ship.mjs*",
+          "node *release.mjs*",
+          "node *tauri-local.mjs*",
+          "node *build-tauri-steam*",
+          "node *agents-install*"
         ],
         "effect": "deny"
       },
@@ -230,7 +248,10 @@
           "*.pem*",
           "*/.ssh/*",
           "*/.aws/*",
-          "*.kiro/crew/.env*"
+          "*.kiro/crew/.env*",
+          "*netlify/config.json*",
+          "*/.config/gh/*",
+          "*.netrc*"
         ],
         "effect": "deny"
       },

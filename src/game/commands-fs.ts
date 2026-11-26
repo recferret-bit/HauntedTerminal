@@ -1,11 +1,12 @@
 import type { KernelEvent } from '../contracts/events.js';
+import { applyChmodMode } from './unix-applets.js';
 import {
-  busy, canUnlink, collectStep, cut, denied, find, findNamed, isCwdInside, push, target, unlink, vetoSubtree,
+  busy, canUnlink, collectStep, cut, denied, find, findNamed, push, target, unlink, vetoSubtree,
 } from './runtime.js';
 import { writeSocket } from './puzzle.js';
 import { empty, out, splitPath, splitShortFlags, type Play } from './play.js';
 import type { Step } from './shell.js';
-import { absPath, hasExec, hasWrite, makeNode, resolve, type VNode } from './tree.js';
+import { absPath, hasExec, hasWrite, isDescendantOrSelf, makeNode, resolve, type VNode } from './tree.js';
 import { runLn } from './tree-links.js';
 
 export function redirect(g: Play, node: VNode | null, path: string, data: string, append: boolean, argv: string[]): Step {
@@ -30,7 +31,7 @@ export function redirect(g: Play, node: VNode | null, path: string, data: string
   return out('', events);
 }
 
-export function dumpNull(g: Play, argv: string[]): Step {
+function dumpNull(g: Play, argv: string[]): Step {
   const events: KernelEvent[] = [];
   if (argv.some((arg) => arg === 'chaos.stream' || arg.endsWith('/chaos.stream'))) {
     g.run.phase1 = true;
@@ -117,7 +118,7 @@ export function cmdRm(g: Play, args: string[]): Step {
       code = 1;
       continue;
     }
-    if (isCwdInside(g, node)) {
+    if (isDescendantOrSelf(g.run.cwd, node)) {
       stderr += `rm: refusing to remove '${path}': you are standing in it\n`;
       code = 1;
       continue;
@@ -183,11 +184,7 @@ export function cmdMv(g: Play, args: string[]): Step {
   }
   if (!folder || folder.kind !== 'dir') return empty(1, `mv: cannot move '${srcPath}' to '${destPath}': No such file or directory\n`);
   if (!hasWrite(folder) || !hasExec(folder)) return denied(g, folder, `mv: cannot move '${srcPath}' to '${destPath}': Permission denied\n`, `mv ${srcPath}`);
-  let inside: VNode | null = folder;
-  while (inside) {
-    if (inside === src) return empty(1, `mv: cannot move '${srcPath}' into itself\n`);
-    inside = inside.parent;
-  }
+  if (isDescendantOrSelf(folder, src)) return empty(1, `mv: cannot move '${srcPath}' into itself\n`);
   const previous = folder.children.get(name);
   if (previous === src) return empty();
   if (previous) {
@@ -240,31 +237,6 @@ export function cmdCp(g: Play, args: string[]): Step {
   return redirect(g, dest, destPath, src.content, false, ['cp', srcPath]);
 }
 
-export function applyMode(_g: Play, current: number, spec: string): number | null {
-  if (/^[0-7]{1,4}$/.test(spec)) return Number.parseInt(spec, 8) & 0o7777;
-  let mode = current;
-  for (const clause of spec.split(',')) {
-    const match = /^([ugoa]*)([+\-=])([rwx]*)$/.exec(clause);
-    if (!match) return null;
-    const who = match[1] || 'a';
-    const op = match[2];
-    let bits = 0;
-    for (const ch of match[3] ?? '') bits |= ch === 'r' ? 4 : ch === 'w' ? 2 : 1;
-    const shifts = new Set<number>();
-    for (const flag of who) {
-      if (flag === 'u' || flag === 'a') shifts.add(6);
-      if (flag === 'g' || flag === 'a') shifts.add(3);
-      if (flag === 'o' || flag === 'a') shifts.add(0);
-    }
-    for (const shift of shifts) {
-      if (op === '+') mode |= bits << shift;
-      else if (op === '-') mode &= ~(bits << shift);
-      else mode = (mode & ~(7 << shift)) | (bits << shift);
-    }
-  }
-  return mode;
-}
-
 export function cmdChmod(g: Play, args: string[]): Step {
   const rest = args.filter((arg) => arg !== '-R' && arg !== '-v');
   if (rest.length < 2) return empty(1, 'chmod: missing operand\n');
@@ -283,7 +255,7 @@ export function cmdChmod(g: Play, args: string[]): Step {
       code = 1;
       continue;
     }
-    const next = applyMode(g, node.mode, spec);
+    const next = applyChmodMode(node.mode, spec);
     if (next === null) return { stdout: '', stderr: `chmod: invalid mode: '${spec}'\n`, code: 1, events };
     target(g, node);
     const veto = g.run.world.vetoChmod(node);

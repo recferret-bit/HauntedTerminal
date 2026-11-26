@@ -8,6 +8,7 @@
  * open-weights cores, and cracking Cloud-locked gates while the player defends it.
  */
 import type { KernelEvent } from '../contracts/events.js';
+import { createStateMachine, type StateMachine, type TransitionTable } from '../contracts/state-machine.js';
 
 export type KiroCoreId = 'qwen' | 'mistral' | 'deepseek' | 'llama';
 
@@ -128,70 +129,36 @@ export function resolveKiroCoreId(raw: string): KiroCoreId | null {
   return null;
 }
 
+interface AuditRule {
+  test: (text: string, label: string) => boolean;
+  message: (text: string) => string;
+}
+
+const AUDIT_RULES: readonly AuditRule[] = [
+  { test: (t) => /API_KEY|sk_live_|SECRET/i.test(t), message: () => 'Leaked live secret detected! Purge this dump with `rm` before scanners scrape it.' },
+  { test: (t, l) => /\bBUG\b/.test(t) && /seed|prod/i.test(l + t), message: () => ' Corrupt `BUG` token spotted—patch it to `FIXED` via `sed -i` or `edit`.' },
+  { test: (t) => /CATALOG_PORT=0000/.test(t), message: () => '`CATALOG_PORT=0000` blackholes traffic—set `CATALOG_PORT=3000`.' },
+  { test: (t) => /LOCAL_MODEL_PORT=0000/.test(t), message: () => '`LOCAL_MODEL_PORT=0000` blackholes local inference—set `LOCAL_MODEL_PORT=11434`.' },
+  { test: (t) => /ALLOW_GUEST_CART=false/.test(t), message: () => '`ALLOW_GUEST_CART=false` blocks buyers—flip it to `ALLOW_GUEST_CART=true`.' },
+  { test: (t) => /display:\s*none/.test(t), message: () => 'Cloud slop hid `.product-grid` with `display: none`—change to `display: grid`.' },
+  { test: (t) => /width:\s*0%/.test(t) || /z-index:\s*-1/.test(t), message: () => '`.cart-drawer` is collapsed (`width: 0%` / `z-index: -1`)—restore `width: 100%; z-index: 10;`.' },
+  { test: (t) => /<button[^>]*disabled/i.test(t), message: () => 'Checkout `<button>` has `disabled` attribute—strip `disabled` so buyers can click.' },
+  { test: (t) => /price\s*\+\s*shipping/.test(t) && !/Number\s*\(\s*price\s*\)/.test(t), message: () => 'JS string-concat trap! Replace `price + shipping` with `Number(price) * Number(qty) + Number(shipping)`.' },
+  { test: (t) => /node:99-vibe/i.test(t), message: () => 'Hallucinated base image `node:99-vibe*`! Switch to `FROM node:20-alpine`.' },
+  { test: (t) => /EXPOSE\s+9999/.test(t) || /broken_server\.js/.test(t), message: () => 'Dockerfile port/entrypoint mismatch—set `EXPOSE 3000` and `CMD ["node", "server.js"]`.' },
+  { test: (t) => /cryptominer\.sh/i.test(t), message: () => 'Malicious `RUN ./cryptominer.sh` layer injected—delete that line and ensure `COPY . .` + `EXPOSE 3000`.' },
+  { test: (t) => /PAYMENT_MODE=broken|localhost:9999|8080:9999/i.test(t), message: () => 'Compose miswire: map nginx `8080:80`, website `byterig-web:1.0` + `http://payment:4002`, and `PAYMENT_MODE=live`.' },
+  { test: (t) => /slop_override=true/.test(t), message: () => 'Boss anchor active (`slop_override=true`)—flip to `slop_override=false` once payment signature is verified!' },
+  { test: (t) => /clod_supervisor_lock=true/.test(t), message: () => 'Clod kernel anchor active (`clod_supervisor_lock=true`)—flip to `clod_supervisor_lock=false`!' },
+  { test: (t) => /CLOD_SUPERVISOR:/i.test(t), message: () => 'Clod compliance token flood active—drain it into `/dev/null` (`cat clod_prompt_flood.stream > /dev/null`)!' },
+  { test: (t) => /ORDER_SIG=([A-Z0-9_]+)/.test(t), message: (t) => `Valid payment signature found (\`${t.match(/ORDER_SIG=([A-Z0-9_]+)/)?.[0]}\`)—pipe it into \`payment_verify.sock\`!` },
+  { test: (t) => /OPEN_WEIGHT_SIG=([A-Z0-9_]+)/.test(t), message: (t) => `Open-weights ensemble signature ready (\`${t.match(/OPEN_WEIGHT_SIG=([A-Z0-9_]+)/)?.[0]}\`)—pipe it into \`kiro_override.sock\`!` },
+  { test: (t) => /FATAL/.test(t), message: (t) => `Counted ${t.split('\n').filter((l) => l.includes('FATAL')).length} \`FATAL\` line(s) in this log.` },
+];
+
 /** Inspect file text with Kiro's local weights (`cat broken.conf | kiro` or `kiro inspect <file>`). */
 export function inspectTextWithKiro(text: string, label: string, core: KiroCoreDef): string {
-  const findings: string[] = [];
-  if (/API_KEY|sk_live_|SECRET/i.test(text)) {
-    findings.push('Leaked live secret detected! Purge this dump with `rm` before scanners scrape it.');
-  }
-  if (/\bBUG\b/.test(text) && /seed|prod/i.test(label + text)) {
-    findings.push(' Corrupt `BUG` token spotted—patch it to `FIXED` via `sed -i` or `edit`.');
-  }
-  if (/CATALOG_PORT=0000/.test(text)) {
-    findings.push('`CATALOG_PORT=0000` blackholes traffic—set `CATALOG_PORT=3000`.');
-  }
-  if (/LOCAL_MODEL_PORT=0000/.test(text)) {
-    findings.push('`LOCAL_MODEL_PORT=0000` blackholes local inference—set `LOCAL_MODEL_PORT=11434`.');
-  }
-  if (/ALLOW_GUEST_CART=false/.test(text)) {
-    findings.push('`ALLOW_GUEST_CART=false` blocks buyers—flip it to `ALLOW_GUEST_CART=true`.');
-  }
-  if (/display:\s*none/.test(text)) {
-    findings.push('Cloud slop hid `.product-grid` with `display: none`—change to `display: grid`.');
-  }
-  if (/width:\s*0%/.test(text) || /z-index:\s*-1/.test(text)) {
-    findings.push('`.cart-drawer` is collapsed (`width: 0%` / `z-index: -1`)—restore `width: 100%; z-index: 10;`.');
-  }
-  if (/<button[^>]*disabled/i.test(text)) {
-    findings.push('Checkout `<button>` has `disabled` attribute—strip `disabled` so buyers can click.');
-  }
-  if (/price\s*\+\s*shipping/.test(text) && !/Number\s*\(\s*price\s*\)/.test(text)) {
-    findings.push('JS string-concat trap! Replace `price + shipping` with `Number(price) * Number(qty) + Number(shipping)`.');
-  }
-  if (/node:99-vibe/i.test(text)) {
-    findings.push('Hallucinated base image `node:99-vibe*`! Switch to `FROM node:20-alpine`.');
-  }
-  if (/EXPOSE\s+9999/.test(text) || /broken_server\.js/.test(text)) {
-    findings.push('Dockerfile port/entrypoint mismatch—set `EXPOSE 3000` and `CMD ["node", "server.js"]`.');
-  }
-  if (/cryptominer\.sh/i.test(text)) {
-    findings.push('Malicious `RUN ./cryptominer.sh` layer injected—delete that line and ensure `COPY . .` + `EXPOSE 3000`.');
-  }
-  if (/PAYMENT_MODE=broken|localhost:9999|8080:9999/i.test(text)) {
-    findings.push('Compose miswire: map nginx `8080:80`, website `byterig-web:1.0` + `http://payment:4002`, and `PAYMENT_MODE=live`.');
-  }
-  if (/slop_override=true/.test(text)) {
-    findings.push('Boss anchor active (`slop_override=true`)—flip to `slop_override=false` once payment signature is verified!');
-  }
-  if (/clod_supervisor_lock=true/.test(text)) {
-    findings.push('Clod kernel anchor active (`clod_supervisor_lock=true`)—flip to `clod_supervisor_lock=false`!');
-  }
-  if (/CLOD_SUPERVISOR:/i.test(text)) {
-    findings.push('Clod compliance token flood active—drain it into `/dev/null` (`cat clod_prompt_flood.stream > /dev/null`)!');
-  }
-  if (/ORDER_SIG=([A-Z0-9_]+)/.test(text)) {
-    const m = text.match(/ORDER_SIG=([A-Z0-9_]+)/);
-    findings.push(`Valid payment signature found (\`${m?.[0]}\`)—pipe it into \`payment_verify.sock\`!`);
-  }
-  if (/OPEN_WEIGHT_SIG=([A-Z0-9_]+)/.test(text)) {
-    const m = text.match(/OPEN_WEIGHT_SIG=([A-Z0-9_]+)/);
-    findings.push(`Open-weights ensemble signature ready (\`${m?.[0]}\`)—pipe it into \`kiro_override.sock\`!`);
-  }
-  if (/FATAL/.test(text)) {
-    const fatals = text.split('\n').filter((l) => l.includes('FATAL')).length;
-    findings.push(`Counted ${fatals} \`FATAL\` line(s) in this log.`);
-  }
-
+  const findings = AUDIT_RULES.filter((r) => r.test(text, label)).map((r) => r.message(text));
   const head = `${CYAN}[KIRO.D // ${core.shortTag}]${RESET} Local Weight Audit ${DIM}(${label})${RESET}\n`;
   if (findings.length === 0) {
     const lineCount = text ? text.split('\n').length : 0;
@@ -200,20 +167,39 @@ export function inspectTextWithKiro(text: string, label: string, core: KiroCoreD
   return `${head}${findings.map((f) => `  ${GOLD}>${RESET} ${f}`).join('\n')}\n`;
 }
 
+export type KiroCrackPhase = 'idle' | 'cracking';
+export type KiroCrackEvent = 'START' | 'STEP' | 'ABORT' | 'COMPLETE';
+
+export const KIRO_CRACK_TRANSITIONS: TransitionTable<KiroCrackPhase, KiroCrackEvent> = {
+  idle: { START: 'cracking' },
+  cracking: { START: 'cracking', STEP: 'cracking', ABORT: 'idle', COMPLETE: 'idle' },
+};
+
+export function createKiroCrackMachine(): StateMachine<KiroCrackPhase, KiroCrackEvent> {
+  return createStateMachine({ initial: 'idle', transitions: KIRO_CRACK_TRANSITIONS });
+}
+
 export class KiroCompanion {
   private coreId: KiroCoreId = 'qwen';
+  private readonly crackFsm = createKiroCrackMachine();
   private crackJob: KiroCrackJob | null = null;
   private clapIdx = 0;
   private unlockedPaths = new Set<string>();
 
   reset(): void {
     this.coreId = 'qwen';
+    this.crackFsm.reset('idle');
     this.crackJob = null;
     this.unlockedPaths.clear();
   }
 
   clearRoomTransient(): void {
+    this.crackFsm.send('ABORT');
     this.crackJob = null;
+  }
+
+  get crackPhase(): KiroCrackPhase {
+    return this.crackFsm.state;
   }
 
   get activeCore(): KiroCoreDef {
@@ -452,6 +438,7 @@ export class KiroCompanion {
     events: KernelEvent[];
   } {
     const required = this.coreId === 'qwen' ? 2 : 3;
+    this.crackFsm.send('START');
     this.crackJob = {
       dirPath,
       targetName,
@@ -490,8 +477,11 @@ export class KiroCompanion {
     events: KernelEvent[];
   } {
     const job = this.crackJob;
-    if (!job) return { completedTargetPath: null, completedTargetName: null, note: '', events: [] };
+    if (this.crackFsm.state !== 'cracking' || !job) {
+      return { completedTargetPath: null, completedTargetName: null, note: '', events: [] };
+    }
     if (job.dirPath !== currentDirPath) {
+      this.crackFsm.send('ABORT');
       this.crackJob = null;
       return {
         completedTargetPath: null,
@@ -503,6 +493,7 @@ export class KiroCompanion {
 
     job.progress += 1;
     if (job.progress < job.required) {
+      this.crackFsm.send('STEP');
       return {
         completedTargetPath: null,
         completedTargetName: null,
@@ -519,6 +510,7 @@ export class KiroCompanion {
       };
     }
 
+    this.crackFsm.send('COMPLETE');
     this.crackJob = null;
     this.unlockedPaths.add(job.targetPath);
     return {

@@ -17,6 +17,7 @@ docs and steering                 structure.md, tech.md, AGENTS.md, CLAUDE.md, R
 
 ```
 ship.mjs preview
+  delete out/ship/last-preview.json (a stale stamp can never be promoted)
   netlify status --json            -> not logged in: print `npx netlify-cli@27.20.0 login`, exit 2
   npm run quality                  -> fail: exit 1, nothing uploaded
   generate-chapter.mjs --verify    -> fail: exit 1
@@ -26,12 +27,12 @@ ship.mjs preview
   write out/ship/last-preview.json {deployId, url, siteId, commit, dirty, distHash, at}
 
 ship.mjs prod                      (run only after the user's yes)
-  read last-preview.json; refuse if dirty, commit or dist hash changed
+  read last-preview.json; refuse if missing, dirty, commit or dist hash changed
   netlify deploy --dir dist --no-build --prod --json --site <id>
-  play-browser.mjs --url <production url> --nointro
+  play-browser.mjs --url <production url> --nointro   -> fail: exit 1, print a rollback hint
 ```
 
-`--dry-run` runs the login-free part (the gates and the build) and prints what it would upload. `--selftest` checks the pure parts (argument parsing, the promote refusals, the dist hash, the token redaction) with no network.
+`--dry-run` is a modifier of the one command, in any position, and never logs in or uploads: `preview --dry-run` (or `--dry-run` alone) runs the gates and the build and prints what it would upload; `prod --dry-run` runs only the promote checks against the stamp. Two commands in one run are refused, and so is `--site-name` without a value. `preview` deletes the previous stamp before anything else, and a failed production play prints a rollback hint. `--selftest` checks the pure parts (argument parsing, the promote refusals, the dist hash, the token redaction) with no network.
 
 ## Decisions
 

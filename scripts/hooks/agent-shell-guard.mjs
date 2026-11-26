@@ -2,7 +2,12 @@
 // PreToolUse hook of every team agent, on the shell tool (`execute_bash`). Kiro's shell permission rules look at the
 // command words only: a redirect (`> file`) or a git refspec is not seen by them (probed with Kiro CLI 3.3.0). This
 // hook reads the command from the event on stdin and blocks (exit 2) what the rules cannot:
-//   - a redirect into a path outside the agent's write paths (`/dev/null` and fd copies like `2>&1` are fine);
+//   - a redirect into a path outside the agent's write paths (`/dev/null`, fd copies like `2>&1` and relative top-level
+//     text files of the shared, git-ignored output folder, `scripts/harness/out/*.txt|*.log`, are fine; a `..` segment
+//     never is). In a line with a `cd` or `pushd`, every redirect target but `/dev/null|stdout|stderr` is refused;
+//   - `node` after a `cd` in the same line, a script path with a glob or expansion (`node scripts/*` would then reach
+//     another folder's `scripts/`, or a script the deny words name, such as a power's deploy script), or a script under
+//     `scripts/harness/out/` (every agent may write there, so nothing there may run);
 //   - `git commit`, `merge`, `push`, `cherry-pick`, `revert` or `rebase` while the branch is main or master;
 //   - `git add` without `--` and explicit paths (`-A`, `.`, `-u`), `git commit --amend`;
 //   - a push that is not a plain `agent/<task>` branch (`+refspec`, `--delete`, `--mirror`, `--tags`, `HEAD:main`).
@@ -76,6 +81,24 @@ export function subcommands(tokens) {
   return subs.filter((s) => s.length);
 }
 
+/**
+ * Where every agent may redirect output: top-level text files of the git-ignored folder all harness runs share. Not its
+ * subfolders (they hold the deploy stamp `ship/last-preview.json`, `ship/site.json`, `stack/stack.json`) and no script.
+ */
+export const SHARED_OUT = ['scripts/harness/out/*.txt', 'scripts/harness/out/*.log'];
+const DEV_TARGETS = new Set(['/dev/null', '/dev/stderr', '/dev/stdout']);
+const isCd = (words) => ['cd', 'pushd'].includes(words[0].replace(/^.*\//, ''));
+
+/** Why the `node` sub-command `words` must not run (`afterCd`: a `cd` came earlier in the line), or null. */
+function nodeProblem(words, afterCd) {
+  if (afterCd) return 'node after cd: run scripts from the repository root (`node scripts/...`, `node .kiro/skills/...`).';
+  const script = words.slice(1).find((w) => !w.startsWith('-')) ?? '';
+  if (/[*?[\]{}$`~]/.test(script)) return `node ${script}: write the script path out in full (no globs or expansions).`;
+  if (script.split('/').includes('..')) return `node ${script}: no \`..\` in a script path.`;
+  if (script.replace(/^(\.\/)+/, '').startsWith('scripts/harness/out/')) return `node ${script}: nothing under scripts/harness/out/ may run (every agent can write there).`;
+  return null;
+}
+
 const GIT_WRITING = new Set(['commit', 'merge', 'push', 'cherry-pick', 'revert', 'rebase', 'pull']);
 const AGENT_BRANCH = /^agent\/[A-Za-z0-9._-]+$/;
 
@@ -89,14 +112,23 @@ function gitParts(words) {
 /** Why `command` must not run for `agentName` on `branch`, or null. `globs` are the agent's write globs. */
 export function violation(command, { globs, branch, isLead }) {
   const tokens = tokenize(command);
-  const allowed = [...globs, '/dev/null'].map((g) => globToRegExp(g));
+  const subs = subcommands(tokens);
+  const hasCd = subs.some(isCd);
+  const allowed = [...globs, ...SHARED_OUT].map((g) => globToRegExp(g));
   for (const target of redirectTargets(tokens)) {
-    if (target === '/dev/null' || target === '/dev/stderr' || target === '/dev/stdout') continue;
+    if (DEV_TARGETS.has(target)) continue;
+    if (hasCd) return `redirect into ${target} in a line with cd: a relative path would land in another folder. Redirect only to /dev/null there, or run from the repository root.`;
     const rel = target.startsWith('/') ? target : target.replace(/^\.\//, '');
-    if (!allowed.some((re) => re.test(rel))) return `redirect into ${target}, which is outside this agent's write paths. Use the write tool (and hand the change to its owner if it is not yours).`;
+    if (rel.split('/').includes('..') || !allowed.some((re) => re.test(rel))) return `redirect into ${target}, which is outside this agent's write paths. Use the write tool (and hand the change to its owner if it is not yours).`;
   }
-  for (const words of subcommands(tokens)) {
+  let afterCd = false;
+  for (const words of subs) {
     const cmd = words[0].replace(/^.*\//, '');
+    if (isCd(words)) afterCd = true;
+    if (cmd === 'node') {
+      const why = nodeProblem(words, afterCd);
+      if (why) return why;
+    }
     if (cmd !== 'git') continue;
     const { sub, rest } = gitParts(words);
     if (GIT_WRITING.has(sub) && !isLead) return `git ${sub} is for lead-dev only.`;

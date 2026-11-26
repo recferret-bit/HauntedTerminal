@@ -1,9 +1,8 @@
-import { pickBoardTheme, type PCB_BOARD_THEMES, type ZoneId } from '../../core/palette.js';
+import { pickBoardTheme, type ZoneId } from '../../core/palette.js';
 import type { AnimTag, PartSpec, Vec2, Vec3 } from '../../core/types.js';
 import { kitBox, kitDisc, kitPlate, outlineRoundRect } from '../../kit/greebles.js';
 
 export { pickBoardTheme };
-export type BoardTheme = (typeof PCB_BOARD_THEMES)[number];
 
 /** Pinwheel fan rotor in a recessed ink well with central hub, built for GPU shrouds and CPU coolers. */
 export function makeFanUnit(o: {

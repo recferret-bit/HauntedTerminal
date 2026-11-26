@@ -5,24 +5,24 @@
 ## Run it
 
 ```bash
-node scripts/harness/property-tests.mjs                        # all 34 properties, the gate
+node scripts/harness/property-tests.mjs                        # all 81 properties, the gate
 node scripts/harness/property-tests.mjs --only terminal,laptop # one or more features: terminal laptop comix chapters gameplay
 node scripts/harness/property-tests.mjs --runs 2000           # look harder (the gate stays at 100)
 node scripts/harness/property-tests.mjs --seed 7 --runs 500   # other random inputs
 node scripts/harness/property-tests.mjs --list                # property names only
 ```
 
-A line per property: `ok` or `FAIL`, the time, the name, the runs. Exit code 0 is a pass. A run that hangs (an endless loop in game code) is killed after 20 s with the property named (exit 137; `--hang-ms` changes the limit).
+A line per property: `ok` or `FAIL`, the time, the name, the runs. Exit code 0 is a pass; an `--only` that selects no feature exits 2. `kit.mjs`, `sessions.mjs` and `arbitraries.mjs` are helpers, not `--only` suites. The runner refuses async properties and async `check()`s (fast-check would return a Promise that reads as a pass) and proves that on every start. A run that hangs (an endless loop in game code) is killed after 20 s with the property named (exit 137; `--hang-ms` changes the limit).
 
 ## What they check
 
 | Feature | Examples of what must always hold |
 |---|---|
-| terminal (both shells) | the shell never throws on any line; `cp`, `mv`, `chmod`, `rm` keep their unix meaning; an unreadable file cannot be copied; `sed` with an empty pattern is refused; `restart-level` arms on a bare run and restarts only on the very next line or `--yes` within 20 ticks; the Esc menu traps keys, never touches the turn timer and keeps a pending restart unchanged |
-| laptop | the state machine stays in known states with timers firing at any moment; one window per app and a sane focus; the loop guard leaves loop-free code alone and still compiles guarded code; saved progress never throws |
+| terminal (both shells) | the shell never throws on any line; `cp`, `mv`, `chmod`, `rm` keep their unix meaning; `chmod` previews match POSIX for every mode 000..777; every command has a manual entry; an unreadable file cannot be copied; `sed` with an empty pattern is refused; `restart-level` arms on a bare run and restarts only on the very next line or `--yes` within 20 ticks; the Esc menu traps keys, never touches the turn timer and keeps a pending restart unchanged; `skin <id>` and the sound and skin prefs; manual search; `map <query>` resolves any query to a chapter level and `map <n>` to level n |
+| laptop | the state machine stays in known states with timers firing at any moment; one window per app and a sane focus; the loop guard leaves loop-free code alone, still compiles guarded code and names each loop's own line; saved progress never throws |
 | comix | the shipped comixes simulate after random tuning; the Check tab reports eight kinds of breakage; the canonical writer reproduces every file; cue arithmetic |
-| chapters | random play never throws on any of the 11 levels; the same play gives the same transcript; the Check tab reports ten kinds of breakage; the canonical writer; preview sessions never leak `ACH_*` unlocks; portable save import rejects prototype keys and merges monotonically |
-| gameplay | HP stays in range; dead enemies stay dead; a pickup is collected once; the inventory; a level is left only when its win rules hold; a Kiro hub refuses the wrong core; every exit door is a `door.ethernet`, locked exactly when the win rules fail; random play still reaches kills, pickups, attacks and exits |
+| chapters | random play never throws on any of the 11 levels; the same play gives the same transcript; the Check tab reports ten kinds of breakage; the canonical writer; preview sessions never leak `ACH_*` unlocks; portable save import rejects prototype keys and merges monotonically; random PIDs (in range, not reserved, listed by `ps`, re-rolled on `restart-level`, kept by labs); `script.locks`; timed `dialog_box`; a 0-death solve for any PID seed |
+| gameplay | HP stays in range; dead enemies stay dead; a pickup is collected once; the inventory; a level is left only when its win rules hold; a Kiro hub refuses the wrong core; every exit door is a `door.ethernet`, locked exactly when the win rules fail; battles (player acts first, damage only in an enemy turn); the 30 s turn timer (runout is one `timeout` enemy turn, holds freeze it); every command emits `VIBECODER_ACTION`; room floors; jump grants; the play lifecycle, Kiro companion and agent director state machines follow their transition tables; random play still reaches kills, pickups, attacks and exits |
 
 ## Reading a failure
 
@@ -38,7 +38,7 @@ The counterexample is the smallest input that fails (fast-check shrinks it). Rep
 
 ## Add or change a property
 
-Each feature has one file in `scripts/harness/props/`; the designer agent of the feature owns it (`terminal.mjs`, `laptop.mjs`, `comix.mjs`, `chapters.mjs` / `gameplay.mjs` / `sessions.mjs`). A property is `{ name, build: () => fc.property(arbitraries..., (inputs) => { expect(ok, 'message') }), examples? }`; `{ name, check: () => void }` is for a guard with no generated input. Shared generators are in `arbitraries.mjs`, the runner helpers in `kit.mjs`, the compiled chapter as a playground in `sessions.mjs`.
+Each feature has one file in `scripts/harness/props/`; the designer agent of the feature owns it: `terminal.mjs` terminal-designer, `laptop.mjs` laptop-designer, `comix.mjs` comix-designer, `chapters.mjs` / `gameplay.mjs` / `sessions.mjs` chapters-designer; the runner, `kit.mjs` and `arbitraries.mjs` are lead-dev's (`scripts/harness/agents-build.mjs`). A property is `{ name, build: () => fc.property(arbitraries..., (inputs) => { expect(ok, 'message') }), examples? }`; `{ name, check: () => void }` is for a guard with no generated input. Shared generators are in `arbitraries.mjs`, the runner helpers in `kit.mjs`, the compiled chapter as a playground in `sessions.mjs`.
 
 Rules of thumb:
 

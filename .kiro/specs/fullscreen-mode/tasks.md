@@ -1,6 +1,6 @@
 # Fullscreen mode: tasks
 
-Status: approved (by the user 2026-11-25) (follows `design.md`)
+Status: see requirements.md
 
 - [x] 1. `src/chapters/fullscreen.ts` (web and Tauri paths, F11 listener) and its unit tests in `scripts/harness/hub-unit.mjs` (toggle on/off, change callback, refused request leaves it off, Tauri IPC call shape, idempotent install). _Req 1, 3, 5, 6_. Gates: `node scripts/harness/hub-unit.mjs`, `npm run quality`
 - [x] 2. `installFullscreenKey()` in `src/hub/app.ts`, `src/pages/chapters-page.ts`, `src/pages/manual-page.ts`, `src/play/comix-read.ts`, `src/play/menu.ts`. _Req 1_. Gates: `npm run quality`, `node scripts/desktop/landing-smoke.mjs`

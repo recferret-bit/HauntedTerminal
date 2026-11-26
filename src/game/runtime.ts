@@ -66,7 +66,7 @@ export function gateOpen(g: Play): boolean {
   return !!gate && hasExec(gate);
 }
 
-export function gargoyleNode(g: Play): VNode | null {
+function gargoyleNode(g: Play): VNode | null {
   return find(g, '/var/dungeon/entrance/iron_gate/stone_gargoyle.bin');
 }
 
@@ -112,7 +112,7 @@ export function bossDown(g: Play, how: 'frozen' | 'thawed' | 'killed'): void {
   cut(g, how === 'frozen' ? 'floor4-freeze' : 'floor4-sigkill');
 }
 
-export function enterable(g: Play, node: VNode): boolean {
+function enterable(g: Play, node: VNode): boolean {
   if (node.kind === 'dir') return hasExec(node);
   if (node.kind !== 'symlink') return false;
   const target = resolve(node.parent ?? g.run.root, node.name, true).node;
@@ -252,7 +252,7 @@ export function applyPickup(g: Play, type: PickupType, amount: number, entityId:
   return `+${amount} GB SSD (${g.run.ssd} GB): ${backups(g)} backup(s). Die now and you restore in place.\n`;
 }
 
-export function collect(g: Play, pickup: Pickup, node: VNode, events: KernelEvent[]): string {
+function collect(g: Play, pickup: Pickup, node: VNode, events: KernelEvent[]): string {
   unlink(g, node);
   push(g, events, { type: 'FILE_REMOVED', inodeId: node.id, name: node.name, entityId: pickup.id });
   g.run.world.collect(pickup);
@@ -364,15 +364,6 @@ export function vetoSubtree(g: Play, node: VNode, events: KernelEvent[]): string
     veto = g.run.world.vetoRemove(child, events);
   });
   return veto;
-}
-
-export function isCwdInside(g: Play, node: VNode): boolean {
-  let cursor: VNode | null = g.run.cwd;
-  while (cursor) {
-    if (cursor === node) return true;
-    cursor = cursor.parent;
-  }
-  return false;
 }
 
 export function unlink(_g: Play, node: VNode): void {

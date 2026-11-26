@@ -32,7 +32,7 @@ export const DESIGN_RIGHT = -1.15;
 export const ACTOR_Z = 0.22;
 /** The hero's stepped walk to a target: 6 held poses. */
 export const HERO_STEPS = 6;
-export const HERO_STEP_MS = 70;
+const HERO_STEP_MS = 70;
 export const HERO_WALK_MS = HERO_STEPS * HERO_STEP_MS;
 /** A batch never queues more than this far ahead; past it, events play at once. */
 export const MAX_LEAD_MS = 2400;

@@ -3,38 +3,28 @@ import type { KernelEvent } from '../contracts/events.js';
 import type { GameSnapshot, TickResult } from '../game/types.js';
 import { setHudHidden } from '../ui/screen.js';
 import { colourise } from '../ui/terminal.js';
-import { emitKernelEvent, openChapterMap, openHintDialog, openManualModal } from './input.js';
-import { exposeLabHooks } from './lab.js';
 import { mountTutorial, taunt } from '../ui/tutorial.js';
 import { syncPlayAudio } from './audio-sync.js';
+import { exposeLabHooks } from './lab.js';
+import { CARD_MS, closeOtherModals, type Play } from './state.js';
 import { syncTerminalPresence } from './term-reveal.js';
-import { CARD_MS, type PauseReason, type Play } from './state.js';
 
 const EVENT_LOG_CAP = 400;
-const OVERLAY_STORM_BLOCKERS: readonly PauseReason[] = ['cinematic', 'intro', 'outro', 'ended', 'hidden'];
 
 function syncPause(play: Play): void {
-  play.session.setPaused(play.reasons.size > 0);
-  play.stage.stormPaused = play.phase !== 'play' || OVERLAY_STORM_BLOCKERS.some((r) => play.reasons.has(r));
-  const blocking =
-    [...play.reasons].some((r) => r !== 'hidden') ||
-    Boolean(play.manualBook?.isOpen()) ||
-    Boolean(play.chapterMap?.isOpen());
-  play.shell.setBlocked(blocking);
+  const derived = play.lifecycle.derive({
+    manualOpen: Boolean(play.manualBook?.isOpen()),
+    mapOpen: Boolean(play.chapterMap?.isOpen()),
+  });
+  play.session.setPaused(derived.clockPaused);
+  play.stage.stormPaused = derived.stormPaused;
+  play.shell.setBlocked(derived.shellBlocked);
   // A card, cinematic or the end of the run takes the screen: overlays step aside.
-  if (play.menu?.isOpen() && [...play.reasons].some((r) => r !== 'hidden' && r !== 'intro')) play.menu.close();
-  if (play.hintDialog?.isOpen() && [...play.reasons].some((r) => r !== 'hidden' && r !== 'intro')) play.hintDialog.close();
-  if (play.chapterMap?.isOpen() && [...play.reasons].some((r) => r !== 'hidden' && r !== 'intro')) play.chapterMap.close();
-  if (play.manualBook?.isOpen() && [...play.reasons].some((r) => r === 'cinematic' || r === 'outro' || r === 'ended')) {
+  if (derived.closeOverlays) closeOtherModals(play, 'manual');
+  if (derived.closeManual && play.manualBook?.isOpen()) {
     play.manualBook.close();
   }
-  const hideHud =
-    play.phase === 'boot' ||
-    play.phase === 'intro' ||
-    play.reasons.has('reveal') ||
-    play.reasons.has('card') ||
-    play.reasons.has('cinematic');
-  setHudHidden(hideHud);
+  setHudHidden(derived.hideHud);
   play.hud?.update(play.session.snapshot());
 }
 
@@ -45,7 +35,8 @@ function paint(play: Play, snap: GameSnapshot): void {
   play.menu?.update(snap);
   play.hintDialog?.update(snap);
   play.chapterMap?.update(snap);
-  play.tutorial.sync(play.phase === 'play' || play.phase === 'intro' ? (snap.tutorial ?? null) : null);
+  const phase = play.lifecycle.phase();
+  play.tutorial.sync(phase === 'play' || phase === 'intro' ? (snap.tutorial ?? null) : null);
   play.dom.captionEl.textContent = snap.room.title;
   play.dom.captionEl.title = snap.cwd;
   try {
@@ -53,18 +44,20 @@ function paint(play: Play, snap: GameSnapshot): void {
   } catch (err) {
     console.error(err);
   }
-  if (snap.ended && !play.endingStarted && play.phase === 'play') play.beginEnding(null);
+  if (snap.ended && !play.lifecycle.isEndingStarted() && phase === 'play') {
+    play.events.emit({ kind: 'ending-begin', stats: null });
+  }
   syncPlayAudio(play);
 }
 
 function holdForCard(play: Play): void {
-  play.reasons.add('card');
+  play.lifecycle.addReason('card');
   window.clearTimeout(play.cardTimer);
   play.cardTimer = window.setTimeout(() => {
-    play.reasons.delete('card');
-    play.syncPause();
+    play.lifecycle.deleteReason('card');
+    syncPause(play);
   }, CARD_MS);
-  play.syncPause();
+  syncPause(play);
 }
 
 function forward(play: Play, ev: KernelEvent): void {
@@ -77,7 +70,6 @@ function forward(play: Play, ev: KernelEvent): void {
 
 /** Delay between two enemies acting in one enemy turn (turn-based-battles Req 19). */
 const ENEMY_STAGGER_MS = 400;
-let applySeq = 0;
 
 /** Cuts an enemy turn at its ENEMY_ACTING markers: the first slice holds everything up to the second enemy. */
 function enemySlices(events: KernelEvent[]): KernelEvent[][] {
@@ -94,16 +86,15 @@ function enemySlices(events: KernelEvent[]): KernelEvent[][] {
  * The single sink for everything the session returns: stage FX, HUD reactions, flow, then the room.
  * An enemy turn with several enemies plays one enemy every ENEMY_STAGGER_MS; the snapshot paints after the last,
  * unless a newer batch arrived meanwhile.
- * `printed`: the text the session already printed with these events (taunts it contains are not repeated).
  */
 function applyEvents(play: Play, events: KernelEvent[], snap: GameSnapshot, printed = ''): void {
   play.eventLog.push(...events);
   if (play.eventLog.length > EVENT_LOG_CAP) play.eventLog.splice(0, play.eventLog.length - EVENT_LOG_CAP);
-  const seq = ++applySeq;
+  const seq = ++play.applySeq;
   const slices = enemySlices(events);
   const last = slices.length - 1;
   slices.forEach((slice, i) => {
-    const run = (): void => applySlice(play, slice, snap, printed, i === last && seq === applySeq);
+    const run = (): void => applySlice(play, slice, snap, printed, i === last && seq === play.applySeq);
     if (i === 0) run();
     else globalThis.setTimeout(run, i * ENEMY_STAGGER_MS);
   });
@@ -111,7 +102,7 @@ function applyEvents(play: Play, events: KernelEvent[], snap: GameSnapshot, prin
 
 function applySlice(play: Play, events: KernelEvent[], snap: GameSnapshot, printed: string, paintNow: boolean): void {
   for (const ev of events) {
-    if (ev.type === 'FLOOR_ENTERED' && play.phase === 'intro') {
+    if (ev.type === 'FLOOR_ENTERED' && play.lifecycle.phase() === 'intro') {
       play.stashedFloorCard = ev;
       continue;
     }
@@ -135,7 +126,7 @@ function applySlice(play: Play, events: KernelEvent[], snap: GameSnapshot, print
       case 'FLOOR_ENTERED':
         play.levelEntryCommands = snap.commands;
         play.dialogs?.handleEvent(ev);
-        if (play.phase === 'play') holdForCard(play);
+        if (play.lifecycle.phase() === 'play') holdForCard(play);
         break;
       case 'AGENT_TAUNT':
         play.dialogs?.handleEvent(ev);
@@ -152,7 +143,7 @@ function applySlice(play: Play, events: KernelEvent[], snap: GameSnapshot, print
         }
         break;
       case 'GAME_ENDED':
-        play.beginEnding({ rank: ev.rank, timeSec: ev.timeSec, commands: ev.commands, shortcuts: snap.shortcuts });
+        play.events.emit({ kind: 'ending-begin', stats: { rank: ev.rank, timeSec: ev.timeSec, commands: ev.commands, shortcuts: snap.shortcuts } });
         break;
       case 'ACHIEVEMENT_UNLOCKED':
         play.hud?.achievement(ev);
@@ -170,27 +161,48 @@ function applySlice(play: Play, events: KernelEvent[], snap: GameSnapshot, print
 
 function applyTick(play: Play, res: TickResult): void {
   if (res.output) play.shell.printAbove(colourise(res.output, res.stderr));
-  play.apply(res.events, res.snapshot, res.output);
+  applyEvents(play, res.events, res.snapshot, res.output);
 }
 
 export function wirePlayLoop(play: Play): void {
-  play.syncPause = () => syncPause(play);
-  play.paint = (snap) => paint(play, snap);
-  play.apply = (events, snap, printed = '') => applyEvents(play, events, snap, printed);
-  play.applyTick = (res) => applyTick(play, res);
+  play.events.subscribe((ev) => {
+    switch (ev.kind) {
+      case 'sync-pause':
+        syncPause(play);
+        break;
+      case 'paint':
+        paint(play, ev.snap);
+        break;
+      case 'apply-events':
+        applyEvents(play, ev.events, ev.snap, ev.printed);
+        break;
+      case 'apply-tick':
+        applyTick(play, ev.res);
+        break;
+      default:
+        break;
+    }
+  });
   const tutHost = play.dom.stageWrap.querySelector<HTMLElement>('#titleblock') ?? play.dom.stageWrap;
   play.tutorial = mountTutorial(tutHost, () => {
-    if (play.phase !== 'play' || !play.skipTutorial) return;
+    if (play.lifecycle.phase() !== 'play' || !play.skipTutorial) return;
     const r = play.skipTutorial();
     if (r && 'snapshot' in r) {
       if (r.output) play.shell.printAbove(colourise(r.output, r.stderr));
-      play.apply(r.events, r.snapshot, r.output);
-    } else play.paint(r ?? play.session.snapshot());
+      applyEvents(play, r.events, r.snapshot, r.output);
+    } else paint(play, r ?? play.session.snapshot());
   });
 }
 
+function emitHookKernelEvent(play: Play, ev: KernelEvent): void {
+  applyEvents(play, [ev], play.session.snapshot());
+  if (play.session.bus) {
+    play.session.bus.emit({ kind: 'kernel', event: ev });
+  }
+}
+
 function exposePlayHooks(play: Play): void {
-  // Automation hooks for headless playthroughs (.agents/harness). Keep them.
+  // Automation hooks for headless playthroughs. Keep them stable.
   (window as unknown as { __game?: unknown }).__game = {
     exec: (line: string) => play.session.exec(line),
     tick: () => play.session.tick(),
@@ -202,37 +214,33 @@ function exposePlayHooks(play: Play): void {
     close: () => play.codeEditor?.close(),
   };
   (window as unknown as { __menu?: unknown }).__menu = {
-    open: () => play.menu?.open(play.session.snapshot()),
-    close: () => play.menu?.close(),
+    open: () => play.events.emit({ kind: 'modal', modal: 'menu', action: 'open' }),
+    close: () => play.events.emit({ kind: 'modal', modal: 'menu', action: 'close' }),
     isOpen: () => play.menu?.isOpen() ?? false,
   };
   (window as unknown as { __hint?: unknown }).__hint = {
-    open: () => openHintDialog(play),
-    close: () => play.hintDialog?.close(),
+    open: () => play.events.emit({ kind: 'modal', modal: 'hint', action: 'open' }),
+    close: () => play.events.emit({ kind: 'modal', modal: 'hint', action: 'close' }),
     isOpen: () => play.hintDialog?.isOpen() ?? false,
   };
   (window as unknown as { __manual?: unknown }).__manual = {
     isOpen: () => play.manualBook?.isOpen() ?? false,
-    open: (queryOrPage?: string | number) => openManualModal(play, queryOrPage),
-    close: () => play.manualBook?.close(),
+    open: (queryOrPage?: string | number) => play.events.emit({ kind: 'modal', modal: 'manual', action: 'open', query: queryOrPage }),
+    close: () => play.events.emit({ kind: 'modal', modal: 'manual', action: 'close' }),
   };
   (window as unknown as { __map?: unknown }).__map = {
     isOpen: () => play.chapterMap?.isOpen() ?? false,
-    open: (queryOrIndex?: string | number) => openChapterMap(play, queryOrIndex),
-    close: () => play.chapterMap?.close(),
+    open: (queryOrIndex?: string | number) => play.events.emit({ kind: 'modal', modal: 'map', action: 'open', query: queryOrIndex }),
+    close: () => play.events.emit({ kind: 'modal', modal: 'map', action: 'close' }),
   };
   (window as unknown as { __term?: unknown }).__term = {
-    /** Exactly what Enter does: echo, run, print; queued while input is blocked. */
     submit: (line: string) => play.shell.submit(line),
-    /** Raw keystrokes as xterm would deliver them (e.g. 'ca\t', '\x1b[A', '\r'). */
     input: (data: string) => play.shell.term.input(data, true),
     busy: () => play.shell.busy(),
-    /** Print text above the prompt, as if a command had produced it. */
     print: (text: string) => play.shell.printAbove(text),
-    /** Push a synthetic KernelEvent through the same sink as session results (stage + HUD + flow). */
-    emit: (ev: KernelEvent) => emitKernelEvent(play, ev),
-    phase: () => play.phase,
-    paused: () => [...play.reasons],
+    emit: (ev: KernelEvent) => emitHookKernelEvent(play, ev),
+    phase: () => play.lifecycle.phase(),
+    paused: () => [...play.lifecycle.reasons],
     statsOpen: () => play.dom.statsEl.classList.contains('open'),
     text: () => {
       const buf = play.shell.term.buffer.active;
@@ -245,8 +253,7 @@ function exposePlayHooks(play: Play): void {
 
 export function armPlayClock(play: Play): void {
   window.setInterval(() => {
-    // The session ignores ticks while paused; still refresh the HUD clock.
-    play.applyTick(play.session.tick());
+    applyTick(play, play.session.tick());
   }, 1000);
   exposePlayHooks(play);
   exposeLabHooks(play);

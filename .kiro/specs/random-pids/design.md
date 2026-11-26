@@ -1,8 +1,8 @@
 # Random pids: design
 
-Status: done
+Status: see requirements.md
 
-Covers requirements 1 to 8 of `requirements.md`. The chapter session is the only place that changes; the specs only swap a number for a placeholder.
+Covers requirements 1 to 9 of `requirements.md`. The chapter session is the only place that changes; the specs only swap a number for a placeholder.
 
 ## Approach
 
@@ -20,7 +20,7 @@ One new pure module, `src/chapters/pids.ts` (chapters layer, no new `src/<area>/
 3. `g.rt.spec` becomes a filled copy of the level spec (`fillPidsDeep`) except `solutionCommands`, which stay raw. Hints, tutorial prompts and commands, script text, checklist descriptions and the summary all read `g.rt.spec`, so they show the real PID with no change at their call sites (requirement 4).
 4. The level's `dialogs.json` entry is filled once at load into `g.rt.dialog`. The five readers of `g.pack.dialogs?.levels[g.rt.spec.id]` (`session-level.ts`, `session-meta.ts`, `session-rules.ts`, `session-snapshot.ts`, `script.ts`) switch to one helper, `levelDialog(g)`.
 5. `ChapterSession.exec(line)` runs `fillPids(line, g.rt.pids)` before the shell sees the line. Every consumer of `solutionCommands` (`solve.ts`, the editor's "step the solution", `play-browser.mjs` through `__term.submit`, the property suites, `battle-unit`, `forge` `solve_level`) already passes the lines through `exec` or the terminal's submit, so none of them changes (requirement 5).
-6. The PID 1 boss, `777` and `4242` are never in the roll (requirement 3); `session-proc.ts` is untouched.
+6. The PID 1 boss, `10`, `777` and `4242` are never in the roll (requirement 3); `session-proc.ts` is untouched.
 
 ### Specs and checks
 

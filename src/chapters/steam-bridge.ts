@@ -5,9 +5,8 @@
  * Once a real Steam App ID is issued (see `.kiro/specs/steamworks-store-release/`), set
  * `steamAppId` and `steamStoreUrl` below to switch every Wishlist CTA to the live store page.
  */
-export const GITHUB_REPO_URL = 'https://github.com/recferret-bit/OutOfCredits';
+const GITHUB_REPO_URL = 'https://github.com/recferret-bit/OutOfCredits';
 export const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases`;
-export const GITHUB_LATEST_RELEASE_URL = `${GITHUB_RELEASES_URL}/latest`;
 
 const STEAM_STORE_APP_RX = /^https:\/\/store\.steampowered\.com\/app\/\d+(?:[/?#]|$)/;
 const GITHUB_REPO_RX = /^https:\/\/github\.com\/recferret-bit\/(?:OutOfCredits|HauntedTerminal)(?:[/?#]|$)/;
@@ -28,8 +27,17 @@ export const STEAM_RELEASE_META: SteamReleaseMeta = {
   waitlistFormUrl: '',
 };
 
+const DISALLOWED_URL_PUNCT = /[\s"'<>\\`]/;
+
+function hasControlCode(s: string): boolean {
+  for (let i = 0; i < s.length; i += 1) {
+    if (s.charCodeAt(i) <= 0x1f) return true;
+  }
+  return false;
+}
+
 export function isAllowedExternalReleaseUrl(url: string): boolean {
-  if (!url || url.length > 512 || /[\s"'<>\\`\x00-\x1f]/.test(url)) return false;
+  if (!url || url.length > 512 || DISALLOWED_URL_PUNCT.test(url) || hasControlCode(url)) return false;
   if (url.includes('..') || /%2e/i.test(url) || url.slice('https://'.length).includes('//')) return false;
   return STEAM_STORE_APP_RX.test(url) || GITHUB_REPO_RX.test(url);
 }
@@ -175,7 +183,7 @@ export async function readDesktopSaveBundle(): Promise<string | null> {
 }
 
 /** Atomically writes `<app_data_dir>/out-of-credits-save.json` inside the Tauri desktop shell. */
-export async function writeDesktopSaveBundle(bundleJson: string): Promise<boolean> {
+async function writeDesktopSaveBundle(bundleJson: string): Promise<boolean> {
   if (!bundleJson) return false;
   const ok = await invokeTauriCommand<boolean>('desktop_write_save_bundle', { bundleJson });
   return Boolean(ok);

@@ -268,7 +268,6 @@ function addPanelLetter(world: ComixWorld, nodes: LetterNodes, item: ResolvedLet
       const card = buildStatsCard(world, item, spec, stats);
       tagLetterEl(card.root, item);
       nodes.statsCards.push(card);
-      return;
     }
   }
 }

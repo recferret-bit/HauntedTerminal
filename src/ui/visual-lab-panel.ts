@@ -1,8 +1,8 @@
-import type { CrtParams } from '../shaders/crt-pass.js';
-import { DEFAULT_CRT_PARAMS } from '../shaders/crt-pass.js';
-import type { PixelArtParams } from '../shaders/pixel-art.js';
-import { DEFAULT_PIXEL_PARAMS } from '../shaders/pixel-art.js';
+import { createStateMachine, type StateMachine, type TransitionTable } from '../contracts/state-machine.js';
+import { DEFAULT_CRT_PARAMS, type CrtParams } from '../shaders/crt-pass.js';
+import { DEFAULT_PIXEL_PARAMS, type PixelArtParams } from '../shaders/pixel-art.js';
 import { LIGHT_MODES, type LightMode } from '../renderer/stage-light.js';
+import { dom } from './dom-lite.js';
 import { ensureStyle, switchButton } from './visual-lab-style.js';
 import {
   DEFAULT_INK, DEFAULT_STORM, DEFAULT_ZOOM, TAB_LABEL, TAB_STATUS, TABS,
@@ -10,6 +10,19 @@ import {
   slidersFor, snap, storageGet, storageSet, writeCrt, writePixel,
   type ShaderHooks, type TabId,
 } from './visual-lab-state.js';
+
+export type VisualLabMode = 'closed' | 'open' | 'destroyed';
+export type VisualLabEvent = 'OPEN' | 'CLOSE' | 'DESTROY';
+
+export const VISUAL_LAB_TRANSITIONS: TransitionTable<VisualLabMode, VisualLabEvent> = {
+  closed: { OPEN: 'open', DESTROY: 'destroyed' },
+  open: { CLOSE: 'closed', DESTROY: 'destroyed' },
+  destroyed: {},
+};
+
+export function createVisualLabMachine(): StateMachine<VisualLabMode, VisualLabEvent> {
+  return createStateMachine({ initial: 'closed', transitions: VISUAL_LAB_TRANSITIONS });
+}
 
 interface Lab {
   hooks: ShaderHooks;
@@ -23,8 +36,7 @@ interface Lab {
   storm: number;
   zoom: number;
   tab: TabId;
-  open: boolean;
-  dead: boolean;
+  mode: StateMachine<VisualLabMode, VisualLabEvent>;
   armed: boolean;
   light: LightMode;
   strip: HTMLElement | null;
@@ -38,36 +50,16 @@ export interface VisualLab {
   destroy(): void;
 }
 
-function pixelField(pixel: PixelArtParams, key: string): number {
-  switch (key) {
-    case 'pixelSize': return pixel.pixelSize;
-    case 'colorLevels': return pixel.colorLevels;
-    case 'dither': return pixel.dither;
-    case 'edgeStrength': return pixel.edgeStrength;
-    case 'saturation': return pixel.saturation;
-    case 'contrast': return pixel.contrast;
-    case 'gridStrength': return pixel.gridStrength;
-    case 'paletteMode': return pixel.paletteMode;
-    default: return 0;
-  }
-}
+const isDead = (lab: Lab): boolean => lab.mode.state === 'destroyed';
 
-function crtField(crt: CrtParams, key: string): number {
-  switch (key) {
-    case 'scanlineIntensity': return crt.scanlineIntensity;
-    case 'rollIntensity': return crt.rollIntensity;
-    case 'noiseOpacity': return crt.noiseOpacity;
-    case 'flickerStrength': return crt.flickerStrength;
-    case 'vignetteStrength': return crt.vignetteStrength;
-    case 'mix': return crt.mix;
-    case 'distort': return crt.distort;
-    default: return 0;
-  }
+function numField<T extends object>(obj: T, key: string): number {
+  const val = Object.hasOwn(obj, key) ? (obj as unknown as Record<string, unknown>)[key] : undefined;
+  return typeof val === 'number' ? val : 0;
 }
 
 function fieldValue(lab: Lab, key: string): number {
-  if (lab.tab === 'crt') return crtField(lab.crt, key);
-  if (lab.tab === 'pixel') return pixelField(lab.pixel, key);
+  if (lab.tab === 'crt') return numField(lab.crt, key);
+  if (lab.tab === 'pixel') return numField(lab.pixel, key);
   if (lab.tab === 'ink') return key === 'outline' ? lab.ink.outline : key === 'halftone' ? lab.ink.halftone : 0;
   if (lab.tab === 'storm') return lab.storm;
   return lab.zoom;
@@ -86,7 +78,7 @@ function tabIsOn(lab: Lab, active: TabId): boolean {
 }
 
 function persist(lab: Lab): void {
-  if (!lab.armed || lab.dead) return;
+  if (!lab.armed || isDead(lab)) return;
   storageSet('pixelOn', lab.pixelOn ? '1' : '0');
   storageSet('crtOn', lab.crtOn ? '1' : '0');
   storageSet('pixel', JSON.stringify(lab.pixel));
@@ -102,14 +94,30 @@ function persist(lab: Lab): void {
 function renderSliders(lab: Lab): void {
   const host = lab.dlg.querySelector<HTMLElement>('#pd-sliders');
   if (!host) return;
-  host.innerHTML = slidersFor(lab.tab).map((spec) => {
-    const value = fieldValue(lab, spec.key);
-    return `<label class="pd-row"><span class="pd-lbl"><span>${spec.label}</span><b data-val="${spec.key}">${formatSlider(spec, value)}</b></span><input type="range" data-key="${spec.key}" aria-label="${spec.label}" min="${spec.min}" max="${spec.max}" step="${spec.step}" value="${value}" /></label>`;
-  }).join('');
+  host.replaceChildren(
+    ...slidersFor(lab.tab).map((spec) => {
+      const value = fieldValue(lab, spec.key);
+      return dom('label', { class: 'pd-row' }, [
+        dom('span', { class: 'pd-lbl' }, [
+          dom('span', {}, [spec.label]),
+          dom('b', { 'data-val': spec.key }, [formatSlider(spec, value)]),
+        ]),
+        dom('input', {
+          type: 'range',
+          'data-key': spec.key,
+          'aria-label': spec.label,
+          min: spec.min,
+          max: spec.max,
+          step: spec.step,
+          value,
+        }),
+      ]);
+    }),
+  );
 }
 
 function sync(lab: Lab): void {
-  if (lab.dead) return;
+  if (isDead(lab)) return;
   const flags: Record<TabId, boolean> = {
     crt: lab.crtOn,
     pixel: lab.pixelOn,
@@ -184,14 +192,14 @@ function pushZoom(lab: Lab): void {
 }
 
 function togglePixel(lab: Lab): boolean {
-  if (lab.dead) return lab.pixelOn;
+  if (isDead(lab)) return lab.pixelOn;
   lab.pixelOn = !lab.pixelOn;
   pushPixel(lab);
   return lab.pixelOn;
 }
 
 function toggleCrt(lab: Lab): boolean {
-  if (lab.dead) return lab.crtOn;
+  if (isDead(lab)) return lab.crtOn;
   lab.crtOn = !lab.crtOn;
   pushCrt(lab);
   return lab.crtOn;
@@ -220,7 +228,7 @@ function resetZoom(lab: Lab): void {
 }
 
 function applySlider(lab: Lab, key: string, raw: number): void {
-  if (lab.dead) return;
+  if (isDead(lab)) return;
   const spec = slidersFor(lab.tab).find((item) => item.key === key);
   if (!spec) return;
   const value = snap(raw, spec.min, spec.max, spec.step);
@@ -269,7 +277,7 @@ function applySlider(lab: Lab, key: string, raw: number): void {
 }
 
 function resetActive(lab: Lab): void {
-  if (lab.dead) return;
+  if (isDead(lab)) return;
   if (lab.tab === 'crt') {
     lab.crt = cloneCrt(DEFAULT_CRT_PARAMS);
     pushCrt(lab);
@@ -295,11 +303,11 @@ function resetActive(lab: Lab): void {
 }
 
 function setOpen(lab: Lab, next: boolean): void {
-  if (lab.dead) return;
-  lab.open = next;
-  lab.dlg.classList.toggle('open', lab.open);
-  lab.dlg.setAttribute('aria-hidden', lab.open ? 'false' : 'true');
-  if (lab.open) sync(lab);
+  if (!lab.mode.send(next ? 'OPEN' : 'CLOSE')) return;
+  const open = lab.mode.state === 'open';
+  lab.dlg.classList.toggle('open', open);
+  lab.dlg.setAttribute('aria-hidden', open ? 'false' : 'true');
+  if (open) sync(lab);
 }
 
 function enableDragging(box: HTMLElement, handle: HTMLElement): void {
@@ -336,45 +344,48 @@ function buildLabChrome(): { strip: HTMLElement | null; dlg: HTMLElement } {
   const dock = document.getElementById('shader-dock');
   let strip: HTMLElement | null = null;
   if (dock) {
-    strip = document.createElement('div');
-    strip.id = 'shader-strip';
-    strip.innerHTML = [
+    strip = dom('div', { id: 'shader-strip' }, [
       switchButton('crt', 'CRT'),
       switchButton('pixel', 'PIXEL'),
       switchButton('ink', 'INK'),
       switchButton('storm', 'STORM'),
-    ].join('');
+    ]);
     dock.appendChild(strip);
   }
-  const dlg = document.createElement('div');
-  dlg.id = 'pixel-dlg';
-  dlg.setAttribute('role', 'dialog');
-  dlg.setAttribute('aria-label', 'Visual shader lab');
-  dlg.setAttribute('aria-hidden', 'true');
   const tabButtons = TABS.map((id) =>
-    `<button type="button" class="pd-tab" role="tab" data-tab="${id}" aria-selected="false"><i class="pd-dot" data-dot="${id}"></i><span>${TAB_LABEL[id]}</span></button>`,
-  ).join('');
-  dlg.innerHTML = `
-    <div class="pd-head" id="pd-drag">
-      <span class="pd-title"><i></i>VISUAL SHADER LAB</span>
-      <button type="button" class="pd-close" id="pd-close" aria-label="Close">✕</button>
-    </div>
-    <div class="pd-body">
-      <div class="pd-light" role="radiogroup" aria-label="Light source">
-        <span class="pd-sub">LIGHT SOURCE</span>
-        <div class="pd-radios">${LIGHT_MODES.map((m) => `<label title="${m.hint}"><input type="radio" name="pd-light" value="${m.id}"><span>${m.label}</span></label>`).join('')}</div>
-      </div>
-      <div class="pd-tabs" role="tablist">${tabButtons}</div>
-      <div class="pd-top">
-        <span class="pd-sub" id="pd-status-lbl">CRT OVERLAY</span>
-        <button type="button" class="pd-toggle" id="pd-enable" aria-pressed="false">OFF</button>
-      </div>
-      <div class="pd-sliders" id="pd-sliders"></div>
-      <div class="pd-foot">
-        <span class="pd-sub">LIVE</span>
-        <button type="button" class="pd-reset" id="pd-reset">RESET</button>
-      </div>
-    </div>`;
+    dom('button', { type: 'button', class: 'pd-tab', role: 'tab', 'data-tab': id, 'aria-selected': 'false' }, [
+      dom('i', { class: 'pd-dot', 'data-dot': id }),
+      dom('span', {}, [TAB_LABEL[id]]),
+    ]),
+  );
+  const radios = LIGHT_MODES.map((m) =>
+    dom('label', { title: m.hint }, [
+      dom('input', { type: 'radio', name: 'pd-light', value: m.id }),
+      dom('span', {}, [m.label]),
+    ]),
+  );
+  const dlg = dom('div', { id: 'pixel-dlg', role: 'dialog', 'aria-label': 'Visual shader lab', 'aria-hidden': 'true' }, [
+    dom('div', { class: 'pd-head', id: 'pd-drag' }, [
+      dom('span', { class: 'pd-title' }, [dom('i'), 'VISUAL SHADER LAB']),
+      dom('button', { type: 'button', class: 'pd-close', id: 'pd-close', 'aria-label': 'Close' }, ['✕']),
+    ]),
+    dom('div', { class: 'pd-body' }, [
+      dom('div', { class: 'pd-light', role: 'radiogroup', 'aria-label': 'Light source' }, [
+        dom('span', { class: 'pd-sub' }, ['LIGHT SOURCE']),
+        dom('div', { class: 'pd-radios' }, radios),
+      ]),
+      dom('div', { class: 'pd-tabs', role: 'tablist' }, tabButtons),
+      dom('div', { class: 'pd-top' }, [
+        dom('span', { class: 'pd-sub', id: 'pd-status-lbl' }, ['CRT OVERLAY']),
+        dom('button', { type: 'button', class: 'pd-toggle', id: 'pd-enable', 'aria-pressed': 'false' }, ['OFF']),
+      ]),
+      dom('div', { class: 'pd-sliders', id: 'pd-sliders' }),
+      dom('div', { class: 'pd-foot' }, [
+        dom('span', { class: 'pd-sub' }, ['LIVE']),
+        dom('button', { type: 'button', class: 'pd-reset', id: 'pd-reset' }, ['RESET']),
+      ]),
+    ]),
+  ]);
   document.body.appendChild(dlg);
   return { strip, dlg };
 }
@@ -397,7 +408,7 @@ function bindLabUi(lab: Lab): void {
   const dragHandle = lab.dlg.querySelector<HTMLElement>('#pd-drag');
   if (dragHandle) enableDragging(lab.dlg, dragHandle);
   lab.strip?.addEventListener('click', (event) => {
-    if (lab.dead || !(event.target instanceof Element)) return;
+    if (isDead(lab) || !(event.target instanceof Element)) return;
     const button = event.target.closest<HTMLElement>('[data-fx]');
     const fx = button?.dataset.fx;
     if (fx === 'crt') toggleCrt(lab);
@@ -406,7 +417,7 @@ function bindLabUi(lab: Lab): void {
     else if (fx === 'storm') toggleStorm(lab);
   });
   lab.dlg.addEventListener('click', (event) => {
-    if (lab.dead || !(event.target instanceof Element)) return;
+    if (isDead(lab) || !(event.target instanceof Element)) return;
     const tabButton = event.target.closest<HTMLElement>('[data-tab]');
     if (tabButton && isTab(tabButton.dataset.tab)) {
       lab.tab = tabButton.dataset.tab;
@@ -426,7 +437,7 @@ function bindLabUi(lab: Lab): void {
     }
   });
   lab.dlg.addEventListener('input', (event) => {
-    if (lab.dead || !(event.target instanceof HTMLInputElement) || event.target.type !== 'range') return;
+    if (isDead(lab) || !(event.target instanceof HTMLInputElement) || event.target.type !== 'range') return;
     const key = event.target.dataset.key;
     if (!key) return;
     applySlider(lab, key, Number(event.target.value));
@@ -434,8 +445,7 @@ function bindLabUi(lab: Lab): void {
 }
 
 function destroyLab(lab: Lab): void {
-  if (lab.dead) return;
-  lab.dead = true;
+  if (!lab.mode.send('DESTROY')) return;
   lab.strip?.remove();
   lab.dlg.remove();
   if (!document.getElementById('pixel-dlg') && !document.getElementById('shader-strip')) {
@@ -460,8 +470,7 @@ export function mountVisualLab(hooks: ShaderHooks): VisualLab {
     storm: boot.storm,
     zoom: boot.zoom,
     tab: isTab(storedTab) ? storedTab : 'crt',
-    open: false,
-    dead: false,
+    mode: createVisualLabMachine(),
     armed: false,
     light: boot.light,
     strip: chrome.strip,
@@ -473,7 +482,7 @@ export function mountVisualLab(hooks: ShaderHooks): VisualLab {
   sync(lab);
   lab.armed = true;
   return {
-    toggle: () => setOpen(lab, !lab.open),
+    toggle: () => setOpen(lab, lab.mode.state !== 'open'),
     togglePixel: () => togglePixel(lab),
     toggleCrt: () => toggleCrt(lab),
     destroy: () => destroyLab(lab),

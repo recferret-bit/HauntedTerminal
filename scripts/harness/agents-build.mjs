@@ -23,13 +23,16 @@ const READ_SHELL = [
   'pwd', 'ls', 'ls *', 'cat *', 'head *', 'tail *', 'wc *', 'grep *', 'which *', 'echo *', 'cd *', 'sleep *',
   'git status', 'git status *', 'git log', 'git log *', 'git show *', 'git branch --show-current', 'git rev-parse *', 'git ls-files', 'git ls-files *',
   'git diff', 'git diff --stat*', 'git diff --name-only*', 'git diff --cached --stat*', 'git diff -- *',
+  // Compare two outputs saved under the shared, git-ignored output folder (e.g. the fingerprint before and after a change).
+  'diff scripts/harness/out/*',
 ];
 /**
- * The dev server on 5174, for when 5173 belongs to another project on the machine (qa then had no page for its browser
+ * The dev server on 5174, for when 5400 belongs to another project on the machine (qa then had no page for its browser
  * tools). Exact strings: a `STACK_PORT=*` pattern would also match `STACK_PORT=$(...) npm start`.
  */
 const ALT_STACK = ['STACK_PORT=5174 npm start', 'STACK_PORT=5174 npm stop', 'STACK_PORT=5174 npm run status'];
-const GATE_SHELL = ['npm run quality', 'npm run quality:*', 'npm run build', 'npm start', 'npm stop', 'npm restart', 'npm run status', ...ALT_STACK, 'node scripts/*', 'node .kiro/skills/*'];
+/** `npx tsc --noEmit`, exactly: CLAUDE.md and the asset skills cite it after a TypeScript edit in src/. No other `npx`. */
+const GATE_SHELL = ['npm run quality', 'npm run quality:*', 'npm run build', 'npm start', 'npm stop', 'npm restart', 'npm run status', ...ALT_STACK, 'node scripts/*', 'node .kiro/skills/*', 'npx tsc --noEmit'];
 /** Only the lead writes git history, and only on agent/<task> branches (the guard hook enforces the branch). */
 const GIT_WRITES = ['git switch -c agent/*', 'git switch agent/*', 'git add -- *', 'git commit -m *', 'git push -u origin agent/*', 'git push origin agent/*'];
 /**
@@ -39,10 +42,24 @@ const GIT_WRITES = ['git switch -c agent/*', 'git switch agent/*', 'git add -- *
 const PERSON_ONLY = ['docs/qa/baselines/**'];
 const PERSON_ONLY_SHELL = ['*visual-audit*--update*', '*docs/qa/baselines*', 'cp *..*'];
 /** Denied for everyone even if a future edit adds a matching allow: they bypass the write fence or rewrite history. */
-const DENY_WORDS = ['*--output*', 'git reset*', 'git checkout*', 'git stash*', 'git clean*', 'git branch -D*', 'rm *', 'sudo *', 'npm install*', 'npm i *', 'npm uninstall*', 'npm publish*', ...PERSON_ONLY_SHELL];
-/** Files that hold secrets: the Crew gateway keeps its channel tokens in ~/.kiro/crew/.env. */
-const SECRET_READS = ['**/.env', '**/.env.*', '**/*.pem', '**/*.key', '~/.kiro/crew/.env', '~/.kiro/crew/auth*', '~/.ssh/**', '~/.aws/**'];
-const SECRET_SHELL = ['*.env*', '*.pem*', '*/.ssh/*', '*/.aws/*', '*.kiro/crew/.env*'];
+/**
+ * The user's commands (deploy, release, native builds, installing the agents) and the ways around `node scripts/*`,
+ * `node .kiro/skills/*` and `cd *`: a `..` segment or a `cd` into `.kiro/powers` would reach a power's script, and command
+ * substitution would hide a command inside an allowed one. The script names are denied after `node` only, so reading them
+ * (`cat`, `grep`, `git log -- <path>`) and naming them in a commit message stay allowed. The guard hook also refuses
+ * `node` after a `cd` and a glob in a script path (shell rules cannot see either).
+ */
+const USER_ONLY_SHELL = [
+  'node *..*', 'cd *..*', 'node *.kiro/powers*', 'cd *.kiro/powers*', '*$(*', '*`*',
+  'node *ship.mjs*', 'node *release.mjs*', 'node *tauri-local.mjs*', 'node *build-tauri-steam*', 'node *agents-install*',
+];
+const DENY_WORDS = ['*--output*', 'git reset*', 'git checkout*', 'git stash*', 'git clean*', 'git branch -D*', 'rm *', 'sudo *', 'npm install*', 'npm i *', 'npm uninstall*', 'npm publish*', ...PERSON_ONLY_SHELL, ...USER_ONLY_SHELL];
+/**
+ * Files that hold secrets: the Crew gateway keeps its channel tokens in ~/.kiro/crew/.env; `netlify login` writes
+ * ~/Library/Preferences/netlify/config.json (macOS), `gh auth login` ~/.config/gh/hosts.yml.
+ */
+const SECRET_READS = ['**/.env', '**/.env.*', '**/*.pem', '**/*.key', '~/.kiro/crew/.env', '~/.kiro/crew/auth*', '~/.ssh/**', '~/.aws/**', '~/Library/Preferences/netlify/**', '~/.config/gh/**'];
+const SECRET_SHELL = ['*.env*', '*.pem*', '*/.ssh/*', '*/.aws/*', '*.kiro/crew/.env*', '*netlify/config.json*', '*/.config/gh/*', '*.netrc*'];
 /** Compiled output: the compilers write it, no agent edits it by hand. */
 const GENERATED = ['src/chapters/generated/**', 'src/cinematic/generated/**', 'chapters/*/story/out/**'];
 /** The visual audit of qa (spec .kiro/specs/qa-visual-audit/, Q11): the lead owns it, so qa cannot change its own checks. */
@@ -89,8 +106,9 @@ const FORGE_READ = ['list_levels', 'get_level', 'validate_level', 'solve_level']
 const TEAM = {
   'lead-dev': {
     description: 'Lead game developer and orchestrator of the Out Of Credits team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here; also the member that Kiro Crew runs.',
-    writes: ['.kiro/specs/**', '.kiro/steering/**', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'docs/*.md', 'docs/media/**', 'docs/reviews/**', 'scripts/harness/property-tests.mjs', 'scripts/harness/props/{kit,arbitraries}.mjs', 'src/contracts/**', 'src/audio/**', 'src/editor-core/**', 'src/play/**', 'src/pages/**', 'src/hub/**', 'src/styles/**', 'src/sandbox/**', 'src/main.ts', 'src/style.css', 'src/game/{session,play,runtime,types,floors,sfx,selfcheck,view,view-layouts}.ts', ...VISUAL_AUDIT],
-    resources: [steer('skills-map'), 'file://.kiro/specs/agent-team/requirements.md', 'file://.kiro/specs/agent-team/design.md'],
+    writes: ['.kiro/specs/**', '.kiro/steering/**', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'docs/*.md', 'docs/media/**', 'docs/reviews/**', 'scripts/harness/property-tests.mjs', 'scripts/harness/props/{kit,arbitraries}.mjs', 'src/contracts/**', 'src/audio/**', 'src/editor-core/**', 'src/play/**', 'src/pages/**', 'src/hub/**', 'src/styles/**', 'src/sandbox/**', 'src/main.ts', 'src/style.css', 'src/game/{session,session-shell,play,runtime,types,floors,sfx,view,view-layouts}.ts', 'scripts/harness/{audio-unit,audio-smoke,hub-unit}.mjs', ...VISUAL_AUDIT],
+    // Not skills-map: AGENTS.md carries the same skill map, and the resources must stay under the CLI's 100,000 characters.
+    resources: ['file://.kiro/specs/agent-team/requirements.md', 'file://.kiro/specs/agent-team/design.md'],
     skills: ['feature-spec-grill'],
     subagents: ['terminal-designer', 'laptop-designer', 'comix-designer', 'chapters-designer', 'artist', 'qa'],
     gitWrites: true,
@@ -98,13 +116,14 @@ const TEAM = {
   },
   'terminal-designer': {
     description: 'Designs and tunes the terminal: the shell, its commands, the virtual file system, man pages, terminal UI and the Terminal Lab (src/game shell files, src/ui, src/terminal-lab, lab scripts).',
-    writes: ['src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts', 'src/ui/**', 'src/terminal-lab/**', 'scripts/harness/terminal-lab/**', 'scripts/harness/props/terminal.mjs'],
-    resources: [steer('terminal-lab-rules'), 'file://.kiro/specs/inventory/items/terminal/requirements.md', 'file://.kiro/specs/inventory/items/terminal/design.md', 'file://.kiro/specs/inventory/items/manual/requirements.md', 'file://.kiro/specs/inventory/items/manual/design.md'],
+    writes: ['src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts', 'src/ui/**', 'src/terminal-lab/**', 'scripts/harness/terminal-lab/**', 'scripts/harness/props/terminal.mjs', 'scripts/harness/{manual-unit,manual-smoke}.mjs'],
+    // The manual's design.md is left out (its spec is done) to keep the resources under the CLI's 100,000 characters.
+    resources: [steer('terminal-lab-rules'), 'file://.kiro/specs/inventory/items/terminal/requirements.md', 'file://.kiro/specs/inventory/items/terminal/design.md', 'file://.kiro/specs/inventory/items/manual/requirements.md'],
     skills: ['chapter-level-generator'],
     welcome: 'terminal-designer: which command, output or terminal behaviour should change?',
   },
   'laptop-designer': {
-    description: "Designs and tunes the developer's laptop (src/laptop): lifecycle, desktop and apps, coding tasks and their checks, sandboxed code runner, keyboard, boot. Writes only src/laptop.",
+    description: "Designs and tunes the developer's laptop (src/laptop, props/laptop.mjs): state-machine lifecycle, desktop and apps, coding tasks and checks, sandboxed code runner, AppBus sound cues, keyboard, boot.",
     writes: ['src/laptop/**', 'scripts/harness/props/laptop.mjs'],
     resources: ['file://.kiro/specs/inventory/items/laptop/requirements.md', 'file://.kiro/specs/inventory/items/laptop/design.md'],
     skills: [],
@@ -121,7 +140,7 @@ const TEAM = {
   },
   'chapters-designer': {
     description: 'Designs and tunes the Kiroween chapter: its levels, story, dialogs and comic issue (chapters/), the chapter runtime and editor, and the gameplay elements levels place (enemies, pickups, puzzles, inventory, Kiro cores). Uses the chapter LEVEL GEN skills.',
-    writes: ['chapters/**', 'src/chapters/**', 'src/chapter-editor/**', 'src/game/{entities,entities-combat,bestiary,puzzle,inventory,kiro,dialogue,agents,battle}.ts', 'scripts/harness/props/{chapters,gameplay,sessions}.mjs', 'scripts/harness/battle-unit.mjs'],
+    writes: ['chapters/**', 'src/chapters/**', 'src/chapter-editor/**', 'src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,dialogue,agents,battle}.ts', 'scripts/harness/props/{chapters,gameplay,sessions}.mjs', 'scripts/harness/battle-unit.mjs'],
     resources: [steer('level-gen-rules'), steer('declarative-chapters'), steer('chapter-editor-rules'), steer('skills-map')],
     skills: ['chapter-architect-intake', 'comix-story-drawer', 'chapter-level-generator', 'chapter-implementer', 'chapter-editor'],
     mcp: { 'credits-forge': ['list_assets', ...FORGE_READ, 'write_level'] },

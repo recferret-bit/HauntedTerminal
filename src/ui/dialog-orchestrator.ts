@@ -1,4 +1,5 @@
 import type { KernelEvent } from '../contracts/events.js';
+import { createStateMachine, type StateMachine, type TransitionTable } from '../contracts/state-machine.js';
 import {
   cleanSpeakerId,
   mountDialogBox,
@@ -10,10 +11,22 @@ import {
 import type { DrawPortrait } from './dom-lite.js';
 import { AGENTS, type TutorialCard } from './tutorial.js';
 
-export type AgentSpeakerId = Extract<KernelEvent, { type: 'AGENT_TAUNT' }>['agent'];
+export type DialogSocketMode = 'free' | 'socket_locked';
+export type DialogSocketEvent = 'LOCK' | 'UNLOCK' | 'CLEAR';
+
+export const DIALOG_SOCKET_TRANSITIONS: TransitionTable<DialogSocketMode, DialogSocketEvent> = {
+  free: { LOCK: 'socket_locked' },
+  socket_locked: { UNLOCK: 'free', CLEAR: 'free' },
+};
+
+export function createDialogSocketMachine(): StateMachine<DialogSocketMode, DialogSocketEvent> {
+  return createStateMachine({ initial: 'free', transitions: DIALOG_SOCKET_TRANSITIONS });
+}
+
+type AgentSpeakerId = Extract<KernelEvent, { type: 'AGENT_TAUNT' }>['agent'];
 
 /** Canonical procgen model id per speaker for unified corner dialog portraits. */
-export const AGENT_MODELS: Record<AgentSpeakerId, string> = {
+const AGENT_MODELS: Record<AgentSpeakerId, string> = {
   clod: 'agent.clod',
   gork: 'agent.gork',
   codec: 'agent.codec',
@@ -97,13 +110,13 @@ export function mountDialogOrchestrator(
   drawPortrait: DrawPortrait,
   opts: DialogOrchestratorOptions = {},
 ): DialogOrchestrator {
-  let socketOpen = false;
+  const socketFsm = createDialogSocketMachine();
   let shown = 0;
   let maxConcurrent = 0;
   let maxRightConcurrent = 0;
 
   const box = mountDialogBox(parent, drawPortrait, {
-    canStartLine: (line) => !(socketOpen && (line.priority ?? 'script') === 'chatter'),
+    canStartLine: (line) => !(socketFsm.state === 'socket_locked' && (line.priority ?? 'script') === 'chatter'),
     onOpen: (line, side) => {
       shown += 1;
       opts.onDialogOpen?.(line, side);
@@ -148,7 +161,7 @@ export function mountDialogOrchestrator(
   };
 
   const clear = (): void => {
-    socketOpen = false;
+    socketFsm.send('CLEAR');
     box.clear();
     opts.onClear?.();
   };
@@ -183,12 +196,12 @@ export function mountDialogOrchestrator(
           opts.tutorial?.step(ev);
           break;
         case 'OBSTACLE_DIALOGUE_RENDERED':
-          socketOpen = true;
+          socketFsm.send('LOCK');
           if (box.activeLine()?.priority === 'chatter') box.shortenHold(200);
           break;
         case 'PUZZLE_DOOR_RESOLVED':
         case 'ROOM_TRANSITION':
-          socketOpen = false;
+          socketFsm.send('UNLOCK');
           box.wake();
           break;
         case 'FLOOR_ENTERED':
@@ -204,7 +217,7 @@ export function mountDialogOrchestrator(
       maxRightConcurrent,
       activeSide: box.activeSide(),
       pending: box.pending(),
-      socketOpen,
+      socketOpen: socketFsm.state === 'socket_locked',
     }),
   };
 }

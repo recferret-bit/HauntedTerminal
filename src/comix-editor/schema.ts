@@ -29,7 +29,7 @@ export const COMIX_MANIFEST_FIELDS: Field[] = [
   opt({ type: 'record', key: 'cues', label: 'Shared named cues (seconds)', keyLabel: 'CUE_NAME', value: 'number' }),
 ];
 
-export const STAGE_INNER_FIELDS: Field[] = [
+const STAGE_INNER_FIELDS: Field[] = [
   t('room', 'Room model', { suggest: 'rooms', mono: true }),
   { type: 'color', key: 'background', label: 'Sky / stage background' },
   opt(b('clampToRoom', 'Clamp camera inside room shell', { defaultTrue: true })),
@@ -116,7 +116,7 @@ export const PAGE_TRACKS_FIELD: Field = {
   item: { union: TRACK_VARIANTS, title: trackTitle, play: 'steps' },
 };
 
-export const PANEL_CORE_FIELDS: Field[] = [
+const PANEL_CORE_FIELDS: Field[] = [
   t('id', 'Panel id', { mono: true }),
   t('title', 'Panel title'),
   time('from', 'Cut in at'),
@@ -192,7 +192,7 @@ export const ALL_MANIFEST_FIELDS: Field[] = [
   ...COMIX_CAST_FIELDS,
 ];
 
-export const ALL_PANEL_FIELDS: Field[] = [
+const ALL_PANEL_FIELDS: Field[] = [
   ...PANEL_CORE_FIELDS,
   PANEL_LETTERS_FIELD,
   PANEL_BEATS_FIELD,

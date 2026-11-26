@@ -1,8 +1,7 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { animReactionsFor, ZONES, type AnimEventReaction } from '../procgen/index.js';
 import { eventLeadMs, fxCuesFor } from './event-fx.js';
-import { setRest } from './stage-actor.js';
-import { reportStage } from './stage-actor.js';
+import { reportStage, setRest } from './stage-actor.js';
 import { HERO_WALK_MS, MAX_LEAD_MS } from './stage-const.js';
 import { handleCastEvent } from './stage-event-cast.js';
 import { handleCombatEvent } from './stage-event-combat.js';

@@ -246,8 +246,77 @@ function exitDoorProps(world) {
 /** The PID a level's spec gives an enemy, when the engine rolls it (spec `.kiro/specs/random-pids/`). */
 const rollable = (e) => e.pid !== undefined && ![1, 10, 777, 4242].includes(e.pid);
 
+/** The `ps` rows that list `pid` as a process (the PID column, not a number elsewhere in the table). */
+const psRow = (ps, pid) => new RegExp(`^\\s*${pid}\\s`, 'm').test(ps);
+/** What `ps` must show: live enemies with a PID; rootkits hide from the table (entities-combat `revealProcesses`). */
+const psVisible = (e) => e && !e.dead && e.pid !== null && e.type !== 'rootkit';
+/** Lab enemy types that need no extra setup (no port, no buffer), so any list of them makes a valid lab. */
+const LAB_ENEMY_TYPES = ['virus', 'bug', 'trojan', 'crack', 'spyware', 'rootkit', 'ransomware'];
+
+/** Random PIDs in play: `ps` shows the roll, a retry rolls again, and a lab keeps the author's PIDs. */
+function pidPlayProps(world, withEnemies, { openLabSession, newLabScript, RESERVED_PIDS, PID_MIN, PID_MAX }) {
+  const authored = fc.uniqueArray(
+    fc.record({ type: fc.constantFrom(...LAB_ENEMY_TYPES), pid: fc.integer({ min: 2, max: 99_999 }).filter((p) => !RESERVED_PIDS.includes(p)) }),
+    { selector: (e) => e.pid, minLength: 1, maxLength: 6 },
+  );
+  return [
+    {
+      name: 'random PIDs in play: every live enemy `ps` can see is listed under its rolled PID (1100-8899, not reserved), and `restart-level --yes` rolls again within 4 retries',
+      build: () =>
+        fc.property(fc.constantFrom(...withEnemies), fc.integer(), fc.nat(), (index, seed, k) => {
+          const session = world.open(index, seed);
+          const solution = world.levels[index].solutionCommands ?? [];
+          for (const c of solution.slice(0, k % (solution.length + 1))) if (!session.snapshot().ended && session.levelIdx === index) session.exec(c);
+          if (session.levelIdx !== index || session.snapshot().ended) return; // the prefix cleared the level: nothing rolled is left to see
+          const first = new Map(session.rt.pids);
+          expect(first.size > 0, `level ${index} rolled no PID`);
+          for (const [id, pid] of first) {
+            expect(Number.isInteger(pid) && pid >= PID_MIN && pid <= PID_MAX && !RESERVED_PIDS.includes(pid), `${id}: rolled PID ${pid} is out of 1100-8899 or reserved`);
+          }
+          const ps = session.exec('ps').output ?? '';
+          for (const [id, pid] of first) {
+            const e = session.rt.world.enemies.find((x) => x.id === id);
+            if (!psVisible(e)) continue;
+            expect(e.pid === pid, `${id}: the world holds PID ${e.pid}, the roll says ${pid}`);
+            expect(psRow(ps, pid), `\`ps\` does not list ${id} under its rolled PID ${pid}:\n${ps}`);
+          }
+          let changed = false;
+          for (let n = 0; n < 4 && !changed; n++) {
+            session.exec('restart-level --yes');
+            expect(session.levelIdx === index, `restart-level --yes left level ${index} for ${session.levelIdx}`);
+            changed = [...first].some(([id, pid]) => session.rt.pids.get(id) !== pid);
+          }
+          expect(changed, `4 \`restart-level --yes\` kept every PID ${JSON.stringify([...first])} (seed ${seed})`);
+        }),
+    },
+    {
+      // Spec .kiro/specs/random-pids/: a lab session uses `fixedPids` (session-level.ts `loadLevel`), never a roll.
+      name: 'a Terminal Lab session keeps the PIDs its author placed: in the world, in `ps`, and after `restart-level --yes`',
+      build: () =>
+        fc.property(authored, fc.integer({ min: 0, max: 3 }), (list, restarts) => {
+          const script = newLabScript('props-lab-pids');
+          list.forEach((e, i) => script.setup.push({ op: 'enemy', id: `e${i}`, type: e.type, path: `/lab/e${i}.exe`, pid: e.pid }));
+          const session = openLabSession(script);
+          const want = JSON.stringify(list.map((e, i) => [`e${i}`, e.pid]));
+          for (let n = 0; n <= restarts; n++) {
+            const label = n === 0 ? 'on load' : `after ${n} restart(s)`;
+            expect(JSON.stringify([...session.rt.pids]) === want, `${label}: PID map ${JSON.stringify([...session.rt.pids])}, author placed ${want}`);
+            const ps = session.exec('ps').output ?? '';
+            list.forEach((a, i) => {
+              const e = session.rt.world.enemies.find((x) => x.id === `e${i}`);
+              expect(e?.pid === a.pid, `${label}: e${i} (${a.type}) holds PID ${e?.pid}, author placed ${a.pid}`);
+              if (psVisible(e)) expect(psRow(ps, a.pid), `${label}: \`ps\` does not list e${i} (${a.type}) under ${a.pid}:\n${ps}`);
+            });
+            if (n < restarts) session.exec('restart-level --yes');
+          }
+        }),
+    },
+  ];
+}
+
 /** Random PIDs: the roll, what the world and the played spec show, and that every solution still clears for any seed. */
-function pidProps(world, { rollPids, fillPids, seededRandom, PID_MIN, PID_MAX }) {
+function pidProps(world, pids, lab) {
+  const { rollPids, fillPids, seededRandom, PID_MIN, PID_MAX } = pids;
   const withEnemies = world.levels.map((l, i) => i).filter((i) => world.levels[i].enemies.some(rollable));
   const enemies = fc.uniqueArray(fc.record({ id: fc.stringMatching(/^[a-z][a-z0-9_]{0,8}$/), pid: fc.option(fc.constantFrom(1, 10, 777, 4242, 1011, 3003, 9999, 1100), { nil: undefined }) }), { selector: (e) => e.id, maxLength: 12 });
   return [
@@ -284,7 +353,7 @@ function pidProps(world, { rollPids, fillPids, seededRandom, PID_MIN, PID_MAX })
             expect(session.rt.world.enemies.find((x) => x.id === e.id)?.pid === pid, `${e.id}: the world holds another PID than ${pid}`);
             expect(played.enemies.find((x) => x.id === e.id)?.pid === pid, `${e.id}: the played spec holds another PID than ${pid}`);
           }
-          const { solutionCommands, ...text } = played;
+          const { solutionCommands: _solutionCommands, ...text } = played;
           expect(!JSON.stringify(text).includes('{pid:'), 'a placeholder is left in the played spec');
           expect(!JSON.stringify(session.rt.dialog ?? {}).includes('{pid:'), 'a placeholder is left in the dialogs');
           const old = session.exec(`kill -9 ${raw[0].pid}`);
@@ -306,6 +375,7 @@ function pidProps(world, { rollPids, fillPids, seededRandom, PID_MIN, PID_MAX })
           expect(session.getCurrentLevel().id !== world.levels[index].id || session.snapshot().ended, `level ${index} did not clear with pidSeed ${seed}`);
         }),
     },
+    ...pidPlayProps(world, withEnemies, { ...pids, ...lab }),
   ];
 }
 
@@ -316,6 +386,8 @@ export default async function chaptersSuite(ctx) {
   const { exportPortableSaveBundle, importPortableSaveBundle } = await ctx.load('/src/chapters/portable-save.ts');
   const world = await chapterWorld(ctx);
   const pidsModule = await ctx.load('/src/chapters/pids.ts');
+  const { openLabSession } = await ctx.load('/src/terminal-lab/node-driver.ts');
+  const { newLabScript } = await ctx.load('/src/terminal-lab/lab-pack.ts');
   const chaptersDir = join(projectRoot, 'chapters');
   const files = filesUnder(chaptersDir, '.json', readdirSync, join);
 
@@ -327,6 +399,12 @@ export default async function chaptersSuite(ctx) {
       return lines;
     });
 
+  /** The position of a level by id; a renamed level fails loudly instead of moving a regression case to another level. */
+  const levelAt = (id) => {
+    const at = world.levels.findIndex((l) => l.id === id);
+    if (at < 0) throw new Error(`props: no level with id ${id} (update the regression examples)`);
+    return at;
+  };
   const errorCount = (issues) => issues.filter((i) => i.severity === 'error').length;
   const isWrapper = (i) => /malformed spec/.test(i.message);
   const baseErrors = errorCount(checkPack(world.pack));
@@ -345,7 +423,11 @@ export default async function chaptersSuite(ctx) {
       name: 'a death text (SSD restore or kernel panic) appears once in stdout and at most once in stderr, per command and per tick',
       // Found by the visual audit (finding 5): hurt() returned the text and the flow appended g.deathText again.
       // Idle play (a first command, then many ticks) makes the enemies kill the player on levels that have them.
-      examples: [[0, 60, ['ls']], [1, 80, ['ls']], [2, 80, ['ls']], [4, 80, ['ls']], [10, 120, ['ls']]],
+      // By level id, so a reordered chapter keeps the regression cases on the levels they were found on.
+      examples: [
+        ['level-01-tutorial-awakening', 60], ['level-02-task-ram-heist', 80], ['level-03-task-gpu-salvage', 80],
+        ['level-05-task-ui-grid', 80], ['level-11-boss-clod-core', 120],
+      ].map(([id, ticks]) => [levelAt(id), ticks, ['ls']]),
       build: () =>
         fc.property(fc.nat(world.levels.length - 1), fc.integer({ min: 20, max: 120 }), fc.constantFrom(['ls'], ['ls', 'cat *'], ['pwd', 'ps']), (levelIdx, ticks, cmds) => {
           const marks = ['[SSD SNAPSHOT RESTORED]', '[KERNEL PANIC]'];
@@ -424,7 +506,7 @@ export default async function chaptersSuite(ctx) {
           expect(Array.isArray(issues), 'checkPack did not return a list');
         }),
     },
-    ...pidProps(world, pidsModule),
+    ...pidProps(world, pidsModule, { openLabSession, newLabScript }),
     ...lockAndTimedProps(world),
     ...exitDoorProps(world),
     ...portableSaveAndPreviewProps({

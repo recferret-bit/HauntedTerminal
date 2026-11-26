@@ -1,9 +1,16 @@
 import * as THREE from 'three';
+import { el as overlayNode } from '../contracts/dom.js';
 import { TextureCatalog, ZONES, type FxPreset, type ZoneId } from '../procgen/index.js';
-import { escHtml as esc } from './html-escape.js';
 import { fitBalloonText, fitWordWidth, type Item } from './stage-fit.js';
 import { avoidOffset, CHROME_IDS, hudBottom, tailOffset, type Box } from './stage-avoid.js';
 import './stage-overlay.css';
+
+function imgNode(src: string): HTMLImageElement {
+  const img = document.createElement('img');
+  img.src = src;
+  img.alt = '';
+  return img;
+}
 
 /**
  * The stage's DOM overlay: dialogue, lettering, cards, plates, pips, padlocks and PS_XRAY links,
@@ -52,7 +59,7 @@ interface BadgeDom {
 const imgCache = new Map<string, string>();
 
 /** A procgen texture as a data URL (cached), for crisp DOM images (image-rendering: pixelated). */
-export function textureUrl(id: string): string {
+function textureUrl(id: string): string {
   const hit = imgCache.get(id);
   if (hit !== undefined) return hit;
   let url = '';
@@ -68,7 +75,7 @@ export function textureUrl(id: string): string {
   return url;
 }
 
-export function zoneCss(zone: ZoneId | string): string {
+function zoneCss(zone: ZoneId | string): string {
   const z = (ZONES as Record<string, { color: number }>)[zone];
   return `#${(z?.color ?? 0xffd166).toString(16).padStart(6, '0')}`;
 }
@@ -361,10 +368,8 @@ export class StageOverlay {
 
   /** A speech balloon (BubbleStyle) anchored over a world point; stays until `drop()` or `life`. */
   balloon(speaker: string, text: string, style: string, at: () => THREE.Vector3 | null, life = 60000): { drop(): void } {
-    const el = document.createElement('div');
     const cls = ['COMIX_CLASSIC', 'JAGGED_SCREAM', 'GHOST_WHISPER', 'KERNEL_GLITCH'].includes(style) ? style : 'COMIX_CLASSIC';
-    el.className = `st-balloon ${cls}`;
-    el.innerHTML = `${speaker ? `<b>${esc(speaker)}</b>` : ''}${esc(text)}`;
+    const el = overlayNode('div', `st-balloon ${cls}`, speaker ? [overlayNode('b', '', [speaker]), text] : [text]);
     const it = this.add(el, life, {
       world: at,
       clamp: true,
@@ -393,7 +398,18 @@ export class StageOverlay {
       el.style.backgroundSize = '48px 48px';
       el.style.imageRendering = 'pixelated';
     }
-    el.innerHTML = `<div class="inner"><div class="kick">${bolt ? `<img src="${bolt}" alt="">` : ''}<span>${esc(kicker)}</span>${bolt ? `<img src="${bolt}" alt="">` : ''}</div><h2>${esc(title)}</h2><div class="path">${esc(path)}</div></div>`;
+    const kickChildren: Array<Node> = [overlayNode('span', '', [kicker])];
+    if (bolt) {
+      kickChildren.unshift(imgNode(bolt));
+      kickChildren.push(imgNode(bolt));
+    }
+    el.replaceChildren(
+      overlayNode('div', 'inner', [
+        overlayNode('div', 'kick', kickChildren),
+        overlayNode('h2', '', [title]),
+        overlayNode('div', 'path', [path]),
+      ]),
+    );
     const total = inMs + holdMs + outMs;
     const it = this.pinCard(el, total, (_t, ms) => {
         const r = this.panelRect;
@@ -412,9 +428,7 @@ export class StageOverlay {
 
   /** Lettering over the coredump tear (the torn-page art stays in the canvas). */
   tearText(title: string, sub: string, delayMs: number, showMs: number): void {
-    const el = document.createElement('div');
-    el.className = 'st-tear';
-    el.innerHTML = `${esc(title)}<small>${esc(sub)}</small>`;
+    const el = overlayNode('div', 'st-tear', [title, overlayNode('small', '', [sub])]);
     this.pinCard(el, delayMs + showMs, (_t, ms) => {
         const r = this.panelRect;
         const n = Math.floor(ms / 83);
@@ -459,10 +473,12 @@ export class StageOverlay {
       d.plate?.remove();
       d.plate = null;
       if (s.plate) {
-        const p = document.createElement('div');
-        p.className = 'st-plate';
         const src = textureUrl('tex.decal.pid-tag');
-        p.innerHTML = `${src ? `<img src="${src}" alt="">` : ''}<span class="pid">${esc(String(s.plate.pid))}</span>${s.plate.name ? `<span class="nm">${esc(s.plate.name.slice(0, 16))}</span>` : ''}`;
+        const parts: Node[] = [];
+        if (src) parts.push(imgNode(src));
+        parts.push(overlayNode('span', 'pid', [String(s.plate.pid)]));
+        if (s.plate.name) parts.push(overlayNode('span', 'nm', [s.plate.name.slice(0, 16)]));
+        const p = overlayNode('div', 'st-plate', parts);
         d.stack.prepend(p);
         d.plate = p;
       }
@@ -473,19 +489,22 @@ export class StageOverlay {
       d.pips?.remove();
       d.pips = null;
       if (s.pips) {
-        const p = document.createElement('div');
-        p.className = 'st-pips';
-        p.innerHTML = Array.from({ length: s.pips.cells }, (_, i) => `<i class="${i < s.pips!.lit ? 'on' : ''}"></i>`).join('');
+        const p = overlayNode(
+          'div',
+          'st-pips',
+          Array.from({ length: s.pips.cells }, (_, i) => overlayNode('i', i < s.pips!.lit ? 'on' : '')),
+        );
         d.stack.appendChild(p);
         d.pips = p;
       }
     }
     if (s.lock) {
       if (!d.lock) {
-        const l = document.createElement('div');
-        l.className = 'st-lock';
         const src = textureUrl('tex.decal.rwx-lock');
-        l.innerHTML = `${src ? `<img src="${src}" alt="">` : ''}<span>LOCKED</span>`;
+        const l = overlayNode('div', 'st-lock', [
+          ...(src ? [imgNode(src)] : []),
+          overlayNode('span', '', ['LOCKED']),
+        ]);
         this.badgeLayer.appendChild(l);
         d.lock = l;
       }

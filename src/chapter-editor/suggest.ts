@@ -7,7 +7,7 @@ import type { LevelSpec } from '../chapters/types.js';
 
 
 /** Names that come from the game's catalogs, the same in every editor. `undefined` for names an editor answers from its own data. */
-export function catalogNames(name: string): string[] | undefined {
+function catalogNames(name: string): string[] | undefined {
   switch (name) {
     case 'models':
       return ModelCatalog.list().map((m) => m.id).sort();

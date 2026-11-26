@@ -18,5 +18,5 @@ async function runPlay(): Promise<void> {
   bindPlayInput(play);
   mountPlayDev(play);
   armPlayClock(play);
-  await play.startRun();
+  play.events.emit({ kind: 'run-start' });
 }

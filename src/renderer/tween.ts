@@ -53,11 +53,11 @@ export class TweenManager {
       if (!tw) continue;
       tw.elapsed += deltaMs;
       const raw = Math.min(1, tw.elapsed / tw.durationMs);
-      let ok = this.safe(() => tw.onUpdate(raw));
+      const ok = this.safe(() => tw.onUpdate(raw));
       if (raw >= 1 || !ok) {
         const at = list.indexOf(tw);
         if (at >= 0) list.splice(at, 1);
-        if (ok && tw.onComplete) ok = this.safe(tw.onComplete);
+        if (ok && tw.onComplete) this.safe(tw.onComplete);
       }
       // clear() swapped the array: stop walking the stale one.
       if (list !== this.tweens) return;

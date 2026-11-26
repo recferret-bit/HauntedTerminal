@@ -1,6 +1,6 @@
 import { AGENTS } from './tutorial.js';
 
-const ERROR_LINE = /^(?:[\w.\/-]+: .*(?:no such file|permission denied|command not found|not a directory|is a directory|missing operand|invalid option|too many levels|not permitted|cannot |unknown|bad )|syntax error|usage: |-?bash: )/i;
+const ERROR_LINE = /^(?:[\w./-]+: .*(?:no such file|permission denied|command not found|not a directory|is a directory|missing operand|invalid option|too many levels|not permitted|cannot |unknown|bad )|syntax error|usage: |-?bash: )/i;
 
 type Rgb = [number, number, number];
 

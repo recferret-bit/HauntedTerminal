@@ -79,7 +79,7 @@ export function inlineCodeFragment(text: string, tokens: readonly string[] = [])
   );
 }
 
-export async function copyCommandText(text: string, trigger: HTMLButtonElement, onNotify?: (msg: string) => void): Promise<void> {
+async function copyCommandText(text: string, trigger: HTMLButtonElement, onNotify?: (msg: string) => void): Promise<void> {
   try {
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);

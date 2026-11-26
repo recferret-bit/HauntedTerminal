@@ -11,6 +11,7 @@
  * the Terminal Lab and the tests all see the same sequence. Spec: `.kiro/specs/turn-based-battles/`.
  */
 import type { BattleAgent, BattlePhase, KernelEvent } from '../contracts/events.js';
+import { nextMachineState, type TransitionTable } from '../contracts/state-machine.js';
 import { battleAdvice, battleTaunt } from './agents.js';
 import type { EnemyType } from './bestiary.js';
 import type { BattleView } from './types.js';
@@ -26,6 +27,14 @@ export const BIG_FOUR: readonly BattleAgent[] = ['clod', 'gork', 'codec', 'antig
 export type BattleHold = 'editor' | 'laptop';
 export type BattleEndReason = Extract<KernelEvent, { type: 'BATTLE_ENDED' }>['reason'];
 export type TurnReason = Extract<KernelEvent, { type: 'BATTLE_TURN' }>['reason'];
+export type BattleTransition = 'BEGIN' | 'SKIP_INTRO' | 'START_PLAYER' | 'START_ENEMY' | 'END';
+
+export const BATTLE_TRANSITIONS: TransitionTable<BattlePhase, BattleTransition> = {
+  idle: { BEGIN: 'intro' },
+  intro: { SKIP_INTRO: 'player', START_PLAYER: 'player', END: 'idle' },
+  player: { START_ENEMY: 'enemy', END: 'idle' },
+  enemy: { START_PLAYER: 'player', END: 'idle' },
+};
 
 /** One enemy that would fight the hero now (see `threats` in entities-combat). */
 export interface BattleThreat {
@@ -50,10 +59,6 @@ export function createBattle(): BattleState {
   return { phase: 'idle', battle: 0, secondsLeft: TURN_SEC, introLeft: 0, enemyIds: [], holds: new Set() };
 }
 
-export function inBattle(b: BattleState): boolean {
-  return b.phase !== 'idle';
-}
-
 /** The agent of the big four who taunts, picked from a seed (the session hashes the level id and battle number). */
 export function pickAgent(seed: number): BattleAgent {
   return BIG_FOUR[Math.abs(seed) % BIG_FOUR.length]!;
@@ -61,9 +66,10 @@ export function pickAgent(seed: number): BattleAgent {
 
 /** idle -> intro: a battle begins. `seed` picks the agent and its taunt; nobody acts during the intro. */
 export function beginBattle(b: BattleState, threats: readonly BattleThreat[], seed: number, events: KernelEvent[]): void {
-  if (b.phase !== 'idle' || threats.length === 0) return;
+  const next = nextMachineState(BATTLE_TRANSITIONS, b.phase, 'BEGIN');
+  if (!next || threats.length === 0) return;
   b.battle += 1;
-  b.phase = 'intro';
+  b.phase = next;
   b.introLeft = INTRO_SEC;
   b.secondsLeft = TURN_SEC;
   b.enemyIds = threats.map((t) => t.id);
@@ -81,8 +87,9 @@ export function beginBattle(b: BattleState, threats: readonly BattleThreat[], se
 
 /** Any phase -> idle. Does nothing outside a battle. */
 export function endBattle(b: BattleState, reason: BattleEndReason, events: KernelEvent[]): void {
-  if (b.phase === 'idle') return;
-  b.phase = 'idle';
+  const next = nextMachineState(BATTLE_TRANSITIONS, b.phase, 'END');
+  if (!next) return;
+  b.phase = next;
   b.enemyIds = [];
   b.secondsLeft = TURN_SEC;
   b.introLeft = 0;
@@ -90,15 +97,19 @@ export function endBattle(b: BattleState, reason: BattleEndReason, events: Kerne
 }
 
 /** -> player, with a fresh turn timer. */
-export function startPlayerTurn(b: BattleState, reason: TurnReason, first: boolean, events: KernelEvent[]): void {
-  b.phase = 'player';
+function startPlayerTurn(b: BattleState, reason: TurnReason, first: boolean, events: KernelEvent[]): void {
+  const next = nextMachineState(BATTLE_TRANSITIONS, b.phase, 'START_PLAYER');
+  if (!next) return;
+  b.phase = next;
   b.secondsLeft = TURN_SEC;
   events.push({ type: 'BATTLE_TURN', battle: b.battle, actor: 'player', first, reason });
 }
 
 /** player -> enemy. The session then runs one world step and calls `afterEnemyTurn`. */
 export function startEnemyTurn(b: BattleState, reason: TurnReason, events: KernelEvent[]): void {
-  b.phase = 'enemy';
+  const next = nextMachineState(BATTLE_TRANSITIONS, b.phase, 'START_ENEMY');
+  if (!next) return;
+  b.phase = next;
   events.push({ type: 'BATTLE_TURN', battle: b.battle, actor: 'enemy', first: false, reason });
 }
 
@@ -118,9 +129,12 @@ export function afterEnemyTurn(
 
 /** intro -> player: Enter on the play page, or a command line from a headless driver. */
 export function skipIntro(b: BattleState, events: KernelEvent[]): boolean {
-  if (b.phase !== 'intro') return false;
+  const next = nextMachineState(BATTLE_TRANSITIONS, b.phase, 'SKIP_INTRO');
+  if (!next) return false;
   b.introLeft = 0;
-  startPlayerTurn(b, 'start', true, events);
+  b.phase = next;
+  b.secondsLeft = TURN_SEC;
+  events.push({ type: 'BATTLE_TURN', battle: b.battle, actor: 'player', first: true, reason: 'start' });
   return true;
 }
 

@@ -1,7 +1,7 @@
 import type { SfxId } from './catalog.js';
 
 /** Enemy model id -> attack sample. */
-export const ATTACK_CUE: Record<string, SfxId> = {
+const ATTACK_CUE: Record<string, SfxId> = {
   'malware.bug': 'atk_bug',
   'malware.spyware': 'atk_spyware',
   'malware.rootkit': 'atk_rootkit',

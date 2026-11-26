@@ -143,7 +143,7 @@ export function badgeMarks(counts: BadgeCounts): HTMLElement {
   );
 }
 
-export function issueCountsFor(issues: readonly EditorIssueLike[], wheres: readonly string[]): { errors: number; warns: number } {
+function issueCountsFor(issues: readonly EditorIssueLike[], wheres: readonly string[]): { errors: number; warns: number } {
   let errors = 0;
   let warns = 0;
   for (const i of issues) {
@@ -154,7 +154,7 @@ export function issueCountsFor(issues: readonly EditorIssueLike[], wheres: reado
   return { errors, warns };
 }
 
-export function renderWorkstationTopBar(topEl: HTMLElement, s: TopBarSpec): void {
+function renderWorkstationTopBar(topEl: HTMLElement, s: TopBarSpec): void {
   const picker = h(
     'select',
     {
@@ -209,7 +209,7 @@ export function renderWorkstationTopBar(topEl: HTMLElement, s: TopBarSpec): void
   );
 }
 
-export function renderDockHead(spec: DockHeadSpec): HTMLElement {
+function renderDockHead(spec: DockHeadSpec): HTMLElement {
   return h(
     'div',
     { class: 'cx-dock-head', 'data-panel-drag': spec.panel },
@@ -239,7 +239,7 @@ export function renderDockHead(spec: DockHeadSpec): HTMLElement {
   );
 }
 
-export function renderOutlinerItem(spec: OutlinerItemSpec): HTMLElement {
+function renderOutlinerItem(spec: OutlinerItemSpec): HTMLElement {
   return h(
     'button',
     {
@@ -254,7 +254,7 @@ export function renderOutlinerItem(spec: OutlinerItemSpec): HTMLElement {
   );
 }
 
-export function renderWorkstationTabs(tabsEl: HTMLElement, paneEl: HTMLElement, s: TabsBarSpec): void {
+function renderWorkstationTabs(tabsEl: HTMLElement, paneEl: HTMLElement, s: TabsBarSpec): void {
   const hadFocus = Boolean(document.activeElement && tabsEl.contains(document.activeElement));
   clear(tabsEl);
   const tabListEl = h('div', { class: 'cx-tablist', role: 'tablist', 'aria-label': 'Spec sections' });

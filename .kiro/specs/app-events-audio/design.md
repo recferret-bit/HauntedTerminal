@@ -1,6 +1,6 @@
 # App events, SFX and music: design
 
-Status: approved
+Status: see requirements.md
 
 ## Shape
 

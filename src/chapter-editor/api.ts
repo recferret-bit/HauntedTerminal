@@ -70,10 +70,6 @@ export async function fetchChapterDiskState(slug: string): Promise<{ etags: Reco
   return requestEditorJson(`/api/chapters/${encodeURIComponent(slug)}/etags`);
 }
 
-export async function fetchEtags(slug: string): Promise<Record<string, string>> {
-  return (await fetchChapterDiskState(slug)).etags;
-}
-
 export async function renderComix(slug: string): Promise<{ ok: boolean; log: string }> {
   return requestEditorJson(`/api/chapters/${encodeURIComponent(slug)}/render-comix`, { method: 'POST' });
 }

@@ -1,5 +1,5 @@
 import type { EnemyType, PickupType } from './bestiary.js';
-import { makeNode, makeRoot, resolve, type VNode } from './tree.js';
+import { makeNode, makeRoot, type VNode } from './tree.js';
 
 function dir(parent: VNode, name: string, mode = 0o755): VNode {
   return makeNode(parent, name, 'dir', mode);
@@ -25,12 +25,6 @@ function link(parent: VNode, name: string, target: string): VNode {
 function root0(node: VNode): VNode {
   node.uid = 0;
   return node;
-}
-
-function at(root: VNode, path: string): VNode {
-  const found = resolve(root, path, false).node;
-  if (!found) throw new Error(`floor path missing: ${path}`);
-  return found;
 }
 
 /** An enemy placed on a floor. Its file (if any) is created by the floor builder at `path`. */
@@ -306,8 +300,4 @@ function floor5(): FloorTree {
       { id: 'f5-energy-b', type: 'energy', path: `${base}/energy2.cell` },
     ],
   };
-}
-
-export function must(root: VNode, path: string): VNode {
-  return at(root, path);
 }

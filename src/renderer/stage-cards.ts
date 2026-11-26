@@ -12,7 +12,6 @@ export interface PanelBounds {
 
 const INK = '#110e1b';
 const PAPER = '#efe6d2';
-const YELLOW = '#ffd166';
 /** Bundled lettering stack for canvas text (public/fonts via styles/fonts.css); never a system font. */
 const CARD_FONT = '"Chakra Petch", "IBM Plex Mono", monospace';
 
@@ -75,89 +74,8 @@ function halftone(ctx: CanvasRenderingContext2D, w: number, h: number, color: st
   }
 }
 
-function fitText(ctx: CanvasRenderingContext2D, text: string, maxW: number, size: number, weight = 800): number {
-  let s = size;
-  for (; s > 18; s -= 4) {
-    ctx.font = `${Math.min(weight, 700)} ${s}px ${CARD_FONT}`;
-    if (ctx.measureText(text).width <= maxW) break;
-  }
-  return s;
-}
-
-/** A Comix Zone title page: paper, halftone, a black panel with a yellow caption box and big lettering. */
-export function floorCardTexture(kicker: string, title: string, path: string, accent: string): THREE.CanvasTexture {
-  const w = 1600;
-  const h = 900;
-  const { canvas, ctx } = freshCanvas(w, h);
-  if (!ctx) return canvasTex(canvas);
-  ctx.fillStyle = PAPER;
-  ctx.fillRect(0, 0, w, h);
-  fillPattern(ctx, 'tex.halftone', 3, 0.18, 0, 0, w, h);
-  // Inner panel, ink frame.
-  ctx.fillStyle = '#1b1528';
-  ctx.fillRect(60, 60, w - 120, h - 120);
-  halftone(ctx, w, h, 'rgba(255,255,255,0.035)', 22, 4);
-  ctx.lineWidth = 16;
-  ctx.strokeStyle = INK;
-  ctx.strokeRect(60, 60, w - 120, h - 120);
-  // Speed burst behind the title.
-  ctx.save();
-  ctx.translate(w / 2, h / 2 + 20);
-  ctx.fillStyle = accent;
-  ctx.globalAlpha = 0.16;
-  for (let i = 0; i < 28; i++) {
-    ctx.rotate((Math.PI * 2) / 28);
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(900, -36);
-    ctx.lineTo(900, 36);
-    ctx.fill();
-  }
-  ctx.restore();
-  // Yellow caption box, centred under the page's masthead strip.
-  const ks = fitText(ctx, kicker, w - 360, 58);
-  ctx.font = `700 ${ks}px ${CARD_FONT}`;
-  const kw = Math.min(w - 260, ctx.measureText(kicker).width + 70);
-  const ky = 230;
-  ctx.fillStyle = YELLOW;
-  ctx.fillRect(w / 2 - kw / 2, ky - 52, kw, 104);
-  ctx.lineWidth = 8;
-  ctx.strokeStyle = INK;
-  ctx.strokeRect(w / 2 - kw / 2, ky - 52, kw, 104);
-  ctx.fillStyle = INK;
-  ctx.textBaseline = 'middle';
-  ctx.textAlign = 'center';
-  ctx.fillText(kicker, w / 2, ky + 2);
-  // The power mark stamped on both ends of the caption (tex.decal.bolt).
-  const bolt = procCanvas('tex.decal.bolt', 3);
-  if (bolt) {
-    ctx.drawImage(bolt, w / 2 - kw / 2 - bolt.width - 10, ky - bolt.height / 2);
-    ctx.drawImage(bolt, w / 2 + kw / 2 + 10, ky - bolt.height / 2);
-  }
-  // Big title with ink stroke.
-  fitText(ctx, title, w - 300, 150);
-  ctx.textAlign = 'center';
-  ctx.lineJoin = 'round';
-  ctx.lineWidth = 22;
-  ctx.strokeStyle = INK;
-  ctx.strokeText(title, w / 2, h / 2 + 70);
-  ctx.fillStyle = accent;
-  ctx.fillText(title, w / 2, h / 2 + 70);
-  // Path in a paper strip.
-  const ps = fitText(ctx, path, w - 420, 64, 700);
-  ctx.font = `700 ${ps}px ${CARD_FONT}`;
-  const pw = Math.min(w - 300, ctx.measureText(path).width + 70);
-  ctx.fillStyle = PAPER;
-  ctx.fillRect(w / 2 - pw / 2, h - 230, pw, 100);
-  ctx.lineWidth = 8;
-  ctx.strokeRect(w / 2 - pw / 2, h - 230, pw, 100);
-  ctx.fillStyle = INK;
-  ctx.fillText(path, w / 2, h - 180);
-  return canvasTex(canvas);
-}
-
 /** One half of a torn page: paper with a jagged tear on its inner edge and glitch lettering. */
-export function tearHalfTexture(side: 'left' | 'right', text: string, seed: number): THREE.CanvasTexture {
+function tearHalfTexture(side: 'left' | 'right', text: string, seed: number): THREE.CanvasTexture {
   const w = 800;
   const h = 900;
   const { canvas, ctx } = freshCanvas(w, h);
@@ -226,44 +144,6 @@ function disposeMesh(mesh: THREE.Mesh): void {
   const mat = mesh.material as THREE.MeshBasicMaterial;
   mat.map?.dispose();
   mat.dispose();
-}
-
-/**
- * Page-turn title card: the page swings in around the spine (screen-left edge) in 6 held poses,
- * holds, then turns away. All in-canvas, over the panel. Returns a cancel function.
- */
-export function playPageCard(
-  layer: THREE.Group, tweens: TweenManager, bounds: PanelBounds, tex: THREE.Texture,
-  timing = { inMs: 420, holdMs: 1300, outMs: 380 },
-): () => void {
-  const w = bounds.left - bounds.right;
-  const h = bounds.top - bounds.bottom;
-  const card = overlayMesh(tex, w, h, 'left');
-  const pivot = new THREE.Group();
-  pivot.name = 'page-card';
-  pivot.position.set(bounds.left, (bounds.top + bounds.bottom) / 2, -2);
-  pivot.add(card);
-  layer.add(pivot);
-  let alive = true;
-  const turn = (a: number) => {
-    pivot.rotation.y = Math.PI + a;
-  };
-  turn(Math.PI / 2 - 0.01);
-  const kill = () => {
-    if (!alive) return;
-    alive = false;
-    disposeMesh(card);
-    pivot.removeFromParent();
-  };
-  tweens.add(timing.inMs, (t) => alive && turn((Math.PI / 2) * (1 - stepped(t, 6)) - 0.0001), () => {
-    if (!alive) return;
-    turn(0);
-    tweens.add(timing.holdMs, () => {}, () => {
-      if (!alive) return;
-      tweens.add(timing.outMs, (t) => alive && turn((Math.PI / 2) * stepped(t, 5)), kill);
-    });
-  });
-  return kill;
 }
 
 /** Coredump: two torn halves slam shut over the panel, hold, then rip apart. */

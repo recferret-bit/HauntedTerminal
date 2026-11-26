@@ -1,6 +1,6 @@
 # Random pids: requirements
 
-Status: done
+Status: approved (reopened 2026-11-26: the browser QA report of task 6 is not written yet)
 
 Capability: every PID the player has to `kill` is random each time instead of fixed in the level spec. (User's words: "lets make all pids to kill to be random each time".)
 
@@ -8,12 +8,13 @@ Capability: every PID the player has to `kill` is random each time instead of fi
 
 1. WHEN a level loads (first entry, retry or restart), THE SYSTEM SHALL give every enemy that has a `pid` in its level spec, except PID 1, a new random PID, unique within that level and in the range 1100-8899.
 2. THE SYSTEM SHALL show, signal and match each enemy only by its random PID (`ps`, `kill`, `pkill`, `top`, the stage's PID tags and the field manual's examples), and `kill` of the old spec PID SHALL answer `No such process`.
-3. THE SYSTEM SHALL keep PID 1 (the boss), `777` (`kiro.d`) and `4242` (the player's shell) fixed, with their protections unchanged.
+3. THE SYSTEM SHALL keep PID 1 (the boss), `10` (`cron_restorer`), `777` (`kiro.d`) and `4242` (the player's shell) fixed, with their protections unchanged, and SHALL never roll one of them (`RESERVED_PIDS` in `src/chapters/pids.ts`).
 4. WHERE a spec string (summary, description, dialog, hint, tutorial prompt or command, `solutionCommands`) names an enemy's PID, THE SYSTEM SHALL write it as the placeholder `{pid:<enemy id>}` and replace it with that enemy's current PID when the string is shown or run.
 5. WHEN the headless solver runs a level's `solutionCommands`, THE SYSTEM SHALL resolve each `{pid:<enemy id>}` from the session it runs in, so every level still clears with 0 deaths for any random PIDs.
 6. IF a spec uses `{pid:<id>}` for an enemy id that does not exist or has no `pid`, THEN THE SYSTEM SHALL fail the pack check (`validate-pack.ts`) and the chapter editor's check with the string and the id.
 7. THE SYSTEM SHALL remove the PID shuffle of chaos mode (`?chaos=1`); chaos mode keeps its other effects.
 8. THE SYSTEM SHALL keep the spec `pid` field as the "this enemy has a PID" marker; its number no longer reaches the player.
+9. WHILE a session is a lab session (Terminal Lab, `lab` option), THE SYSTEM SHALL roll no PID: each enemy SHALL keep the PID its author placed, and `{pid:<enemy id>}` SHALL still resolve to that PID. *(from the approved design decision of 2026-11-26, `design.md` Decisions: "Terminal Lab sessions keep the PIDs the lab author placed"; built as `fixedPids` in `src/chapters/pids.ts`, used by `loadLevel` in `src/chapters/session-level.ts`)*
 
 ## Out of scope
 
@@ -41,3 +42,4 @@ Context found in code (not decisions): chaos mode (`?chaos=1`) already shuffles 
 - 4, 5: `node scripts/harness/generate-chapter.mjs --verify` and `node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs` (0 deaths).
 - 6: `node scripts/harness/editor-unit-test.mjs` (a bad placeholder is reported).
 - 7: `node scripts/harness/terminal-lab-unit.mjs`, `npm run quality`.
+- 9: the property "a Terminal Lab session keeps the PIDs its author placed" (`node scripts/harness/property-tests.mjs --only chapters`), plus `node scripts/harness/terminal-lab-unit.mjs` and `node scripts/harness/terminal-lab.mjs --all` (labs run with their authors' PIDs).

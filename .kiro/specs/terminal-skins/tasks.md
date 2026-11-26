@@ -1,6 +1,6 @@
 # Terminal skins: tasks
 
-Status: approved (by the user 2026-11-25)
+Status: see requirements.md
 
 - [x] 1. Skin table `src/contracts/terminal-skins.ts`, key in `brand.ts`, pref and apply in `src/ui/terminal-skin.ts`. _Req 1, 6, 7_. Gates: `npm run quality` sub-gates
 - [x] 2. The `skin` command: `runSkin` in `commands-proc.ts`, both shells and their consume methods, `manual.ts` (COMMANDS, help, completion), `manual-cmds-meta.ts` (`man skin`, field manual), `selfcheck.ts`, `src/terminal-lab/commands.ts`. _Req 3, 4, 9_. Gates: `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/property-tests.mjs --only terminal`

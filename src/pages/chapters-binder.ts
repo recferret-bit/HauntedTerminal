@@ -1,7 +1,7 @@
 import { ACHIEVEMENT_SPECS, presentAchievement, readAchievements } from '../chapters/achievements.js';
 import { GRIMOIRE_ENTRIES, dossierOf, type MetagameStore } from '../chapters/catalog.js';
 import { exportPortableSaveFile, importPortableSaveBundle } from '../chapters/portable-save.js';
-import { esc } from './html-text.js';
+import { dom } from '../ui/dom-lite.js';
 import type { ChaptersPageEls, ChaptersViewState } from './chapters-page-model.js';
 
 function renderAchievementsBinder(host: HTMLElement, state: ChaptersViewState, onRefresh: () => void): void {
@@ -98,6 +98,13 @@ function renderAchievementsBinder(host: HTMLElement, state: ChaptersViewState, o
   host.replaceChildren(bar, ...cards);
 }
 
+function binderLabeledRow(label: string, text: string, color?: string): HTMLParagraphElement {
+  return dom('p', { style: color ? `font-size:12px;color:${color};` : 'font-size:12px;' }, [
+    dom('strong', {}, [label]),
+    ` ${text}`,
+  ]);
+}
+
 export function renderBinder(
   els: ChaptersPageEls,
   state: ChaptersViewState,
@@ -110,35 +117,39 @@ export function renderBinder(
     return;
   }
   if (state.activeBinderTab === 'grimoire') {
-    els.binderContentEl.innerHTML = GRIMOIRE_ENTRIES.map((g) => {
-      const practiced = meta.usedCommands.includes(g.command.split(' ')[0]!);
-      return `
-            <article class="binder-card">
-              <div class="level-card-top">
-                <strong style="font-family:var(--display);font-size:16px;">${esc(g.command)}</strong>
-                <span class="mech-tag">${esc(g.category)}${practiced ? ' [x]' : ''}</span>
-              </div>
-              <code class="binder-syntax">${esc(g.syntax)}</code>
-              <p style="font-size:12px;"><strong>Linux Reality:</strong> ${esc(g.realWorld)}</p>
-              <p style="font-size:12px;color:#0a5c44;"><strong>Comic Stage:</strong> ${esc(g.comicEffect)}</p>
-            </article>
-          `;
-    }).join('');
+    els.binderContentEl.replaceChildren(
+      ...GRIMOIRE_ENTRIES.map((g) => {
+        const practiced = meta.usedCommands.includes(g.command.split(' ')[0]!);
+        return dom('article', { class: 'binder-card' }, [
+          dom('div', { class: 'level-card-top' }, [
+            dom('strong', { style: 'font-family:var(--display);font-size:16px;' }, [g.command]),
+            dom('span', { class: 'mech-tag' }, [`${g.category}${practiced ? ' [x]' : ''}`]),
+          ]),
+          dom('code', { class: 'binder-syntax' }, [g.syntax]),
+          binderLabeledRow('Linux Reality:', g.realWorld),
+          binderLabeledRow('Comic Stage:', g.comicEffect, '#0a5c44'),
+        ]);
+      }),
+    );
     return;
   }
-  const parodyBanner = `<div class="workshop-flash">◈ KIRO PARODY &amp; NON-AFFILIATION NOTICE: The "Big Four" (Anti-Gravy, Codec, Gork, Clod) are original fictional parody characters—no real AI brands are used or affiliated. Run <code>kiro disclaimer</code> in the terminal for details.</div>`;
-  els.binderContentEl.innerHTML = parodyBanner + dossierOf(state.activeChapter).map((b) => {
+  const parodyBanner = dom('div', { class: 'workshop-flash' }, [
+    '◈ KIRO PARODY & NON-AFFILIATION NOTICE: The "Big Four" (Anti-Gravy, Codec, Gork, Clod) are original fictional parody characters—no real AI brands are used or affiliated. Run ',
+    dom('code', {}, ['kiro disclaimer']),
+    ' in the terminal for details.',
+  ]);
+  const cards = dossierOf(state.activeChapter).map((b) => {
     const seen = meta.seenMalware.includes(b.id);
-    return `
-            <article class="binder-card">
-              <div class="level-card-top">
-                <strong style="font-family:var(--display);font-size:15px;">${esc(b.name)}</strong>
-                <span class="mech-tag ${b.role === 'BOSS' ? 'boss' : b.role === 'ALLY' ? 'hub' : ''}">${esc(b.role)}${seen ? ' • LOGGED' : ''}</span>
-              </div>
-              <code class="binder-syntax">${esc(b.model)}</code>
-              <p style="font-size:12px;"><strong>Hardware Host:</strong> ${esc(b.hostHardware)}</p>
-              <p style="font-size:12px;color:#8e1f4a;"><strong>Counterplay:</strong> ${esc(b.counterplay)}</p>
-            </article>
-          `;
-  }).join('');
+    const roleCls = `mech-tag ${b.role === 'BOSS' ? 'boss' : b.role === 'ALLY' ? 'hub' : ''}`.trim();
+    return dom('article', { class: 'binder-card' }, [
+      dom('div', { class: 'level-card-top' }, [
+        dom('strong', { style: 'font-family:var(--display);font-size:15px;' }, [b.name]),
+        dom('span', { class: roleCls }, [`${b.role}${seen ? ' • LOGGED' : ''}`]),
+      ]),
+      dom('code', { class: 'binder-syntax' }, [b.model]),
+      binderLabeledRow('Hardware Host:', b.hostHardware),
+      binderLabeledRow('Counterplay:', b.counterplay, '#8e1f4a'),
+    ]);
+  });
+  els.binderContentEl.replaceChildren(parodyBanner, ...cards);
 }

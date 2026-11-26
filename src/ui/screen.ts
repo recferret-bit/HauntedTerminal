@@ -11,10 +11,10 @@
  */
 import { startMatrixRain } from './term-boot.js';
 
-export const POWER_ON_MS = 760;
-export const POWER_OFF_MS = 460;
+const POWER_ON_MS = 760;
+const POWER_OFF_MS = 460;
 /** Keep in step with the `matrix-boot` / `matrix-fade` durations in game.css. */
-export const MATRIX_BOOT_MS = 1800;
+const MATRIX_BOOT_MS = 1800;
 
 const body = () => document.body.classList;
 const wait = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));

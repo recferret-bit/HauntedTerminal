@@ -16,6 +16,7 @@ import { levelScript } from './script.js';
 import * as code from './session-code.js';
 import * as flow from './session-flow.js';
 import * as level from './session-level.js';
+import { writeRedirect } from './session-redirect.js';
 import * as rules from './session-rules.js';
 import type { LabConfig, LabInjection, LabInspect } from './session-lab-types.js';
 import type { ChapterSession, ChapterSessionOptions, ChapterState, EditorOpenPayload, LevelRuntime } from './session-state.js';
@@ -104,7 +105,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
       root: () => this.rt.root,
       cwdPath: () => absPath(this.rt.cwd),
       push: (events, ev) => events.push(ev),
-      hurt: (amount, source, events) => rules.hurt(this, amount, source, events),
+      hurt: (amount, source, events) => level.hurt(this, amount, source, events),
       alive: () => !this.deadNow,
       kernelPhase: () => rules.computeBossPhase(this),
       truce: () =>
@@ -265,7 +266,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   }
 
   writeRedirect(path: string, data: string, append: boolean, argv: string[]): Step {
-    return code.writeRedirect(this, path, data, append, argv);
+    return writeRedirect(this, path, data, append, argv);
   }
 
   dispatch(argv: string[], stdin: string): Step {

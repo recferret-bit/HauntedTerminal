@@ -82,7 +82,7 @@ export const MANUAL_TEXT_AND_PROCS: readonly ManualCommandEntry[] = [
       'Crucial for puzzle pipelines like `grep "^PASS=" boiler.dump | cut -d= -f2 | rev > valve_lock.sock`.',
     flags: [
       { flag: '-d<char>', alias: '-d <char>', kind: 'flag', meaning: 'Delimiter character separating fields (default: Tab)', detail: 'For `KEY=VALUE`, use `-d=` or `-d =`; for `/etc/passwd` colons, `-d:`.', example: 'cut -d= -f2' },
-      { flag: '-f<list>', alias: '-f <list>', kind: 'flag', meaning: '1-based field number(s) to keep (`-f2`, `-f1,3`, `-f2-`)', detail: 'Classic supports comma lists & ranges (`1,3`, `2-`); chapter takes a single field index.', example: 'cut -d: -f1,3' },
+      { flag: '-f<list>', alias: '-f <list>', kind: 'flag', meaning: '1-based field number(s) to keep (`-f2`, `-f1,3`, `-f2-`)', detail: 'Supports comma lists & ranges (`1,3`, `2-`) in both classic and chapter shells.', example: 'cut -d: -f1,3' },
     ],
     pitfalls: ['Field numbering is 1-based (`-f1` is the first column, not `-f0`).'],
     examples: [

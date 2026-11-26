@@ -38,7 +38,10 @@ function drawSfx(world: ComixWorld, entry: SfxNode, t: number, cur: string, w: n
 function drawSfxSeq(world: ComixWorld, entry: SfxSeqNode, t: number, cur: string, w: number, h: number): void {
   const { nodes, item, spec } = entry;
   if (spec.activePanelOnly && item.panelId !== cur) {
-    for (const node of nodes) (spec.freezeOnCut ? node.keep(t) : node.update(-1, 0, 0, 0));
+    for (const node of nodes) {
+      if (spec.freezeOnCut) node.keep(t);
+      else node.update(-1, 0, 0, 0);
+    }
     return;
   }
   const projected = projectPoint(world, spec.point);

@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import type * as THREE from 'three';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { postBaseUniforms } from './post-common.js';
 
@@ -28,14 +28,14 @@ export const DEFAULT_PIXEL_PARAMS: Readonly<PixelArtParams> = {
   paletteMode: 0,
 };
 
-export const PIXEL_VERT = /* glsl */ `
+const PIXEL_VERT = /* glsl */ `
 varying vec2 vUv;
 void main() {
   vUv = uv;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }`;
 
-export const BAYER_CHUNK = /* glsl */ `
+const BAYER_CHUNK = /* glsl */ `
 float luma(vec3 c) {
   return dot(c, vec3(0.299, 0.587, 0.114));
 }
@@ -48,7 +48,7 @@ float bayer4x4(vec2 cell) {
   return bayer2(0.5 * p) * 0.25 + bayer2(p);
 }`;
 
-export const EDGE_CHUNK = /* glsl */ `
+const EDGE_CHUNK = /* glsl */ `
 vec3 samplePixelEdge(sampler2D tex, vec2 centerUv, vec2 texel, float edgeStrength) {
   vec3 c0 = texture2D(tex, centerUv).rgb;
   vec3 cN = texture2D(tex, centerUv + vec2(0.0, texel.y)).rgb;
@@ -64,7 +64,7 @@ vec3 samplePixelEdge(sampler2D tex, vec2 centerUv, vec2 texel, float edgeStrengt
   return clamp(c0 * (1.0 - outline * 0.42) + ridge, 0.0, 1.0);
 }`;
 
-export const PALETTE_CHUNK = /* glsl */ `
+const PALETTE_CHUNK = /* glsl */ `
 vec3 ramp4(vec3 c0, vec3 c1, vec3 c2, vec3 c3, float q) {
   return q < 0.33 ? mix(c0, c1, q * 3.0)
        : q < 0.66 ? mix(c1, c2, (q - 0.33) * 3.0)
@@ -102,7 +102,7 @@ vec3 applyPaletteMode(vec3 col, float qLuma, float mode) {
   return mix(mansion, col, 0.22);
 }`;
 
-export const QUANTIZE_CHUNK = /* glsl */ `
+const QUANTIZE_CHUNK = /* glsl */ `
 vec3 quantizePixelArt(vec3 col, vec2 cell, vec2 subUv, float levels, float ditherAmt, float sat, float con, float pixelSize, float gridStr, float mode) {
   col = clamp((col - 0.5) * con + 0.5, 0.0, 1.0);
   float lum = luma(col);
@@ -116,7 +116,7 @@ vec3 quantizePixelArt(vec3 col, vec2 cell, vec2 subUv, float levels, float dithe
   return col * (1.0 - border * gridStr);
 }`;
 
-export const PIXEL_MAIN = /* glsl */ `
+const PIXEL_MAIN = /* glsl */ `
 uniform sampler2D tDiffuse;
 uniform vec2 uResolution;
 uniform float uPixelSize;
@@ -140,7 +140,7 @@ void main() {
   gl_FragColor = vec4(col, 1.0);
 }`;
 
-export const buildPixelArtFrag = () =>
+const buildPixelArtFrag = () =>
   [BAYER_CHUNK, EDGE_CHUNK, PALETTE_CHUNK, QUANTIZE_CHUNK, PIXEL_MAIN].join('\n');
 
 /**

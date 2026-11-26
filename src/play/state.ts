@@ -1,20 +1,24 @@
 import { DEFAULT_SKIN, type TerminalSkinId } from '../contracts/terminal-skins.js';
+import type { ChapterManifest } from '../chapters/types.js';
+import { isChapterSession } from '../chapters/chapter-session.js';
 import type { LabConfig } from '../chapters/session-lab-types.js';
 import type { ExecRecord } from '../contracts/exec-record.js';
 import type { KernelEvent } from '../contracts/events.js';
 import type { Session } from '../game/session.js';
 import type { GameSnapshot, TickResult } from '../game/types.js';
 import type { ComicStage } from '../renderer/comic-stage.js';
-import type { CodeEditor } from '../ui/code-editor.js';
 import type { ChapterMapDialog } from '../ui/chapter-map.js';
-import type { EscMenu } from '../ui/esc-menu.js';
-import type { HintDialog } from '../ui/hint-dialog.js';
-import type { EndStats, Hud } from '../ui/hud.js';
-import type { ManualBook } from '../ui/manual-book.js';
+import type { CodeEditor } from '../ui/code-editor.js';
 import type { DialogBox } from '../ui/dialog-box.js';
 import type { DialogOrchestrator } from '../ui/dialog-orchestrator.js';
+import type { EscMenu } from '../ui/esc-menu.js';
+import type { HintDialog } from '../ui/hint-dialog.js';
+import type { Hud } from '../ui/hud.js';
+import type { ManualBook } from '../ui/manual-book.js';
 import type { Shell } from '../ui/terminal.js';
 import type { TutorialCard } from '../ui/tutorial.js';
+import { createPlayBus, type PlayEventBus } from './events.js';
+import { createPlayLifecycle, type PlayLifecycle } from './lifecycle.js';
 
 export const STORY = [
   '\x1b[1;93mOUT OF CREDITS\x1b[0m',
@@ -40,10 +44,6 @@ export const CARD_MS = 1600;
 export const BANNER_MS = 520;
 
 const SKIP_KEY = 'credits.skipIntro';
-
-export type Phase = 'boot' | 'intro' | 'play' | 'outro' | 'stats';
-/** Every reason the game clock is stopped. Input is blocked for all of them except a hidden tab. */
-export type PauseReason = 'intro' | 'card' | 'outro' | 'ended' | 'cinematic' | 'hidden' | 'reveal';
 
 export type GiveItem = 'energy' | 'ram' | 'ssd';
 /** Optional debug hook the game module may add; the dev panel enables its buttons only if present. */
@@ -74,6 +74,19 @@ export interface PlayDom {
   manualModalEl: HTMLElement | null;
 }
 
+export function chapterBanner(session: Session, manifest: ChapterManifest | undefined): string {
+  if (!isChapterSession(session)) return STORY;
+  const level = session.getCurrentLevel();
+  return [
+    `\x1b[1;93m${manifest?.badge ?? 'ISSUE #1'}: ${manifest?.title ?? 'FREELANCE NIGHTMARE'}\x1b[0m`,
+    `${manifest?.subtitle ?? ''}`,
+    `Level ${level.index}/${session.getLevels().length}: \x1b[1;96m${level.title}\x1b[0m (${level.cwd})`,
+    `Goal: ${level.summary}`,
+    'Type \x1b[1;93mhank\x1b[0m for Socratic hints, \x1b[1;93medit <file>\x1b[0m for Split Code Editor, or \x1b[1;93mhelp\x1b[0m.',
+    '',
+  ].join('\n');
+}
+
 export function readSkipPref(): boolean {
   const params = new URLSearchParams(location.search);
   if (params.has('nointro') || params.get('skipIntro') === '1') return true;
@@ -87,14 +100,15 @@ export function readSkipPref(): boolean {
 export function writeSkipPref(on: boolean): void {
   try {
     sessionStorage.setItem(SKIP_KEY, on ? '1' : '0');
-  } catch { /* storage blocked: remembered in memory only */ }
+  } catch {
+    /* storage blocked: remembered in memory only */
+  }
 }
 
 export class Play {
-  phase: Phase = 'boot';
-  reasons = new Set<PauseReason>(['intro']);
+  readonly lifecycle: PlayLifecycle;
+  readonly events: PlayEventBus = createPlayBus();
   cardTimer = 0;
-  endingStarted = false;
   /** FLOOR_ENTERED that arrived while the intro was running; shown once it ends. */
   stashedFloorCard: Extract<KernelEvent, { type: 'FLOOR_ENTERED' }> | null = null;
   hud: Hud | null = null;
@@ -135,14 +149,8 @@ export class Play {
   shell!: Shell;
   tutorial!: TutorialCard;
   lab!: ShaderLab;
-
-  syncPause!: () => void;
-  paint!: (snap: GameSnapshot) => void;
-  apply!: (events: KernelEvent[], snap: GameSnapshot, printed?: string) => void;
-  applyTick!: (res: TickResult) => void;
-  runCinematic!: <T>(show: () => Promise<T>) => Promise<T | undefined>;
-  beginEnding!: (stats: EndStats | null) => void;
-  startRun!: () => Promise<void>;
+  /** Monotonic counter invalidating stale enemy-turn stagger timers from earlier event batches. */
+  applySeq = 0;
 
   constructor(
     readonly dom: PlayDom,
@@ -153,8 +161,37 @@ export class Play {
     public skipTutorial: SkipTutorial | undefined,
     public skipIntroPref: boolean,
   ) {
-    if (document.hidden) this.reasons.add('hidden');
+    this.lifecycle = createPlayLifecycle(document.hidden);
     stage.stormPaused = true;
     session.setPaused(true);
   }
+}
+
+export type OverlayId = 'menu' | 'manual' | 'map' | 'hint' | 'editor';
+
+function isOverlayOpen(play: Play, id: OverlayId): boolean {
+  switch (id) {
+    case 'menu':
+      return Boolean(play.menu?.isOpen());
+    case 'manual':
+      return Boolean(play.manualBook?.isOpen());
+    case 'map':
+      return Boolean(play.chapterMap?.isOpen());
+    case 'hint':
+      return Boolean(play.hintDialog?.isOpen());
+    case 'editor':
+      return Boolean(play.codeEditor?.isOpen());
+  }
+}
+
+export function anyModalOpen(play: Play, exclude: readonly OverlayId[] = []): boolean {
+  const ids: OverlayId[] = ['menu', 'manual', 'map', 'hint', 'editor'];
+  return ids.some((id) => !exclude.includes(id) && isOverlayOpen(play, id));
+}
+
+export function closeOtherModals(play: Play, keep?: Exclude<OverlayId, 'editor'>): void {
+  if (keep !== 'menu' && play.menu?.isOpen()) play.menu.close();
+  if (keep !== 'manual' && play.manualBook?.isOpen()) play.manualBook.close();
+  if (keep !== 'map' && play.chapterMap?.isOpen()) play.chapterMap.close();
+  if (keep !== 'hint' && play.hintDialog?.isOpen()) play.hintDialog.close();
 }

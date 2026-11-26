@@ -5,12 +5,12 @@ export interface Word {
   quote: 'none' | 'single' | 'double';
 }
 
-export interface Command {
+interface Command {
   words: Word[];
   redirect?: { target: Word; append: boolean };
 }
 
-export interface PipelineItem {
+interface PipelineItem {
   op: null | ';' | '&&' | '||';
   commands: Command[];
 }

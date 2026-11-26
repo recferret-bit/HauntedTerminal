@@ -6,7 +6,7 @@ import { absPath, lookup, makeNode, type VNode } from './tree.js';
 
 const CONTENT_LIMIT = 4000;
 
-export function toLabNode(node: VNode, path: string): LabNode {
+function toLabNode(node: VNode, path: string): LabNode {
   const out: LabNode = {
     id: node.id,
     name: node.name,
@@ -23,7 +23,7 @@ export function toLabNode(node: VNode, path: string): LabNode {
   return out;
 }
 
-export function buildLabEntities(world: World, held: boolean): LabEntity[] {
+function buildLabEntities(world: World, held: boolean): LabEntity[] {
   const out: LabEntity[] = world.enemies.map((e) => ({
     id: e.id,
     model: e.model,
@@ -82,7 +82,7 @@ export function placeLabFile(root: VNode, f: ClassicLabFile): VNode {
   return node;
 }
 
-export function checkInjectionProblem(world: World, root: VNode, what: LabInjection): string | null {
+function checkInjectionProblem(world: World, root: VNode, what: LabInjection): string | null {
   const spawn = what.enemy ?? what.pickup;
   if (!spawn || (what.enemy && what.pickup)) return 'inject exactly one enemy or one pickup';
   if (world.enemies.some((e) => e.id === spawn.id) || world.pickups.some((p) => p.id === spawn.id)) {

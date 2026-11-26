@@ -8,7 +8,7 @@ import { MAX_COMIC_FX_LIGHTS, mergeComicFxLights, type ComicFxLight } from './co
  */
 
 /** Duration of `public/sfx/lightning.mp3` (~1.41s). */
-export const LIGHTNING_SOUND_SEC = 1.41;
+const LIGHTNING_SOUND_SEC = 1.41;
 const LIGHTNING_FX_COLOR = 0x4cc9f0;
 
 export interface LightningStrikeOptions {

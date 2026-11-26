@@ -5,6 +5,7 @@
  * must land (tutorial steps, a floor's new objective, death, the ending).
  */
 import type { BattleAgent, KernelEvent } from '../contracts/events.js';
+import { createStateMachine, type StateMachine, type TransitionTable } from '../contracts/state-machine.js';
 import type { BattleThreat } from './battle.js';
 import { BESTIARY } from './bestiary.js';
 import type { KiroCompanion } from './kiro.js';
@@ -26,7 +27,7 @@ const SAFE_HP = 0.5;
 
 const COLOR: Record<AgentName, string> = { clod: '38;5;208', gork: '1;37', codec: '1;32', antigravy: '1;34', kiro: '1;36' };
 
-export function agentModel(agent: AgentName): string {
+function agentModel(agent: AgentName): string {
   return agent === 'kiro' ? 'npc.kiro_ghost' : `agent.${agent}`;
 }
 
@@ -80,10 +81,23 @@ const FLOOR_PROMPTS: Record<number, { agent: AgentName; text: string }> = {
   5: { agent: 'clod', text: 'FINAL PROMPT: you are inside our core. There is no exit. (Please do not type exit.)' },
 };
 
+export type TutorialPhase = 'waiting' | 'active' | 'finished' | 'abandoned';
+export type TutorialEvent = 'ARRIVE' | 'START_COMPLETE' | 'SKIP' | 'ABANDON';
+
+export const TUTORIAL_TRANSITIONS: TransitionTable<TutorialPhase, TutorialEvent> = {
+  waiting: { ARRIVE: 'active', SKIP: 'finished', ABANDON: 'abandoned' },
+  active: { START_COMPLETE: 'finished', SKIP: 'finished', ABANDON: 'abandoned' },
+  finished: {},
+  abandoned: {},
+};
+
+export function createTutorialMachine(): StateMachine<TutorialPhase, TutorialEvent> {
+  return createStateMachine({ initial: 'waiting', transitions: TUTORIAL_TRANSITIONS });
+}
+
 export class AgentDirector {
+  private readonly fsm = createTutorialMachine();
   private step = 0;
-  private live = true;
-  private started = false;
   private cooldown = 0;
   private firstKill = false;
   private firstPickup = false;
@@ -91,11 +105,14 @@ export class AgentDirector {
 
   constructor(private readonly kiro?: KiroCompanion) {}
 
+  get tutorialPhase(): TutorialPhase {
+    return this.fsm.state;
+  }
+
   /** A new run: the tutorial is waiting for the hero to arrive. */
   reset(): void {
+    this.fsm.reset('waiting');
     this.step = 0;
-    this.live = true;
-    this.started = false;
     this.cooldown = 0;
     this.firstKill = false;
     this.firstPickup = false;
@@ -104,11 +121,11 @@ export class AgentDirector {
 
   /** The tutorial is running (enemies hold their fire). */
   active(): boolean {
-    return this.live;
+    return this.fsm.state === 'waiting' || this.fsm.state === 'active';
   }
 
   state(): TutorialState | null {
-    if (!this.live) return null;
+    if (!this.active()) return null;
     const def = STEPS[this.step];
     if (!def) return null;
     return { step: this.step + 1, total: STEPS.length, agent: def.agent, prompt: def.prompt, command: def.command };
@@ -121,8 +138,7 @@ export class AgentDirector {
 
   /** The hero arrives: shock, then the first prompt. Delivered once per run, with the first command or tick. */
   arrive(): Chatter | null {
-    if (this.started || !this.live) return null;
-    this.started = true;
+    if (!this.fsm.send('ARRIVE')) return null;
     const out = this.empty();
     this.emote(out, 'shock', 'Where... am I? This is my /home... from the INSIDE?');
     if (this.kiro) {
@@ -136,7 +152,7 @@ export class AgentDirector {
   /** After a command line: advance the tutorial in order; leaving the desk (or the floor) finishes it. */
   observe(lines: string[][], ctx: { failed: boolean; leftDesk: boolean }): Chatter {
     const out = this.empty();
-    if (!this.live) return out;
+    if (!this.active()) return out;
     let progressed = false;
     for (const argv of lines) {
       const def = STEPS[this.step];
@@ -162,19 +178,17 @@ export class AgentDirector {
   /** `tutorial skip` or the HUD button. */
   skip(): Chatter {
     const out = this.empty();
-    if (!this.live) return out;
-    this.started = true;
+    if (!this.fsm.send('SKIP')) return out;
     const last = STEPS[STEPS.length - 1];
     if (last) this.tell(out, { type: 'TUTORIAL_STEP', step: STEPS.length, total: STEPS.length, prompt: last.prompt, command: last.command, agent: last.agent, done: true });
     this.say(out, 'gork', 'annoyed', 'Skipped onboarding? Bold. PROMPT: reach our kernel. You will not.', true);
-    this.end(out);
+    this.emote(out, 'determined', 'Fine. Down to the kernel, then exit. Then home.');
     return out;
   }
 
   /** Leaving floor 1 by a debug jump: the tutorial just stops. */
   abandon(): void {
-    this.live = false;
-    this.started = true;
+    this.fsm.send('ABANDON');
   }
 
   /** What `tutorial` prints. */
@@ -274,7 +288,7 @@ export class AgentDirector {
   }
 
   private end(out: Chatter): void {
-    this.live = false;
+    this.fsm.send('START_COMPLETE');
     this.emote(out, 'determined', 'Fine. Down to the kernel, then exit. Then home.');
   }
 }

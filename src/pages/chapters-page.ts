@@ -9,8 +9,7 @@ import { wireExternalLinksForDesktop, wireSteamWishlistLink } from '../chapters/
 import type { ChapterLevelSummary, ChapterManifest } from '../chapters/types.js';
 import { renderIssueRack } from './chapters-issue-rack.js';
 import { renderLevelDossier, renderLevelGrid } from './chapters-level-grid.js';
-import type { ChaptersPageEls, ChaptersViewState } from './chapters-page-model.js';
-import { syncChaptersUrl } from './chapters-page-model.js';
+import { syncChaptersUrl, type ChaptersPageEls, type ChaptersViewState } from './chapters-page-model.js';
 import { captureActiveFocusSelector, renderMetagame, restoreActiveFocus } from './chapters-workshop.js';
 
 function pageEls(): ChaptersPageEls {

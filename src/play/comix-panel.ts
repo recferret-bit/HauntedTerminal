@@ -7,7 +7,7 @@ import { CinematicStage } from '../cinematic/stage.js';
  * CinematicStage looks along +z from z = −8, and on that camera world +x is screen-left,
  * so image-right is world −x. `halfW` is the camera's visible half-width.
  */
-export function specXToWorld(specX: number, halfW: number): number {
+function specXToWorld(specX: number, halfW: number): number {
   return -specX * halfW * 0.78;
 }
 
@@ -150,7 +150,7 @@ const dead: LivePanel = {
 };
 
 /** One panel: the game's comic renderer, room behind the cast, idle animation on the stage clock. */
-export function mountPanel(host: HTMLElement, panel: ComixPanelSpec): LivePanel {
+function mountPanel(host: HTMLElement, panel: ComixPanelSpec): LivePanel {
   let stage: CinematicStage;
   try {
     stage = new CinematicStage();

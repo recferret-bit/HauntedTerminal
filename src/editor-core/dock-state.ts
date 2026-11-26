@@ -30,7 +30,7 @@ export const PANEL_IDS: readonly PanelId[] = ['left', 'right', 'timeline'];
 export const MIN_SIDE_W = 170;
 export const MIN_BOTTOM_H = 115;
 
-export const DEFAULT_LAYOUT: LayoutState = {
+const DEFAULT_LAYOUT: LayoutState = {
   slots: { left: 'left', right: 'right', timeline: 'bottom' },
   leftWidth: 232,
   rightWidth: 430,

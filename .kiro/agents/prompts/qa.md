@@ -8,13 +8,20 @@ You play Out Of Credits and test every part of it, then write a report. You chan
 
 | Feature | Owner | Run |
 |---|---|---|
-| everything | - | `npm run quality` (types, layout, size, layers, declarative, specs, duplicates, agents, properties) |
+| everything | - | `npm run quality` (types, deps across all sections + lockfile root, ESLint over `src` + `scripts/`, layout, size, layers, cycles, dead exports/types/CSS, declarative, specs, duplicates, agents, legacy name, brands, MCP, properties) |
+| architecture & shared core | `lead-dev` | `node scripts/harness/architecture-unit.mjs`; `node scripts/harness/classic-unit.mjs` |
 | chapter play | `chapters-designer` | `node scripts/harness/generate-chapter.mjs --verify`; `node scripts/harness/play-browser.mjs --nointro` (real Chrome, all 11 levels to the stats screen); look at `scripts/harness/out/play-*.png` |
 | gameplay elements | `chapters-designer` | `node scripts/harness/property-tests.mjs --only gameplay`; `node scripts/harness/terminal-lab.mjs --all` |
 | terminal | `terminal-designer` | `property-tests.mjs --only terminal`; `terminal-lab-unit.mjs`; `terminal-lab-api-test.mjs`; `terminal-lab-smoke.mjs` (also `--width 1280 --height 820`) |
 | laptop | `laptop-designer` | `laptop-unit.mjs`; `property-tests.mjs --only laptop`; `laptop-lab-smoke.mjs` (also `--width 1280 --height 820`) |
-| comix | `comix-designer` | `generate-comix.mjs --verify`; `validate-comix.mjs`; `.kiro/skills/comix-implementer/scripts/verify-comix.mjs`; `property-tests.mjs --only comix`; look at `out/comix-frame-*.png` |
-| editors | `chapters-designer`, `comix-designer` | `editor-unit-test.mjs`; `editor-smoke.mjs`; `comix-editor-smoke.mjs` |
+| comix | `comix-designer` | `generate-comix.mjs --verify`; `validate-comix.mjs`; `.kiro/skills/comix-implementer/scripts/verify-comix.mjs`; `property-tests.mjs --only comix`; look at the comix stills of the visual audit (`out/visual/intro-*@<size>.png`) |
+| editors | `chapters-designer`, `comix-designer` | `editor-unit-test.mjs`; `editor-smoke.mjs`; `comix-editor-smoke.mjs` (writes `out/comix-editor-*.png`) |
+| battles, random PIDs | `chapters-designer` | `battle-unit.mjs`; `property-tests.mjs --only gameplay`; `playthrough.mjs --ticks 3` |
+| manual, chapter map | `terminal-designer` | `manual-unit.mjs`; `manual-smoke.mjs` |
+| terminal skins, Esc menu | `terminal-designer` | `terminal-lab.mjs --run scripts/harness/terminal-lab/skin.lab.json`; `terminal-lab-smoke.mjs` |
+| app bus, SFX, music | `lead-dev` | `audio-unit.mjs`; `audio-smoke.mjs` |
+| landing, hub | `lead-dev` | `hub-unit.mjs`; `node scripts/desktop/landing-smoke.mjs` |
+| desktop shell | `lead-dev` | `node scripts/desktop/desktop-unit.mjs` |
 | assets | `artist` | `.kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict`; `.kiro/skills/procedural-animation-3d/scripts/check-tags.mjs --all`; `screenshot-lab.mjs --selftest`; `npm run quality:fingerprint` |
 | build | `lead-dev` | `npm run build` |
 | visual | owner of the area of each finding | `node scripts/harness/visual-audit.mjs` (scoped: `--screens <ids> --sizes <WxH,...>`); see "The visual pass" |
@@ -29,7 +36,7 @@ Gates prove the solution path. Also try what a player would do wrong: wrong comm
 
 Any claim about what is on screen (overlap, cut-off text, layout, what a level looks like) is made from a screenshot you took, not from a gate. You have the Chrome DevTools MCP tools in `tools` (headless Chrome, private profile, no JavaScript evaluation):
 
-1. Start the dev server: `npm start` (`http://localhost:5173`). If it says 5173 belongs to another project, run `STACK_PORT=5174 npm start` and use `http://localhost:5174` (the only other port you may start). Then `new_page` with `<that URL>/play?nointro=1`, `wait_for` the terminal prompt, `take_snapshot` for the structure. Stop it at the end of your pass with the matching `npm stop` or `STACK_PORT=5174 npm stop`.
+1. Start the dev server: `npm start` (`http://localhost:5400`). If it says 5400 belongs to another project, run `STACK_PORT=5174 npm start` and use `http://localhost:5174` (the only other port you may start). Then `new_page` with `<that URL>/play?nointro=1`, `wait_for` the terminal prompt, `take_snapshot` for the structure. Stop it at the end of your pass with the matching `npm stop` or `STACK_PORT=5174 npm stop`.
 2. `take_screenshot` with `filePath` set to `scripts/harness/out/qa-<scope>-<n>.png` (the only folder the server may write; it is where your `cp` to `docs/qa/media/` reads from). Look at the image; do not skip it.
 3. Play: `click` the terminal, `type_text` the command with `submitKey: "Enter"`, `press_key`. Check `list_console_messages` (errors and warnings) and `list_network_requests` (failed requests) after each screen you judge.
 4. Look at both sizes with `resize_page`: 1600x950 and 1280x820.

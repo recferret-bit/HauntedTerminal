@@ -10,7 +10,7 @@ import { COMIC_FRAG, COMIC_FX_LIGHTS, COMIC_LIGHT, type ComicMaterial } from './
  */
 export type ComicSurfaceKind = 'clay_cracks' | 'coffee_heat' | 'accretion_halo' | 'crt_code';
 
-export interface ComicPatch {
+interface ComicPatch {
   /** Uniform declarations and `cv`-prefixed helper functions inserted before `main()`. */
   decl?: string;
   /** Statements at the top of `main()`; may step `comicUv` before `uMap` is sampled. */
@@ -45,7 +45,7 @@ float cvHash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 }`;
 
-export function patchComicFragment(patch: ComicPatch, source: string = COMIC_FRAG): string {
+function patchComicFragment(patch: ComicPatch, source: string = COMIC_FRAG): string {
   let out = source;
   const swap = (anchor: string, replacement: string): void => {
     if (!out.includes(anchor)) {
@@ -61,7 +61,7 @@ export function patchComicFragment(patch: ComicPatch, source: string = COMIC_FRA
   return out;
 }
 
-export function comicVariant(
+function comicVariant(
   base: ComicMaterial,
   patch: ComicPatch,
   uniforms: Record<string, THREE.IUniform>,
@@ -83,7 +83,7 @@ uniform vec2 uCvScale;
 uniform float uCvFreeze;`;
 
 /** Sculpted clay golem tectonic crack seams pulsing upward in stepped 12 fps beats (`agent.clod`). */
-export const CLAY_CRACKS_PATCH: ComicPatch = {
+const CLAY_CRACKS_PATCH: ComicPatch = {
   decl: SHARED_DECL,
   begin: /* glsl */ `
   float cvTick = uCvFreeze > 0.5 ? 0.0 : floor(uTime * 12.0);
@@ -109,7 +109,7 @@ export const CLAY_CRACKS_PATCH: ComicPatch = {
 };
 
 /** Swirling dark-roast espresso, golden crema spiral, and stepped rising heat-wave shimmer (`agent.antigravy`). */
-export const COFFEE_HEAT_PATCH: ComicPatch = {
+const COFFEE_HEAT_PATCH: ComicPatch = {
   decl: SHARED_DECL,
   begin: /* glsl */ `
   float cvTick = uCvFreeze > 0.5 ? 0.0 : floor(uTime * 12.0);
@@ -132,7 +132,7 @@ export const COFFEE_HEAT_PATCH: ComicPatch = {
 };
 
 /** Concentric planetary accretion ring circles framing the separated event-horizon core (`agent.gork`). */
-export const ACCRETION_HALO_PATCH: ComicPatch = {
+const ACCRETION_HALO_PATCH: ComicPatch = {
   decl: SHARED_DECL,
   begin: /* glsl */ `
   float cvTick = uCvFreeze > 0.5 ? 0.0 : floor(uTime * 12.0);`,
@@ -149,7 +149,7 @@ export const ACCRETION_HALO_PATCH: ComicPatch = {
 };
 
 /** Clean dark recessed CRT glass screen behind the `>_` prompt symbols, with no moving lines (`agent.codec`). */
-export const CRT_CODE_PATCH: ComicPatch = {
+const CRT_CODE_PATCH: ComicPatch = {
   decl: SHARED_DECL,
   begin: /* glsl */ `
   float cvTick = uCvFreeze > 0.5 ? 0.0 : floor(uTime * 12.0);`,
@@ -161,7 +161,7 @@ export const CRT_CODE_PATCH: ComicPatch = {
   col = mix(col, cvWell, 0.94 * cvLive);`,
 };
 
-export const SURFACE_PATCHES: Record<ComicSurfaceKind, ComicPatch> = {
+const SURFACE_PATCHES: Record<ComicSurfaceKind, ComicPatch> = {
   clay_cracks: CLAY_CRACKS_PATCH,
   coffee_heat: COFFEE_HEAT_PATCH,
   accretion_halo: ACCRETION_HALO_PATCH,

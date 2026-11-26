@@ -75,8 +75,10 @@ export function corrupt(doc, ops) {
       if (!parent || typeof parent !== 'object' || !(key in parent)) continue;
     }
     const v = parent[key];
-    if (op.how === 'delete') Array.isArray(parent) ? parent.splice(key, 1) : delete parent[key];
-    else if (op.how === 'null') parent[key] = null;
+    if (op.how === 'delete') {
+      if (Array.isArray(parent)) parent.splice(key, 1);
+      else delete parent[key];
+    } else if (op.how === 'null') parent[key] = null;
     else if (op.how === 'junk') parent[key] = op.junk;
     else if (op.how === 'empty') parent[key] = Array.isArray(v) ? [] : v && typeof v === 'object' ? {} : '';
     else if (op.how === 'duplicate' && Array.isArray(parent)) parent.splice(key, 0, structuredClone(v));

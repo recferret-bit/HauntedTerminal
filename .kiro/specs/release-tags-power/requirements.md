@@ -2,7 +2,7 @@
 
 Status: approved
 
-Capability: two project powers that connect builds to GitHub tags. `credits-tauri-local` builds a local, unversioned, non-production Tauri app. `credits-release` builds the production Tauri installers and ships the web build on Netlify from the same release (GitHub Pages dropped, see Decisions).
+Capability: two project powers that connect builds to GitHub tags. `credits-tauri-local` builds a local, unversioned, non-production Tauri app. `credits-release` builds the production Tauri installers and makes the Netlify preview from the same release (GitHub Pages dropped, see Decisions).
 
 ## Requirements
 
@@ -19,15 +19,15 @@ Capability: two project powers that connect builds to GitHub tags. `credits-taur
 6. IF the branch is not `main`, the tree is dirty, `main` differs from `origin/main`, the tag already exists, or `<version>` differs from `package.json`, THEN THE SYSTEM SHALL refuse and name the failed check.
 7. WHEN the checks pass and `--yes` is given, THE SYSTEM SHALL run `npm run quality` and the 0-death chapter verify, then create and push tag `v<version>`.
 8. WHEN tag `v*` is pushed, THE SYSTEM SHALL build the Tauri installers on a GitHub Release (existing `desktop-release.yml`).
-9. WHEN the tag is released, THE SYSTEM SHALL promote the Netlify build through `credits-ship prod`, keeping its played-preview rule.
-10. (Dropped: GitHub Pages is out of scope.)
+9. WHEN the tag is pushed and, if `gh` is installed, its workflow run succeeded, THE SYSTEM SHALL make the Netlify preview through `credits-ship preview` and SHALL NOT promote it; production stays the user's second yes.
+10. (Dropped: GitHub Pages, see Out of scope.)
 11. THE SYSTEM SHALL deny `credits-release` in every team agent's shell, and keep credentials out of the repo.
 
 ## Out of scope
 
 - A second chapter, Steam publishing and signing certificates (see `steamworks-store-release`).
 - Changing the `credits-ship` preview rule.
-- GitHub Pages, a Vite `base` and any change to root-absolute URLs.
+- GitHub Pages, a Vite `base` and any change to root-absolute URLs (formerly requirement 10, dropped by the user; see Decisions).
 
 ## Decisions
 

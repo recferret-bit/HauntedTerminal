@@ -1,6 +1,6 @@
 # Rename out of credits: design
 
-Status: done
+Status: see requirements.md
 
 ## Naming table
 

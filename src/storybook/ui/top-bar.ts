@@ -1,5 +1,4 @@
-import type { LabOptions, TabId } from '../domain/options.js';
-import { TAB_IDS } from '../domain/options.js';
+import { TAB_IDS, type LabOptions, type TabId } from '../domain/options.js';
 import { modelCategories, tabCount } from '../subjects/catalog-items.js';
 import { button, el, pressedButton } from './dom.js';
 

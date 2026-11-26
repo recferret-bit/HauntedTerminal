@@ -1,6 +1,6 @@
 # Fullscreen mode: design
 
-Status: approved (by the user 2026-11-25) (follows `requirements.md`)
+Status: see requirements.md
 
 ## Pieces
 

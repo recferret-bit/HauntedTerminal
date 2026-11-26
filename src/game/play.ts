@@ -94,12 +94,7 @@ export function splitShortFlags(args: string[]): { flags: string; paths: string[
   return { flags, paths };
 }
 
-export function linesOf(text: string): string[] {
-  if (!text) return [];
-  const parts = text.split('\n');
-  if (parts[parts.length - 1] === '') parts.pop();
-  return parts;
-}
+export { globToRegExp as globReg } from './unix-applets.js';
 
 export function brace(word: string): string[] {
   const open = word.indexOf('{');
@@ -110,14 +105,6 @@ export function brace(word: string): string[] {
   const post = word.slice(close + 1);
   if (!body.includes(',')) return [word];
   return body.split(',').flatMap((piece) => brace(pre + piece + post));
-}
-
-export function escapeReg(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-export function globReg(pattern: string): RegExp {
-  return new RegExp(`^${pattern.split('').map((ch) => (ch === '*' ? '.*' : ch === '?' ? '.' : escapeReg(ch))).join('')}$`);
 }
 
 export function splitPath(path: string): { dir: string; base: string } {

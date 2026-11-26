@@ -16,7 +16,7 @@ const SAY_FIELDS: Field[] = [sel('agent', 'Agent', AGENTS), sel('mood', 'Mood', 
 const TAUNT_FIELDS: Field[] = [sel('mood', 'Mood', MOODS), t('text', 'Line', { rows: 2, hint: 'begins with the agent: CLOD: ..., GORK: ..., KIRO: ...' }), opt(t('print', 'Also print', { mono: true, hint: '{text} is the line' }))];
 
 /** What a lab check watches. `ran`, `output`, `code` and `event` stay passed once seen; `file` and `riddle` are read live. */
-export const COND_VARIANTS = (): Record<LabCond['kind'], Field[]> => ({
+const COND_VARIANTS = (): Record<LabCond['kind'], Field[]> => ({
   ran: [t('pattern', 'A command line matching (text, or re:regex)', { mono: true })],
   output: [t('pattern', 'Some output matching (text, or re:regex)', { mono: true })],
   code: [n('code', 'Exit code'), opt(t('line', 'For a command line matching', { mono: true }))],
@@ -155,7 +155,7 @@ export function stepTitle(step: Record<string, unknown>): string {
   }
 }
 
-export const STEPS: Field[] = [{ type: 'array', key: 'steps', label: 'Script', item: { union: STEP_VARIANTS, tag: 'op', title: stepTitle } }];
+const STEPS: Field[] = [{ type: 'array', key: 'steps', label: 'Script', item: { union: STEP_VARIANTS, tag: 'op', title: stepTitle } }];
 
 /** Every key of a lab script the import check knows. */
 export const LAB_FIELDS: Field[] = [t('id', 'Id', { mono: true }), ...SETTINGS, ...RUN_SWITCHES, ...SETUP, ...STEPS];

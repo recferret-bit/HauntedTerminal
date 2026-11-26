@@ -7,7 +7,6 @@
 import {
   ITEM_IDS,
   type ItemId,
-  type ItemDef,
   ITEMS,
   isItemId,
   heroModelFor,
@@ -15,7 +14,7 @@ import {
 import { empty, out } from './play.js';
 import type { Step } from './shell.js';
 
-export { ITEM_IDS, type ItemId, type ItemDef, ITEMS, isItemId };
+export { ITEM_IDS, type ItemId, ITEMS, isItemId };
 
 export interface Inventory {
   /** In the order they were picked up. */
@@ -79,6 +78,3 @@ export function runInventory(holder: { inventory: Inventory }, cmd: string, args
 export function completeHold(inv: Inventory, prefix: string): string[] {
   return inv.items.filter((id) => id.startsWith(prefix));
 }
-
-/** Command names the inventory answers. */
-export const INVENTORY_COMMANDS: readonly string[] = ['inventory', 'inv', 'hold'];

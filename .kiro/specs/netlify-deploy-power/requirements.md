@@ -17,7 +17,7 @@ Capability: a project Kiro power, `credits-ship`, that puts Out Of Credits on a 
 9. IF the developer is not logged in to Netlify, THEN THE SYSTEM SHALL stop before the gates and print the one-time setup command.
 10. THE SYSTEM SHALL bundle the Netlify MCP server pinned to an exact version for questions about sites and deploys; uploads go through the gated script, never through an MCP deploy tool.
 11. THE SYSTEM SHALL keep deploys out of reach of the seven team agents: the power is infrastructure no agent writes, and every agent's shell refuses the deploy script (checked by `npm run quality:agents`).
-12. WHEN a production deploy passes, THE SYSTEM SHALL tell the developer which README placeholders and GitHub About fields to update; Kiro replaces `<LIVE_URL>` in `README.md` only when the user asks, as a normal reviewed edit.
+12. WHEN a production deploy passes, THE SYSTEM SHALL tell the developer to check that `README.md` and the GitHub About website point at the production URL; Kiro edits `README.md` only when the user asks, as a normal reviewed edit.
 
 ## Out of scope
 

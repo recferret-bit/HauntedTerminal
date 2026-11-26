@@ -7,7 +7,7 @@
     "name": "Out Of Credits",
     "url": "https://github.com/recferret-bit/OutOfCredits"
   },
-  "keywords": ["tauri", "desktop", "local build", "native app", "try the app", "build the app locally", "installer"],
+  "keywords": ["tauri", "desktop", "local build", "native app", "try the app", "build the app locally"],
   "homepage": "https://github.com/recferret-bit/OutOfCredits/tree/main/.kiro/powers/credits-tauri-local",
   "repository": "https://github.com/recferret-bit/OutOfCredits",
   "license": "MIT"

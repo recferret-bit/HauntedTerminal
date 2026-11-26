@@ -1,6 +1,6 @@
 import type { ComixPack } from './spec-types.js';
 
-export const COMIX_DRAFT_KEY = 'ht-comix-draft';
+const COMIX_DRAFT_KEY = 'ht-comix-draft';
 
 export function writeDraftComixPack(pack: ComixPack): void {
   try {

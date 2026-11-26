@@ -37,7 +37,7 @@ function unquoteYaml(val: string): string {
 }
 
 /** Parse flat CSS rule blocks into selector -> lowercase property map (last declaration wins). */
-export function parseCssSubset(rawCss: string): Map<string, Map<string, string>> {
+function parseCssSubset(rawCss: string): Map<string, Map<string, string>> {
   const clean = stripBlockComments(rawCss);
   const rules = new Map<string, Map<string, string>>();
   const blockRx = /([^{}]+)\{([^{}]*)\}/g;
@@ -274,14 +274,14 @@ export function validateDockerfile(raw: string): DockerfileValidation {
   return { ok: errors.length === 0, baseImage, exposePort, cmdTarget, errors };
 }
 
-export interface ComposeServiceParsed {
+interface ComposeServiceParsed {
   image: string;
   ports: string[];
   env: Record<string, string>;
 }
 
 /** Flexible indentation-aware parser for docker-compose.yml `services:` blocks (supports 2-space, 4-space, and indentless sequences). */
-export function parseComposeServices(raw: string): { services: Map<string, ComposeServiceParsed>; parseErrors: string[] } {
+function parseComposeServices(raw: string): { services: Map<string, ComposeServiceParsed>; parseErrors: string[] } {
   const services = new Map<string, ComposeServiceParsed>();
   const parseErrors: string[] = [];
   const lines = raw.split(/\r?\n/);

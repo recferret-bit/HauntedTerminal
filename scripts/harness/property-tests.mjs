@@ -7,9 +7,11 @@
 //   --hang-ms 20000   a property running longer than this is reported as a hang and the run is killed (exit != 0)
 // Suites live in scripts/harness/props/<feature>.mjs and load the TypeScript sources through Vite SSR.
 // Exit 1 when a property fails: it prints the shrunk counterexample and the seed that replays it.
+// Properties and checks are synchronous only; the runner refuses async ones and self-checks that at startup (exit 1).
+// An empty --only (e.g. `--only ,`) prints usage and exits 2.
 // Spec: .kiro/specs/property-based-tests/.
 import { parseArgs, withProcgen } from './lib/load.mjs';
-import { DEFAULT_RUNS, DEFAULT_SEED, quietly, runProperty, startWatchdog } from './props/kit.mjs';
+import { DEFAULT_RUNS, DEFAULT_SEED, quietly, runProperty, runnerSelfCheck, startWatchdog } from './props/kit.mjs';
 
 const FEATURES = ['terminal', 'laptop', 'comix', 'chapters', 'gameplay'];
 const args = parseArgs(process.argv.slice(2), ['--seed', '--runs', '--only', '--hang-ms']);
@@ -18,10 +20,17 @@ const runs = Number(args.val('--runs', DEFAULT_RUNS));
 const only = String(args.val('--only', FEATURES.join(','))).split(',').map((s) => s.trim()).filter(Boolean);
 const hangMs = Number(args.val('--hang-ms', 20_000));
 const unknown = only.filter((f) => !FEATURES.includes(f));
-if (unknown.length || !Number.isInteger(seed) || !Number.isInteger(runs) || runs < 1) {
+if (!only.length || unknown.length || !Number.isInteger(seed) || !Number.isInteger(runs) || runs < 1) {
   console.error(`usage: property-tests.mjs [--only ${FEATURES.join(',')}] [--seed <int>] [--runs <int >= 1>] [--list]`);
+  if (!only.length) console.error('--only selected no feature');
   if (unknown.length) console.error(`unknown feature(s): ${unknown.join(', ')}`);
   process.exit(2);
+}
+// The runner itself: an always-failing async property or check must never be reported ok.
+const selfProblems = runnerSelfCheck();
+if (selfProblems.length) {
+  console.error(`property-tests runner self-check FAILED:\n  - ${selfProblems.join('\n  - ')}`);
+  process.exit(1);
 }
 
 const t0 = performance.now();
@@ -42,7 +51,13 @@ await withProcgen(async (_p, vite) => {
         continue;
       }
       watchdog.arm(`${feature}: ${prop.name}`);
-      const r = quietly(() => runProperty(prop, { seed, runs, feature }));
+      const r = quietly(() => {
+        try {
+          return runProperty(prop, { seed, runs, feature });
+        } catch (err) {
+          return { ok: false, ms: 0, runs: 0, message: `refused: ${err instanceof Error ? err.message : String(err)}` };
+        }
+      });
       watchdog.arm(null);
       total += 1;
       const time = `${(r.ms / 1000).toFixed(2)}s`.padStart(7);

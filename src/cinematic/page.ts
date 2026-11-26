@@ -161,7 +161,7 @@ const CSS = /* css */ `
 .htc-press { font-weight: 700; font-size: max(12px, min(2.6cqh, 3.4cqw)); letter-spacing: 0.1em; text-transform: uppercase; }
 `;
 
-export function injectStyle(): HTMLStyleElement {
+function injectStyle(): HTMLStyleElement {
   const existing = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
   if (existing) {
     existing.dataset.users = String(Number(existing.dataset.users ?? '1') + 1);
@@ -175,7 +175,7 @@ export function injectStyle(): HTMLStyleElement {
   return style;
 }
 
-export function releaseStyle(style: HTMLStyleElement): void {
+function releaseStyle(style: HTMLStyleElement): void {
   const users = Number(style.dataset.users ?? '1') - 1;
   if (users <= 0) style.remove();
   else style.dataset.users = String(users);
@@ -208,7 +208,7 @@ export function jaggedPoints(spikes: number, seed: number, inner = 0.84): string
 }
 
 /** An oval outline in a 0..100 box (plain speech / thought). */
-export function ovalPoints(n = 28): string {
+function ovalPoints(n = 28): string {
   const pts: string[] = [];
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2;

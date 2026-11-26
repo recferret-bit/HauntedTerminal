@@ -1,5 +1,14 @@
+import { createStateMachine, type TransitionTable } from '../contracts/state-machine.js';
 import type { LabStep } from './lab-types.js';
 import { runSteps, type LabDriver, type StepResult, type StopReason } from './runner.js';
+
+type RunPhase = 'idle' | 'running';
+type RunEvent = 'START' | 'STOP';
+
+const RUN_TRANSITIONS: TransitionTable<RunPhase, RunEvent> = {
+  idle: { START: 'running' },
+  running: { STOP: 'idle' },
+};
 
 export interface RunControlDeps {
   driver: () => LabDriver;
@@ -26,8 +35,12 @@ export class RunControl {
   readonly breakpoints = new Set<number>();
   cursor = 0;
   recording = false;
-  running = false;
+  private readonly phase = createStateMachine({ initial: 'idle', transitions: RUN_TRANSITIONS });
   private epoch = 0;
+
+  get running(): boolean {
+    return this.phase.state === 'running';
+  }
 
   constructor(private readonly deps: RunControlDeps) {}
 
@@ -50,8 +63,7 @@ export class RunControl {
   /** Stops whatever is running, without touching the cursor or the results. */
   pause(): void {
     this.epoch += 1;
-    if (this.running) {
-      this.running = false;
+    if (this.phase.send('STOP')) {
       this.deps.onChange();
     }
   }
@@ -71,7 +83,7 @@ export class RunControl {
     work: (cancelled: () => boolean, recordStep: (r: StepResult, bumpCursor: boolean) => void) => Promise<void>,
   ): Promise<void> {
     const epoch = ++this.epoch;
-    this.running = true;
+    this.phase.send('START');
     this.deps.onChange();
     const active = () => this.epoch === epoch;
     const recordStep = (r: StepResult, bumpCursor: boolean) => {
@@ -86,7 +98,7 @@ export class RunControl {
       if (active()) this.deps.say(`✕ the ${what} was interrupted: ${(err as Error).message}`);
     } finally {
       if (active()) {
-        this.running = false;
+        this.phase.send('STOP');
         this.deps.onChange();
       }
     }

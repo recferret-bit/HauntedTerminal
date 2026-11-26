@@ -9,7 +9,7 @@ import {
   type SteamReleaseMeta,
 } from '../chapters/steam-bridge.js';
 
-export const WAITLIST_STORAGE_KEY = 'out-of-credits:waitlist:v1';
+const WAITLIST_STORAGE_KEY = 'out-of-credits:waitlist:v1';
 
 export type TargetPlatform = 'macos' | 'windows' | 'linux-deck';
 
@@ -46,7 +46,7 @@ export function readWaitlistEntry(): WaitlistEntry | null {
   }
 }
 
-export function saveWaitlistEntry(entry: WaitlistEntry): void {
+function saveWaitlistEntry(entry: WaitlistEntry): void {
   if (typeof localStorage === 'undefined') return;
   try {
     localStorage.setItem(WAITLIST_STORAGE_KEY, JSON.stringify(entry));

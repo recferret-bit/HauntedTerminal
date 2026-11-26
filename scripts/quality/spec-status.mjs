@@ -36,6 +36,26 @@ function findSpecFolders(dir, rel = '') {
   return entries;
 }
 
+/** The `Status:` line near the top of a spec file ('' when absent). */
+const statusLineOf = (text) => text.split('\n').slice(0, 12).find((l) => /^Status:/i.test(l.trim()))?.trim() ?? '';
+/** The state a `Status:` line names, lower case ('' when none). */
+export const statusOf = (line) => (line.match(/^Status:\s*`?([a-z-]+)`?/i)?.[1] ?? '').toLowerCase();
+
+const escapeRe = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/**
+ * design.md and tasks.md carry no status of their own: absent, or "Status: see <reqFile>" naming the spec's own
+ * requirements file (`requirements.md`, or `bugfix.md` for a bugfix spec).
+ */
+export const pointsToRequirements = (line, reqFile) => new RegExp(`^Status:\\s*see\\s+\`?${escapeRe(reqFile)}\`?\\.?$`, 'i').test(line);
+
+/**
+ * Checkboxes in any Markdown list form: `- [ ]`, `* [ ]`, `+ [ ]` or numbered (`1. [ ]`, `1) [ ]`). `[ ]`, `[-]` (in
+ * progress) and `[~]` (partial) count as unticked. Tasks and open questions use the same matchers.
+ */
+const LIST_ITEM = String.raw`^\s*(?:[-*+]|\d+[.)])\s+`;
+const TASK_BOX = new RegExp(String.raw`${LIST_ITEM}\[[ xX~-]\]`);
+const OPEN_BOX = new RegExp(String.raw`${LIST_ITEM}\[[ ~-]\]`);
+
 /** Every spec folder with its parsed status (including nested child specs). */
 export function loadSpecs(root) {
   const dir = join(root, '.kiro/specs');
@@ -44,9 +64,11 @@ export function loadSpecs(root) {
     const requirements = read(join(folder, reqFile));
     const design = read(join(folder, 'design.md'));
     const tasks = read(join(folder, 'tasks.md'));
-    const statusLine = requirements.split('\n').slice(0, 12).find((l) => /^Status:/i.test(l.trim())) ?? '';
-    const status = (statusLine.match(/^Status:\s*`?([a-z-]+)`?/i)?.[1] ?? '').toLowerCase();
-    const open = (section(requirements, 'Open questions') ?? []).filter((l) => /^\s*- \[ \]/.test(l));
+    const statusLine = statusLineOf(requirements);
+    const status = statusOf(statusLine);
+    const ownStatus = { 'design.md': statusLineOf(design), 'tasks.md': statusLineOf(tasks) };
+    const taskLines = tasks.split('\n');
+    const open = (section(requirements, 'Open questions') ?? []).filter((l) => OPEN_BOX.test(l));
     return {
       name,
       folder,
@@ -58,7 +80,9 @@ export function loadSpecs(root) {
       legacy: /legacy/i.test(statusLine),
       open,
       hasDecisions: section(requirements, 'Decisions') !== null,
-      openTasks: tasks.split('\n').filter((l) => /^\s*- \[ \]/.test(l)),
+      ownStatus,
+      taskCount: taskLines.filter((l) => TASK_BOX.test(l)).length,
+      openTasks: taskLines.filter((l) => OPEN_BOX.test(l)),
       text: [requirements, design, tasks].join('\n'),
     };
   });
@@ -93,12 +117,11 @@ export const specsNaming = (specs, footprint) => specs.filter((s) => s.text.incl
 
 /** Untracked footprints on disk right now (new areas and pages that are not committed yet). */
 export function untrackedFootprints(root) {
-  let others = [];
   try {
-    others = execFileSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' }).split('\n').filter(Boolean);
+    const others = execFileSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' }).split('\n').filter(Boolean);
+    const tracked = trackedFiles(root);
+    return [...new Set(others.map((p) => footprintOf(p, tracked)).filter(Boolean))];
   } catch {
     return [];
   }
-  const tracked = trackedFiles(root);
-  return [...new Set(others.map((p) => footprintOf(p, tracked)).filter(Boolean))];
 }

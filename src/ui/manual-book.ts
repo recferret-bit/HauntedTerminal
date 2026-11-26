@@ -1,9 +1,25 @@
+import { createStateMachine, type StateMachine, type TransitionTable } from '../contracts/state-machine.js';
 import { BOOK_PAGES, BOOK_SECTIONS, resolveManualPageIndex, tokenizeSearchQuery } from '../game/manual-catalog.js';
 import type { BookPage } from '../game/manual-types.js';
 import { el } from './dom-lite.js';
 import { btn, inlineCodeFragment, type BookActions } from './manual-book-dom.js';
 import { renderBookPage } from './manual-book-render.js';
 import { createSearchPanel, type SearchPanel } from './manual-book-search.js';
+
+export type ManualBookMode = 'closed' | 'open';
+export type ManualBookEvent = 'OPEN' | 'CLOSE';
+
+export const MANUAL_BOOK_TRANSITIONS: TransitionTable<ManualBookMode, ManualBookEvent> = {
+  closed: { OPEN: 'open' },
+  open: { CLOSE: 'closed' },
+};
+
+export function createManualBookMachine(initiallyOpen = false): StateMachine<ManualBookMode, ManualBookEvent> {
+  return createStateMachine({
+    initial: initiallyOpen ? 'open' : 'closed',
+    transitions: MANUAL_BOOK_TRANSITIONS,
+  });
+}
 
 export interface ManualBookOptions {
   /** True inside /play modal (shows Insert buttons & Close button); false on /manual.html. */
@@ -227,28 +243,43 @@ function buildBookChrome(opts: {
   return { bookShell, searchAnchor, spreadHost, flipHost, spine, prevBtn, nextBtn, pageCountEl, standaloneLink, tabs, toastEl };
 }
 
+function resolveTurnLeaf(spread: boolean, forward: boolean, spreadHost: HTMLElement): { el: HTMLElement | null; scrollTop: number } {
+  const turnSel = forward ? (spread ? '.mb-page-right' : '.mb-page') : (spread ? '.mb-page-left' : '.mb-page');
+  const el = spreadHost.querySelector<HTMLElement>(turnSel);
+  return { el, scrollTop: el?.scrollTop ?? 0 };
+}
+
+function createToastNotifier(shellRef: { toast?: HTMLElement }): { notify: (msg: string) => void; clear: () => void } {
+  let toastTimer = 0;
+  return {
+    notify(msg: string) {
+      const el = shellRef.toast;
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => el.classList.add('hidden'), 1600);
+    },
+    clear: () => window.clearTimeout(toastTimer),
+  };
+}
+
 export function mountManualBook(host: HTMLElement, options: ManualBookOptions = {}): ManualBook {
   const modalMode = Boolean(options.modal);
-  let opened = !modalMode;
+  const fsm = createManualBookMachine(!modalMode);
+  const isOpen = (): boolean => fsm.state === 'open';
   let currentIndex = Math.max(0, Math.min(BOOK_PAGES.length - 1, options.initialPage ?? 0));
   let tokens: string[] = [];
   let flipTimer = 0;
-  let toastTimer = 0;
-  let shell!: ReturnType<typeof buildBookChrome>;
-
-  const notify = (msg: string): void => {
-    shell.toastEl.textContent = msg;
-    shell.toastEl.classList.remove('hidden');
-    window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(() => shell.toastEl.classList.add('hidden'), 1600);
-  };
+  const shellRef: { toast?: HTMLElement } = {};
+  const toast = createToastNotifier(shellRef);
 
   const actions: BookActions = {
     canInsert: Boolean(options.onInsertCommand),
     onInsert: (cmd) => options.onInsertCommand?.(cmd),
     onNavigatePage: (idx) => goToPage(idx),
     onJumpCommand: (cmd) => { tokens = []; goToPage(resolveManualPageIndex(cmd)); },
-    onNotify: notify,
+    onNotify: toast.notify,
   };
 
   const searchPanel = createSearchPanel({
@@ -260,7 +291,8 @@ export function mountManualBook(host: HTMLElement, options: ManualBookOptions = 
     onHighlightTokens(nextTokens) { tokens = [...nextTokens]; paintPages(); },
   });
 
-  shell = buildBookChrome({ modalMode, searchPanel, onStep: (d) => stepPage(d), onGoTo: (p) => goToPage(p), onClose: () => close() });
+  const shell = buildBookChrome({ modalMode, searchPanel, onStep: (d) => stepPage(d), onGoTo: (p) => goToPage(p), onClose: () => close() });
+  shellRef.toast = shell.toastEl;
   host.replaceChildren(shell.bookShell);
 
   function stepPage(delta: -1 | 1): void {
@@ -290,21 +322,20 @@ export function mountManualBook(host: HTMLElement, options: ManualBookOptions = 
     const prevStart = alignedStart(currentIndex);
     const clamped = Math.max(0, Math.min(BOOK_PAGES.length - 1, targetIdx));
     const nextStart = alignedStart(clamped);
+    const turned = nextStart !== prevStart;
     const forward = nextStart > prevStart;
-    const turnSel = forward ? (spread ? '.mb-page-right' : '.mb-page') : (spread ? '.mb-page-left' : '.mb-page');
-    const prevTurning = animate && nextStart !== prevStart ? shell.spreadHost.querySelector<HTMLElement>(turnSel) : null;
-    const turnScroll = prevTurning?.scrollTop ?? 0;
+    const prevLeaf = animate && turned ? resolveTurnLeaf(spread, forward, shell.spreadHost) : { el: null, scrollTop: 0 };
     currentIndex = clamped;
     paintPages();
     const backSel = forward ? (spread ? '.mb-page-left' : null) : (spread ? '.mb-page-right' : null);
     const arrivingBack = backSel ? shell.spreadHost.querySelector<HTMLElement>(backSel) : null;
     window.clearTimeout(flipTimer);
-    flipTimer = prevTurning && nextStart !== prevStart ? playFlipLeaf(shell.flipHost, forward ? 'next' : 'prev', prevTurning, turnScroll, arrivingBack) : 0;
-    options.onPageChange?.(BOOK_PAGES[currentIndex]!, nextStart !== prevStart, animate);
+    flipTimer = prevLeaf.el ? playFlipLeaf(shell.flipHost, forward ? 'next' : 'prev', prevLeaf.el, prevLeaf.scrollTop, arrivingBack) : 0;
+    options.onPageChange?.(BOOK_PAGES[currentIndex]!, turned, animate);
   }
 
   function open(queryOrPage?: string | number): void {
-    opened = true;
+    fsm.send('OPEN');
     host.classList.remove('hidden');
     searchPanel.closeResults();
     if (typeof queryOrPage === 'number') goToPage(queryOrPage, false);
@@ -314,24 +345,23 @@ export function mountManualBook(host: HTMLElement, options: ManualBookOptions = 
       searchPanel.setQuery(q, false);
       goToPage(resolveManualPageIndex(q), false);
     } else paintPages();
-    window.setTimeout(() => { if (opened) shell.bookShell.focus({ preventScroll: true }); }, 0);
+    window.setTimeout(() => { if (isOpen()) shell.bookShell.focus({ preventScroll: true }); }, 0);
   }
 
   function close(): void {
-    if (!modalMode || !opened) return;
-    opened = false;
+    if (!modalMode || !fsm.send('CLOSE')) return;
     searchPanel.closeResults();
     host.classList.add('hidden');
     options.onClose?.();
   }
 
   const onKeyDown = (e: KeyboardEvent): void => {
-    if (opened) handleBookKeydown(e, modalMode, searchPanel, close, stepPage, options.onSearchDismiss);
+    if (isOpen()) handleBookKeydown(e, modalMode, searchPanel, close, stepPage, options.onSearchDismiss);
   };
-  const onResize = (): void => { if (opened) paintPages(); };
+  const onResize = (): void => { if (isOpen()) paintPages(); };
   window.addEventListener('keydown', onKeyDown, true);
   window.addEventListener('resize', onResize);
-  const unbindOutside = bindOutsideDismiss(shell.searchAnchor, () => opened && searchPanel.isResultsOpen(), () => searchPanel.closeResults());
+  const unbindOutside = bindOutsideDismiss(shell.searchAnchor, () => isOpen() && searchPanel.isResultsOpen(), () => searchPanel.closeResults());
 
   if (options.initialQuery) {
     const q = options.initialQuery.trim();
@@ -343,12 +373,12 @@ export function mountManualBook(host: HTMLElement, options: ManualBookOptions = 
 
   return {
     open, close,
-    isOpen: () => opened,
+    isOpen,
     goToPage: (idx, anim = true) => goToPage(idx, anim),
     search: (q) => searchPanel.setQuery(q),
     currentPage: () => BOOK_PAGES[currentIndex]!,
     destroy: () => {
-      window.clearTimeout(flipTimer); window.clearTimeout(toastTimer);
+      window.clearTimeout(flipTimer); toast.clear();
       window.removeEventListener('keydown', onKeyDown, true); window.removeEventListener('resize', onResize);
       unbindOutside();
       host.replaceChildren();

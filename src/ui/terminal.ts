@@ -13,6 +13,8 @@ export type { Shell, ShellHooks } from './terminal-types.js';
 export { colourise } from './terminal-colour.js';
 
 const TERM_FONT = '"IBM Plex Mono", ui-monospace, monospace';
+const ESC = String.fromCharCode(0x1b);
+const TYPE_TOKENS_RX = new RegExp(`${ESC}\\[[0-9;?]*[A-Za-z]|\\r\\n|[\\s\\S]`, 'gu');
 
 /**
  * The terminal opens before its web font may have arrived; xterm then measures the fallback font's cells, and the rows
@@ -86,7 +88,7 @@ function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: {
     busy: () => st.blocked || st.queue.length > 0 || st.draining || st.typing,
     typeOut(text: string, ms: number) {
       st.cancelType?.();
-      const tokens = text.replace(/\r?\n/g, '\r\n').match(/\x1b\[[0-9;?]*[A-Za-z]|\r\n|[\s\S]/gu) ?? [];
+      const tokens = text.replace(/\r?\n/g, '\r\n').match(TYPE_TOKENS_RX) ?? [];
       if (tokens.length === 0) return Promise.resolve();
       st.typing = true;
       const frames = Math.max(1, Math.round(ms / 16));

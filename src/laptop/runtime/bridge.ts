@@ -7,10 +7,10 @@ import type { RunRequest } from '../domain/run.js';
 import { guardHtmlScripts, guardLoops } from './loop-guard.js';
 
 /** How long timers in the player's code get to print before the run is reported. */
-export const SETTLE_MS = 120;
+const SETTLE_MS = 120;
 
 /** How long one task of page code may loop before `__lg` stops it (loop-guard.ts inserts the calls). */
-export const LOOP_BUDGET_MS = 1000;
+const LOOP_BUDGET_MS = 1000;
 
 /**
  * The loop check: the first call in a task notes the time and schedules a reset for the next task, so

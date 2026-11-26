@@ -129,7 +129,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
 const SPEC_BY_ID = new Map(ACHIEVEMENT_SPECS.map((s) => [s.id, s]));
 const REQUIRED_STACK_MECHANICS: readonly ChapterMechanic[] = ['html-css', 'terminal-code', 'docker-image', 'docker-compose'];
 const REQUIRED_HUB_CORES = ['qwen', 'deepseek', 'llama'] as const;
-export const ACHIEVEMENTS_STORAGE_KEY = 'out-of-credits:achievements:v1';
+const ACHIEVEMENTS_STORAGE_KEY = 'out-of-credits:achievements:v1';
 
 export interface UnlockedAchievement {
   id: string;

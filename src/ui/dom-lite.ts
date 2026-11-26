@@ -1,25 +1,5 @@
-/** Tiny DOM builder for `src/ui` (which may not import `editor-core`, where `h()` lives). Text nodes only, never innerHTML. */
-export function el<K extends keyof HTMLElementTagNameMap>(
-  tag: K,
-  className: string,
-  children: ReadonlyArray<Node | string> = [],
-): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  for (const child of children) node.append(child);
-  return node;
-}
-
-export function setText(node: HTMLElement, text: string): void {
-  if (node.textContent !== text) node.textContent = text;
-}
-
-/** Restart a CSS animation by toggling its class. */
-export function replayClass(node: HTMLElement, cls: string): void {
-  node.classList.remove(cls);
-  void node.offsetWidth;
-  node.classList.add(cls);
-}
+/** Tiny DOM builder & portrait types for `src/ui` (re-exporting layer-safe primitives from `contracts/dom`). */
+export { dom, el, replayClass, setText } from '../contracts/dom.js';
 
 /** Number of stepped head animation frames per character portrait. */
 export const PORTRAIT_FRAMES = 4;

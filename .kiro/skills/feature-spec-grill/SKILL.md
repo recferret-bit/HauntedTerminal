@@ -66,6 +66,8 @@ A delegated answer is written as `**A (user delegated, 2026-11-15):** <the defau
 
 Change the `Status:` line only at a gate, and add the date and who approved: `Status: approved (requirements, design, tasks approved by the user 2026-11-15)`. Never move a spec past `draft` yourself because answers "seem obvious". After each edit, run `node scripts/quality/check-specs.mjs`.
 
+The status lives only in `requirements.md` (or `bugfix.md`). `design.md` and `tasks.md` carry no status of their own: write `Status: see requirements.md` (or `see bugfix.md`) there, and keep dated notes on the requirements line. The gate fails on a design or tasks status that disagrees, on an `approved` spec whose tasks are all ticked (run the gates and set `Status: done`), and counts `[ ]`, `[-]` and `[~]` boxes (with `-` or `*` bullets) as unticked.
+
 ## 4. Templates
 
 **requirements.md**: see the scaffold. Requirements are numbered and written in EARS: `WHEN <trigger>, THE SYSTEM SHALL <response>`, `IF <bad case>, THEN THE SYSTEM SHALL ...`, `WHILE <state>, THE SYSTEM SHALL ...`.

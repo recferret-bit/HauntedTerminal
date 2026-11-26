@@ -69,7 +69,7 @@ When a prompt may be a feature or big refactor, output the size-test verdict on 
   - *Terminal Lab*: `src/terminal-lab/lab-types.ts` + `src/chapters/session-lab-types.ts` + `lab-pack.ts` / `runner.ts` + `schema.ts` + `lab-check.ts` / `store.ts` + `catalog.ts` + fixture in `scripts/harness/terminal-lab/`.
 
 ### Post-Edit Checks (match `PostFileSave` / `PostFileCreate`)
-- Edited `src/**/*.ts`: run `npx tsc --noEmit`.
+- Edited `src/**/*.ts` or `scripts/**/*.mjs` (`static-analysis-on-save`): run `npx tsc --noEmit && npm run quality:lint && node scripts/quality/check-cycles.mjs && node scripts/quality/check-layers.mjs && node scripts/quality/check-size.mjs src scripts/desktop`.
 - Edited `chapters/**/*.json`: run `node scripts/harness/generate-chapter.mjs --validate && node scripts/harness/generate-chapter.mjs --check`.
 - Edited `comix/**/*.{json,md}`: run `node scripts/harness/validate-comix.mjs && node scripts/harness/generate-comix.mjs --validate && node scripts/harness/generate-comix.mjs --check`.
 - Edited `scripts/harness/terminal-lab/*.lab.json`: run `node scripts/harness/terminal-lab.mjs --all`.
@@ -78,7 +78,8 @@ When a prompt may be a feature or big refactor, output the size-test verdict on 
 
 ### Pre-Completion Gates (match `Stop` hooks & `architecture.md`)
 Always run before declaring work done (plus targeted suites for areas touched):
-- `npm run quality` (`tsc --noEmit`, `quality:root`, `quality:size`, `quality:layers`, `quality:declarative`, `quality:specs`, `quality:dup`, `quality:agents`, `quality:brands`, `quality:mcp`, `quality:props`)
+- `npm run quality` (`tsc --noEmit`, `quality:deps`, `quality:lint`, `quality:root`, `quality:size`, `quality:layers`, `quality:cycles`, `quality:deadcode`, `quality:declarative`, `quality:specs`, `quality:dup`, `quality:agents`, `quality:brands`, `quality:mcp`, `quality:props`)
+- `npm run test` (`classic-unit.mjs`, `architecture-unit.mjs`, `battle-unit.mjs`, `audio-unit.mjs`, `editor-unit-test.mjs`, `terminal-lab-unit.mjs`, `laptop-unit.mjs`, `manual-unit.mjs`, `hub-unit.mjs`, `legacy-keys-unit.mjs`, `desktop-unit.mjs`, `generate-chapter.mjs --verify`, `generate-comix.mjs --verify`)
 - `node scripts/quality/check-specs.mjs --report`
 - `node scripts/harness/generate-chapter.mjs --check && node scripts/harness/generate-comix.mjs --check`
 - When chapters, comix, editors, labs, laptop, or assets changed, run the corresponding verifiers:
@@ -100,5 +101,5 @@ Always run before declaring work done (plus targeted suites for areas touched):
 
 - **Background dev server only**: use `npm start`, `npm stop`, `npm restart`, `npm run status`, or `STACK_PORT=5174 npm start` (prefer `STACK_PORT=` over `--port`). Never run foreground `npm run dev` (it blocks the shell).
 - **Co-editing specs safely**: `/editor` and `/comix-editor` use etag `409` conflict protection. Read spec JSON from disk immediately before editing, change only fields named by the task, and format via canonical writers (`stringifyChapterJson` in `scripts/harness/lib/chapter-json.mjs`, `stringifyComixJson` in `scripts/harness/lib/comix-json.mjs`, `scripts/harness/lib/lab-json.mjs`) so no-op saves change zero bytes.
-- **Hard limits & safety**: inward layer imports only (`scripts/quality/check-layers.mjs`), `<= 600` lines/file, `<= 130` lines/function, `0` `jscpd` duplicate clones, no `any`, plain functions and data tables before classes, DOM built via `h()` (never `innerHTML`), live redraws preserving focus (`redrawKeepingFocus`), player code isolated in Workers or `sandbox="allow-scripts"` iframes, and dev APIs restricted to localhost + same-origin + `baseEtag`.
-- **Clean root & hygiene**: keep root limited to tool configs, `.github/`, `.kiro/`, `AGENTS.md`, `CLAUDE.md`, `README.md`, and `LICENSE` (update `scripts/quality/check-root.mjs` and `.kiro/steering/structure.md` together if changed). Pin exact dependency versions, report only checks you actually ran, and commit only when asked.
+- **Hard limits & safety**: inward layers (`check-layers.mjs`), 0 runtime cycles (`check-cycles.mjs`), 0 dead exports/types/CSS/modules (`check-deadcode.mjs`), strict TS + ESLint across `src` and `scripts` (`quality:lint`), `<= 600` lines/file, `<= 130` lines/function, 0 clones (`jscpd`), no `any`, `createStateMachine` + typed buses (`AppBus`/`PlayEventBus` modal routing), shared pure services (`unix-applets`, `kiro-commands`, `tree`), DOM via `h()`/`dom()` (never `innerHTML`), live redraws preserving focus (`redrawKeepingFocus`), sandboxed player code, and local/etag-guarded dev APIs.
+- **Clean root & hygiene**: keep root limited to tool configs, `.github/`, `.kiro/`, `AGENTS.md`, `CLAUDE.md`, `README.md`, and `LICENSE` (update `scripts/quality/check-root.mjs` and `.kiro/steering/structure.md` together if changed). Pin exact dependency versions across all 4 sections matching `package-lock.json` (`check-deps.mjs`), write non-vacuous property tests keeping counterexamples in `examples`, report only checks you actually ran, and commit only when asked.

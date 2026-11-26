@@ -1,5 +1,6 @@
 import { readChapterProgress } from '../chapters/catalog.js';
 import type { ChapterLevelSummary, ChapterManifest } from '../chapters/types.js';
+import { createStateMachine, type StateMachine, type TransitionTable } from '../contracts/state-machine.js';
 import type { GameSnapshot } from '../game/types.js';
 import {
   buildCurrentBeacon,
@@ -35,6 +36,19 @@ export interface ChapterMapDialog {
   close(): void;
   isOpen(): boolean;
   update(snap: GameSnapshot): void;
+}
+
+export type ChapterMapMode = 'closed' | 'browsing' | 'confirming';
+export type ChapterMapEvent = 'OPEN' | 'CLOSE' | 'SELECT' | 'ARM_DEPLOY' | 'CANCEL_DEPLOY';
+
+export const CHAPTER_MAP_TRANSITIONS: TransitionTable<ChapterMapMode, ChapterMapEvent> = {
+  closed: { OPEN: 'browsing' },
+  browsing: { CLOSE: 'closed', SELECT: 'browsing', ARM_DEPLOY: 'confirming' },
+  confirming: { CLOSE: 'closed', SELECT: 'browsing', CANCEL_DEPLOY: 'browsing' },
+};
+
+export function createChapterMapMachine(): StateMachine<ChapterMapMode, ChapterMapEvent> {
+  return createStateMachine({ initial: 'closed', transitions: CHAPTER_MAP_TRANSITIONS });
 }
 
 interface MapParts {
@@ -436,7 +450,7 @@ export function mountChapterMap(host: HTMLElement, handlers: ChapterMapHandlers)
   host.appendChild(p.dialog);
 
   let selectedId = '';
-  let confirmOpen = false;
+  const fsm = createChapterMapMachine();
   let topology: MotherboardTopology | null = null;
 
   const currentTopology = (): MotherboardTopology => {
@@ -448,7 +462,7 @@ export function mountChapterMap(host: HTMLElement, handlers: ChapterMapHandlers)
     topo.orderedBlocks.find((b) => b.level.id === selectedId) ?? topo.orderedBlocks[0]!;
 
   const modal = createNativeModal(p.dialog, [p.closeBtn, p.xBtn], (back) => {
-    confirmOpen = false;
+    fsm.send('CLOSE');
     handlers.onClose?.(back);
   });
 
@@ -457,32 +471,31 @@ export function mountChapterMap(host: HTMLElement, handlers: ChapterMapHandlers)
     const block = selectedBlock(topo);
     selectedId = block.level.id;
     renderBoard(p, topo, selectedId, selectLevel, quickDeploy);
-    renderInspector(p, topo, block, confirmOpen);
+    renderInspector(p, topo, block, fsm.state === 'confirming');
   };
   const selectLevel = (id: string): void => {
     if (selectedId === id) return;
     selectedId = id;
-    confirmOpen = false;
+    fsm.send('SELECT');
     handlers.onMove?.();
     draw();
   };
   const triggerDeploy = (forceDirect = false): void => {
     const topo = topology ?? currentTopology();
     const block = selectedBlock(topo);
-    if (!forceDirect && handlers.hasUnsavedLevelProgress?.() && !confirmOpen) {
-      confirmOpen = true;
+    if (!forceDirect && handlers.hasUnsavedLevelProgress?.() && fsm.state === 'browsing') {
+      fsm.send('ARM_DEPLOY');
       handlers.onMove?.();
       renderInspector(p, topo, block, true);
       p.confirmNo.focus?.({ preventScroll: true });
       return;
     }
-    confirmOpen = false;
     modal.close();
     handlers.onDeploy(block.level, topo.manifest.id);
   };
   const quickDeploy = (id: string): void => {
     selectedId = id;
-    confirmOpen = false;
+    fsm.send('SELECT');
     draw();
     triggerDeploy(false);
   };
@@ -494,7 +507,7 @@ export function mountChapterMap(host: HTMLElement, handlers: ChapterMapHandlers)
     selectLevel,
     triggerDeploy,
     cancelConfirm: () => {
-      confirmOpen = false;
+      fsm.send('CANCEL_DEPLOY');
       handlers.onMove?.();
       draw();
       p.deployBtn.focus?.({ preventScroll: true });
@@ -506,7 +519,8 @@ export function mountChapterMap(host: HTMLElement, handlers: ChapterMapHandlers)
       const wasOpen = modal.isOpen();
       const topo = currentTopology();
       selectedId = resolveLevelByQuery(topo.manifest, queryOrIndex, handlers.getCurrentLevelId?.() ?? null).id;
-      confirmOpen = false;
+      if (wasOpen) fsm.send('SELECT');
+      else fsm.send('OPEN');
       draw();
       modal.open(findBlockBtn(p.board, selectedId) ?? p.closeBtn);
       if (!wasOpen) handlers.onOpen?.();

@@ -1,5 +1,6 @@
 import type { KernelEvent } from '../contracts/events.js';
 import type { TutorialState } from '../game/types.js';
+import { dom, replayClass } from './dom-lite.js';
 
 export type AgentId = TutorialState['agent'];
 type TauntSpeakerId = Extract<KernelEvent, { type: 'AGENT_TAUNT' }>['agent'];
@@ -30,28 +31,26 @@ export interface TutorialCard {
 
 const STAMP_MS = 1100;
 
-function esc(s: string): string {
-  return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);
-}
-
 export function mountTutorial(parent: HTMLElement, onSkip?: () => void): TutorialCard {
-  const card = document.createElement('section');
-  card.id = 'tutorial-card';
-  card.setAttribute('aria-live', 'polite');
-  card.innerHTML = `
-    <header><span class="tut-agent"></span><span class="tut-kind">AGENT PROMPT</span><span class="tut-step"></span></header>
-    <p class="tut-text"></p>
-    <div class="tut-cmd"><span class="tut-label">TYPE</span><code></code></div>
-    <div class="tut-stamp" aria-hidden="true"><i>OK</i> DONE</div>
-    ${onSkip ? '<button type="button" class="tut-skip">skip tutorial &raquo;</button>' : ''}
-  `;
-  parent.appendChild(card);
-  const agentEl = card.querySelector<HTMLElement>('.tut-agent')!;
-  const stepEl = card.querySelector<HTMLElement>('.tut-step')!;
-  const textEl = card.querySelector<HTMLElement>('.tut-text')!;
-  const cmdEl = card.querySelector<HTMLElement>('code')!;
-  const skip = card.querySelector<HTMLButtonElement>('.tut-skip');
+  const agentEl = dom('span', { class: 'tut-agent' });
+  const stepEl = dom('span', { class: 'tut-step' });
+  const textEl = dom('p', { class: 'tut-text' });
+  const cmdEl = dom('code');
+  const skip = onSkip ? dom('button', { type: 'button', class: 'tut-skip' }, ['skip tutorial »']) : null;
   if (skip && onSkip) skip.onclick = () => onSkip();
+
+  const card = dom(
+    'section',
+    { id: 'tutorial-card', 'aria-live': 'polite' },
+    [
+      dom('header', {}, [agentEl, dom('span', { class: 'tut-kind' }, ['AGENT PROMPT']), stepEl]),
+      textEl,
+      dom('div', { class: 'tut-cmd' }, [dom('span', { class: 'tut-label' }, ['TYPE']), cmdEl]),
+      dom('div', { class: 'tut-stamp', 'aria-hidden': 'true' }, [dom('i', {}, ['OK']), ' DONE']),
+      skip,
+    ],
+  );
+  parent.appendChild(card);
 
   let shownKey = '';
   let stampUntil = 0;
@@ -64,7 +63,7 @@ export function mountTutorial(parent: HTMLElement, onSkip?: () => void): Tutoria
     card.style.setProperty('--agent-ink', a.ink);
     agentEl.textContent = a.name;
     stepEl.textContent = `${s.step}/${s.total}`;
-    textEl.innerHTML = esc(s.prompt);
+    textEl.textContent = s.prompt;
     cmdEl.textContent = s.command;
   };
 
@@ -81,11 +80,7 @@ export function mountTutorial(parent: HTMLElement, onSkip?: () => void): Tutoria
     card.classList.remove('done');
     render(s);
     card.classList.add('open');
-    if (fresh) {
-      card.classList.remove('enter');
-      void card.offsetWidth;
-      card.classList.add('enter');
-    }
+    if (fresh) replayClass(card, 'enter');
   };
 
   return {

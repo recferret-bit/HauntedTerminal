@@ -41,7 +41,7 @@ const COMIX_DOCK_BUTTONS: readonly DockButtonDef<ComixDockId>[] = [
   { id: 'top', label: '▴ Top', title: 'Hide Top Bar (restorable from floating pill)' },
 ];
 
-export interface ComixEditorHook extends WorkstationHook<ComixDockId> {
+interface ComixEditorHook extends WorkstationHook<ComixDockId> {
   ready: boolean;
   state(): {
     slug: string;
@@ -265,7 +265,7 @@ class ComixEditorController {
         targetSlot = 'camera.portrait';
       } else if (panel.camera.to) {
         const cues = { ...manifestCues, ...(page.cues ?? {}) };
-        let useTo = false;
+        let useTo: boolean;
         try {
           const pFrom = resolveTime(panel.from, cues, page.from);
           const pUntil = resolveTime(panel.until, cues, page.from);

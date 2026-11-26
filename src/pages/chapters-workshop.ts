@@ -7,47 +7,33 @@ import {
   type MetagameStore,
 } from '../chapters/catalog.js';
 import { forwardSteamAchievement } from '../chapters/steam-bridge.js';
-import { esc } from './html-text.js';
+import { dom } from '../ui/dom-lite.js';
 import { renderBinder } from './chapters-binder.js';
 import type { ChaptersPageEls, ChaptersViewState } from './chapters-page-model.js';
 
 function renderWorkshop(els: ChaptersPageEls, state: ChaptersViewState, meta: MetagameStore): void {
   if (!els.workshopEl) return;
-  els.workshopEl.innerHTML =
-    (state.workshopBanner ? `<div class="workshop-flash">${esc(state.workshopBanner)}</div>` : '') +
-    RIG_PERKS.map((perk) => {
-      const owned = meta.unlockedPerks.includes(perk.id);
-      const active = meta.activePerks.includes(perk.id);
-      const canBuy = meta.scrap >= perk.costScrap;
-      const btnLabel = !owned
-        ? `Install (${perk.costScrap} Scrap)`
-        : active
-          ? 'Active in ~/.bashrc (Disable)'
-          : 'Disabled (Enable)';
-      return `
-            <article class="perk-card ${active ? 'active' : ''}">
-              <div>
-                <div class="level-card-top">
-                  <span class="door-kicker ${active ? 'teal' : ''}">${owned ? (active ? 'EQUIPPED' : 'OWNED') : `${perk.costScrap} SCRAP`}</span>
-                  <code style="font-size:11px;">${esc(perk.bashrcLine)}</code>
-                </div>
-                <h4 style="margin-top:6px;font-family:var(--display);font-size:16px;">${esc(perk.title)}</h4>
-                <p style="font-size:12px;color:#3d3630;margin-top:4px;">${esc(perk.effectSummary)}</p>
-              </div>
-              <button
-                type="button"
-                class="comic-btn ${active ? 'teal' : owned || canBuy ? 'primary' : 'paper'} perk-action-btn"
-                data-perk-id="${esc(perk.id)}"
-              >
-                ${esc(btnLabel)}
-              </button>
-            </article>
-          `;
-    }).join('');
-
-  els.workshopEl.querySelectorAll<HTMLButtonElement>('.perk-action-btn').forEach((btn) => {
+  const flash = state.workshopBanner ? dom('div', { class: 'workshop-flash' }, [state.workshopBanner]) : null;
+  const cards = RIG_PERKS.map((perk) => {
+    const owned = meta.unlockedPerks.includes(perk.id);
+    const active = meta.activePerks.includes(perk.id);
+    const canBuy = meta.scrap >= perk.costScrap;
+    const btnLabel = !owned
+      ? `Install (${perk.costScrap} Scrap)`
+      : active
+        ? 'Active in ~/.bashrc (Disable)'
+        : 'Disabled (Enable)';
+    const btn = dom(
+      'button',
+      {
+        type: 'button',
+        class: `comic-btn ${active ? 'teal' : owned || canBuy ? 'primary' : 'paper'} perk-action-btn`,
+        'data-perk-id': perk.id,
+      },
+      [btnLabel],
+    );
     btn.onclick = () => {
-      const res = purchaseOrTogglePerk(btn.dataset.perkId ?? '');
+      const res = purchaseOrTogglePerk(perk.id);
       for (const ev of res.unlockedAchievements ?? []) {
         void forwardSteamAchievement(ev.steamApiName);
         state.bus?.emit({ kind: 'kernel', event: ev });
@@ -62,7 +48,21 @@ function renderWorkshop(els: ChaptersPageEls, state: ChaptersViewState, meta: Me
       state.workshopBanner = `${res.message}${achSuffix}`;
       renderMetagame(els, state);
     };
+    return dom('article', { class: `perk-card ${active ? 'active' : ''}`.trim() }, [
+      dom('div', {}, [
+        dom('div', { class: 'level-card-top' }, [
+          dom('span', { class: `door-kicker ${active ? 'teal' : ''}`.trim() }, [
+            owned ? (active ? 'EQUIPPED' : 'OWNED') : `${perk.costScrap} SCRAP`,
+          ]),
+          dom('code', { style: 'font-size:11px;' }, [perk.bashrcLine]),
+        ]),
+        dom('h4', { style: 'margin-top:6px;font-family:var(--display);font-size:16px;' }, [perk.title]),
+        dom('p', { style: 'font-size:12px;color:#3d3630;margin-top:4px;' }, [perk.effectSummary]),
+      ]),
+      btn,
+    ]);
   });
+  els.workshopEl.replaceChildren(...(flash ? [flash, ...cards] : cards));
 }
 
 export function captureActiveFocusSelector(): string | null {

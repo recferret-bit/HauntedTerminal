@@ -24,6 +24,16 @@ function compile(gl: WebGLRenderingContext, type: number, src: string): WebGLSha
   return null;
 }
 
+/** Binds `tex` with nearest filtering, edge clamping and a flipped upload (the pixel pass samples it 1:1). */
+function bindNearestTexture(gl: WebGLRenderingContext, tex: WebGLTexture): void {
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+}
+
 /** Full-screen pass. Null when WebGL or the shader will not start; the caller draws the canvas plain. */
 export function mountPixelBlit(params: PixelArtParams, pixelRatio: number): PixelBlit | null {
   const canvas = document.createElement('canvas');
@@ -50,12 +60,7 @@ export function mountPixelBlit(params: PixelArtParams, pixelRatio: number): Pixe
   if (!buf || !tex) return null;
   gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-  gl.bindTexture(gl.TEXTURE_2D, tex);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+  bindNearestTexture(gl, tex);
   const loc = (name: string): WebGLUniformLocation | null => gl.getUniformLocation(prog, name);
   const uRes = loc('uResolution');
   const uSize = loc('uPixelSize');
@@ -74,12 +79,7 @@ export function mountPixelBlit(params: PixelArtParams, pixelRatio: number): Pixe
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
     gl.disable(gl.BLEND);
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+    bindNearestTexture(gl, tex);
     gl.uniform1f(uSize, params.pixelSize * Math.max(0.5, pixelRatio));
     gl.uniform1f(uLevels, params.colorLevels);
     gl.uniform1f(uDither, params.dither);

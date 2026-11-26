@@ -16,7 +16,7 @@ export interface VNode {
 
 let nextId = 1;
 
-export function resetIds(): void {
+function resetIds(): void {
   nextId = 1;
 }
 
@@ -168,4 +168,12 @@ export function parentDir(path: string): string {
 
 export function baseName(path: string): string {
   return path.slice(path.lastIndexOf('/') + 1);
+}
+
+/** True when `node` is `ancestor` or lies beneath it in the VFS tree. */
+export function isDescendantOrSelf(node: VNode, ancestor: VNode): boolean {
+  for (let cur: VNode | null = node; cur; cur = cur.parent) {
+    if (cur === ancestor) return true;
+  }
+  return false;
 }

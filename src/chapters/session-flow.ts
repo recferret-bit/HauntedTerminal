@@ -12,7 +12,7 @@ import type { LevelSpec } from './types.js';
 import { applySkipTutorial, bullyingNote, runTimed, syncTutorial } from './script.js';
 import type { ChapterState, EditorOpenPayload } from './session-state.js';
 import { afterCommand, battleSecond, enemyTurn, maybeBeginBattle } from './session-battle.js';
-import { arriveCurrentLevel, levelBannerText, loadLevel, rebootLevel } from './session-level.js';
+import { arriveCurrentLevel, levelBannerText, loadLevel, restartChapterLevel } from './session-level.js';
 import { cmdHank } from './session-meta.js';
 import { allWinRulesMet, refreshExitGates, syncValidatedCodeBugs } from './session-rules.js';
 import { observe } from './session-lab-checks.js';
@@ -82,13 +82,10 @@ export function consumeSkinRequest(g: ChapterState): TerminalSkinId | null {
 
 export function jumpToLevel(g: ChapterState, levelIdOrIndex: string | number): TickResult {
     const events: KernelEvent[] = [];
-    let idx = -1;
-    if (typeof levelIdOrIndex === 'number') {
-      idx = Math.max(0, Math.min(g.levels.length - 1, levelIdOrIndex - 1));
-    } else {
-      idx = g.levels.findIndex((l) => l.id === levelIdOrIndex);
-    }
-    if (idx < 0) idx = 0;
+    const rawIdx = typeof levelIdOrIndex === 'number'
+      ? Math.max(0, Math.min(g.levels.length - 1, levelIdOrIndex - 1))
+      : g.levels.findIndex((l) => l.id === levelIdOrIndex);
+    const idx = rawIdx < 0 ? 0 : rawIdx;
     g.fullRun = false;
     g.ended = false;
     g.endedAt = null;
@@ -226,7 +223,7 @@ export function clockTick(g: ChapterState, then: (events: KernelEvent[]) => stri
   }
 
 /** Runs a step outside a command line and turns it into a TickResult: death text, achievements, sfx, lab checks. */
-export function settle(g: ChapterState, step: (events: KernelEvent[]) => string): TickResult {
+function settle(g: ChapterState, step: (events: KernelEvent[]) => string): TickResult {
     g.deadNow = false;
     g.deathText = '';
     const events: KernelEvent[] = [];
@@ -293,11 +290,9 @@ export function restart(g: ChapterState, options?: { intro?: boolean }): TickRes
   }
 
 export function restartFloor(g: ChapterState): TickResult {
-    const events: KernelEvent[] = [];
-    g.bus.emit({ kind: 'restart', step: 'go' });
-    const arrival = rebootLevel(g, events);
-    return { output: `[RETRY] Reloaded ${g.rt.spec.title}.\n${arrival}`, events, snapshot: snapshot(g) };
-  }
+  const events: KernelEvent[] = [];
+  return { output: restartChapterLevel(g, events), events, snapshot: snapshot(g) };
+}
 
 export function debugTeleport(g: ChapterState, floor: FloorId): TickResult {
     return jumpToLevel(g, Math.min(g.levels.length, Math.max(1, floor)));

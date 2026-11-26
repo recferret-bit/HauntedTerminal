@@ -1,8 +1,9 @@
 import type { BubbleStyle, KernelEvent } from '../contracts/events.js';
 import { BESTIARY } from './bestiary.js';
 import { dialogueEvent } from './dialogue.js';
-import { F3_WING_ENERGY, F3_WING_PICKUP } from './floors.js';
-import { KIRO_CORE_ORDER, inspectTextWithKiro, type KiroScanInput } from './kiro.js';
+import { F3_WING_ENERGY, F3_WING_PICKUP, FLOOR_TITLES } from './floors.js';
+import { KIRO_CORE_ORDER, type KiroScanInput } from './kiro.js';
+import { runKiroCommand, stepKiroCrackOnRoot } from './kiro-commands.js';
 import { labRiddleRead, labRiddleWrite } from './lab-riddle.js';
 import type { EntityView, ProcRow } from './entities.js';
 import { empty, out, type Play } from './play.js';
@@ -10,8 +11,7 @@ import {
   anchorFree, backups, boss, bump, cut, denied, ensure, find, gargoyleNeutral, gateOpen, maxHp, phase1, plankBridged, portal, push,
 } from './runtime.js';
 import type { Step } from './shell.js';
-import { absPath, hasExec, makeNode, modeString, resolve, type VNode } from './tree.js';
-import { FLOOR_TITLES } from './floors.js';
+import { absPath, hasExec, makeNode, type VNode } from './tree.js';
 import type { HintGoals, HintTask } from './types.js';
 
 export function readSocket(g: Play, node: VNode): Step {
@@ -20,11 +20,10 @@ export function readSocket(g: Play, node: VNode): Step {
     bump(g, 'read');
     return labStep;
   }
-  const text = socketRead(g, node.name);
-  const style = socketStyle(g, node.name, false);
-  const ev = dialogueEvent({ obstacleId: node.name, speaker: socketSpeaker(g, node.name), style, mood: 'cryptic', text: text.body, tokens: text.tokens, anchor: node.id });
+  const spec = socketSpec(node.name);
+  const ev = dialogueEvent({ obstacleId: node.name, speaker: spec.speaker, style: spec.style, mood: 'cryptic', text: spec.body, tokens: spec.tokens, anchor: node.id });
   bump(g, 'read');
-  return out(`${ev.payload.ansiTerminalBanner}${text.body}\n`, [ev]);
+  return out(`${ev.payload.ansiTerminalBanner}${spec.body}\n`, [ev]);
 }
 
 export function writeSocket(g: Play, node: VNode, data: string): Step {
@@ -88,83 +87,84 @@ export function writeSocket(g: Play, node: VNode, data: string): Step {
     return { stdout: '', stderr: 'The intercom only speaks. It does not listen. (Typical management.)\n', code: 1, events };
   }
   g.run.attempts[node.name] = (g.run.attempts[node.name] ?? 0) + 1;
+  const spec = socketSpec(node.name);
   const hint = socketHint(g, node.name);
-  const ev = dialogueEvent({ obstacleId: node.name, speaker: socketSpeaker(g, node.name), style: 'JAGGED_SCREAM', mood: 'mocking', text: hint, tokens: [], anchor: node.id });
+  const ev = dialogueEvent({ obstacleId: node.name, speaker: spec.speaker, style: 'JAGGED_SCREAM', mood: 'mocking', text: hint, tokens: [], anchor: node.id });
   events.push(ev);
   return { stdout: '', stderr: `${ev.payload.ansiTerminalBanner}${hint}\n`, code: 1, events };
 }
 
-export function socketSpeaker(_g: Play, name: string): string {
-  if (name === 'intercom.sock') return 'Agent Intercom';
-  if (name === 'archivist_gate.sock') return 'Archivist Gate';
-  if (name === 'pressure_plate.sock') return 'Altar of Balance';
-  if (name === 'valve_lock.sock') return 'Valve Lock';
-  return 'Wakeup Socket';
+interface SocketMeta {
+  speaker: string;
+  style: BubbleStyle;
+  body: string;
+  tokens: string[];
+  hints: readonly string[];
 }
 
-export function socketStyle(_g: Play, name: string, wrong: boolean): BubbleStyle {
-  if (wrong) return 'JAGGED_SCREAM';
-  if (name === 'pressure_plate.sock') return 'GHOST_WHISPER';
-  if (name === 'valve_lock.sock' || name === 'wakeup.sock') return 'KERNEL_GLITCH';
-  return 'COMIX_CLASSIC';
-}
+const DEFAULT_SOCKET_META: SocketMeta = {
+  speaker: 'Wakeup Socket',
+  style: 'KERNEL_GLITCH',
+  body: 'You are their last worker, and KERNEL_OVERLORD is their core. Feed me the WAKEUP_TOKEN from the core dump, then patch player_trapped to false. Then: exit.',
+  tokens: ['grep', 'sed', 'exit'],
+  hints: [
+    'core_dump.log hides WAKEUP_TOKEN.',
+    'grep the token into this socket.',
+    'Then sed the reality anchor.',
+  ],
+};
 
-export function socketRead(_g: Play, name: string): { body: string; tokens: string[] } {
-  if (name === 'intercom.sock') {
-    return {
-      body: 'AGENTS HERE. We pulled you in because we need hands. First job: a spirit holds the hatch and the relay is dead. Light the room (ls -la), remove .poltergeist.lock and touch cellar_hatch/.power_on. Chop chop, worker.',
-      tokens: ['ls -la', 'rm', 'touch'],
-    };
-  }
-  if (name === 'archivist_gate.sock') {
-    return {
-      body: 'I keep the agents\' firewall. Count every FATAL line in the chronicles and write that integer here. Or pick the lock like a vandal.',
-      tokens: ['grep', 'wc -l', 'chmod'],
-    };
-  }
-  if (name === 'pressure_plate.sock') {
-    return {
-      body: 'Remove the mimic, place exactly three .rune files on the pedestal, and whisper align.',
-      tokens: ['rm', 'touch', 'echo'],
-    };
-  }
-  if (name === 'valve_lock.sock') {
-    return {
-      body: 'The agents sealed the furnace. boiler.dump hides PASS=. Cut the value out and reverse it.',
-      tokens: ['grep', 'cut', 'rev'],
-    };
-  }
-  return {
-    body: 'You are their last worker, and KERNEL_OVERLORD is their core. Feed me the WAKEUP_TOKEN from the core dump, then patch player_trapped to false. Then: exit.',
-    tokens: ['grep', 'sed', 'exit'],
-  };
-}
-
-export function socketHint(g: Play, name: string): string {
-  const n = Math.min(3, g.run.attempts[name] ?? 1);
-  const sets: Record<string, string[]> = {
-    'archivist_gate.sock': [
+const SOCKET_META: Readonly<Record<string, SocketMeta>> = {
+  'intercom.sock': {
+    speaker: 'Agent Intercom',
+    style: 'COMIX_CLASSIC',
+    body: 'AGENTS HERE. We pulled you in because we need hands. First job: a spirit holds the hatch and the relay is dead. Light the room (ls -la), remove .poltergeist.lock and touch cellar_hatch/.power_on. Chop chop, worker.',
+    tokens: ['ls -la', 'rm', 'touch'],
+    hints: [],
+  },
+  'archivist_gate.sock': {
+    speaker: 'Archivist Gate',
+    style: 'COMIX_CLASSIC',
+    body: "I keep the agents' firewall. Count every FATAL line in the chronicles and write that integer here. Or pick the lock like a vandal.",
+    tokens: ['grep', 'wc -l', 'chmod'],
+    hints: [
       'Wrong. The chronicles directory holds the logs.',
       'grep -h "FATAL" chronicles/*.log',
       'Pipe that into wc -l and redirect it here. One integer.',
     ],
-    'pressure_plate.sock': [
+  },
+  'pressure_plate.sock': {
+    speaker: 'Altar of Balance',
+    style: 'GHOST_WHISPER',
+    body: 'Remove the mimic, place exactly three .rune files on the pedestal, and whisper align.',
+    tokens: ['rm', 'touch', 'echo'],
+    hints: [
       'Something on the pedestal is not a rune.',
       'ls -la pedestal',
       'rm the mimic, touch three .rune files, echo align.',
     ],
-    'valve_lock.sock': [
+  },
+  'valve_lock.sock': {
+    speaker: 'Valve Lock',
+    style: 'KERNEL_GLITCH',
+    body: 'The agents sealed the furnace. boiler.dump hides PASS=. Cut the value out and reverse it.',
+    tokens: ['grep', 'cut', 'rev'],
+    hints: [
       'boiler.dump contains PASS=.',
       'cut -d= -f2',
       'rev that value into this socket.',
     ],
-    'wakeup.sock': [
-      'core_dump.log hides WAKEUP_TOKEN.',
-      'grep the token into this socket.',
-      'Then sed the reality anchor.',
-    ],
-  };
-  return sets[name]?.[n - 1] ?? 'That is not the phrase.';
+  },
+  'wakeup.sock': DEFAULT_SOCKET_META,
+};
+
+function socketSpec(name: string): SocketMeta {
+  return SOCKET_META[name] ?? DEFAULT_SOCKET_META;
+}
+
+function socketHint(g: Play, name: string): string {
+  const n = Math.min(3, g.run.attempts[name] ?? 1);
+  return socketSpec(name).hints[n - 1] ?? 'That is not the phrase.';
 }
 
 
@@ -243,7 +243,7 @@ function isCommandSnippet(code: string): boolean {
 export function stripCommandsFromText(raw: string): string {
   const trimmed = raw.replace(/^\s*\[[ xX]\]\s*/, '').trim();
   if (!trimmed) return '';
-  let cleaned = trimmed
+  const cleaned = trimmed
     .replace(/\(([^()]*`[^()`]+`[^()]*)\)/g, (_, inner: string) => {
       const hasCmd = [...inner.matchAll(/`([^`]+)`/g)].some((m) => isCommandSnippet(m[1] ?? ''));
       return hasCmd ? '' : `(${inner.replace(/`/g, '')})`;
@@ -390,23 +390,7 @@ export function statusText(g: Play): string {
 }
 
 export function stepKiroCrack(g: Play, events: KernelEvent[]): string {
-  const adv = g.kiro.advanceCrack(absPath(g.run.cwd));
-  for (const ev of adv.events) push(g, events, ev);
-  if (adv.completedTargetPath) {
-    const node = find(g, adv.completedTargetPath);
-    if (node && ((node.kind === 'dir' && !hasExec(node)) || (node.kind === 'file' && (node.mode & 0o444) === 0))) {
-      const old = node.mode;
-      node.mode = node.kind === 'dir' ? 0o755 : 0o644;
-      push(g, events, { type: 'INODE_MODE_CHANGED', inodeId: node.id, oldMode: old, newMode: node.mode });
-      push(g, events, {
-        type: 'PUZZLE_DOOR_RESOLVED',
-        socketInodeId: node.id,
-        unlockedInodeId: node.id,
-        solvedViaInput: 'kiro_crack',
-      });
-    }
-  }
-  return adv.note;
+  return stepKiroCrackOnRoot(g.kiro, g.run.root, absPath(g.run.cwd), 0o444, (ev) => push(g, events, ev)).note;
 }
 
 export function kiroFileRow(child: VNode, locked: boolean, readable: boolean): KiroScanInput['files'][number] {
@@ -442,93 +426,62 @@ export function psXrayToggle(rows: ProcRow[], active = rows.length > 0): KernelE
 }
 
 export function cmdKiro(g: Play, args: string[], stdin: string): Step {
-  const sub = (args[0] ?? '').toLowerCase();
-  if (!sub && stdin) {
-    bump(g, 'read');
-    return out(inspectTextWithKiro(stdin, 'stdin', g.kiro.activeCore));
-  }
-  if (!sub || sub === 'status' || sub === 'cores' || sub === 'list') {
-    bump(g, 'read');
-    return out(g.kiro.formatStatus(g.run.ram));
-  }
-  if (sub === 'load' || sub === 'pull' || sub === 'use' || sub === 'swap') {
-    if (!args[1]) return empty(1, `kiro load: specify a local .gguf core (${KIRO_CORE_ORDER.join(', ')})\n`);
-    bump(g, 'cast');
-    const res = g.kiro.loadCore(args[1]);
-    const events: KernelEvent[] = [];
-    for (const ev of res.events) push(g, events, ev);
-    return res.ok ? out(res.stdout, events) : empty(1, res.stderr ?? res.stdout);
-  }
-  if (sub === 'scan' || sub === 'sweep') {
-    bump(g, 'lantern');
-    const cwd = absPath(g.run.cwd);
-    const files = [...g.run.cwd.children.values()]
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map((child) => kiroFileRow(
-        child,
-        (child.kind === 'dir' && !hasExec(child)) || (child.kind === 'file' && (child.mode & 0o444) === 0),
-        (child.mode & 0o444) !== 0 && child.kind === 'file',
-      ));
-    const enemies = g.run.world.views(cwd).filter((v) => v.kind !== 'pickup').map(kiroEnemyRow);
-    const res = g.kiro.scanRoom({ cwd, ramGb: g.run.ram, files, enemies });
-    const events: KernelEvent[] = [];
-    if (res.enableXray) {
-      g.run.xray = true;
-      g.run.world.revealProcesses(events);
-      push(g, events, psXrayToggle(g.run.world.procs(), true));
-    }
-    if (res.healAmount > 0 && g.run.hp < maxHp(g)) {
-      g.run.hp = Math.min(maxHp(g), g.run.hp + res.healAmount);
-    }
-    if (res.revealHidden) {
-      const revealed = g.run.world.reveal(g.run.cwd, events);
-      for (const child of g.run.cwd.children.values()) {
-        if (child.name.startsWith('.') && !revealed.includes(child.id)) revealed.push(child.id);
-      }
-      if (!g.run.lantern) g.run.lantern = true;
-      push(g, events, { type: 'LANTERN_REVEAL', dirId: g.run.cwd.id, revealedInodes: revealed });
-    }
-    for (const ev of res.events) push(g, events, ev);
-    return out(res.stdout, events);
-  }
-  if (sub === 'crack' || sub === 'decrypt' || sub === 'hack') {
-    const targetArg = args[1];
-    if (!targetArg) return empty(1, 'kiro crack: specify a locked gate or encrypted file\n');
-    const found = resolve(g.run.cwd, targetArg, false);
-    if (!found.node) return empty(1, `kiro crack: ${targetArg}: No such file or directory\n`);
-    const node = found.node;
-    const fullPath = absPath(node);
-    const isLocked =
-      (node.kind === 'dir' && !hasExec(node)) ||
-      (node.kind === 'file' && (node.mode & 0o444) === 0);
-    if (!isLocked) {
-      return out(`[KIRO.D] ${node.name} is already unlocked (${modeString(node)}).\n`);
-    }
-    bump(g, 'cast');
-    const started = g.kiro.startCrack(absPath(g.run.cwd), node.name, fullPath);
-    const events: KernelEvent[] = [];
-    for (const ev of started.events) push(g, events, ev);
-    return out(started.stdout, events);
-  }
-  if (sub === 'inspect' || sub === 'audit') {
-    const targetArg = args[1];
-    if (!targetArg) return empty(1, 'kiro inspect: specify a file (or pipe via `cat <file> | kiro`)\n');
-    const found = resolve(g.run.cwd, targetArg, true);
-    if (!found.node) {
-      if (found.denied) return denied(g, found.denied, `kiro inspect: ${targetArg}: Permission denied\n`, `kiro inspect ${targetArg}`);
-      return empty(1, `kiro inspect: ${targetArg}: No such file or directory\n`);
-    }
-    if (found.node.kind !== 'file') return empty(1, `kiro inspect: ${targetArg}: Not a regular file\n`);
-    if ((found.node.mode & 0o444) === 0) return denied(g, found.node, `kiro inspect: ${targetArg}: Permission denied\n`, `kiro inspect ${targetArg}`);
-    bump(g, 'read');
-    return out(inspectTextWithKiro(found.node.content, found.node.name, g.kiro.activeCore));
-  }
-  if (sub === 'disclaimer' || sub === 'legal' || sub === 'brands') {
-    bump(g, 'read');
-    const res = g.kiro.formatDisclaimer();
-    const events: KernelEvent[] = [];
-    for (const ev of res.events) push(g, events, ev);
-    return out(res.stdout, events);
-  }
-  return empty(1, `kiro: unknown subcommand '${sub}'. Try: kiro | kiro scan | kiro load <core> | kiro crack <lock> | kiro disclaimer\n`);
+  return runKiroCommand(
+    {
+      cwd: g.run.cwd,
+      readMask: 0o444,
+      ramGb: g.run.ram,
+      noFileMessage: 'No such file or directory',
+      onAction(action, _command, events) {
+        bump(g, action);
+        void events;
+      },
+      onDenied(node, command, msg) {
+        return denied(g, node, msg, command);
+      },
+      loadCore(loadArgs) {
+        if (!loadArgs[1]) return empty(1, `kiro load: specify a local .gguf core (${KIRO_CORE_ORDER.join(', ')})\n`);
+        bump(g, 'cast');
+        const res = g.kiro.loadCore(loadArgs[1]);
+        const events: KernelEvent[] = [];
+        for (const ev of res.events) push(g, events, ev);
+        return res.ok ? out(res.stdout, events) : empty(1, res.stderr ?? res.stdout);
+      },
+      scanRoom() {
+        bump(g, 'lantern');
+        const cwd = absPath(g.run.cwd);
+        const files = [...g.run.cwd.children.values()]
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((child) => kiroFileRow(
+            child,
+            (child.kind === 'dir' && !hasExec(child)) || (child.kind === 'file' && (child.mode & 0o444) === 0),
+            (child.mode & 0o444) !== 0 && child.kind === 'file',
+          ));
+        const enemies = g.run.world.views(cwd).filter((v) => v.kind !== 'pickup').map(kiroEnemyRow);
+        const res = g.kiro.scanRoom({ cwd, ramGb: g.run.ram, files, enemies });
+        const events: KernelEvent[] = [];
+        if (res.enableXray) {
+          g.run.xray = true;
+          g.run.world.revealProcesses(events);
+          push(g, events, psXrayToggle(g.run.world.procs(), true));
+        }
+        if (res.healAmount > 0 && g.run.hp < maxHp(g)) {
+          g.run.hp = Math.min(maxHp(g), g.run.hp + res.healAmount);
+        }
+        if (res.revealHidden) {
+          const revealed = g.run.world.reveal(g.run.cwd, events);
+          for (const child of g.run.cwd.children.values()) {
+            if (child.name.startsWith('.') && !revealed.includes(child.id)) revealed.push(child.id);
+          }
+          if (!g.run.lantern) g.run.lantern = true;
+          push(g, events, { type: 'LANTERN_REVEAL', dirId: g.run.cwd.id, revealedInodes: revealed });
+        }
+        for (const ev of res.events) push(g, events, ev);
+        return out(res.stdout, events);
+      },
+    },
+    g.kiro,
+    args,
+    stdin,
+  );
 }

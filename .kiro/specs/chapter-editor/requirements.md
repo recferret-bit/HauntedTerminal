@@ -26,3 +26,7 @@ Capability: a human reviews and tunes any chapter at `/editor` without writing c
 ## Decisions
 
 Tasks 13-17 were never built. **A (user, 2026-11-17):** "close all the open questions" before the Kiroween submission. Applied as: tasks 1-12 are done; 13-17 (level add/delete/reorder, undo/redo and diff, per-field locks, real-inode dialogue preview, keyboard reordering and a screen-reader pass) move to the backlog in `tasks.md`. To keep any of them in scope, move it back and set the status to `approved`.
+
+## Open questions
+
+None (legacy).
