@@ -14,7 +14,7 @@
       "files": [
         {
           "file": "title_theme.mp3",
-          "bytes": 1152984
+          "bytes": 1030686
         }
       ]
     },
@@ -28,7 +28,7 @@
       "files": [
         {
           "file": "menu_bed.mp3",
-          "bytes": 576827
+          "bytes": 566124
         }
       ]
     },
@@ -42,7 +42,7 @@
       "files": [
         {
           "file": "level_select.mp3",
-          "bytes": 865219
+          "bytes": 478980
         }
       ]
     },
@@ -56,7 +56,7 @@
       "files": [
         {
           "file": "manual_bed.mp3",
-          "bytes": 1152984
+          "bytes": 1151058
         }
       ]
     },
@@ -70,7 +70,7 @@
       "files": [
         {
           "file": "achievements_bed.mp3",
-          "bytes": 480906
+          "bytes": 334784
         }
       ]
     },
@@ -84,7 +84,7 @@
       "files": [
         {
           "file": "comic_reader.mp3",
-          "bytes": 1152984
+          "bytes": 886490
         }
       ]
     },
@@ -98,7 +98,7 @@
       "files": [
         {
           "file": "rank_card.mp3",
-          "bytes": 240788
+          "bytes": 241997
         }
       ]
     },
@@ -112,18 +112,7 @@
       "files": [
         {
           "file": "floor_attic.mp3",
-          "bytes": 961141,
-          "note": "Full take. Kept. The first twenty seconds are the lead-in."
-        },
-        {
-          "file": "floor_attic_intro.m4a",
-          "bytes": 128885,
-          "note": "Two bars of that lead-in, played once."
-        },
-        {
-          "file": "floor_attic_loop.m4a",
-          "bytes": 497980,
-          "note": "The tune from the downbeat, eight bars, the part that loops."
+          "bytes": 958588
         }
       ]
     },
@@ -137,7 +126,7 @@
       "files": [
         {
           "file": "floor_crypt.mp3",
-          "bytes": 961141
+          "bytes": 850755
         }
       ]
     },
@@ -151,7 +140,7 @@
       "files": [
         {
           "file": "floor_maze.mp3",
-          "bytes": 961141
+          "bytes": 793076
         }
       ]
     },
@@ -165,7 +154,7 @@
       "files": [
         {
           "file": "floor_furnace.mp3",
-          "bytes": 961141
+          "bytes": 867682
         }
       ]
     },
@@ -179,7 +168,7 @@
       "files": [
         {
           "file": "floor_core.mp3",
-          "bytes": 961141
+          "bytes": 954199
         }
       ]
     },
@@ -193,7 +182,7 @@
       "files": [
         {
           "file": "hub_matrix.mp3",
-          "bytes": 1440749
+          "bytes": 1351679
         }
       ]
     },
@@ -207,7 +196,7 @@
       "files": [
         {
           "file": "battle_loop.mp3",
-          "bytes": 961141
+          "bytes": 622549
         }
       ]
     },
@@ -221,7 +210,7 @@
       "files": [
         {
           "file": "battle_boss.mp3",
-          "bytes": 961141
+          "bytes": 959842
         }
       ]
     },
@@ -235,7 +224,7 @@
       "files": [
         {
           "file": "low_hp_bed.mp3",
-          "bytes": 480906
+          "bytes": 452021
         }
       ]
     },
@@ -249,7 +238,7 @@
       "files": [
         {
           "file": "laptop_bed.mp3",
-          "bytes": 480906
+          "bytes": 382431
         }
       ]
     },
@@ -263,7 +252,7 @@
       "files": [
         {
           "file": "lab_bed.mp3",
-          "bytes": 480906
+          "bytes": 480234
         }
       ]
     },

@@ -38,7 +38,7 @@ export type LaptopAction =
 
 export type LoopCue = 'rain_loop' | 'low_hp_loop' | 'lap_fan';
 
-export type CineCue = 'thunder' | 'thunder-far' | 'burst' | 'zap' | 'shatter' | 'lightning';
+export type CineCue = 'thunder' | 'thunder-far' | 'burst' | 'zap' | 'shatter' | 'lightning' | 'boot';
 
 export type LetterCue = 'slam' | 'bubble' | 'caption' | 'glitch' | 'flash' | 'invert' | 'shake' | 'pixel';
 
@@ -56,6 +56,7 @@ export type AppEvent =
   | { kind: 'loop'; cue: LoopCue; on: boolean }
   | { kind: 'cine'; cue: CineCue }
   | { kind: 'letter'; letter: LetterCue }
+  | { kind: 'dialog'; speaker: string }
   | { kind: 'page' }
   | { kind: 'audio-hold'; paused: boolean };
 

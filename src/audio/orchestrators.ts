@@ -27,6 +27,10 @@ export function attachOrchestrators(bus: AppBus, graph: AudioGraph): () => void 
 
   const cuesFor = (event: AppEvent): SfxId[] => {
     if (event.kind === 'command') armCommandFollowupDrop(event.result === 'ok');
+    // Dialog and agent taunt audio is triggered on visual box open (`dialog` app event), not queue push.
+    if (event.kind === 'kernel' && (event.event.type === 'DIALOG_BOX' || event.event.type === 'AGENT_TAUNT')) {
+      return [];
+    }
     const cues = sfxFor(event);
     if (!dropShock && !dropHeroType) return cues;
     return cues.filter((cue) => !(dropShock && cue === 'emote_shock') && !(dropHeroType && cue === 'hero_type'));

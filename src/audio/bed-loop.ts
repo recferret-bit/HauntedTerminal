@@ -54,7 +54,6 @@ function arm(
   const end = when + remain;
   const join = end - x;
   src.start(when, off);
-  src.stop(end + (looping ? 0 : 0.05));
   const level = gain.gain;
   if (fadeIn > 0) {
     level.setValueAtTime(0.0001, when);

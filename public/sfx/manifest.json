@@ -119,29 +119,701 @@
     },
     {
       "row": 13,
-      "name": "agent_taunt",
-      "effect": "Agent taunt pops in (Clod, Gork, Codec, Anti-Gravy)",
-      "listed_seconds": 0.6,
-      "duration_seconds": 0.6,
+      "name": "taunt_antigravy_1",
+      "effect": "Anti-Gravy robot voice taunt variant 1",
+      "listed_seconds": 3.71,
+      "duration_seconds": 3.71,
       "loop": false,
       "files": [
         {
-          "file": "agent_taunt.mp3",
-          "bytes": 15716
+          "file": "taunt_antigravy_1.mp3",
+          "bytes": 59811
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_antigravy_2",
+      "effect": "Anti-Gravy robot voice taunt variant 2",
+      "listed_seconds": 2.85,
+      "duration_seconds": 2.85,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_antigravy_2.mp3",
+          "bytes": 46018
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_antigravy_3",
+      "effect": "Anti-Gravy robot voice taunt variant 3",
+      "listed_seconds": 2.69,
+      "duration_seconds": 2.69,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_antigravy_3.mp3",
+          "bytes": 43510
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_antigravy_4",
+      "effect": "Anti-Gravy robot voice taunt variant 4",
+      "listed_seconds": 3.87,
+      "duration_seconds": 3.87,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_antigravy_4.mp3",
+          "bytes": 62318
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_antigravy_5",
+      "effect": "Anti-Gravy robot voice taunt variant 5",
+      "listed_seconds": 3.24,
+      "duration_seconds": 3.24,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_antigravy_5.mp3",
+          "bytes": 52287
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_antigravy_6",
+      "effect": "Anti-Gravy robot voice taunt variant 6",
+      "listed_seconds": 2.56,
+      "duration_seconds": 2.56,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_antigravy_6.mp3",
+          "bytes": 41421
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_antigravy_7",
+      "effect": "Anti-Gravy robot voice taunt variant 7",
+      "listed_seconds": 3.19,
+      "duration_seconds": 3.19,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_antigravy_7.mp3",
+          "bytes": 51452
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_antigravy_8",
+      "effect": "Anti-Gravy robot voice taunt variant 8",
+      "listed_seconds": 3.79,
+      "duration_seconds": 3.79,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_antigravy_8.mp3",
+          "bytes": 61065
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_antigravy_9",
+      "effect": "Anti-Gravy robot voice taunt variant 9",
+      "listed_seconds": 2.77,
+      "duration_seconds": 2.77,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_antigravy_9.mp3",
+          "bytes": 44764
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_antigravy_10",
+      "effect": "Anti-Gravy robot voice taunt variant 10",
+      "listed_seconds": 3.42,
+      "duration_seconds": 3.42,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_antigravy_10.mp3",
+          "bytes": 55213
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_codec_1",
+      "effect": "Codec robot voice taunt variant 1",
+      "listed_seconds": 2.51,
+      "duration_seconds": 2.51,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_codec_1.mp3",
+          "bytes": 40585
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_codec_2",
+      "effect": "Codec robot voice taunt variant 2",
+      "listed_seconds": 3.55,
+      "duration_seconds": 3.55,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_codec_2.mp3",
+          "bytes": 57303
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_codec_3",
+      "effect": "Codec robot voice taunt variant 3",
+      "listed_seconds": 2.35,
+      "duration_seconds": 2.35,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_codec_3.mp3",
+          "bytes": 38077
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_codec_4",
+      "effect": "Codec robot voice taunt variant 4",
+      "listed_seconds": 2.3,
+      "duration_seconds": 2.3,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_codec_4.mp3",
+          "bytes": 37241
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_codec_5",
+      "effect": "Codec robot voice taunt variant 5",
+      "listed_seconds": 3.5,
+      "duration_seconds": 3.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_codec_5.mp3",
+          "bytes": 56467
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_codec_6",
+      "effect": "Codec robot voice taunt variant 6",
+      "listed_seconds": 4.05,
+      "duration_seconds": 4.05,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_codec_6.mp3",
+          "bytes": 65244
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_codec_7",
+      "effect": "Codec robot voice taunt variant 7",
+      "listed_seconds": 2.43,
+      "duration_seconds": 2.43,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_codec_7.mp3",
+          "bytes": 39331
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_codec_8",
+      "effect": "Codec robot voice taunt variant 8",
+      "listed_seconds": 3.19,
+      "duration_seconds": 3.19,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_codec_8.mp3",
+          "bytes": 51452
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_codec_9",
+      "effect": "Codec robot voice taunt variant 9",
+      "listed_seconds": 2.69,
+      "duration_seconds": 2.69,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_codec_9.mp3",
+          "bytes": 43510
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_codec_10",
+      "effect": "Codec robot voice taunt variant 10",
+      "listed_seconds": 2.59,
+      "duration_seconds": 2.59,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_codec_10.mp3",
+          "bytes": 41838
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_gork_1",
+      "effect": "Gork robot voice taunt variant 1",
+      "listed_seconds": 3.47,
+      "duration_seconds": 3.47,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_gork_1.mp3",
+          "bytes": 56049
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_gork_2",
+      "effect": "Gork robot voice taunt variant 2",
+      "listed_seconds": 3.55,
+      "duration_seconds": 3.55,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_gork_2.mp3",
+          "bytes": 57303
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_gork_3",
+      "effect": "Gork robot voice taunt variant 3",
+      "listed_seconds": 2.51,
+      "duration_seconds": 2.51,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_gork_3.mp3",
+          "bytes": 40585
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_gork_4",
+      "effect": "Gork robot voice taunt variant 4",
+      "listed_seconds": 3.55,
+      "duration_seconds": 3.55,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_gork_4.mp3",
+          "bytes": 57303
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_gork_5",
+      "effect": "Gork robot voice taunt variant 5",
+      "listed_seconds": 4.0,
+      "duration_seconds": 4.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_gork_5.mp3",
+          "bytes": 64408
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_gork_6",
+      "effect": "Gork robot voice taunt variant 6",
+      "listed_seconds": 2.46,
+      "duration_seconds": 2.46,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_gork_6.mp3",
+          "bytes": 39749
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_gork_7",
+      "effect": "Gork robot voice taunt variant 7",
+      "listed_seconds": 3.08,
+      "duration_seconds": 3.08,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_gork_7.mp3",
+          "bytes": 49780
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_gork_8",
+      "effect": "Gork robot voice taunt variant 8",
+      "listed_seconds": 3.24,
+      "duration_seconds": 3.24,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_gork_8.mp3",
+          "bytes": 52287
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_gork_9",
+      "effect": "Gork robot voice taunt variant 9",
+      "listed_seconds": 2.69,
+      "duration_seconds": 2.69,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_gork_9.mp3",
+          "bytes": 43510
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_gork_10",
+      "effect": "Gork robot voice taunt variant 10",
+      "listed_seconds": 3.08,
+      "duration_seconds": 3.08,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_gork_10.mp3",
+          "bytes": 49780
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_clod_1",
+      "effect": "Clod robot voice taunt variant 1",
+      "listed_seconds": 3.16,
+      "duration_seconds": 3.16,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_clod_1.mp3",
+          "bytes": 51034
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_clod_2",
+      "effect": "Clod robot voice taunt variant 2",
+      "listed_seconds": 3.19,
+      "duration_seconds": 3.19,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_clod_2.mp3",
+          "bytes": 51452
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_clod_3",
+      "effect": "Clod robot voice taunt variant 3",
+      "listed_seconds": 2.93,
+      "duration_seconds": 2.93,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_clod_3.mp3",
+          "bytes": 47272
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_clod_4",
+      "effect": "Clod robot voice taunt variant 4",
+      "listed_seconds": 3.76,
+      "duration_seconds": 3.76,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_clod_4.mp3",
+          "bytes": 60647
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_clod_5",
+      "effect": "Clod robot voice taunt variant 5",
+      "listed_seconds": 2.43,
+      "duration_seconds": 2.43,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_clod_5.mp3",
+          "bytes": 39331
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_clod_6",
+      "effect": "Clod robot voice taunt variant 6",
+      "listed_seconds": 3.74,
+      "duration_seconds": 3.74,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_clod_6.mp3",
+          "bytes": 60229
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_clod_7",
+      "effect": "Clod robot voice taunt variant 7",
+      "listed_seconds": 3.29,
+      "duration_seconds": 3.29,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_clod_7.mp3",
+          "bytes": 53123
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_clod_8",
+      "effect": "Clod robot voice taunt variant 8",
+      "listed_seconds": 2.43,
+      "duration_seconds": 2.43,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_clod_8.mp3",
+          "bytes": 39331
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_clod_9",
+      "effect": "Clod robot voice taunt variant 9",
+      "listed_seconds": 4.05,
+      "duration_seconds": 4.05,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_clod_9.mp3",
+          "bytes": 65244
+        }
+      ]
+    },
+    {
+      "row": 13,
+      "name": "taunt_clod_10",
+      "effect": "Clod robot voice taunt variant 10",
+      "listed_seconds": 3.79,
+      "duration_seconds": 3.79,
+      "loop": false,
+      "files": [
+        {
+          "file": "taunt_clod_10.mp3",
+          "bytes": 61065
         }
       ]
     },
     {
       "row": 14,
       "name": "kiro_advice",
-      "effect": "Kiro Ghost advice",
-      "listed_seconds": 0.7,
-      "duration_seconds": 0.7,
+      "effect": "Kiro Ghost robot voice praise/cheer variant 1",
+      "listed_seconds": 2.09,
+      "duration_seconds": 2.09,
       "loop": false,
       "files": [
         {
           "file": "kiro_advice.mp3",
-          "bytes": 18224
+          "bytes": 33897
+        }
+      ]
+    },
+    {
+      "row": 14,
+      "name": "kiro_advice_2",
+      "effect": "Kiro Ghost robot voice praise/cheer variant 2",
+      "listed_seconds": 2.77,
+      "duration_seconds": 2.77,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_advice_2.mp3",
+          "bytes": 44764
+        }
+      ]
+    },
+    {
+      "row": 14,
+      "name": "kiro_advice_3",
+      "effect": "Kiro Ghost robot voice praise/cheer variant 3",
+      "listed_seconds": 2.69,
+      "duration_seconds": 2.69,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_advice_3.mp3",
+          "bytes": 43510
+        }
+      ]
+    },
+    {
+      "row": 14,
+      "name": "kiro_advice_4",
+      "effect": "Kiro Ghost robot voice praise/cheer variant 4",
+      "listed_seconds": 3.16,
+      "duration_seconds": 3.16,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_advice_4.mp3",
+          "bytes": 51034
+        }
+      ]
+    },
+    {
+      "row": 14,
+      "name": "kiro_advice_5",
+      "effect": "Kiro Ghost robot voice praise/cheer variant 5",
+      "listed_seconds": 3.24,
+      "duration_seconds": 3.24,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_advice_5.mp3",
+          "bytes": 52287
+        }
+      ]
+    },
+    {
+      "row": 14,
+      "name": "kiro_advice_6",
+      "effect": "Kiro Ghost robot voice praise/cheer variant 6",
+      "listed_seconds": 2.59,
+      "duration_seconds": 2.59,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_advice_6.mp3",
+          "bytes": 41838
+        }
+      ]
+    },
+    {
+      "row": 14,
+      "name": "kiro_advice_7",
+      "effect": "Kiro Ghost robot voice praise/cheer variant 7",
+      "listed_seconds": 2.43,
+      "duration_seconds": 2.43,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_advice_7.mp3",
+          "bytes": 39331
+        }
+      ]
+    },
+    {
+      "row": 14,
+      "name": "kiro_advice_8",
+      "effect": "Kiro Ghost robot voice praise/cheer variant 8",
+      "listed_seconds": 2.59,
+      "duration_seconds": 2.59,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_advice_8.mp3",
+          "bytes": 41838
+        }
+      ]
+    },
+    {
+      "row": 14,
+      "name": "kiro_advice_9",
+      "effect": "Kiro Ghost robot voice praise/cheer variant 9",
+      "listed_seconds": 3.47,
+      "duration_seconds": 3.47,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_advice_9.mp3",
+          "bytes": 56049
+        }
+      ]
+    },
+    {
+      "row": 14,
+      "name": "kiro_advice_10",
+      "effect": "Kiro Ghost robot voice praise/cheer variant 10",
+      "listed_seconds": 2.56,
+      "duration_seconds": 2.56,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_advice_10.mp3",
+          "bytes": 41421
         }
       ]
     },
@@ -1882,20 +2554,6 @@
       ]
     },
     {
-      "name": "sting_taunt",
-      "effect": "Agent taunt motif, one kept music take moved out of public/music",
-      "listed_seconds": 5.0,
-      "duration_seconds": 5.0,
-      "loop": false,
-      "source": "music_v2_5",
-      "files": [
-        {
-          "file": "sting_taunt.mp3",
-          "bytes": 121043
-        }
-      ]
-    },
-    {
       "name": "dialog_hero",
       "effect": "Vibecoder dialog box appearing",
       "listed_seconds": 0.6,
@@ -1904,19 +2562,6 @@
       "files": [
         {
           "file": "dialog_hero.mp3",
-          "bytes": 15716
-        }
-      ]
-    },
-    {
-      "name": "dialog_npc",
-      "effect": "NPC dialog box appearing",
-      "listed_seconds": 0.6,
-      "duration_seconds": 0.6,
-      "loop": false,
-      "files": [
-        {
-          "file": "dialog_npc.mp3",
           "bytes": 15716
         }
       ]

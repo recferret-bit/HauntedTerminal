@@ -237,15 +237,27 @@ await withProcgen(async (_procgen, vite) => {
     );
     assert.deepEqual(
       sfxMod.sfxFor({ kind: 'kernel', event: { type: 'DIALOG_BOX', id: 'd1', speaker: 'kiro', text: 'hi' } }),
-      ['dialog_npc'],
+      ['kiro_advice'],
     );
     assert.deepEqual(
       sfxMod.sfxFor({ kind: 'kernel', event: { type: 'DIALOG_BOX', id: 'd3', speaker: 'clod', text: 'ha' } }),
-      ['dialog_npc'],
+      ['taunt_clod_1'],
+    );
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'DIALOG_BOX', id: 'd4', speaker: 'antigravy', text: 'yo' } }),
+      ['taunt_antigravy_1'],
     );
     assert.deepEqual(
       sfxMod.sfxFor({ kind: 'kernel', event: { type: 'DIALOG_BOX', id: 'd2', speaker: 'vibecoder', text: 'uh' } }),
       ['dialog_hero'],
+    );
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'AGENT_TAUNT', agent: 'codec', model: 'agent.codec', text: 'ha', mood: 'smug' } }),
+      ['taunt_codec_1'],
+    );
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'dialog', speaker: 'gork' }),
+      ['taunt_gork_1'],
     );
     assert.deepEqual(
       sfxMod.sfxFor({ kind: 'kernel', event: { type: 'TUTORIAL_STEP', step: 1, total: 5, agent: 'kiro', prompt: 'hi' } }),
@@ -630,15 +642,15 @@ await withProcgen(async (_procgen, vite) => {
     sigSess.skipIntro();
     sigSess.exec('ls');
     sigSess.skipBattleIntro();
-    assert.ok(cues(sigSess.exec('kill -STOP 4001')).includes('sigstop'), 'kill -STOP emits sigstop');
-    assert.ok(cues(sigSess.exec('kill -CONT 4001')).includes('sigcont'), 'kill -CONT emits sigcont');
-    assert.ok(cues(sigSess.exec('kill -15 4001')).includes('sigterm'), 'kill -15 on spyware emits sigterm');
+    assert.ok(cues(sigSess.exec('kill -STOP {pid:s1}')).includes('sigstop'), 'kill -STOP emits sigstop');
+    assert.ok(cues(sigSess.exec('kill -CONT {pid:s1}')).includes('sigcont'), 'kill -CONT emits sigcont');
+    assert.ok(cues(sigSess.exec('kill -15 {pid:s1}')).includes('sigterm'), 'kill -15 on spyware emits sigterm');
 
     const killSess = createChapterSession({ chapterId: 'au', pack: mkPack([{ path: '/arena/n.txt', kind: 'file', content: 'hi\n' }], [{ id: 'v1', type: 'virus', path: '/arena/virus.exe', pid: 4001 }]), preview: true, startLevelId: 'au-1' });
     killSess.skipIntro();
     killSess.exec('ls');
     killSess.skipBattleIntro();
-    const k9 = cues(killSess.exec('kill -9 4001'));
+    const k9 = cues(killSess.exec('kill -9 {pid:v1}'));
     assert.ok(k9.includes('lightning') && k9.includes('kill'), 'kill -9 emits lightning and kill');
 
     const mvDenySess = createChapterSession({
@@ -895,6 +907,73 @@ await withProcgen(async (_procgen, vite) => {
 
     keysMod.handleKey(st, '\x1b[A', false);
     assert.deepEqual(heard, ['press', 'tab', 'backspace', 'press', 'enter', 'press']);
+  });
+
+  await test('attachOrchestrators plays dialog/taunt voices synchronously on dialog open, rotating per-agent variants cleanly', async () => {
+    const orchMod = await vite.ssrLoadModule('/src/audio/orchestrators.ts');
+    const engineMod = await vite.ssrLoadModule('/src/audio/engine.ts');
+    const bus = busMod.createAppBus();
+    const played = [];
+    const fakePlayer = {
+      live: true, muted: false, volume: 1,
+      play(id) { played.push(id); },
+      loop() {}, bed() {}, hold() {}, setMuted() {}, setVolume() {}, dispose() {},
+    };
+    const off = orchMod.attachOrchestrators(bus, fakePlayer);
+    try {
+      bus.emit({ kind: 'kernel', event: { type: 'DIALOG_BOX', id: 'd1', speaker: 'antigravy', name: 'ANTIGRAVY', model: 'agent.antigravy', text: 'hi', holdMs: 1780 } });
+      bus.emit({ kind: 'kernel', event: { type: 'AGENT_TAUNT', agent: 'clod', model: 'agent.clod', text: 'ha', mood: 'laugh' } });
+      assert.deepEqual(played, [], 'queued DIALOG_BOX and AGENT_TAUNT kernel events do not trigger premature voice playback');
+      bus.emit({ kind: 'dialog', speaker: 'antigravy' });
+      bus.emit({ kind: 'dialog', speaker: 'clod' });
+      bus.emit({ kind: 'dialog', speaker: 'kiro' });
+      bus.emit({ kind: 'dialog', speaker: 'vibecoder' });
+      assert.deepEqual(played, ['taunt_antigravy_1', 'taunt_clod_1', 'kiro_advice', 'dialog_hero']);
+    } finally {
+      off();
+    }
+
+    await withFakeWindow(async (env) => {
+      const eng = engineMod.createGraph(10, 3);
+      env.state().listeners.get('pointerdown')();
+      await new Promise((r) => setTimeout(r, 15));
+      for (let i = 0; i < 24; i += 1) eng.play('taunt_antigravy_1');
+      for (let i = 0; i < 12; i += 1) eng.play('taunt_codec_1');
+      for (let i = 0; i < 12; i += 1) eng.play('kiro_advice');
+      await new Promise((r) => setTimeout(r, 25));
+      const playedVoices = env.state().starts.filter((s) => s.url.includes('/sfx/taunt_') || s.url.includes('/sfx/kiro_advice'));
+      const gravyUrls = playedVoices.filter((s) => s.url.includes('/sfx/taunt_antigravy_')).map((s) => s.url);
+      const codecUrls = playedVoices.filter((s) => s.url.includes('/sfx/taunt_codec_')).map((s) => s.url);
+      const kiroUrls = playedVoices.filter((s) => s.url.includes('/sfx/kiro_advice')).map((s) => s.url);
+      assert.equal(gravyUrls.length, 24);
+      assert.equal(codecUrls.length, 12);
+      assert.equal(kiroUrls.length, 12);
+      assert.ok(gravyUrls.every((u) => /^\/sfx\/taunt_antigravy_(?:[1-9]|10)\.mp3$/.test(u)), 'antigravy randomly picks across its 10 variants');
+      assert.ok(codecUrls.every((u) => /^\/sfx\/taunt_codec_(?:[1-9]|10)\.mp3$/.test(u)), 'codec randomly picks across its 10 variants');
+      assert.ok(kiroUrls.every((u) => /^\/sfx\/kiro_advice(?:|_2|_3|_4|_5|_6|_7|_8|_9|_10)\.mp3$/.test(u)), 'kiro randomly picks across its 10 praise/cheer variants');
+      for (let i = 1; i < gravyUrls.length; i += 1) {
+        assert.notEqual(gravyUrls[i], gravyUrls[i - 1], 'antigravy avoids repeating the same variant back-to-back');
+      }
+      for (let i = 1; i < codecUrls.length; i += 1) {
+        assert.notEqual(codecUrls[i], codecUrls[i - 1], 'codec avoids repeating the same variant back-to-back');
+      }
+      for (let i = 1; i < kiroUrls.length; i += 1) {
+        assert.notEqual(kiroUrls[i], kiroUrls[i - 1], 'kiro avoids repeating the same praise variant back-to-back');
+      }
+      assert.ok(new Set(gravyUrls).size >= 4, 'random selection samples multiple distinct antigravy variants');
+      assert.ok(new Set(codecUrls).size >= 3, 'random selection samples multiple distinct codec variants');
+      assert.ok(new Set(kiroUrls).size >= 3, 'random selection samples multiple distinct kiro praise variants');
+      assert.ok(playedVoices.every((s) => s.rate === 1), 'robot voice taunts and kiro cheers preserve native pitch/speed');
+      for (const s of playedVoices) {
+        if (s.url.endsWith('/taunt_antigravy_2.mp3')) {
+          assert.equal(s.offset, 0, 'taunt_antigravy_2 starts immediately without unnecessary trim');
+        } else {
+          assert.ok(s.offset > 0, `${s.url} trims leading silence`);
+        }
+      }
+      assert.ok(env.state().stopped >= 46, 'starting the next dialog voice fades out the previous active speech cleanly');
+      eng.dispose();
+    });
   });
 }, '/src/audio/sfx-for.ts');
 

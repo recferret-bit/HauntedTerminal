@@ -29,16 +29,77 @@ const KEY_VARIANTS: Partial<Record<SfxId, readonly SfxId[]>> = {
   key_backspace: ['key_backspace', 'key_backspace_2'],
 };
 
+const TAUNT_VARIANTS: Partial<Record<SfxId, readonly SfxId[]>> = {
+  taunt_antigravy_1: ['taunt_antigravy_1', 'taunt_antigravy_2', 'taunt_antigravy_3', 'taunt_antigravy_4', 'taunt_antigravy_5', 'taunt_antigravy_6', 'taunt_antigravy_7', 'taunt_antigravy_8', 'taunt_antigravy_9', 'taunt_antigravy_10'],
+  taunt_codec_1: ['taunt_codec_1', 'taunt_codec_2', 'taunt_codec_3', 'taunt_codec_4', 'taunt_codec_5', 'taunt_codec_6', 'taunt_codec_7', 'taunt_codec_8', 'taunt_codec_9', 'taunt_codec_10'],
+  taunt_gork_1: ['taunt_gork_1', 'taunt_gork_2', 'taunt_gork_3', 'taunt_gork_4', 'taunt_gork_5', 'taunt_gork_6', 'taunt_gork_7', 'taunt_gork_8', 'taunt_gork_9', 'taunt_gork_10'],
+  taunt_clod_1: ['taunt_clod_1', 'taunt_clod_2', 'taunt_clod_3', 'taunt_clod_4', 'taunt_clod_5', 'taunt_clod_6', 'taunt_clod_7', 'taunt_clod_8', 'taunt_clod_9', 'taunt_clod_10'],
+  kiro_advice: ['kiro_advice', 'kiro_advice_2', 'kiro_advice_3', 'kiro_advice_4', 'kiro_advice_5', 'kiro_advice_6', 'kiro_advice_7', 'kiro_advice_8', 'kiro_advice_9', 'kiro_advice_10'],
+};
+
+const SPEECH_SFX: ReadonlySet<SfxId> = new Set<SfxId>([
+  'dialog_hero', ...Object.values(TAUNT_VARIANTS).flatMap((v) => v ?? []),
+]);
+
 const KEY_RATES = [1.0, 1.045, 0.96, 1.02, 0.975, 1.06, 0.945] as const;
 const KEY_GAINS = [0.9, 0.84, 0.94, 0.87, 0.92] as const;
 
-/** Active windows (seconds) trimmed from leading and trailing silence so keystrokes feel instant and free slots cleanly. */
-const SFX_TRIM: Partial<Record<SfxId, { offset: number; duration: number }>> = {
+/** Active windows (seconds) trimmed from leading and trailing silence so keystrokes and dialog voices fire at 0ms latency. */
+const SFX_TRIM: Partial<Record<SfxId, { offset: number; duration?: number }>> = {
   key_press: { offset: 0.105, duration: 0.215 },
   key_press_2: { offset: 0.098, duration: 0.185 },
   key_press_3: { offset: 0.045, duration: 0.28 },
   key_backspace: { offset: 0.085, duration: 0.22 },
   key_backspace_2: { offset: 0.085, duration: 0.15 },
+  kiro_advice: { offset: 0.067, duration: 1.68 },
+  kiro_advice_2: { offset: 0.059, duration: 2.57 },
+  kiro_advice_3: { offset: 0.128, duration: 2.4 },
+  kiro_advice_4: { offset: 0.05, duration: 2.92 },
+  kiro_advice_5: { offset: 0.047, duration: 3.02 },
+  kiro_advice_6: { offset: 0.092, duration: 2.33 },
+  kiro_advice_7: { offset: 0.051, duration: 2.26 },
+  kiro_advice_8: { offset: 0.054, duration: 2.43 },
+  kiro_advice_9: { offset: 0.083, duration: 3.18 },
+  kiro_advice_10: { offset: 0.053, duration: 2.31 },
+  taunt_antigravy_1: { offset: 0.075, duration: 3.45 },
+  taunt_antigravy_3: { offset: 0.064, duration: 2.5 },
+  taunt_antigravy_4: { offset: 0.079, duration: 3.67 },
+  taunt_antigravy_5: { offset: 0.029, duration: 3.1 },
+  taunt_antigravy_6: { offset: 0.058, duration: 2.4 },
+  taunt_antigravy_7: { offset: 0.064, duration: 2.96 },
+  taunt_antigravy_8: { offset: 0.088, duration: 3.48 },
+  taunt_antigravy_9: { offset: 0.137, duration: 2.47 },
+  taunt_antigravy_10: { offset: 0.063, duration: 3.19 },
+  taunt_codec_1: { offset: 0.052, duration: 2.3 },
+  taunt_codec_2: { offset: 0.072, duration: 3.32 },
+  taunt_codec_3: { offset: 0.141, duration: 2.05 },
+  taunt_codec_4: { offset: 0.08, duration: 2.04 },
+  taunt_codec_5: { offset: 0.125, duration: 3.2 },
+  taunt_codec_6: { offset: 0.084, duration: 3.81 },
+  taunt_codec_7: { offset: 0.073, duration: 2.17 },
+  taunt_codec_8: { offset: 0.047, duration: 2.95 },
+  taunt_codec_9: { offset: 0.081, duration: 2.39 },
+  taunt_codec_10: { offset: 0.112, duration: 2.31 },
+  taunt_gork_1: { offset: 0.032, duration: 3.29 },
+  taunt_gork_2: { offset: 0.115, duration: 3.24 },
+  taunt_gork_3: { offset: 0.066, duration: 2.28 },
+  taunt_gork_4: { offset: 0.085, duration: 3.31 },
+  taunt_gork_5: { offset: 0.097, duration: 3.5 },
+  taunt_gork_6: { offset: 0.079, duration: 2.19 },
+  taunt_gork_7: { offset: 0.042, duration: 2.82 },
+  taunt_gork_8: { offset: 0.088, duration: 3 },
+  taunt_gork_9: { offset: 0.109, duration: 2.42 },
+  taunt_gork_10: { offset: 0.051, duration: 2.85 },
+  taunt_clod_1: { offset: 0.083, duration: 2.88 },
+  taunt_clod_2: { offset: 0.067, duration: 2.94 },
+  taunt_clod_3: { offset: 0.12, duration: 2.66 },
+  taunt_clod_4: { offset: 0.074, duration: 3.26 },
+  taunt_clod_5: { offset: 0.102, duration: 2.17 },
+  taunt_clod_6: { offset: 0.103, duration: 3.53 },
+  taunt_clod_7: { offset: 0.09, duration: 3.01 },
+  taunt_clod_8: { offset: 0.13, duration: 2.12 },
+  taunt_clod_9: { offset: 0.079, duration: 3.76 },
+  taunt_clod_10: { offset: 0.092, duration: 3.47 },
 };
 
 export interface AudioGraph {
@@ -124,14 +185,28 @@ function spawnVoice(
   return { node, amp };
 }
 
-function nextKeyStyle(id: SfxId, step: number): { cue: SfxId; rate: number; gain: number } {
-  const variants = KEY_VARIANTS[id];
-  if (!variants) return { cue: id, rate: 1, gain: 0.9 };
-  return {
-    cue: variants[step % variants.length] ?? id,
-    rate: KEY_RATES[step % KEY_RATES.length] ?? 1,
-    gain: KEY_GAINS[step % KEY_GAINS.length] ?? 0.9,
-  };
+function nextPlayStyle(id: SfxId, variantSteps: Map<SfxId, number>): { cue: SfxId; rate: number; gain: number } {
+  const keyVars = KEY_VARIANTS[id];
+  if (keyVars) {
+    const step = variantSteps.get(id) ?? 0;
+    variantSteps.set(id, step + 1);
+    return {
+      cue: keyVars[step % keyVars.length] ?? id,
+      rate: KEY_RATES[step % KEY_RATES.length] ?? 1,
+      gain: KEY_GAINS[step % KEY_GAINS.length] ?? 0.9,
+    };
+  }
+  const tauntVars = TAUNT_VARIANTS[id];
+  if (tauntVars) {
+    const last = variantSteps.get(id);
+    let idx = Math.floor(Math.random() * tauntVars.length);
+    if (last !== undefined && tauntVars.length > 1 && idx === last) {
+      idx = (idx + 1 + Math.floor(Math.random() * (tauntVars.length - 1))) % tauntVars.length;
+    }
+    variantSteps.set(id, idx);
+    return { cue: tauntVars[idx] ?? id, rate: 1, gain: 0.92 };
+  }
+  return { cue: id, rate: 1, gain: 0.9 };
 }
 
 function stopAt(node: AudioBufferSourceNode | null | undefined, when?: number): void {
@@ -175,6 +250,19 @@ interface Slots {
   stopAll(): void;
 }
 
+function fadeActiveSpeech(
+  ctx: AudioContext,
+  voices: (VoiceSlot | null)[],
+  speechSlots: boolean[],
+): void {
+  for (let i = 0; i < voices.length; i += 1) {
+    if (!speechSlots[i] || !voices[i]) continue;
+    stopVoice(ctx, voices[i], 0.025);
+    voices[i] = null;
+    speechSlots[i] = false;
+  }
+}
+
 function makeSlots(
   ctx: AudioContext,
   master: GainNode,
@@ -187,10 +275,10 @@ function makeSlots(
   let seq = 0;
   let held = false;
   let lastTypingAt = -Infinity;
-  let pressStep = 0;
-  let backStep = 0;
+  const variantSteps = new Map<SfxId, number>();
   const order = Array.from({ length: count }, () => -1);
   const typingSlots = Array.from({ length: count }, () => false);
+  const speechSlots = Array.from({ length: count }, () => false);
   const voices: (VoiceSlot | null)[] = Array.from({ length: count }, () => null);
   const loops = new Map<string, LoopEntry>();
   const loopOn = new Set<string>();
@@ -213,25 +301,28 @@ function makeSlots(
         if (now - lastTypingAt < typingMinIntervalSec) return;
         lastTypingAt = now;
       }
-      const step = id === 'key_press' ? pressStep++ : id === 'key_backspace' ? backStep++ : 0;
-      const { cue, rate, gain } = nextKeyStyle(id, step);
+      const { cue, rate, gain } = nextPlayStyle(id, variantSteps);
       void load('sfx', cue).then((buffer) => {
         if (!buffer || !alive() || ctx.state === 'closed') return;
         const isTyping = TYPING_SFX.has(cue);
+        const isSpeech = SPEECH_SFX.has(cue);
+        if (isSpeech) fadeActiveSpeech(ctx, voices, speechSlots);
         const slot = pickCappedSlot(order, typingSlots, isTyping, typingCap);
         stopVoice(ctx, voices[slot], 0.012);
         const trim = SFX_TRIM[cue];
         const offset = trim && buffer.duration > trim.offset + 0.05 ? trim.offset : 0;
-        const duration = trim && buffer.duration > offset + trim.duration ? trim.duration : undefined;
+        const duration = trim?.duration !== undefined && buffer.duration > offset + trim.duration ? trim.duration : undefined;
         const voice = spawnVoice(ctx, master, buffer, gain, false, offset, duration, rate);
         voices[slot] = voice;
         order[slot] = ++seq;
         typingSlots[slot] = isTyping;
+        speechSlots[slot] = isSpeech;
         voice.node.onended = () => {
           if (voices[slot] !== voice) return;
           voices[slot] = null;
           order[slot] = -1;
           typingSlots[slot] = false;
+          speechSlots[slot] = false;
         };
       });
     },
@@ -264,8 +355,7 @@ function makeSlots(
     },
     stopAll() {
       lastTypingAt = -Infinity;
-      pressStep = 0;
-      backStep = 0;
+      variantSteps.clear();
       loopOn.clear();
       loopPos.clear();
       for (const entry of loops.values()) stopAt(entry.node);
@@ -275,6 +365,7 @@ function makeSlots(
         voices[i] = null;
         order[i] = -1;
         typingSlots[i] = false;
+        speechSlots[i] = false;
       }
     },
   };
@@ -415,6 +506,12 @@ export function createGraph(
     master.gain.value = muted ? 0 : volume;
   };
   let unlocked = typeof window === 'undefined';
+  let prewarmed = false;
+  const prewarm = (): void => {
+    if (prewarmed || closed || ctx.state !== 'running') return;
+    prewarmed = true;
+    for (const id of SPEECH_SFX) void load('sfx', id);
+  };
   const unbindUnlock = (): void => {
     if (unlocked || typeof window === 'undefined') return;
     unlocked = true;
@@ -425,11 +522,15 @@ export function createGraph(
   const resume = (): void => {
     if (ctx.state === 'running') {
       unbindUnlock();
+      prewarm();
       return;
     }
     if (ctx.state === 'suspended') {
       void ctx.resume().then(() => {
-        if (ctx.state === 'running') unbindUnlock();
+        if (ctx.state === 'running') {
+          unbindUnlock();
+          prewarm();
+        }
       }).catch(() => {});
     }
   };

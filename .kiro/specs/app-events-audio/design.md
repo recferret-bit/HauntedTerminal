@@ -22,6 +22,7 @@ Mute and volume stay on the session (`setMuted`, `setVolume`) and on the Esc men
 - `restart`: `arm` or `go`.
 - `manual`: the in-game book opened or closed.
 - `timer`: the battle clock's displayed second, played for 5 down to 1.
+- `dialog`: emitted from `DialogOrchestrator.onOpen` (`{ speaker }`) when a dialog box visually opens on screen so Big Four voice taunts (`taunt_<agent>_{1..10}`), Kiro praise/cheer anti-taunts (`kiro_advice`, `kiro_advice_{2..10}` — randomly picked per speaker with prewarmed buffers and trimmed leading silence), and hero cues play in exact sync with box appearance rather than queue push.
 - `scene`: the music scene below.
 - `laptop`: laptop lab actions (`open`, `close`, `post`, `disk`, `ready`, `trackpad`, `run`, `loop-guard`, `shutdown`, `key`).
 - `loop`: start or stop `rain_loop`, `low_hp_loop`, or `lap_fan`.

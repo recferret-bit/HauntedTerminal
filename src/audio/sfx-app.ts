@@ -1,5 +1,6 @@
 import type { AppEvent } from '../contracts/app-bus.js';
 import type { SfxId } from './catalog.js';
+import { speakerCue } from './sfx-kernel.js';
 
 const KEY: Record<Extract<AppEvent, { kind: 'key' }>['key'], SfxId> = {
   press: 'key_press',
@@ -45,6 +46,7 @@ const CINE: Record<Extract<AppEvent, { kind: 'cine' }>['cue'], SfxId> = {
   zap: 'teleport_zap',
   shatter: 'shatter',
   lightning: 'lightning',
+  boot: 'term_boot',
 };
 
 const LETTER: Record<Extract<AppEvent, { kind: 'letter' }>['letter'], SfxId> = {
@@ -108,6 +110,8 @@ export function appCues(event: AppEvent): SfxId[] {
       return [CINE[event.cue]];
     case 'letter':
       return [LETTER[event.letter]];
+    case 'dialog':
+      return [speakerCue(event.speaker)];
     case 'page':
       return ['page_turn'];
     case 'pointer':

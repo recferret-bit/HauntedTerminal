@@ -21,6 +21,7 @@ const PICKUP: Record<string, SfxId> = {
   ram: 'pickup_ram',
   ssd: 'pickup_ssd',
   lantern: 'pickup_lantern',
+  laptop: 'pickup_ssd',
 };
 
 /** Models whose signature action has `damage: 0` (indirect effects rather than missed hits). */

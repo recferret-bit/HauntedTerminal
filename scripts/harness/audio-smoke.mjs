@@ -560,8 +560,8 @@ try {
 
   await clearSpy();
   await $('window.__stage.stage.devNoStorm = false; window.__stage.stage.stormOn = true; window.__stage.stage.stormIn = 0.05;');
-  await waitCue('sfx/thunder_far', 5000);
-  check((await cues()).includes('sfx/thunder_far'), 'Ambient storm lightning bolt plays sfx/thunder_far');
+  await waitCue('sfx/lightning', 5000);
+  check((await cues()).includes('sfx/lightning'), 'Ambient storm lightning bolt plays sfx/lightning');
 
   // Dev Inspector (F2): toggle btn, #btn-lightning, #btn-heal, #btn-damage (first-hit hp_tier_drop!), all FX buttons [data-ev]
   const toggleCues = await checkClickCue('Dev Inspector toggle button', '#sandbox-toggle-btn', 'sfx/menu_move');
@@ -891,9 +891,9 @@ try {
   check((await cues()).includes('sfx/atk_crack'), 'Level 3 crack lock-pick plays live sfx/atk_crack in Chrome');
   await browser.waitFor('!window.__term.busy()', 5000, 'level 3 unbusy');
   await clearSpy();
-  await $('window.__term.submit("kill -15 2104")');
+  await $('window.__term.submit("kill -15 {pid:crack_l3}")');
   await waitCue('sfx/sigterm', 4000);
-  check((await cues()).includes('sfx/sigterm'), 'Level 3 kill -15 2104 plays live sfx/sigterm');
+  check((await cues()).includes('sfx/sigterm'), 'Level 3 kill -15 {pid:crack_l3} plays live sfx/sigterm');
 
   await browser.open(`${base}/play/chapter-01-kiroween/level-08-task-docker-forge?nointro=1`);
   await browser.waitFor('window.__term && window.__term.phase() === "play" && !window.__term.busy()', 15000, 'level 8 ready');
@@ -911,17 +911,17 @@ try {
   check((await cues()).includes('sfx/atk_ransomware'), 'Level 8 ransomware plays live sfx/atk_ransomware in Chrome');
   await browser.waitFor('!window.__term.busy()', 5000, 'level 8 unbusy before signals');
   await clearSpy();
-  await $('window.__term.submit("kill -STOP 4108")');
+  await $('window.__term.submit("kill -STOP {pid:ransomware_l8}")');
   await waitCue('sfx/sigstop', 4000);
   check((await cues()).includes('sfx/sigstop'), 'Level 8 kill -STOP plays live sfx/sigstop');
   await browser.waitFor('!window.__term.busy()', 5000, 'level 8 unbusy before CONT');
   await clearSpy();
-  await $('window.__term.submit("kill -CONT 4108")');
+  await $('window.__term.submit("kill -CONT {pid:ransomware_l8}")');
   await waitCue('sfx/sigcont', 4000);
   check((await cues()).includes('sfx/sigcont'), 'Level 8 kill -CONT plays live sfx/sigcont');
   await browser.waitFor('!window.__term.busy()', 5000, 'level 8 unbusy before -9');
   await clearSpy();
-  await $('window.__term.submit("kill -9 4108")');
+  await $('window.__term.submit("kill -9 {pid:ransomware_l8}")');
   await waitCue('sfx/kill', 4000);
   const ransomKillCues = await cues();
   check(ransomKillCues.includes('sfx/lightning') && ransomKillCues.includes('sfx/kill'), `Level 8 kill -9 plays lightning + kill (${JSON.stringify(ransomKillCues)})`);
@@ -1003,7 +1003,7 @@ try {
   const againPhase = await $('window.__term.phase()');
   check(againPhase === 'intro', `Stats #outro-again starts intro phase (got ${againPhase})`);
   check(againCues.includes('sfx/level_restart'), `Stats #outro-again plays level_restart (${JSON.stringify(againCues)})`);
-  for (const leaked of ['sfx/title_card', 'sfx/emote_shock', 'sfx/agent_taunt', 'sfx/enemy_spawn', 'music/floor_attic', 'sfx/thunder_far']) {
+  for (const leaked of ['sfx/title_card', 'sfx/emote_shock', 'sfx/taunt_antigravy_1', 'sfx/taunt_clod_1', 'sfx/enemy_spawn', 'music/floor_attic', 'sfx/thunder_far']) {
     check(!againCues.includes(leaked), `Stats #outro-again does not emit premature ${leaked} during intro (${JSON.stringify(againCues)})`);
   }
   await waitCue('music/cine_intro', 8000);

@@ -26,8 +26,22 @@ function fileCues(ev: KernelEvent): SfxId[] {
   return ['chmod'];
 }
 
+const SPEAKER_CUES: Record<string, SfxId> = {
+  vibecoder: 'dialog_hero',
+  antigravy: 'taunt_antigravy_1',
+  codec: 'taunt_codec_1',
+  gork: 'taunt_gork_1',
+  clod: 'taunt_clod_1',
+  kiro: 'kiro_advice',
+};
+
+/** Maps a dialog/taunt speaker id to its voice or notification sample cue. */
+export function speakerCue(speaker: string): SfxId {
+  return SPEAKER_CUES[speaker.toLowerCase()] ?? 'kiro_advice';
+}
+
 function battleCues(ev: KernelEvent): SfxId[] {
-  if (ev.type === 'BATTLE_STARTED') return ['battle_start', 'sting_taunt'];
+  if (ev.type === 'BATTLE_STARTED') return ['battle_start'];
   if (ev.type === 'BATTLE_ENDED') return ev.reason === 'cleared' ? ['battle_won'] : [];
   if (ev.type === 'BATTLE_TURN') {
     const cues: SfxId[] = [ev.actor === 'player' ? 'turn_player' : 'turn_enemy'];
@@ -80,7 +94,7 @@ function actorCues(ev: KernelEvent): SfxId[] {
     if (ev.emote === 'shout') return ['emote_shout', 'lightning'];
     return [];
   }
-  if (ev.type === 'DIALOG_BOX') return [ev.speaker === 'kiro' ? 'kiro_advice' : 'cine_bubble_pop'];
+  if (ev.type === 'DIALOG_BOX') return [speakerCue(ev.speaker)];
   if (ev.type === 'TUTORIAL_STEP') return ev.done ? [] : ['cine_caption_in'];
   if (ev.type === 'KIRO_ACTION') {
     const cue: Record<typeof ev.action, SfxId> = {
@@ -92,7 +106,7 @@ function actorCues(ev: KernelEvent): SfxId[] {
     };
     return ev.action === 'scan' ? ['kiro_scan', 'sting_kiro'] : [cue[ev.action]];
   }
-  if (ev.type === 'AGENT_TAUNT') return [ev.agent === 'kiro' ? 'kiro_advice' : 'agent_taunt'];
+  if (ev.type === 'AGENT_TAUNT') return [speakerCue(ev.agent)];
   return [];
 }
 
@@ -106,11 +120,12 @@ function lifeCues(ev: KernelEvent): SfxId[] {
     const cue = pickupCue(ev.item);
     const cues: SfxId[] = cue ? [cue, 'hero_collect'] : ['hero_collect'];
     if (ev.item === 'lantern') cues.push('sting_lantern', 'lantern_on');
+    if (ev.item === 'laptop') cues.push('item_lit');
     return cues;
   }
   if (ev.type === 'LANTERN_REVEAL') return ['lantern_on', 'reveal', 'sting_lantern'];
   if (ev.type === 'ITEM_CARRIED') return ['pickup_hover'];
-  if (ev.type === 'ITEM_GIVEN') return ['item_lit'];
+  if (ev.type === 'ITEM_GIVEN') return [ev.item === 'terminal' ? 'term_boot' : 'item_lit'];
   if (ev.type === 'ENEMY_STATE') {
     if (ev.state === 'petrified') return ['petrify'];
     if (ev.state === 'revealed') return ['reveal'];

@@ -2,7 +2,17 @@
 
 export const SFX_IDS = [
   'key_press', 'key_enter', 'key_backspace', 'cmd_ok', 'cmd_fail', 'perm_denied', 'cmd_locked', 'tab_complete',
-  'agent_taunt', 'kiro_advice', 'timer_tick', 'timer_expired', 'menu_open', 'menu_close', 'menu_move',
+  'taunt_antigravy_1', 'taunt_antigravy_2', 'taunt_antigravy_3', 'taunt_antigravy_4', 'taunt_antigravy_5',
+  'taunt_antigravy_6', 'taunt_antigravy_7', 'taunt_antigravy_8', 'taunt_antigravy_9', 'taunt_antigravy_10',
+  'taunt_codec_1', 'taunt_codec_2', 'taunt_codec_3', 'taunt_codec_4', 'taunt_codec_5',
+  'taunt_codec_6', 'taunt_codec_7', 'taunt_codec_8', 'taunt_codec_9', 'taunt_codec_10',
+  'taunt_gork_1', 'taunt_gork_2', 'taunt_gork_3', 'taunt_gork_4', 'taunt_gork_5',
+  'taunt_gork_6', 'taunt_gork_7', 'taunt_gork_8', 'taunt_gork_9', 'taunt_gork_10',
+  'taunt_clod_1', 'taunt_clod_2', 'taunt_clod_3', 'taunt_clod_4', 'taunt_clod_5',
+  'taunt_clod_6', 'taunt_clod_7', 'taunt_clod_8', 'taunt_clod_9', 'taunt_clod_10',
+  'kiro_advice', 'kiro_advice_2', 'kiro_advice_3', 'kiro_advice_4', 'kiro_advice_5',
+  'kiro_advice_6', 'kiro_advice_7', 'kiro_advice_8', 'kiro_advice_9', 'kiro_advice_10',
+  'timer_tick', 'timer_expired', 'menu_open', 'menu_close', 'menu_move',
   'achievement', 'item_lit', 'manual_open', 'manual_close', 'title_card', 'level_clear', 'rank_reveal',
   'restart_arm', 'level_restart', 'lightning', 'thunder_close', 'thunder_far', 'rain_loop', 'glass_burst',
   'teleport_zap', 'shatter', 'hop', 'panels_smash', 'symlink_loop', 'page_turn', 'lantern_on', 'reveal',
@@ -20,7 +30,7 @@ export const SFX_IDS = [
   'lap_open', 'lap_close', 'lap_post_beep', 'lap_fan', 'lap_disk', 'lap_ready', 'lap_trackpad', 'lap_run',
   'lap_loop_guard', 'lap_shutdown', 'cine_panel_flash', 'cine_glitch_text', 'cine_pixelate', 'cine_invert',
   'cine_shake', 'cine_sfx_slam', 'cine_caption_in', 'cine_bubble_pop', 'sting_clear', 'sting_kiro',
-  'sting_lantern', 'sting_taunt', 'dialog_hero', 'dialog_npc',
+  'sting_lantern', 'dialog_hero',
   'key_press_2', 'key_press_3', 'key_backspace_2', 'term_boot',
 ] as const;
 
