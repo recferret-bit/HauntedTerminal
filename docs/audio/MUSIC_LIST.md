@@ -1,6 +1,6 @@
 # Music list (ElevenLabs prompts)
 
-Music only: no sound effects, no voice, no lyrics. The sound-effect cues live in `docs/SFX_LIST.md`. This list covers the one Kiroween chapter: the front door, the five floor themes, the Matrix Hub, turn-based fights, the laptop and the Terminal Lab, and the intro and outro cinematics.
+Music only: no sound effects, no voice, no lyrics. The sound-effect cues live in `docs/audio/SFX_LIST.md`. This list covers the one Kiroween chapter: the front door, the five floor themes, the Matrix Hub, turn-based fights, the laptop and the Terminal Lab, and the intro and outro cinematics.
 
 The look the music has to sit under:
 
@@ -37,7 +37,7 @@ Tempos are locked so a floor can crossfade into a fight without a lurch. 144 BPM
 - Prompts must stay at or under 4100 characters. Every prompt in this list is far under that.
 - There is no loop switch on music compose. Rows marked `loop` are written so the last bar is the same figure as the first. After export, crossfade one bar in an editor and listen to the join. If the join pumps or adds a note, regenerate.
 - One-shots end in silence so they trim cleanly and do not ring under the next bed.
-- Generate 2 variations of every row and keep the best. Beds: keep the take whose ending joins its opening. Name the files from the Name column, `floor_crypt_1.mp3` and `floor_crypt_2.mp3`, the same pattern as `docs/SFX_LIST.md`.
+- Generate 2 variations of every row and keep the best. Beds: keep the take whose ending joins its opening. Name the files from the Name column, `floor_crypt_1.mp3` and `floor_crypt_2.mp3`, the same pattern as `docs/audio/SFX_LIST.md`.
 - Output **mp3 at 44.1 kHz, 192 kbps** (`mp3_44100_192`) so a bed and a sound effect share a sample rate. Left on Auto, this model picks 48 kHz.
 - Do not name a commercial game, a film score, or a composer in the prompt. Describe the ensemble. The model is screened for copyrighted material.
 - If a cinematic comes back with the sections in the wrong order, rebuild that one row as a composition plan (`elevenlabs music composition-plan create`, then `music compose` with the plan and no prompt). Three chunks, one per sentence of the timeline, durations matching the prompt. Do not send a prompt and a plan together.

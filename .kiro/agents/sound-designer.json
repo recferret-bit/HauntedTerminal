@@ -1,0 +1,275 @@
+{
+  "name": "sound-designer",
+  "description": "Owns the game's sound: sound effects, music beds and robot voice lines in public/sfx and public/music, their prompt lists (docs/audio) and manifests, and which app event or scene plays which cue (src/audio). Generates with the ElevenLabs CLI only through audio-gen.mjs, under a credit cap.",
+  "prompt": "file://./prompts/sound-designer.md",
+  "model": "auto",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "allowedTools": [],
+  "includeMcpJson": false,
+  "includePowers": false,
+  "resources": [
+    "file://AGENTS.md",
+    "file://.kiro/agents/prompts/team-rules.md",
+    "file://.kiro/steering/product.md",
+    "file://.kiro/steering/tech.md",
+    "file://.kiro/steering/structure.md",
+    "file://.kiro/steering/architecture.md",
+    "file://.kiro/steering/glossary.md",
+    "file://.kiro/steering/spec-first.md",
+    "file://.kiro/specs/app-events-audio/requirements.md",
+    "file://.kiro/specs/audio-agent/requirements.md",
+    "skill://.kiro/skills/sfx-and-music-pipeline/SKILL.md",
+    "skill://.kiro/skills/elevenlabs-shared/SKILL.md",
+    "skill://.kiro/skills/elevenlabs-text-to-sound-effects/SKILL.md",
+    "skill://.kiro/skills/elevenlabs-music/SKILL.md",
+    "skill://.kiro/skills/elevenlabs-text-to-speech/SKILL.md",
+    "skill://.kiro/skills/elevenlabs-voices/SKILL.md",
+    "skill://.kiro/skills/elevenlabs-audio-effects/SKILL.md",
+    "skill://.kiro/skills/elevenlabs-usage/SKILL.md",
+    "skill://.kiro/skills/elevenlabs-models/SKILL.md"
+  ],
+  "hooks": [
+    {
+      "name": "agent-baseline",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/agent-scope.mjs sound-designer --snapshot"
+      }
+    },
+    {
+      "name": "agent-shell-guard",
+      "trigger": "PreToolUse",
+      "matcher": "^execute_bash$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/agent-shell-guard.mjs sound-designer"
+      }
+    },
+    {
+      "name": "agent-scope",
+      "trigger": "Stop",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/agent-scope.mjs sound-designer"
+      }
+    }
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_write",
+        "match": [
+          "**"
+        ],
+        "exclude": [
+          "public/sfx/**",
+          "public/music/**",
+          "docs/audio/*.md",
+          "src/audio/**",
+          "scripts/harness/{audio-unit,audio-smoke}.mjs"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "public/sfx/**",
+          "public/music/**",
+          "docs/audio/*.md",
+          "src/audio/**",
+          "scripts/harness/{audio-unit,audio-smoke}.mjs"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "src/chapters/generated/**",
+          "src/cinematic/generated/**",
+          "chapters/*/story/out/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "docs/qa/baselines/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_read",
+        "match": [
+          "**/.env",
+          "**/.env.*",
+          "**/*.pem",
+          "**/*.key",
+          "~/.kiro/crew/.env",
+          "~/.kiro/crew/auth*",
+          "~/.ssh/**",
+          "~/.aws/**",
+          "~/Library/Preferences/netlify/**",
+          "~/.config/gh/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "pwd",
+          "ls",
+          "ls *",
+          "cat *",
+          "head *",
+          "tail *",
+          "wc *",
+          "grep *",
+          "which *",
+          "echo *",
+          "cd *",
+          "sleep *",
+          "git status",
+          "git status *",
+          "git log",
+          "git log *",
+          "git show *",
+          "git branch --show-current",
+          "git rev-parse *",
+          "git ls-files",
+          "git ls-files *",
+          "git diff",
+          "git diff --stat*",
+          "git diff --name-only*",
+          "git diff --cached --stat*",
+          "git diff -- *",
+          "diff scripts/harness/out/*",
+          "npm run quality",
+          "npm run quality:*",
+          "npm run test",
+          "npm run build",
+          "npm start",
+          "npm stop",
+          "npm restart",
+          "npm run status",
+          "STACK_PORT=5174 npm start",
+          "STACK_PORT=5174 npm stop",
+          "STACK_PORT=5174 npm run status",
+          "node scripts/*",
+          "node .kiro/skills/*",
+          "npx tsc --noEmit"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*"
+        ],
+        "exclude": [
+          "pwd",
+          "ls",
+          "ls *",
+          "cat *",
+          "head *",
+          "tail *",
+          "wc *",
+          "grep *",
+          "which *",
+          "echo *",
+          "cd *",
+          "sleep *",
+          "git status",
+          "git status *",
+          "git log",
+          "git log *",
+          "git show *",
+          "git branch --show-current",
+          "git rev-parse *",
+          "git ls-files",
+          "git ls-files *",
+          "git diff",
+          "git diff --stat*",
+          "git diff --name-only*",
+          "git diff --cached --stat*",
+          "git diff -- *",
+          "diff scripts/harness/out/*",
+          "npm run quality",
+          "npm run quality:*",
+          "npm run test",
+          "npm run build",
+          "npm start",
+          "npm stop",
+          "npm restart",
+          "npm run status",
+          "STACK_PORT=5174 npm start",
+          "STACK_PORT=5174 npm stop",
+          "STACK_PORT=5174 npm run status",
+          "node scripts/*",
+          "node .kiro/skills/*",
+          "npx tsc --noEmit"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*--output*",
+          "git reset*",
+          "git checkout*",
+          "git stash*",
+          "git clean*",
+          "git branch -D*",
+          "rm *",
+          "sudo *",
+          "npm install*",
+          "npm i *",
+          "npm uninstall*",
+          "npm publish*",
+          "*visual-audit*--update*",
+          "*docs/qa/baselines*",
+          "cp *..*",
+          "node *..*",
+          "cd *..*",
+          "node *.kiro/powers*",
+          "cd *.kiro/powers*",
+          "*$(*",
+          "*`*",
+          "node *ship.mjs*",
+          "node *release.mjs*",
+          "node *tauri-local.mjs*",
+          "node *build-tauri-steam*",
+          "node *agents-install*",
+          "node *mcp-probe*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*.env*",
+          "*.pem*",
+          "*/.ssh/*",
+          "*/.aws/*",
+          "*.kiro/crew/.env*",
+          "*netlify/config.json*",
+          "*/.config/gh/*",
+          "*.netrc*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "mcp",
+        "match": [
+          "*"
+        ],
+        "effect": "deny"
+      }
+    ]
+  },
+  "welcomeMessage": "sound-designer: which sound effect, music bed or voice line should I write, generate or map?"
+}
