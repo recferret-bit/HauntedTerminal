@@ -28,7 +28,6 @@
     "file://.kiro/steering/architecture.md",
     "file://.kiro/steering/glossary.md",
     "file://.kiro/steering/spec-first.md",
-    "file://.kiro/specs/agent-team/requirements.md",
     "skill://.kiro/skills/feature-spec-grill/SKILL.md"
   ],
   "hooks": [

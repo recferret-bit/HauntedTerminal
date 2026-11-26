@@ -119,9 +119,10 @@ const TEAM = {
   'lead-dev': {
     description: 'Lead game developer and orchestrator of the Out Of Credits team. Takes any tuning request, routes each part to the owning designer or the artist, has qa check every change, and commits finished work on an agent/<task> branch. Start here; also the member that Kiro Crew runs.',
     writes: ['.kiro/specs/**', '.kiro/steering/**', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'docs/*.md', 'docs/media/**', 'docs/reviews/**', 'scripts/harness/property-tests.mjs', 'scripts/harness/props/{kit,arbitraries}.mjs', 'src/contracts/**', 'src/editor-core/**', 'src/play/**', 'src/pages/**', 'src/hub/**', 'src/styles/**', 'src/sandbox/**', 'src/main.ts', 'src/style.css', 'src/game/{session,session-shell,play,runtime,types,floors,sfx,view,view-layouts}.ts', 'scripts/harness/{hub-unit,classic-unit,architecture-unit}.mjs', ...VISUAL_AUDIT, ...AUDIO_GEN, ...SOCIAL_MEDIA],
-    // Not skills-map (AGENTS.md carries the same skill map) nor the agent-team design.md (read it when needed): the
-    // resources must keep >= 8,000 of the CLI's 100,000 characters free.
-    resources: ['file://.kiro/specs/agent-team/requirements.md'],
+    // Nothing beyond the shared base: the skill map is in AGENTS.md, and the agent-team spec (12,600 characters) is read
+    // on demand (its prompt says when). The lead carries the most context of the team; check-agents.mjs keeps at least
+    // LEAD_HEADROOM of the CLI's 100,000 characters free for it, so the next doc edit cannot silently push it over.
+    resources: [],
     skills: ['feature-spec-grill'],
     subagents: ['terminal-designer', 'laptop-designer', 'comix-designer', 'chapters-designer', 'artist', 'sound-designer', 'smm-agent', 'qa'],
     gitWrites: true,

@@ -23,6 +23,8 @@ const MAX_CHARS = 100_000;
 const MAX_FILE_CHARS = 50_000;
 /** A NOTE (not a failure) when an agent's file:// total is this close to MAX_CHARS. */
 const NEAR_CHARS = 5_000;
+/** The lead loads the most shared text (AGENTS.md, steering); a failure when it has less than this left (audio-agent spec). */
+const LEAD_HEADROOM = 15_000;
 const notes = [];
 /** Paths that must have exactly one owner: source, content, assets, property suites, docs and the files agents keep current. */
 const OWNED = /^(src\/|chapters\/|comix\/|public\/assets\/|public\/(?:music|sfx)\/|social\/(?:[^/]+\.md$|campaigns\/|research\/|media\/README\.md$|media\/specs\/)|scripts\/harness\/(?:audio|social)-[^/]+\.mjs$|scripts\/harness\/lib\/(?:audio-gen|social)-[^/]+\.mjs$|scripts\/harness\/props\/|scripts\/harness\/terminal-lab\/|scripts\/harness\/(?:battle-unit|manual-unit|manual-smoke|audio-unit|audio-smoke|hub-unit|classic-unit|architecture-unit)\.mjs$|scripts\/harness\/property-tests\.mjs$|scripts\/harness\/visual-audit\.mjs$|scripts\/harness\/lib\/visual-[^/]+\.mjs$|scripts\/harness\/visual\/|docs\/|\.kiro\/specs\/|\.kiro\/steering\/|(AGENTS|CLAUDE|README)\.md$)/;
@@ -79,6 +81,7 @@ for (const { file, name, agent } of agents) {
   }
   if (files > MAX_FILES) problems.push(`${file}: ${files} file:// resources (limit ${MAX_FILES})`);
   if (chars > MAX_CHARS) problems.push(`${file}: ${chars} characters of file:// resources (limit ${MAX_CHARS})`);
+  else if (name === LEAD && chars > MAX_CHARS - LEAD_HEADROOM) problems.push(`${file}: ${chars} characters of file:// resources; ${LEAD} must keep ${LEAD_HEADROOM} of ${MAX_CHARS} free (move a doc to read-on-demand, or trim AGENTS.md or steering)`);
   else if (chars > MAX_CHARS - NEAR_CHARS) notes.push(`${file}: ${chars} characters of file:// resources, ${MAX_CHARS - chars} left of ${MAX_CHARS}`);
   const hooks = Array.isArray(agent.hooks) ? agent.hooks : [];
   const hookCmd = (trigger) => hooks.filter((h) => h.trigger === trigger).map((h) => h.action?.command ?? '').join(' ');

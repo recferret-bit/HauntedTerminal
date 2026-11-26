@@ -62,3 +62,9 @@ node scripts/harness/visual-audit.mjs --selftest
 ```
 
 Use these `node` forms: `npm run desktop:*` is not on your shell allow-list. The skill map you route by is in `AGENTS.md` ("Skill Categories & Pipelines"); `.kiro/steering/skills-map.md` is not loaded, read it when you need the detail.
+
+## Read on demand (not loaded, to keep your context small)
+
+- `.kiro/specs/agent-team/requirements.md` and `design.md`: why the team, its fences and hooks are the way they are. Read them before you change how the team works, or when an agent's permission surprises you.
+- `.kiro/specs/<name>/` of the feature a request touches, before you split it.
+- The steering scoped to an area (`asset-pcg-rules`, `level-gen-rules`, `declarative-*`, `*-editor-rules`, `terminal-lab-rules`) before you write a brief for it.
