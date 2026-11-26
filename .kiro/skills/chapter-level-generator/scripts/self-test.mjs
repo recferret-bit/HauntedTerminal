@@ -381,7 +381,6 @@ await withProcgen(async (_p, vite) => {
     'Running ls -la on Level 2 triggers Vibecoder + Kiro.d reaction dialogs warning about Level 3',
   );
   assert.equal(kiroChap.exec('ls -l').code, 0, 'ls -l unlocks immediately after grabbing the Tube Transistor');
-  kiroChap.exec("sed -i 's/0000/11434/' ollama_bus.conf");
   const l2RamCollect = kiroChap.exec('mv ram_16gb.dimm ~');
   assert.equal(
     l2RamCollect.events.some((e) => isBox(e, 'kiro') && /MAXIMUM HEALTH|\+10 Max HP/i.test(e.text)),

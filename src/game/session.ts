@@ -21,6 +21,7 @@ import { runLine, type Host, type Step, type Word } from './shell.js';
 import { createAppBus, publishKernel, type AppBus } from '../contracts/app-bus.js';
 import { createSfx, type Sfx } from './sfx.js';
 import { absPath } from './tree.js';
+import { createOuch } from './ouch.js';
 import { finishTabCompletion } from './unix-applets.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from './types.js';
 import { buildRoom } from './view.js';
@@ -73,6 +74,7 @@ class Game implements LabSession, Host, ClassicShellHost {
   readonly kiro = new KiroCompanion();
   readonly agents = new AgentDirector(this.kiro);
   readonly lab: LabConfig | null;
+  readonly ouch = createOuch();
   deadNow = false;
   /** Set by a confirmed `restart-level`: the confirming line is not answered by an enemy turn. */
   private reloadedNow = false;

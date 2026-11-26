@@ -103,6 +103,13 @@
 .st-pips { display: flex; gap: 2px; padding: 2px; background: var(--ink); border: 2px solid #f4f1ea; }
 .st-pips i { width: max(6px, calc(var(--u) * 0.11)); height: max(7px, calc(var(--u) * 0.12)); background: #3a2a38; }
 .st-pips i.on { background: #ef476f; box-shadow: inset 2px 2px 0 #ffd6de; }
+/* Attack countdown: a red skull and the actions left before the hit; solid when it lands after the next action. */
+.st-skull { display: flex; align-items: center; gap: 3px; padding: 1px 6px; background: var(--ink); border: 2px solid #f4f1ea; color: #ef476f; font-weight: 700; line-height: 1; font-size: max(13px, calc(var(--u) * 0.26)); animation: st-skull-pulse 0.5s steps(1) infinite; }
+.st-skull i { font-style: normal; }
+.st-skull b { color: #f4f1ea; font-family: "IBM Plex Mono", monospace; }
+.st-skull.hot { background: #e8002b; color: #f4f1ea; border-color: var(--ink); animation: none; }
+@keyframes st-skull-pulse { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .st-skull { animation: none; } }
 .st-plate { position: relative; width: max(64px, calc(var(--u) * 1.15)); }
 .st-plate img { display: block; width: 100%; image-rendering: pixelated; }
 .st-plate .pid { position: absolute; left: 55%; top: 18%; width: 39%; height: 52%; display: flex; align-items: center; font-weight: 700; font-size: max(10px, calc(var(--u) * 0.2)); color: var(--ink); background: #f4f1ea; }

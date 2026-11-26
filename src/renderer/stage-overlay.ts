@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { el as overlayNode } from '../contracts/dom.js';
+import { isReducedMotionPreferred, mountWordReveal, planWordReveal } from '../contracts/word-reveal.js';
 import { TextureCatalog, ZONES, type FxPreset, type ZoneId } from '../procgen/index.js';
 import { fitBalloonText, fitWordWidth, imgNode, stepped, type Item, type PxRect } from './stage-fit.js';
 import { buildCaptionBox, buildStageCard, buildStageTearText, type CardHost } from './stage-overlay-cards.js';
@@ -31,6 +32,8 @@ export interface BadgeState {
   visible: boolean;
   pips: { lit: number; cells: number } | null;
   plate: { pid: number; name?: string } | null;
+  /** Attack countdown skull: actions until the hit (0 = told, `!`), or null. */
+  strike: number | null;
   /** World point of the door's lock socket when it is locked. */
   lock: THREE.Vector3 | null;
 }
@@ -42,6 +45,8 @@ interface BadgeDom {
   pipKey: string;
   plate: HTMLDivElement | null;
   plateKey: string;
+  skull: HTMLDivElement | null;
+  skullKey: string;
   lock: HTMLDivElement | null;
 }
 
@@ -354,14 +359,28 @@ export class StageOverlay {
   }
 
   /** A speech balloon (BubbleStyle) anchored over a world point; stays until `drop()` or `life`. */
-  balloon(speaker: string, text: string, style: string, at: () => THREE.Vector3 | null, life = 60000): { drop(): void } {
+  balloon(
+    speaker: string,
+    text: string,
+    style: string,
+    at: () => THREE.Vector3 | null,
+    life = 60000,
+    opts: { instant?: boolean } = {},
+  ): { drop(): void } {
     const cls = ['COMIX_CLASSIC', 'JAGGED_SCREAM', 'GHOST_WHISPER', 'KERNEL_GLITCH'].includes(style) ? style : 'COMIX_CLASSIC';
-    const el = overlayNode('div', `st-balloon ${cls}`, speaker ? [overlayNode('b', '', [speaker]), text] : [text]);
-    const it = this.add(el, life, {
+    const body = overlayNode('span', 'st-balloon-text');
+    const reveal = mountWordReveal(body, text);
+    const instant = opts.instant ?? isReducedMotionPreferred();
+    const plan = planWordReveal(reveal.wordCount, life, { instant });
+    if (plan.stepMs <= 0) reveal.showAll();
+    else reveal.showWords(1);
+    const el = overlayNode('div', `st-balloon ${cls}`, speaker ? [overlayNode('b', '', [speaker]), body] : [body]);
+    const it = this.add(el, plan.holdMs, {
       world: at,
       clamp: true,
       fit: true,
       render: (_t, ms) => {
+        if (plan.stepMs > 0) reveal.atMs(ms, plan.stepMs);
         const n = Math.floor(ms / 83);
         const pop = n === 0 ? 0.6 : n === 1 ? 1.08 : 1;
         const shake = cls === 'JAGGED_SCREAM' ? (n % 2 ? 1.5 : -1.5) : cls === 'KERNEL_GLITCH' && n % 9 === 0 ? 4 : 0;
@@ -404,7 +423,7 @@ export class StageOverlay {
   /** HP pips, PID plate and padlock for one actor; diffed by key, re-placed every step. */
   badge(id: string, s: BadgeState): void {
     let d = this.badges.get(id);
-    const any = s.visible && (s.pips || s.plate || s.lock);
+    const any = s.visible && (s.pips || s.plate || s.lock || s.strike !== null);
     if (!any) {
       if (d) {
         d.wrap.style.display = 'none';
@@ -422,7 +441,7 @@ export class StageOverlay {
       stack.className = 'st-badges';
       wrap.appendChild(stack);
       this.badgeLayer.appendChild(wrap);
-      d = { wrap, stack, pips: null, pipKey: '', plate: null, plateKey: '', lock: null };
+      d = { wrap, stack, pips: null, pipKey: '', plate: null, plateKey: '', skull: null, skullKey: '', lock: null };
       this.badges.set(id, d);
     }
     d.wrap.style.display = '';
@@ -458,6 +477,17 @@ export class StageOverlay {
         );
         d.stack.appendChild(p);
         d.pips = p;
+      }
+    }
+    const skullKey = s.strike === null ? '' : String(s.strike);
+    if (skullKey !== d.skullKey) {
+      d.skullKey = skullKey;
+      d.skull?.remove();
+      d.skull = null;
+      if (s.strike !== null) {
+        // Solid red when the hit lands after the next action (told, or 1 left); a stepped pulse above that.
+        d.skull = overlayNode('div', `st-skull${s.strike <= 1 ? ' hot' : ''}`, [overlayNode('i', '', ['\u2620']), overlayNode('b', '', [s.strike <= 0 ? '!' : String(s.strike)])]);
+        d.stack.appendChild(d.skull);
       }
     }
     if (s.lock) {

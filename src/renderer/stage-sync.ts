@@ -129,6 +129,7 @@ export function applyActor(stage: ComicStage, a: StageActor, ra: RoomActor, inde
   a.label = ra.label;
   a.target = ra.target;
   if (ra.pid !== undefined) a.pid = ra.pid;
+  a.strikeIn = ra.strikeIn;
   if (ra.maxHp !== undefined) a.maxHp = ra.maxHp;
   if (ra.hp !== undefined && ra.hp !== a.hp) {
     if (a.kind === 'vibecoder' && a.hp !== undefined && ra.hp > a.hp) stage.heroOuchUntil = 0;
@@ -210,13 +211,14 @@ export function syncOverlays(stage: ComicStage): void {
   const procs = new Map(stage.xrayProcs.map((p) => [p.pid, p]));
   const lockedLabels = lockedNames(stage.view);
   for (const a of stage.actors.values()) {
-    const b = a as StageActor & { badge?: { pips: { lit: number; cells: number } | null; plate: { pid: number; name?: string } | null; locked: boolean } };
+    const b = a as StageActor & { badge?: { pips: { lit: number; cells: number } | null; plate: { pid: number; name?: string } | null; locked: boolean; strike: number | null } };
     const p = a.pid !== undefined ? procs.get(a.pid) : undefined;
     const plateOn = stage.xrayOn && a.pid !== undefined && !a.exiting && !a.dead && a.rest !== 'hidden' && (a.kind === 'enemy' || a.kind === 'boss' || p !== undefined);
     b.badge = {
       pips: pipState(a),
       plate: plateOn ? { pid: a.pid!, name: p ? `${p.name} ${Math.round(p.cpu)}%` : a.target ?? a.label } : null,
       locked: b.badge?.locked ?? false,
+      strike: a.strikeIn !== undefined && a.rest !== 'frozen' && a.rest !== 'petrified' && a.rest !== 'hidden' ? a.strikeIn : null,
     };
     if (a.kind === 'door') {
       const locked = doorLocked(a, lockedLabels);

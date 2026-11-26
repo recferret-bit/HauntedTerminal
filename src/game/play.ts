@@ -6,6 +6,7 @@ import type { Inventory } from './inventory.js';
 import type { FloorId } from './types.js';
 import type { KiroCompanion } from './kiro.js';
 import type { Sfx } from './sfx.js';
+import type { OuchState } from './ouch.js';
 import type { Step } from './shell.js';
 import type { VNode } from './tree.js';
 
@@ -72,6 +73,7 @@ export interface Play {
   readonly agents: AgentDirector;
   readonly host: WorldHost;
   readonly lab: LabConfig | null;
+  readonly ouch: OuchState;
   run: Run;
   deadNow: boolean;
   deathText: string;

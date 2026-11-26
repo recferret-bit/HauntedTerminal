@@ -4,6 +4,7 @@ import { createBattle, type BattleHold, type BattleState } from '../game/battle.
 import type { PickupType } from '../game/bestiary.js';
 import type { WorldHost } from '../game/entities.js';
 import { starterInventory } from '../game/inventory.js';
+import { createOuch, type OuchState } from '../game/ouch.js';
 import { KiroCompanion } from '../game/kiro.js';
 import type { Session } from '../game/session.js';
 import type { Host, Step, Word } from '../game/shell.js';
@@ -56,6 +57,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   readonly pidRandom: () => number;
   readonly host: WorldHost;
   readonly lab: LabConfig | null;
+  readonly ouch: OuchState;
 
   levelIdx = 0;
   lastCmdStartedCrack = false;
@@ -100,6 +102,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
     }
     this.pack = pack;
     this.chaosSeed = options.chaosSeed || pack.manifest.id;
+    this.ouch = createOuch(options.pidSeed === undefined ? Math.random : seededRandom(options.pidSeed + 1));
     this.pidRandom = options.pidSeed === undefined ? Math.random : seededRandom(options.pidSeed);
     this.preview = Boolean(options.preview);
     this.levels = pack.levels;

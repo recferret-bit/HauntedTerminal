@@ -1,5 +1,6 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { endBattle } from '../game/battle.js';
+import { rollOuch } from '../game/ouch.js';
 import { SSD_PER_BACKUP, maxHpFor } from '../game/bestiary.js';
 import { World } from '../game/entities.js';
 import type { EnemySpawn, PickupSpawn } from '../game/floors.js';
@@ -215,6 +216,7 @@ export function hurt(g: ChapterState, amount: number, source: string, events: Ke
     amount: mitigated,
     hpRemaining: g.hp,
     sourceName: source,
+    ouch: rollOuch(g.ouch, g.hp),
   });
 
   if (g.hp > 0) return '';

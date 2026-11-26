@@ -49,6 +49,8 @@ export interface StageActor {
   hp?: number;
   maxHp?: number;
   displayHp?: number;
+  /** Attack countdown from the view (`RoomActor.strikeIn`). */
+  strikeIn?: number;
   pid?: number;
   label?: string;
   target?: string;

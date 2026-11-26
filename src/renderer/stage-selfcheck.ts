@@ -81,7 +81,7 @@ export function allEvents(): KernelEvent[] {
     { type: 'VIBECODER_ACTION', action: 'cast', command: 'kill -15 667', targetEntityId: 'worm-1' },
     { type: 'ENEMY_HIT', entityId: 'worm-1', model: 'malware.worm', damage: 1, hpRemaining: 1, command: 'kill -15 667' },
     { type: 'ENEMY_ATTACK', entityId: 'zombie-1', model: 'malware.zombie', damage: 10, attack: 'swipe' },
-    { type: 'PLAYER_DAMAGED', amount: 10, hpRemaining: 70, sourceName: 'zombie' },
+    { type: 'PLAYER_DAMAGED', amount: 10, hpRemaining: 70, sourceName: 'zombie', ouch: 'SEGFAULT!' },
     { type: 'ROOM_TRANSITION', fromDir: 1, toDir: 2, toPath: '/selfcheck/furnace', upwardPanelsSmashed: 0, viaSymlinkLoop: false },
     { type: 'ROOM_TRANSITION', fromDir: 1, toDir: 2, toPath: '/selfcheck/furnace', upwardPanelsSmashed: 3, viaSymlinkLoop: false },
     { type: 'ROOM_TRANSITION', fromDir: 1, toDir: 2, toPath: '/selfcheck/furnace', upwardPanelsSmashed: 0, viaSymlinkLoop: true },

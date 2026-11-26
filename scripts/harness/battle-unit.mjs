@@ -247,5 +247,34 @@ await withProcgen(async (_p, vite) => {
     assert.doesNotMatch(s.exec('help').output, /tactical/i);
   });
 
+  await test('countdown: strikeIn is the number of actions until the hit lands (0 = told = the next action), and it is absent for a frozen enemy and the intro', () => {
+    const BUG = { id: 'b1', type: 'bug', path: '/arena/bug.py', pid: 4003 };
+    for (const enemy of [TROJAN, VIRUS, BUG]) {
+      const s = session([enemy]);
+      s.exec('ls');
+      const intro = s.snapshot().room.actors.find((a) => a.id === enemy.id);
+      assert.equal(intro?.strikeIn, undefined, `${enemy.type}: no badge during the intro`);
+      assert.ok(s.skipBattleIntro());
+      const shown = [];
+      const hits = [];
+      for (let i = 1; i <= 12; i++) {
+        const r = s.exec('pwd');
+        if (of(r.events, 'PLAYER_DAMAGED').length) hits.push(i);
+        shown.push(r.snapshot.room.actors.find((a) => a.id === enemy.id)?.strikeIn);
+      }
+      assert.ok(hits.length >= 2, `${enemy.type} struck at least twice (${hits})`);
+      shown.forEach((n, i) => {
+        const next = hits.find((h) => h > i + 1);
+        if (next === undefined) return;
+        const left = next - (i + 1);
+        assert.equal(n, left === 1 ? 0 : left, `${enemy.type}: after action ${i + 1} the badge says ${n}, the hit lands ${left} actions later (hits ${hits}); 0 means 1`);
+      });
+    }
+    const s = fighting([VIRUS]);
+    const pid = s.snapshot().room.actors.find((a) => a.id === 'v1').pid;
+    const r = s.exec(`kill -STOP ${pid}`);
+    assert.equal(r.snapshot.room.actors.find((a) => a.id === 'v1')?.strikeIn, undefined, 'frozen: no badge');
+  });
+
   console.log(`battle-unit: ${count()} checks passed`);
 });

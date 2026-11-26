@@ -818,27 +818,20 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "roomSeed": 22,
       "mechanic": "terminal",
       "exitDir": "/srv/kiroween/cache_vault/gpu_alley",
-      "summary": "Anti-Gravy's visible gargoyle minion (`gravy_sentry.bin`) clutches your Tube Transistor! Read `cat vault_notes.txt`, petrify `gravy_sentry.bin` (`chmod -x`) so the Tube Transistor lands on the ground, grab it (`mv tube_transistor ~`) to unlock `ls -la`, fix `ollama_bus.conf`, and loot RAM + SSD!",
+      "summary": "Anti-Gravy's visible gargoyle minion (`gravy_sentry.bin`) clutches your Tube Transistor! Read `cat vault_notes.txt`, petrify `gravy_sentry.bin` (`chmod -x`) so the Tube Transistor lands on the ground, grab it (`mv tube_transistor ~`) to unlock `ls -la`, and loot RAM + SSD!",
       "files": [
         {
           "path": "/srv/kiroween/cache_vault/vault_notes.txt",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. TEST `ls -la`: Try `ls -la` once you hold the Tube Transistor to spot hidden dotfiles before entering GPU Alley.\n4. BUS & HARDWARE: Restore port `11434` in `ollama_bus.conf` (`sed -i 's/0000/11434/' ollama_bus.conf`), pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n"
+          "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. TEST `ls -la`: Try `ls -la` once you hold the Tube Transistor to spot hidden dotfiles before entering GPU Alley.\n4. HARDWARE: Pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n"
         },
         {
           "path": "/srv/kiroween/cache_vault/gravy_sentry.bin",
           "kind": "file",
           "mode": 493,
           "content": "ANTI_GRAVY_MINION_GARGOYLE_TROJAN\n"
-        },
-        {
-          "path": "/srv/kiroween/cache_vault/ollama_bus.conf",
-          "kind": "file",
-          "mode": 420,
-          "questCritical": true,
-          "content": "# Local Open-Weights Model Bus\nLOCAL_MODEL_HOST=127.0.0.1\nLOCAL_MODEL_PORT=0000\n"
         },
         {
           "path": "/srv/kiroween/cache_vault/ram_16gb.dimm",
@@ -898,14 +891,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           }
         }
       ],
-      "patches": [
-        {
-          "file": "ollama_bus.conf",
-          "label": "Fix LOCAL_MODEL_PORT=11434",
-          "find": "LOCAL_MODEL_PORT=0000",
-          "replace": "LOCAL_MODEL_PORT=11434"
-        }
-      ],
+      "patches": [],
       "props": [
         {
           "id": "l2_ram_bank",
@@ -955,12 +941,6 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "description": "Grab the fallen Tube Transistor off the ground (`mv tube_transistor ~`)"
         },
         {
-          "kind": "file_contains",
-          "path": "/srv/kiroween/cache_vault/ollama_bus.conf",
-          "pattern": "LOCAL_MODEL_PORT=11434",
-          "description": "Restore LOCAL_MODEL_PORT=11434 in `ollama_bus.conf` (`sed -i 's/0000/11434/' ollama_bus.conf`)"
-        },
-        {
           "kind": "file_absent",
           "path": "/srv/kiroween/cache_vault/ram_16gb.dimm",
           "description": "Collect the 16GB RAM stick (`mv ram_16gb.dimm ~`)"
@@ -975,7 +955,6 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "cat vault_notes.txt",
         "chmod -x gravy_sentry.bin",
         "mv tube_transistor ~",
-        "sed -i 's/0000/11434/' ollama_bus.conf",
         "mv ram_16gb.dimm ~",
         "mv ssd_256gb.img ~",
         "cd gpu_alley"
@@ -3843,11 +3822,11 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = {
         "completion": "Kiro.d: \"Awesome! You mastered ls, mv, cat, ps, and kill! Head into Cache Vault next—watch out, Big Four minions will attack you in turn-based battle!\""
       },
       "level-02-task-ram-heist": {
-        "banner": "LEVEL 02 // CACHE VAULT: Petrify gravy_sentry.bin so the Tube Transistor drops to the ground (`mv tube_transistor ~`), try `ls -la`, fix ollama_bus.conf & loot RAM+SSD!",
+        "banner": "LEVEL 02 // CACHE VAULT: Petrify gravy_sentry.bin so the Tube Transistor drops to the ground (`mv tube_transistor ~`), try `ls -la`, loot RAM+SSD!",
         "hankRungs": [
           "Kiro.d: \"Read `cat vault_notes.txt` first, then petrify `gravy_sentry.bin` with `chmod -x gravy_sentry.bin` so the Tube Transistor lands on the ground!\"",
-          "Kiro.d: \"Grab the fallen Tube Transistor with `mv tube_transistor ~` (try `ls -la` right away!), patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` with `sed -i`, then pocket `ram_16gb.dimm` and `ssd_256gb.img`!\"",
-          "Kiro.d: \"Run `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `mv tube_transistor ~`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv ssd_256gb.img ~`, then `cd gpu_alley`!\""
+          "Kiro.d: \"Grab the fallen Tube Transistor with `mv tube_transistor ~` (try `ls -la` right away!), then pocket `ram_16gb.dimm` and `ssd_256gb.img`!\"",
+          "Kiro.d: \"Run `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `mv tube_transistor ~`, `mv ram_16gb.dimm ~`, `mv ssd_256gb.img ~`, then `cd gpu_alley`!\""
         ],
         "agentTaunt": "ANTI-GRAVY: \"HAHAHA! My gargoyle minion gravy_sentry.bin has your precious Tube Transistor—eat red Matrix fireballs, Vibecoder!\"",
         "completion": "Cache Vault cleared! You grabbed the Tube Transistor off the ground (unlocking `ls -la` and all `ls` flags) plus RAM and a 256GB SSD disk—ready for GPU Alley!"

@@ -36,6 +36,8 @@ export interface RoomActor {
   hidden: boolean;
   petrified?: boolean;
   frozen?: boolean;
+  /** Enemy attack countdown: player actions until its hit lands (0 = told, it strikes after the next action). Set only in a battle's player phase. */
+  strikeIn?: number;
   alpha?: number;
   label?: string;
 }

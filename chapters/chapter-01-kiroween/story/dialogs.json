@@ -22,11 +22,11 @@
       "completion": "Kiro.d: \"Awesome! You mastered ls, mv, cat, ps, and kill! Head into Cache Vault next—watch out, Big Four minions will attack you in turn-based battle!\""
     },
     "level-02-task-ram-heist": {
-      "banner": "LEVEL 02 // CACHE VAULT: Petrify gravy_sentry.bin so the Tube Transistor drops to the ground (`mv tube_transistor ~`), try `ls -la`, fix ollama_bus.conf & loot RAM+SSD!",
+      "banner": "LEVEL 02 // CACHE VAULT: Petrify gravy_sentry.bin so the Tube Transistor drops to the ground (`mv tube_transistor ~`), try `ls -la`, loot RAM+SSD!",
       "hankRungs": [
         "Kiro.d: \"Read `cat vault_notes.txt` first, then petrify `gravy_sentry.bin` with `chmod -x gravy_sentry.bin` so the Tube Transistor lands on the ground!\"",
-        "Kiro.d: \"Grab the fallen Tube Transistor with `mv tube_transistor ~` (try `ls -la` right away!), patch `LOCAL_MODEL_PORT=11434` in `ollama_bus.conf` with `sed -i`, then pocket `ram_16gb.dimm` and `ssd_256gb.img`!\"",
-        "Kiro.d: \"Run `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `mv tube_transistor ~`, `sed -i 's/0000/11434/' ollama_bus.conf`, `mv ram_16gb.dimm ~`, `mv ssd_256gb.img ~`, then `cd gpu_alley`!\""
+        "Kiro.d: \"Grab the fallen Tube Transistor with `mv tube_transistor ~` (try `ls -la` right away!), then pocket `ram_16gb.dimm` and `ssd_256gb.img`!\"",
+        "Kiro.d: \"Run `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `mv tube_transistor ~`, `mv ram_16gb.dimm ~`, `mv ssd_256gb.img ~`, then `cd gpu_alley`!\""
       ],
       "agentTaunt": "ANTI-GRAVY: \"HAHAHA! My gargoyle minion gravy_sentry.bin has your precious Tube Transistor—eat red Matrix fireballs, Vibecoder!\"",
       "completion": "Cache Vault cleared! You grabbed the Tube Transistor off the ground (unlocking `ls -la` and all `ls` flags) plus RAM and a 256GB SSD disk—ready for GPU Alley!"

@@ -8,6 +8,7 @@ import { ensureLabDirChain, placeLabFile } from './lab-support.js';
 import { freshLabLevelState } from './lab-types.js';
 import { COMMANDS, manualTopics, mapTopics } from './manual.js';
 import { KIRO_CORE_ORDER } from './kiro.js';
+import { rollOuch } from './ouch.js';
 import {
   ACTION_RANK, LOAD_BEARING, READERS, WRITERS, globReg, out, type HeroAction, type Play,
 } from './play.js';
@@ -197,7 +198,7 @@ export function hurt(g: Play, amount: number, source: string, events: KernelEven
     return '';
   }
   g.run.hp = Math.max(0, g.run.hp - mitigated);
-  push(g, events, { type: 'PLAYER_DAMAGED', amount: mitigated, hpRemaining: g.run.hp, sourceName: source });
+  push(g, events, { type: 'PLAYER_DAMAGED', amount: mitigated, hpRemaining: g.run.hp, sourceName: source, ouch: rollOuch(g.ouch, g.run.hp) });
   if (g.run.hp > 0) return '';
   return die(g, events);
 }

@@ -4,6 +4,7 @@ import type { PickupType } from '../game/bestiary.js';
 import type { RestartPending } from '../game/commands-proc.js';
 import type { World, WorldHost } from '../game/entities.js';
 import type { Inventory } from '../game/inventory.js';
+import type { OuchState } from '../game/ouch.js';
 import type { KiroCompanion } from '../game/kiro.js';
 import { COMMANDS } from '../game/manual.js';
 import { ensureLabDirChain, placeLabFile, splitLabParentAndName } from '../game/lab-support.js';
@@ -178,6 +179,8 @@ export interface ChapterState {
   readonly chaosSeed: string;
   /** Random source of the PID roll. */
   readonly pidRandom: () => number;
+  /** The rare ouch comments on a hit (`src/game/ouch.ts`). */
+  readonly ouch: OuchState;
   readonly host: WorldHost;
   /** The lab session's config, or null in the game. */
   readonly lab: LabConfig | null;

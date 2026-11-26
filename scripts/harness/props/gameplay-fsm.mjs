@@ -416,6 +416,40 @@ function busProps({ createAppBus, publishKernel, createPlayBus }) {
 }
 
 /** Loads the state-machine modules and builds their properties, in their original order. */
+/** The hero's rare ouch comments (`src/game/ouch.ts`, spec hero-ouch-comments). Numbers are stated here, not read from the module. */
+function ouchProps({ OUCH_WORDS, createOuch, rollOuch }) {
+  return [
+    {
+      name: 'ouch comments: 20 distinct words of 1-2 words; a hit speaks at most every 4th hit, never on a lethal hit, never the same word twice in a row; a roll that always passes speaks on hits 1, 5, 9...',
+      build: () => {
+        expect(OUCH_WORDS.length === 20 && new Set(OUCH_WORDS).size === 20, 'the table is not 20 distinct words');
+        expect(OUCH_WORDS.every((w) => w.trim().split(/\s+/).length <= 2 && /^[A-Z0-9 !'-]+$/.test(w)), 'a word is not 1-2 upper-case words');
+        return fc.property(
+          fc.array(fc.integer({ min: 0, max: 3 }), { minLength: 1, maxLength: 60 }),
+          fc.array(fc.double({ min: 0, max: 0.9999, noNaN: true }), { minLength: 1, maxLength: 8 }),
+          (hps, rolls) => {
+            let i = 0;
+            const state = createOuch(() => rolls[i++ % rolls.length]);
+            let sinceSpoke = 99;
+            let last = null;
+            for (const hp of hps) {
+              const w = rollOuch(state, hp);
+              if (w === undefined) { sinceSpoke += 1; continue; }
+              expect(hp > 0, `spoke on a lethal hit: ${w}`);
+              expect(sinceSpoke >= 4, `spoke ${sinceSpoke} hits after the last comment`);
+              expect(OUCH_WORDS.includes(w) && w !== last, `bad or repeated word ${w} after ${last}`);
+              sinceSpoke = 1;
+              last = w;
+            }
+            const always = createOuch(() => 0);
+            for (let n = 1; n <= 12; n++) expect((rollOuch(always, 50) !== undefined) === (n % 4 === 1), `always-pass roll: hit ${n}`);
+          },
+        );
+      },
+    },
+  ];
+}
+
 export async function gameplayFsmProps(ctx) {
   const { PLAY_PHASE_TRANSITIONS, createPlayLifecycle } = await ctx.load('/src/play/lifecycle.ts');
   const { KiroCompanion } = await ctx.load('/src/game/kiro.ts');
@@ -436,6 +470,7 @@ export async function gameplayFsmProps(ctx) {
     skipIntro,
     startEnemyTurn,
   } = await ctx.load('/src/game/battle.ts');
+  const { OUCH_WORDS, createOuch, rollOuch } = await ctx.load('/src/game/ouch.ts');
   const { createAppBus, publishKernel } = await ctx.load('/src/contracts/app-bus.ts');
   const { createPlayBus } = await ctx.load('/src/play/events.ts');
   const sm = { nextMachineState, reachableStates };
@@ -443,6 +478,7 @@ export async function gameplayFsmProps(ctx) {
     ...lifecycleProps({ PLAY_PHASE_TRANSITIONS, createPlayLifecycle, ...sm }),
     ...companionProps({ KiroCompanion, AgentDirector }),
     ...battleProps({ BATTLE_TRANSITIONS, BIG_FOUR, INTRO_SEC, TURN_SEC, afterEnemyTurn, battleView, beginBattle, clockSecond, createBattle, endBattle, setHold, skipIntro, startEnemyTurn, ...sm }),
+    ...ouchProps({ OUCH_WORDS, createOuch, rollOuch }),
     ...busProps({ createAppBus, publishKernel, createPlayBus }),
   ];
 }

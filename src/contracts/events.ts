@@ -102,6 +102,8 @@ export type KernelEvent =
       amount: number;
       hpRemaining: number;
       sourceName: string;
+      /** A rare nerdy ouch word the stage letters big and yellow over the hero (`src/game/ouch.ts`). Not a dialog. */
+      ouch?: string;
     }
   | {
       type: 'FLOOR_CLEARED';

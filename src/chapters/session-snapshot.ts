@@ -29,6 +29,17 @@ function kiroStageActor(g: ChapterState, cwdPath: string, exitOpen: boolean) {
   return kiroStage(g, g.kiro.stageActorProps(cwdPath, 2.4), cwdPath, exitOpen);
 }
 
+/** Attack countdown (`RoomActor.strikeIn`): in a battle's player phase, the actions until each hurting enemy's hit lands. */
+function markStrikeCountdowns(g: ChapterState, room: RoomView): void {
+  if (g.battle.phase !== 'player' || g.ended) return;
+  const hurting = new Set(g.rt.world.threats().map((e) => e.id));
+  for (const actor of room.actors) {
+    const e = actor.id && hurting.has(actor.id) ? g.rt.world.get(actor.id) : undefined;
+    const toTell = e && !actor.hidden ? g.rt.world.ticksToTell(e) : null;
+    if (e && toTell !== null) actor.strikeIn = e.told ? 0 : toTell + 1;
+  }
+}
+
 function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, exitBase: string, exitOpen: boolean, lockedCaption: string | null): void {
     // The HUD floor is the level index, also on the ended (stats) room.
     room.floor = g.rt.spec.index;
@@ -181,6 +192,7 @@ export function snapshot(g: ChapterState): GameSnapshot {
 
     const room = buildRoom(facts);
     decorateSnapshotRoom(g, room, cwdPath, exitBase, exitOpen, lockedCaption(g, cwdPath, exitOpen));
+    markStrikeCountdowns(g, room);
 
     const rank = g.ended ? computeRunRank(g.commands, g.deaths, g.levels.length) : null;
     const shortcuts: string[] = [];

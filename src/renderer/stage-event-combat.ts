@@ -76,6 +76,7 @@ function onPlayerDamaged(stage: ComicStage, ev: Extract<KernelEvent, { type: 'PL
     if (!hero.disposed) syncHeroFace(stage, hero);
   });
   flashActor(stage, hero, 0xef476f, 240, 250);
+  if (ev.ouch && ev.hpRemaining > 0) say(stage, ev.ouch, anchorPoint(stage, 'vibecoder', null), '#ffd166', 0.9, 1.5);
   if (ev.hpRemaining <= 0) stage.tweens.delay(450, () => playTear(stage, 'SEGFAULT'));
 }
 

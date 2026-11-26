@@ -299,7 +299,7 @@ function updateBadges(stage: ComicStage): void {
   for (const a of stage.actors.values()) {
     if (a.disposed) continue;
     live.add(a.id);
-    const b = (a as StageActor & { badge?: { pips: { lit: number; cells: number } | null; plate: { pid: number; name?: string } | null; locked: boolean } }).badge;
+    const b = (a as StageActor & { badge?: { pips: { lit: number; cells: number } | null; plate: { pid: number; name?: string } | null; locked: boolean; strike: number | null } }).badge;
     if (!b) continue;
     const visible = !hideForPan && a.group.visible && !a.exiting && !a.dead;
     const top = new THREE.Vector3(a.group.position.x, a.group.position.y + a.height + 0.12 + a.animator.hoverOffset, a.group.position.z);
@@ -308,6 +308,7 @@ function updateBadges(stage: ComicStage): void {
       visible: visible || (!hideForPan && b.locked && a.group.visible),
       pips: visible ? b.pips : null,
       plate: visible ? b.plate : null,
+      strike: visible ? b.strike : null,
       lock: !hideForPan && b.locked && a.group.visible ? actorSocket(a, a.model.sockets.lock ? 'lock' : 'fx') : null,
     });
   }
