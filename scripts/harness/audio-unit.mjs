@@ -561,25 +561,51 @@ await withProcgen(async (_procgen, vite) => {
     }
   };
 
-  await test('WebAudio starts each dad loop as a looping voice and a loop-off stops it', async () => {
+  await test('WebAudio plays the typing loop as a looping voice and the smoke loop as a playlist of its ten takes; loop-off stops either', async () => {
     const engineMod = await vite.ssrLoadModule('/src/audio/engine.ts');
     await withFakeWindow(async (env) => {
       const eng = engineMod.createGraph(10);
       env.state().listeners.get('pointerdown')();
       await new Promise((r) => setTimeout(r, 10));
-      for (const cue of ['dad_typing_loop', 'dad_smoke_loop']) {
-        const before = env.state().starts.length;
-        const stopsBefore = env.state().stopped;
-        eng.loop(cue, true);
-        await new Promise((r) => setTimeout(r, 25));
-        const started = env.state().starts.slice(before);
-        assert.equal(started.length, 1, `${cue} starts one voice`);
-        assert.ok(started[0].url.includes(cue) && started[0].loop === true, `${cue} plays its file on loop`);
-        eng.loop(cue, false);
-        assert.equal(env.state().stopped, stopsBefore + 1, `${cue} off stops its voice`);
-        eng.loop(cue, false);
-        assert.equal(env.state().stopped, stopsBefore + 1, `${cue} off twice stops nothing more`);
+      const typingBefore = env.state().starts.length;
+      eng.loop('dad_typing_loop', true);
+      await new Promise((r) => setTimeout(r, 25));
+      const typing = env.state().starts.slice(typingBefore);
+      assert.equal(typing.length, 1, 'dad_typing_loop starts one voice');
+      assert.ok(typing[0].url.includes('dad_typing_loop') && typing[0].loop === true, 'the typing loop plays its file on loop');
+      const stopsBefore = env.state().stopped;
+      eng.loop('dad_typing_loop', false);
+      assert.equal(env.state().stopped, stopsBefore + 1, 'dad_typing_loop off stops its voice');
+      eng.loop('dad_typing_loop', false);
+      assert.equal(env.state().stopped, stopsBefore + 1, 'off twice stops nothing more');
+
+      // The smoke loop: one take plays once; when it ends the next, different take starts.
+      const played = [];
+      const smokeBefore = env.state().starts.length;
+      eng.loop('dad_smoke_loop', true);
+      for (let i = 0; i < 60; i += 1) {
+        await new Promise((r) => setTimeout(r, 6));
+        const starts = env.state().starts.slice(smokeBefore);
+        if (starts.length > played.length) {
+          const s = starts[starts.length - 1];
+          assert.equal(s.loop, false, 'a smoke take plays once, the playlist chains the next');
+          played.push(s.url.replace(/^.*\/sfx\//, '').replace(/\.mp3$/, ''));
+        }
+        const live = env.state().activeSources.filter((n) => typeof n.onended === 'function');
+        if (live.length > 0) live[live.length - 1].onended();
       }
+      assert.ok(played.length >= 30, `the playlist keeps chaining (${played.length} takes)`);
+      assert.ok(played.every((t) => /^dad_smoke_loop(?:|_[2-9]|_10)$/.test(t)), `only smoke takes: ${played.join(',')}`);
+      for (let i = 1; i < played.length; i += 1) assert.notEqual(played[i], played[i - 1], 'never the same take twice in a row');
+      assert.equal(new Set(played).size, 10, `all ten takes are reached (${[...new Set(played)].length})`);
+      const before = env.state().starts.length;
+      eng.loop('dad_smoke_loop', false);
+      const after = env.state().stopped;
+      const stray = env.state().activeSources.filter((n) => typeof n.onended === 'function');
+      if (stray.length > 0) stray[stray.length - 1].onended();
+      await new Promise((r) => setTimeout(r, 25));
+      assert.equal(env.state().starts.length, before, 'no take starts after the loop is turned off');
+      assert.ok(after >= 1);
       eng.dispose();
     });
   });

@@ -1,5 +1,6 @@
 import { playBed, type BedHandle } from './bed-loop.js';
 import { musicAsset, musicLoops, sampleUrl, type MusicId, type SfxId } from './catalog.js';
+import { LOOP_TAKES, pickTake } from './loop-takes.js';
 import { SOUND_SOURCES, TYPING_MIN_INTERVAL_MS, TYPING_SOUND_SOURCES } from './limits.js';
 import { pickCappedSlot } from './voices.js';
 
@@ -286,10 +287,26 @@ function makeSlots(
   const loopOn = new Set<string>();
   const loopPos = new Map<string, number>();
 
+  const loopTake = new Map<string, string>();
+
   const startLoop = (id: string): void => {
-    void load('sfx', id).then((buffer) => {
+    const takes = LOOP_TAKES[id as SfxId];
+    const file = takes ? pickTake(takes, loopTake.get(id)) : id;
+    void load('sfx', file).then((buffer) => {
       if (!buffer || !alive() || ctx.state === 'closed' || held || !loopOn.has(id) || loops.has(id)) return;
       const gain = LOOP_GAINS[id as SfxId] ?? 0.35;
+      if (takes) {
+        // A playlist: this take plays once, and its end starts the next one while the loop is still on.
+        loopTake.set(id, file);
+        const { node } = spawnVoice(ctx, master, buffer, gain, false);
+        node.onended = () => {
+          if (loops.get(id)?.node !== node) return;
+          loops.delete(id);
+          startLoop(id);
+        };
+        loops.set(id, { node, buffer, startedAt: ctx.currentTime, pos: 0 });
+        return;
+      }
       const offset = buffer.duration > 0 ? (loopPos.get(id) ?? 0) % buffer.duration : 0;
       const { node } = spawnVoice(ctx, master, buffer, gain, true, offset);
       loops.set(id, { node, buffer, startedAt: ctx.currentTime, pos: offset });

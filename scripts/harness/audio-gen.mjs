@@ -58,6 +58,8 @@ function entryFor(root, req, opts, post) {
     ? { name: req.take, where: req.row.effect, listed_seconds: req.row.seconds, plan_ms: Math.round(req.seconds * 1000), loop: req.row.loop }
     : { row: Number(req.row.row) || req.row.row, name: req.take, effect: req.row.effect, listed_seconds: req.row.seconds, duration_seconds: req.seconds, loop: req.row.loop });
   const entry = { ...base, files: [file] };
+  // A retake of an sfx whose row changed its length or loop flag must not keep the old numbers.
+  if (old && req.group !== 'music') Object.assign(entry, { listed_seconds: req.row.seconds, duration_seconds: req.seconds, loop: req.row.loop });
   if (req.kind === 'voice') Object.assign(entry, { duration_seconds: seconds, text: opts.text, voice: req.row.voice });
   if (post.post === false) entry.post = false;
   else delete entry.post;

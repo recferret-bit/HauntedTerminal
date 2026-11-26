@@ -100,6 +100,15 @@ await test('generate: writes the take, patches only its manifest entry, keeps ev
   assert.ok(!out.includes('sk_secret'), 'nothing of the subscription but counts and tier');
 });
 
+await test('generate: a retake takes the row\'s new length and loop flag instead of keeping the old ones', () => {
+  const f = fixture();
+  const list = join(f.root, 'docs/audio/SFX_LIST.md');
+  writeFileSync(list, readFileSync(list, 'utf8').replace('| Key press | 0.1s |', '| Key press | 5s, loop |'));
+  assert.equal(run(f, ['plan', 'key_press', '--generate']).code, 0);
+  const entry = JSON.parse(read(f, 'public/sfx/manifest.json')).sounds.find((s) => s.name === 'key_press');
+  assert.deepEqual([entry.listed_seconds, entry.duration_seconds, entry.loop], [5, 5, true]);
+});
+
 await test('generate: a new take is appended to the manifest, which stays valid JSON', () => {
   const f = fixture();
   const { code } = run(f, ['plan', 'key_press', '--variants', '2', '--generate']);
