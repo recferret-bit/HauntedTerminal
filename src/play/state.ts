@@ -136,6 +136,8 @@ export class Play {
   holdMusic = false;
   unmountAudio?: () => void;
   manualBook: ManualBook | null = null;
+  /** The in-game laptop overlay while it is open (`src/play/laptop.ts`), else null. It never holds the turn timer. */
+  laptopOverlay: { close(): void; state(): string } | null = null;
   /** Every event the session produced, newest last (capped). The chapter editor reads it through `__game.events()`. */
   eventLog: KernelEvent[] = [];
   /** The lab's config in a Terminal Lab game (`?lab=1` on a draft), else null. */
@@ -172,7 +174,7 @@ export class Play {
   }
 }
 
-export type OverlayId = 'menu' | 'manual' | 'map' | 'hint' | 'editor';
+export type OverlayId = 'menu' | 'manual' | 'map' | 'hint' | 'editor' | 'laptop';
 
 function isOverlayOpen(play: Play, id: OverlayId): boolean {
   switch (id) {
@@ -186,11 +188,13 @@ function isOverlayOpen(play: Play, id: OverlayId): boolean {
       return Boolean(play.hintDialog?.isOpen());
     case 'editor':
       return Boolean(play.codeEditor?.isOpen());
+    case 'laptop':
+      return Boolean(play.laptopOverlay);
   }
 }
 
 export function anyModalOpen(play: Play, exclude: readonly OverlayId[] = []): boolean {
-  const ids: OverlayId[] = ['menu', 'manual', 'map', 'hint', 'editor'];
+  const ids: OverlayId[] = ['menu', 'manual', 'map', 'hint', 'editor', 'laptop'];
   return ids.some((id) => !exclude.includes(id) && isOverlayOpen(play, id));
 }
 
@@ -199,4 +203,5 @@ export function closeOtherModals(play: Play, keep?: Exclude<OverlayId, 'editor'>
   if (keep !== 'manual' && play.manualBook?.isOpen()) play.manualBook.close();
   if (keep !== 'map' && play.chapterMap?.isOpen()) play.chapterMap.close();
   if (keep !== 'hint' && play.hintDialog?.isOpen()) play.hintDialog.close();
+  if (keep !== 'laptop') play.laptopOverlay?.close();
 }

@@ -3,7 +3,7 @@ import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import type { GameSnapshot, TickResult } from '../game/types.js';
 import type { EndStats } from '../ui/hud.js';
 
-export type PlayModalKind = 'manual' | 'map' | 'hint' | 'menu';
+export type PlayModalKind = 'manual' | 'map' | 'hint' | 'menu' | 'laptop';
 export type PlayModalAction = 'open' | 'close' | 'toggle';
 
 export type PlayEvent =
@@ -32,6 +32,9 @@ export interface PlayModalTarget {
   openMenu(): void;
   closeMenu(): void;
   isMenuOpen(): boolean;
+  openLaptop(): void;
+  closeLaptop(): void;
+  isLaptopOpen(): boolean;
 }
 
 export function routeModalAction(
@@ -43,6 +46,7 @@ export function routeModalAction(
     map: { isOpen: target.isMapOpen, open: () => target.openMap(ev.query), close: target.closeMap },
     hint: { isOpen: target.isHintOpen, open: target.openHint, close: target.closeHint },
     menu: { isOpen: target.isMenuOpen, open: target.openMenu, close: target.closeMenu },
+    laptop: { isOpen: target.isLaptopOpen, open: target.openLaptop, close: target.closeLaptop },
   };
   const slot = slots[ev.modal];
   if (ev.action === 'open') slot.open();

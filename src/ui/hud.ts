@@ -12,6 +12,8 @@ export interface HudHandlers {
   onHint(): void;
   onMap?(): void;
   onManual?(): void;
+  /** The laptop slot was clicked (the play page opens the laptop overlay). */
+  onLaptop?(): void;
   onSkipDialog?(): void;
   onPlayAgain(skipIntroNextTime: boolean): void;
   maxFloors?: number;
@@ -472,6 +474,7 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
       (id) => {
         if (id === 'map') handlers.onMap?.();
         else if (id === 'manual') handlers.onManual?.();
+        else if (id === 'laptop') handlers.onLaptop?.();
       },
     ),
     drawPortrait: handlers.drawPortrait,

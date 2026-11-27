@@ -4,11 +4,11 @@
  * input mirror and the quests. URL: `?state=<state>` starts there, `?speed=0|0.5|1`, `?mute=1`.
  */
 import { startPageAudio } from '../../audio/page.js';
-import type { LaptopAction } from '../../contracts/app-bus.js';
 import { h } from '../../editor-core/dom.js';
 import { APPS } from '../domain/apps.js';
 import { LAPTOP_STATES, userEvents, type LaptopEvent, type LaptopState } from '../domain/machine.js';
 import { TASKS } from '../domain/tasks.js';
+import { laptopHear } from '../app-bus.js';
 import { mountLaptop, type LaptopHandle } from '../ui/laptop.js';
 
 const EVENT_LABEL: Record<Exclude<LaptopEvent, 'DONE'>, string> = { OPEN: 'Open the lid', CLOSE: 'Close the lid', POWER: 'Power' };
@@ -94,22 +94,6 @@ function soundBox(lt: LaptopHandle, onMute: (muted: boolean) => void, onUnmuted:
   return section('Sound', h('label', { class: 'll-kv' }, box, ' key clicks, beeps, disk'));
 }
 
-const LAPTOP_ACTIONS: readonly LaptopAction[] = [
-  'open', 'close', 'post', 'disk', 'ready', 'trackpad', 'run', 'loop-guard', 'shutdown', 'key',
-  'solved', 'check-fail', 'win-open', 'win-min', 'win-close',
-];
-
-const KEY_ACTIONS: Readonly<Record<string, 'press' | 'enter' | 'backspace' | 'tab'>> = {
-  key: 'press',
-  'key-enter': 'enter',
-  'key-backspace': 'backspace',
-  'key-tab': 'tab',
-};
-
-function laptopAction(action: string): LaptopAction | null {
-  return LAPTOP_ACTIONS.some((name) => name === action) ? action as LaptopAction : null;
-}
-
 export function startLaptopLab(root: HTMLElement): LaptopHandle {
   const q = new URLSearchParams(location.search);
   const stage = h('div', { class: 'll-stage' });
@@ -121,15 +105,7 @@ export function startLaptopLab(root: HTMLElement): LaptopHandle {
   const start = q.get('state') as LaptopState | null;
   const page = startPageAudio('laptop', root, q.get('mute') === '1' ? { muted: true } : undefined);
   const muted = page.muted;
-  const hear = (action: string): void => {
-    if (action === 'fan-on') page.bus.emit({ kind: 'loop', cue: 'lap_fan', on: true });
-    else if (action === 'fan-off') page.bus.emit({ kind: 'loop', cue: 'lap_fan', on: false });
-    else if (KEY_ACTIONS[action]) page.bus.emit({ kind: 'key', key: KEY_ACTIONS[action] });
-    else {
-      const name = laptopAction(action);
-      if (name) page.bus.emit({ kind: 'laptop', action: name });
-    }
-  };
+  const hear = laptopHear(page.bus);
   const lt = mountLaptop(stage, {
     start: start && LAPTOP_STATES.includes(start) ? start : 'closed',
     speed: q.has('speed') ? Number(q.get('speed')) : 1,

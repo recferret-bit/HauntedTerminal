@@ -495,6 +495,7 @@ await withProcgen(async (_procgen, vite) => {
       chapterMap: { isOpen: () => openState.map, close: () => { openState.map = false; } },
       hintDialog: { isOpen: () => openState.hint, close: () => { openState.hint = false; } },
       codeEditor: { isOpen: () => openState.editor },
+      laptopOverlay: null,
     };
     const modalTarget = {
       openManual: () => { closeOtherModals(fakePlay, 'manual'); openState.manual = true; },
@@ -509,6 +510,9 @@ await withProcgen(async (_procgen, vite) => {
       openMenu: () => { closeOtherModals(fakePlay, 'menu'); openState.menu = true; },
       closeMenu: () => { openState.menu = false; },
       isMenuOpen: () => openState.menu,
+      openLaptop: () => { closeOtherModals(fakePlay, 'laptop'); fakePlay.laptopOverlay = { state: () => 'closed', close: () => { fakePlay.laptopOverlay = null; } }; },
+      closeLaptop: () => fakePlay.laptopOverlay?.close(),
+      isLaptopOpen: () => Boolean(fakePlay.laptopOverlay),
     };
     bus.subscribe((ev) => {
       if (ev.kind === 'modal') routeModalAction(modalTarget, ev);
@@ -524,6 +528,14 @@ await withProcgen(async (_procgen, vite) => {
     bus.emit({ kind: 'modal', modal: 'menu', action: 'open' });
     assert.deepEqual([openState.hint, openState.menu], [false, true]);
     bus.emit({ kind: 'modal', modal: 'menu', action: 'toggle' });
+    assert.equal(anyModalOpen(fakePlay), false);
+    bus.emit({ kind: 'modal', modal: 'laptop', action: 'toggle' });
+    assert.deepEqual([Boolean(fakePlay.laptopOverlay), anyModalOpen(fakePlay)], [true, true]);
+    bus.emit({ kind: 'modal', modal: 'map', action: 'open' });
+    assert.deepEqual([fakePlay.laptopOverlay, openState.map], [null, true]);
+    bus.emit({ kind: 'modal', modal: 'laptop', action: 'toggle' });
+    assert.deepEqual([openState.map, Boolean(fakePlay.laptopOverlay)], [false, true]);
+    bus.emit({ kind: 'modal', modal: 'laptop', action: 'toggle' });
     assert.equal(anyModalOpen(fakePlay), false);
     openState.editor = true;
     assert.equal(anyModalOpen(fakePlay), true);

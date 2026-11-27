@@ -280,6 +280,13 @@ function exposePlayHooks(play: Play): void {
     open: (queryOrIndex?: string | number) => play.events.emit({ kind: 'modal', modal: 'map', action: 'open', query: queryOrIndex }),
     close: () => play.events.emit({ kind: 'modal', modal: 'map', action: 'close' }),
   };
+  (window as unknown as { __laptopOverlay?: unknown }).__laptopOverlay = {
+    isOpen: () => Boolean(play.laptopOverlay),
+    /** The laptop's lifecycle state while open (`closed`, `opening`, `desktop`, ...), else null. */
+    state: () => play.laptopOverlay?.state() ?? null,
+    open: () => play.events.emit({ kind: 'modal', modal: 'laptop', action: 'open' }),
+    close: () => play.events.emit({ kind: 'modal', modal: 'laptop', action: 'close' }),
+  };
   (window as unknown as { __term?: unknown }).__term = {
     submit: (line: string) => play.shell.submit(line),
     input: (data: string) => play.shell.term.input(data, true),

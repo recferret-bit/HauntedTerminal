@@ -56,7 +56,7 @@ const LAYERS = [
   { area: 'laptop/', may: ['contracts/', 'laptop/', 'editor-core/', 'audio/'], three: false },
   { area: 'hub/', may: ['contracts/', 'chapters/', 'cinematic/catalog', 'audio/'], three: false },
   // Play page composition. main.ts only starts it. Helpers live in play/ so the entry stays small.
-  { area: 'play/', may: ['assets/', 'audio/', 'chapters/', 'cinematic/', 'contracts/', 'game/', 'renderer/', 'sandbox/', 'ui/'], three: true },
+  { area: 'play/', may: ['assets/', 'audio/', 'chapters/', 'cinematic/', 'contracts/', 'game/', 'laptop/', 'renderer/', 'sandbox/', 'ui/'], three: true },
   { area: 'main.ts', may: ['contracts/', 'play/'], three: false },
 ];
 
