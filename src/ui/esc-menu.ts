@@ -1,6 +1,6 @@
 /**
- * The Esc menu: a centred modal over the stage with the level details, the sound control, a two-step Restart level and
- * a Back to main menu with one confirm line. Spec: .kiro/specs/esc-menu-hud-rework/ (design 3, 4, 7; D4, D5, D12).
+ * The Esc menu: a centred full-viewport modal covering both stage and terminal with the level details, the sound control,
+ * a two-step Restart level and a Back to main menu with one confirm line. Spec: .kiro/specs/esc-menu-hud-rework/.
  *
  * It is NOT a pause. It never touches `play.reasons` or the turn-timer hold, so the game clock and the battle timer keep
  * running. While open it keeps keys away from the terminal: key, paste and beforeinput events whose target is outside the

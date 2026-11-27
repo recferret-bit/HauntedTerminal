@@ -43,9 +43,9 @@ function setPlaySkin(play: Play, id: TerminalSkinId): void {
   play.menu?.update(play.session.snapshot());
 }
 
-/** The Esc menu: mounted once, opened by Esc (capture phase, so xterm and the page never see that key). */
+/** The Esc menu: mounted once on body to cover stage and terminal, opened by Esc (capture phase). */
 export function mountPlayMenu(play: Play): void {
-  const menu = mountEscMenu(play.dom.stageWrap, {
+  const menu = mountEscMenu(document.body, {
     onMute: () => {
       play.session.toggleMute();
       saveSound(play);
