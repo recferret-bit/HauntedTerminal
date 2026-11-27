@@ -169,11 +169,10 @@ function kiroLoad(stage: ComicStage, ev: Extract<KernelEvent, { type: 'KIRO_ACTI
   }
 }
 
-/** The Tensor GPU ritual's magic: a casting swirl on Kiro, a materialize burst, a gold flash and a hop. */
+/** The Tensor GPU ritual's magic: a gate-opening burst on Kiro, a materialize burst, a gold flash and a hop. */
 function kiroEmpower(stage: ComicStage, ev: Extract<KernelEvent, { type: 'KIRO_ACTION' }>, kiro: StageActor | undefined): void {
-  stage.light.ping(2);
   const at = kiro && !kiro.disposed ? actorSocket(kiro, 'fx') : anchorPoint(stage, 'panel', null);
-  playFx(stage, 'fx.matrix-cast', at, { noShake: true }, 'kiro-empower');
+  playFx(stage, 'fx.gate-open', at, { text: ' ', noShake: true, scale: 1.1 }, 'kiro-empower');
   playFx(stage, 'fx.touch-materialize', at, { noShake: true, scale: 1.2 }, 'kiro-empower-2');
   say(stage, ev.message, at, '#ffd166', 1.1);
   if (kiro && !kiro.disposed) {

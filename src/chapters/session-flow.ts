@@ -104,10 +104,12 @@ export function jumpToLevel(g: ChapterState, levelIdOrIndex: string | number): T
     g.intro = false;
     // A level he has already reached keeps the run he has (items, core, RAM, SSD, HP, VRAM, taken pickups); a level beyond it, or a
     // direct entry, starts from what the chapter's grants give.
-    if (idx > g.reachedIdx) applyInitialLoadout(g, idx);
+    const revisit = idx <= g.reachedIdx;
+    if (!revisit) applyInitialLoadout(g, idx);
     loadLevel(g, idx, false, events);
-    const banner = levelBannerText(g);
-    return { output: banner, events, snapshot: snapshot(g) };
+    // A return does not lock the terminal for the opening conversation again: it ends at once, as Skip Dialog would.
+    const opening = revisit && openingActive(g) ? resolveOpeningTransition(g, events) : '';
+    return { output: levelBannerText(g) + opening, events, snapshot: snapshot(g) };
   }
 
 export function arriveLevel(g: ChapterState): TickResult {

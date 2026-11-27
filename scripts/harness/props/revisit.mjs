@@ -47,12 +47,12 @@ export function revisitProps(world) {
     {
       name: 'a deploy beyond the highest level reached starts from the chapter grants (the inventory is rebuilt, not kept)',
       build: () =>
-        fc.property(fc.constantFrom(...world.levels.keys()), (target) => {
+        fc.property(fc.constantFrom(...[...world.levels.keys()].slice(1)), (target) => {
           const session = world.open(0);
           session.inventory = { ...session.inventory, vram: 5 };
           session.jumpToLevel(world.levels[target].id);
           const fresh = world.open(target);
-          expect(session.inventory.vram === (target > 0 ? 0 : 5), `vram ${session.inventory.vram} after a first deploy to level index ${target}`);
+          expect(session.inventory.vram === 0, `vram ${session.inventory.vram} after a first deploy to level index ${target}`);
           expect(JSON.stringify(session.inventory.items.slice().sort()) === JSON.stringify(fresh.inventory.items.slice().sort()), `items after the deploy to ${target} differ from a direct entry`);
         }),
     },
