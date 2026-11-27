@@ -218,7 +218,12 @@ function exitDoorProps(world) {
           const { l, i } = exitLevels[k];
           const session = world.open(i);
           // Half the runs play the solution first (minus any line naming the exit), so the open side is reached too.
-          if (solve) world.drive(session, (l.solutionCommands ?? []).filter((c) => !c.includes(nameOf(l.exitDir))));
+          if (solve) {
+            for (const cmd of (l.solutionCommands ?? []).filter((c) => !c.includes(nameOf(l.exitDir)))) {
+              if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+              session.exec(cmd);
+            }
+          }
           world.drive(session, play);
           if (session.snapshot().ended || session.snapshot().room.kind === 'outro') return;
           const parent = parentOf(l.exitDir);
@@ -277,7 +282,11 @@ function pidPlayProps(world, withEnemies, { openLabSession, newLabScript, RESERV
         fc.property(fc.constantFrom(...withEnemies), fc.integer(), fc.nat(), (index, seed, k) => {
           const session = world.open(index, seed);
           const solution = world.levels[index].solutionCommands ?? [];
-          for (const c of solution.slice(0, k % (solution.length + 1))) if (!session.snapshot().ended && session.levelIdx === index) session.exec(c);
+          for (const c of solution.slice(0, k % (solution.length + 1))) {
+            if (session.snapshot().ended || session.levelIdx !== index) break;
+            if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+            session.exec(c);
+          }
           if (session.levelIdx !== index || session.snapshot().ended) return; // the prefix cleared the level: nothing rolled is left to see
           const first = new Map(session.rt.pids);
           expect(first.size > 0, `level ${index} rolled no PID`);
@@ -380,6 +389,7 @@ function pidProps(world, pids, lab) {
           for (const cmd of world.levels[index].solutionCommands) {
             for (let t = 0; t < 2; t++) deaths += session.tick().events.filter((e) => e.type === 'PLAYER_RESPAWNED').length;
             deaths += (session.forceEnemyTurn()?.events ?? []).filter((e) => e.type === 'PLAYER_RESPAWNED').length;
+            if (session.snapshot().skippableDialog) session.skipOpeningDialog();
             deaths += session.exec(cmd).events.filter((e) => e.type === 'PLAYER_RESPAWNED').length;
           }
           expect(deaths === 0, `${deaths} death(s) on level ${index} with pidSeed ${seed}`);

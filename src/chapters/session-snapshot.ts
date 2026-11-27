@@ -320,7 +320,7 @@ export function snapshot(g: ChapterState): GameSnapshot {
     }
     markStrikeCountdowns(g, room);
 
-    const rank = g.ended ? computeRunRank(g.commands, g.deaths, g.levels.length) : null;
+    const rank = g.ended ? computeRunRank(g.commands, g.deaths, g.levels) : null;
     const shortcuts: string[] = [];
     if (g.chaosMode) shortcuts.push('CHAOS');
 

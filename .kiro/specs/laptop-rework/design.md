@@ -40,6 +40,8 @@ scripts/harness/play-laptop-smoke.mjs  Updates `/play` headless Chrome E2E check
                                   clicks, `.lt-screen` click-to-boot in `'open'`, computed transparent backgrounds on
                                   `#laptop-overlay` / `.laptop-overlay-panel` / `#laptop-overlay .lt-scene`, and outside-click
                                   close + focus return (Req 1-7).
+scripts/harness/laptop-lab-smoke.mjs  Asserts `/laptop-lab` preserves its `.lt-scene` purple halftone background and
+                                  `.ll-stage` border alongside the new `.lt-power` deck button (Req 2, 5).
 ```
 
 ## Decisions

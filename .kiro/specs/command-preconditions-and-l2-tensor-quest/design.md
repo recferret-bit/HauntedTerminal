@@ -69,6 +69,7 @@ scripts/harness/
 - **Level 2 quest objective & `manifest.grants` invariant (Q4 & Req 6).**
   - Adding `{ kind: "file_absent", path: "/srv/kiroween/cache_vault/.tensor_gpu", ... }` to Level 2 `winRules` adds the 6th quest step and guarantees normal campaign runs carry `tensor_gpu` into Hub 1.
   - `chapter.manifest.json -> grants` omits `tensor_gpu` because `tensor_gpu` is consumed in Hub 1 (`take_item`): granting it at `afterLevel: 2` would break Hub 1's direct-entry fallback property (`scripts/harness/props/ritual.mjs`) and leave a consumed item in Levels 5–11 on direct jumps.
+  - `computeLevelRank` and `computeRunRank` (`src/chapters/session-state.ts`) include `solutionCommands` length in `par` (`Math.max(8, solutionLen)` and `Math.max(12, count * 6, solTotal)`) so Level 2's 9-step quest and the 68-step campaign retain Rank `S` (`ACH_ZERO_PANIC_RUN`) on a 0-death canonical solve.
 
 ## Layers and gates
 

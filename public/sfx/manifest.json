@@ -2847,6 +2847,90 @@
           "bytes": 481533
         }
       ]
+    },
+    {
+      "row": 152,
+      "name": "dad_rig_beep",
+      "effect": "Old coder workstation random ambient computer telemetry bip (scheduled randomly while `dad_rig_loop` is active)",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_rig_beep.mp3",
+          "bytes": 4432
+        }
+      ]
+    },
+    {
+      "row": 152,
+      "name": "dad_rig_beep_2",
+      "effect": "Old coder workstation random ambient computer telemetry bip (scheduled randomly while `dad_rig_loop` is active)",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_rig_beep_2.mp3",
+          "bytes": 4432
+        }
+      ]
+    },
+    {
+      "row": 152,
+      "name": "dad_rig_beep_3",
+      "effect": "Old coder workstation random ambient computer telemetry bip (scheduled randomly while `dad_rig_loop` is active)",
+      "listed_seconds": 0.5,
+      "duration_seconds": 0.5,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_rig_beep_3.mp3",
+          "bytes": 6313
+        }
+      ]
+    },
+    {
+      "row": 153,
+      "name": "dad_rig_spark",
+      "effect": "Old coder workstation random ambient electricity crackle (scheduled randomly while `dad_rig_loop` is active)",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_rig_spark.mp3",
+          "bytes": 12582
+        }
+      ]
+    },
+    {
+      "row": 153,
+      "name": "dad_rig_spark_2",
+      "effect": "Old coder workstation random ambient electricity crackle (scheduled randomly while `dad_rig_loop` is active)",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_rig_spark_2.mp3",
+          "bytes": 12582
+        }
+      ]
+    },
+    {
+      "row": 153,
+      "name": "dad_rig_spark_3",
+      "effect": "Old coder workstation random ambient electricity crackle (scheduled randomly while `dad_rig_loop` is active)",
+      "listed_seconds": 0.6,
+      "duration_seconds": 0.6,
+      "loop": false,
+      "files": [
+        {
+          "file": "dad_rig_spark_3.mp3",
+          "bytes": 11329
+        }
+      ]
     }
   ],
   "variant_note": "One kept take per cue. The _1/_2/_3 suffix was removed. Near-duplicate clicks, sweeps, page flips and confirm chimes were dropped."

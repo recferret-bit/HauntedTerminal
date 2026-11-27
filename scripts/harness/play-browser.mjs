@@ -264,6 +264,7 @@ async function main() {
         }
         const line = String(item);
         await waitFor((st) => !st.busy || st.ended, lineTimeout, `input to unblock before "${line}"`);
+        await evaluate(`(() => { const b = document.querySelector('#skip-dialog-btn'); if (b && !b.hidden) b.click(); return true; })()`, lineTimeout);
         await evaluate(`window.__term.submit(${JSON.stringify(line)}).then(() => true)`, lineTimeout);
         ran++;
         await sleep(gap);

@@ -290,19 +290,21 @@ export const splitParentAndName = splitLabParentAndName;
 
 export { globToRegExp } from '../game/unix-applets.js';
 
-export function computeRunRank(commands: number, deaths: number, levelCount: number): RankGrade {
-  const par = Math.max(12, levelCount * 6);
+export function computeRunRank(commands: number, deaths: number, levels: readonly Pick<LevelSpec, 'solutionCommands'>[] | number): RankGrade {
+  const count = typeof levels === 'number' ? levels : levels.length;
+  const solTotal = typeof levels === 'number' ? 0 : levels.reduce((sum, l) => sum + l.solutionCommands.length, 0);
+  const par = Math.max(12, count * 6, solTotal);
   if (deaths === 0 && commands <= par) return 'S';
   if (deaths <= 1 && commands <= Math.round(par * 1.45)) return 'A';
   if (deaths <= 3 && commands <= Math.round(par * 2.1)) return 'B';
   return 'C';
 }
 
-export function computeLevelRank(levelCommands: number, levelDeaths: number, usedSpoilerRung: boolean): RankGrade {
-  const par = 8;
+export function computeLevelRank(levelCommands: number, levelDeaths: number, usedSpoilerRung: boolean, solutionLen = 0): RankGrade {
+  const par = Math.max(8, solutionLen);
   if (!usedSpoilerRung && levelDeaths === 0 && levelCommands <= par) return 'S';
-  if (levelDeaths <= 1 && levelCommands <= 12) return 'A';
-  if (levelDeaths <= 2 && levelCommands <= 18) return 'B';
+  if (levelDeaths <= 1 && levelCommands <= Math.max(12, Math.round(par * 1.5))) return 'A';
+  if (levelDeaths <= 2 && levelCommands <= Math.max(18, Math.round(par * 2.25))) return 'B';
   return 'C';
 }
 

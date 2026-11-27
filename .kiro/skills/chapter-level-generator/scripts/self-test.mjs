@@ -362,25 +362,41 @@ await withProcgen(async (_p, vite) => {
   assert.equal(kiroChap.exec('mv tube_transistor /dev/null').code, 1, 'mv tube_transistor /dev/null must be refused');
   assert.equal(kiroChap.exec('mv tube_transistor renamed_tube').code, 1, 'renaming tube_transistor must be refused');
   assert.equal(kiroChap.snapshot().inventory.items.includes('tube_transistor'), false, 'failed rm/mv must not grant tube_transistor');
+  const l2PlainLs = kiroChap.exec('ls');
+  assert.equal(l2PlainLs.output.includes('.tensor_gpu'), false, 'plain ls must not reveal hidden .tensor_gpu');
   const grabTransistor = kiroChap.exec('mv tube_transistor ~');
   assert.equal(grabTransistor.code, 0, 'mv tube_transistor ~ grabs the Tube Transistor off the ground');
   assert.ok(grabTransistor.events.some((e) => e.type === 'PICKUP_COLLECTED' && e.item === 'tube_transistor'), 'Grabbing Tube Transistor emits PICKUP_COLLECTED');
   assert.equal(grabTransistor.snapshot.inventory.held, 'tube_transistor', 'Vibecoder immediately holds the Tube Transistor');
   assert.equal(grabTransistor.snapshot.room.dark, false, 'Tube Transistor immediately lights up Cache Vault');
+  assert.equal(grabTransistor.snapshot.skippableDialog, true, 'Post-tube_transistor Kiro dialog marks skippableDialog true');
   assert.ok(
     grabTransistor.events.some((e) => isBox(e, 'vibecoder')) &&
       grabTransistor.events.some((e) => isBox(e, 'kiro') && /ls -la/i.test(e.text)),
     'Grabbing Tube Transistor triggers Vibecoder + Kiro.d dialogs encouraging ls -la',
   );
+  const blockedSweep = kiroChap.exec('ls -la');
+  assert.equal(blockedSweep.code, 1, 'ls -la stays blocked until Kiro finishes speaking or Skip Dialog is used');
+  assert.ok(/Skip Dialog/i.test(blockedSweep.output), 'Blocked ls -la explains waiting or clicking Skip Dialog');
+  kiroChap.skipOpeningDialog();
+  assert.equal(kiroChap.snapshot().skippableDialog, false, 'Skipping dialog clears skippableDialog');
   const l2Sweep = kiroChap.exec('ls -la');
-  assert.equal(l2Sweep.code, 0, 'ls -la unlocks immediately after grabbing the Tube Transistor');
+  assert.equal(l2Sweep.code, 0, 'ls -la unlocks after Kiro dialog stops');
   assert.ok(l2Sweep.output.includes('.vault_beacon'), 'ls -la reveals .vault_beacon on Level 2');
+  assert.ok(l2Sweep.output.includes('.tensor_gpu'), 'ls -la immediately lists hidden .tensor_gpu');
+  assert.ok(
+    l2Sweep.events.some((e) => e.type === 'ENTITY_SPAWNED' && e.entityId === 'pickup_l2_tensor_gpu' && e.fromX === 3.45 && e.fromY === 1.2),
+    'First ls -la spawns .tensor_gpu tumbling from behind the cache DIMM bank',
+  );
   assert.ok(
     l2Sweep.events.some((e) => isBox(e, 'vibecoder') && /\.vault_beacon/i.test(e.text)) &&
       l2Sweep.events.some((e) => isBox(e, 'kiro') && /gpu_alley/i.test(e.text)),
     'Running ls -la on Level 2 triggers Vibecoder + Kiro.d reaction dialogs warning about Level 3',
   );
-  assert.equal(kiroChap.exec('ls -l').code, 0, 'ls -l unlocks immediately after grabbing the Tube Transistor');
+  assert.equal(kiroChap.exec('ls -l').code, 0, 'ls -l stays unlocked after first ls -la');
+  const grabTensor = kiroChap.exec('mv .tensor_gpu ~');
+  assert.equal(grabTensor.code, 0, 'mv .tensor_gpu ~ collects the dislodged Tensor GPU');
+  assert.ok(grabTensor.snapshot.inventory.items.includes('tensor_gpu'), 'Inventory contains tensor_gpu after mv .tensor_gpu ~');
   const l2RamCollect = kiroChap.exec('mv ram_16gb.dimm ~');
   assert.equal(
     l2RamCollect.events.some((e) => isBox(e, 'kiro') && /MAXIMUM HEALTH|\+10 Max HP/i.test(e.text)),
@@ -585,6 +601,7 @@ await withProcgen(async (_p, vite) => {
   fullRunSession.skipIntro();
   for (const lvl of catalog.getChapterLevels('chapter-01-kiroween')) {
     for (const cmd of lvl.solutionCommands) {
+      if (fullRunSession.snapshot().skippableDialog) fullRunSession.skipOpeningDialog();
       fullRunSession.exec(cmd);
     }
   }

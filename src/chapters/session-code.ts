@@ -377,8 +377,8 @@ export function cmdExit(g: ChapterState): Step {
     g.endedAt = Date.now();
     const timeSec = Math.max(1, Math.floor((g.endedAt - g.startedAt - g.pausedMs) / 1000));
     const levelSec = Math.max(1, Math.floor((g.endedAt - g.rt.levelStartedAt) / 1000));
-    const lvlRank = computeLevelRank(g.rt.levelCommands, g.rt.levelDeaths, g.rt.usedSpoilerRung);
-    const runRank = computeRunRank(g.commands, g.deaths, g.levels.length);
+    const lvlRank = computeLevelRank(g.rt.levelCommands, g.rt.levelDeaths, g.rt.usedSpoilerRung, g.rt.spec.solutionCommands.length);
+    const runRank = computeRunRank(g.commands, g.deaths, g.levels);
     const reward = g.preview
       ? { scrapEarned: 0, totalScrap: 0 }
       : recordLevelClear(g.chapterId, g.rt.spec.id, lvlRank, g.rt.levelCommands, levelSec, g.chaosMode);

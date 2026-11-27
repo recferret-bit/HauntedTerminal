@@ -11,7 +11,7 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
     "badge": "KIROWEEN SPECIAL ISSUE",
     "estimatedMinutes": 35,
     "clientName": "Kiro.d & The Bearded Matrix Coder (Dad)",
-    "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal and lays out the chapter mission: raid 6 sectors, reboot Kiro.d at the Matrix Hub with 3 open-weight models to silence Anti-Gravy, Codec, and Gork, then defeat Clod and PID 1 to exit home! Basic ls works from the start for visible files; petrify the gargoyle in Sector 02 so your glowing Tube Transistor lands on the ground (grab it with mv to unlock ls -la and reveal hidden enemies in Sector 03), receive the Motherboard Map & Field Manual from the Old Bearded Coder on your first Hub visit (Sector 04), recover your clamshell laptop in Logic Cell (Sector 06), and uncover the father-son unicorn twist!",
+    "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal and lays out the chapter mission: raid 6 sectors, reboot Kiro.d at the Matrix Hub with 3 open-weight models to silence Anti-Gravy, Codec, and Gork, then defeat Clod and PID 1 to exit home! Basic ls works from the start for visible files; in Sector 02 try plain ls, petrify the gargoyle so your Tube Transistor lands (`mv tube_transistor ~`), run `ls -la` after Kiro.d's signal to dislodge the hidden `.tensor_gpu`, receive the Motherboard Map & Field Manual from the Old Bearded Coder on your first Hub visit (Sector 04), recover your clamshell laptop in Logic Cell (Sector 06), and uncover the father-son unicorn twist!",
     "allyNpc": {
       "id": "dad.tty",
       "name": "Old Bearded Matrix Coder (dad.tty)",
@@ -41,7 +41,7 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
     },
     "mechanicsSummary": [
       "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, finish talking with Kiro.d (who brings your terminal and explains your chapter mission), then practice ls, mv, cat, ps, and kill while ls flags stay locked without a Tube Transistor",
-      "Levels 2-3, 5-6, 8-9 Tasks: Finish Vibecoder + Kiro.d opening dialog (or Skip Dialog) before Big Four taunt & turn-based battle! Petrify the gargoyle minion in Level 2 so the Tube Transistor drops onto the ground (`mv tube_transistor ~`), test `ls -la`, expose Codec's hidden squad & dotfile riddle in Level 3, and recover your laptop in Level 6",
+      "Levels 2-3, 5-6, 8-9 Tasks: Finish Vibecoder + Kiro.d opening dialog (or Skip Dialog) before Big Four taunt & turn-based battle! Petrify the gargoyle minion in Level 2 (`mv tube_transistor ~`), wait for Kiro.d's signal to run `ls -la` and dislodge `.tensor_gpu` from behind the DIMM bank, expose Codec's hidden squad & dotfile riddle in Level 3, and recover your laptop in Level 6",
       "Levels 4, 7, 10 Hub: On your first Hub visit (Level 4), the Old Bearded Coder hands you the Motherboard Map & Unix Field Manual (unlocking ACH_FIELD_MANUAL and /manual), then reboots Kiro.d with Qwen, DeepSeek, and Llama to silence Anti-Gravy, Codec, and Gork",
       "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro.d as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
     ],
@@ -78,14 +78,14 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
         "roomKind": "crypt_entrance",
         "floorTheme": 2,
         "mechanic": "terminal",
-        "mechanicLabel": "Task 1 (Battle Rules / chmod -x / Ground Drop / sed)",
+        "mechanicLabel": "Task 1 (Battle Rules / chmod -x / Ground Drop / Hidden .tensor_gpu via ls -la)",
         "difficulty": 1,
         "teaches": [
+          "ls",
           "cat",
           "chmod -x",
           "mv",
-          "ls -la",
-          "sed -i"
+          "ls -la"
         ],
         "enemies": [
           "trojan"
@@ -991,14 +991,14 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "roomSeed": 22,
       "mechanic": "terminal",
       "exitDir": "/srv/kiroween/cache_vault/gpu_alley",
-      "summary": "Anti-Gravy's visible gargoyle minion (`gravy_sentry.bin`) clutches your Tube Transistor! Read `cat vault_notes.txt`, petrify `gravy_sentry.bin` (`chmod -x`) so the Tube Transistor lands on the ground, grab it (`mv tube_transistor ~`) to unlock `ls -la`, and loot RAM + SSD!",
+      "summary": "Anti-Gravy's visible gargoyle minion (`gravy_sentry.bin`) clutches your Tube Transistor—and Kiro.d senses a hidden Tensor GPU somewhere in this vault! Try plain `ls`, read `cat vault_notes.txt`, petrify `gravy_sentry.bin` (`chmod -x`), grab `mv tube_transistor ~`, wait for Kiro.d's signal (or Skip Dialog ») to run `ls -la` and dislodge `.tensor_gpu`, then pocket `.tensor_gpu`, RAM, and SSD!",
       "files": [
         {
           "path": "/srv/kiroween/cache_vault/vault_notes.txt",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. TEST `ls -la`: Try `ls -la` once you hold the Tube Transistor to spot hidden dotfiles before entering GPU Alley.\n4. HARDWARE: Pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n5. TENSOR GPU: the gargoyle also dropped a Tensor GPU card. Pocket it with `mv tensor_gpu ~` and carry it to the Old Bearded Coder at the Matrix Hub: with it Kiro.d can load open-weight models!\n",
+          "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. PLAIN `ls` VS `ls -la`: Plain `ls` misses hidden dotfiles! Once you hold the Tube Transistor and Kiro.d finishes speaking (or click `Skip Dialog »`), run `ls -la` to expose `.vault_beacon` and dislodge `.tensor_gpu` from behind the cache DIMM bank.\n4. TENSOR GPU: Pocket `.tensor_gpu` with `mv .tensor_gpu ~` and carry it to the Old Bearded Coder at the Matrix Hub: with it Kiro.d can load open-weight models!\n5. HARDWARE: Pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n",
           "x": 2.05,
           "model": "prop.file"
         },
@@ -1027,7 +1027,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "content": "#!/bin/transistor\n# TUBE TRANSISTOR: glowing vacuum-tube light & ls -la unlock.\nexport LIGHT=\"on\"\n"
         },
         {
-          "path": "/srv/kiroween/cache_vault/tensor_gpu",
+          "path": "/srv/kiroween/cache_vault/.tensor_gpu",
           "kind": "file",
           "mode": 420,
           "content": "#!/bin/tensor\n# TENSOR GPU: a PCIe card with a tensor die. Lets Kiro.d load open-weight models.\nexport TENSOR=\"ready\"\n"
@@ -1037,7 +1037,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "content": "# Hidden Cache Vault Dotfile\nTUBE_TRANSISTOR_CHECK=ok\nWARNING=Codec cloaked his entire squad in gpu_alley — open with ls -la!\n",
-          "x": 2.95,
+          "x": 2.82,
           "model": "prop.file"
         },
         {
@@ -1088,12 +1088,13 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "id": "pickup_l2_tensor_gpu",
           "type": "tensor_gpu",
-          "path": "/srv/kiroween/cache_vault/tensor_gpu",
+          "path": "/srv/kiroween/cache_vault/.tensor_gpu",
           "appearWhen": {
-            "kind": "enemy_dead",
-            "enemyId": "trojan_l2"
+            "kind": "room_swept"
           },
-          "x": 0.45,
+          "x": 3.18,
+          "dropFromX": 3.45,
+          "dropFromY": 1.2,
           "zOrder": 1,
           "scale": 0.9,
           "rotation": -6
@@ -1182,6 +1183,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         },
         {
           "kind": "file_absent",
+          "path": "/srv/kiroween/cache_vault/.tensor_gpu",
+          "description": "Sweep with `ls -la` and pocket the hidden Tensor GPU (`mv .tensor_gpu ~`)"
+        },
+        {
+          "kind": "file_absent",
           "path": "/srv/kiroween/cache_vault/ram_16gb.dimm",
           "description": "Collect the 16GB RAM stick (`mv ram_16gb.dimm ~`)"
         },
@@ -1192,10 +1198,12 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         }
       ],
       "solutionCommands": [
+        "ls",
         "cat vault_notes.txt",
         "chmod -x gravy_sentry.bin",
         "mv tube_transistor ~",
-        "mv tensor_gpu ~",
+        "ls -la",
+        "mv .tensor_gpu ~",
         "mv ram_16gb.dimm ~",
         "mv ssd_256gb.img ~",
         "cd gpu_alley"
@@ -1247,8 +1255,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "steps": [
               {
                 "kind": "dialog_box",
-                "speaker": "vibecoder",
-                "text": "I wish I could run ls -la right now to check the shadows, but every ls flag is locked without that Tube Transistor!",
+                "speaker": "kiro",
+                "text": "HOLD ON: my scanner detects a Tensor GPU hidden somewhere in this vault! Try plain ls first—though ls flags stay locked until we recover that Tube Transistor!",
                 "holdSec": 5
               }
             ]
@@ -1259,10 +1267,36 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "Read cat vault_notes.txt and petrify gravy_sentry.bin with chmod -x gravy_sentry.bin! Once it turns to stone, the Tube Transistor lands on the ground—grab it with mv tube_transistor ~ and try ls -la!",
+                "text": "Read cat vault_notes.txt, petrify gravy_sentry.bin with chmod -x gravy_sentry.bin, then grab mv tube_transistor ~ and wait for my signal before running ls -la!",
                 "holdSec": 5
               }
             ]
+          }
+        ],
+        "locks": [
+          {
+            "command": "ls",
+            "flags": "*",
+            "until": {
+              "kind": "any",
+              "of": [
+                {
+                  "kind": "not",
+                  "of": {
+                    "kind": "has_item",
+                    "item": "tube_transistor"
+                  }
+                },
+                {
+                  "kind": "room_swept"
+                },
+                {
+                  "kind": "dialog_done"
+                }
+              ]
+            },
+            "message": "ls: wait for Kiro.d to finish speaking (or click Skip Dialog ») before running ls -la!\n",
+            "freeAction": true
           }
         ],
         "bullying": {
@@ -1299,6 +1333,37 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "triggers": [
           {
             "when": {
+              "kind": "all",
+              "of": [
+                {
+                  "kind": "ran_command",
+                  "name": "ls"
+                },
+                {
+                  "kind": "not",
+                  "of": {
+                    "kind": "room_swept"
+                  }
+                }
+              ]
+            },
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "Hmm, plain ls only listed vault_notes.txt, gravy_sentry.bin, ram_16gb.dimm, and ssd_256gb.img... no Tensor GPU in sight!",
+                "holdSec": 6
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Plain ls hides dotfiles! The Tensor GPU must be cloaked as a hidden file—petrify gravy_sentry.bin and grab the Tube Transistor so we can run ls -la!",
+                "holdSec": 7
+              }
+            ]
+          },
+          {
+            "when": {
               "kind": "enemy_dead",
               "enemyId": "trojan_l2"
             },
@@ -1332,7 +1397,26 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "All ls flags are unlocked now! Try running ls -la right here to sweep the shadows for hidden dotfiles before heading to gpu_alley!",
+                "text": "Hold on until I finish talking (or hit Skip Dialog »), then try ls -la right here to sweep the shadows and flush out that hidden Tensor GPU!",
+                "holdSec": 7
+              }
+            ]
+          },
+          {
+            "when": {
+              "kind": "room_swept"
+            },
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "AHA! ls -la exposed .vault_beacon—and a hidden .tensor_gpu card just tumbled out from behind the cache DIMM bank!",
+                "holdSec": 6
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "There it is! Grab .tensor_gpu (`mv .tensor_gpu ~`) for the Hub—and remember to run ls -la in gpu_alley next!",
                 "holdSec": 7
               }
             ]
@@ -1354,25 +1438,6 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "speaker": "kiro",
                 "text": "That is the real thing, Vibecoder! Keep it safe: with a Tensor GPU the Old Bearded Coder can load open-weight models into me. Carry it to the Matrix Hub!",
                 "holdSec": 8
-              }
-            ]
-          },
-          {
-            "when": {
-              "kind": "room_swept"
-            },
-            "steps": [
-              {
-                "kind": "dialog_box",
-                "speaker": "vibecoder",
-                "text": "Whoa—ls -la exposed a hidden .vault_beacon dotfile that plain ls completely missed!",
-                "holdSec": 6
-              },
-              {
-                "kind": "dialog_box",
-                "speaker": "kiro",
-                "text": "Awesome test! Codec cloaked his enemies in gpu_alley next—open Sector 03 with ls -la the moment you step inside!",
-                "holdSec": 7
               }
             ]
           }
@@ -4862,14 +4927,14 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = {
         "completion": "Kiro.d: \"Awesome! You mastered ls, mv, cat, ps, and kill! Head into Cache Vault next—watch out, Big Four minions will attack you in turn-based battle!\""
       },
       "level-02-task-ram-heist": {
-        "banner": "LEVEL 02 // CACHE VAULT: Petrify gravy_sentry.bin so the Tube Transistor drops to the ground (`mv tube_transistor ~`), try `ls -la`, loot RAM+SSD!",
+        "banner": "LEVEL 02 // CACHE VAULT: Try plain `ls`, petrify gravy_sentry.bin, grab `tube_transistor`, run `ls -la` after Kiro.d's signal to dislodge `.tensor_gpu`, loot RAM+SSD!",
         "hankRungs": [
-          "Kiro.d: \"Read `cat vault_notes.txt` first, then petrify `gravy_sentry.bin` with `chmod -x gravy_sentry.bin` so the Tube Transistor lands on the ground!\"",
-          "Kiro.d: \"Grab the fallen Tube Transistor with `mv tube_transistor ~` (try `ls -la` right away!), then pocket `ram_16gb.dimm` and `ssd_256gb.img`!\"",
-          "Kiro.d: \"Run `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `mv tube_transistor ~`, `mv ram_16gb.dimm ~`, `mv ssd_256gb.img ~`, then `cd gpu_alley`!\""
+          "Kiro.d: \"Try plain `ls` (no Tensor GPU in plain sight!), read `cat vault_notes.txt`, then petrify `gravy_sentry.bin` with `chmod -x gravy_sentry.bin` so the Tube Transistor drops!\"",
+          "Kiro.d: \"Grab the fallen Tube Transistor with `mv tube_transistor ~`, let me finish my cue (or click Skip Dialog »), then run `ls -la` to dislodge `.tensor_gpu` from behind the DIMM bank and pocket it (`mv .tensor_gpu ~`)!\"",
+          "Kiro.d: \"Run `ls`, `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `mv tube_transistor ~`, `ls -la`, `mv .tensor_gpu ~`, `mv ram_16gb.dimm ~`, `mv ssd_256gb.img ~`, then `cd gpu_alley`!\""
         ],
         "agentTaunt": "ANTI-GRAVY: \"HAHAHA! My gargoyle minion gravy_sentry.bin has your precious Tube Transistor—eat red Matrix fireballs, Vibecoder!\"",
-        "completion": "Cache Vault cleared! You grabbed the Tube Transistor off the ground (unlocking `ls -la` and all `ls` flags) plus RAM and a 256GB SSD disk—ready for GPU Alley!"
+        "completion": "Cache Vault cleared! You unlocked `ls -la` with the Tube Transistor, uncovered `.tensor_gpu` from behind the DIMM bank, and pocketed RAM + SSD for GPU Alley!"
       },
       "level-03-task-gpu-salvage": {
         "banner": "LEVEL 03 // GPU ALLEY: Your Tube Transistor unlocks `ls -la`! Sweep Codec's hidden squad (`.codec_spycam`, `.keygen.exe`, `port_445/worm.bin`) & `.transistor_rune`, then solve `transistor_gate.sock`!",

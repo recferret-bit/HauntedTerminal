@@ -10,6 +10,7 @@ await withProcgen(async (_p, vite) => {
     KEY_GAINS,
     KEY_RATES,
     KEY_VARIANTS,
+    LOOP_ACCENTS,
     LOOP_CUE_IDS,
     LOOP_GAINS,
     SFX_TRIM,
@@ -47,6 +48,13 @@ await withProcgen(async (_p, vite) => {
   for (const [id, gain] of Object.entries(LOOP_GAINS)) {
     assert.ok(sfxSet.has(id), `LOOP_GAINS key "${id}" must exist in SFX_IDS`);
     assert.ok(Number.isFinite(gain) && gain > 0 && gain <= 1, `LOOP_GAINS.${id} out of range`);
+  }
+  for (const [id, spec] of Object.entries(LOOP_ACCENTS)) {
+    assert.ok(sfxSet.has(id), `LOOP_ACCENTS key "${id}" must exist in SFX_IDS`);
+    assert.ok(Array.isArray(spec.cues) && spec.cues.length > 0, `LOOP_ACCENTS.${id}.cues must be non-empty`);
+    for (const c of spec.cues) assert.ok(sfxSet.has(c), `LOOP_ACCENTS.${id} cue "${c}" must exist in SFX_IDS`);
+    assert.ok(spec.minIntervalMs >= 50 && spec.maxIntervalMs >= spec.minIntervalMs, `LOOP_ACCENTS.${id} interval bounds invalid`);
+    assert.ok(spec.gain > 0 && spec.gain <= 1, `LOOP_ACCENTS.${id}.gain out of range`);
   }
   for (const [base, group] of [...Object.entries(KEY_VARIANTS), ...Object.entries(TAUNT_VARIANTS)]) {
     assert.ok(sfxSet.has(base), `variant key "${base}" must exist in SFX_IDS`);

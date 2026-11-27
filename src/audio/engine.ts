@@ -5,6 +5,7 @@ import {
   KEY_GAINS,
   KEY_RATES,
   KEY_VARIANTS,
+  LOOP_ACCENTS,
   LOOP_GAINS,
   SFX_TRIM,
   SPEECH_SFX,
@@ -12,6 +13,7 @@ import {
   THROTTLED_TYPING_SFX,
   TYPING_SFX,
 } from './config.js';
+import { startLoopAccents, type AccentHandle } from './loop-accents.js';
 import { LOOP_TAKES, pickTake } from './loop-takes.js';
 import { SOUND_SOURCES, TYPING_MIN_INTERVAL_MS, TYPING_SOUND_SOURCES } from './limits.js';
 import { pickCappedSlot } from './voices.js';
@@ -153,6 +155,7 @@ function stopVoice(ctx: AudioContext, voice: VoiceSlot | null | undefined, fadeS
 interface LoopEntry {
   node?: AudioBufferSourceNode;
   bed?: BedHandle;
+  accents?: AccentHandle;
   buffer: AudioBuffer;
   startedAt: number;
   pos: number;
@@ -161,6 +164,28 @@ interface LoopEntry {
 function stopLoopEntry(entry: LoopEntry | undefined): void {
   stopAt(entry?.node);
   entry?.bed?.stop();
+  entry?.accents?.stop();
+}
+
+function attachLoopAccents(
+  id: string,
+  ctx: AudioContext,
+  master: GainNode,
+  load: Loader,
+  still: () => boolean,
+): AccentHandle | undefined {
+  const spec = LOOP_ACCENTS[id as SfxId];
+  if (!spec) return undefined;
+  return startLoopAccents({
+    spec,
+    still,
+    play(cue, gain, rate) {
+      void load('sfx', cue).then((buf) => {
+        if (!buf || !still()) return;
+        spawnVoice(ctx, master, buf, gain, false, 0, undefined, rate);
+      });
+    },
+  });
 }
 
 function startCrossfadedLoop(
@@ -170,12 +195,13 @@ function startCrossfadedLoop(
   gain: number,
   offset: number,
   still: () => boolean,
+  accents?: AccentHandle,
 ): LoopEntry {
   const amp = ctx.createGain();
   amp.gain.value = gain;
   amp.connect(master);
   const bed = playBed({ ctx, dest: amp, bed: buffer, intro: null, startPos: offset, looping: true, still });
-  return { bed, buffer, startedAt: ctx.currentTime, pos: offset };
+  return { bed, accents, buffer, startedAt: ctx.currentTime, pos: offset };
 }
 
 interface Slots {
@@ -240,13 +266,14 @@ function makeSlots(
         return;
       }
       const offset = buffer.duration > 0 ? (loopPos.get(id) ?? 0) % buffer.duration : 0;
+      const still = (): boolean => alive() && !held && loopOn.has(id);
+      const accents = attachLoopAccents(id, ctx, master, load, still);
       if (CROSSFADE_LOOPS.has(id as SfxId)) {
-        const entry = startCrossfadedLoop(ctx, master, buffer, gain, offset, () => alive() && !held && loopOn.has(id));
-        loops.set(id, entry);
+        loops.set(id, startCrossfadedLoop(ctx, master, buffer, gain, offset, still, accents));
         return;
       }
       const { node } = spawnVoice(ctx, master, buffer, gain, true, offset);
-      loops.set(id, { node, buffer, startedAt: ctx.currentTime, pos: offset });
+      loops.set(id, { node, accents, buffer, startedAt: ctx.currentTime, pos: offset });
     });
   };
 

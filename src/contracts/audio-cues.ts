@@ -37,6 +37,8 @@ export const SFX_IDS = [
   'dad_typing_loop',
   'kiro_fly', 'kiro_magic', 'bat_wings',
   'dad_rig_loop',
+  'dad_rig_beep', 'dad_rig_beep_2', 'dad_rig_beep_3',
+  'dad_rig_spark', 'dad_rig_spark_2', 'dad_rig_spark_3',
 ] as const;
 
 export type SfxId = (typeof SFX_IDS)[number];

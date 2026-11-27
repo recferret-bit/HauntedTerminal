@@ -1,6 +1,6 @@
 # Laptop rework: requirements
 
-Status: requirements-approved (requirements approved by the user 2026-11-27)
+Status: design-approved (requirements approved by the user 2026-11-27; design approved by the user 2026-11-27)
 
 Capability: reworks the developer's CSS 3D clamshell laptop (`src/laptop/`) and its in-game `/play` overlay (`src/play/laptop.ts`) so running the laptop in-game is immediately obvious (auto-opening the lid on launch and adding a prominent physical Power button top-right of the deck beside the speaker grille) and removes all rectangular backgrounds behind the floating 3D laptop on `/play` while keeping `/laptop-lab`'s comic-panel stage intact.
 
@@ -44,6 +44,7 @@ Capability: reworks the developer's CSS 3D clamshell laptop (`src/laptop/`) and 
   **A (user, 2026-11-27):** Power button toggles power (boots in `'open'`, shuts down in `'booting'`/`'desktop'`), and clicking the dark screen in `'open'` still boots too — obvious hardware button without breaking screen-click muscle memory.
 - **Q:** Where should the background behind the 3D laptop be removed?
   **A (user, 2026-11-27):** Transparent in `/play` only (keep the comic-panel stage in `/laptop-lab`) — removes the dark backdrop, paper frame, and purple halftone scene fill in-game so only the 3D laptop floats over the live stage and terminal.
+  **Confirmed at design approval (user, 2026-11-27):** Transparent background is strictly for gameplay (`/play`) only; leave the background intact in `/laptop-lab`.
 - **Q:** With the background removed in `/play`, what should clicking empty space outside the 3D laptop body do?
   **A (user, 2026-11-27):** Close the laptop overlay (while keeping the floating `CLOSE [Esc]` button too) — natural dismissal when the live game is visible around the laptop.
 

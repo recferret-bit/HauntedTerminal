@@ -40,7 +40,9 @@ const BODY_CENTRE_Y = 0.52;
 const FLAP_RATE = 2.4;
 /** Scaled so the wide 3/4 cartoon bat wingspan (~1.3u) reads crisply (~67–124 px) without dwarfing actors. */
 const FLIGHT_SCALE = 1.25;
-const BAT_Z = ACTOR_Z - 0.45;
+/** Behind actors (ACTOR_Z = 0.22), projectiles, lightning bolts (z <= 0.22) and FX shaders, in front of room walls (zWallFace ~ 1.12). */
+const BAT_Z = ACTOR_Z + 0.18;
+const BAT_RENDER_ORDER = -15;
 const RECOIL_HOVER = { amp: 0.028, speed: 2.2 } as const;
 const SECOND_BURST_DELAY_SEC = 0.28;
 
@@ -121,7 +123,10 @@ function spawnFlock(stage: ComicStage): void {
     const animator = createAnimator(model, { hoverBob: RECOIL_HOVER });
     animator.update(flight.phase * 2);
     model.group.visible = false;
+    model.group.renderOrder = BAT_RENDER_ORDER;
+    model.group.traverse((obj) => { obj.renderOrder = BAT_RENDER_ORDER; });
     stage.world.add(model.group);
+    (stage as Partial<ComicStage>).applyInk?.(model.group);
     for (const mat of model.allMaterials) stage.extraComics.add(mat);
     stage.bats.flying.push({
       flight,

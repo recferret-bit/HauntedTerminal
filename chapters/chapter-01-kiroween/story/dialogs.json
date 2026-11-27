@@ -22,14 +22,14 @@
       "completion": "Kiro.d: \"Awesome! You mastered ls, mv, cat, ps, and kill! Head into Cache Vault next—watch out, Big Four minions will attack you in turn-based battle!\""
     },
     "level-02-task-ram-heist": {
-      "banner": "LEVEL 02 // CACHE VAULT: Petrify gravy_sentry.bin so the Tube Transistor drops to the ground (`mv tube_transistor ~`), try `ls -la`, loot RAM+SSD!",
+      "banner": "LEVEL 02 // CACHE VAULT: Try plain `ls`, petrify gravy_sentry.bin, grab `tube_transistor`, run `ls -la` after Kiro.d's signal to dislodge `.tensor_gpu`, loot RAM+SSD!",
       "hankRungs": [
-        "Kiro.d: \"Read `cat vault_notes.txt` first, then petrify `gravy_sentry.bin` with `chmod -x gravy_sentry.bin` so the Tube Transistor lands on the ground!\"",
-        "Kiro.d: \"Grab the fallen Tube Transistor with `mv tube_transistor ~` (try `ls -la` right away!), then pocket `ram_16gb.dimm` and `ssd_256gb.img`!\"",
-        "Kiro.d: \"Run `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `mv tube_transistor ~`, `mv ram_16gb.dimm ~`, `mv ssd_256gb.img ~`, then `cd gpu_alley`!\""
+        "Kiro.d: \"Try plain `ls` (no Tensor GPU in plain sight!), read `cat vault_notes.txt`, then petrify `gravy_sentry.bin` with `chmod -x gravy_sentry.bin` so the Tube Transistor drops!\"",
+        "Kiro.d: \"Grab the fallen Tube Transistor with `mv tube_transistor ~`, let me finish my cue (or click Skip Dialog »), then run `ls -la` to dislodge `.tensor_gpu` from behind the DIMM bank and pocket it (`mv .tensor_gpu ~`)!\"",
+        "Kiro.d: \"Run `ls`, `cat vault_notes.txt`, `chmod -x gravy_sentry.bin`, `mv tube_transistor ~`, `ls -la`, `mv .tensor_gpu ~`, `mv ram_16gb.dimm ~`, `mv ssd_256gb.img ~`, then `cd gpu_alley`!\""
       ],
       "agentTaunt": "ANTI-GRAVY: \"HAHAHA! My gargoyle minion gravy_sentry.bin has your precious Tube Transistor—eat red Matrix fireballs, Vibecoder!\"",
-      "completion": "Cache Vault cleared! You grabbed the Tube Transistor off the ground (unlocking `ls -la` and all `ls` flags) plus RAM and a 256GB SSD disk—ready for GPU Alley!"
+      "completion": "Cache Vault cleared! You unlocked `ls -la` with the Tube Transistor, uncovered `.tensor_gpu` from behind the DIMM bank, and pocketed RAM + SSD for GPU Alley!"
     },
     "level-03-task-gpu-salvage": {
       "banner": "LEVEL 03 // GPU ALLEY: Your Tube Transistor unlocks `ls -la`! Sweep Codec's hidden squad (`.codec_spycam`, `.keygen.exe`, `port_445/worm.bin`) & `.transistor_rune`, then solve `transistor_gate.sock`!",

@@ -7,7 +7,7 @@
   "badge": "KIROWEEN SPECIAL ISSUE",
   "estimatedMinutes": 35,
   "clientName": "Kiro.d & The Bearded Matrix Coder (Dad)",
-  "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal and lays out the chapter mission: raid 6 sectors, reboot Kiro.d at the Matrix Hub with 3 open-weight models to silence Anti-Gravy, Codec, and Gork, then defeat Clod and PID 1 to exit home! Basic ls works from the start for visible files; petrify the gargoyle in Sector 02 so your glowing Tube Transistor lands on the ground (grab it with mv to unlock ls -la and reveal hidden enemies in Sector 03), receive the Motherboard Map & Field Manual from the Old Bearded Coder on your first Hub visit (Sector 04), recover your clamshell laptop in Logic Cell (Sector 06), and uncover the father-son unicorn twist!",
+  "summary": "Sucked into his computer, a Vibecoder wakes empty-handed in a dark tangle of wires and chips where Kiro.d brings his terminal and lays out the chapter mission: raid 6 sectors, reboot Kiro.d at the Matrix Hub with 3 open-weight models to silence Anti-Gravy, Codec, and Gork, then defeat Clod and PID 1 to exit home! Basic ls works from the start for visible files; in Sector 02 try plain ls, petrify the gargoyle so your Tube Transistor lands (`mv tube_transistor ~`), run `ls -la` after Kiro.d's signal to dislodge the hidden `.tensor_gpu`, receive the Motherboard Map & Field Manual from the Old Bearded Coder on your first Hub visit (Sector 04), recover your clamshell laptop in Logic Cell (Sector 06), and uncover the father-son unicorn twist!",
   "allyNpc": {
     "id": "dad.tty",
     "name": "Old Bearded Matrix Coder (dad.tty)",
@@ -37,7 +37,7 @@
   },
   "mechanicsSummary": [
     "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, finish talking with Kiro.d (who brings your terminal and explains your chapter mission), then practice ls, mv, cat, ps, and kill while ls flags stay locked without a Tube Transistor",
-    "Levels 2-3, 5-6, 8-9 Tasks: Finish Vibecoder + Kiro.d opening dialog (or Skip Dialog) before Big Four taunt & turn-based battle! Petrify the gargoyle minion in Level 2 so the Tube Transistor drops onto the ground (`mv tube_transistor ~`), test `ls -la`, expose Codec's hidden squad & dotfile riddle in Level 3, and recover your laptop in Level 6",
+    "Levels 2-3, 5-6, 8-9 Tasks: Finish Vibecoder + Kiro.d opening dialog (or Skip Dialog) before Big Four taunt & turn-based battle! Petrify the gargoyle minion in Level 2 (`mv tube_transistor ~`), wait for Kiro.d's signal to run `ls -la` and dislodge `.tensor_gpu` from behind the DIMM bank, expose Codec's hidden squad & dotfile riddle in Level 3, and recover your laptop in Level 6",
     "Levels 4, 7, 10 Hub: On your first Hub visit (Level 4), the Old Bearded Coder hands you the Motherboard Map & Unix Field Manual (unlocking ACH_FIELD_MANUAL and /manual), then reboots Kiro.d with Qwen, DeepSeek, and Llama to silence Anti-Gravy, Codec, and Gork",
     "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro.d as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
   ],
@@ -65,9 +65,9 @@
       "roomKind": "crypt_entrance",
       "floorTheme": 2,
       "mechanic": "terminal",
-      "mechanicLabel": "Task 1 (Battle Rules / chmod -x / Ground Drop / sed)",
+      "mechanicLabel": "Task 1 (Battle Rules / chmod -x / Ground Drop / Hidden .tensor_gpu via ls -la)",
       "difficulty": 1,
-      "teaches": ["cat", "chmod -x", "mv", "ls -la", "sed -i"],
+      "teaches": ["ls", "cat", "chmod -x", "mv", "ls -la"],
       "enemies": ["trojan"],
       "classicFloor": 2,
       "specPath": "levels/level-02-task-ram-heist/level.spec.json"

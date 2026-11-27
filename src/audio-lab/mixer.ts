@@ -25,7 +25,7 @@ export function createMixerPanel(
       type: 'range',
       min: '0',
       max: '1',
-      step: '0.02',
+      step: '0.01',
       value: String(cur.gain),
       'aria-label': `${id} reference gain`,
     }) as HTMLInputElement;

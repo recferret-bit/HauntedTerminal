@@ -65,7 +65,10 @@ export default async function gameplaySuite(ctx) {
                 p.levels[1].pickups.push({ id: `prop_${type}`, type, path: `${cwd}/${type}` });
               });
           const name = list.length ? list[l].name : type;
-          for (const prepCmd of list.length ? list[l].prep : []) session.exec(prepCmd);
+          for (const prepCmd of list.length ? list[l].prep : []) {
+            if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+            session.exec(prepCmd);
+          }
           const first = session.exec(`mv ${name} ~`);
           expect(first.events.filter((e) => e.type === 'PICKUP_COLLECTED' && e.item === type).length === 1, `\`mv ${name} ~\` did not collect ${type} exactly once`);
           const kept = JSON.stringify(session.snapshot().inventory);
@@ -123,6 +126,7 @@ export default async function gameplaySuite(ctx) {
     if (session.snapshot().openingDialog) session.skipOpeningDialog();
     for (const c of world.levels[levelIdx].solutionCommands ?? []) {
       if (session.snapshot().battle?.phase === 'intro' || session.levelIdx !== levelIdx) break;
+      if (session.snapshot().skippableDialog) session.skipOpeningDialog();
       session.exec(c);
     }
     if (session.levelIdx !== levelIdx || session.snapshot().battle?.phase !== 'intro') return null;
@@ -263,7 +267,10 @@ export default async function gameplaySuite(ctx) {
       check: () => {
         const last = world.levels.length - 1;
         const session = world.open(last);
-        for (const c of world.levels[last].solutionCommands ?? []) session.exec(c);
+        for (const c of world.levels[last].solutionCommands ?? []) {
+          if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+          session.exec(c);
+        }
         const snap = session.exec('exit').snapshot;
         expect(snap.ended, 'the last level did not end the chapter after its solution and `exit`');
         expect(snap.room.floor === session.rt.spec.index, `ended room.floor ${snap.room.floor} != level index ${session.rt.spec.index}`);

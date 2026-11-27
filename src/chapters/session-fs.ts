@@ -129,7 +129,7 @@ export function cmdCd(g: ChapterState, args: string[]): Step {
       const clearedId = g.rt.spec.id;
       const clearedMechanic = g.rt.spec.mechanic;
       const levelSec = Math.max(1, Math.floor((Date.now() - g.rt.levelStartedAt) / 1000));
-      const lvlRank = computeLevelRank(g.rt.levelCommands, g.rt.levelDeaths, g.rt.usedSpoilerRung);
+      const lvlRank = computeLevelRank(g.rt.levelCommands, g.rt.levelDeaths, g.rt.usedSpoilerRung, g.rt.spec.solutionCommands.length);
       const reward = g.preview
         ? { scrapEarned: 0, totalScrap: 0 }
         : recordLevelClear(g.chapterId, clearedId, lvlRank, g.rt.levelCommands, levelSec, g.chaosMode);

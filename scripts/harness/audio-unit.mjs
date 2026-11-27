@@ -706,6 +706,32 @@ await withProcgen(async (_procgen, vite) => {
     assert.equal(seen.size, takes.length, 'pickTake reaches every take');
   });
 
+  await test('startLoopAccents fires random-interval beeps/sparks without immediate repeats and stops cleanly', async () => {
+    const { pickAccentDelay, startLoopAccents } = await vite.ssrLoadModule('/src/audio/loop-accents.ts');
+    assert.equal(pickAccentDelay(100, 300, () => 0), 100);
+    assert.equal(pickAccentDelay(100, 300, () => 1), 300);
+    assert.equal(pickAccentDelay(10, 20, () => 0), 50, 'clamps to >= 50ms');
+    const fired = [];
+    let alive = true;
+    const handle = startLoopAccents({
+      spec: { cues: ['dad_rig_beep', 'dad_rig_spark'], minIntervalMs: 50, maxIntervalMs: 50, gain: 0.08, rateJitter: 0.08 },
+      play: (cue, gain, rate) => fired.push({ cue, gain, rate }),
+      still: () => alive,
+    });
+    await new Promise((r) => setTimeout(r, 260));
+    handle.stop();
+    const countAtStop = fired.length;
+    await new Promise((r) => setTimeout(r, 140));
+    assert.ok(countAtStop >= 3, `expected >= 3 accents fired, got ${countAtStop}`);
+    assert.equal(fired.length, countAtStop, 'stop() cancels further accents');
+    for (let i = 1; i < fired.length; i += 1) assert.notEqual(fired[i].cue, fired[i - 1].cue, 'no back-to-back repeat');
+    for (const f of fired) {
+      assert.equal(f.gain, 0.08);
+      assert.ok(f.rate >= 0.92 && f.rate <= 1.08, `rate in jitter range: ${f.rate}`);
+    }
+    alive = false;
+  });
+
   await test('WebAudio hold pauses loops and beds while allowing UI one-shots and holding deferred beds', async () => {
     const engineMod = await vite.ssrLoadModule('/src/audio/engine.ts');
     await withFakeWindow(async (env) => {

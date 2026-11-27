@@ -8,8 +8,9 @@ Sources of truth: `src/audio/{config,limits,loop-takes,music-for,sfx-for,catalog
 |---|---|---|
 | `SFX_TRIM` | `Partial<Record<SfxId, { offset: number; duration?: number }>>` | Active trim windows (seconds) bypassing leading/trailing MP3 silence for 0ms latency |
 | `LOOP_CUE_IDS` | `readonly SfxId[]` | `rain_loop`, `lap_fan`, `dad_typing_loop`, `dad_rig_loop`, `low_hp_loop`, `pickup_hover` |
-| `LOOP_GAINS` | `Partial<Record<SfxId, number>>` | Ambient/loop per-cue mix gains (`rain_loop: 0.22`, `lap_fan: 0.28`, `dad_typing_loop: 0.16`, `dad_rig_loop: 0.14`) |
+| `LOOP_GAINS` | `Partial<Record<SfxId, number>>` | Ambient/loop per-cue mix gains (`rain_loop: 0.22`, `lap_fan: 0.28`, `dad_typing_loop: 0.16`, `dad_rig_loop: 0.03`) |
 | `CROSSFADE_LOOPS` | `ReadonlySet<SfxId>` | Single-file ambient loops played via `playBed` 120 ms overlap crossfade (`dad_rig_loop`) |
+| `LOOP_ACCENTS` | `Partial<Record<SfxId, LoopAccentSpec>>` | Random-interval ambient one-shot accents paired with a loop (`dad_rig_loop` -> `dad_rig_beep..3`, `dad_rig_spark..3`, 2.2–6.5 s, gain `0.08`) |
 | `DEFAULT_LOOP_GAIN` | `number` (`0.35`) | Fallback gain when a loop cue is absent from `LOOP_GAINS` |
 | `TYPING_SFX` | `ReadonlySet<SfxId>` | Capped to `TYPING_SOUND_SOURCES` (`3`) simultaneous voices |
 | `THROTTLED_TYPING_SFX` | `ReadonlySet<SfxId>` | Rate-limited to `TYPING_MIN_INTERVAL_MS` (`100ms`); `key_enter` & `tab_complete` bypass throttle |

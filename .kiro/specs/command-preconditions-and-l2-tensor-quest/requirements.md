@@ -1,6 +1,6 @@
 # Command Preconditions & Level 2 Tensor GPU Quest: requirements
 
-Status: approved (requirements, design, and tasks approved by the user 2026-11-27)
+Status: done (2026-11-27; requirements, design, and tasks approved by the user 2026-11-27)
 
 Capability: Extend declarative level scripts (`level.spec.json -> script`) with reusable command-availability preconditions across the four-place chapter vocabulary (`src/chapters/script-types.ts`, `src/chapters/script.ts`, `src/chapter-editor/schema*.ts`, `src/chapters/validate-pack.ts`), and rework Chapter 1 Level 2 (`level-02-task-ram-heist`) so: (1) `tensor_gpu` is a hidden dotfile (`.tensor_gpu`) that appears from behind a Cache Vault rack right on the very first `ls -la`, rather than dropping on `enemy_dead`; (2) Level 2 adds an additional quest step (pocketing `.tensor_gpu` in `winRules`) where Kiro.d tells the Vibecoder a Tensor GPU must be somewhere here and asks him to try plain `ls` (which misses it); and (3) after obtaining `tube_transistor`, Kiro.d asks the Vibecoder to try `ls -la`, while running `ls` flags (`-la`, `-a`, `-l`, etc.) is refused as a free action until that dialog finishes (or is skipped via `Skip Dialog »`).
 

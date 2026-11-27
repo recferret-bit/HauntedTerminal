@@ -54,7 +54,7 @@ export const LOOP_GAINS: Partial<Record<SfxId, number>> = {
   rain_loop: 0.22,
   lap_fan: 0.28,
   dad_typing_loop: 0.16,
-  dad_rig_loop: 0.14,
+  dad_rig_loop: 0.03,
 };
 
 export const LOOP_CUE_IDS: readonly SfxId[] = [
@@ -68,6 +68,28 @@ export const LOOP_CUE_IDS: readonly SfxId[] = [
 
 /** Seamless single-file ambient loops played via `playBed` overlap crossfade so MP3 padding never clicks at the seam. */
 export const CROSSFADE_LOOPS: ReadonlySet<SfxId> = new Set<SfxId>(['dad_rig_loop']);
+
+export interface LoopAccentSpec {
+  readonly cues: readonly SfxId[];
+  readonly minIntervalMs: number;
+  readonly maxIntervalMs: number;
+  readonly gain: number;
+  readonly rateJitter: number;
+}
+
+/** Random-interval one-shot accents that fire softly while an ambient loop is active. */
+export const LOOP_ACCENTS: Partial<Record<SfxId, LoopAccentSpec>> = {
+  dad_rig_loop: {
+    cues: [
+      'dad_rig_beep', 'dad_rig_beep_2', 'dad_rig_beep_3',
+      'dad_rig_spark', 'dad_rig_spark_2', 'dad_rig_spark_3',
+    ],
+    minIntervalMs: 2200,
+    maxIntervalMs: 6500,
+    gain: 0.08,
+    rateJitter: 0.08,
+  },
+};
 
 /** Active windows (seconds) trimmed from leading and trailing silence so keystrokes and dialog voices fire at 0ms latency. */
 export const SFX_TRIM: Partial<Record<SfxId, SfxTrimWindow>> = {

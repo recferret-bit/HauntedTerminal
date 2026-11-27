@@ -656,27 +656,33 @@ await withProcgen(async (_procgen, vite) => {
     assert.deepEqual(planWordReveal(12, 2400, { instant: true }), { stepMs: 0, holdMs: 2400, revealMs: 0 });
   });
 
-  await test('flying bats: Bézier endpoints, easing, opposite corners, flock size and ranges', async () => {
+  await test('flying bats: side-to-side middle/top Bézier endpoints, clean level entry, flock size and pitch clamp', async () => {
     const bat = await load('/src/renderer/bat-path.ts');
     const bounds = { minX: -5, maxX: 5, minY: 0, maxY: 6 };
+    const spanY = bounds.maxY - bounds.minY;
     let seed = 12345;
     const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 0x100000000);
     const sizes = new Set();
-    const starts = new Set();
+    const startSides = new Set();
     for (let i = 0; i < 400; i++) {
       const flock = bat.makeFlock(rand, bounds);
       sizes.add(flock.length);
       assert.ok(flock.length >= 1 && flock.length <= 6);
-      const outside = (p) => p.x < bounds.minX || p.x > bounds.maxX || p.y < bounds.minY || p.y > bounds.maxY;
       const sx = Math.sign(flock[0].p0.x - (bounds.minX + bounds.maxX) / 2);
-      const sy = Math.sign(flock[0].p0.y - (bounds.minY + bounds.maxY) / 2);
-      starts.add(`${sx},${sy}`);
+      startSides.add(sx);
       for (const f of flock) {
-        assert.ok(outside(f.p0) && outside(f.p3));
-        // Opposite corner: both axes flip between start and end.
+        assert.ok(f.p0.x < bounds.minX || f.p0.x > bounds.maxX);
+        assert.ok(f.p3.x < bounds.minX || f.p3.x > bounds.maxX);
+        // Opposite horizontal side: left/right flips between start and end; height stays in middle-to-upper band.
         assert.equal(Math.sign(f.p3.x - (bounds.minX + bounds.maxX) / 2), -sx);
-        assert.equal(Math.sign(f.p3.y - (bounds.minY + bounds.maxY) / 2), -sy);
-        assert.deepEqual(bat.cubicBezier(f.p0, f.p1, f.p2, f.p3, 0), f.p0);
+        assert.ok(f.p0.y >= bounds.minY + spanY * 0.4 && f.p0.y <= bounds.maxY);
+        assert.ok(f.p3.y >= bounds.minY + spanY * 0.4 && f.p3.y <= bounds.maxY);
+        // Clean level initial entry: tangent at t=0 has zero pitch.
+        const at0 = bat.cubicBezier(f.p0, f.p1, f.p2, f.p3, 0);
+        const at1 = bat.cubicBezier(f.p0, f.p1, f.p2, f.p3, 0.02);
+        const entryHeading = bat.computeBatHeading(at0, at1, f.p3.x > f.p0.x);
+        assert.ok(Math.abs(entryHeading.rotZ) < 0.02, `entry rotZ should be clean level (~0), got ${entryHeading.rotZ}`);
+        assert.deepEqual(at0, f.p0);
         assert.deepEqual(bat.cubicBezier(f.p0, f.p1, f.p2, f.p3, 1), f.p3);
         assert.ok(f.scale >= 0.7 && f.scale <= 1.3);
         assert.ok(f.durationSec >= 2 / 1.25 - 1e-9 && f.durationSec <= 3.5 / 0.75 + 1e-9);
@@ -685,7 +691,7 @@ await withProcgen(async (_procgen, vite) => {
       assert.equal(scales.size, flock.length, 'each bat differs in size');
     }
     assert.deepEqual([...sizes].sort(), [1, 2, 3, 4, 5, 6], 'every group size 1..6 occurs');
-    assert.equal(starts.size, 4, 'all four start corners occur');
+    assert.deepEqual([...startSides].sort((a, b) => a - b), [-1, 1], 'both left and right start sides occur');
     let prev = 0;
     for (let i = 1; i <= 100; i++) {
       const e = bat.easeInOutSine(i / 100);
@@ -699,7 +705,7 @@ await withProcgen(async (_procgen, vite) => {
     assert.ok(scoped.length >= 2 && scoped.length <= 3, `custom countRange [2,3] gave ${scoped.length}`);
 
     // Quadrant travel alignment: local nose (-1,0,0) under scale(sx, s, s) then rotZ aligns with (dx, dy) & stays upright.
-    for (const [dx, dy] of [[3, 2], [3, -2], [-3, 2], [-3, -2]]) {
+    for (const [dx, dy] of [[5, 1], [5, -1], [-5, 1], [-5, -1]]) {
       const h = bat.computeBatHeading({ x: 0, y: 0 }, { x: dx, y: dy }, false);
       const probe = new THREE.Object3D();
       probe.scale.set(h.facingLeft ? -2 : 2, 2, 2);
@@ -712,11 +718,12 @@ await withProcgen(async (_procgen, vite) => {
       const up = new THREE.Vector3(0, 1, 0).applyMatrix4(probe.matrixWorld);
       assert.ok(up.y > 0, `bat stays upright for (${dx},${dy}), up.y=${up.y}`);
     }
+    assert.ok(Math.abs(bat.computeBatHeading({ x: 0, y: 0 }, { x: 1, y: 4 }, false).pitch - 0.28) < 1e-6);
     assert.equal(bat.computeBatHeading({ x: 1, y: 1 }, { x: 1, y: 1 }, true).facingLeft, true);
     assert.equal(bat.computeBatHeading({ x: 1, y: 1 }, { x: 1, y: 1 }, false).facingLeft, false);
   });
 
-  await test('stage-bats: prop.bat_flying flock orientation, bat_wings burst + 4+-bat stagger, pause/reduced-motion silence', async () => {
+  await test('stage-bats: prop.bat_flying flock orientation, behind-actors/lightning/FX layering, bat_wings burst + 4+-bat stagger, pause/reduced-motion silence', async () => {
     const { createAppBus } = await load('/src/contracts/app-bus.ts');
     const stageBats = await load('/src/renderer/stage-bats.ts');
     const makeMockStage = () => {
@@ -742,7 +749,7 @@ await withProcgen(async (_procgen, vite) => {
       };
     };
 
-    // Small flock (2 bats): spawns prop.bat_flying, mirrors travel direction, emits bat_wings once, disposes cleanly.
+    // Small flock (2 bats): spawns prop.bat_flying behind actors/lightning/FX (z > 0.22, renderOrder < 0), mirrors travel direction, emits bat_wings once, disposes cleanly.
     const small = makeMockStage();
     stageBats.setBatsAmbient(small.stage, { enabled: true, minGapSec: 0.25, maxGapSec: 0.25, count: [2, 2] });
     stageBats.stepBats(small.stage, 0.3);
@@ -750,6 +757,8 @@ await withProcgen(async (_procgen, vite) => {
     for (const b of small.stage.bats.flying) {
       assert.equal(b.model.spec.id, 'prop.bat_flying');
       assert.equal(Math.sign(b.model.group.scale.x), b.flight.p3.x > b.flight.p0.x ? -1 : 1);
+      assert.ok(b.model.group.position.z > 0.22, `bat must sit behind ACTOR_Z (0.22), got z=${b.model.group.position.z}`);
+      assert.ok(b.model.group.renderOrder < 0, `bat renderOrder must draw under actors/lightning/FX, got ${b.model.group.renderOrder}`);
     }
     for (let i = 0; i < 200 && small.stage.bats.flying.length > 0; i += 1) {
       stageBats.stepBats(small.stage, 0.05);

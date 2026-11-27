@@ -38,11 +38,13 @@ const BAT_MARGIN = 1.1;
 const FLIGHT_SEC: readonly [number, number] = [2, 3.5];
 const SPEED_SPREAD = 0.25;
 const SCALE_RANGE: readonly [number, number] = [0.7, 1.3];
+const MAX_PITCH_RAD = 0.28;
 export const FLOCK_GAP_SEC: readonly [number, number] = [20, 60];
 
 export type Rand = () => number;
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
+const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
 const between = (rand: Rand, lo: number, hi: number): number => lerp(lo, hi, rand());
 
 export function cubicBezier(p0: Pt, p1: Pt, p2: Pt, p3: Pt, t: number): Pt {
@@ -61,51 +63,45 @@ export function easeInOutSine(t: number): number {
   return (1 - Math.cos(Math.PI * k)) / 2;
 }
 
-/** Corner index 0..3: bit 0 = right, bit 1 = top. The opposite corner flips both bits. */
-function oppositeCorner(corner: number): number {
-  return corner ^ 3;
-}
-
-function cornerPoint(bounds: BatBounds, corner: number, margin: number = BAT_MARGIN): Pt {
-  return {
-    x: corner & 1 ? bounds.maxX + margin : bounds.minX - margin,
-    y: corner & 2 ? bounds.maxY + margin : bounds.minY - margin,
-  };
-}
-
-/** One flock: 1 to 6 bats from a random corner to the opposite one, each a little different. */
+/** One flock: 1 to 6 bats crossing from middle/top on one side to the opposite side. */
 export function makeFlock(rand: Rand, bounds: BatBounds, countRange?: [number, number]): BatFlight[] {
   const minCount = countRange ? Math.max(1, Math.round(countRange[0])) : MIN_FLOCK;
   const maxCount = countRange ? Math.max(minCount, Math.round(countRange[1])) : MAX_FLOCK;
   const count = minCount + Math.min(maxCount - minCount, Math.floor(rand() * (maxCount - minCount + 1)));
-  const corner = Math.min(3, Math.floor(rand() * 4));
-  const from = cornerPoint(bounds, corner);
-  const to = cornerPoint(bounds, oppositeCorner(corner));
-  return Array.from({ length: count }, () => flightBetween(rand, from, to));
+  const fromRight = rand() < 0.5;
+  const startX = fromRight ? bounds.minX - BAT_MARGIN : bounds.maxX + BAT_MARGIN;
+  const endX = fromRight ? bounds.maxX + BAT_MARGIN : bounds.minX - BAT_MARGIN;
+  const spanY = Math.max(0.5, bounds.maxY - bounds.minY);
+  const fromY = bounds.minY + spanY * between(rand, 0.5, 0.86);
+  const toY = clamp(
+    fromY + spanY * between(rand, -0.16, 0.16),
+    bounds.minY + spanY * 0.46,
+    bounds.maxY - spanY * 0.08,
+  );
+  return Array.from({ length: count }, () => flightBetween(rand, { x: startX, y: fromY }, { x: endX, y: toY }, bounds));
 }
 
-function flightBetween(rand: Rand, from: Pt, to: Pt): BatFlight {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const len = Math.hypot(dx, dy) || 1;
-  // Unit normal of the corner-to-corner line: the sideways direction of the bow.
-  const nx = -dy / len;
-  const ny = dx / len;
-  const bow1 = between(rand, -0.22, 0.22) * len;
-  // Half the time the second bow flips sign, so the route is an S instead of a single arc.
-  const bow2 = (rand() < 0.5 ? -1 : 1) * between(rand, 0.06, 0.22) * len;
-  const jx = between(rand, -0.8, 0.8);
-  const jy = between(rand, -0.8, 0.8);
-  const at = (f: number, bow: number): Pt => ({
-    x: from.x + dx * f + nx * bow + jx,
-    y: from.y + dy * f + ny * bow + jy,
-  });
+function flightBetween(rand: Rand, from: Pt, to: Pt, bounds: BatBounds): BatFlight {
+  const spanY = Math.max(0.5, bounds.maxY - bounds.minY);
+  const minY = bounds.minY + spanY * 0.42;
+  const maxY = bounds.maxY - spanY * 0.06;
+  const jx = between(rand, -0.45, 0.45);
+  const p0: Pt = { x: from.x + jx * 0.5, y: clamp(from.y + between(rand, -0.35, 0.35), minY, maxY) };
+  const p3: Pt = { x: to.x + jx * 0.5, y: clamp(to.y + between(rand, -0.35, 0.35), minY, maxY) };
+  const dx = p3.x - p0.x;
+  // Horizontal entry handle (`p1.y = p0.y`) ensures clean level rotation (`rotZ = 0`) as each bat enters.
+  const p1: Pt = { x: p0.x + dx / 3, y: p0.y };
+  const bow2 = between(rand, -0.09, 0.09) * Math.abs(dx);
+  const p2: Pt = {
+    x: p0.x + (dx * 2) / 3,
+    y: clamp(lerp(p0.y, p3.y, 0.65) + bow2, bounds.minY + spanY * 0.38, bounds.maxY - spanY * 0.05),
+  };
   const speed = 1 + between(rand, -SPEED_SPREAD, SPEED_SPREAD);
   return {
-    p0: { x: from.x + jx * 0.5, y: from.y + jy * 0.5 },
-    p1: at(1 / 3, bow1),
-    p2: at(2 / 3, bow2),
-    p3: { x: to.x + jx * 0.5, y: to.y + jy * 0.5 },
+    p0,
+    p1,
+    p2,
+    p3,
     durationSec: between(rand, FLIGHT_SEC[0], FLIGHT_SEC[1]) / speed,
     scale: between(rand, SCALE_RANGE[0], SCALE_RANGE[1]),
     phase: rand(),
@@ -115,13 +111,13 @@ function flightBetween(rand: Rand, from: Pt, to: Pt): BatFlight {
 
 /**
  * Travel-aligned orientation for a canonical screen-right (`-x`) flying bat:
- * mirrors `scale.x` to `facingLeft` and pitches `rotation.z` along `(ahead - at)`.
+ * mirrors `scale.x` to `facingLeft` and pitches `rotation.z` gently along `(ahead - at)`.
  */
 export function computeBatHeading(at: Pt, ahead: Pt, prevFacingLeft: boolean): BatHeading {
   const dx = ahead.x - at.x;
   const dy = ahead.y - at.y;
   const facingLeft = Math.abs(dx) > 1e-5 ? dx > 0 : prevFacingLeft;
   const rawPitch = Math.atan2(dy, Math.max(1e-5, Math.abs(dx)));
-  const pitch = Math.min(0.65, Math.max(-0.65, rawPitch));
+  const pitch = clamp(rawPitch, -MAX_PITCH_RAD, MAX_PITCH_RAD);
   return { facingLeft, pitch, rotZ: facingLeft ? pitch : -pitch };
 }
