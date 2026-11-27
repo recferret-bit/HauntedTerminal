@@ -96,6 +96,18 @@ await withProcgen(async (_procgen, vite) => {
     assert.deepEqual(sfxMod.sfxFor({ kind: 'letter', letter: 'slam' }), ['cine_sfx_slam']);
     assert.equal(sfxMod.hpBand(40), sfxMod.hpBand(21));
     assert.ok(sfxMod.hpBand(20) < sfxMod.hpBand(21));
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'INODE_MODE_CHANGED', inodeId: 9, oldMode: 0, newMode: 0o755 } }),
+      ['gate_open', 'lap_run'],
+    );
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'INODE_MODE_CHANGED', inodeId: 9, oldMode: 0o755, newMode: 0 } }),
+      ['gate_locked'],
+    );
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'INODE_MODE_CHANGED', inodeId: 9, oldMode: 0o644, newMode: 0o600 } }),
+      ['chmod'],
+    );
   });
 
   await test('music priority: rank, menu, low hp, boss, floor', () => {
@@ -427,8 +439,8 @@ await withProcgen(async (_procgen, vite) => {
 
   await test('ambientLoopsFor maps the greybeard rig to his two loops and every other model to none', async () => {
     const models = await vite.ssrLoadModule('/src/audio/sfx-models.ts');
-    assert.deepEqual([...models.ambientLoopsFor(['npc.greybeard_rig'])], ['dad_typing_loop', 'dad_smoke_loop']);
-    assert.deepEqual([...models.ambientLoopsFor(['malware.bug', undefined, 'npc.greybeard_rig', 'npc.greybeard_rig'])], ['dad_typing_loop', 'dad_smoke_loop'], 'no duplicates');
+    assert.deepEqual([...models.ambientLoopsFor(['npc.greybeard_rig'])], ['dad_typing_loop', 'dad_rig_loop']);
+    assert.deepEqual([...models.ambientLoopsFor(['malware.bug', undefined, 'npc.greybeard_rig', 'npc.greybeard_rig'])], ['dad_typing_loop', 'dad_rig_loop'], 'no duplicates');
     assert.deepEqual([...models.ambientLoopsFor(['malware.bug', 'boss.kernel', undefined])], []);
     assert.deepEqual([...models.ambientLoopsFor([])], []);
   });
@@ -458,18 +470,18 @@ await withProcgen(async (_procgen, vite) => {
     assert.deepEqual(loops(), [], 'no dad, no loops');
     actors = [{ key: 'socket', model: 'npc.greybeard_rig' }];
     sync.syncPlayAudio(play);
-    assert.deepEqual(loops(), ['dad_typing_loop:true', 'dad_smoke_loop:true']);
+    assert.deepEqual(loops(), ['dad_typing_loop:true', 'dad_rig_loop:true']);
     sync.syncPlayAudio(play);
     assert.deepEqual(loops(), [], 'steady state publishes nothing');
     actors = [{ key: 'ghost', model: 'malware.bug' }];
     sync.syncPlayAudio(play);
-    assert.deepEqual(loops(), ['dad_typing_loop:false', 'dad_smoke_loop:false'], 'he left the room');
+    assert.deepEqual(loops(), ['dad_typing_loop:false', 'dad_rig_loop:false'], 'he left the room');
     actors = [{ key: 'socket', model: 'npc.greybeard_rig' }];
     sync.syncPlayAudio(play);
     loops();
     ended = true;
     sync.syncPlayAudio(play);
-    assert.deepEqual(loops(), ['dad_typing_loop:false', 'dad_smoke_loop:false'], 'the rank screen is not the play surface');
+    assert.deepEqual(loops(), ['dad_typing_loop:false', 'dad_rig_loop:false'], 'the rank screen is not the play surface');
 
     ended = false;
     actors = [];
@@ -525,14 +537,14 @@ await withProcgen(async (_procgen, vite) => {
     const fakePlayer = { live: true, muted: false, volume: 1, play() {}, loop(id, on) { calls.push([id, on]); }, bed() {}, hold() {}, setMuted() {}, setVolume() {}, dispose() {} };
     const off = orchMod.attachOrchestrators(bus, fakePlayer);
     try {
-      for (const cue of ['dad_typing_loop', 'dad_smoke_loop']) {
+      for (const cue of ['dad_typing_loop', 'dad_rig_loop']) {
         bus.emit({ kind: 'loop', cue, on: true });
         bus.emit({ kind: 'loop', cue, on: false });
       }
     } finally {
       off();
     }
-    assert.deepEqual(calls, [['dad_typing_loop', true], ['dad_typing_loop', false], ['dad_smoke_loop', true], ['dad_smoke_loop', false]]);
+    assert.deepEqual(calls, [['dad_typing_loop', true], ['dad_typing_loop', false], ['dad_rig_loop', true], ['dad_rig_loop', false]]);
   });
 
   await test('hp_tier_drop fires on first tier drop from full HP and post-heal tier drop', async () => {
@@ -640,8 +652,9 @@ await withProcgen(async (_procgen, vite) => {
     }
   };
 
-  await test('WebAudio plays the typing loop as a looping voice and the smoke loop as a playlist of its ten takes; loop-off stops either', async () => {
+  await test('WebAudio plays dad_typing_loop on loop and dad_rig_loop as a crossfaded single seamless loop; loop-off stops either; pickTake avoids back-to-back repeats', async () => {
     const engineMod = await vite.ssrLoadModule('/src/audio/engine.ts');
+    const takesMod = await vite.ssrLoadModule('/src/audio/loop-takes.ts');
     await withFakeWindow(async (env) => {
       const eng = engineMod.createGraph(10);
       env.state().listeners.get('pointerdown')();
@@ -658,35 +671,39 @@ await withProcgen(async (_procgen, vite) => {
       eng.loop('dad_typing_loop', false);
       assert.equal(env.state().stopped, stopsBefore + 1, 'off twice stops nothing more');
 
-      // The smoke loop: one take plays once; when it ends the next, different take starts.
-      const played = [];
-      const smokeBefore = env.state().starts.length;
-      eng.loop('dad_smoke_loop', true);
-      for (let i = 0; i < 60; i += 1) {
-        await new Promise((r) => setTimeout(r, 6));
-        const starts = env.state().starts.slice(smokeBefore);
-        if (starts.length > played.length) {
-          const s = starts[starts.length - 1];
-          assert.equal(s.loop, false, 'a smoke take plays once, the playlist chains the next');
-          played.push(s.url.replace(/^.*\/sfx\//, '').replace(/\.mp3$/, ''));
-        }
-        const live = env.state().activeSources.filter((n) => typeof n.onended === 'function');
-        if (live.length > 0) live[live.length - 1].onended();
-      }
-      assert.ok(played.length >= 30, `the playlist keeps chaining (${played.length} takes)`);
-      assert.ok(played.every((t) => /^dad_smoke_loop(?:|_[2-9]|_10)$/.test(t)), `only smoke takes: ${played.join(',')}`);
-      for (let i = 1; i < played.length; i += 1) assert.notEqual(played[i], played[i - 1], 'never the same take twice in a row');
-      assert.equal(new Set(played).size, 10, `all ten takes are reached (${[...new Set(played)].length})`);
-      const before = env.state().starts.length;
-      eng.loop('dad_smoke_loop', false);
-      const after = env.state().stopped;
-      const stray = env.state().activeSources.filter((n) => typeof n.onended === 'function');
-      if (stray.length > 0) stray[stray.length - 1].onended();
+      // The rig loop: single seamless crossfaded bed via playBed (not node.loop), pauses/resumes on hold, stops cleanly.
+      const rigBefore = env.state().starts.length;
+      eng.loop('dad_rig_loop', true);
       await new Promise((r) => setTimeout(r, 25));
-      assert.equal(env.state().starts.length, before, 'no take starts after the loop is turned off');
-      assert.ok(after >= 1);
+      const rig = env.state().starts.slice(rigBefore);
+      assert.equal(rig.length, 1, 'dad_rig_loop starts one seamless voice');
+      assert.ok(rig[0].url.includes('dad_rig_loop.mp3') && rig[0].loop === false, 'dad_rig_loop uses playBed overlap crossfade rather than raw node.loop');
+      env.advance(3.2);
+      const stopsBeforeHold = env.state().stopped;
+      eng.hold(true);
+      assert.equal(env.state().stopped, stopsBeforeHold + 1, 'hold(true) pauses dad_rig_loop');
+      eng.hold(false);
+      await new Promise((r) => setTimeout(r, 25));
+      const resumed = env.state().starts.slice(rigBefore + 1);
+      assert.equal(resumed.length, 1, 'hold(false) resumes dad_rig_loop');
+      assert.ok(Math.abs(resumed[0].offset - 3.2) < 0.01, 'dad_rig_loop resumes at its saved offset');
+      const stopsBeforeOff = env.state().stopped;
+      eng.loop('dad_rig_loop', false);
+      assert.equal(env.state().stopped, stopsBeforeOff + 1, 'dad_rig_loop off stops its crossfaded bed');
+      eng.loop('dad_rig_loop', false);
+      assert.equal(env.state().stopped, stopsBeforeOff + 1, 'off twice stops nothing more');
       eng.dispose();
     });
+    const takes = ['a', 'b', 'c', 'd'];
+    let last;
+    const seen = new Set();
+    for (let i = 0; i < 60; i += 1) {
+      const next = takesMod.pickTake(takes, last);
+      assert.notEqual(next, last, 'pickTake never repeats back to back');
+      seen.add(next);
+      last = next;
+    }
+    assert.equal(seen.size, takes.length, 'pickTake reaches every take');
   });
 
   await test('WebAudio hold pauses loops and beds while allowing UI one-shots and holding deferred beds', async () => {
@@ -1258,10 +1275,10 @@ await withProcgen(async (_procgen, vite) => {
     const off = bus.subscribe((ev) => { if (ev.kind === 'loop') emitted.push(`${ev.cue}:${ev.on}`); });
     try {
       const ca = new CineAudio(false, bus);
-      ca.loop('dad_smoke_loop', true);
+      ca.loop('dad_rig_loop', true);
       ca.rain(true);
       ca.stopLoops();
-      assert.deepEqual(emitted, ['dad_smoke_loop:true', 'rain_loop:true', 'dad_smoke_loop:false', 'rain_loop:false']);
+      assert.deepEqual(emitted, ['dad_rig_loop:true', 'rain_loop:true', 'dad_rig_loop:false', 'rain_loop:false']);
     } finally {
       off();
     }

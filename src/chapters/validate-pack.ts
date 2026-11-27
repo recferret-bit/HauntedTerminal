@@ -4,6 +4,7 @@ import { BESTIARY, PICKUP_TYPES, type EnemyType, type PickupType } from '../game
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
 import { allStrings, pidRefs, RESERVED_PIDS } from './pids.js';
 import { isRec } from './record.js';
+import { validateArgsPattern } from './script-locks.js';
 import type { ChapterMechanic, ChapterPack, LevelSpec, ScriptCond, ScriptStep, WinRule } from './types.js';
 import { checkActorKind, checkComixStory, checkMusicCue, checkSfxCue, checkSocket, checkStageSpec, checkTransform } from './validate-stage.js';
 
@@ -79,6 +80,12 @@ class LevelCheck {
 
   cond(tab: string, what: string, c: ScriptCond): void {
     switch (c.kind) {
+      case 'ran_command': {
+        if (!c.name.trim()) this.add('error', tab, `${what}: ran_command command name is empty`);
+        const err = validateArgsPattern(c.args);
+        if (err) this.add('error', tab, `${what}: ran_command.args ${err}`);
+        break;
+      }
       case 'file_absent':
       case 'file_read':
         this.needPath(tab, what, c.path, 'file');
@@ -88,6 +95,12 @@ class LevelCheck {
         break;
       case 'has_item':
         if (!isItemId(c.item)) this.add('error', tab, `${what}: unknown item "${c.item}" (${ITEM_IDS.join(', ')})`);
+        break;
+      case 'flag':
+        if (!c.name.trim()) this.add('error', tab, `${what}: flag name is empty`);
+        break;
+      case 'not':
+        this.cond(tab, `${what}.not`, c.of);
         break;
       case 'any':
       case 'all':
@@ -153,6 +166,7 @@ class LevelCheck {
       }
       if (s.kind === 'sfx') checkSfxCue((sev, tab, msg) => this.add(sev, tab, msg), 'script', `${what}: sfx`, s.cue);
       if (s.kind === 'music') checkMusicCue((sev, tab, msg) => this.add(sev, tab, msg), 'script', `${what}: music`, s.cue ?? undefined, true);
+      if (s.kind === 'set_flag' && !s.name.trim()) this.add('error', 'script', `${what}: set_flag name is empty`);
     }
   }
 }
@@ -219,6 +233,8 @@ function checkScript(c: LevelCheck): void {
   });
   script.locks?.forEach((l, i) => {
     if (!l.command.trim()) c.add('error', 'script', `script.locks[${i}]: command is empty`);
+    const err = validateArgsPattern(l.args);
+    if (err) c.add('error', 'script', `script.locks[${i}].args: ${err}`);
     if (!l.message.trim()) c.add('warn', 'script', `script.locks[${i}]: empty message, the player gets no hint`);
     c.cond('script', `script.locks[${i}].until`, l.until);
   });
@@ -297,6 +313,8 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack, winnable: boolean): Pack
   for (const p of spec.pickups) {
     c.needPath('entities', `pickup "${p.id}"`, p.path, 'file');
     if (p.appearWhen) c.cond('entities', `pickup "${p.id}".appearWhen`, p.appearWhen);
+    if (p.dropFromX !== undefined && !Number.isFinite(p.dropFromX)) c.add('error', 'entities', `pickup "${p.id}".dropFromX must be finite`);
+    if (p.dropFromY !== undefined && !Number.isFinite(p.dropFromY)) c.add('error', 'entities', `pickup "${p.id}".dropFromY must be finite`);
     checkTransform(add, 'entities', `pickup "${p.id}"`, p);
     checkSocket(add, 'entities', `pickup "${p.id}"`, p.socket);
     checkSfxCue(add, 'entities', `pickup "${p.id}".sfx`, p.sfx);

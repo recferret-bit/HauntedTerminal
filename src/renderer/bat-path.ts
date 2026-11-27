@@ -13,6 +13,12 @@ export interface BatBounds {
   maxY: number;
 }
 
+export interface BatHeading {
+  facingLeft: boolean;
+  pitch: number;
+  rotZ: number;
+}
+
 export interface BatFlight {
   p0: Pt;
   p1: Pt;
@@ -105,4 +111,17 @@ function flightBetween(rand: Rand, from: Pt, to: Pt): BatFlight {
     phase: rand(),
     delaySec: between(rand, 0, 0.7),
   };
+}
+
+/**
+ * Travel-aligned orientation for a canonical screen-right (`-x`) flying bat:
+ * mirrors `scale.x` to `facingLeft` and pitches `rotation.z` along `(ahead - at)`.
+ */
+export function computeBatHeading(at: Pt, ahead: Pt, prevFacingLeft: boolean): BatHeading {
+  const dx = ahead.x - at.x;
+  const dy = ahead.y - at.y;
+  const facingLeft = Math.abs(dx) > 1e-5 ? dx > 0 : prevFacingLeft;
+  const rawPitch = Math.atan2(dy, Math.max(1e-5, Math.abs(dx)));
+  const pitch = Math.min(0.65, Math.max(-0.65, rawPitch));
+  return { facingLeft, pitch, rotZ: facingLeft ? pitch : -pitch };
 }

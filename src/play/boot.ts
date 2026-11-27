@@ -17,7 +17,7 @@ import { labConfigFor } from './lab.js';
 import { readPlayRoute } from './route.js';
 import { Play, chapterBanner, readSkipPref, type DebugGive, type PlayDom, type SkipTutorial } from './state.js';
 
-function requirePlayDom(): PlayDom {
+function requirePlayDom(editorMode: boolean): PlayDom {
   const mount = document.getElementById('stage-mount');
   const stageWrap = document.getElementById('stage-wrapper');
   const termDockEl = document.getElementById('terminal-dock');
@@ -34,6 +34,7 @@ function requirePlayDom(): PlayDom {
   const manualModalEl = document.getElementById('manual-book-modal');
   // The terminal stays dark and HUD stays hidden until the intro & floor page-flip reveal complete.
   document.body.classList.add('term-off', 'hud-hidden');
+  if (editorMode) document.body.classList.add('stage-only');
   if (!mount || !stageWrap || !termEl || !inspectorEl || !toggleBtn || !hudEl || !statsEl || !captionEl || !cineEl) {
     throw new Error('Missing shell nodes');
   }
@@ -60,10 +61,11 @@ async function loadStage(mount: HTMLElement): Promise<ComicStage> {
 }
 
 export async function bootPlay(): Promise<Play> {
-  const dom = requirePlayDom();
-  const stage = await loadStage(dom.mount);
   const route = readPlayRoute(location.pathname, location.search);
   const urlParams = route.search;
+  const editorMode = urlParams.get('editor') === '1';
+  const dom = requirePlayDom(editorMode);
+  const stage = await loadStage(dom.mount);
   const levelParam = route.level;
   const floorParam = route.floor;
   const chapterParam = route.chapter || CHAPTER_MANIFESTS[0]?.id || '';
@@ -71,7 +73,7 @@ export async function bootPlay(): Promise<Play> {
   const draft = urlParams.get('draft') === '1' ? readDraftPack(chapterParam) : null;
   const pack = draft ?? getChapterPack(chapterParam);
   const lab = labConfigFor(urlParams, draft !== null, chapterParam);
-  const isPreview = draft !== null || urlParams.get('preview') === '1';
+  const isPreview = draft !== null || editorMode || urlParams.get('preview') === '1';
   if (!isPreview && !lab) await hydrateFromDesktopSaveBundle();
   const chapterManifest = lab?.classic ? undefined : pack?.manifest;
   const session: Session = lab?.classic
@@ -135,6 +137,7 @@ export async function bootPlay(): Promise<Play> {
     (Boolean(levelParam) && (!isChapterSession(session) || session.getCurrentLevel().index > 1)) ||
     floorParam >= 2;
   const skipIntroPref =
+    editorMode ||
     readSkipPref() ||
     ((Boolean(lab) || directMidJump || (isChapterSession(session) && hasChapterProgress(readChapterProgress(), chapterParam))) &&
       urlParams.get('intro') !== '1');
@@ -142,5 +145,7 @@ export async function bootPlay(): Promise<Play> {
   const play = new Play(dom, stage, session, chapterBanner(session, chapterManifest), debugGive, skipTutorial, skipIntroPref);
   play.terminalLab = lab;
   play.preview = isPreview;
+  play.editorMode = editorMode;
+  play.aiPaused = editorMode;
   return play;
 }

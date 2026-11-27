@@ -11,6 +11,7 @@ import {
 import { createVortexMaterial, type ComicMaterial } from '../shaders/comic-material.js';
 import { applyHeroFaceTier, heroFaceTierForHp, type HeroFaceTier } from './portrait.js';
 import { LEGACY_CAST, stampMaterialBases, type HauntedCast } from './procgen-cast.js';
+import { disposeDoorRig, type DoorRig } from './stage-door-rig.js';
 
 /**
  * One live actor on the stage, built from a RoomActor: `RoomActor.model` when present, else the
@@ -58,6 +59,8 @@ export interface StageActor {
   label?: string;
   target?: string;
   portRole?: 'entry' | 'exit' | 'sub';
+  viewLocked?: boolean;
+  doorRig: DoorRig | null;
   /** Last view x / y (design space), to tell a real move from a re-sync. */
   viewX: number;
   viewY: number;
@@ -399,6 +402,8 @@ export function buildStageActor(ra: RoomActor, seed: number): StageActor {
     label: ra.label,
     target: ra.target,
     portRole: ra.portRole,
+    viewLocked: ra.locked,
+    doorRig: null,
     viewX: Number.NaN,
     viewY: Number.NaN,
     baseScale: [scale, scale, scale],
@@ -449,6 +454,7 @@ export function disposeStageActor(actor: StageActor): void {
   actor.disposed = true;
   actor.gen++;
   actor.onBeat = null;
+  disposeDoorRig(actor);
   actor.group.removeFromParent();
   try {
     actor.animator.dispose();

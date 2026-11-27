@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { BARE_HERO_MODEL } from '../contracts/inventory.js';
-import { mergeComicFxLights } from '../shaders/comic-material.js';
+import { MAX_COMIC_FX_LIGHTS, mergeComicFxLights } from '../shaders/comic-material.js';
 import { setCrtTime } from '../shaders/crt-pass.js';
 import type { RoomActor } from './room-view.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
@@ -13,6 +13,7 @@ import { popOut } from './stage-motion.js';
 import { stepHeroYaw, yawForDx } from './stage-hero-turn.js';
 import { isLevelTransitionPhase, stepLevelTransition } from './stage-level-transition.js';
 import { stepBats } from './stage-bats.js';
+import { activeDoorLights, stepDoorPower } from './stage-door-rig.js';
 import { applyActor } from './stage-sync.js';
 import type { ComicStage } from './comic-stage.js';
 
@@ -36,6 +37,9 @@ export function stepStage(stage: ComicStage, dt: number): void {
   stage.tweens.update(dtMs);
   stepLevelTransition(stage, dtMs);
   stepActors(stage, dt);
+  stepDoorPower(stage, dt, (a, pos) =>
+    playFx(stage, 'fx.door-unlock', pos, { text: ' ', noShake: true, scale: 0.36, flashMul: 0, lightMul: 0.35 }, `${a.id}:spark`),
+  );
   stepBats(stage, dt);
   stepAgentAmbientFx(stage, dt);
   heroFidget(stage, dt);
@@ -100,6 +104,9 @@ function heroFidget(stage: ComicStage, dt: number): void {
 function lightFrame(stage: ComicStage, dt: number): void {
   const h = stage.hero();
   const lantern = h && !h.disposed && h.group.visible && ('lantern' in h.model.sockets) ? actorSocket(h, 'lantern') : null;
+  const doorLights = activeDoorLights(stage);
+  const transientBudget = Math.max(0, MAX_COMIC_FX_LIGHTS - doorLights.length);
+  const transientLights = mergeComicFxLights([stage.lightning.activeLights(), stage.fxPlayer.activeLights()], transientBudget);
   stage.light.update(dt, {
     lantern,
     feetY: stage.feetY,
@@ -110,7 +117,7 @@ function lightFrame(stage: ComicStage, dt: number): void {
     heroGlow: h && !h.disposed && h.group.visible ? new THREE.Vector3(h.group.position.x, stage.feetY + 0.85, 0) : null,
     heroBare: h?.modelId === BARE_HERO_MODEL,
     flash: stage.lightning.flashStrength,
-    fxLights: mergeComicFxLights([stage.lightning.activeLights(), stage.fxPlayer.activeLights()]),
+    fxLights: [...transientLights, ...doorLights],
   });
   // The bulb itself burns brighter while the light is boosted.
   const glow = h?.glow;

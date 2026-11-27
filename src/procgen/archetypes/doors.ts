@@ -29,6 +29,13 @@ function doorSpec(id: string, label: string, parts: PartSpec[], sockets: Record<
   return { id, category: 'door', label, parts, sockets };
 }
 
+function sillLugs(x: number, zone: 'solder' | 'heatsink' = 'solder'): PartSpec[] {
+  return [
+    kitBox('lug.l', [0.1, 0.16, 0.2], zone, [x, SILL_H + 0.06, 0], { bevel: 0.01 }),
+    kitBox('lug.r', [0.1, 0.16, 0.2], zone, [-x, SILL_H + 0.06, 0], { bevel: 0.01 }),
+  ];
+}
+
 // ---------------------------------------------------------------- door.usb
 
 function buildUsb(_seed: number): ModelSpec {
@@ -38,18 +45,21 @@ function buildUsb(_seed: number): ModelSpec {
   const cavityY = -0.07;
   const inside = greeblePortCavityZ(back, D);
   const tongueX = 0.14 * SCREEN_LEFT;
+  const ledY = cy + H / 2 - 0.12;
   const parts: PartSpec[] = [
     sill(0.94),
-    kitBox('lug.l', [0.1, 0.16, 0.2], 'solder', [0.42, SILL_H + 0.06, 0], { bevel: 0.01 }),
-    kitBox('lug.r', [0.1, 0.16, 0.2], 'solder', [-0.42, SILL_H + 0.06, 0], { bevel: 0.01 }),
+    ...sillLugs(0.42),
     ...greeblePortShell({
       name: 'port', pos: [0, cy, back], width: W, height: H, depth: D, radius: 0.05,
       cavityOutline: outlineTransform(outlineRoundRect(0.6, 1.26, 0.03, 2), { move: [0, cavityY] }),
     }),
+    kitPlate('cavity.glow', outlineRoundRect(0.46, 1.08, 0.025, 2), 0.014, 'dataCyan', [0, cy + cavityY, inside - 0.002], { outline: false }),
     // The tongue fills one half of the mouth, as in a real USB-A receptacle.
     kitPlate('tongue', outlineRoundRect(0.25, 1.12, 0.02, 1), 0.05, 'plastic', [tongueX, cy + cavityY, inside - 0.02]),
     ...greeblePinRow({ name: 'contact', pos: [tongueX, cy + cavityY, inside - 0.045], count: 4, pitch: 0.26, size: [0.13, 0.15], depth: 0.02, axis: 'y' }),
-    ...greebleLed({ name: 'led', pos: [0, cy + H / 2 - 0.12, -back], radius: 0.04, zone: 'phosphor' }),
+    ...greebleLed({ name: 'led', pos: [0, ledY, -back], radius: 0.04, zone: 'phosphor' }),
+    ...greebleLed({ name: 'act.led', pos: [0.22 * SCREEN_LEFT, ledY, -back], radius: 0.034, zone: 'powerAmber', blink: 3 }),
+    ...greebleLed({ name: 'tx.led', pos: [0.22 * SCREEN_RIGHT, ledY, -back], radius: 0.034, zone: 'dataCyan', blink: 2 }),
   ];
   return doorSpec('door.usb', 'USB door', parts, doorSockets([0, cy + cavityY, -0.2], SILL_H + H + 0.14, [0, cy, -0.2]));
 }
@@ -63,6 +73,7 @@ function buildEthernet(_seed: number): ModelSpec {
   const inside = greeblePortCavityZ(back, D);
   // The RJ45 mouth, clip slot up: a stepped arch.
   const mouth = outlineSymmetric([[0.36, -0.68], [0.36, 0.2], [0.22, 0.2], [0.22, 0.4], [0.1, 0.4], [0.1, 0.52]]);
+  const mouthGlow = outlineTransform(mouth, { scale: [0.84, 0.84], move: [0, -0.05] });
   // Eight contact pins hang in the mouth like a portcullis.
   const barY = 0.2, tw = 0.042, len = 0.46, pitch = 0.084;
   const gate: Vec2[] = [[-0.36, barY], [-0.36, barY - 0.05]];
@@ -74,11 +85,15 @@ function buildEthernet(_seed: number): ModelSpec {
   const ledY = cy + 0.63;
   const parts: PartSpec[] = [
     sill(1.1),
+    ...sillLugs(0.49),
     ...greeblePortShell({ name: 'port', pos: [0, cy, back], width: W, height: H, depth: D, radius: 0.04, cavityOutline: mouth }),
+    kitPlate('cavity.glow', mouthGlow, 0.014, 'dataCyan', [0, cy, inside - 0.001], { outline: false }),
     kitPlate('portcullis.pins', gate, 0.04, 'gold', [0, cy, inside - 0.03]),
     kitBox('threshold', [0.72, 0.05, 0.03], 'plastic', [0, cy - 0.655, inside - 0.01]),
-    ...greebleLed({ name: 'led', pos: [0.32 * SCREEN_LEFT, ledY, -back], radius: 0.045, zone: 'phosphor', square: true }),
-    ...greebleLed({ name: 'link.led', pos: [0.32 * SCREEN_RIGHT, ledY, -back], radius: 0.045, zone: 'powerAmber', square: true, blink: 3 }),
+    ...greebleLed({ name: 'led', pos: [0.35 * SCREEN_LEFT, ledY, -back], radius: 0.042, zone: 'phosphor', square: true }),
+    ...greebleLed({ name: 'tx.led', pos: [0.12 * SCREEN_LEFT, ledY, -back], radius: 0.034, zone: 'dataCyan', square: true, blink: 4 }),
+    ...greebleLed({ name: 'rx.led', pos: [0.12 * SCREEN_RIGHT, ledY, -back], radius: 0.034, zone: 'phosphor', square: true, blink: 2 }),
+    ...greebleLed({ name: 'link.led', pos: [0.35 * SCREEN_RIGHT, ledY, -back], radius: 0.042, zone: 'powerAmber', square: true, blink: 3 }),
   ];
   return doorSpec('door.ethernet', 'Ethernet door', parts, doorSockets([0, cy - 0.3, -0.2], SILL_H + H + 0.14, [0, cy - 0.2, -0.2]));
 }
@@ -93,15 +108,21 @@ function buildHdmi(_seed: number): ModelSpec {
   const inside = greeblePortCavityZ(back, D);
   const shell = outlineSymmetric([[0.55, -0.72], [0.55, 0.3], [0.34, 0.72]]);
   const mouth = outlineSymmetric([[0.44, -0.63], [0.44, 0.25], [0.3, 0.5]]);
+  const mouthGlow = outlineTransform(mouth, { scale: [0.56, 0.58], move: [0, -0.04] });
   const tongueY = cy - 0.1;
   const parts: PartSpec[] = [
     sill(1.1),
+    kitBox('lug.l', [0.1, 0.14, 0.07], 'solder', [0.47, SILL_H + 0.05, -0.135], { bevel: 0.01 }),
+    kitBox('lug.r', [0.1, 0.14, 0.07], 'solder', [-0.47, SILL_H + 0.05, -0.135], { bevel: 0.01 }),
     ...greeblePortShell({ name: 'port', pos: [0, cy, back], width: 1.1, height: H, depth: D, outline: shell, cavityOutline: mouth }),
+    kitPlate('cavity.glow', mouthGlow, 0.012, 'dataCyan', [0, cy, inside + 0.001], { outline: false }),
     // The contact blade, stood on end, teeth to both sides.
     ...greebleContactTeeth({ name: 'blade.a', pos: [0.15, tongueY, inside], width: 0.8, count: 9, toothLength: 0.1, bar: 0.04, depth: 0.03, dir: 'left' }),
     ...greebleContactTeeth({ name: 'blade.b', pos: [-0.15, tongueY, inside], width: 0.8, count: 9, toothLength: 0.1, bar: 0.04, depth: 0.03, dir: 'right' }),
     kitPlate('tongue', outlineRoundRect(0.22, 0.9, 0.03, 1), 0.06, 'plastic', [0, tongueY, inside - 0.025]),
     ...greebleLed({ name: 'led', pos: [0, cy + 0.61, -back], radius: 0.04, zone: 'phosphor' }),
+    ...greebleLed({ name: 'link.led', pos: [0.2 * SCREEN_LEFT, cy + 0.58, -back], radius: 0.028, zone: 'powerAmber', blink: 3 }),
+    ...greebleLed({ name: 'sync.led', pos: [0.2 * SCREEN_RIGHT, cy + 0.58, -back], radius: 0.028, zone: 'dataCyan', blink: 2 }),
   ];
   return doorSpec('door.hdmi', 'HDMI door', parts, doorSockets([0, tongueY, -0.2], SILL_H + H + 0.14, [0, cy, -0.2]));
 }
@@ -115,9 +136,11 @@ function buildSerial(seed: number): ModelSpec {
   const dShape: Vec2[] = [[0.24, -0.56], [0.24, 0.56], [-0.24, 0.43], [-0.24, -0.43]];
   const parts: PartSpec[] = [
     sill(0.9, 0.3),
+    ...sillLugs(0.39),
     kitPlate('flange', outlineRoundRect(0.74, H, 0.12, 3), 0.1, 'solder', [0, cy, 0.03], { bevel: 0.012 }),
     kitPlate('dshell', dShape, 0.16, 'heatsink', [0, cy, -0.02], { bevel: 0.03 }),
     kitPlate('insert', outlineTransform(dShape, { scale: [0.74, 0.86] }), 0.03, 'plastic', [0, cy, -0.105], { bevel: 0.01 }),
+    kitBox('cavity.glow', [0.055, 0.72, 0.014], 'powerAmber', [0, cy, -0.122], { outline: false }),
   ];
   // Nine pin holes: five on the long side, four on the short side.
   const hole = (i: number, x: number, y: number): PartSpec => kitDisc(`hole${i}`, 0.04, 0.012, 'ink', [x, cy + y, -0.124], { outline: false, sides: 8 });
@@ -127,6 +150,8 @@ function buildSerial(seed: number): ModelSpec {
     ...greebleScrew({ name: 'thumb.top', pos: [0, cy + 0.69, -0.02], radius: 0.085, zone: 'heatsink', style: 'thumb', angle: rng.range(0, 3) }),
     ...greebleScrew({ name: 'thumb.bottom', pos: [0, cy - 0.69, -0.02], radius: 0.085, zone: 'heatsink', style: 'thumb', angle: rng.range(0, 3) }),
     ...greebleLed({ name: 'led', pos: [0.24 * SCREEN_LEFT, cy + 0.7, -0.02], radius: 0.035, zone: 'powerAmber' }),
+    ...greebleLed({ name: 'tx.led', pos: [0.24 * SCREEN_RIGHT, cy + 0.7, -0.02], radius: 0.032, zone: 'phosphor', blink: 3 }),
+    ...greebleLed({ name: 'rx.led', pos: [0.24 * SCREEN_LEFT, cy - 0.7, -0.02], radius: 0.032, zone: 'dataCyan', blink: 2 }),
   );
   return doorSpec('door.serial', 'Serial door', parts, doorSockets([0, cy, -0.2], SILL_H + H + 0.14, [0, cy, -0.2]));
 }
@@ -134,7 +159,10 @@ function buildSerial(seed: number): ModelSpec {
 // ---------------------------------------------------------------- door.firewall
 
 function buildFirewall(_seed: number): ModelSpec {
-  const parts: PartSpec[] = [kitBox('sill', [1.08, SILL_H, 0.3], 'pcbDark', [0, SILL_H / 2, 0], { bevel: 0.015, texture: 'tex.pcb-traces' })];
+  const parts: PartSpec[] = [
+    kitBox('sill', [1.08, SILL_H, 0.3], 'pcbDark', [0, SILL_H / 2, 0], { bevel: 0.015, texture: 'tex.pcb-traces' }),
+    ...sillLugs(0.49, 'heatsink'),
+  ];
   // Posts with spire finials.
   for (const [side, sx] of [['l', 1], ['r', -1]] as const) {
     parts.push(kitPlate(`post.${side}`, outlineSymmetric([[0.065, 0], [0.065, 1.42], [0.09, 1.42], [0.09, 1.47], [0.05, 1.5], [0, 1.66]]), 0.2, 'heatsink', [0.45 * sx, SILL_H - 0.01, 0], { bevel: 0.012 }));
@@ -143,6 +171,7 @@ function buildFirewall(_seed: number): ModelSpec {
   parts.push(
     kitBox('rail.top', [0.82, 0.07, 0.07], 'heatsink', [0, 1.22, 0.02]),
     kitBox('rail.bottom', [0.82, 0.07, 0.07], 'heatsink', [0, 0.3, 0.02]),
+    kitBox('cavity.glow', [0.76, 0.06, 0.02], 'phosphor', [0, 1.22, -0.02], { outline: false }),
   );
   // Six spear-tipped bars, tallest in the middle: a pointed arch drawn with iron.
   const bars = 6;
@@ -162,6 +191,8 @@ function buildFirewall(_seed: number): ModelSpec {
     ...greebleLed({ name: 'led', pos: [0.095, bitY, -0.185], radius: 0.026, zone: 'lockRed', bezelZone: null, square: true }),
     ...greebleLed({ name: 'bit.w.led', pos: [0, bitY, -0.185], radius: 0.026, zone: 'lockRed', bezelZone: null, square: true }),
     ...greebleLed({ name: 'bit.x.led', pos: [-0.095, bitY, -0.185], radius: 0.026, zone: 'lockRed', bezelZone: null, square: true }),
+    ...greebleLed({ name: 'post.l.led', pos: [0.45 * SCREEN_LEFT, 1.38, -0.1], radius: 0.032, zone: 'dataCyan', square: true, blink: 3 }),
+    ...greebleLed({ name: 'post.r.led', pos: [0.45 * SCREEN_RIGHT, 1.38, -0.1], radius: 0.032, zone: 'dataCyan', square: true, blink: 2 }),
   );
   return doorSpec('door.firewall', 'Firewall gate', parts, doorSockets([0, lockY, -0.22], 1.85, [0, lockY, -0.22]));
 }
@@ -188,6 +219,7 @@ function buildLoopback(seed: number): ModelSpec {
   const loopY = glassY - 0.36;
   const parts: PartSpec[] = [
     sill(1.0, 0.26),
+    ...sillLugs(0.44),
     kitPlate('frame', outlineArch(0.92, H, 10, 0.12), 0.16, 'pcb', [0, cy, 0], { bevel: 0.02, texture: 'tex.pcb-traces' }),
     kitPlate('liner', outlineArch(0.74, glassH + 0.08, 10, 0.1), 0.04, 'gold', [0, glassY, -0.09]),
     kitPlate('glass', outlineArch(0.66, glassH, 10, 0.09), 0.03, 'glass', [0, glassY, -0.12]),
@@ -196,6 +228,8 @@ function buildLoopback(seed: number): ModelSpec {
     kitPlate('loop.trace', outlineStroke(loop, 0.05), 0.02, 'gold', [0, loopY, -0.145]),
     kitPlate('loop.arrow', outlineTransform([[-0.075, 0], [0.075, 0], [0, -0.11]], { rot: 0.5, move: tip }), 0.02, 'gold', [0, loopY, -0.146]),
     ...greebleLed({ name: 'led', pos: [0, cy + H / 2 - 0.105, -0.08], radius: 0.035, zone: 'powerAmber' }),
+    ...greebleLed({ name: 'sync.led', pos: [0.415 * SCREEN_LEFT, cy + 0.15, -0.08], radius: 0.028, zone: 'dataCyan', blink: 3 }),
+    ...greebleLed({ name: 'tx.led', pos: [0.415 * SCREEN_RIGHT, cy + 0.15, -0.08], radius: 0.028, zone: 'phosphor', blink: 2 }),
   ];
   return doorSpec('door.loopback', 'Loopback mirror', parts, doorSockets([0, glassY, -0.2], SILL_H + H + 0.14, [0, glassY, -0.2]));
 }
@@ -236,6 +270,8 @@ function buildSocket(_seed: number): ModelSpec {
   ];
   const parts: PartSpec[] = [
     kitPlate('box', outlineRoundRect(0.5, 0.22, 0.03, 2), 0.3, 'heatsink', [0, 0.122, 0], { bevel: 0.012 }),
+    kitBox('lug.l', [0.09, 0.14, 0.2], 'solder', [0.27, 0.1, 0], { bevel: 0.01 }),
+    kitBox('lug.r', [0.09, 0.14, 0.2], 'solder', [-0.27, 0.1, 0], { bevel: 0.01 }),
     kitBox('conduit', [0.18, 0.56, 0.18], 'heatsink', [0, 0.48, 0.02]),
     kitBox('collar.low', [0.25, 0.06, 0.22], 'solder', [0, 0.27, 0.02], { bevel: 0.01 }),
     kitBox('collar.high', [0.25, 0.06, 0.22], 'solder', [0, 0.68, 0.02], { bevel: 0.01 }),
@@ -243,6 +279,10 @@ function buildSocket(_seed: number): ModelSpec {
     ...eye('led', 0.16 * SCREEN_LEFT),
     ...eye('twin.led', 0.16 * SCREEN_RIGHT),
     ...greebleSpeakerGrille({ name: 'mouth', pos: [0, faceY - 0.17, -0.08], radius: 0.17, aspect: 0.62, slats: 4, zone: 'solder' }).map((p) => (p.name === 'mouth.plate' ? { ...p, texture: 'tex.grille' } : p)),
+    ...greebleLed({ name: 'status.led', pos: [0.22 * SCREEN_LEFT, faceY + 0.34, -0.08], radius: 0.03, zone: 'phosphor', blink: 2 }),
+    ...greebleLed({ name: 'tx.led', pos: [0.22 * SCREEN_RIGHT, faceY + 0.34, -0.08], radius: 0.03, zone: 'dataCyan', blink: 3 }),
+    kitBox('rail.l.led', [0.04, 0.44, 0.016], 'dataCyan', [0.31 * SCREEN_LEFT, faceY - 0.03, -0.084], { outline: false }),
+    kitBox('rail.r.led', [0.04, 0.44, 0.016], 'dataCyan', [0.31 * SCREEN_RIGHT, faceY - 0.03, -0.084], { outline: false }),
     ...greebleScrew({ name: 'screw.top', pos: [0, faceY + 0.34, -0.08], radius: 0.03, zone: 'solder', angle: 0.3 }),
     ...greebleScrew({ name: 'screw.bottom', pos: [0, faceY - 0.355, -0.08], radius: 0.03, zone: 'solder', angle: 1.2 }),
   ];

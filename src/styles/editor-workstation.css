@@ -592,6 +592,17 @@ button.cx-readout:hover { border-color: var(--yellow); }
   min-height: 0;
   overflow-y: auto;
 }
+.ch-studio-row { display: flex; gap: 6px; align-items: center; min-width: 0; }
+.ch-studio-select { flex: 1; min-width: 0; font-size: 11px; }
+.ch-studio-enemy { flex: 0 1 108px; }
+.cx-studio-bar { flex-wrap: nowrap; }
+.cx-studio-select {
+  width: auto;
+  max-width: 170px;
+  font-size: 11px;
+  padding: 2px 6px;
+  height: 24px;
+}
 .pv-send-row { display: flex; gap: 6px; align-items: center; }
 .pv-send-row input { flex: 1; min-width: 0; }
 .pv-emit summary { cursor: pointer; color: var(--yellow); font-size: 12px; }
@@ -768,4 +779,5 @@ fieldset.grp > legend { padding: 0 6px; display: flex; gap: 6px; align-items: ce
   .ed.cx-ed > .ed-top { gap: 6px; padding: 0 8px; }
   .ed.cx-ed > .ed-top .btn { padding: 3px 7px; font-size: 12px; }
   .cx-view-btn { padding: 2px 5px; font-size: 10.5px; }
+  .cx-sel-pill { max-width: 120px; }
 }

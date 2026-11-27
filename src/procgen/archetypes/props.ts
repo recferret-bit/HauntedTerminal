@@ -9,7 +9,7 @@ import { buildGpuCard, buildGpuServer, buildRamBank, buildTransistor, buildWireL
 import { buildCoolerAio, buildCoolerTower, buildIndicator, buildWaterPipe } from './props/cooling.js';
 import { buildCables, buildCapacitor, buildChip, buildCrt, buildFan, buildHeatsink } from './props/hardware.js';
 import { buildFile, buildFuse, buildTar, buildTombstone } from './props/items.js';
-import { buildBat, buildCobweb, buildSpider } from './props/kiroween.js';
+import { buildBat, buildCobweb, buildFlyingBat, buildSpider } from './props/kiroween.js';
 import {
   buildCornerCobweb, buildHangingCable, buildLedBar, buildPcbPlaque, buildPlatter, buildShelf,
 } from './props/clutter.js';
@@ -120,9 +120,14 @@ ModelCatalog.register({
   build: buildSpider,
 });
 ModelCatalog.register({
-  id: 'prop.bat', category: 'prop', label: 'Circuit bat',
-  lore: 'A folded matte-black PCB bat with copper ribs flapping in the upper shadows. Kiroween set dressing.',
+  id: 'prop.bat', category: 'prop', label: 'Perched cartoon bat',
+  lore: 'A plump comic Halloween bat hanging upside down in folded slate-blue scalloped wings, fur ruff, and copper ears. Kiroween set dressing.',
   build: buildBat,
+});
+ModelCatalog.register({
+  id: 'prop.bat_flying', category: 'prop', label: 'Flying cartoon bat',
+  lore: 'A plump comic Halloween bat swooping in 3/4 profile with wide 3-scallop slate-blue wings, twin pointed ears, and zero camera eyes. Stage flock decoration.',
+  build: buildFlyingBat,
 });
 ModelCatalog.register({
   id: 'prop.platter', category: 'prop', label: 'Disk platter',

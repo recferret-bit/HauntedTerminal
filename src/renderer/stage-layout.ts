@@ -38,6 +38,19 @@ export function placeX(stage: ComicStage, designX: number): number {
   return stage.panelLeft - t * (stage.panelLeft - stage.panelRight);
 }
 
+/** Inverse of `placeX`: map a live panel world X coordinate back to authored design X. */
+export function unplaceX(stage: ComicStage, worldX: number): number {
+  const panelSpan = stage.panelLeft - stage.panelRight;
+  if (Math.abs(panelSpan) < 1e-6) return DESIGN_LEFT;
+  const t = (stage.panelLeft - worldX) / panelSpan;
+  return DESIGN_LEFT - t * (DESIGN_LEFT - DESIGN_RIGHT);
+}
+
+/** Inverse of authored Y placement (`stage.feetY + designY`). */
+export function unplaceY(stage: ComicStage, worldY: number): number {
+  return worldY - stage.feetY;
+}
+
 /** The flood spans the main panel, centred on the room's `flood` socket when it has one. */
 export function syncFlood(stage: ComicStage): void {
   if (!stage.flood) return;

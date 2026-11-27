@@ -82,6 +82,8 @@ export const PICKUP_FIELDS: Field[] = [
   opt(t('label', 'Stage label')),
   opt(t('sfx', 'Pickup SFX override', { suggest: 'sfx', mono: true })),
   ...transformFields({ includeY: true }),
+  opt(n('dropFromX', 'Drop from X (launch origin)', { step: 0.05 })),
+  opt(n('dropFromY', 'Drop from Y (launch height)', { step: 0.05 })),
   opt({ type: 'union', key: 'appearWhen', label: 'Appears when (drops onto ground)', union: COND_VARIANTS }),
 ];
 
@@ -240,9 +242,16 @@ export const SCRIPT: Field[] = [
     label: 'Locked commands (refused until a condition holds)',
     optional: true,
     item: {
-      title: (l) => `${String(l.command)}: ${String(l.message).slice(0, 60)}`,
+      title: (l) => {
+        const flags = l.flags ? ` [${String(l.flags)}]` : '';
+        const args = l.args !== undefined && l.args !== '' ? ` (${String(l.args)})` : '';
+        return `${String(l.command)}${flags}${args}: ${String(l.message).slice(0, 60)}`;
+      },
       fields: [
         t('command', 'Command (first word)', { mono: true }),
+        opt(t('flags', 'Option flags (* or short letters, e.g. la)', { mono: true })),
+        opt(t('args', 'Args pattern (glob or re:...)', { mono: true })),
+        opt(b('freeAction', 'Free action (0 battle turns)')),
         { type: 'union', key: 'until', label: 'Unlocked when', union: COND_VARIANTS },
         t('message', 'Refusal text', { rows: 2 }),
       ],

@@ -31,7 +31,7 @@ Writing needs the dev server (`/api/chapters`, a Vite plugin that exists only un
 | JSON | the raw file, applied to the draft | any |
 | Check | static checks (references, asset ids, field tables) and the headless solution of this level or the chapter, on the draft | `validate-pack.ts`, `schema-check.ts`, `solve.ts` |
 
-The center stage holds the real game in an iframe (`/play/<chapter>/<level>?draft=1`, `ViewportStageController` with Canvas zoom `Fit` / `40%–250%`, symmetric edge/corner handles, and Portrait/Landscape switch); the bottom dock holds transport controls (restart, next command, run solution at a chosen speed), command input, event emitter, and the live event log. Every dock (`Levels`, `Inspector`, `Console`, `Log`, `Bar`, `Top`) can be hidden, dragged to float, resized, or swapped Left<->Right (`WorkspaceManager` + Focus Mode `` ` ``). The draft travels through localStorage (`src/chapters/draft.ts`); a preview records no progress, scrap or telemetry.
+The center stage holds the real game in an interactive stage-only iframe (`/play/<chapter>/<level>?draft=1&nointro=1&editor=1`, `ViewportStageController` with Canvas zoom `Fit` / `40%–250%`, symmetric edge/corner handles, Portrait/Landscape switch, plus Stage Studio bar toggles `👁 HUD`, `👻 Hidden`, `⏸ AI`, `📁 Room`). Clicking any 3D actor selects it bidirectionally with the Inspector; dragging moves `(x, y)` with floor snap, `Shift` axis lock, and `socket` detach, while corner `⤡` scales and top `⟳` rotates, mutating the live draft for real `Save file` persistence. The bottom Stage Studio dock has zero terminal command input and holds `↻ Restart`, Dialog Runner (`💬 All Dialogs`, `⏭ Next Beat`, `■ Stop`, specific dialog picker + `▶ Run Dialog`), `+ Add to Level`, `⚡ Test Enemy`, `💀 Kill Enemies`, `⚗ Open in Lab`, collapsible `Event Tester`, and the live event log (with `▶ Play solution on stage` / `⏭ Step solution command` on the `Check` tab). Every dock (`Levels`, `Inspector`, `Studio`, `Log`, `Bar`, `Top`) can be hidden, dragged to float, resized, or swapped Left<->Right (`WorkspaceManager` + Focus Mode `` ` ``). The draft travels through localStorage (`src/chapters/draft.ts`); a preview records no progress, scrap or telemetry.
 
 Saving writes only changed files, refreshes the manifest's level summaries and recompiles `src/chapters/generated/`. **Saves are conflict-safe**: each file carries an etag; if someone else (an agent, git, another tab) changed it after the editor loaded it, the API answers 409, nothing is overwritten, and the header offers "Reload from disk". `Ctrl/Cmd+S` saves the current file; `Ctrl/Cmd+Shift+S` saves all dirty files.
 
@@ -54,7 +54,9 @@ The vocabulary is `src/chapters/script-types.ts`; the field tables are `src/chap
 | `chrome.ts` | workstation top bar, Levels outliner header/list, roving ARIA Inspector tablist |
 | `panes.ts`, `app.ts` | inspector tabs, save/conflict handling, `pushState`/`popstate` routing, item selection, `window.__chapterEditor` |
 | `chapter-model.ts` | `BasePackModel` + `FileBaselineTracker` (editable draft, baselines, etags, `reloadFrom`) |
-| `preview.ts` | centered game stage (`ViewportStageController`) + bottom Console & Walkthrough dock |
+| `preview.ts`, `stage-studio.ts` | centered interactive 3D Stage Studio viewport + bottom Stage Studio dock (no terminal input) |
+| `actor-mutator.ts` | bidirectional Inspector <-> stage actor mapping, live transform/socket-detach patching, `+ Add to Level` |
+| `dialog-runner.ts` | catalogs and plays level/manifest/riddle/tutorial dialog beats on the stage |
 | `api.ts` | dev API client (`editor-core/http.ts`) with read-only fallback |
 
 Node side: `scripts/harness/lib/chapter-api.mjs` + `editor-api-common.mjs` (API, safety rules in `chapter-editor-rules.md`), `chapter-compile.mjs` (read chapters, render `catalog-data.ts`, etags), `chapter-json.mjs` (canonical JSON text).

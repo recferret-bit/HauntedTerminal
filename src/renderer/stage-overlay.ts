@@ -494,15 +494,14 @@ export class StageOverlay {
       if (!d.lock) {
         const src = textureUrl('tex.decal.rwx-lock');
         const l = overlayNode('div', 'st-lock', [
-          ...(src ? [imgNode(src)] : []),
-          overlayNode('span', '', ['LOCKED']),
+          src ? imgNode(src) : overlayNode('i', '', ['\uD83D\uDD12']),
         ]);
         this.badgeLayer.appendChild(l);
         d.lock = l;
       }
       const lp = this.project(s.lock);
       d.lock.style.display = '';
-      // Keep the badge inside the stage panel: a door at the panel edge must not push LOCKED out of the stage.
+      // Keep the badge inside the stage panel: a door at the panel edge must not push the padlock out of the stage.
       const r = this.panelRect;
       const half = (d.lock.offsetWidth || 0) / 2 + 4;
       const lx = r.w > half * 2 ? Math.min(r.x + r.w - half, Math.max(r.x + half, lp.x)) : lp.x;

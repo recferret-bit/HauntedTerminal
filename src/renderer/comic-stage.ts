@@ -83,7 +83,7 @@ export class ComicStage {
   /** The dynamic cast, keyed by RoomActor.id ?? key. */
   readonly actors = new Map<string, StageActor>();
   actorSeed = 1;
-  readonly pendingSpawn = new Map<string, { reason: string; at: number; entrance?: 'appear' | 'glide' }>();
+  readonly pendingSpawn = new Map<string, { reason: string; at: number; entrance?: 'appear' | 'glide'; fromX?: number; fromY?: number }>();
   readonly recentStrikes = new Map<string, number>();
   queue: { at: number; ev: KernelEvent }[] = [];
   cursor = 0;

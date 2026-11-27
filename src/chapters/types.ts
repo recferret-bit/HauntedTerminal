@@ -111,6 +111,9 @@ export type LevelEnemySpec = EnemySpawn;
 export interface LevelPickupSpec extends PickupSpawn {
   /** Optional condition: pickup and its file stay hidden until this holds, then land on the ground. */
   appearWhen?: ScriptCond;
+  /** Optional design-space origin `(dropFromX, dropFromY)` when `appearWhen` triggers, arcing onto `x`. */
+  dropFromX?: number;
+  dropFromY?: number;
 }
 
 export interface LevelPropSpec extends SceneTransform {

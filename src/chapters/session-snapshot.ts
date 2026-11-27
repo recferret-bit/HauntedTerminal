@@ -1,13 +1,28 @@
 import { SSD_PER_BACKUP, maxHpFor } from '../game/bestiary.js';
 import { pickTransform, type ActorKind } from '../contracts/room-view.js';
 import { battleView } from '../game/battle.js';
-import { absPath } from '../game/tree.js';
+import { absPath, type VNode } from '../game/tree.js';
 import type { GameSnapshot, LevelInfo, RoomActor, RoomView } from '../game/types.js';
 import { buildRoom, roomSeedForPath, type SceneFacts, type ViewThing } from '../game/view.js';
 import { computeRunRank, splitParentAndName, type ChapterState } from './session-state.js';
-import { hiddenEnemyId, isNodeHidden, isPickupHidden, kiroStage, openingActive, tutorialState } from './script.js';
+import { hasSkippableDialog, hiddenEnemyId, isNodeHidden, isPickupHidden, kiroStage, openingActive, tutorialState } from './script.js';
 import { chapterHintGoals } from './session-hints.js';
 import { allWinRulesMet, computeBossPhase, getChecklist } from './session-rules.js';
+
+/** A `*.sock` node is locked only when gated by an unsolved riddle or boss verification token. */
+function chapterSocketOpen(g: ChapterState, child: VNode): boolean {
+  if (child.kind !== 'socket') return true;
+  const sockPath = absPath(child);
+  const specRiddle = (g.rt.spec.riddles ?? []).find((r) => r.path === sockPath);
+  const labRiddle = g.lab?.content.riddles.find((r) => r.path === sockPath);
+  const riddle = specRiddle ?? labRiddle;
+  if (riddle) return g.rt.lab.solved.has(riddle.id);
+  const bossRule = g.rt.spec.winRules.find((r) => r.kind === 'boss_defeated');
+  if (bossRule && bossRule.kind === 'boss_defeated' && (bossRule.verifySocket === child.name || bossRule.verifySocket === sockPath)) {
+    return (g.rt.socketInputs.get(bossRule.verifySocket) ?? '').includes(bossRule.expectedToken);
+  }
+  return true;
+}
 
 /** `LOCKED: <first missing> (+N more)`, only in the room that holds the exit door while the exit is locked (D7). */
 function lockedCaption(g: ChapterState, cwdPath: string, exitOpen: boolean): string | null {
@@ -246,20 +261,31 @@ export function snapshot(g: ChapterState): GameSnapshot {
     const exits: Record<string, boolean> = exitBase ? { [exitBase]: exitOpen } : {};
 
     const rawEntities = g.rt.world.views(cwdPath);
+    const showHidden = g.editorShowHidden;
     const entityTargets = new Set(rawEntities.map((e) => e.target));
     const hiddenId = hiddenEnemyId(g);
-    const entities = rawEntities.filter((e) => e.id !== hiddenId && !(e.kind === 'pickup' && isPickupHidden(g, e.id)));
+    const entities = rawEntities.flatMap((e) => {
+      const isGated = e.id === hiddenId || (e.kind === 'pickup' && isPickupHidden(g, e.id));
+      if (isGated && !showHidden) return [];
+      if (showHidden && (isGated || e.unseen)) {
+        return [{ ...e, alpha: 0.55, ...(e.state === 'hidden' ? { state: 'idle' as const } : {}) }];
+      }
+      return [e];
+    });
     const effectiveCounts = hiddenId
       ? { left: Math.max(0, counts.left - 1), total: Math.max(0, counts.total - 1) }
       : counts;
     const things: ViewThing[] = [];
+    const hiddenThingNames = new Set<string>();
     for (const child of g.rt.cwd.children.values()) {
-      if (isNodeHidden(g, child)) continue;
+      const nodeHidden = isNodeHidden(g, child);
+      if (nodeHidden && !showHidden) continue;
+      if (nodeHidden) hiddenThingNames.add(child.name);
       const fSpec = g.rt.filesByPath.get(absPath(child));
       things.push({
         name: child.name,
         type: child.kind,
-        open: child.kind === 'dir' ? (child.mode & 0o111) !== 0 : true,
+        open: child.kind === 'dir' ? (child.mode & 0o111) !== 0 : child.kind === 'socket' ? chapterSocketOpen(g, child) : true,
         entity: entityTargets.has(child.name) ? child.name : undefined,
         ...(fSpec?.x !== undefined ? { x: fSpec.x } : {}),
         ...(fSpec?.y !== undefined ? { y: fSpec.y } : {}),
@@ -285,6 +311,13 @@ export function snapshot(g: ChapterState): GameSnapshot {
 
     const room = buildRoom(facts);
     decorateSnapshotRoom(g, room, cwdPath, exitBase, exitOpen, lockedCaption(g, cwdPath, exitOpen), subdirCaption);
+    if (showHidden && hiddenThingNames.size > 0) {
+      for (const a of room.actors) {
+        if (a.target && hiddenThingNames.has(a.target) && (a.alpha === undefined || a.alpha === 1)) {
+          a.alpha = 0.55;
+        }
+      }
+    }
     markStrikeCountdowns(g, room);
 
     const rank = g.ended ? computeRunRank(g.commands, g.deaths, g.levels.length) : null;
@@ -319,6 +352,7 @@ export function snapshot(g: ChapterState): GameSnapshot {
       inventory: { items: [...g.inventory.items], held: g.inventory.held, vram: g.inventory.vram },
       battle: battleView(g.battle),
       openingDialog: openingActive(g),
+      skippableDialog: hasSkippableDialog(g),
       volume: g.volume,
       level: levelInfo(g, effectiveCounts),
       hintGoals: chapterHintGoals(g),

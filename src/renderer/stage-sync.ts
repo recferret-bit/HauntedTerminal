@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { zOrderToZOffset, type RoomSocketId } from '../contracts/room-view.js';
-import { ModelCatalog, ZONES } from '../procgen/index.js';
-import { isComic, type ComicMaterial } from '../shaders/comic-material.js';
+import { ModelCatalog } from '../procgen/index.js';
+import { isComic } from '../shaders/comic-material.js';
 import { eventEntityIds } from './event-fx.js';
 import type { RoomActor, RoomView } from './room-view.js';
 import { heroFaceTierForHp, type HeroFaceTier } from './portrait.js';
@@ -11,6 +11,7 @@ import {
 } from './stage-cast.js';
 import { ACTOR_Z, lockedNames, themeFor } from './stage-const.js';
 import { doorLocked, fade, pendingQueuedSpawn, queuedFor, removeActor, setRest } from './stage-actor.js';
+import { isPowerDoorActor, syncDoorPowerImmediate } from './stage-door-rig.js';
 import { clearBubble, playFx, say } from './stage-fx.js';
 import { applyLantern, placeX, syncFlood, syncRoomModel } from './stage-layout.js';
 import { closeDoor, kill, openDoor, playEntrance } from './stage-motion.js';
@@ -145,7 +146,7 @@ function onActorCreated(stage: ComicStage, a: StageActor): void {
   const pending = stage.pendingSpawn.get(a.id);
   if (pending) {
     stage.pendingSpawn.delete(a.id);
-    playEntrance(stage, a, pending.reason, pending.entrance);
+    playEntrance(stage, a, pending.reason, pending.entrance, { x: pending.fromX, y: pending.fromY });
   } else if (stage.revealArmed > stage.clockMs && a.rest !== 'hidden') {
     a.animator.setState('revealed');
   }
@@ -173,6 +174,7 @@ export function applyActor(stage: ComicStage, a: StageActor, ra: RoomActor, inde
   a.label = ra.label;
   a.target = ra.target;
   a.portRole = ra.portRole;
+  a.viewLocked = ra.locked;
   if (ra.pid !== undefined) a.pid = ra.pid;
   a.strikeIn = ra.strikeIn;
   if (ra.maxHp !== undefined) a.maxHp = ra.maxHp;
@@ -232,30 +234,7 @@ export function applyActor(stage: ComicStage, a: StageActor, ra: RoomActor, inde
   }
 }
 
-/**
- * The door's status lamp (`led`) shows the lock: lockRed while locked, phosphor otherwise. It is a runtime
- * tint (no model change). The lamp gets its own material and colour once, so the zone's other parts and the
- * animator's zone-wide tint never repaint it; every other uniform stays shared (blink, flash, time).
- */
-function tintDoorLed(a: StageActor, locked: boolean): void {
-  const mesh = a.model.parts.get('led');
-  if (!mesh || Array.isArray(mesh.material)) return;
-  let mat = mesh.material as ComicMaterial;
-  if (!mat.userData.ledOwn) {
-    const own = mat.clone() as ComicMaterial;
-    for (const key of Object.keys(mat.uniforms)) own.uniforms[key] = mat.uniforms[key]!;
-    own.uniforms.uColor = { value: (mat.uniforms.uColor!.value as THREE.Color).clone() };
-    own.userData.comic = true;
-    own.userData.ledOwn = true;
-    mesh.material = own;
-    a.model.allMaterials.push(own);
-    a.all.push(own);
-    mat = own;
-  }
-  (mat.uniforms.uColor!.value as THREE.Color).setHex(ZONES[locked ? 'lockRed' : 'phosphor'].color);
-}
-
-/** Pips, PS_XRAY plates and lock plates for every actor. */
+/** Pips, PS_XRAY plates, lock plates and power/cable states for every actor. */
 export function syncOverlays(stage: ComicStage): void {
   const procs = new Map(stage.xrayProcs.map((p) => [p.pid, p]));
   const lockedLabels = lockedNames(stage.view);
@@ -269,20 +248,25 @@ export function syncOverlays(stage: ComicStage): void {
       locked: b.badge?.locked ?? false,
       strike: a.strikeIn !== undefined && a.rest !== 'frozen' && a.rest !== 'petrified' && a.rest !== 'hidden' ? a.strikeIn : null,
     };
-    if (a.kind === 'door') {
+    if (a.kind === 'door' || a.modelId === 'door.socket') {
       const locked = doorLocked(a, lockedLabels);
       const shown = a as StageActor & { lockedShown?: boolean };
-      // The view is the truth for locks: unlocked (chmod, a solved socket, a valve) opens the door
-      // once with a CLANK; re-locked (ransomware, a crack closing up) drops it back.
+      const hadTransition = shown.lockedShown !== undefined;
       if (shown.lockedShown === true && !locked && !a.exiting) {
+        if (isPowerDoorActor(a)) syncDoorPowerImmediate(stage, a, locked);
         openDoor(stage, a);
         playFx(stage, 'fx.gate-open', actorSocket(a, 'fx'), {}, a.id);
+        if (!stage.reducedMotion.on) {
+          playFx(stage, 'fx.door-unlock', actorSocket(a, 'lock'), { text: ' ', noShake: true, scale: 0.68, flashMul: 0.2, lightMul: 0.2 }, `${a.id}:unlock`);
+        }
       } else if (shown.lockedShown === false && locked && !a.exiting) {
+        if (isPowerDoorActor(a)) syncDoorPowerImmediate(stage, a, locked);
         closeDoor(stage, a);
+      } else if ((!hadTransition || !a.doorRig) && isPowerDoorActor(a)) {
+        syncDoorPowerImmediate(stage, a, locked);
       }
       shown.lockedShown = locked;
       b.badge.locked = locked;
-      tintDoorLed(a, locked);
     }
   }
 }

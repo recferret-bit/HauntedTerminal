@@ -1,5 +1,6 @@
 import { writeDraftPack } from '../chapters/draft.js';
 import type { ScriptStep } from '../chapters/types.js';
+import type { StageActorRef, StageTransformPatch } from '../contracts/stage-editor.js';
 import type { LayoutState } from '../editor-core/dock-layout.js';
 import { clear, h, type Rec } from '../editor-core/dom.js';
 import { changedFolders, pollDisk } from '../editor-core/file-tracker.js';
@@ -12,6 +13,13 @@ import {
   type WorkspaceState,
   type WorkstationHook,
 } from '../editor-core/workspace.js';
+import {
+  actorIdForItemPath,
+  addObjectToLevel,
+  applyStageTransformPatch,
+  resolveActorTarget,
+  type AddObjectPreset,
+} from './actor-mutator.js';
 import { ConflictError, fetchChapterDiskState, loadChapters, saveFile } from './api.js';
 import { ChapterModel, type FileKey } from './chapter-model.js';
 import { checkPack } from './check.js';
@@ -32,8 +40,8 @@ const PREVIEW_DELAY_MS = 500;
 const CHAPTER_DOCK_BUTTONS: readonly DockButtonDef<ChapterDockId>[] = [
   { id: 'left', label: '◧ Levels', title: 'Toggle Left Levels Outliner ([)', restoreLabel: 'Levels' },
   { id: 'right', label: '◨ Inspector', title: 'Toggle Right Inspector (])', restoreLabel: 'Inspector' },
-  { id: 'timeline', label: '◫ Console', title: 'Toggle Bottom Console & Walkthrough (\\)', restoreLabel: 'Console' },
-  { id: 'log', label: '⊟ Log', title: 'Toggle Event Log & Console Drawer' },
+  { id: 'timeline', label: '◫ Studio', title: 'Toggle Bottom Stage Studio (\\)', restoreLabel: 'Stage Studio' },
+  { id: 'log', label: '⊟ Log', title: 'Toggle Event Log & Stage Studio Drawer' },
   { id: 'stagebar', label: '⬒ Bar', title: 'Toggle Viewport Toolbar' },
   { id: 'top', label: '▴ Top', title: 'Hide Top Bar (restorable from floating pill)' },
 ];
@@ -114,6 +122,9 @@ class EditorApp {
       onToggleDock: (dock) => this.workspace.toggle(dock),
       onToggleZen: () => this.workspace.toggleZen(),
       onRevealSelected: () => this.revealSelectedItem(),
+      onAddObject: (cwd, preset) => this.handleAddObject(cwd, preset),
+      onSelectActor: (hit, cwd) => this.handleStageSelect(hit, cwd),
+      onTransformActor: (patch, cwd) => this.handleStageTransform(patch, cwd),
     });
     this.pv.stageEl.append(this.workspace.renderRestoreOverlay());
     this.gridEl = h('div', { class: 'ed cx-ed' }, this.top, this.side, this.pv.stageEl, this.pv.timelineEl, this.main);
@@ -262,12 +273,73 @@ class EditorApp {
     if (levelChanged && this.sel.target === 'level') this.loadPreviewSoon();
   }
 
-  private selectItem(path: string | null, scrollIntoView = false, item?: Rec): string | null {
+  private selectItem(path: string | null, scrollIntoView = false, item?: Rec, syncStage = true): string | null {
     this.selectedPath = path;
     if (path) this.open.add(path);
     this.pv.setSelectedReadout(path ? summarizeSelectedItem(this.pane, path, item) : null);
     syncSelectedDetailsDom(this.pane, path, scrollIntoView);
+    if (syncStage) {
+      const level = this.model.level(this.pv.currentLevelId || this.sel.levelId);
+      const actorId = path && level ? actorIdForItemPath(this.model.draft, level, this.pv.activeCwd, path) : null;
+      this.pv.setStageSelectedActor(actorId);
+    }
     return this.selectedPath;
+  }
+
+  private activeDraftLevel() {
+    const id = this.pv.currentLevelId || this.sel.levelId;
+    return { levelId: id, level: this.model.level(id) };
+  }
+
+  private handleStageSelect(hit: StageActorRef | null, cwd: string): void {
+    const { levelId, level } = this.activeDraftLevel();
+    if (!hit || !level) {
+      this.selectItem(null, false, undefined, false);
+      return;
+    }
+    const res = resolveActorTarget(this.model.draft, level, cwd, hit.actorId, hit.target, hit.portRole);
+    const label = hit.label || hit.target || hit.actorId;
+    if (!res) {
+      this.selectedPath = null;
+      this.pv.setSelectedReadout(label);
+      return;
+    }
+    if (res.subdirCwd) this.open.add(`${levelId}.overview.stage.subdirs.${res.subdirCwd}`);
+    this.open.add(res.itemPath);
+    if (this.sel.target !== res.target || this.sel.tab !== res.tab) {
+      this.select({ target: res.target, levelId, tab: res.tab }, false);
+    }
+    this.selectItem(res.itemPath, true, undefined, false);
+    this.pv.setSelectedReadout(label);
+  }
+
+  private handleStageTransform(patch: StageTransformPatch, cwd: string): void {
+    const { level } = this.activeDraftLevel();
+    if (!level) return;
+    if (!patch.commit) return;
+    const res = applyStageTransformPatch(this.model.draft, level, cwd, patch);
+    if (!res) return;
+    if (res.subdirCwd) this.open.add(`${level.id}.overview.stage.subdirs.${res.subdirCwd}`);
+    this.open.add(res.itemPath);
+    this.selectedPath = res.itemPath;
+    this.refreshIssues();
+    this.drawChrome();
+    this.drawPane();
+    this.pv.setSelectedReadout(summarizeSelectedItem(this.pane, res.itemPath));
+    this.pv.syncDraftInPlace();
+  }
+
+  private handleAddObject(cwd: string, preset: AddObjectPreset): void {
+    const levelId = this.pv.currentLevelId || this.sel.levelId;
+    const level = this.model.level(levelId);
+    if (!level) return;
+    const added = addObjectToLevel(level, cwd, preset);
+    this.open.add(added.itemPath);
+    this.refreshIssues();
+    this.select({ target: 'level', levelId: level.id, tab: added.tab }, false);
+    this.selectItem(added.itemPath, true, undefined, false);
+    this.pv.syncDraftInPlace();
+    this.pv.setStageSelectedActor(added.actorId);
   }
 
   private revealSelectedItem(): void {
@@ -310,6 +382,7 @@ class EditorApp {
     this.checkTimer = window.setTimeout(() => {
       this.refreshIssues();
       this.drawChrome();
+      this.pv.syncDraftInPlace();
     }, CHECK_DELAY_MS);
     this.drawChrome();
   }

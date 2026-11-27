@@ -78,6 +78,7 @@ export interface SceneFacts {
     zOrder?: number;
     scale?: SceneScale;
     rotation?: SceneRotation;
+    alpha?: number;
   };
 }
 

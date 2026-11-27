@@ -149,7 +149,7 @@ export function buildRoom(facts: SceneFacts): RoomView {
   });
   if (facts.entryDoor || facts.entryPort) {
     const ep = facts.entryPort;
-    const epSocket = ep?.socket ?? 'door.left';
+    const epSocket = ep?.socket ?? (ep?.x === undefined ? 'door.left' : undefined);
     actors.push({
       key: 'entity',
       id: 'door:entry',
@@ -162,6 +162,7 @@ export function buildRoom(facts: SceneFacts): RoomView {
       ...(ep?.y !== undefined ? { y: ep.y } : {}),
       ...transformAttrs(ep),
       hidden: false,
+      locked: false,
       label: ep?.label ?? 'sector_in',
     });
   }
@@ -187,6 +188,7 @@ export function buildRoom(facts: SceneFacts): RoomView {
       x: slotX !== undefined ? slotX + 0.18 : facts.kiro.x,
       y: facts.kiro.y,
       ...transformAttrs(facts.kiro),
+      ...(facts.kiro.alpha !== undefined ? { alpha: facts.kiro.alpha } : {}),
       hidden: false,
       label: facts.kiro.label,
     });
@@ -246,7 +248,7 @@ function placeEntities(ctx: BuildCtx, autoX: number): void {
       maxHp: ent.maxHp,
       pid: ent.pid,
       target: ent.target,
-      ...socketAttr(ent.socket ?? slot?.socket),
+      ...socketAttr(ent.socket ?? (ent.x === undefined ? slot?.socket : undefined)),
       x: xVal !== undefined ? place.take(xVal) : autoX,
       y: ent.y ?? slot?.y,
       ...transformAttrs(ent),
@@ -254,7 +256,7 @@ function placeEntities(ctx: BuildCtx, autoX: number): void {
       ...(ent.scale === undefined && slot?.scale !== undefined ? { scale: slot.scale } : {}),
       ...(ent.rotation === undefined && slot?.rotation !== undefined ? { rotation: slot.rotation } : {}),
       hidden: false,
-      alpha: ent.unseen ? 0.04 : 1,
+      alpha: ent.alpha ?? (ent.unseen ? 0.04 : 1),
       petrified: ent.state === 'petrified' || undefined,
       frozen: ent.state === 'frozen' || undefined,
       label: ent.label,
@@ -289,15 +291,21 @@ function placeThings(ctx: BuildCtx, maxThingsActors: number): void {
     if (!explicitlyPlaced && actors.length >= maxThingsActors) continue;
     const exit = thing.name in facts.exits;
     const look = thingModel(thing, floor, exit);
-    const lockedDoor = (thing.type === 'dir' || thing.type === 'symlink') && (!thing.open || (exit && !facts.exits[thing.name]));
-    const socket = thing.socket ?? (exit ? 'door.right' : slot?.socket);
+    const model = thing.model ?? slot?.model ?? look.model;
+    const kind = thing.kind ?? look.kind;
+    const isDoorActor = thing.type === 'dir' || thing.type === 'symlink' || kind === 'door' || model.startsWith('door.');
+    const lockedDoor =
+      thing.type === 'dir' || thing.type === 'symlink'
+        ? !thing.open || (exit && !facts.exits[thing.name])
+        : isDoorActor && !thing.open;
+    const socket = thing.socket ?? (thing.x === undefined ? (exit ? 'door.right' : slot?.socket) : undefined);
     const explicitX = thing.x ?? slot?.x;
     const x = exit ? place.take(explicitX ?? EXIT_SOCKET_X) : explicitX !== undefined ? place.take(explicitX) : autoX;
     actors.push({
       key: keyFor(thing.key ?? slot?.key ?? (exit ? 'gate' : undefined)),
       id: `${thing.type === 'dir' || thing.type === 'symlink' ? 'door' : thing.type === 'socket' ? 'sock' : 'file'}:${thing.name}`,
-      model: thing.model ?? slot?.model ?? look.model,
-      kind: thing.kind ?? look.kind,
+      model,
+      kind,
       ...(thing.type === 'dir' || thing.type === 'symlink'
         ? { portRole: facts.exits[thing.name] !== undefined ? ('exit' as const) : ('sub' as const) }
         : {}),
@@ -311,6 +319,7 @@ function placeThings(ctx: BuildCtx, maxThingsActors: number): void {
       ...(thing.scale === undefined && slot?.scale !== undefined ? { scale: slot.scale } : {}),
       ...(thing.rotation === undefined && slot?.rotation !== undefined ? { rotation: slot.rotation } : {}),
       hidden: false,
+      ...(isDoorActor ? { locked: lockedDoor } : {}),
       label: thing.label ?? slot?.label ?? (lockedDoor ? `${thing.name} [locked]` : thing.name),
     });
   }

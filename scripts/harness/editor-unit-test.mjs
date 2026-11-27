@@ -28,7 +28,14 @@ await withProcgen(async (_procgen, vite) => {
   const chapterModelMod = await vite.ssrLoadModule('/src/chapter-editor/chapter-model.ts');
   const chapterCheckMod = await vite.ssrLoadModule('/src/chapter-editor/check.ts');
   const chapterSuggestMod = await vite.ssrLoadModule('/src/chapter-editor/suggest.ts');
+  const chapterSchemaMod = await vite.ssrLoadModule('/src/chapter-editor/schema.ts');
   const chapterSchemaScriptMod = await vite.ssrLoadModule('/src/chapter-editor/schema-script.ts');
+  const actorMutatorMod = await vite.ssrLoadModule('/src/chapter-editor/actor-mutator.ts');
+  const dialogRunnerMod = await vite.ssrLoadModule('/src/chapter-editor/dialog-runner.ts');
+  const stageLayoutMod = await vite.ssrLoadModule('/src/renderer/stage-layout.ts');
+  const stageConstMod = await vite.ssrLoadModule('/src/renderer/stage-const.ts');
+  const viewMod = await vite.ssrLoadModule('/src/game/view.ts');
+  const validatePackMod = await vite.ssrLoadModule('/src/chapters/validate-pack.ts');
   const comixModelMod = await vite.ssrLoadModule('/src/comix-editor/model.ts');
   const comixCheckMod = await vite.ssrLoadModule('/src/comix-editor/check.ts');
   const comixSelMod = await vite.ssrLoadModule('/src/comix-editor/selection.ts');
@@ -198,6 +205,10 @@ await withProcgen(async (_procgen, vite) => {
         { kind: 'spawn', entityId: '   ', model: 'prop.fan' },
         { kind: 'fx', preset: 'fx.missing_nope', x: 2.2, y: 1.0, text: 'WHOOSH' },
         { kind: 'despawn', entityId: 'ghost_orb' },
+        { kind: 'set_flag', name: '  ' },
+      ],
+      locks: [
+        { command: 'ls', args: 're:[', until: { kind: 'dialog_done' }, message: 'blocked' },
       ],
     };
     const brokenChIssues = chapterCheckMod.checkPack(brokenCh);
@@ -208,6 +219,8 @@ await withProcgen(async (_procgen, vite) => {
     assert.ok(brokenChIssues.some((i) => i.tab === 'entities' && i.message.includes('pickup.missing_xyz')));
     assert.ok(brokenChIssues.some((i) => i.tab === 'script' && i.message.includes('spawn missing entityId')));
     assert.ok(brokenChIssues.some((i) => i.tab === 'script' && i.message.includes('fx.missing_nope')));
+    assert.ok(brokenChIssues.some((i) => i.tab === 'script' && i.message.includes('set_flag')));
+    assert.ok(brokenChIssues.some((i) => i.tab === 'script' && i.message.includes('args')));
 
     const suggest = chapterSuggestMod.makeSuggest(() => chModel.draft.levels[0]);
     const fxList = suggest('fx');
@@ -217,6 +230,12 @@ await withProcgen(async (_procgen, vite) => {
     assert.ok(variants.spawn.some((f) => f.key === 'x') && variants.spawn.some((f) => f.key === 'scale'));
     assert.ok(variants.despawn.some((f) => f.key === 'entityId'));
     assert.ok(variants.fx.some((f) => f.key === 'preset' && f.suggest === 'fx'));
+    assert.ok(variants.set_flag.some((f) => f.key === 'name'));
+    const conds = chapterSchemaScriptMod.COND_VARIANTS();
+    assert.ok(conds.ran_command.some((f) => f.key === 'flags') && conds.ran_command.some((f) => f.key === 'args'));
+    assert.ok(Array.isArray(conds.dialog_done) && conds.flag.some((f) => f.key === 'name') && conds.not.some((f) => f.key === 'of'));
+    const pickupKeys = chapterSchemaMod.PICKUP_FIELDS.map((f) => f.key);
+    assert.ok(pickupKeys.includes('dropFromX') && pickupKeys.includes('dropFromY'));
 
     for (const cxSlug of listComixIds()) {
       const cxModel = new comixModelMod.ComixModel(readComix(cxSlug));
@@ -491,6 +510,215 @@ await withProcgen(async (_procgen, vite) => {
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true });
     }
+  });
+
+  console.log('=== [7/9] stage-layout: unplaceX / unplaceY exact inverse round-trips ===');
+  await test('unplaceX and unplaceY invert placeX and feetY + y across symmetric and asymmetric panels', () => {
+    const stages = [
+      { panelLeft: 4.9, panelRight: -1.15, feetY: 0.5 },
+      { panelLeft: 6.4, panelRight: -2.8, feetY: 0.35 },
+      { panelLeft: 3.1, panelRight: -0.4, feetY: 1.1 },
+    ];
+    for (const stage of stages) {
+      for (const designX of [stageConstMod.DESIGN_RIGHT, -0.5, 0, 1.5, 2.75, 4.2, stageConstMod.DESIGN_LEFT]) {
+        const wx = stageLayoutMod.placeX(stage, designX);
+        const backX = stageLayoutMod.unplaceX(stage, wx);
+        assert.ok(Math.abs(backX - designX) < 1e-9, `unplaceX round-trip failed for ${designX}: got ${backX}`);
+      }
+      for (const designY of [-0.5, 0, 0.35, 1.8]) {
+        const backY = stageLayoutMod.unplaceY(stage, stage.feetY + designY);
+        assert.ok(Math.abs(backY - designY) < 1e-9, `unplaceY round-trip failed for ${designY}: got ${backY}`);
+      }
+    }
+  });
+
+  console.log('=== [8/9] actor-mutator: mapping, socket detach, hero upgrade, + Add to Level ===');
+  await test('resolveActorTarget, applyStageTransformPatch, actorIdForItemPath, and addObjectToLevel cover every spec slot', () => {
+    const slug = listChapterSlugs()[0];
+    const ch = readChapter(slug);
+    const pack = structuredClone({ manifest: ch.manifest, levels: ch.levels.map((l) => l.spec), dialogs: ch.dialogs, comix: ch.comix });
+    const lvl1 = pack.levels[0];
+    const cwd = lvl1.cwd;
+
+    // 1. Numeric hero upgrades to object when y/scale/rotation edited, stays clean when x-only
+    lvl1.stage = { ...(lvl1.stage ?? {}), hero: 4.1 };
+    const rHeroX = actorMutatorMod.applyStageTransformPatch(pack, lvl1, cwd, { actorId: 'vibecoder', x: 3.5, y: null, commit: true });
+    assert.equal(rHeroX?.kind, 'hero');
+    assert.equal(lvl1.stage.hero, 3.5);
+    actorMutatorMod.applyStageTransformPatch(pack, lvl1, cwd, { actorId: 'vibecoder', x: 3.2, y: 0.4, scale: 1.2, rotation: 15, commit: true });
+    assert.deepEqual(lvl1.stage.hero, { x: 3.2, y: 0.4, scale: 1.2, rotation: 15 });
+    assert.equal(actorMutatorMod.actorIdForItemPath(pack, lvl1, cwd, `${lvl1.id}.overview.stage.hero`), 'vibecoder');
+
+    // 2. Entry port upgrades and detaches socket
+    lvl1.stage.entryPort = { socket: 'door.left', x: 4.8 };
+    const rEntry = actorMutatorMod.applyStageTransformPatch(pack, lvl1, cwd, { actorId: 'door:entry', portRole: 'entry', x: 4.4, detachSocket: true, commit: true });
+    assert.equal(rEntry?.kind, 'entryPort');
+    assert.equal(lvl1.stage.entryPort.x, 4.4);
+    assert.equal('socket' in lvl1.stage.entryPort, false);
+
+    // 2b. Unset hero scale-only edit defaults x=2.4; unset entryPort scale-only preserves door.left & 4.37
+    delete lvl1.stage.hero;
+    actorMutatorMod.applyStageTransformPatch(pack, lvl1, cwd, { actorId: 'vibecoder', scale: 1.25, commit: true });
+    assert.deepEqual(lvl1.stage.hero, { x: 2.4, scale: 1.25 });
+    delete lvl1.stage.entryPort;
+    actorMutatorMod.applyStageTransformPatch(pack, lvl1, cwd, { actorId: 'door:entry', portRole: 'entry', scale: 1.2, commit: true });
+    assert.equal(lvl1.stage.entryPort.socket, 'door.left');
+    assert.equal(lvl1.stage.entryPort.x, 4.37);
+    assert.equal(lvl1.stage.entryPort.scale, 1.2);
+
+    // 2c. view.buildRoom respects detached entryPort & exit door explicit x without snapping back to sockets
+    const detachedRoom = viewMod.buildRoom({
+      floor: 1,
+      cwd: '/tmp/test-room',
+      hp: 5,
+      maxHp: 5,
+      held: [],
+      lantern: false,
+      flood: 0,
+      xray: false,
+      entryPort: { x: 3.84 },
+      things: [{ name: 'exit', type: 'dir', open: false, x: 1.5 }],
+      exits: { exit: false },
+      entities: [],
+    });
+    const entryActor = detachedRoom.actors.find((a) => a.id === 'door:entry');
+    const exitActor = detachedRoom.actors.find((a) => a.id === 'door:exit');
+    assert.equal(entryActor?.x, 3.84);
+    assert.equal(entryActor?.socket, undefined);
+    assert.equal(exitActor?.x, 1.5);
+    assert.equal(exitActor?.socket, undefined);
+
+    const defaultRoom = viewMod.buildRoom({
+      floor: 1,
+      cwd: '/tmp/test-room-default',
+      hp: 5,
+      maxHp: 5,
+      held: [],
+      lantern: false,
+      flood: 0,
+      xray: false,
+      entryPort: {},
+      things: [{ name: 'exit', type: 'dir', open: false }],
+      exits: { exit: false },
+      entities: [],
+    });
+    assert.equal(defaultRoom.actors.find((a) => a.id === 'door:entry')?.socket, 'door.left');
+    assert.equal(defaultRoom.actors.find((a) => a.id === 'door:exit')?.socket, 'door.right');
+
+    // 3. Kiro clears target when dragged in X
+    lvl1.stage.kiro = { target: 'app.py', x: 2.0 };
+    actorMutatorMod.applyStageTransformPatch(pack, lvl1, cwd, { actorId: 'kiro', x: 2.6, y: 0.5, commit: true });
+    assert.equal(lvl1.stage.kiro.x, 2.6);
+    assert.equal(lvl1.stage.kiro.y, 0.5);
+    assert.equal('target' in lvl1.stage.kiro, false);
+
+    // 4. Backing file socket detach + scale/rotation + reverse lookup
+    const firstFileIdx = lvl1.files.findIndex((f) => f.kind === 'dir' || f.kind === 'socket' || f.kind === 'file');
+    if (firstFileIdx >= 0) {
+      const f = lvl1.files[firstFileIdx];
+      const base = f.path.split('/').pop();
+      f.socket = 'door.right';
+      const prefix = f.kind === 'dir' ? 'door' : f.kind === 'socket' ? 'sock' : 'file';
+      const rFile = actorMutatorMod.applyStageTransformPatch(pack, lvl1, cwd, {
+        actorId: `${prefix}:${base}`,
+        target: base,
+        x: 1.1,
+        detachSocket: true,
+        scale: 1.3,
+        commit: true,
+      });
+      assert.equal(rFile?.kind, 'file');
+      assert.equal(f.x, 1.1);
+      assert.equal('socket' in f, false);
+      assert.equal(f.scale, 1.3);
+    }
+
+    // 5. Boss cameo + outro actor transforms
+    const bossLevel = pack.levels.find((l) => l.mechanic === 'boss');
+    if (bossLevel) {
+      const rCameo = actorMutatorMod.applyStageTransformPatch(pack, bossLevel, bossLevel.cwd, { actorId: 'boss:cameo', x: -0.9, y: 0.25, commit: true });
+      assert.equal(rCameo?.target, 'chapter');
+      assert.equal(pack.manifest.boss.cameoTransform?.x, -0.9);
+    }
+    const outroActor = pack.manifest.outro?.actors?.[0];
+    if (outroActor) {
+      const rOutro = actorMutatorMod.applyStageTransformPatch(pack, lvl1, cwd, { actorId: outroActor.id, x: 2.2, rotation: -10, commit: true });
+      assert.equal(rOutro?.kind, 'outro');
+      assert.equal(outroActor.x, 2.2);
+      assert.equal(outroActor.rotation, -10);
+    }
+
+    // 6. + Add to Level presets pass validatePack cleanly
+    for (const preset of ['prop', 'enemy', 'pickup', 'pickup:ssd', 'pickup:tensor_gpu', 'door', 'socket']) {
+      const added = actorMutatorMod.addObjectToLevel(lvl1, cwd, preset);
+      assert.ok(added.actorId.length > 0 && added.itemPath.startsWith(lvl1.id));
+    }
+    const packIssues = validatePackMod.validatePack(pack);
+    const addErrors = packIssues.filter((i) => i.where === lvl1.id && i.level === 'error');
+    assert.deepEqual(addErrors, [], `Expected zero validation errors after + Add to Level presets, got: ${JSON.stringify(addErrors)}`);
+  });
+
+  console.log('=== [9/9] dialog-runner: collectDialogCatalog & playback state ===');
+  await test('collectDialogCatalog indexes dialogs.json, arrival, timed, triggers, tutorial, riddles, and manifest beats', () => {
+    const slug = listChapterSlugs()[0];
+    const ch = readChapter(slug);
+    const pack = structuredClone({ manifest: ch.manifest, levels: ch.levels.map((l) => l.spec), dialogs: ch.dialogs, comix: ch.comix });
+    const lvl1 = pack.levels[0];
+    const catalog1 = dialogRunnerMod.collectDialogCatalog(pack, lvl1);
+    assert.ok(catalog1.some((b) => b.id === 'dialogs:banner'));
+    assert.ok(catalog1.some((b) => b.id === 'dialogs:agentTaunt'));
+    assert.ok(catalog1.some((b) => b.id.startsWith('dialogs:hankRungs:')));
+    assert.ok(catalog1.some((b) => b.id.startsWith('arrival:')));
+    assert.ok(catalog1.some((b) => b.id.startsWith('tutorial:')));
+    assert.ok(catalog1.some((b) => b.id.startsWith('outro:')));
+
+    const riddleLvl = pack.levels.find((l) => (l.riddles?.length ?? 0) > 0);
+    if (riddleLvl) {
+      const catRiddle = dialogRunnerMod.collectDialogCatalog(pack, riddleLvl);
+      assert.ok(catRiddle.some((b) => b.id.startsWith('riddle:')));
+    }
+
+    const played = [];
+    let cleared = 0;
+    const runner = dialogRunnerMod.createDialogRunner(() => ({
+      clearDialogs: () => { cleared += 1; },
+      playBeat: (events) => { played.push(events); },
+    }));
+    const targetBeat = catalog1[0];
+    assert.equal(runner.runSpecific(catalog1, targetBeat.id), true);
+    assert.equal(cleared, 1);
+    assert.equal(played.length, 1);
+    runner.stop();
+    assert.equal(cleared, 2);
+
+    // Narrative sequence excludes hankRungs/bossKill/pickup/outro and orders banner -> arrival -> timed -> agentTaunt -> tutorial -> completion
+    const narrative = dialogRunnerMod.collectNarrativeSequence(pack, lvl1);
+    assert.ok(narrative.length >= 2);
+    assert.equal(narrative.some((b) => b.id.startsWith('dialogs:hankRungs:') || b.id.startsWith('outro:')), false);
+    const ids = narrative.map((b) => b.id);
+    const idxBanner = ids.indexOf('dialogs:banner');
+    const idxArrival = ids.findIndex((id) => id.startsWith('arrival:'));
+    const idxCompletion = ids.indexOf('dialogs:completion');
+    if (idxBanner >= 0 && idxArrival >= 0) assert.ok(idxBanner < idxArrival);
+    if (idxArrival >= 0 && idxCompletion >= 0) assert.ok(idxArrival < idxCompletion);
+
+    // runAll + nextBeat clears stale overlay dialogs before advancing
+    const b1 = { id: 't1', group: 'test', label: 'beat 1', delayMs: 800, events: [{ type: 'AGENT_TAUNT', agent: 'clod', model: 'agent.clod', text: 'first', mood: 'laugh' }] };
+    const b2 = { id: 't2', group: 'test', label: 'beat 2', delayMs: 800, events: [{ type: 'DIALOG_BOX', speaker: 'kiro', name: 'KIRO', model: 'npc.kiro_ghost', text: 'second', holdMs: 3000 }] };
+    cleared = 0;
+    played.length = 0;
+    runner.runAll([b1, b2]);
+    assert.equal(cleared, 1);
+    assert.equal(played.length, 1);
+    assert.equal(runner.state().index, 1);
+    assert.equal(runner.state().currentLabel, 'beat 1');
+    runner.nextBeat();
+    assert.equal(cleared, 2);
+    assert.equal(played.length, 2);
+    assert.equal(runner.state().index, 2);
+    assert.equal(runner.state().currentLabel, 'beat 2');
+    assert.equal(runner.state().running, false);
+    runner.stop();
   });
 });
 

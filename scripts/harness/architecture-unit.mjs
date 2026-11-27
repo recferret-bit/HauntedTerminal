@@ -697,6 +697,96 @@ await withProcgen(async (_procgen, vite) => {
 
     const scoped = bat.makeFlock(() => 0.5, bounds, [2, 3]);
     assert.ok(scoped.length >= 2 && scoped.length <= 3, `custom countRange [2,3] gave ${scoped.length}`);
+
+    // Quadrant travel alignment: local nose (-1,0,0) under scale(sx, s, s) then rotZ aligns with (dx, dy) & stays upright.
+    for (const [dx, dy] of [[3, 2], [3, -2], [-3, 2], [-3, -2]]) {
+      const h = bat.computeBatHeading({ x: 0, y: 0 }, { x: dx, y: dy }, false);
+      const probe = new THREE.Object3D();
+      probe.scale.set(h.facingLeft ? -2 : 2, 2, 2);
+      probe.rotation.z = h.rotZ;
+      probe.updateMatrixWorld(true);
+      const nose = new THREE.Vector3(-1, 0, 0).applyMatrix4(probe.matrixWorld).normalize();
+      const len = Math.hypot(dx, dy);
+      const dot = nose.x * (dx / len) + nose.y * (dy / len);
+      assert.ok(dot > 0.999, `bat nose aligns with (${dx},${dy}), got dot=${dot}`);
+      const up = new THREE.Vector3(0, 1, 0).applyMatrix4(probe.matrixWorld);
+      assert.ok(up.y > 0, `bat stays upright for (${dx},${dy}), up.y=${up.y}`);
+    }
+    assert.equal(bat.computeBatHeading({ x: 1, y: 1 }, { x: 1, y: 1 }, true).facingLeft, true);
+    assert.equal(bat.computeBatHeading({ x: 1, y: 1 }, { x: 1, y: 1 }, false).facingLeft, false);
+  });
+
+  await test('stage-bats: prop.bat_flying flock orientation, bat_wings burst + 4+-bat stagger, pause/reduced-motion silence', async () => {
+    const { createAppBus } = await load('/src/contracts/app-bus.ts');
+    const stageBats = await load('/src/renderer/stage-bats.ts');
+    const makeMockStage = () => {
+      const bus = createAppBus();
+      const sfx = [];
+      bus.subscribe((ev) => { if (ev.kind === 'sfx') sfx.push(ev.cue); });
+      return {
+        sfx,
+        stage: {
+          world: new THREE.Group(),
+          extraComics: new Set(),
+          audioBus: bus,
+          bats: stageBats.createBatsState(),
+          stormPaused: false,
+          devNoStorm: false,
+          reducedMotion: { on: false },
+          panelLeft: 4.9,
+          panelRight: -1.15,
+          camPanX: 0,
+          feetY: 0.62,
+          viewTop: 4.9,
+        },
+      };
+    };
+
+    // Small flock (2 bats): spawns prop.bat_flying, mirrors travel direction, emits bat_wings once, disposes cleanly.
+    const small = makeMockStage();
+    stageBats.setBatsAmbient(small.stage, { enabled: true, minGapSec: 0.25, maxGapSec: 0.25, count: [2, 2] });
+    stageBats.stepBats(small.stage, 0.3);
+    assert.equal(small.stage.bats.flying.length, 2);
+    for (const b of small.stage.bats.flying) {
+      assert.equal(b.model.spec.id, 'prop.bat_flying');
+      assert.equal(Math.sign(b.model.group.scale.x), b.flight.p3.x > b.flight.p0.x ? -1 : 1);
+    }
+    for (let i = 0; i < 200 && small.stage.bats.flying.length > 0; i += 1) {
+      stageBats.stepBats(small.stage, 0.05);
+    }
+    assert.equal(small.stage.bats.flying.length, 0);
+    assert.equal(small.stage.world.children.length, 0);
+    assert.equal(small.stage.extraComics.size, 0);
+    assert.deepEqual(small.sfx, ['bat_wings']);
+
+    // Large flock (5 bats): emits bat_wings on entry plus one staggered second burst.
+    const large = makeMockStage();
+    stageBats.setBatsAmbient(large.stage, { enabled: true, minGapSec: 0.25, maxGapSec: 0.25, count: [5, 5] });
+    stageBats.stepBats(large.stage, 0.3);
+    for (let i = 0; i < 200 && large.stage.bats.flying.length > 0; i += 1) {
+      stageBats.stepBats(large.stage, 0.05);
+    }
+    assert.deepEqual(large.sfx, ['bat_wings', 'bat_wings']);
+
+    // Paused & reduced-motion silence: no spawn, no audio, active flock clears on reduced motion.
+    const silent = makeMockStage();
+    stageBats.setBatsAmbient(silent.stage, { enabled: true, minGapSec: 0.2, maxGapSec: 0.2, count: [3, 3] });
+    silent.stage.stormPaused = true;
+    stageBats.stepBats(silent.stage, 0.5);
+    assert.equal(silent.stage.bats.flying.length, 0);
+    assert.equal(silent.sfx.length, 0);
+    silent.stage.stormPaused = false;
+    silent.stage.reducedMotion.on = true;
+    stageBats.stepBats(silent.stage, 0.5);
+    assert.equal(silent.stage.bats.flying.length, 0);
+    assert.equal(silent.sfx.length, 0);
+    silent.stage.reducedMotion.on = false;
+    stageBats.stepBats(silent.stage, 0.5);
+    assert.equal(silent.stage.bats.flying.length, 3);
+    silent.stage.reducedMotion.on = true;
+    stageBats.stepBats(silent.stage, 0.05);
+    assert.equal(silent.stage.bats.flying.length, 0);
+    assert.equal(silent.stage.world.children.length, 0);
   });
 
   await test('SceneTransform helpers, compensateInkOutlines & zero hardcoded chapter data in engine layouts/sfx', async () => {
@@ -1024,6 +1114,183 @@ await withProcgen(async (_procgen, vite) => {
     assert.ok(orbActor && orbActor.model === 'prop.fan' && orbActor.x === 2.1 && orbActor.y === 0.4 && orbActor.zOrder === 1 && orbActor.scale === 1.5 && orbActor.rotation === 25 && orbActor.label === 'ORB');
     sess.exec('ls');
     assert.equal(sess.snapshot().room.actors.some((a) => a.id === 'ghost_orb'), false);
+  });
+
+  await test('door cable rigs, RoomActor.locked, gated sockets, shine lights, and firewall bar retraction', async () => {
+    const viewMod = await load('/src/game/view.ts');
+    const cast = await load('/src/renderer/stage-cast.ts');
+    const doorRigMod = await load('/src/renderer/stage-door-rig.ts');
+    const { createChapterSession } = await load('/src/chapters/chapter-session.ts');
+
+    const ch = createChapterSession({ chapterId: 'chapter-01-kiroween', startLevel: 0 });
+    ch.skipIntro();
+    ch.skipTutorial();
+    const snap = ch.snapshot();
+    const lockedExit = snap.room.actors.find((a) => a.portRole === 'exit');
+    assert.ok(lockedExit && lockedExit.locked === true, 'chapter 1 initial exit door must report locked: true');
+
+    const socketRoom = viewMod.buildRoom({
+      floor: 2,
+      cwd: '/srv/test',
+      lantern: false,
+      dark: false,
+      entryDoor: true,
+      held: null,
+      hp: 100,
+      maxHp: 100,
+      xray: false,
+      flood: 0,
+      things: [
+        { name: 'gate.sock', type: 'socket', open: false },
+        { name: 'intercom.sock', type: 'socket', open: true },
+        { name: 'dad.tty.sock', type: 'socket', open: true },
+        { name: 'exit_gate', type: 'dir', open: true },
+      ],
+      entities: [],
+      exits: { exit_gate: true },
+      ghost: false,
+      mimic: false,
+      gateOpen: true,
+      plankBridged: true,
+      gargoyle: 'gone',
+      zombies: 0,
+      bossDead: false,
+      bossFrozen: false,
+      phase1: false,
+      portal: false,
+      powerOn: false,
+      valveOpen: false,
+      hostiles: 0,
+    });
+    assert.equal(socketRoom.actors.find((a) => a.id === 'door:entry')?.locked, false);
+    assert.equal(socketRoom.actors.find((a) => a.id === 'sock:gate.sock')?.locked, true);
+    assert.equal(socketRoom.actors.find((a) => a.id === 'sock:intercom.sock')?.locked, false);
+    assert.equal(socketRoom.actors.find((a) => a.id === 'sock:dad.tty.sock')?.locked, undefined);
+    assert.equal(socketRoom.actors.find((a) => a.id === 'door:exit_gate')?.locked, false);
+
+    for (const m of ['door.usb', 'door.ethernet', 'door.hdmi', 'door.serial', 'door.firewall', 'door.loopback', 'door.socket']) {
+      assert.equal(doorRigMod.isPowerDoorActor({ kind: m === 'door.socket' ? 'npc' : 'door', modelId: m }), true, `${m} should be power door`);
+    }
+    assert.equal(doorRigMod.isPowerDoorActor({ kind: 'door', modelId: 'door.devnull' }), false);
+
+    const seenVariants = new Set();
+    for (let s = 1; s <= 40; s++) {
+      seenVariants.add(doorRigMod.pickDoorCableVariant(`door:${s}`, s * 17));
+    }
+    assert.deepEqual([...seenVariants].sort(), ['ceiling_drop', 'floor_trench', 'mixed_harness', 'wall_conduit']);
+
+    const exitActor = cast.buildStageActor({
+      key: 'gate',
+      id: 'door:exit_test',
+      model: 'door.ethernet',
+      kind: 'door',
+      portRole: 'exit',
+      x: -0.8,
+      locked: true,
+      hidden: false,
+      label: 'exit_test [locked]',
+    }, 11);
+    exitActor.home.set(-3.98, 0, 0);
+    exitActor.base.copy(exitActor.home);
+    exitActor.viewX = -0.8;
+
+    const emitted = [];
+    const sparks = [];
+    const host = {
+      room: { seed: 42 },
+      view: { dark: true },
+      reducedMotion: { on: false },
+      devNoStorm: false,
+      stormPaused: false,
+      audioBus: { emit: (ev) => emitted.push(ev) },
+      actors: new Map([[exitActor.id, exitActor]]),
+    };
+
+    const rig = doorRigMod.ensureDoorRig(host, exitActor);
+    assert.ok(rig && rig.cavityGlow && rig.primaryLed && rig.pulses.length > 0);
+    assert.equal(rig.inwardX, 1, 'screen-right door cables must route inward (+x)');
+
+    doorRigMod.syncDoorPowerImmediate(host, exitActor, true);
+    doorRigMod.stepDoorPower(host, 0.05, (a, pos) => sparks.push({ id: a.id, pos: pos.clone() }));
+    assert.equal(rig.primaryLed.mat.uniforms.uEmissive.value, 0);
+    assert.equal(rig.cavityGlow.mat.uniforms.uEmissive.value, 0);
+    assert.ok(rig.pulses.every((p) => !p.mesh.visible && p.mat.uniforms.uEmissive.value === 0));
+    assert.deepEqual(doorRigMod.activeDoorLights(host), []);
+
+    doorRigMod.syncDoorPowerImmediate(host, exitActor, false);
+    for (let i = 0; i < 65; i++) {
+      doorRigMod.stepDoorPower(host, 0.1, (a, pos) => sparks.push({ id: a.id, pos: pos.clone() }));
+    }
+    assert.ok(rig.primaryLed.mat.uniforms.uEmissive.value > 0.8);
+    assert.ok(rig.cavityGlow.mat.uniforms.uEmissive.value > 0.6);
+    assert.ok(rig.pulses.every((p) => p.mesh.visible));
+    assert.ok(rig.pulses.some((p) => p.mat.uniforms.uEmissive.value > 1.0));
+    const lights = doorRigMod.activeDoorLights(host);
+    const { ZONES } = await load('/src/procgen/core/palette.ts');
+    const { MAX_COMIC_FX_LIGHTS, mergeComicFxLights } = await load('/src/shaders/comic-material.ts');
+    assert.equal(MAX_COMIC_FX_LIGHTS, 8);
+    assert.equal(lights.length, 2, 'exit door emits combined yellow + green light pair');
+    assert.deepEqual(lights.map((l) => l.color), [ZONES.powerAmber.color, ZONES.phosphor.color]);
+    assert.ok(lights.every((l) => l.radius <= 1.6 && l.power >= 0.2 && l.power <= 0.4));
+    const fakeStrike = Array.from({ length: 4 }, (_, idx) => ({
+      x: 1 + idx * 0.4,
+      y: 0.9,
+      radius: 6.8,
+      power: 2.1 - idx * 0.2,
+      color: ZONES.dataCyan.color,
+    }));
+    const mergedDuringStrike = [
+      ...mergeComicFxLights([fakeStrike], Math.max(0, MAX_COMIC_FX_LIGHTS - lights.length)),
+      ...lights,
+    ];
+    assert.equal(mergedDuringStrike.length, 6);
+    assert.ok(mergedDuringStrike.some((l) => l.color === ZONES.powerAmber.color));
+    assert.ok(mergedDuringStrike.some((l) => l.color === ZONES.phosphor.color));
+    assert.equal(exitActor.offset.y, 0);
+    assert.ok(sparks.length > 0, 'unlocked live exit door emits micro-sparks');
+    assert.ok(emitted.some((e) => e.kind === 'sfx' && e.cue === 'kiro_crack_step'), 'unlocked live exit door emits exit beacon beep');
+
+    sparks.length = 0;
+    emitted.length = 0;
+    host.reducedMotion.on = true;
+    for (let i = 0; i < 65; i++) {
+      doorRigMod.stepDoorPower(host, 0.1, (a, pos) => sparks.push({ id: a.id, pos: pos.clone() }));
+    }
+    assert.equal(sparks.length, 0);
+    assert.equal(emitted.length, 0);
+    assert.equal(doorRigMod.activeDoorLights(host).length, 2);
+
+    const fwActor = cast.buildStageActor({
+      key: 'gate',
+      id: 'door:fw_test',
+      model: 'door.firewall',
+      kind: 'door',
+      portRole: 'sub',
+      x: 1.5,
+      locked: true,
+      hidden: false,
+      label: 'firewall [locked]',
+    }, 17);
+    fwActor.home.set(1.8, 0, 0);
+    fwActor.base.copy(fwActor.home);
+    fwActor.viewX = 1.5;
+    doorRigMod.ensureDoorRig(host, fwActor);
+    host.actors.set(fwActor.id, fwActor);
+    doorRigMod.setFirewallOpenProgress(fwActor, 0);
+    const barClosedY = fwActor.model.parts.get('bar0').position.y;
+    doorRigMod.syncDoorPowerImmediate(host, fwActor, false);
+    fwActor.animator.update(0.05);
+    doorRigMod.stepDoorPower(host, 0.05);
+    const barOpenY = fwActor.model.parts.get('bar0').position.y;
+    assert.ok(barOpenY > barClosedY + 1.0, 'door.firewall bars stay retracted upward after animator.step + stepDoorPower');
+    assert.equal(fwActor.offset.y, 0);
+
+    doorRigMod.disposeDoorRig(exitActor);
+    doorRigMod.disposeDoorRig(fwActor);
+    assert.equal(exitActor.doorRig, null);
+    assert.equal(fwActor.doorRig, null);
+    cast.disposeStageActor(exitActor);
+    cast.disposeStageActor(fwActor);
   });
 
   console.log(`\narchitecture-unit OK (${count()} tests)`);

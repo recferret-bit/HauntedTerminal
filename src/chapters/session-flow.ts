@@ -15,9 +15,11 @@ import {
   completeOpeningBeats,
   emitLevelTaunt,
   hasOpeningGate,
+  hasSkippableDialog,
   levelScript,
   openingActive,
   runTimed,
+  skipMidLevelDialog,
   syncScriptTriggers,
   syncTutorial,
 } from './script.js';
@@ -282,14 +284,26 @@ export function skipBattleIntro(g: ChapterState): TickResult | null {
     });
   }
 
-/** Opening Vibecoder + Kiro conversation -> Big Four taunt / battle start (Skip Dialog button). Null when none is active. */
+/** Opening or mid-level scripted Vibecoder + Kiro conversation skip (Skip Dialog button). Null when none is active. */
 export function skipOpeningDialog(g: ChapterState): TickResult | null {
-    if (!openingActive(g)) return null;
-    g.intro = false;
-    return settle(g, (events) => {
-      const arr = !g.rt.levelArrived ? arriveCurrentLevel(g, events) : '';
-      return arr + resolveOpeningTransition(g, events);
-    });
+    if (openingActive(g)) {
+      g.intro = false;
+      return settle(g, (events) => {
+        const arr = !g.rt.levelArrived ? arriveCurrentLevel(g, events) : '';
+        return arr + resolveOpeningTransition(g, events);
+      });
+    }
+    if (!hasSkippableDialog(g)) return null;
+    return settle(g, (events) => skipMidLevelDialog(g, events) + syncWorldAndGates(g, events));
+  }
+
+/** Marks an active mid-level scripted dialog complete after natural DialogBox queue drain. */
+export function finishScriptDialog(g: ChapterState): GameSnapshot | null {
+    if (g.rt.levelTicks < g.rt.dialogBusyUntilTick && g.rt.deferred.length === 0) {
+      g.rt.dialogBusyUntilTick = g.rt.levelTicks;
+      return snapshot(g);
+    }
+    return null;
   }
 
 /** The player's turn ends now and the enemies act (the solver's timer runouts). Null outside a player turn. */

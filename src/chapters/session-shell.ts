@@ -15,7 +15,7 @@ import { cmdDocker, cmdEdit, cmdExit, cmdSed, cmdSource } from './session-code.j
 import { cmdCat, cmdCd, cmdChmod, cmdCp, cmdCut, cmdFind, cmdGrep, cmdHeadTail, cmdLs, cmdMkdir, cmdMv, cmdRm, cmdTouch, cmdWc } from './session-fs.js';
 import { cmdKiro } from './session-kiro.js';
 import { cmdTree } from './session-search.js';
-import { applySkipTutorial, isNodeHidden, lockMessage, tutorialState } from './script.js';
+import { applySkipTutorial, findCommandLock, isNodeHidden, tutorialState } from './script.js';
 import { cmdAchievements, cmdBestiary, cmdGrimoire, cmdHank, cmdStatus, cmdWorkshop } from './session-meta.js';
 import { cmdKill, cmdPkill, cmdPs } from './session-proc.js';
 
@@ -131,23 +131,26 @@ function cmdRestartLevel(g: ChapterState, args: string[]): Step {
   );
 }
 
-/** A `script.locks` entry refuses the command before it runs (the first word decides; `kiro.d` shares `kiro`). */
+/** A `script.locks` entry refuses the command before it runs (canonical command + optional flags/args; `kiro.d` shares `kiro`). */
 export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
     const first = argv[0] ?? '';
     const canonical = first === 'kiro.d' ? 'kiro' : first;
-    const locked = lockMessage(g, canonical);
-    if (locked !== undefined) {
+    const args = argv.slice(1);
+    const lock = findCommandLock(g, canonical, args);
+    if (lock !== undefined) {
       g.commandCue = 'locked';
-      return emptyStep(1, locked.replace(/\n?$/, '\n'));
+      if (lock.freeAction) g.freeAction = true;
+      return emptyStep(1, lock.message.replace(/\n?$/, '\n'));
     }
-    const wantsHidden = first === 'ls' ? hasLsFlags(argv.slice(1)) : first === 'tree' && treeWantsHidden(argv.slice(1));
+    const wantsHidden = first === 'ls' ? hasLsFlags(args) : first === 'tree' && treeWantsHidden(args);
     if (!g.lab && wantsHidden && !hasItem(g.inventory, 'tube_transistor')) {
       g.commandCue = 'locked';
       return emptyStep(1, first === 'ls' ? LS_FLAGS_LOCKED_MESSAGE : TREE_FLAGS_LOCKED_MESSAGE);
     }
     const step = dispatchCommand(g, argv, stdin);
-    if (step.code === 0 && canonical && canonical !== 'ls' && !g.reloadedNow) {
-      g.rt.commandsRun.add(canonical);
+    if (step.code === 0 && canonical && !g.reloadedNow) {
+      g.rt.commandLog.push({ name: canonical, args });
+      if (canonical !== 'ls') g.rt.commandsRun.add(canonical);
     }
     return step;
   }

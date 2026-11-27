@@ -1,32 +1,31 @@
 import { writeDraftPack } from '../chapters/draft.js';
 import { stepOutput } from '../chapters/script.js';
 import type { ChapterPack, LevelSpec, ScriptStep } from '../chapters/types.js';
-import { buildConsoleDock } from '../editor-core/console-dock.js';
 import { h, sleep } from '../editor-core/dom.js';
 import { GamePreviewShell } from '../editor-core/game-preview.js';
 import type { ViewportStageController } from '../editor-core/viewport-stage.js';
-import type { ChapterDockId } from './chrome.js';
+import { StageStudio, type StudioEventHooks } from './stage-studio.js';
 
 export interface PreviewTarget {
   level: LevelSpec;
   pack: ChapterPack;
 }
 
-export interface PreviewOpts {
+export interface PreviewOpts extends StudioEventHooks {
   getPack: () => ChapterPack;
-  onToggleDock?: (dock: ChapterDockId) => void;
   onToggleZen?: () => void;
   onRevealSelected?: () => void;
 }
 
 /**
- * Center Game Viewport (`stageEl`) + Bottom Console & Solution Walkthrough Dock (`timelineEl`).
- * Runs the real game in an iframe fed with the editor's unsaved draft (`?draft=1`).
+ * Center Stage Viewport (`stageEl`) + Bottom Stage Studio Dock (`timelineEl`).
+ * Runs the real game in stage-only editor mode (`?draft=1&nointro=1&editor=1`).
  */
 export class Preview {
   readonly stageEl: HTMLElement;
   readonly timelineEl: HTMLElement;
   private readonly shell: GamePreviewShell;
+  private readonly studio: StageStudio;
   private readonly levelPill = h('span', { class: 'ch-level-pill', title: 'Active level in preview' }, 'No level');
   private readonly stepLabel = h('span', { class: 'pv-step' });
   private target: PreviewTarget | null = null;
@@ -38,51 +37,35 @@ export class Preview {
     this.shell = new GamePreviewShell({
       frameTitle: 'Game preview',
       reloadTitle: 'Reload active level preview',
-      onReload: () => this.reload(),
+      onReload: () => this.reload(true),
       selectionTitle: 'Selected spec item — click to reveal & focus in Inspector',
       onRevealSelected: () => this.opts.onRevealSelected?.(),
       onToggleZen: this.opts.onToggleZen,
       onHideBar: () => this.opts.onToggleDock?.('stagebar'),
       pills: [this.levelPill],
+      stageBarControls: [],
     });
+    this.studio = new StageStudio({
+      play: this.shell.play,
+      logEl: this.shell.logEl,
+      statusEl: this.shell.statusEl,
+      setStatus: (msg) => this.setStatus(msg),
+      getPack: () => this.currentTarget()?.pack ?? this.opts.getPack(),
+      getLevel: () => this.currentTarget()?.level ?? null,
+      onRestart: () => this.reload(true),
+      onOpenInLab: () => this.openInLab(),
+      onAddObject: (cwd, preset) => this.opts.onAddObject?.(cwd, preset),
+      onToggleDock: this.opts.onToggleDock,
+      onSelectActor: this.opts.onSelectActor,
+      onTransformActor: this.opts.onTransformActor,
+    });
+    this.shell.stageEl.querySelector('.cx-bar-right')?.before(...this.studio.stageBarControls);
     this.stageEl = this.shell.stageEl;
-    this.timelineEl = this.buildConsoleDock();
+    this.timelineEl = this.studio.timelineEl;
   }
 
   get stage(): ViewportStageController {
     return this.shell.stage;
-  }
-
-  private buildConsoleDock(): HTMLElement {
-    const speed = h(
-      'select',
-      { title: 'Delay between typed commands', 'aria-label': 'Command playback delay' },
-      ...[300, 700, 1500, 3000].map((ms) => h('option', { value: String(ms), selected: ms === this.speed }, `${ms} ms`)),
-    );
-    speed.addEventListener('change', () => { this.speed = Number(speed.value); });
-
-    // `.pv-bar button:nth-child(2)` must remain `⏭ Next command` for harness compatibility.
-    const bar = h(
-      'div',
-      { class: 'pv-bar' },
-      h('button', { type: 'button', class: 'btn small', onclick: () => this.reload() }, '↻ Restart level'),
-      h('button', { type: 'button', class: 'btn small', onclick: () => void this.stepOnce() }, '⏭ Next command'),
-      h('button', { type: 'button', class: 'btn small primary', onclick: () => void this.runAll() }, '▶ Run solution'),
-      h('button', { type: 'button', class: 'btn small', onclick: () => { this.running = false; } }, '■ Stop'),
-      h('button', { type: 'button', class: 'btn small', title: 'Import a copy of this level into Terminal Lab (read-only toward chapters/)', onclick: () => this.openInLab() }, '⚗ Open in Lab'),
-      speed,
-      this.stepLabel,
-      this.shell.statusEl,
-    );
-    return buildConsoleDock({
-      label: 'Console and Solution Walkthrough',
-      bar,
-      logEl: this.shell.logEl,
-      play: this.shell.play,
-      onStatus: (msg) => this.setStatus(msg),
-      onToggleLog: () => this.opts.onToggleDock?.('log'),
-      onHide: () => this.opts.onToggleDock?.('timeline'),
-    });
   }
 
   get currentLevelId(): string {
@@ -93,8 +76,30 @@ export class Preview {
     return this.shell.phase;
   }
 
+  get activeCwd(): string {
+    return this.studio.getCwd();
+  }
+
   setSelectedReadout(label: string | null): void {
     this.shell.setSelectedReadout(label);
+  }
+
+  setStageSelectedActor(actorId: string | null): void {
+    this.studio.setSelectedActor(actorId);
+  }
+
+  syncDraftInPlace(): boolean {
+    const cur = this.currentTarget();
+    if (!cur) return false;
+    writeDraftPack(cur.pack);
+    const api = this.shell.play.win?.__stageEditor;
+    if (!api?.ready) return false;
+    const ok = api.syncDraftInPlace(cur.pack.manifest.id);
+    if (ok) {
+      this.studio.refreshCatalog();
+      this.studio.refreshRooms();
+    }
+    return ok;
   }
 
   private setStatus(text: string): void {
@@ -106,10 +111,10 @@ export class Preview {
     this.stepLabel.textContent = cmds.length ? `solution ${Math.min(this.cursor, cmds.length)}/${cmds.length}` : '';
   }
 
-  /** Loads `level` with the current draft and waits until the terminal is live. */
+  /** Loads `level` with the current draft and swaps in place when the stage editor is already live. */
   load(level: LevelSpec): void {
     this.target = { level, pack: this.opts.getPack() };
-    this.reload();
+    this.reload(false);
   }
 
   private currentTarget(): PreviewTarget | null {
@@ -127,16 +132,28 @@ export class Preview {
     window.open(`/terminal-lab?from=${encodeURIComponent(ref)}&draft=1`, '_blank', 'noopener');
   }
 
-  reload(): void {
+  reload(forceIframe = false): void {
     const cur = this.currentTarget();
     if (!cur) return;
     this.target = cur;
     this.levelPill.textContent = `${String(cur.level.index).padStart(2, '0')} · ${cur.level.id}`;
     this.running = false;
     this.cursor = 0;
+    this.studio.stopDialogs();
     this.updateStepLabel();
     writeDraftPack(cur.pack);
-    void this.shell.load(`/play/${encodeURIComponent(cur.pack.manifest.id)}/${encodeURIComponent(cur.level.id)}?draft=1&nointro=1`);
+
+    const api = !forceIframe ? this.shell.play.win?.__stageEditor : undefined;
+    if (api?.ready && api.swapDraft(cur.pack.manifest.id, cur.level.id)) {
+      this.shell.prepareSwap();
+      this.studio.attachFrame();
+      return;
+    }
+
+    const url = `/play/${encodeURIComponent(cur.pack.manifest.id)}/${encodeURIComponent(cur.level.id)}?draft=1&nointro=1&editor=1`;
+    void this.shell.load(url).then(({ live }) => {
+      if (live) this.studio.attachFrame();
+    });
   }
 
   async stepOnce(): Promise<void> {
@@ -150,6 +167,8 @@ export class Preview {
       const live = await this.shell.waitUntilLive();
       if (!live || this.shell.play.phase !== 'play') return;
     }
+    const skipBtn = this.shell.play.win?.document.querySelector<HTMLButtonElement>('#skip-dialog-btn');
+    if (skipBtn && !skipBtn.hidden) skipBtn.click();
     this.cursor += 1;
     this.updateStepLabel();
     this.setStatus(`$ ${next}`);

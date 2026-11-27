@@ -54,7 +54,7 @@ export function cuesForKernelEvent(ev) {
     case 'INODE_MODE_CHANGED': {
       const was = ((ev.oldMode ?? 0) & 0o111) !== 0;
       const now = ((ev.newMode ?? 0) & 0o111) !== 0;
-      return was !== now ? [now ? 'gate_open' : 'gate_locked'] : ['chmod'];
+      return was !== now ? (now ? ['gate_open', 'lap_run'] : ['gate_locked']) : ['chmod'];
     }
     case 'BATTLE_STARTED':
       return ['battle_start'];

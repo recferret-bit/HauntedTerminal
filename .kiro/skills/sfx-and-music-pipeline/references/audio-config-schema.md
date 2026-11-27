@@ -7,8 +7,9 @@ Sources of truth: `src/audio/{config,limits,loop-takes,music-for,sfx-for,catalog
 | Export | Type | Purpose |
 |---|---|---|
 | `SFX_TRIM` | `Partial<Record<SfxId, { offset: number; duration?: number }>>` | Active trim windows (seconds) bypassing leading/trailing MP3 silence for 0ms latency |
-| `LOOP_CUE_IDS` | `readonly SfxId[]` | `rain_loop`, `lap_fan`, `dad_typing_loop`, `dad_smoke_loop`, `low_hp_loop`, `pickup_hover` |
-| `LOOP_GAINS` | `Partial<Record<SfxId, number>>` | Ambient/loop per-cue mix gains (`rain_loop: 0.22`, `lap_fan: 0.28`, `dad_typing_loop: 0.16`, `dad_smoke_loop: 0.14`) |
+| `LOOP_CUE_IDS` | `readonly SfxId[]` | `rain_loop`, `lap_fan`, `dad_typing_loop`, `dad_rig_loop`, `low_hp_loop`, `pickup_hover` |
+| `LOOP_GAINS` | `Partial<Record<SfxId, number>>` | Ambient/loop per-cue mix gains (`rain_loop: 0.22`, `lap_fan: 0.28`, `dad_typing_loop: 0.16`, `dad_rig_loop: 0.14`) |
+| `CROSSFADE_LOOPS` | `ReadonlySet<SfxId>` | Single-file ambient loops played via `playBed` 120 ms overlap crossfade (`dad_rig_loop`) |
 | `DEFAULT_LOOP_GAIN` | `number` (`0.35`) | Fallback gain when a loop cue is absent from `LOOP_GAINS` |
 | `TYPING_SFX` | `ReadonlySet<SfxId>` | Capped to `TYPING_SOUND_SOURCES` (`3`) simultaneous voices |
 | `THROTTLED_TYPING_SFX` | `ReadonlySet<SfxId>` | Rate-limited to `TYPING_MIN_INTERVAL_MS` (`100ms`); `key_enter` & `tab_complete` bypass throttle |
@@ -16,7 +17,7 @@ Sources of truth: `src/audio/{config,limits,loop-takes,music-for,sfx-for,catalog
 | `TAUNT_VARIANTS` | `Partial<Record<SfxId, SfxId[]>>` | 10 rotated takes each (`taunt_antigravy_1..10`, `taunt_codec_1..10`, `taunt_gork_1..10`, `taunt_clod_1..10`, `kiro_advice..10`, `dad_cheer..10`) |
 | `SPEECH_SFX` | `ReadonlySet<SfxId>` | `'dialog_hero'` plus all `TAUNT_VARIANTS` |
 | `KEY_RATES` / `KEY_GAINS` | `readonly number[]` | Pitch & gain round-robin variation tables for typing cues |
-| `LOOP_TAKES` (`loop-takes.ts`) | `Partial<Record<SfxId, SfxId[]>>` | Non-repeating playlist takes (e.g. `dad_smoke_loop..10`) |
+| `LOOP_TAKES` (`loop-takes.ts`) | `Partial<Record<SfxId, SfxId[]>>` | Optional non-repeating playlist takes (currently empty) |
 | `SOUND_SOURCES` (`limits.ts`) | `10` | Default pooled one-shot voices (loops & music beds have dedicated slots) |
 
 ## 2. `MusicScene` Priority (`src/audio/music-for.ts`)

@@ -13,7 +13,7 @@ import type { Session } from '../game/session.js';
 import type { AppBus } from '../contracts/app-bus.js';
 import type { Sfx } from '../game/sfx.js';
 import { absPath, hasWrite, lookup, type VNode } from '../game/tree.js';
-import type { CommandResult, TickResult } from '../game/types.js';
+import type { CommandResult, GameSnapshot, TickResult } from '../game/types.js';
 import type { RankGrade } from './catalog.js';
 import type { LabConfig, LabInjection, LabInspect, LabLevelState } from './session-lab-types.js';
 import type { ChapterPack, LevelDialogEntry, LevelFileSpec, LevelPatchChip, LevelSpec, ScriptStep } from './types.js';
@@ -55,6 +55,8 @@ export interface ChapterSession extends Session {
   skipBattleIntro(): TickResult | null;
   /** Skips the opening Vibecoder + Kiro conversation (`openingSec`), unlocking the terminal and firing the Big Four taunt / battle start. */
   skipOpeningDialog(): TickResult | null;
+  /** Marks any active mid-level scripted dialog complete after natural DialogBox queue drain. */
+  finishScriptDialog?(): GameSnapshot | null;
   /** Stop or restart the battle turn timer while the mini-editor or the laptop is open. */
   holdTurnTimer(hold: BattleHold, on: boolean): void;
   /** The player's turn ends now and the enemies act (the lab's Tick, the solver's timer runouts). Null outside a battle's player turn. */
@@ -64,6 +66,11 @@ export interface ChapterSession extends Session {
    * the pid is in use, or its file does not exist.
    */
   inject(what: LabInjection): TickResult;
+  setEditorPreviewOptions?(opts: { showHidden?: boolean }): TickResult;
+  listPreviewDirs?(): string[];
+  setPreviewCwd?(cwd: string): TickResult;
+  injectEditorEnemy?(type: string, x?: number): TickResult | null;
+  killAllEnemies?(): { count: number; result: TickResult };
 }
 
 export interface ChapterSessionOptions {
@@ -138,6 +145,8 @@ export interface LevelRuntime {
   arrivalNote: string;
   /** First words of commands the player ran in this level (`ls`, `ps`): feeds script conditions. */
   commandsRun: Set<string>;
+  /** Full successful command invocations `{ name, args }` on this level for flag/arg `ran_command` checks. */
+  commandLog: Array<{ name: string; args: string[] }>;
   tutorialSkipped: boolean;
   tutorialLastStep: number;
   /** The script's hidden enemy has been shown. */
@@ -168,6 +177,10 @@ export interface LevelRuntime {
   triggersFired: Set<number>;
   /** True once the opening Vibecoder + Kiro conversation (`openingSec`) has finished or been skipped. */
   openingDone: boolean;
+  /** Level tick until which an active scripted `dialog_box` beat holds (`dialog_done` is false). */
+  dialogBusyUntilTick: number;
+  /** Per-level script flags set by `set_flag` steps and read by `flag` conditions. */
+  flags: Set<string>;
   /** Battles started in this level runtime (used to wire the level's Big Four `agentTaunt` onto Battle #1). */
   levelBattles: number;
   /** Armed `restart-level` confirm; dies with the level runtime (a load or reboot builds a new one). */
@@ -180,6 +193,7 @@ export interface ChapterState {
   readonly chapterId: string;
   readonly pack: ChapterPack;
   readonly preview: boolean;
+  editorShowHidden: boolean;
   readonly levels: LevelSpec[];
   readonly sfx: Sfx;
   readonly bus: AppBus;

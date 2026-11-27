@@ -25,7 +25,7 @@ Mute and volume stay on the session (`setMuted`, `setVolume`) and on the Esc men
 - `dialog`: emitted from `DialogOrchestrator.onOpen` (`{ speaker }`) when a dialog box visually opens on screen so Big Four voice taunts (`taunt_<agent>_{1..10}`), Kiro praise/cheer anti-taunts (`kiro_advice`, `kiro_advice_{2..10}` — randomly picked per speaker with prewarmed buffers and trimmed leading silence), and hero cues play in exact sync with box appearance rather than queue push. Later change 2026-11-26: speaker `dad` maps to `dad_cheer` (`SPEAKER_CUES` in `src/audio/sfx-kernel.ts`), variants `dad_cheer`, `dad_cheer_2` .. `dad_cheer_10` in `TAUNT_VARIANTS` (`src/audio/engine.ts`).
 - `scene`: the music scene below.
 - `laptop`: laptop lab actions (`open`, `close`, `post`, `disk`, `ready`, `trackpad`, `run`, `loop-guard`, `shutdown`, `key`).
-- `loop`: start or stop `rain_loop`, `low_hp_loop`, `lap_fan`, `dad_typing_loop` or `dad_smoke_loop`.
+- `loop`: start or stop `rain_loop`, `low_hp_loop`, `lap_fan`, `dad_typing_loop` or `dad_rig_loop`.
 - `cine` and `letter`: cinematic beats and lettering.
 - `page`: the comic reader turned a page.
 - `audio-hold`: the cinematic paused or resumed. The graph suspends.

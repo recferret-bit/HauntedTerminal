@@ -30,6 +30,12 @@ export interface ConsoleDockSpec {
   onHide: () => void;
   /** An editor panel shown left of the send box and the log; the Log toggle hides only those (the Terminal Lab's script). */
   lead?: HTMLElement;
+  /** Omit the terminal command input box (Chapter Editor Stage Studio removes the terminal dock completely). */
+  hideCommandInput?: boolean;
+  /** Custom summary text for the collapsible kernel event tester. */
+  emitSummary?: string;
+  /** Extra controls placed inside `.ch-console-tools` before the event tester. */
+  extraTools?: HTMLElement[];
 }
 
 function emitBox(spec: ConsoleDockSpec): HTMLElement {
@@ -46,7 +52,7 @@ function emitBox(spec: ConsoleDockSpec): HTMLElement {
       spec.onStatus(`bad JSON: ${String((err as Error).message)}`);
     }
   });
-  return h('details', { class: 'pv-emit' }, h('summary', {}, 'Fire an event on the stage'), h('div', { class: 'pv-emit-row' }, select, fire), area);
+  return h('details', { class: 'pv-emit' }, h('summary', {}, spec.emitSummary ?? 'Fire an event on the stage'), h('div', { class: 'pv-emit-row' }, select, fire), area);
 }
 
 function head(spec: ConsoleDockSpec): HTMLElement {
@@ -64,28 +70,37 @@ function head(spec: ConsoleDockSpec): HTMLElement {
   );
 }
 
-/** The bottom Console dock shared by the editors: transport bar, a line sender, the raw-event box and the event log. */
+/** The bottom Console dock shared by the editors: transport bar, optional line sender, raw-event box and event log. */
 export function buildConsoleDock(spec: ConsoleDockSpec): HTMLElement {
-  const send = h('input', {
-    type: 'text',
-    class: 'mono',
-    spellcheck: 'false',
-    autocorrect: 'off',
-    autocapitalize: 'none',
-    'aria-label': 'Send command to player terminal',
-    placeholder: 'type a command for the player…',
-  });
-  const submit = (): void => {
-    if (!send.value.trim()) return;
-    spec.play.submit(send.value);
-    send.value = '';
+  const sendRow = (): HTMLElement => {
+    const send = h('input', {
+      type: 'text',
+      class: 'mono',
+      spellcheck: 'false',
+      autocorrect: 'off',
+      autocapitalize: 'none',
+      'aria-label': 'Send command to player terminal',
+      placeholder: 'type a command for the player…',
+    });
+    const submit = (): void => {
+      if (!send.value.trim()) return;
+      spec.play.submit(send.value);
+      send.value = '';
+    };
+    send.addEventListener('keydown', (e) => {
+      if (e.isComposing || e.keyCode === 229 || e.key !== 'Enter') return;
+      e.preventDefault();
+      submit();
+    });
+    return h('div', { class: 'pv-send pv-send-row' }, send, h('button', { type: 'button', class: 'btn small', onclick: submit }, 'Run'));
   };
-  send.addEventListener('keydown', (e) => {
-    if (e.isComposing || e.keyCode === 229 || e.key !== 'Enter') return;
-    e.preventDefault();
-    submit();
-  });
-  const tools = h('div', { class: 'ch-console-tools' }, h('div', { class: 'pv-send pv-send-row' }, send, h('button', { type: 'button', class: 'btn small', onclick: submit }, 'Run')), emitBox(spec));
+  const tools = h(
+    'div',
+    { class: 'ch-console-tools' },
+    ...(spec.hideCommandInput ? [] : [sendRow()]),
+    ...(spec.extraTools ?? []),
+    emitBox(spec),
+  );
   const logPane = h(
     'div',
     { class: 'ch-console-log' },

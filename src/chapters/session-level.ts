@@ -73,6 +73,33 @@ function removeFiles(root: VNode, paths: readonly string[]): void {
   }
 }
 
+function buildLevelRoot(spec: LevelSpec, goneFiles: string[]): { root: VNode; cwd: VNode; quests: QuestBackup[] } {
+  const root = makeRoot();
+  ensureDirChain(root, '/home/dev');
+  ensureDirChain(root, spec.cwd);
+
+  const quests: QuestBackup[] = [];
+  for (const f of spec.files) {
+    const node = placeFile(root, f);
+    if (f.questCritical && f.kind === 'file') {
+      const { parentPath, name } = splitParentAndName(f.path);
+      quests.push({
+        path: f.path,
+        name,
+        parentPath,
+        mode: node.mode,
+        uid: node.uid,
+        content: node.content,
+        missingTicks: 0,
+      });
+    }
+  }
+
+  for (const gen of spec.generate ?? []) growTree(root, gen);
+  removeFiles(root, goneFiles);
+  return { root, cwd: lookup(root, spec.cwd) ?? root, quests };
+}
+
 export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events: KernelEvent[]): void {
     // A new or restarted level ends any battle; holds (an open editor) stay.
     endBattle(g.battle, 'level', events);
@@ -92,31 +119,7 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       g.hp = maxHpFor(g.ram);
     }
 
-    const root = makeRoot();
-    ensureDirChain(root, '/home/dev');
-    ensureDirChain(root, spec.cwd);
-
-    const quests: QuestBackup[] = [];
-    for (const f of spec.files) {
-      const node = placeFile(root, f);
-      if (f.questCritical && f.kind === 'file') {
-        const { parentPath, name } = splitParentAndName(f.path);
-        quests.push({
-          path: f.path,
-          name,
-          parentPath,
-          mode: node.mode,
-          uid: node.uid,
-          content: node.content,
-          missingTicks: 0,
-        });
-      }
-    }
-
-    for (const gen of spec.generate ?? []) growTree(root, gen);
-    removeFiles(root, goneFiles);
-
-    const cwd = lookup(root, spec.cwd) ?? root;
+    const { root, cwd, quests } = buildLevelRoot(spec, goneFiles);
     const { enemySpawns, pickupSpawns } = levelSpawns(spec);
 
     if (!g.preview) recordTelemetry({ malware: ['hank.tty', 'kiro.d', g.pack.manifest.allyNpc.id, ...spec.enemies.map((e) => e.type)] });
@@ -152,6 +155,7 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       levelArrived: false,
       arrivalNote: '',
       commandsRun: new Set(),
+      commandLog: [],
       tutorialSkipped: false,
       tutorialLastStep: 1,
       hiddenRevealed: false,
@@ -166,6 +170,8 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       droppedPickups: new Set(),
       triggersFired: new Set(),
       openingDone: false,
+      dialogBusyUntilTick: 0,
+      flags: new Set(),
       levelBattles: 0,
       restartPending: null,
       lab: { absorbed: {}, solved: new Set(), attempts: {}, hits: new Set() },

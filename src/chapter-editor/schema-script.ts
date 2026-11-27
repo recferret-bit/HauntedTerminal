@@ -12,7 +12,11 @@ const KIRO_ACTIONS = ['scan', 'load', 'crack_start', 'crack_step', 'crack_done',
 export type Variants<K extends string> = Record<K, Field[]>;
 
 export const COND_VARIANTS = (): Variants<ScriptCond['kind']> => ({
-  ran_command: [t('name', 'Command', { mono: true, hint: 'first word the player typed, e.g. ls or ps' })],
+  ran_command: [
+    t('name', 'Command', { mono: true, hint: 'first word the player typed, e.g. ls or ps' }),
+    opt(t('flags', 'Option flags (* or short letters, e.g. la)', { mono: true })),
+    opt(t('args', 'Args pattern (glob or re:...)', { mono: true })),
+  ],
   file_absent: [t('path', 'Path', { suggest: 'paths', mono: true })],
   file_read: [t('path', 'Path', { suggest: 'paths', mono: true })],
   enemy_dead: [t('enemyId', 'Enemy id', { suggest: 'enemies' })],
@@ -21,13 +25,18 @@ export const COND_VARIANTS = (): Variants<ScriptCond['kind']> => ({
   has_item: [sel('item', 'Item', ITEM_IDS)],
   room_swept: [],
   tutorial_skipped: [],
+  dialog_done: [],
+  flag: [t('name', 'Flag name', { mono: true })],
+  not: [{ type: 'union', key: 'of', label: 'Negated condition', union: COND_VARIANTS }],
   any: [{ type: 'array', key: 'of', label: 'Any of', item: { union: COND_VARIANTS, title: condTitle } }],
   all: [{ type: 'array', key: 'of', label: 'All of', item: { union: COND_VARIANTS, title: condTitle } }],
 });
 
 export function condTitle(c: Record<string, unknown>): string {
-  const detail = c.name ?? c.path ?? c.enemyId ?? c.core ?? c.item ?? (Array.isArray(c.of) ? `${c.of.length} conditions` : '');
-  return `${String(c.kind)}${detail ? `: ${String(detail)}` : ''}`;
+  const flags = c.kind === 'ran_command' && c.flags ? ` [${String(c.flags)}]` : '';
+  const detail = c.name ?? c.path ?? c.enemyId ?? c.core ?? c.item
+    ?? (Array.isArray(c.of) ? `${c.of.length} conditions` : c.of && typeof c.of === 'object' ? condTitle(c.of as Record<string, unknown>) : '');
+  return `${String(c.kind)}${detail ? `: ${String(detail)}${flags}` : ''}`;
 }
 
 const TEXT_ROWS = 3;
@@ -90,10 +99,11 @@ export const STEP_VARIANTS = (): Variants<ScriptStep['kind']> => ({
     t('text', 'Line', { rows: TEXT_ROWS }),
     opt(n('holdSec', 'Hold seconds after the text (default 12)', { step: 0.5 })),
   ],
+  set_flag: [t('name', 'Flag name', { mono: true })],
 });
 
 function stepTitle(s: Record<string, unknown>): string {
-  const text = s.text ?? s.message ?? s.entityId ?? s.preset ?? s.cue ?? s.step ?? s.mood ?? '';
+  const text = s.text ?? s.message ?? s.entityId ?? s.name ?? s.preset ?? s.cue ?? s.step ?? s.mood ?? '';
   return `${String(s.kind)}: ${String(text).replace(/\s+/g, ' ').slice(0, 70)}`;
 }
 

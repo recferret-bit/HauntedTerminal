@@ -74,6 +74,7 @@ function runShellLine(play: Play, line: string): { output: string; clear?: boole
 function handleNonPausingModalClose(play: Play): void {
   play.events.emit({ kind: 'sync-pause' });
   syncPlayAudio(play);
+  if (play.editorMode) return;
   window.setTimeout(() => {
     if (play.lifecycle.phase() === 'play' && !anyModalOpen(play)) {
       play.shell.focus();
@@ -109,7 +110,7 @@ export function mountPlayShell(play: Play): void {
       onClose: () => {
         play.session.bus?.emit({ kind: 'menu', action: 'close' });
         if (isChapterSession(play.session)) play.session.holdTurnTimer('editor', false);
-        if (play.lifecycle.phase() === 'play') window.setTimeout(() => play.shell.focus(), 0);
+        if (!play.editorMode && play.lifecycle.phase() === 'play') window.setTimeout(() => play.shell.focus(), 0);
       },
       onLayoutChange: () => {
         window.requestAnimationFrame(() => {
@@ -200,16 +201,23 @@ function playAgain(play: Play, skip: boolean): void {
 }
 
 export function mountPlayHud(play: Play): void {
+  play.dialogs?.clear();
   const chapter = isChapterSession(play.session) ? play.session : null;
   play.dialogs = mountDialogOrchestrator(play.dom.stageWrap, drawPortrait, {
     tutorial: play.tutorial,
     reducedMotion: () => play.stage.reducedMotion.on,
     onDialogOpen: (line) => play.session.bus?.emit({ kind: 'dialog', speaker: line.speaker }),
+    onDialogIdle: () => {
+      if (!isChapterSession(play.session)) return;
+      const snap = play.session.finishScriptDialog?.();
+      if (snap) play.events.emit({ kind: 'paint', snap });
+    },
   });
   play.dialogBox = play.dialogs.box;
   play.hintDialog = mountHintDialog(play.dom.stageWrap, {
     onClose: (returnFocus) => {
       play.session.bus?.emit({ kind: 'menu', action: 'move' });
+      if (play.editorMode) return;
       window.setTimeout(() => {
         if (anyModalOpen(play, ['editor'])) return;
         if (play.codeEditor?.isOpen()) {
@@ -245,9 +253,11 @@ export function mountPlayHud(play: Play): void {
           dev: params.get('dev') === '1',
         });
         window.history.replaceState(null, '', nextUrl);
-        window.setTimeout(() => {
-          if (play.lifecycle.phase() === 'play') play.shell.focus();
-        }, 0);
+        if (!play.editorMode) {
+          window.setTimeout(() => {
+            if (play.lifecycle.phase() === 'play') play.shell.focus();
+          }, 0);
+        }
       } else {
         window.location.assign(buildPlayUrl(chapterId, level.id, true));
       }
@@ -330,9 +340,11 @@ export function bindPlayInput(play: Play): void {
       e.preventDefault();
       e.stopPropagation();
       finishPlayLevelTransition(play, true);
-      window.setTimeout(() => {
-        if (play.lifecycle.phase() === 'play' && !anyModalOpen(play)) play.shell.focus();
-      }, 0);
+      if (!play.editorMode) {
+        window.setTimeout(() => {
+          if (play.lifecycle.phase() === 'play' && !anyModalOpen(play)) play.shell.focus();
+        }, 0);
+      }
       return;
     }
     if (e.key === 'F1' || e.key === 'F2' || e.key === 'F3' || e.key === 'F4' || e.key === 'F8' || e.key === 'F9' || e.key === 'F10') {
@@ -368,6 +380,7 @@ export function bindPlayInput(play: Play): void {
   new ResizeObserver(refit).observe(play.dom.termEl);
 
   document.addEventListener('click', (e) => {
+    if (play.editorMode) return;
     const el = e.target as Element | null;
     if (!el?.closest('button, .item-slot.clickable') || el.closest('#outro, #cinematic, #code-editor-pane, #manual-book-modal, #esc-menu, #hint-dialog, #hud-hint, #chapter-map-dialog, #hud-map, .item-slot.item-map, .item-slot.item-manual, #laptop-overlay, .item-slot.item-laptop')) return;
     if (play.lifecycle.phase() === 'play' && !anyModalOpen(play)) {

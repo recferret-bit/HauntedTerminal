@@ -20,11 +20,17 @@ export interface ScriptTimed {
   steps: ScriptStep[];
 }
 
-/** A command that refuses (printing `message`, exit 1) until `until` holds. Matches the first word, so `ls -a` is covered too. */
+/** A command that refuses (printing `message`, exit 1) until `until` holds. Matches `command` (canonical word), plus optional `flags` and `args`. */
 export interface ScriptLock {
   command: string;
+  /** Optional flag filter on `argv.slice(1)`: `"*"` matches any `-x`/`--long` flag; letters like `"a"` or `"la"` require each short flag char in bundled `-...` args. */
+  flags?: string;
+  /** Optional pattern (`plain` substring or `re:<regex>`) matched against `argv.slice(1).join(' ')`. */
+  args?: string;
   until: ScriptCond;
   message: string;
+  /** When true, refusing the command sets `freeAction` so it consumes 0 battle turns. */
+  freeAction?: boolean;
 }
 
 /** Steps that run once per level load as soon as `when` holds (after commands, saves, or ticks). */
@@ -39,9 +45,9 @@ export interface FirstPickupScript {
   steps: ScriptStep[];
 }
 
-/** A condition over live level state. `any` / `all` nest. */
+/** A condition over live level state. `any` / `all` / `not` nest. */
 export type ScriptCond =
-  | { kind: 'ran_command'; name: string }
+  | { kind: 'ran_command'; name: string; flags?: string; args?: string }
   | { kind: 'file_absent'; path: string }
   | { kind: 'file_read'; path: string }
   | { kind: 'enemy_dead'; enemyId: string }
@@ -50,6 +56,9 @@ export type ScriptCond =
   | { kind: 'has_item'; item: ItemId }
   | { kind: 'room_swept' }
   | { kind: 'tutorial_skipped' }
+  | { kind: 'dialog_done' }
+  | { kind: 'flag'; name: string }
+  | { kind: 'not'; of: ScriptCond }
   | { kind: 'any'; of: ScriptCond[] }
   | { kind: 'all'; of: ScriptCond[] };
 
@@ -93,7 +102,9 @@ export type ScriptStep =
   /** Plays a one-shot FX preset at optional design coordinates `(x, y)` with optional word override. */
   | { kind: 'fx'; preset: string; x?: number; y?: number; text?: string }
   /** Overrides active level music with a `MusicId`, or `null` to restore stage default. */
-  | { kind: 'music'; cue: string | null };
+  | { kind: 'music'; cue: string | null }
+  /** Sets a per-level script flag (`flag` condition). */
+  | { kind: 'set_flag'; name: string };
 
 export interface TutorialStepSpec {
   prompt: string;

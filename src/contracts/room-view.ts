@@ -113,6 +113,8 @@ export interface RoomActor extends SceneTransform {
   hidden: boolean;
   petrified?: boolean;
   frozen?: boolean;
+  /** Explicit lock state for doors and gated sockets (overrides label/neighbor heuristics). */
+  locked?: boolean;
   /** Enemy attack countdown: player actions until its hit lands (0 = told, it strikes after the next action). Set only in a battle's player phase. */
   strikeIn?: number;
   alpha?: number;

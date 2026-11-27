@@ -100,15 +100,18 @@ function onSystemHand(stage: ComicStage, ev: Extract<KernelEvent, { type: 'SYSTE
 function onEntitySpawned(stage: ComicStage, ev: Extract<KernelEvent, { type: 'ENTITY_SPAWNED' }>): void {
   if (ev.reason === 'boss_fork' || ev.reason === 'cron_restore') stage.handClaims.set(ev.reason, stage.clockMs);
   const a = stage.actors.get(ev.entityId);
-  if (a && !a.exiting) playEntrance(stage, a, ev.reason, ev.entrance);
-  else stage.pendingSpawn.set(ev.entityId, { reason: ev.reason, at: stage.clockMs, entrance: ev.entrance });
+  if (a && !a.exiting) playEntrance(stage, a, ev.reason, ev.entrance, { x: ev.fromX, y: ev.fromY });
+  else stage.pendingSpawn.set(ev.entityId, { reason: ev.reason, at: stage.clockMs, entrance: ev.entrance, fromX: ev.fromX, fromY: ev.fromY });
 }
 
 function onFileCreated(stage: ComicStage, ev: Extract<KernelEvent, { type: 'FILE_CREATED' }>, subject: StageActor | null, cues: FxCue[]): void {
   const id = ev.entityId ?? subject?.id;
   const a = id ? stage.actors.get(id) : undefined;
   if (a && !a.exiting) playSpawn(stage, a, 'script');
-  else if (id) stage.pendingSpawn.set(id, { reason: 'script', at: stage.clockMs });
+  else if (id) {
+    const prev = stage.pendingSpawn.get(id);
+    stage.pendingSpawn.set(id, { reason: 'script', at: stage.clockMs, entrance: prev?.entrance, fromX: prev?.fromX, fromY: prev?.fromY });
+  }
   else playCues(stage, cues, null, ev);
 }
 

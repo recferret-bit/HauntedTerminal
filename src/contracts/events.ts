@@ -124,6 +124,9 @@ export type KernelEvent =
       reason: 'room_enter' | 'boss_fork' | 'cron_restore' | 'virus_split' | 'script';
       /** How the stage brings the actor in: `appear` (default) or `glide` in from the panel edge to its slot beside the hero. */
       entrance?: 'appear' | 'glide';
+      /** Optional design-space origin `(fromX, fromY)` for prop-dislodged pickup drops. */
+      fromX?: number;
+      fromY?: number;
     }
   | {
       /** An enemy starts an attack. Damage (if any) follows as PLAYER_DAMAGED in the same batch or the next tick. */

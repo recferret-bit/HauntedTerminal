@@ -16,6 +16,7 @@ import { getChapterPack } from './catalog.js';
 import { seededRandom } from './pids.js';
 import { hasOpeningGate, levelScript, openingActive } from './script.js';
 import * as code from './session-code.js';
+import * as editor from './session-editor.js';
 import * as flow from './session-flow.js';
 import * as level from './session-level.js';
 import { writeRedirect } from './session-redirect.js';
@@ -47,6 +48,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   readonly chapterId: string;
   readonly pack: ChapterPack;
   readonly preview: boolean;
+  editorShowHidden = false;
   readonly levels: LevelSpec[];
   readonly sfx: Sfx = createSfx();
   readonly bus: AppBus = createAppBus();
@@ -200,6 +202,10 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
     return res ? heard(this, res) : null;
   }
 
+  finishScriptDialog(): GameSnapshot | null {
+    return flow.finishScriptDialog(this);
+  }
+
   holdTurnTimer(hold: BattleHold, on: boolean): void {
     flow.holdTurnTimer(this, hold, on);
   }
@@ -211,6 +217,28 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
 
   inject(what: LabInjection): TickResult {
     return heard(this, lab.inject(this, what));
+  }
+
+  setEditorPreviewOptions(opts: { showHidden?: boolean }): TickResult {
+    return heard(this, editor.setEditorPreviewOptions(this, opts));
+  }
+
+  listPreviewDirs(): string[] {
+    return editor.listEditorDirs(this);
+  }
+
+  setPreviewCwd(cwd: string): TickResult {
+    return heard(this, editor.setEditorCwd(this, cwd));
+  }
+
+  injectEditorEnemy(type: string, x?: number): TickResult | null {
+    const res = editor.injectEditorEnemy(this, type, x);
+    return res ? heard(this, res) : null;
+  }
+
+  killAllEnemies(): { count: number; result: TickResult } {
+    const res = editor.killAllEditorEnemies(this);
+    return { count: res.count, result: heard(this, res.result) };
   }
 
   exec(line: string): CommandResult {

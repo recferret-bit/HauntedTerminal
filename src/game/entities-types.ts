@@ -115,6 +115,8 @@ export interface EntityView extends SceneTransform {
   socket?: RoomSocketId;
   /** Present but unseen (dotfile before the lantern, a worm sunk into its port). */
   unseen: boolean;
+  /** Optional opacity override used by the editor when previewing hidden actors. */
+  alpha?: number;
   label: string;
   locked?: boolean;
 }

@@ -6,9 +6,10 @@ import { buildSystemHand } from './procgen-cast.js';
 import { easeOutBack, stepped } from './tween.js';
 import { flightPath, smootherstep } from './stage-flight-path.js';
 import { claim, fade, owns, release, removeActor, setRest } from './stage-actor.js';
+import { setFirewallOpenProgress } from './stage-door-rig.js';
 import { ACTOR_Z, HERO_STEPS, HERO_WALK_MS } from './stage-const.js';
 import { playCues, playFx, say } from './stage-fx.js';
-import { applyLantern } from './stage-layout.js';
+import { applyLantern, placeX } from './stage-layout.js';
 import { launchEnemyProjectile } from './stage-projectile.js';
 import { anchorPoint, findByModel, firstOfKind } from './stage-resolve.js';
 import { HERO_HALF_YAW, poseHeroWalk, resetHeroPose, restoreActorBodyPose, setActorBodyScale } from './stage-hero-turn.js';
@@ -240,34 +241,30 @@ export function strikeFrom(stage: ComicStage, a: StageActor): void {
   });
 }
 
-/** The view re-locked a door: the grille drops back, the padlock returns. */
-export function closeDoor(stage: ComicStage, door: StageActor): void {
+function tweenDoorState(stage: ComicStage, door: StageActor, open: boolean): void {
   if (door.disposed) return;
-  const legacyGate = door.key === 'gate';
-  const from = door.offset.y;
-  stage.tweens.add(220, (t) => {
-    if (door.disposed) return;
-    if (legacyGate) door.offset.y = from * (1 - stepped(t, 3));
-  }, () => {
-    if (door.disposed) return;
-    door.offset.y = 0;
-    if (legacyGate) fade(door, Math.max(0.04, (door as StageActor & { viewAlpha?: number }).viewAlpha ?? 1));
-  });
-  door.animator.setState('hit');
+  door.offset.y = 0;
+  fade(door, Math.max(0.04, (door as StageActor & { viewAlpha?: number }).viewAlpha ?? 1));
+  if (door.modelId === 'door.firewall') {
+    setFirewallOpenProgress(door, open ? 0 : 1);
+    stage.tweens.add(open ? stage.config.transitionMs : 220, (t) => {
+      const k = stepped(Math.min(1, t), open ? 4 : 3);
+      if (!door.disposed) setFirewallOpenProgress(door, open ? k : 1 - k);
+    }, () => {
+      if (!door.disposed) setFirewallOpenProgress(door, open ? 1 : 0);
+    });
+  }
+  door.animator.setState(open ? 'revealed' : 'hit');
 }
 
+/** The view re-locked a door: keep grounded at y = 0 and close any firewall grille bars. */
+export function closeDoor(stage: ComicStage, door: StageActor): void {
+  tweenDoorState(stage, door, false);
+}
+
+/** Opens a door in place (grounded at y = 0, full opacity); only `door.firewall` retracts its inner spear grille. */
 export function openDoor(stage: ComicStage, door: StageActor): void {
-  if (door.disposed) return;
-  const legacyGate = door.key === 'gate';
-  stage.tweens.add(stage.config.transitionMs, (t) => {
-    if (door.disposed) return;
-    const k = easeOutBack(Math.min(1, t));
-    if (legacyGate) {
-      door.offset.y = 0.7 * k;
-      fade(door, 1 - 0.65 * Math.min(1, t));
-    }
-  });
-  door.animator.setState('revealed');
+  tweenDoorState(stage, door, true);
 }
 
 export function slideToHome(stage: ComicStage, a: StageActor, bridge: boolean): void {
@@ -365,10 +362,16 @@ export function popOut(stage: ComicStage, a: StageActor): void {
 /** Which way an actor enters: `appear` is the classic spawn performance, `glide` flies it in from the panel edge. */
 export type SpawnEntrance = 'appear' | 'glide';
 
+/** Optional design-space launch origin when a script pickup tumbles out from behind a prop. */
+export interface SpawnOrigin {
+  x?: number;
+  y?: number;
+}
+
 /** Entrance of a script spawn. `glide` flies the actor from the screen-right panel edge to its slot along a smooth winding path (`flyTo`). */
-export function playEntrance(stage: ComicStage, a: StageActor, reason: string, entrance: SpawnEntrance | undefined): void {
+export function playEntrance(stage: ComicStage, a: StageActor, reason: string, entrance: SpawnEntrance | undefined, from?: SpawnOrigin): void {
   if (entrance !== 'glide') {
-    playSpawn(stage, a, reason);
+    playSpawn(stage, a, reason, from);
     return;
   }
   const g = claim(a);
@@ -443,27 +446,32 @@ export function flyTo(stage: ComicStage, a: StageActor, to: THREE.Vector3, ms: n
 
 
 /** Drops a floor item pickup (e.g. Tube Transistor) from above onto the ground with a stepped comic bounce. */
-function dropToGround(stage: ComicStage, a: StageActor): void {
+function dropToGround(stage: ComicStage, a: StageActor, from?: SpawnOrigin): void {
   const g = claim(a);
   const restRotZ = typeof a.body.userData.restRotZ === 'number' ? a.body.userData.restRotZ : a.body.rotation.z;
-  const dropH = 1.15;
+  const dropH = typeof from?.y === 'number' && Number.isFinite(from.y) ? Math.max(0.2, from.y) : 1.15;
+  const startDx = typeof from?.x === 'number' && Number.isFinite(from.x) ? placeX(stage, from.x) - a.home.x : 0;
+  const startSpin = startDx === 0 ? -0.55 : Math.sign(startDx) * 0.9;
   a.awaitingSpawn = false;
-  a.offset.set(0, dropH, 0);
-  a.body.rotation.z = restRotZ - 0.55;
+  a.offset.set(startDx, dropH, 0);
+  a.body.rotation.z = restRotZ + startSpin;
   playCues(stage, [{ id: 'fx.touch-materialize', anchor: 'subject', delayMs: 220, text: 'DROP!' }], a, null);
   stage.tweens.add(460, (t) => {
     if (!owns(a, g)) return;
     const k = stepped(t, 6);
     if (k < 0.55) {
       const u = k / 0.55;
+      a.offset.x = startDx * (1 - u);
       a.offset.y = dropH * (1 - u * u);
-      a.body.rotation.z = restRotZ - 0.55 * (1 - u);
+      a.body.rotation.z = restRotZ + startSpin * (1 - u);
     } else if (k < 0.82) {
       const u = (k - 0.55) / 0.27;
+      a.offset.x = 0;
       a.offset.y = Math.sin(u * Math.PI) * 0.22;
       a.body.rotation.z = restRotZ + Math.sin(u * Math.PI) * 0.16;
     } else {
       const u = (k - 0.82) / 0.18;
+      a.offset.x = 0;
       a.offset.y = Math.sin(u * Math.PI) * 0.06;
       a.body.rotation.z = restRotZ;
     }
@@ -477,7 +485,7 @@ function dropToGround(stage: ComicStage, a: StageActor): void {
 }
 
 /** Spawn performance: the System Hand draws it in (fork / cron / split), or it materialises (script / touch). */
-export function playSpawn(stage: ComicStage, a: StageActor, reason: string): void {
+export function playSpawn(stage: ComicStage, a: StageActor, reason: string, from?: SpawnOrigin): void {
   if (reason === 'room_enter') {
     a.awaitingSpawn = false;
     return;
@@ -488,7 +496,7 @@ export function playSpawn(stage: ComicStage, a: StageActor, reason: string): voi
     if (stamped.scriptSpawnAt === stage.clockMs) return;
     stamped.scriptSpawnAt = stage.clockMs;
     if (a.kind === 'pickup' && a.modelId.startsWith('item.')) {
-      dropToGround(stage, a);
+      dropToGround(stage, a, from);
       return;
     }
     a.awaitingSpawn = true;

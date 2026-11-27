@@ -153,7 +153,7 @@ export class FxPlayer {
     return this.live.length;
   }
 
-  /** Up to 4 strongest active FX lights in world space for the comic light shader and FX halos. */
+  /** Up to MAX_COMIC_FX_LIGHTS strongest active FX lights in world space for the comic light shader and FX halos. */
   activeLights(): ComicFxLight[] {
     return collectTopFxLights(this.live, MAX_COMIC_FX_LIGHTS);
   }

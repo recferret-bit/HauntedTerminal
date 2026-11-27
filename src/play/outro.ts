@@ -3,7 +3,7 @@ import { isChapterSession } from '../chapters/chapter-session.js';
 import { publishKernel } from '../contracts/app-bus.js';
 import type { GameSnapshot } from '../game/types.js';
 import type { EndStats } from '../ui/hud.js';
-import { matrixBoot, powerOff, powerOn, setCinematic } from '../ui/screen.js';
+import { matrixBoot, powerOff, powerOn, resetScreen, setCinematic } from '../ui/screen.js';
 import { holdForComix, syncPlayAudio } from './audio-sync.js';
 import { BANNER_MS, CARD_MS, closeOtherModals, FLOOR_NAMES, type Play } from './state.js';
 import { armOpeningTerminal, cueOpeningBoot } from './term-reveal.js';
@@ -104,6 +104,18 @@ async function startRun(play: Play): Promise<void> {
   if (!isChapterSession(session)) session.skipIntro();
   play.lifecycle.send('BEGIN_PLAY');
   play.lifecycle.deleteReason('intro');
+  if (play.editorMode) {
+    play.lifecycle.deleteReason('reveal');
+    resetScreen();
+    play.stage.resize();
+    requestAnimationFrame(() => play.stage.resize());
+    play.events.emit({ kind: 'apply-events', events: [], snap: session.snapshot() });
+    if (isChapterSession(session)) {
+      play.events.emit({ kind: 'apply-tick', res: session.arriveLevel() });
+    }
+    play.events.emit({ kind: 'sync-pause' });
+    return;
+  }
   play.lifecycle.addReason('reveal');
   play.events.emit({ kind: 'sync-pause' });
   const snap = session.snapshot();

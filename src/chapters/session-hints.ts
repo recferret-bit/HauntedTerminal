@@ -22,6 +22,7 @@ function allyLabel(g: ChapterState): string {
 function fileAbsentLabel(g: ChapterState, path: string): string {
   const name = baseName(path);
   const pickup = g.rt.spec.pickups.find((p) => p.path === path);
+  if (pickup?.type === 'tensor_gpu') return `Find and collect the hidden Tensor GPU (${name})`;
   if (/gpu|tensor|shader|h100/i.test(name)) return `Collect GPU chip (${name})`;
   if (pickup?.type === 'ram') return `Collect RAM stick (${name})`;
   if (pickup?.type === 'ssd') return `Collect SSD drive (${name})`;

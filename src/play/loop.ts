@@ -6,6 +6,7 @@ import { colourise } from '../ui/terminal.js';
 import { mountTutorial, taunt } from '../ui/tutorial.js';
 import { syncPlayAudio } from './audio-sync.js';
 import { exposeLabHooks } from './lab.js';
+import { exposeStageEditorHooks } from './stage-editor.js';
 import { LEVEL_TRANSITION_MS, closeOtherModals, type Play } from './state.js';
 import { syncTerminalPresence } from './term-reveal.js';
 
@@ -16,7 +17,7 @@ function syncPause(play: Play): void {
     manualOpen: Boolean(play.manualBook?.isOpen()),
     mapOpen: Boolean(play.chapterMap?.isOpen()),
   });
-  play.session.setPaused(derived.clockPaused);
+  play.session.setPaused(derived.clockPaused || play.aiPaused);
   play.stage.stormPaused = derived.stormPaused;
   play.shell.setBlocked(derived.shellBlocked);
   // A card, cinematic or the end of the run takes the screen: overlays step aside.
@@ -42,7 +43,10 @@ function paint(play: Play, snap: GameSnapshot): void {
   play.hintDialog?.update(snap);
   play.chapterMap?.update(snap);
   const phase = play.lifecycle.phase();
-  play.tutorial.sync(phase === 'play' || phase === 'intro' ? (snap.tutorial ?? null) : null);
+  const tutorialSnap = play.editorMode && play.previewTutorialOverride !== null
+    ? play.previewTutorialOverride
+    : (snap.tutorial ?? null);
+  play.tutorial.sync(phase === 'play' || phase === 'intro' ? tutorialSnap : null);
   play.dom.captionEl.textContent = snap.room.title;
   play.dom.captionEl.title = snap.cwd;
   try {
@@ -54,6 +58,7 @@ function paint(play: Play, snap: GameSnapshot): void {
     play.events.emit({ kind: 'ending-begin', stats: null });
   }
   syncPlayAudio(play);
+  play.onPaint?.(snap);
 }
 
 /** Completes or skips an active level-exit comic transition and flushes any deferred arrival chatter. */
@@ -78,6 +83,11 @@ function holdForLevelTransition(play: Play): void {
 }
 
 function applyTutorialUi(play: Play, ev: Extract<KernelEvent, { type: 'TUTORIAL_STEP' }>, snap: GameSnapshot): void {
+  if (play.editorMode) {
+    play.previewTutorialOverride = ev.done
+      ? null
+      : { step: ev.step, total: ev.total, agent: ev.agent, prompt: ev.prompt, command: ev.command };
+  }
   if (play.dialogs) play.dialogs.handleEvent(ev);
   else play.tutorial.step(ev);
   if (ev.done && snap.tutorial === null) {
@@ -307,8 +317,10 @@ function exposePlayHooks(play: Play): void {
 
 export function armPlayClock(play: Play): void {
   window.setInterval(() => {
+    if (play.aiPaused) return;
     applyTick(play, play.session.tick());
   }, 1000);
   exposePlayHooks(play);
   exposeLabHooks(play);
+  exposeStageEditorHooks(play);
 }

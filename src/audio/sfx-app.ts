@@ -61,6 +61,10 @@ const LETTER: Record<Extract<AppEvent, { kind: 'letter' }>['letter'], SfxId> = {
   pixel: 'cine_pixelate',
 };
 
+const STAGE_SFX: Partial<Record<string, SfxId>> = {
+  bat_wings: 'bat_wings',
+};
+
 const SILENT_POINTER_IDS = new Set([
   'unknown', 'background', 'tty-manual-btn', 'sandbox-toggle-btn',
   'hint-dialog-close', 'hint-dialog-x', 'ce-save', 'ce-close', 'ce-chip',
@@ -117,8 +121,10 @@ export function appCues(event: AppEvent): SfxId[] {
       return ['page_turn'];
     case 'pointer':
       return pointerCues(event.id, event.surface);
-    case 'sfx':
-      return isSfxId(event.cue) ? [event.cue] : [];
+    case 'sfx': {
+      const mapped = STAGE_SFX[event.cue];
+      return mapped ? [mapped] : isSfxId(event.cue) ? [event.cue] : [];
+    }
     default:
       return [];
   }

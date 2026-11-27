@@ -2793,146 +2793,6 @@
       ]
     },
     {
-      "row": 148,
-      "name": "dad_smoke_loop",
-      "effect": "Old coder dad.tty smoking a cigarette (ambience while he is in the room, `loop` event)",
-      "listed_seconds": 5.0,
-      "duration_seconds": 5.0,
-      "loop": true,
-      "files": [
-        {
-          "file": "dad_smoke_loop.mp3",
-          "bytes": 121670
-        }
-      ]
-    },
-    {
-      "row": 148,
-      "name": "dad_smoke_loop_2",
-      "effect": "Old coder dad.tty smoking a cigarette (ambience while he is in the room, `loop` event)",
-      "listed_seconds": 5.0,
-      "duration_seconds": 5.0,
-      "loop": true,
-      "files": [
-        {
-          "file": "dad_smoke_loop_2.mp3",
-          "bytes": 121670
-        }
-      ]
-    },
-    {
-      "row": 148,
-      "name": "dad_smoke_loop_3",
-      "effect": "Old coder dad.tty smoking a cigarette (ambience while he is in the room, `loop` event)",
-      "listed_seconds": 5.0,
-      "duration_seconds": 5.0,
-      "loop": true,
-      "files": [
-        {
-          "file": "dad_smoke_loop_3.mp3",
-          "bytes": 121670
-        }
-      ]
-    },
-    {
-      "row": 148,
-      "name": "dad_smoke_loop_4",
-      "effect": "Old coder dad.tty smoking a cigarette (ambience while he is in the room, `loop` event)",
-      "listed_seconds": 5.0,
-      "duration_seconds": 5.0,
-      "loop": true,
-      "files": [
-        {
-          "file": "dad_smoke_loop_4.mp3",
-          "bytes": 121670
-        }
-      ]
-    },
-    {
-      "row": 148,
-      "name": "dad_smoke_loop_5",
-      "effect": "Old coder dad.tty smoking a cigarette (ambience while he is in the room, `loop` event)",
-      "listed_seconds": 5.0,
-      "duration_seconds": 5.0,
-      "loop": true,
-      "files": [
-        {
-          "file": "dad_smoke_loop_5.mp3",
-          "bytes": 121670
-        }
-      ]
-    },
-    {
-      "row": 148,
-      "name": "dad_smoke_loop_6",
-      "effect": "Old coder dad.tty smoking a cigarette (ambience while he is in the room, `loop` event)",
-      "listed_seconds": 5.0,
-      "duration_seconds": 5.0,
-      "loop": true,
-      "files": [
-        {
-          "file": "dad_smoke_loop_6.mp3",
-          "bytes": 121670
-        }
-      ]
-    },
-    {
-      "row": 148,
-      "name": "dad_smoke_loop_7",
-      "effect": "Old coder dad.tty smoking a cigarette (ambience while he is in the room, `loop` event)",
-      "listed_seconds": 5.0,
-      "duration_seconds": 5.0,
-      "loop": true,
-      "files": [
-        {
-          "file": "dad_smoke_loop_7.mp3",
-          "bytes": 121670
-        }
-      ]
-    },
-    {
-      "row": 148,
-      "name": "dad_smoke_loop_8",
-      "effect": "Old coder dad.tty smoking a cigarette (ambience while he is in the room, `loop` event)",
-      "listed_seconds": 5.0,
-      "duration_seconds": 5.0,
-      "loop": true,
-      "files": [
-        {
-          "file": "dad_smoke_loop_8.mp3",
-          "bytes": 121670
-        }
-      ]
-    },
-    {
-      "row": 148,
-      "name": "dad_smoke_loop_9",
-      "effect": "Old coder dad.tty smoking a cigarette (ambience while he is in the room, `loop` event)",
-      "listed_seconds": 5.0,
-      "duration_seconds": 5.0,
-      "loop": true,
-      "files": [
-        {
-          "file": "dad_smoke_loop_9.mp3",
-          "bytes": 121670
-        }
-      ]
-    },
-    {
-      "row": 148,
-      "name": "dad_smoke_loop_10",
-      "effect": "Old coder dad.tty smoking a cigarette (ambience while he is in the room, `loop` event)",
-      "listed_seconds": 5.0,
-      "duration_seconds": 5.0,
-      "loop": true,
-      "files": [
-        {
-          "file": "dad_smoke_loop_10.mp3",
-          "bytes": 121670
-        }
-      ]
-    },
-    {
       "row": 149,
       "name": "kiro_fly",
       "effect": "Kiro flies to the old coder (`ACTOR_FLY_TO`, the Tensor GPU ritual)",
@@ -2957,6 +2817,34 @@
         {
           "file": "kiro_magic.mp3",
           "bytes": 32017
+        }
+      ]
+    },
+    {
+      "row": 151,
+      "name": "bat_wings",
+      "effect": "Bat flock fast cartoon wing claps (`stage-bats`, flock entry)",
+      "listed_seconds": 0.9,
+      "duration_seconds": 0.9,
+      "loop": false,
+      "files": [
+        {
+          "file": "bat_wings.mp3",
+          "bytes": 18852
+        }
+      ]
+    },
+    {
+      "row": 148,
+      "name": "dad_rig_loop",
+      "effect": "Old coder dad.tty workstation ambience: computer beeps, cooling fans, electricity (while he is in the room, `loop` event)",
+      "listed_seconds": 20.0,
+      "duration_seconds": 20.0,
+      "loop": true,
+      "files": [
+        {
+          "file": "dad_rig_loop.mp3",
+          "bytes": 481533
         }
       ]
     }

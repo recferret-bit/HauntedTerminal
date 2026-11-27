@@ -1,10 +1,9 @@
-import * as THREE from 'three';
 import type { StageBatsAmbient } from '../contracts/room-view.js';
 import { buildModel, compensateInkOutlines, createAnimator, disposeModel, ModelCatalog, type BuiltModel, type ModelAnimator } from '../procgen/index.js';
 import { stampMaterialBases } from './procgen-cast.js';
 import { ACTOR_Z } from './stage-const.js';
 import {
-  cubicBezier, easeInOutSine, FLOCK_GAP_SEC, makeFlock,
+  computeBatHeading, cubicBezier, easeInOutSine, FLOCK_GAP_SEC, makeFlock,
   type BatBounds, type BatFlight,
 } from './bat-path.js';
 import type { ComicStage } from './comic-stage.js';
@@ -16,7 +15,8 @@ interface FlyingBat {
   animator: ModelAnimator;
   /** Seconds since the flock spawned, minus this bat's delay. */
   age: number;
-  lastSize: number;
+  facingLeft: boolean;
+  lastScaleKey: string;
 }
 
 export interface BatsState {
@@ -27,19 +27,32 @@ export interface BatsState {
   maxGapSec: number;
   countRange?: [number, number];
   scaleMul: number;
+  flockSize: number;
+  entryCueSent: boolean;
+  secondCueSent: boolean;
+  sinceEntrySec: number;
 }
 
-const BAT_MODEL = 'prop.bat';
+const BAT_MODEL = 'prop.bat_flying';
 /** The bat model's body centre above its origin; the route is drawn through the body, not the feet. */
-const BODY_CENTRE_Y = 0.54;
-/** Wings beat this much faster in flight than on the wall prop. */
-const FLAP_RATE = 3.2;
-/** The prop bat is drawn for a wall perch; in flight it is blown up to read next to the hero. */
-const FLIGHT_SCALE = 2.6;
+const BODY_CENTRE_Y = 0.52;
+/** Wings beat briskly on the 12 fps stepped clock in flight. */
+const FLAP_RATE = 2.4;
+/** Scaled so the wide 3/4 cartoon bat wingspan (~1.3u) reads crisply (~67–124 px) without dwarfing actors. */
+const FLIGHT_SCALE = 1.25;
 const BAT_Z = ACTOR_Z - 0.45;
+const RECOIL_HOVER = { amp: 0.028, speed: 2.2 } as const;
+const SECOND_BURST_DELAY_SEC = 0.28;
 
 const nextGap = (minSec: number, maxSec: number): number =>
   minSec + Math.random() * Math.max(0.05, maxSec - minSec);
+
+function resetFlockAudio(bats: BatsState, flockSize = 0): void {
+  bats.flockSize = flockSize;
+  bats.entryCueSent = false;
+  bats.secondCueSent = false;
+  bats.sinceEntrySec = 0;
+}
 
 export function createBatsState(): BatsState {
   return {
@@ -49,12 +62,17 @@ export function createBatsState(): BatsState {
     minGapSec: FLOCK_GAP_SEC[0],
     maxGapSec: FLOCK_GAP_SEC[1],
     scaleMul: 1,
+    flockSize: 0,
+    entryCueSent: false,
+    secondCueSent: false,
+    sinceEntrySec: 0,
   };
 }
 
 function clearBats(stage: ComicStage): void {
   for (const bat of [...stage.bats.flying]) removeBat(stage, bat);
   stage.bats.flying = [];
+  resetFlockAudio(stage.bats);
 }
 
 /** Applies optional JSON `ambient.bats` overrides (resetting to defaults when omitted). */
@@ -95,16 +113,24 @@ function viewBounds(stage: ComicStage): BatBounds {
 
 function spawnFlock(stage: ComicStage): void {
   const flock = makeFlock(Math.random, viewBounds(stage), stage.bats.countRange);
+  resetFlockAudio(stage.bats, flock.length);
   for (const flight of flock) {
     const seed = Math.floor(Math.random() * 0x7fffffff);
     const model = buildModel(ModelCatalog.build(BAT_MODEL, seed), { seed });
     stampMaterialBases(model.allMaterials);
-    const animator = createAnimator(model, {});
+    const animator = createAnimator(model, { hoverBob: RECOIL_HOVER });
     animator.update(flight.phase * 2);
     model.group.visible = false;
     stage.world.add(model.group);
     for (const mat of model.allMaterials) stage.extraComics.add(mat);
-    stage.bats.flying.push({ flight, model, animator, age: -flight.delaySec, lastSize: 0 });
+    stage.bats.flying.push({
+      flight,
+      model,
+      animator,
+      age: -flight.delaySec,
+      facingLeft: flight.p3.x > flight.p0.x,
+      lastScaleKey: '',
+    });
   }
 }
 
@@ -120,19 +146,43 @@ function placeBat(bat: FlyingBat, scaleMul: number): void {
   const t = Math.min(1, Math.max(0, bat.age / flight.durationSec));
   const e = easeInOutSine(t);
   const at = cubicBezier(flight.p0, flight.p1, flight.p2, flight.p3, e);
-  const ahead = cubicBezier(flight.p0, flight.p1, flight.p2, flight.p3, Math.min(1, e + 0.02));
+  const e0 = e > 0.98 ? 0.98 : e;
+  const pA = e > 0.98 ? cubicBezier(flight.p0, flight.p1, flight.p2, flight.p3, e0) : at;
+  const pB = cubicBezier(flight.p0, flight.p1, flight.p2, flight.p3, Math.min(1, e0 + 0.02));
+  const heading = computeBatHeading(pA, pB, bat.facingLeft);
+  bat.facingLeft = heading.facingLeft;
   const g = bat.model.group;
   g.visible = bat.age >= 0;
   const size = flight.scale * FLIGHT_SCALE * scaleMul;
-  g.scale.setScalar(size);
-  if (Math.abs(bat.lastSize - size) > 1e-4) {
-    bat.lastSize = size;
+  const sx = heading.facingLeft ? -size : size;
+  g.scale.set(sx, size, size);
+  const scaleKey = `${heading.facingLeft ? '-' : '+'}${size.toFixed(4)}`;
+  if (bat.lastScaleKey !== scaleKey) {
+    bat.lastScaleKey = scaleKey;
     compensateInkOutlines(g);
   }
   g.position.set(at.x, at.y - BODY_CENTRE_Y * size, BAT_Z);
-  // Bank into the turn: lean with the vertical part of the heading, kept small so the bat still reads front-on.
-  const bank = Math.atan2(ahead.y - at.y, Math.abs(ahead.x - at.x) + 1e-6);
-  g.rotation.z = THREE.MathUtils.clamp(bank, -0.5, 0.5) * (ahead.x < at.x ? -1 : 1);
+  g.rotation.z = heading.rotZ;
+}
+
+function emitFlockAudio(stage: ComicStage, visibleCount: number, dt: number): void {
+  const bats = stage.bats;
+  if (visibleCount <= 0) return;
+  if (!bats.entryCueSent) {
+    bats.entryCueSent = true;
+    bats.sinceEntrySec = 0;
+    stage.audioBus?.emit({ kind: 'sfx', cue: 'bat_wings' });
+    return;
+  }
+  bats.sinceEntrySec += dt;
+  if (
+    bats.flockSize >= 4 &&
+    !bats.secondCueSent &&
+    (visibleCount >= Math.ceil(bats.flockSize / 2) || bats.sinceEntrySec >= SECOND_BURST_DELAY_SEC)
+  ) {
+    bats.secondCueSent = true;
+    stage.audioBus?.emit({ kind: 'sfx', cue: 'bat_wings' });
+  }
 }
 
 /** Advance the flock timer and every flight by `dt` seconds. Frozen while the game is paused. */
@@ -149,15 +199,19 @@ export function stepBats(stage: ComicStage, dt: number): void {
     if (bats.flying.length === 0) spawnFlock(stage);
   }
   const alive: FlyingBat[] = [];
+  let visibleCount = 0;
   for (const bat of bats.flying) {
     bat.age += dt;
     if (bat.age >= bat.flight.durationSec) {
       removeBat(stage, bat);
       continue;
     }
+    if (bat.age >= 0) visibleCount += 1;
     bat.animator.update(dt * FLAP_RATE);
     placeBat(bat, bats.scaleMul);
     alive.push(bat);
   }
   bats.flying = alive;
+  if (alive.length === 0) resetFlockAudio(bats);
+  else emitFlockAudio(stage, visibleCount, dt);
 }

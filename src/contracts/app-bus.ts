@@ -39,9 +39,9 @@ export type LaptopAction =
   | 'run' | 'loop-guard' | 'shutdown' | 'key'
   | 'solved' | 'check-fail' | 'win-open' | 'win-min' | 'win-close';
 
-export type LoopCue = 'rain_loop' | 'low_hp_loop' | 'lap_fan' | 'dad_typing_loop' | 'dad_smoke_loop';
+export type LoopCue = 'rain_loop' | 'low_hp_loop' | 'lap_fan' | 'dad_typing_loop' | 'dad_rig_loop';
 
-const LOOP_SET = new Set<string>(['rain_loop', 'low_hp_loop', 'lap_fan', 'dad_typing_loop', 'dad_smoke_loop']);
+const LOOP_SET = new Set<string>(['rain_loop', 'low_hp_loop', 'lap_fan', 'dad_typing_loop', 'dad_rig_loop']);
 
 export function isLoopCue(cue: string): cue is LoopCue | SfxId {
   return LOOP_SET.has(cue) || isSfxId(cue);

@@ -1,4 +1,5 @@
 import type { KernelEvent } from '../contracts/events.js';
+import type { StageEditorApi } from '../contracts/stage-editor.js';
 import { h, sleep, type Rec } from './dom.js';
 
 /** The automation hooks `src/play/loop.ts` puts on the game window. Tools extend it with their own (`__lab`). */
@@ -14,6 +15,7 @@ export interface PlayWindow extends Window {
     input(data: string): void;
   };
   __game?: { events(): KernelEvent[]; snapshot(): { cwd: string; hp: number; maxHp: number; enemiesLeft: number } };
+  __stageEditor?: StageEditorApi;
 }
 
 const BOOT_TIMEOUT_MS = 30_000;

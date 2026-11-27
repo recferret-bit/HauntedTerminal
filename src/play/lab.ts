@@ -1,14 +1,12 @@
-import { createChapterSession, isChapterSession } from '../chapters/chapter-session.js';
+import { createChapterSession } from '../chapters/chapter-session.js';
 import { readDraftPack } from '../chapters/draft.js';
 import { readLabConfig } from '../chapters/lab-config.js';
 import { isLabSession, type LabConfig, type LabInjection } from '../chapters/session-lab-types.js';
-import { publishKernel } from '../contracts/app-bus.js';
 import type { ExecRecord } from '../contracts/exec-record.js';
 import { createSession, type Session } from '../game/session.js';
 import type { CommandResult, TickResult } from '../game/types.js';
-import { resetScreen } from '../ui/screen.js';
-import { mountPlayAudio, syncPlayAudio } from './audio-sync.js';
-import { chapterBanner, FLOOR_NAMES, type DebugGive, type Play, type SkipTutorial } from './state.js';
+import { swapPlaySession } from './session-swap.js';
+import type { Play } from './state.js';
 
 /** Lines kept for the lab; the lab reads them as they come, so old ones only matter for a late reader. */
 const EXEC_LOG_CAP = 400;
@@ -43,9 +41,6 @@ function swapLabSession(play: Play, packId: string, levelId: string): boolean {
   if (!draft) return false;
   const lab = readLabConfig(packId);
   const hadFocus = frameHasFocus();
-  const prevSnap = play.session.snapshot();
-  const wasMuted = prevSnap.muted;
-  const prevVol = prevSnap.volume;
   const next: Session = lab.classic
     ? createSession({ lab })
     : createChapterSession({
@@ -55,64 +50,15 @@ function swapLabSession(play: Play, packId: string, levelId: string): boolean {
         startLevelId: levelId,
         lab,
       });
-  if (wasMuted !== next.snapshot().muted) next.toggleMute();
-  if (prevVol !== undefined) next.setVolume(prevVol);
-
-  window.clearTimeout(play.cardTimer);
-  play.cardTimer = 0;
-  window.clearTimeout(play.transitionTimer);
-  play.transitionTimer = 0;
-  play.deferredPostTransition.length = 0;
-  play.stage.skipLevelTransition();
-  play.stashedFloorCard = null;
-  play.eventLog = [];
-  play.execLog = [];
-  play.execCount = 0;
-  play.execTaunts = null;
-  play.codeEditor?.close();
-  play.manualBook?.close();
-  play.tutorial.hide();
-  play.hud?.hideStats();
-  resetScreen();
-
-  const manifest = lab.classic ? undefined : draft.manifest;
-  play.session = next;
-  play.terminalLab = lab;
-  mountPlayAudio(play);
-  syncPlayAudio(play);
-  play.activeBanner = chapterBanner(next, manifest);
-  play.debugGive = (next as Session & { debugGive?: DebugGive }).debugGive?.bind(next);
-  play.skipTutorial = (next as Session & { skipTutorial?: SkipTutorial }).skipTutorial?.bind(next);
-  play.sessionSeq += 1;
-  if (play.dom.mastheadSubEl) {
-    play.dom.mastheadSubEl.textContent = manifest ? `${manifest.badge} // ${manifest.title}` : 'CLASSIC FLOORS';
-  }
-
-  play.events.emit({ kind: 'session-swapped' });
-  next.skipIntro();
-  play.lifecycle.resetForLabSwap(document.hidden);
-  play.events.emit({ kind: 'sync-pause' });
-  play.shell.reset(play.activeBanner);
-
-  const snap = next.snapshot();
-  const card = {
-    type: 'FLOOR_ENTERED' as const,
-    floorId: snap.room?.floor ?? snap.floor,
-    title: isChapterSession(next)
-      ? `LEVEL ${String(next.getCurrentLevel().index).padStart(2, '0')} — ${next.getCurrentLevel().title.toUpperCase()}`
-      : (FLOOR_NAMES[snap.floor] ?? `Floor ${snap.floor}`),
-    path: snap.cwd,
-  };
-  play.events.emit({ kind: 'apply-events', events: [card], snap });
-  publishKernel(next.bus, [card]);
-  window.clearTimeout(play.cardTimer);
-  play.cardTimer = 0;
-  play.lifecycle.deleteReason('card');
-  if (isChapterSession(next)) {
-    play.events.emit({ kind: 'apply-tick', res: next.arriveLevel() });
-  }
-  play.events.emit({ kind: 'sync-pause' });
-  if (hadFocus) play.shell.focus();
+  swapPlaySession(play, {
+    next,
+    manifest: lab.classic ? undefined : draft.manifest,
+    terminalLab: lab,
+    emitFloorCard: true,
+    arrive: true,
+    resetShell: true,
+    focusTerminal: hadFocus,
+  });
   return true;
 }
 

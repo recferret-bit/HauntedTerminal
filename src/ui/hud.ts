@@ -281,7 +281,7 @@ function updateHud(view: HudView, snap: GameSnapshot): void {
   const hideMap = !snap.inventory?.items.includes('map');
   view.mapBtn.hidden = hideMap;
   view.mapBtn.classList.toggle('hidden', hideMap);
-  const hideSkip = !snap.openingDialog;
+  const hideSkip = !(snap.openingDialog || snap.skippableDialog);
   view.skipDialogBtn.hidden = hideSkip;
   view.skipDialogBtn.classList.toggle('hidden', hideSkip);
   updateTurn(view, snap.battle);

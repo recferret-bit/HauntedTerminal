@@ -28,6 +28,7 @@ export const THROTTLED_TYPING_SFX: ReadonlySet<SfxId> = new Set<SfxId>([
 export const KEY_VARIANTS: Partial<Record<SfxId, readonly SfxId[]>> = {
   key_press: ['key_press', 'key_press_2', 'key_press_3'],
   key_backspace: ['key_backspace', 'key_backspace_2'],
+  bat_wings: ['bat_wings'],
 };
 
 export const TAUNT_VARIANTS: Partial<Record<SfxId, readonly SfxId[]>> = {
@@ -53,17 +54,20 @@ export const LOOP_GAINS: Partial<Record<SfxId, number>> = {
   rain_loop: 0.22,
   lap_fan: 0.28,
   dad_typing_loop: 0.16,
-  dad_smoke_loop: 0.14,
+  dad_rig_loop: 0.14,
 };
 
 export const LOOP_CUE_IDS: readonly SfxId[] = [
   'rain_loop',
   'lap_fan',
   'dad_typing_loop',
-  'dad_smoke_loop',
+  'dad_rig_loop',
   'low_hp_loop',
   'pickup_hover',
 ] as const;
+
+/** Seamless single-file ambient loops played via `playBed` overlap crossfade so MP3 padding never clicks at the seam. */
+export const CROSSFADE_LOOPS: ReadonlySet<SfxId> = new Set<SfxId>(['dad_rig_loop']);
 
 /** Active windows (seconds) trimmed from leading and trailing silence so keystrokes and dialog voices fire at 0ms latency. */
 export const SFX_TRIM: Partial<Record<SfxId, SfxTrimWindow>> = {

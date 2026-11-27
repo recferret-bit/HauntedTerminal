@@ -30,7 +30,7 @@ function fileCues(ev: KernelEvent): SfxId[] {
   if (ev.type !== 'INODE_MODE_CHANGED') return [];
   const was = (ev.oldMode & 0o111) !== 0;
   const now = (ev.newMode & 0o111) !== 0;
-  if (was !== now) return [now ? 'gate_open' : 'gate_locked'];
+  if (was !== now) return now ? ['gate_open', 'lap_run'] : ['gate_locked'];
   return ['chmod'];
 }
 

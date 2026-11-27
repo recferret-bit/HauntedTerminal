@@ -78,13 +78,128 @@ try {
   check((await $("document.querySelector('.solve-out').textContent")).includes('cleared headlessly'), 'whole chapter clears headlessly from the draft');
   await browser.shoot(out('03-check'));
 
-  // 6. preview: the real game on the draft, stepped through the solution
+  // 6. preview: Stage-only mode (no terminal dock, full-height stage), stepped through Check tab solution
   await browser.waitFor("document.querySelector('.pv-status').textContent === 'live'", 60000, 'the preview game');
-  await $("document.querySelector('.pv-bar button:nth-child(2)').click()");
+  const stageOnly = await $(`(() => {
+    const f = document.querySelector('.pv-frame');
+    const doc = f.contentDocument;
+    const dock = doc.getElementById('terminal-dock');
+    const wrap = doc.getElementById('stage-wrapper')?.getBoundingClientRect();
+    const bar = document.querySelector('.cx-stage-bar');
+    const noTermInput = document.querySelector('input[aria-label="Send command to player terminal"]') === null;
+    const hasStageOnly = doc.body.classList.contains('stage-only');
+    return {
+      noTermInput,
+      hasStageOnly,
+      dockHidden: dock?.offsetParent === null,
+      fullHeight: Boolean(wrap) && wrap.height >= doc.documentElement.clientHeight - 4,
+      barFits: Boolean(bar) && bar.scrollWidth <= bar.clientWidth + 2,
+    };
+  })()`);
+  check(stageOnly.noTermInput && stageOnly.hasStageOnly && stageOnly.dockHidden && stageOnly.fullHeight, 'stage-only mode removes terminal command input, hides #terminal-dock, and expands #stage-wrapper to full height');
+  check(stageOnly.barFits, `stage bar fits without horizontal overflow at ${vpWidth}x${vpHeight}`);
+
+  await click('button', 'Step solution command');
   await browser.waitFor("document.querySelectorAll('.pv-ev').length > 0", 20000, 'preview events');
   const logged = await $("document.querySelector('.pv-log').textContent");
-  check(logged.length > 0, 'preview game ran a solution command and the event log filled');
+  check(logged.length > 0, 'Check tab step solution command ran in stage-only preview and filled event log');
   check(((await $("document.querySelector('.pv-frame').contentWindow.document.title")) || '').includes('Play'), 'preview iframe is the game page');
+
+  // 6c. Stage Studio bar & dock controls: HUD, Hidden, AI, Dialog Runner, Test Enemy, Kill Enemies, Restart, Add to Level, Room switch
+  await click('.cx-view-btn', 'HUD');
+  await sleep(80);
+  const hudOff = await $("document.querySelector('.pv-frame').contentDocument.body.classList.contains('editor-hud-off')");
+  await click('button', 'Run Dialog');
+  await sleep(150);
+  const dialogVisibleWhileHudOff = await $("Boolean(document.querySelector('.pv-frame').contentDocument.querySelector('.dialog-box.open, .st-balloon, .st-say, #tutorial-card:not([hidden])'))");
+  // Regression check: TUTORIAL_STEP and vibecoder DIALOG_BOX remain open & visible in stage-only HUD-off mode
+  await $(`(() => {
+    const se = document.querySelector('.pv-frame').contentWindow.__stageEditor;
+    se.clearDialogs();
+    se.playBeat([{ type: 'TUTORIAL_STEP', step: 1, total: 2, agent: 'kiro', prompt: 'Inspect node', command: 'ls', done: false }]);
+  })()`);
+  await sleep(140);
+  const tutVisible = await $(`(() => {
+    const doc = document.querySelector('.pv-frame').contentDocument;
+    const card = doc.getElementById('tutorial-card');
+    const r = card?.getBoundingClientRect();
+    return Boolean(card) && !card.hidden && card.classList.contains('open') && Boolean(r) && r.height > 20;
+  })()`);
+  await $(`(() => {
+    const se = document.querySelector('.pv-frame').contentWindow.__stageEditor;
+    se.clearDialogs();
+    se.playBeat([{ type: 'DIALOG_BOX', speaker: 'vibecoder', name: 'DEV', model: 'vibecoder.dev_terminal', text: 'Checking dev dialog box visibility!', holdMs: 4000 }]);
+  })()`);
+  await sleep(140);
+  const vibeBoxVisible = await $(`(() => {
+    const doc = document.querySelector('.pv-frame').contentDocument;
+    const box = doc.querySelector('.dialog-box.open');
+    const r = box?.getBoundingClientRect();
+    return Boolean(box) && Boolean(r) && r.height > 20 && box.textContent.includes('Checking dev dialog box visibility!');
+  })()`);
+  await click('.cx-view-btn', 'HUD');
+  await sleep(60);
+  const hudBackOn = await $("!document.querySelector('.pv-frame').contentDocument.body.classList.contains('editor-hud-off')");
+  check(hudOff && dialogVisibleWhileHudOff && tutVisible && vibeBoxVisible && hudBackOn, 'HUD toggle hides game chrome while keeping dialogs, TutorialCard, and vibecoder DialogBox visible');
+
+  await click('.cx-view-btn', 'Hidden');
+  await sleep(120);
+  const hiddenShown = await $("document.querySelector('.pv-frame').contentWindow.__stageEditor.isShowHidden() === true && document.querySelector('.pv-frame').contentWindow.__stageEditor.listActors().some((a) => a.hidden)");
+  await click('.cx-view-btn', 'Hidden');
+  await sleep(80);
+  check(hiddenShown, 'Hidden toggle reveals appearWhen/hidden/pre-spawned actors on stage');
+
+  await click('.cx-view-btn', 'AI');
+  await sleep(60);
+  const aiResumed = await $("document.querySelector('.pv-frame').contentWindow.__stageEditor.isAiPaused() === false");
+  await click('.cx-view-btn', 'AI');
+  await sleep(60);
+  const aiPausedBack = await $("document.querySelector('.pv-frame').contentWindow.__stageEditor.isAiPaused() === true");
+  check(aiResumed && aiPausedBack, 'AI toggle pauses and resumes enemy ticks');
+
+  await click('button', 'All Dialogs');
+  await sleep(180);
+  const beat1Text = await $("document.querySelector('.pv-status')?.textContent || ''");
+  await click('button', 'Next Beat');
+  await sleep(140);
+  const beat2Text = await $("document.querySelector('.pv-status')?.textContent || ''");
+  await click('button', 'Next Beat');
+  await sleep(140);
+  const beat3Text = await $("document.querySelector('.pv-status')?.textContent || ''");
+  const afterBeatCount = await $("document.querySelectorAll('.pv-ev').length");
+  await click('button', 'Stop');
+  await sleep(80);
+  const boxCleared = await $("!document.querySelector('.pv-frame').contentDocument.querySelector('.dialog-box.open')");
+  check(
+    afterBeatCount > 0 && boxCleared && beat1Text.startsWith('dialog:') && beat2Text.startsWith('dialog:') && beat1Text !== beat2Text && beat2Text !== beat3Text,
+    `All Dialogs, Next Beat, and Stop advance and clear live dialog beats (${beat1Text} -> ${beat2Text} -> ${beat3Text})`,
+  );
+
+  const enemiesBeforeSpawn = await $("document.querySelector('.pv-frame').contentWindow.__stageEditor.listActors().filter((a) => a.kind === 'enemy' || a.kind === 'boss').length");
+  await click('button', 'Test Enemy');
+  await sleep(180);
+  const spawnState = await $(`(() => {
+    const actors = document.querySelector('.pv-frame').contentWindow.__stageEditor.listActors();
+    return {
+      enemies: actors.filter((a) => a.kind === 'enemy' || a.kind === 'boss').length,
+      hasTest: actors.some((a) => a.actorId.startsWith('test_')),
+    };
+  })()`);
+  await click('button', 'Kill Enemies');
+  await sleep(180);
+  const killState = await $(`(() => {
+    const actors = document.querySelector('.pv-frame').contentWindow.__stageEditor.listActors();
+    return {
+      enemies: actors.filter((a) => a.kind === 'enemy' || a.kind === 'boss').length,
+      hasTest: actors.some((a) => a.actorId.startsWith('test_')),
+    };
+  })()`);
+  check(spawnState.hasTest && spawnState.enemies > enemiesBeforeSpawn && killState.enemies === 0 && !killState.hasTest, 'Test Enemy spawns an enemy on stage and Kill Enemies clears enemies cleanly');
+
+  await click('button', 'Restart');
+  await sleep(150);
+  check(await $("document.querySelector('.pv-frame').contentWindow.__stageEditor.ready === true"), 'Restart resets level preview cleanly');
+
   await click('.ed-tab', 'Script');
   await $("[...document.querySelectorAll('.ed-pane details.item')].slice(0, 1).forEach((d) => (d.open = true))");
   const before = await $("document.querySelectorAll('.pv-ev').length");
@@ -94,13 +209,25 @@ try {
   check(after > before, 'the play button on a script step fires its events on the live stage');
   await browser.shoot(out('04-preview'));
 
-  // 6b. a dialogue bubble plays on a real hub level without errors
+  // 6b. a dialogue bubble plays on a real hub level without errors & Room selector switches cwd
   const hub = chapter.levels.find((l) => l.spec.script?.arrival?.some((st) => st.kind === 'dialogue'));
   if (hub) {
     const errorsBefore = browser.problems.length;
     await click('.ed-item', hub.spec.title);
     await click('.ed-tab', 'Script');
     await browser.waitFor("document.querySelector('.pv-status').textContent === 'live'", 60000, 'the hub preview');
+    const roomSwitched = await $(`(() => {
+      const sel = document.querySelector('select[aria-label="Active room directory"]');
+      if (!sel || sel.options.length < 2) return true;
+      const alt = [...sel.options].find((o) => o.value !== sel.value);
+      if (!alt) return true;
+      sel.value = alt.value;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      return document.querySelector('.pv-frame').contentWindow.__stageEditor.getCwd() === alt.value;
+    })()`);
+    check(roomSwitched, 'Room selector switches active cwd directory in live preview');
+    await $(`(() => { const sel = document.querySelector('select[aria-label="Active room directory"]'); if (sel && sel.options.length) { sel.value = sel.options[0].value; sel.dispatchEvent(new Event('change', { bubbles: true })); } })()`);
+    await sleep(60);
     const at = hub.spec.script.arrival.findIndex((st) => st.kind === 'dialogue');
     await $(`document.querySelectorAll('.ed-pane .item-tools [title^="Play"]')[${at}].click()`);
     await browser.waitFor("document.querySelector('.pv-log').textContent.includes('OBSTACLE_DIALOGUE_RENDERED')", 15000, 'the dialogue event');
@@ -113,6 +240,14 @@ try {
   // 7. revert
   await click('.ed-top .btn', 'Revert file');
   check(!(await $("document.querySelector('.ed-item.on .dot')")), 'revert clears the unsaved mark');
+
+  await $(`(() => { const s = document.querySelector('select[aria-label="Add object kind"]'); s.value = 'prop'; })()`);
+  await click('button', '+ Add to Level');
+  await sleep(250);
+  const propAdded = await $("(window.__chapterEditor.state().dirty || []).length > 0 && (localStorage.getItem('credits.editor.draft:' + window.__chapterEditor.state().slug) || '').includes('prop_tar_')");
+  check(propAdded, '+ Add to Level inserts a prop into draft and syncs stage');
+  await click('.ed-top .btn', 'Revert file');
+  await sleep(80);
 
   // 8. the schema check catches what no reference check can: a misspelled key, and Check issues are keyboard-operable buttons
   await click('.ed-item', chapter.levels[0].spec.title);
@@ -344,6 +479,166 @@ try {
     stageWidgetsOk && propVecOk && draftHasVec,
     `interactive Stage hero alt-mode and prop numOrVec3 vec3 scale widgets update draft cleanly (stage=${stageWidgetsOk}, prop=${propVecOk}, draft=${draftHasVec})`,
   );
+
+  // 8e. Interactive 3D canvas selection + real CDP pointer drags (move, Shift axis lock, Alt floor-snap bypass, rotate + Shift 15°, cross-iframe scale, socket detach) -> Save file -> restore exact bytes
+  await click('.ed-item', chapter.levels[0].spec.title);
+  const lvl0 = chapter.levels[0];
+  await browser.waitFor(
+    `window.__chapterEditor?.state().previewLevel === ${JSON.stringify(lvl0.spec.id)} && document.querySelector('.pv-frame')?.contentWindow?.__stageEditor?.ready === true`,
+    20000,
+    'stage editor ready on level 0',
+  );
+  const lvl0Path = resolve(chaptersDir, slug, lvl0.path);
+  const origLvl0 = readFileSync(lvl0Path, 'utf8');
+  const putLvl0 = (json) => fetch(`${base}/api/chapters/${slug}/file`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ path: lvl0.path, json }) });
+  const cdpDrag = async (x0, y0, x1, y1, modifiers = 0) => {
+    await browser.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: x0, y: y0, modifiers });
+    await browser.send('Input.dispatchMouseEvent', { type: 'mousePressed', button: 'left', clickCount: 1, x: x0, y: y0, modifiers });
+    for (let i = 1; i <= 5; i++) {
+      const mx = x0 + ((x1 - x0) * i) / 5;
+      const my = y0 + ((y1 - y0) * i) / 5;
+      await browser.send('Input.dispatchMouseEvent', { type: 'mouseMoved', button: 'left', buttons: 1, x: mx, y: my, modifiers });
+    }
+    await browser.send('Input.dispatchMouseEvent', { type: 'mouseReleased', button: 'left', clickCount: 1, x: x1, y: y1, modifiers });
+    await sleep(60);
+  };
+  const stagePoints = async (id) => $(`(() => {
+    const f = document.querySelector('.pv-frame');
+    const fr = f.getBoundingClientRect();
+    const doc = f.contentDocument;
+    const se = f.contentWindow.__stageEditor;
+    if (${JSON.stringify(id)}) se.setSelectedActor(${JSON.stringify(id)});
+    const box = doc.querySelector('.st-ed-box');
+    const scaleH = doc.querySelector('.st-ed-scale');
+    const rotH = doc.querySelector('.st-ed-rot');
+    const pt = (el) => {
+      if (!el || el.hidden) return null;
+      const r = el.getBoundingClientRect();
+      return {
+        x: fr.left + f.clientLeft + r.left + r.width / 2,
+        y: fr.top + f.clientTop + r.top + r.height / 2,
+        w: r.width,
+        h: r.height,
+      };
+    };
+    const actor = se.listActors().find((a) => a.actorId === ${JSON.stringify(id)});
+    return {
+      fr: { left: fr.left, top: fr.top, right: fr.right, bottom: fr.bottom },
+      box: pt(box),
+      scale: pt(scaleH),
+      rot: pt(rotH),
+      actor,
+    };
+  })()`);
+
+  try {
+    // 1. Real mouse click in empty room clears selection
+    await $(`document.querySelector('.pv-frame').contentWindow.__stageEditor.setSelectedActor('vibecoder')`);
+    const frameBounds = await $(`(() => { const r = document.querySelector('.pv-frame').getBoundingClientRect(); return { left: r.left, top: r.top }; })()`);
+    await cdpDrag(frameBounds.left + 14, frameBounds.top + 14, frameBounds.left + 14, frameBounds.top + 14);
+    const clearedAfterEmpty = await $(`document.querySelector('.pv-frame').contentWindow.__stageEditor.getSelectedActor() === null`);
+    check(clearedAfterEmpty, 'real click in empty stage clears selection');
+
+    // 2. Real CDP drag with Alt (<0.12 y) bypasses floor snap; normal drop inside |y|<0.12 snaps to floor (y=0); Shift locks axis
+    const p0 = await stagePoints('vibecoder');
+    check(Boolean(p0.box && p0.scale && p0.rot), 'selected vibecoder renders selection box, scale handle, and rotate handle');
+    const heroFloorY = p0.box.y;
+    await cdpDrag(p0.box.x, p0.box.y, p0.box.x, heroFloorY - 6, 1); // Alt = 1
+    const afterAlt = await $(`document.querySelector('.pv-frame').contentWindow.__stageEditor.listActors().find((a) => a.actorId === 'vibecoder')`);
+    check(afterAlt && afterAlt.y > 0 && afterAlt.y < 0.12, `Alt drag inside |y|<0.12 bypasses floor snap (y=${afterAlt?.y})`);
+
+    const pAlt = await stagePoints('vibecoder');
+    await cdpDrag(pAlt.box.x, pAlt.box.y, pAlt.box.x, heroFloorY); // no Alt -> snaps back to floor y=0
+    const afterFloorSnap = await $(`document.querySelector('.pv-frame').contentWindow.__stageEditor.listActors().find((a) => a.actorId === 'vibecoder')`);
+    check(afterFloorSnap && afterFloorSnap.y === 0, `releasing within |y|<0.12 without Alt snaps actor to floor y=0 (y=${afterFloorSnap?.y})`);
+
+    const pSnap = await stagePoints('vibecoder');
+    const beforeShiftX = pSnap.actor.x;
+    await cdpDrag(pSnap.box.x, pSnap.box.y, pSnap.box.x + 55, pSnap.box.y - 12, 8); // Shift = 8 locks dominant horizontal axis
+    const afterShift = await $(`document.querySelector('.pv-frame').contentWindow.__stageEditor.listActors().find((a) => a.actorId === 'vibecoder')`);
+    check(afterShift && afterShift.x !== beforeShiftX && afterShift.y === 0, `Shift drag locks axis cleanly (x: ${beforeShiftX} -> ${afterShift?.x}, y=${afterShift?.y})`);
+
+    // 3. Real CDP clockwise drag on rotate handle produces positive rotation, and Shift snaps to 15°
+    const pRot = await stagePoints('vibecoder');
+    await cdpDrag(pRot.rot.x, pRot.rot.y, pRot.box.x + 60, pRot.box.y);
+    const afterClockwise = await $(`document.querySelector('.pv-frame').contentWindow.__stageEditor.listActors().find((a) => a.actorId === 'vibecoder')`);
+    check(afterClockwise && Number(afterClockwise.rotation) > 0, `clockwise rotate handle drag applies positive degrees (rotation=${afterClockwise?.rotation})`);
+
+    const pRot2 = await stagePoints('vibecoder');
+    await cdpDrag(pRot2.rot.x, pRot2.rot.y, pRot2.box.x + 48, pRot2.box.y - 20, 8); // Shift = 15° snap
+    const afterRotSnap = await $(`document.querySelector('.pv-frame').contentWindow.__stageEditor.listActors().find((a) => a.actorId === 'vibecoder')`);
+    check(afterRotSnap && Number(afterRotSnap.rotation) % 15 === 0, `Shift rotate drag snaps to 15° increments (rotation=${afterRotSnap?.rotation})`);
+
+    // 4. Real CDP cross-iframe scale drag past .pv-frame bottom updates scale and terminates cleanly
+    const pScale = await stagePoints('vibecoder');
+    const scaleTargetY = pScale.fr.bottom + 24 < vpHeight - 8 ? pScale.fr.bottom + 24 : pScale.scale.y + 42;
+    await cdpDrag(pScale.scale.x, pScale.scale.y, pScale.scale.x + 28, scaleTargetY);
+    const afterScale = await $(`document.querySelector('.pv-frame').contentWindow.__stageEditor.listActors().find((a) => a.actorId === 'vibecoder')`);
+    // Verify subsequent click in empty area still works (drag did not remain stuck after crossing iframe edge)
+    await cdpDrag(pScale.fr.left + 14, pScale.fr.top + 14, pScale.fr.left + 14, pScale.fr.top + 14);
+    const unstuckAfterScale = await $(`document.querySelector('.pv-frame').contentWindow.__stageEditor.getSelectedActor() === null`);
+    check(
+      afterScale && Number(afterScale.scale) > 1 && unstuckAfterScale,
+      `cross-iframe scale handle drag updates scale (${afterScale?.scale}) and releases cleanly`,
+    );
+
+    // 5. Save file writes updated hero transform to disk
+    const heroNow = await $(`document.querySelector('.pv-frame').contentWindow.__stageEditor.listActors().find((a) => a.actorId === 'vibecoder')`);
+    await click('.ed-top .btn', 'Save file');
+    await browser.waitFor("window.__chapterEditor.state().dirty.length === 0", 12000, 'save after hero drag');
+    const savedDisk = JSON.parse(readFileSync(lvl0Path, 'utf8'));
+    const savedHeroX = typeof savedDisk.stage?.hero === 'number' ? savedDisk.stage.hero : savedDisk.stage?.hero?.x;
+    check(
+      savedHeroX !== undefined
+        && Math.abs(savedHeroX - heroNow.x) < 0.05
+        && Math.abs(savedDisk.stage?.hero?.scale - heroNow.scale) < 0.05
+        && savedDisk.stage?.hero?.rotation === heroNow.rotation,
+      `Save file persisted hero transform (x=${savedHeroX}, scale=${savedDisk.stage?.hero?.scale}, rot=${savedDisk.stage?.hero?.rotation}) to disk`,
+    );
+  } finally {
+    writeFileSync(lvl0Path, origLvl0);
+    await putLvl0(lvl0.spec);
+    await $("window.__chapterEditor.reload()");
+    await sleep(150);
+  }
+  check(readFileSync(lvl0Path, 'utf8') === origLvl0, 'canvas drag test restored original level.spec.json bytes cleanly');
+
+  // 8f. Real CDP drag on door:entry (level 1 has entryPort/entryDoor) detaches socket, survives syncDraftInPlace, persists to disk, and restores cleanly
+  const lvl1 = chapter.levels[1];
+  await click('.ed-item', lvl1.spec.title);
+  await browser.waitFor(
+    `window.__chapterEditor?.state().previewLevel === ${JSON.stringify(lvl1.spec.id)} && document.querySelector('.pv-frame')?.contentWindow?.__stageEditor?.ready === true`,
+    20000,
+    'stage editor ready on level 1',
+  );
+  const lvl1Path = resolve(chaptersDir, slug, lvl1.path);
+  const origLvl1 = readFileSync(lvl1Path, 'utf8');
+  const putLvl1 = (json) => fetch(`${base}/api/chapters/${slug}/file`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ path: lvl1.path, json }) });
+  try {
+    const pEntry = await stagePoints('door:entry');
+    check(Boolean(pEntry.box && pEntry.actor), 'level 1 entry door renders selectable box on stage');
+    const beforeEntryX = pEntry.actor.x;
+    await cdpDrag(pEntry.box.x, pEntry.box.y, pEntry.box.x + 48, pEntry.box.y);
+    await sleep(320); // allow draft syncDraftInPlace round-trip
+    const afterEntry = await $(`document.querySelector('.pv-frame').contentWindow.__stageEditor.listActors().find((a) => a.actorId === 'door:entry')`);
+    check(
+      afterEntry && Math.abs(afterEntry.x - beforeEntryX) > 0.08,
+      `door:entry drag detached socket and survived syncDraftInPlace (${beforeEntryX} -> ${afterEntry?.x})`,
+    );
+    await click('.ed-top .btn', 'Save file');
+    await browser.waitFor("window.__chapterEditor.state().dirty.length === 0", 12000, 'save after entry door drag');
+    const savedLvl1 = JSON.parse(readFileSync(lvl1Path, 'utf8'));
+    check(
+      savedLvl1.stage?.entryPort?.socket === undefined && Math.abs(savedLvl1.stage?.entryPort?.x - afterEntry.x) < 0.05,
+      `Save file persisted detached entryPort (x=${savedLvl1.stage?.entryPort?.x}) without socket`,
+    );
+  } finally {
+    writeFileSync(lvl1Path, origLvl1);
+    await putLvl1(lvl1.spec);
+    await $("window.__chapterEditor.reload()");
+    await sleep(150);
+  }
+  check(readFileSync(lvl1Path, 'utf8') === origLvl1, 'entry door drag test restored original level 1 bytes cleanly');
 
   // 9. a file changed on disk by someone else is noticed, and a stale save is refused
   const last = chapter.levels[chapter.levels.length - 1];

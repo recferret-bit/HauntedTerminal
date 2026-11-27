@@ -47,7 +47,7 @@ export function isBossModel(model: string): boolean {
 
 /** NPC model id -> the ambience loops that play while that NPC is in the player's room. */
 const AMBIENT_LOOPS_BY_MODEL: Record<string, readonly LoopCue[]> = {
-  'npc.greybeard_rig': ['dad_typing_loop', 'dad_smoke_loop'],
+  'npc.greybeard_rig': ['dad_typing_loop', 'dad_rig_loop'],
 };
 
 /** Loops to keep on for the models present in the room (every other loop of this table is off). */

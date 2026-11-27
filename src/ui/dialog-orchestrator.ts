@@ -38,6 +38,7 @@ export interface DialogOrchestratorOptions {
   tutorial?: TutorialCard;
   onRightDialogOpen?: () => void;
   onDialogOpen?: (line: DialogLine, side: 'left' | 'right') => void;
+  onDialogIdle?: () => void;
   onClear?: () => void;
   reducedMotion?: () => boolean;
 }
@@ -148,6 +149,9 @@ export function mountDialogOrchestrator(
       const openRight = side === 'right' ? Math.max(1, countOpenDialogs(parent, '.dialog-box.side-right.open')) : 0;
       maxConcurrent = Math.max(maxConcurrent, openAll);
       maxRightConcurrent = Math.max(maxRightConcurrent, openRight);
+    },
+    onClose: () => {
+      if (box.pending() === 0) opts.onDialogIdle?.();
     },
   });
 

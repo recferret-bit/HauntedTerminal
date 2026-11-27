@@ -120,12 +120,31 @@ function enterable(g: Play, node: VNode): boolean {
   return !!target && target.kind === 'dir' && hasExec(target);
 }
 
+function socketOpen(g: Play, child: VNode): boolean {
+  const path = absPath(child);
+  const riddle = g.lab?.content.riddles.find((r) => r.path === path);
+  if (riddle) return g.run.lab.solved.has(riddle.id);
+  if (child.name === 'archivist_gate.sock') return Boolean(g.run.archivistSolved) || gateOpen(g);
+  if (child.name === 'pressure_plate.sock') return Boolean(find(g, '/usr/local/labyrinth/hidden_wing/boiler_shaft'));
+  if (child.name === 'valve_lock.sock') {
+    const hall = find(g, '/proc_mansion/boiler_room/furnace_hall');
+    return Boolean(hall && hasExec(hall));
+  }
+  if (child.name === 'wakeup.sock') return Boolean(g.run.tokenOk);
+  return true;
+}
+
 export function facts(g: Play): SceneFacts {
   const cwd = absPath(g.run.cwd);
   const world = g.run.world;
   const things: ViewThing[] = [...g.run.cwd.children.values()]
     .sort((a, b) => a.name.localeCompare(b.name))
-    .map((child) => ({ name: child.name, type: child.kind, open: enterable(g, child), entity: world.entityOf(child.id) }));
+    .map((child) => ({
+      name: child.name,
+      type: child.kind,
+      open: child.kind === 'socket' ? socketOpen(g, child) : enterable(g, child),
+      entity: world.entityOf(child.id),
+    }));
   const entities = world.views(cwd);
   const garg = gargoyleNode(g);
   const necromancer = boss(g);

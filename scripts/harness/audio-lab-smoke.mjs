@@ -50,10 +50,11 @@ try {
   assert.ok(afterPlay.recentCues.includes('key_press:raw'));
 
   await $('document.querySelector("[data-loop-toggle=\\"rain_loop\\"]").click()');
-  await $('document.querySelector("[data-take=\\"dad_smoke_loop_2\\"]").click()');
+  await $('document.querySelector("[data-loop-toggle=\\"dad_rig_loop\\"]").click()');
   const afterMix = await $('window.__audioLab.state()');
   assert.equal(afterMix.activeLoops.rain_loop.on, true);
-  assert.ok(afterMix.recentCues.some((c) => c.includes('dad_smoke_loop_2')));
+  assert.equal(afterMix.activeLoops.dad_rig_loop.on, true);
+  assert.ok(afterMix.recentCues.some((c) => c.includes('dad_rig_loop')));
 
   await $('document.querySelector("[data-scene=\\"boss\\"]").click()');
   const afterScene = await $('window.__audioLab.state()');

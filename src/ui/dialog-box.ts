@@ -113,14 +113,22 @@ function findHeroDrawer(parent: HTMLElement): HeroDrawerEls | null {
   const drawer = hud?.querySelector<HTMLElement>('#hero-dialog-drawer');
   const name = hud?.querySelector<HTMLElement>('#hero-dialog-name');
   const text = hud?.querySelector<HTMLElement>('#hero-dialog-text');
-  return hud && drawer && name && text ? { hud, drawer, name, text } : null;
+  if (!hud || !drawer || !name || !text) return null;
+  if (typeof globalThis.getComputedStyle === 'function') {
+    const topbar = hud.closest<HTMLElement>('#topbar');
+    if ((topbar && globalThis.getComputedStyle(topbar).display === 'none') || globalThis.getComputedStyle(hud).display === 'none') {
+      return null;
+    }
+  }
+  return { hud, drawer, name, text };
 }
 
 function closeHeroDrawer(parent: HTMLElement): void {
-  const hero = findHeroDrawer(parent);
-  if (!hero) return;
-  hero.hud.classList.remove('talking', 'open', 'entering', 'exiting', ...MOOD_CLASSES);
-  hero.drawer.setAttribute('aria-hidden', 'true');
+  const hud = parent.querySelector<HTMLElement>('#hero-hud');
+  const drawer = hud?.querySelector<HTMLElement>('#hero-dialog-drawer');
+  if (!hud || !drawer) return;
+  hud.classList.remove('talking', 'open', 'entering', 'exiting', ...MOOD_CLASSES);
+  drawer.setAttribute('aria-hidden', 'true');
 }
 
 function placeRightTop(root: HTMLElement, parent: HTMLElement, side: 'left' | 'right'): void {

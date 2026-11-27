@@ -54,6 +54,8 @@ export interface GameSnapshot {
   battle: BattleView | null;
   /** True while the level's opening Vibecoder + Kiro conversation is still playing (terminal locked, Skip Dialog shown). */
   openingDialog?: boolean;
+  /** True while any skippable scripted dialog (opening or mid-level trigger) is active (shows Skip Dialog without locking terminal unless openingDialog is also true). */
+  skippableDialog?: boolean;
 }
 
 /** Name, objective and win-rule checklist of the current level. Classic floors have an empty checklist. */

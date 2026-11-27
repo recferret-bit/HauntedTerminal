@@ -19,6 +19,7 @@ export function cueOpeningBoot(play: Play): boolean {
 
 /** Hide the panel until he has a terminal. The first time it appears, run the visor boot. */
 export function syncTerminalPresence(play: Play, snap: GameSnapshot): void {
+  if (play.editorMode) return;
   const has = snap.inventory.items.includes('terminal');
   const first = has && !play.shell.available && !play.termBooted && play.lifecycle.phase() === 'play';
   if (!first) {

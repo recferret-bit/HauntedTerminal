@@ -5,8 +5,9 @@ import { dialogueEvent } from '../game/dialogue.js';
 import { consumeItem, giveItem, heroModel, holdItem, ITEMS } from '../game/inventory.js';
 import { lookup, type VNode } from '../game/tree.js';
 import type { TutorialState } from '../game/types.js';
+import { findMatchingLock, invocationMatches, recordDialogHoldTicks, scriptDialogActive } from './script-locks.js';
 import { resolveTauntAgent, type ChapterState } from './session-state.js';
-import type { LevelScript, ScriptAgent, ScriptBullying, ScriptCond, ScriptCoreReaction, ScriptStep, ScriptTutorial } from './types.js';
+import type { LevelScript, ScriptAgent, ScriptBullying, ScriptCond, ScriptCoreReaction, ScriptLock, ScriptStep, ScriptTutorial } from './types.js';
 
 /**
  * The one interpreter for `level.spec.json -> script`. It knows nothing about any chapter or level:
@@ -29,8 +30,11 @@ function fill(template: string, vars: Record<string, string>): string {
 
 export function evalCond(g: ChapterState, c: ScriptCond): boolean {
   switch (c.kind) {
-    case 'ran_command':
-      return g.rt.commandsRun.has(c.name);
+    case 'ran_command': {
+      if (!c.flags && !c.args) return g.rt.commandsRun.has(c.name);
+      const want = c.name === 'kiro.d' ? 'kiro' : c.name;
+      return g.rt.commandLog.some((entry) => entry.name === want && invocationMatches(entry.args, c.flags, c.args));
+    }
     case 'file_absent':
       return lookup(g.rt.root, c.path) === null;
     case 'file_read':
@@ -49,6 +53,12 @@ export function evalCond(g: ChapterState, c: ScriptCond): boolean {
       return g.rt.roomSwept;
     case 'tutorial_skipped':
       return g.rt.tutorialSkipped;
+    case 'dialog_done':
+      return !scriptDialogActive(g, openingActive(g));
+    case 'flag':
+      return g.rt.flags.has(c.name);
+    case 'not':
+      return !evalCond(g, c.of);
     case 'any':
       return c.of.some((x) => evalCond(g, x));
     case 'all':
@@ -158,6 +168,8 @@ export function stepOutput(s: ScriptStep, env: StepEnv): { events: KernelEvent[]
       };
     case 'music':
       return { events: [], print: '' };
+    case 'set_flag':
+      return { events: [], print: '' };
     case 'give_item': {
       const def = ITEMS[s.item];
       return {
@@ -196,6 +208,7 @@ export function runSteps(g: ChapterState, steps: ScriptStep[], events: KernelEve
     heroModel: heroModel(g.inventory.held),
   };
   let out = '';
+  const startEvIdx = events.length;
   for (const [i, s] of steps.entries()) {
     if (s.kind === 'wait') {
       // The rest of the beat runs `sec` level seconds from now, in order (`runTimed`).
@@ -205,6 +218,7 @@ export function runSteps(g: ChapterState, steps: ScriptStep[], events: KernelEve
     }
     if (s.kind === 'take_item') g.inventory = consumeItem(g.inventory, s.item);
     if (s.kind === 'music') g.rt.musicOverride = s.cue === null ? '' : s.cue;
+    if (s.kind === 'set_flag') g.rt.flags.add(s.name);
     if (s.kind === 'give_item') {
       const wasEmpty = g.inventory.held === null;
       g.inventory = giveItem(g.inventory, s.item);
@@ -232,6 +246,7 @@ export function runSteps(g: ChapterState, steps: ScriptStep[], events: KernelEve
     events.push(...r.events);
     out += r.print;
   }
+  recordDialogHoldTicks(g, events.slice(startEvIdx));
   return out;
 }
 
@@ -252,7 +267,7 @@ export function openingActive(g: ChapterState): boolean {
   return !g.rt.openingDone && !g.ended && hasOpeningGate(g);
 }
 
-const OPENING_KEEP = new Set<ScriptStep['kind']>(['spawn', 'despawn', 'carry_item', 'give_item', 'take_item', 'fly_to', 'kiro_action', 'tutorial_step']);
+const OPENING_KEEP = new Set<ScriptStep['kind']>(['spawn', 'despawn', 'carry_item', 'give_item', 'take_item', 'fly_to', 'kiro_action', 'tutorial_step', 'set_flag']);
 
 /** Marks the opening dialog finished and fast-forwards any unfired state-changing beats up to `openingSec`. */
 export function completeOpeningBeats(g: ChapterState, events: KernelEvent[]): string {
@@ -268,6 +283,7 @@ export function completeOpeningBeats(g: ChapterState, events: KernelEvent[]): st
     if (steps.length > 0) out += runSteps(g, steps, events);
   });
   out += flushPendingBeats(g, events, OPENING_KEEP);
+  g.rt.dialogBusyUntilTick = g.rt.levelTicks;
   return out;
 }
 
@@ -320,10 +336,20 @@ export function runTimed(g: ChapterState, events: KernelEvent[]): string {
   return out;
 }
 
-/** The refusal text when a `script.locks` entry blocks this command word, else undefined. */
-export function lockMessage(g: ChapterState, command: string): string | undefined {
-  const lock = levelScript(g).locks?.find((l) => l.command === command && !evalCond(g, l.until));
-  return lock?.message;
+/** True when any skippable scripted dialog (opening or mid-level trigger/timed) is currently running. */
+export function hasSkippableDialog(g: ChapterState): boolean {
+  return scriptDialogActive(g, openingActive(g));
+}
+
+/** Fast-forwards active mid-level scripted dialogs, running kept deferred/trigger state beats and clearing the dialog timer. */
+export function skipMidLevelDialog(g: ChapterState, events: KernelEvent[]): string {
+  g.rt.dialogBusyUntilTick = g.rt.levelTicks;
+  return flushPendingBeats(g, events, OPENING_KEEP);
+}
+
+/** The matching `script.locks` entry when command + args match and its `until` condition does not hold, else undefined. */
+export function findCommandLock(g: ChapterState, command: string, args: readonly string[]): ScriptLock | undefined {
+  return findMatchingLock(levelScript(g).locks, command, args, (c) => evalCond(g, c));
 }
 
 // ---- tutorial ----------------------------------------------------------------------------------------------
@@ -380,7 +406,7 @@ export function finishTutorial(g: ChapterState, events: KernelEvent[]): void {
   if (tut) announceTutorialStep(g, tut.steps.length, true, events);
 }
 
-const SKIP_KEEP = new Set<ScriptStep['kind']>(['spawn', 'despawn', 'carry_item', 'give_item', 'take_item', 'fly_to']);
+const SKIP_KEEP = new Set<ScriptStep['kind']>(['spawn', 'despawn', 'carry_item', 'give_item', 'take_item', 'fly_to', 'set_flag']);
 
 /**
  * Drops every tutorial beat that has not played yet. Dialogs, emotes and prompts
@@ -404,6 +430,7 @@ export function applySkipTutorial(g: ChapterState, events: KernelEvent[]): strin
   const tut = levelScript(g).tutorial;
   g.rt.tutorialSkipped = true;
   g.rt.openingDone = true;
+  g.rt.dialogBusyUntilTick = g.rt.levelTicks;
   const skippedOut = fastForwardSkippedBeats(g, events);
   if (tut) {
     if (!g.rt.hiddenRevealed) revealHidden(g, events);
@@ -446,8 +473,15 @@ export function syncScriptTriggers(g: ChapterState, events: KernelEvent[]): stri
     g.rt.droppedPickups.add(p.id);
     const live = g.rt.world.pickups.find((x) => x.id === p.id && !x.collected);
     if (live) {
+      events.push({
+        type: 'ENTITY_SPAWNED',
+        entityId: live.id,
+        model: live.model,
+        reason: 'script',
+        ...(p.dropFromX !== undefined ? { fromX: p.dropFromX } : {}),
+        ...(p.dropFromY !== undefined ? { fromY: p.dropFromY } : {}),
+      });
       events.push({ type: 'FILE_CREATED', inodeId: live.inode, name: live.name, entityId: live.id });
-      events.push({ type: 'ENTITY_SPAWNED', entityId: live.id, model: live.model, reason: 'script' });
     }
   }
   (levelScript(g).triggers ?? []).forEach((tr, i) => {
@@ -497,7 +531,7 @@ export function kiroIsWeak(g: ChapterState): boolean {
 const KIRO_ENTITY = 'kiro';
 
 /** Where Kiro stands in the room: `undefined` = not on stage. */
-export function kiroStage<T extends object>(g: ChapterState, base: T, cwdPath: string, exitOpen: boolean): T | undefined {
+export function kiroStage<T extends object>(g: ChapterState, base: T, cwdPath: string, exitOpen: boolean): (T & { alpha?: number }) | undefined {
   const k = levelScript(g).kiro;
   const stK = g.rt.spec.stage?.kiro;
   const withStage = stK
@@ -514,13 +548,17 @@ export function kiroStage<T extends object>(g: ChapterState, base: T, cwdPath: s
     : base;
   if (!k) return withStage;
   const stage = k.stage ?? 'show';
-  if (stage === 'hidden') return undefined;
-  if (stage === 'crack_only') return g.kiro.activeCrack?.dirPath === cwdPath ? withStage : undefined;
-  if ((k.hideWhen?.includes('intro') && g.intro) || (k.hideWhen?.includes('exit_open') && exitOpen)) return undefined;
-  if (k.hideWhen?.includes('before_spawn') && !g.rt.spawned.has(KIRO_ENTITY)) return undefined;
+  const hiddenByScript =
+    stage === 'hidden' ||
+    (stage === 'crack_only' && g.kiro.activeCrack?.dirPath !== cwdPath) ||
+    Boolean(k.hideWhen?.includes('intro') && g.intro) ||
+    Boolean(k.hideWhen?.includes('exit_open') && exitOpen) ||
+    Boolean(k.hideWhen?.includes('before_spawn') && !g.rt.spawned.has(KIRO_ENTITY));
+  if (hiddenByScript && !g.editorShowHidden) return undefined;
   const loaded = k.labelLoaded?.cores.some((c) => g.rt.loadedCores.has(c));
   const label = loaded && k.labelLoaded ? k.labelLoaded.label : k.label;
-  return label ? { ...withStage, label } : withStage;
+  const resolved = label ? { ...withStage, label } : withStage;
+  return hiddenByScript ? { ...resolved, alpha: 0.55 } : resolved;
 }
 
 /** Does the core the player typed (or now runs) satisfy the hub's wanted core? */

@@ -17,6 +17,8 @@ export interface GamePreviewOpts {
   onHideBar?: () => void;
   /** Pills after Reload in the stage bar's Game group (the active level). */
   pills?: HTMLElement[];
+  /** Extra controls placed inside `.cx-stage-bar` after the Game group (used by Stage Studio). */
+  stageBarControls?: HTMLElement[];
 }
 
 /**
@@ -40,7 +42,14 @@ export class GamePreviewShell<W extends PlayWindow = PlayWindow> {
     this.play = new PlayFrame<W>(this.stage.frame);
     this.selPill = h('button', { type: 'button', class: 'cx-sel-pill', hidden: true, title: opts.selectionTitle, onclick: () => opts.onRevealSelected?.() }, '');
     const right = renderStageBarRightGroup({ selReadoutBtn: this.selPill, hint: 'Ctrl+Wheel: Canvas', onToggleZen: opts.onToggleZen, onHideBar: opts.onHideBar });
-    const bar = h('div', { class: 'cx-stage-bar' }, this.stage.buildZoomGroup('Canvas'), this.stage.buildGameGroup(opts.reloadTitle, opts.onReload, ...(opts.pills ?? [])), right);
+    const bar = h(
+      'div',
+      { class: 'cx-stage-bar' },
+      this.stage.buildZoomGroup('Canvas'),
+      this.stage.buildGameGroup(opts.reloadTitle, opts.onReload, ...(opts.pills ?? [])),
+      ...(opts.stageBarControls ?? []),
+      right,
+    );
     this.stageEl = h('section', { class: 'cx-stage', 'aria-label': 'Game Viewport' }, bar, this.stage.matEl);
     this.timer = window.setInterval(() => this.play.flushTo(this.logEl), LOG_POLL_MS);
   }

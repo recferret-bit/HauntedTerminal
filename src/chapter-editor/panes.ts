@@ -229,8 +229,28 @@ function checkPane(env: Env, sel: Sel): HTMLElement {
   const all = h('button', { type: 'button', class: 'btn' }, 'Solve the whole chapter');
   all.addEventListener('click', () => solve());
   buttons.append(all);
+
+  const stageButtons = h('div', { class: 'row' });
+  if (sel.target === 'level') {
+    const playAll = h('button', { type: 'button', class: 'btn' }, '▶ Play solution on stage');
+    playAll.addEventListener('click', () => void env.preview.runAll());
+    const stepOne = h('button', { type: 'button', class: 'btn' }, '⏭ Step solution command');
+    stepOne.addEventListener('click', () => void env.preview.stepOnce());
+    stageButtons.append(playAll, stepOne);
+  }
+
   const shown = sel.target === 'level' ? env.issues.filter((i) => i.where === sel.levelId || i.where === 'chapter') : env.issues;
-  return h('div', {}, h('h4', {}, `Static checks (${shown.length})`), issueList(env, shown, true), h('h4', {}, 'Headless playthrough'), note('Types the canonical solution under enemy tick pressure, on the unsaved draft.', 'note dim'), buttons, out);
+  return h(
+    'div',
+    {},
+    h('h4', {}, `Static checks (${shown.length})`),
+    issueList(env, shown, true),
+    h('h4', {}, 'Headless playthrough'),
+    note('Types the canonical solution under enemy tick pressure, on the unsaved draft.', 'note dim'),
+    buttons,
+    ...(sel.target === 'level' ? [h('h4', {}, 'Stage walkthrough'), stageButtons] : []),
+    out,
+  );
 }
 
 export function renderPane(env: Env, sel: Sel): HTMLElement {

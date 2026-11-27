@@ -81,7 +81,8 @@ export function isLocked(stage: ComicStage, a: StageActor, lockedLabels?: Set<st
 }
 
 export function doorLocked(a: StageActor, lockedLabels: Set<string>): boolean {
-  if (a.kind !== 'door') return false;
+  if (a.kind !== 'door' && a.modelId !== 'door.socket') return false;
+  if (typeof a.viewLocked === 'boolean') return a.viewLocked;
   const label = (a.label ?? '').toLowerCase();
   if (label.includes('[locked]') || label.includes('(sealed)') || a.viewState === 'petrified') return true;
   const target = normName(a.target ?? '');

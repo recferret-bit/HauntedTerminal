@@ -5,7 +5,7 @@ import type { LabConfig } from '../chapters/session-lab-types.js';
 import type { ExecRecord } from '../contracts/exec-record.js';
 import type { KernelEvent } from '../contracts/events.js';
 import type { Session } from '../game/session.js';
-import type { GameSnapshot, TickResult } from '../game/types.js';
+import type { GameSnapshot, TickResult, TutorialState } from '../game/types.js';
 import type { ComicStage } from '../renderer/comic-stage.js';
 import type { ChapterMapDialog } from '../ui/chapter-map.js';
 import type { CodeEditor } from '../ui/code-editor.js';
@@ -144,6 +144,14 @@ export class Play {
   terminalLab: LabConfig | null = null;
   /** A chapter editor preview (`?draft=1` or `?preview=1`): it records nothing, not even the terminal skin. */
   preview = false;
+  /** True when mounted inside Chapter Editor Stage Studio (`?editor=1`): stage-only, no terminal dock, pointer selection/drag enabled. */
+  editorMode = false;
+  /** Pauses enemy ticks & turn clock in Stage Studio while keeping animations/dialogs responsive. */
+  aiPaused = false;
+  /** Invoked at the end of `paint()` so Stage Studio keeps gizmo bounds and room state synced. */
+  onPaint: ((snap: GameSnapshot) => void) | null = null;
+  /** Previewed tutorial step card in Stage Studio (`playBeat` / `Script` play) preserved across `paint()`. */
+  previewTutorialOverride: TutorialState | null = null;
   /** The terminal skin on screen (spec .kiro/specs/terminal-skins/). */
   skin: TerminalSkinId = DEFAULT_SKIN;
   /** Lab games only: the newest lines the terminal ran with what the session answered (capped), and how many ran in all. */

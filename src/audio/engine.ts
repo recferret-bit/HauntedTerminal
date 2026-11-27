@@ -1,6 +1,7 @@
 import { playBed, type BedHandle } from './bed-loop.js';
 import { musicAsset, musicLoops, sampleUrl, type MusicId, type SfxId } from './catalog.js';
 import {
+  CROSSFADE_LOOPS,
   KEY_GAINS,
   KEY_RATES,
   KEY_VARIANTS,
@@ -150,10 +151,31 @@ function stopVoice(ctx: AudioContext, voice: VoiceSlot | null | undefined, fadeS
 }
 
 interface LoopEntry {
-  node: AudioBufferSourceNode;
+  node?: AudioBufferSourceNode;
+  bed?: BedHandle;
   buffer: AudioBuffer;
   startedAt: number;
   pos: number;
+}
+
+function stopLoopEntry(entry: LoopEntry | undefined): void {
+  stopAt(entry?.node);
+  entry?.bed?.stop();
+}
+
+function startCrossfadedLoop(
+  ctx: AudioContext,
+  master: GainNode,
+  buffer: AudioBuffer,
+  gain: number,
+  offset: number,
+  still: () => boolean,
+): LoopEntry {
+  const amp = ctx.createGain();
+  amp.gain.value = gain;
+  amp.connect(master);
+  const bed = playBed({ ctx, dest: amp, bed: buffer, intro: null, startPos: offset, looping: true, still });
+  return { bed, buffer, startedAt: ctx.currentTime, pos: offset };
 }
 
 interface Slots {
@@ -218,6 +240,11 @@ function makeSlots(
         return;
       }
       const offset = buffer.duration > 0 ? (loopPos.get(id) ?? 0) % buffer.duration : 0;
+      if (CROSSFADE_LOOPS.has(id as SfxId)) {
+        const entry = startCrossfadedLoop(ctx, master, buffer, gain, offset, () => alive() && !held && loopOn.has(id));
+        loops.set(id, entry);
+        return;
+      }
       const { node } = spawnVoice(ctx, master, buffer, gain, true, offset);
       loops.set(id, { node, buffer, startedAt: ctx.currentTime, pos: offset });
     });
@@ -259,7 +286,7 @@ function makeSlots(
       if (!on) {
         loopOn.delete(id);
         loopPos.delete(id);
-        stopAt(loops.get(id)?.node);
+        stopLoopEntry(loops.get(id));
         loops.delete(id);
         return;
       }
@@ -275,7 +302,7 @@ function makeSlots(
           const dur = entry.buffer.duration || 0;
           const raw = entry.pos + Math.max(0, ctx.currentTime - entry.startedAt);
           loopPos.set(id, dur > 0 ? raw % dur : 0);
-          stopAt(entry.node);
+          stopLoopEntry(entry);
         }
         loops.clear();
         return;
@@ -287,7 +314,7 @@ function makeSlots(
       variantSteps.clear();
       loopOn.clear();
       loopPos.clear();
-      for (const entry of loops.values()) stopAt(entry.node);
+      for (const entry of loops.values()) stopLoopEntry(entry);
       loops.clear();
       for (let i = 0; i < voices.length; i += 1) {
         stopVoice(ctx, voices[i]);
