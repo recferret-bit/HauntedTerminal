@@ -6,7 +6,7 @@ import { setRest } from './stage-actor.js';
 import { clearBubble, playCues, playFx, say } from './stage-fx.js';
 import { claim, flashActor, heroAction, heroFlinch, hopInPlace, owns, playEntrance, playHand, playSpawn, release } from './stage-motion.js';
 import { heroEmote } from './stage-emote.js';
-import { itemCarried, itemGiven } from './stage-carry.js';
+import { actorFlyTo, itemCarried, itemGiven } from './stage-carry.js';
 import { anchorPoint, findByKey, firstOfKind } from './stage-resolve.js';
 import { syncOverlays } from './stage-sync.js';
 import { stepped } from './tween.js';
@@ -55,6 +55,9 @@ export function handleCastEvent(stage: ComicStage, ev: KernelEvent, subject: Sta
       return true;
     case 'ITEM_GIVEN':
       itemGiven(stage, ev);
+      return true;
+    case 'ACTOR_FLY_TO':
+      actorFlyTo(stage, ev);
       return true;
     default:
       return false;
@@ -130,6 +133,7 @@ function onKiroAction(stage: ComicStage, ev: Extract<KernelEvent, { type: 'KIRO_
   else if (ev.action === 'load') kiroLoad(stage, ev, kiro);
   else if (ev.action === 'crack_start' || ev.action === 'crack_step') kiroCrack(stage, ev, kiro);
   else if (ev.action === 'crack_done') kiroCrackDone(stage, ev, kiro);
+  else kiroEmpower(stage, ev, kiro);
 }
 
 function kiroScan(stage: ComicStage, ev: Extract<KernelEvent, { type: 'KIRO_ACTION' }>, kiro: StageActor | undefined): void {
@@ -162,6 +166,19 @@ function kiroLoad(stage: ComicStage, ev: Extract<KernelEvent, { type: 'KIRO_ACTI
   if (kiro && !kiro.disposed) {
     hopInPlace(stage, kiro, 0.16, 280);
     flashActor(stage, kiro, 0x4cc9f0, 240, 0);
+  }
+}
+
+/** The Tensor GPU ritual's magic: a casting swirl on Kiro, a materialize burst, a gold flash and a hop. */
+function kiroEmpower(stage: ComicStage, ev: Extract<KernelEvent, { type: 'KIRO_ACTION' }>, kiro: StageActor | undefined): void {
+  stage.light.ping(2);
+  const at = kiro && !kiro.disposed ? actorSocket(kiro, 'fx') : anchorPoint(stage, 'panel', null);
+  playFx(stage, 'fx.matrix-cast', at, { noShake: true }, 'kiro-empower');
+  playFx(stage, 'fx.touch-materialize', at, { noShake: true, scale: 1.2 }, 'kiro-empower-2');
+  say(stage, ev.message, at, '#ffd166', 1.1);
+  if (kiro && !kiro.disposed) {
+    hopInPlace(stage, kiro, 0.24, 360);
+    flashActor(stage, kiro, 0xffd166, 420, 0);
   }
 }
 
