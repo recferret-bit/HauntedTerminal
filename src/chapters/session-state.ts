@@ -191,6 +191,8 @@ export interface ChapterState {
   /** The lab session's config, or null in the game. */
   readonly lab: LabConfig | null;
   levelIdx: number;
+  /** The highest level index this session has loaded (-1 before the first load): a map deploy to a level at or below it keeps the run. */
+  reachedIdx: number;
   lastCmdStartedCrack: boolean;
   hp: number;
   ram: number;
