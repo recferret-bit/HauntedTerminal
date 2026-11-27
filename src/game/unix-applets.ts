@@ -79,6 +79,8 @@ export interface GrepSpec {
   numbers: boolean;
   pattern: string;
   files: string[];
+  /** `-r`: search directories recursively; every hit is named by its path. */
+  recursive?: boolean;
 }
 
 export function parseGrepArgs(args: string[]): GrepSpec | { error: string } {
@@ -87,6 +89,7 @@ export function parseGrepArgs(args: string[]): GrepSpec | { error: string } {
   let ignoreCase = false;
   let invert = false;
   let numbers = false;
+  let recursive = false;
   const positional: string[] = [];
   for (const arg of args) {
     if (arg.startsWith('-') && arg !== '-' && !arg.startsWith('--') && positional.length === 0) {
@@ -95,15 +98,16 @@ export function parseGrepArgs(args: string[]): GrepSpec | { error: string } {
       if (arg.includes('i')) ignoreCase = true;
       if (arg.includes('v')) invert = true;
       if (arg.includes('n')) numbers = true;
+      if (arg.includes('r') || arg.includes('R')) recursive = true;
     } else {
       positional.push(arg);
     }
   }
   const pattern = positional[0];
   if (pattern === undefined || pattern === '') {
-    return { error: 'usage: grep [-hcivn] <pattern> [file...]\n' };
+    return { error: 'usage: grep [-hcivnr] <pattern> [file...]\n' };
   }
-  return { hide, count, ignoreCase, invert, numbers, pattern, files: positional.slice(1) };
+  return { hide, count, ignoreCase, invert, numbers, pattern, files: positional.slice(1), recursive };
 }
 
 export function compileGrepRegex(pattern: string, ignoreCase: boolean): RegExp {
@@ -126,7 +130,7 @@ export function runGrepSources(
       if (rx.test(line) !== spec.invert) hits.push({ name: source.name, line, n: index + 1 });
     });
   }
-  const named = !spec.hide && spec.files.length > 1;
+  const named = !spec.hide && (spec.recursive === true || spec.files.length > 1);
   if (spec.count) {
     const body = named
       ? sources.map((source) => `${source.name}:${hits.filter((h) => h.name === source.name).length}`).join('\n')

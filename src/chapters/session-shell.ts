@@ -8,11 +8,13 @@ import { helpText, manPage, manualTopics, mapTopics, runMan, runManual, runMap }
 import type { Step, Word } from '../game/shell.js';
 import { absPath, resolve } from '../game/tree.js';
 import { runLn, runReadlink } from '../game/tree-links.js';
+import { treeWantsHidden, TREE_FLAGS_LOCKED_MESSAGE } from '../game/search-applets.js';
 import { finishTabCompletion, hasLsFlags, LS_FLAGS_LOCKED_MESSAGE, reverseLines } from '../game/unix-applets.js';
 import { CHAPTER_COMMANDS, emptyStep, globToRegExp, okStep, type ChapterState } from './session-state.js';
 import { cmdDocker, cmdEdit, cmdExit, cmdSed, cmdSource } from './session-code.js';
 import { cmdCat, cmdCd, cmdChmod, cmdCp, cmdCut, cmdFind, cmdGrep, cmdHeadTail, cmdLs, cmdMkdir, cmdMv, cmdRm, cmdTouch, cmdWc } from './session-fs.js';
 import { cmdKiro } from './session-kiro.js';
+import { cmdTree } from './session-search.js';
 import { applySkipTutorial, isNodeHidden, lockMessage, tutorialState } from './script.js';
 import { cmdAchievements, cmdBestiary, cmdGrimoire, cmdHank, cmdStatus, cmdWorkshop } from './session-meta.js';
 import { cmdKill, cmdPkill, cmdPs } from './session-proc.js';
@@ -138,9 +140,10 @@ export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
       g.commandCue = 'locked';
       return emptyStep(1, locked.replace(/\n?$/, '\n'));
     }
-    if (!g.lab && first === 'ls' && !hasItem(g.inventory, 'tube_transistor') && hasLsFlags(argv.slice(1))) {
+    const wantsHidden = first === 'ls' ? hasLsFlags(argv.slice(1)) : first === 'tree' && treeWantsHidden(argv.slice(1));
+    if (!g.lab && wantsHidden && !hasItem(g.inventory, 'tube_transistor')) {
       g.commandCue = 'locked';
-      return emptyStep(1, LS_FLAGS_LOCKED_MESSAGE);
+      return emptyStep(1, first === 'ls' ? LS_FLAGS_LOCKED_MESSAGE : TREE_FLAGS_LOCKED_MESSAGE);
     }
     const step = dispatchCommand(g, argv, stdin);
     if (step.code === 0 && canonical && canonical !== 'ls' && !g.reloadedNow) {
@@ -245,6 +248,7 @@ export const CHAPTER_HANDLERS: Readonly<Record<string, ChapterHandler>> = {
   cut: cmdCut,
   rev: dispatchRev,
   find: cmdFind,
+  tree: cmdTree,
   readlink: (g, args) => runReadlink(g.rt.cwd, g.rt.root, args, (node) => isNodeHidden(g, node)),
   ln: (g, args) => runLn(g.rt.cwd, args),
   echo: (_g, args) => okStep(`${args.join(' ')}\n`),

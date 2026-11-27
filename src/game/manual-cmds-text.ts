@@ -8,7 +8,7 @@ export const MANUAL_TEXT_AND_PROCS: readonly ManualCommandEntry[] = [
     categoryLabel: 'Text & Search',
     filters: ['beginner', 'flags-numbers', 'text'],
     availability: 'both',
-    syntax: 'grep [-i] [-v] [-c] [-n] [-h] <pattern> [file...]',
+    syntax: 'grep [-i] [-v] [-c] [-n] [-h] [-r] <pattern> [file...]',
     summary: 'Filter lines matching a regular expression or text pattern from files or piped stdin.',
     realWorld:
       'Global Regular Expression Print. Scans line by line and emits lines matching `<pattern>`. Supports combining short flags like `-iv` or `-hc`.',
@@ -19,6 +19,7 @@ export const MANUAL_TEXT_AND_PROCS: readonly ManualCommandEntry[] = [
       { flag: '-v', kind: 'flag', meaning: 'Invert match — print lines that do NOT contain `<pattern>`', detail: 'Great for stripping noise/comments (`grep -v "^#"`).', example: 'grep -v DEBUG app.log' },
       { flag: '-c', kind: 'flag', meaning: 'Count only — print number of matching lines instead of text', detail: 'Replaces piping into `wc -l` for a single file.', example: 'grep -c FATAL app.log' },
       { flag: '-n', kind: 'flag', meaning: 'Prefix matching lines with 1-based line numbers (classic)', detail: 'Helps locate the exact line before editing.', example: 'grep -n BUG prod.py' },
+      { flag: '-r', kind: 'flag', meaning: 'Search every readable file below a directory (dot files too); hits are named by path', detail: 'With no path it searches the current room. Handy to find a word hidden deep in a big folder structure.', example: 'grep -r vram .' },
       { flag: '-h', kind: 'flag', meaning: 'Hide filenames when searching multiple files (classic)', detail: 'Prevents `file1.log:` prefixes before piping.', example: 'grep -h FATAL logs/*.log' },
     ],
     pitfalls: [

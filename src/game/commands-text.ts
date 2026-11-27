@@ -4,13 +4,15 @@ import { readSocket } from './puzzle.js';
 import { bump, denied, push, target } from './runtime.js';
 import { empty, out, type Play } from './play.js';
 import type { Step } from './shell.js';
-import { absPath, hasWrite, resolve } from './tree.js';
+import { formatTree, parseTreeArgs, recursiveGrepSources, type SearchWalk } from './search-applets.js';
+import { absPath, hasExec, hasWrite, resolve } from './tree.js';
 import {
   SED_EMPTY_PATTERN,
   applyCutText,
   compileSedScript,
   emptySedPattern,
   formatWc,
+  type GrepSpec,
   parseCutArgs,
   parseGrepArgs,
   parseHeadTailArgs,
@@ -89,9 +91,18 @@ function textFrom(g: Play, args: string[], stdin: string, applet: string): { tex
   return { text };
 }
 
+/** The result of a grep over `sources`: exit 0 on a hit, 1 on none, 2 when a path was missing too. */
+function grepStep(sources: Array<{ name: string; text: string }>, spec: GrepSpec, stderr: string): Step {
+  const { stdout, hits } = runGrepSources(sources, spec);
+  if (spec.count) return { stdout, stderr, code: hits ? 0 : 1, events: [] };
+  if (hits === 0) return { stdout: '', stderr, code: stderr ? 2 : 1, events: [] };
+  return { stdout, stderr, code: 0, events: [] };
+}
+
 export function cmdGrep(g: Play, args: string[], stdin: string): Step {
   const spec = parseGrepArgs(args);
   if ('error' in spec) return empty(2, spec.error);
+  if (spec.recursive) return grepRecursive(g, spec);
   const sources: Array<{ name: string; text: string }> = [];
   let stderr = '';
   if (spec.files.length === 0) sources.push({ name: '', text: stdin });
@@ -115,10 +126,7 @@ export function cmdGrep(g: Play, args: string[], stdin: string): Step {
       sources.push({ name: file, text: node.content });
     }
   }
-  const { stdout, hits } = runGrepSources(sources, spec);
-  if (spec.count) return { stdout, stderr, code: hits ? 0 : 1, events: [] };
-  if (hits === 0) return { stdout: '', stderr, code: stderr ? 2 : 1, events: [] };
-  return { stdout, stderr, code: 0, events: [] };
+  return grepStep(sources, spec, stderr);
 }
 
 export function cmdWc(g: Play, args: string[], stdin: string): Step {
@@ -175,4 +183,35 @@ export function cmdHeadTail(g: Play, args: string[], stdin: string, head: boolea
   const got = textFrom(g, spec.files, stdin, cmd);
   if (got.error) return empty(1, got.error);
   return out(sliceHeadTail(got.text, cmd, spec.n));
+}
+
+/** What `tree` and `grep -r` may see in a classic floor: rooms with `+x` and files with `+r`. */
+const CLASSIC_WALK: SearchWalk = {
+  canEnter: (node) => hasExec(node),
+  canRead: (node) => node.kind === 'file' && (node.mode & 0o444) !== 0,
+  hidden: () => false,
+};
+
+/** `tree [-a] [-L n] [dir]`: the folder structure at a glance (`-a` is gated like `ls -a` by the shell). */
+export function cmdTree(g: Play, args: string[]): Step {
+  const spec = parseTreeArgs(args);
+  if ('error' in spec) return empty(1, spec.error);
+  const found = resolve(g.run.cwd, spec.path, false);
+  if (!found.node) return empty(1, `tree: ${spec.path}: No such file or directory\n`);
+  return out(formatTree(found.node, spec.path, spec, CLASSIC_WALK));
+}
+
+/** `grep -r PATTERN [path...]`: every readable file below each path, hits named by path. */
+function grepRecursive(g: Play, spec: GrepSpec): Step {
+  const sources: Array<{ name: string; text: string }> = [];
+  let stderr = '';
+  for (const path of spec.files.length > 0 ? spec.files : ['.']) {
+    const node = resolve(g.run.cwd, path, false).node;
+    if (!node) {
+      stderr += `grep: ${path}: No such file or directory\n`;
+      continue;
+    }
+    for (const hit of recursiveGrepSources(node, path, CLASSIC_WALK)) sources.push({ name: hit.name, text: hit.node.content });
+  }
+  return grepStep(sources, spec, stderr);
 }

@@ -5,7 +5,7 @@ import { empty, out } from './play.js';
 import type { Step } from './shell.js';
 
 export const COMMANDS = [
-  'pwd', 'ls', 'cd', 'cat', 'readlink', 'find', 'touch', 'rm', 'mv', 'cp', 'chmod', 'ln',
+  'pwd', 'ls', 'cd', 'cat', 'readlink', 'find', 'tree', 'touch', 'rm', 'mv', 'cp', 'chmod', 'ln',
   'echo', 'grep', 'wc', 'cut', 'rev', 'sed', 'head', 'tail', 'ps', 'top', 'kill', 'pkill',
   'source', '.', 'kiro', 'kiro.d', 'help', 'man', 'manual', 'map', 'status', 'whoami', 'tutorial', 'clear', 'exit', 'logout',
   'inventory', 'inv', 'hold', 'restart-level', 'retry', 'skin',
@@ -14,10 +14,10 @@ export const COMMANDS = [
 export function helpText(hint: string): string {
   return [
     '\x1b[1;93mOUT OF CREDITS\x1b[0m: every command is a step or a swing.',
-    '  look   pwd  ls [-a -l]  cat  readlink  find [-name -type]  ps [aux]  top  status',
+    '  look   pwd  ls [-a -l]  tree [-a -L n]  cat  readlink  find [-name -type]  ps [aux]  top  status',
     '  move   cd <dir>  cd ..  cd ../../..  cd -',
     '  files  touch  rm [-r -f]  mv  cp  chmod  ln -s  echo',
-    '  text   grep [-h -c -i -v -n]  wc [-l]  cut -d -f  rev  sed [-i]  head  tail [-n]',
+    '  text   grep [-h -c -i -v -n -r]  wc [-l]  cut -d -f  rev  sed [-i]  head  tail [-n]',
     '  fight  kill [-9 -15 -STOP -CONT] <pid>  pkill <name>     (ps shows the PIDs)',
     '  loot   source <file>  or  . <file>   (*.cell heal, *.dimm RAM, *.img SSD backup)',
     '  ghost  kiro [scan | load <qwen|mistral|deepseek|llama> | crack <lock>]   cat <file> | kiro',
@@ -54,6 +54,7 @@ const MAN: Record<string, string[]> = {
   ],
   readlink: ['readlink <link>: where a symlink really points. Mirrors that point at themselves are traps.'],
   find: ['find [dir] [-name "<pattern>"] [-type f|d]: search a subtree. Patterns take * and ?.'],
+  tree: ['tree [-a] [-L n] [dir]: draw the folders below a room. -a shows dot files (needs the Tube Transistor), -L n stops n levels down.'],
   touch: ['touch <file>...: create empty files (a rune, a fuse, a .power_on).'],
   rm: [
     'rm [-f] [-r] <path>...: delete. -r for rooms, -f to ignore what is missing.',

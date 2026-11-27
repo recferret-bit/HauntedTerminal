@@ -24,6 +24,7 @@ import { levelBannerText, loadLevel } from './session-level.js';
 import { cmdHank } from './session-meta.js';
 import { allWinRulesMet, refreshExitGates, sinkIntoNull, unfinishedObjectives } from './session-rules.js';
 import { riddleRead } from './session-riddle.js';
+import { cmdGrepRecursive } from './session-search.js';
 
 /** One `ls -l` row: mode, owner, size, name and a kind suffix (`/` dir, `=` socket, `-> target` symlink). */
 function longRow(c: VNode): string {
@@ -222,7 +223,8 @@ export function cmdHeadTail(g: ChapterState, cmd: 'head' | 'tail', args: string[
 
 export function cmdGrep(g: ChapterState, args: string[], stdin: string): Step {
     const spec = parseGrepArgs(args);
-    if ('error' in spec) return emptyStep(2, 'usage: grep [-ivc] PATTERN [FILE...]\n');
+    if ('error' in spec) return emptyStep(2, 'usage: grep [-ivcr] PATTERN [FILE...]\n');
+    if (spec.recursive) return cmdGrepRecursive(g, spec);
 
     let haystack = stdin;
     if (spec.files.length > 0) {

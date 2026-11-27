@@ -3,7 +3,7 @@ import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import { cmdChmod, cmdCp, cmdLn, cmdMv, cmdRm, cmdTouch, redirect } from './commands-fs.js';
 import { cmdCd, cmdFind, cmdLs, cmdReadlink } from './commands-move.js';
 import { cmdKill, cmdPkill, cmdPs, cmdSource, runSkin } from './commands-proc.js';
-import { cmdCat, cmdCut, cmdEcho, cmdGrep, cmdHeadTail, cmdRev, cmdSed, cmdWc } from './commands-text.js';
+import { cmdCat, cmdCut, cmdEcho, cmdGrep, cmdHeadTail, cmdRev, cmdSed, cmdTree, cmdWc } from './commands-text.js';
 import { hasItem, runInventory } from './inventory.js';
 import { helpText, runMan, runManual, runMap } from './manual.js';
 import { empty, out, type Play } from './play.js';
@@ -11,6 +11,7 @@ import { cmdKiro, statusText } from './puzzle.js';
 import { bump, causeOf, elapsedSec, noteAction, portal, push, rank } from './runtime.js';
 import type { Step } from './shell.js';
 import { absPath, resolve } from './tree.js';
+import { treeWantsHidden, TREE_FLAGS_LOCKED_MESSAGE } from './search-applets.js';
 import { hasLsFlags, LS_FLAGS_LOCKED_MESSAGE } from './unix-applets.js';
 
 export interface ClassicShellHost extends Play {
@@ -47,6 +48,10 @@ const CLASSIC_HANDLERS: Record<string, ClassicHandler> = {
       return empty(1, LS_FLAGS_LOCKED_MESSAGE);
     }
     return cmdLs(g, args);
+  },
+  tree: (g, args) => {
+    if (!g.lab && !hasItem(g.run.inventory, 'tube_transistor') && treeWantsHidden(args)) return empty(1, TREE_FLAGS_LOCKED_MESSAGE);
+    return cmdTree(g, args);
   },
   cd: (g, args) => cmdCd(g, args[0]),
   cat: (g, args, stdin) => cmdCat(g, args, stdin),
