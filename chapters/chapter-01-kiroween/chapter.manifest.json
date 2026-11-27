@@ -311,6 +311,23 @@
           "holdSec": 6
         }
       ]
+    },
+    {
+      "pickup": "vram_module",
+      "steps": [
+        {
+          "kind": "dialog_box",
+          "speaker": "kiro",
+          "text": "A VRAM module! Each one is a spare charge for my skills: kiro heal with a qwen core, kiro hint with a deepseek core. The chip under your health bar counts them!",
+          "holdSec": 8
+        },
+        {
+          "kind": "dialog_box",
+          "speaker": "vibecoder",
+          "text": "Spare charges, hidden in piles of folders. Got it: I am searching every archive from now on!",
+          "holdSec": 6
+        }
+      ]
     }
   ]
 }

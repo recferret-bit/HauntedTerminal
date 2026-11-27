@@ -140,7 +140,7 @@ await withProcgen(async (_p, vite) => {
   assert.ok(arrival.events.some((e) => e.type === 'VIBECODER_EMOTE' && e.emote === 'shock'));
   assert.equal(arrival.snapshot.room.dark, true, 'Without the lantern the room is dark');
   assert.equal(arrival.snapshot.openingDialog, true, 'Level 1 opens with openingDialog gate active until Vibecoder + Kiro finish talking');
-  assert.deepEqual(arrival.snapshot.inventory, { items: [], held: null }, 'He starts empty-handed (no manual, map, lantern, or terminal)');
+  assert.deepEqual(arrival.snapshot.inventory, { items: [], held: null, vram: 0 }, 'He starts empty-handed (no manual, map, lantern, or terminal)');
   const isBox = (e, speaker) => e.type === 'DIALOG_BOX' && e.speaker === speaker;
   const timeline = [];
   const kiroSeen = [];
@@ -223,7 +223,7 @@ await withProcgen(async (_p, vite) => {
   // Level 2 opening dialog -> Big Four taunt -> turn-based battle start, visible gargoyle enemy, Tube Transistor drops on ground after petrification, SSD replaces tensor image!
   const l2 = createChapterSession({ chapterId: 'chapter-01-kiroween', startLevelId: 'level-02-task-ram-heist' });
   const l2Arrival = l2.arriveLevel();
-  assert.deepEqual(l2Arrival.snapshot.inventory, { items: ['terminal'], held: 'terminal' }, 'Level 2 opens carrying only the terminal');
+  assert.deepEqual(l2Arrival.snapshot.inventory, { items: ['terminal'], held: 'terminal', vram: 0 }, 'Level 2 opens carrying only the terminal');
   assert.equal(l2Arrival.snapshot.openingDialog, true, 'Level 2 holds terminal & battle until Vibecoder + Kiro finish talking');
   assert.equal(l2Arrival.snapshot.battle, null, 'Battle does NOT begin before opening dialog finishes');
   assert.ok(
@@ -276,7 +276,7 @@ await withProcgen(async (_p, vite) => {
   // Level 3 opens with the Tube Transistor, `ls -la` & `ls` flags unlocked, ALL 3 enemies hidden until `ls -la` + `.transistor_rune` riddle!
   const l3 = createChapterSession({ chapterId: 'chapter-01-kiroween', startLevelId: 'level-03-task-gpu-salvage' });
   const l3Arrival = l3.arriveLevel();
-  assert.deepEqual(l3Arrival.snapshot.inventory, { items: ['terminal', 'tube_transistor'], held: 'tube_transistor' }, 'Level 3 opens holding the Tube Transistor');
+  assert.deepEqual(l3Arrival.snapshot.inventory, { items: ['terminal', 'tube_transistor'], held: 'tube_transistor', vram: 0 }, 'Level 3 opens holding the Tube Transistor');
   assert.equal(l3Arrival.snapshot.room.dark, false, 'Level 3 is lit by the Tube Transistor');
   const l3HiddenBefore = l3Arrival.snapshot.room.actors.filter((a) => a.kind === 'enemy');
   assert.ok(l3HiddenBefore.length >= 3 && l3HiddenBefore.every((a) => a.state === 'hidden' && (a.alpha ?? 1) < 0.1), 'All 3 enemies on Level 3 start hidden until ls -la');
