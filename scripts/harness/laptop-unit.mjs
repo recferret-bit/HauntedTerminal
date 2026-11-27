@@ -283,7 +283,7 @@ await withProcgen(async (_p, vite) => {
   // ---- the game inventory ----
   await test('the inventory starts with the tube transistor and terminal (no manual or map by default) and holds only what it has', () => {
     const start = inv.starterInventory();
-    assert.deepEqual(start, { items: ['tube_transistor', 'terminal'], held: 'tube_transistor' });
+    assert.deepEqual(start, { items: ['tube_transistor', 'terminal'], held: 'tube_transistor', vram: 0, taken: [] });
     assert.equal(inv.holdItem(start, 'manual'), start);
     assert.equal(inv.holdItem(start, 'map'), start);
     assert.equal(inv.holdItem(start, 'laptop'), start);
