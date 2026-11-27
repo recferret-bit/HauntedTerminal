@@ -849,6 +849,7 @@ await withProcgen(async (_procgen, vite) => {
     const cast = await load('/src/renderer/stage-cast.ts');
     const eventFx = await load('/src/renderer/event-fx.ts');
     const eventCast = await load('/src/renderer/stage-event-cast.ts');
+    const levelTrans = await load('/src/renderer/stage-level-transition.ts');
     const fxMod = await load('/src/renderer/fx-player.ts');
     const { createChapterSession } = await load('/src/chapters/chapter-session.ts');
     const cat = await load('/src/chapters/generated/catalog-data.ts');
@@ -889,6 +890,52 @@ await withProcgen(async (_procgen, vite) => {
     assert.equal(room.actors.find((a) => a.id === 'door:gate')?.portRole, 'exit');
     assert.equal(room.actors.find((a) => a.id === 'door:vault')?.portRole, 'sub');
     assert.equal(room.actors.find((a) => a.id === 'file:note.txt')?.portRole, undefined);
+
+    const doorStage = {
+      panelLeft: 4.9,
+      panelRight: -1.15,
+      room: { model: { group: new THREE.Group(), sockets: { 'door.right': [-0.75, 0, 0], 'door.left': [3.75, 0, 0] } } },
+      actors: new Map([
+        ['door:sub', { key: 'gate', id: 'door:sub', kind: 'door', modelId: 'door.ethernet', portRole: 'sub', roomSocket: 'door.right', exiting: false, disposed: false, home: new THREE.Vector3(-0.9, 0, 0) }],
+        ['door:exit', { key: 'dir', id: 'door:exit', kind: 'door', modelId: 'door.usb', portRole: 'exit', exiting: false, disposed: false, home: new THREE.Vector3(1.2, 0, 0) }],
+        ['door:entry', { key: 'entry', id: 'door:entry', kind: 'door', modelId: 'door.serial', exiting: false, disposed: false, home: new THREE.Vector3(4.1, 0, 0) }],
+        ['door:real-entry', { key: 'dir', id: 'door:real-entry', kind: 'door', modelId: 'door.hdmi', portRole: 'entry', exiting: false, disposed: false, home: new THREE.Vector3(3.4, 0, 0) }],
+      ]),
+    };
+    assert.equal(levelTrans.findExitDoorX(doorStage), 1.2);
+    assert.equal(levelTrans.findEntryDoorX(doorStage), 3.4);
+    doorStage.actors.get('door:exit').exiting = true;
+    assert.equal(levelTrans.findExitDoorX(doorStage), -0.9);
+    doorStage.actors.get('door:real-entry').disposed = true;
+    assert.equal(levelTrans.findEntryDoorX(doorStage), 4.1);
+    doorStage.actors.clear();
+    assert.equal(levelTrans.findExitDoorX(doorStage), -0.75);
+    assert.equal(levelTrans.findEntryDoorX(doorStage), 3.75);
+    doorStage.room = null;
+    assert.equal(levelTrans.findExitDoorX(doorStage), -1.15 + 0.65);
+    assert.equal(levelTrans.findEntryDoorX(doorStage), 4.9 - 0.65);
+
+    const roomWithZeroEnt = viewMod.buildRoom({
+      floor: 1, cwd: '/srv/test', lantern: false, dark: false, entryDoor: true, held: null,
+      hp: 100, maxHp: 100, xray: false, flood: 0, things: [], exits: {},
+      entities: [{ id: 'zero-e', kind: 'npc', label: 'Zero', model: 'npc.kiro_ghost', x: 0.5, zOrder: 0, rotation: 0 }],
+      ghost: false, mimic: false, gateOpen: true, plankBridged: true, gargoyle: 'gone',
+      zombies: 0, bossDead: false, bossFrozen: false, phase1: false, portal: false,
+      powerOn: false, valveOpen: false, hostiles: 0,
+    });
+    const zeroEntActor = roomWithZeroEnt.actors.find((a) => a.id === 'zero-e');
+    assert.equal(zeroEntActor?.zOrder, 0);
+    assert.equal(zeroEntActor?.rotation, 0);
+
+    const mirroredHero = cast.buildStageActor({
+      key: 'vibecoder', id: 'vibecoder', model: 'vibecoder.dev', kind: 'vibecoder', x: 0, scale: [-1, 1, 1],
+    }, 1);
+    assert.equal(mirroredHero.body.scale.x, -1);
+    cast.applyActorTransform(mirroredHero, {
+      key: 'vibecoder', id: 'vibecoder', model: 'vibecoder.dev', kind: 'vibecoder', x: 0, scale: [1, 1, 1],
+    });
+    assert.equal(mirroredHero.body.scale.x, 1);
+    cast.disposeStageActor(mirroredHero);
 
     const defTrans = cast.buildStageActor({
       key: 'entity',

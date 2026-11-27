@@ -329,6 +329,15 @@ try {
     assert.deepEqual([ok.isError, ok.body.ok], [false, true]);
     const chFile = await call('get_chapter_file', { chapter: SLUG, path: 'chapter.manifest.json' });
     assert.equal(chFile.isError, false);
+    const audioAssets = await call('list_assets', { kind: 'audio' });
+    assert.equal(audioAssets.isError, false);
+    assert.ok(Array.isArray(audioAssets.body.audio?.sfx) && audioAssets.body.audio.sfx.includes('door_usb'));
+    assert.ok(Array.isArray(audioAssets.body.audio?.music) && audioAssets.body.audio.music.length > 0);
+    assert.equal(audioAssets.body.models, undefined);
+    const allAssets = await call('list_assets', { kind: 'all' });
+    assert.equal(allAssets.isError, false);
+    assert.ok(Array.isArray(allAssets.body.models) && Array.isArray(allAssets.body.rooms) && Array.isArray(allAssets.body.fx));
+    assert.deepEqual(allAssets.body.audio, audioAssets.body.audio);
     const cmx = await call('validate_comix', { comix: COMIX });
     assert.deepEqual([cmx.isError, cmx.body.ok], [false, true]);
     const lab = await call('run_lab', { id: LAB });
@@ -343,6 +352,8 @@ try {
   await test('server: bad input is rejected before the tool runs (schema)', async () => {
     const res = await client.callTool({ name: 'write_level', arguments: { chapter: SLUG, levelId: LEVEL } }).catch((e) => ({ isError: true, thrown: e }));
     assert.equal(res.isError, true);
+    const badKind = await client.callTool({ name: 'list_assets', arguments: { kind: 'bogus' } }).catch((e) => ({ isError: true, thrown: e }));
+    assert.equal(badKind.isError, true);
   });
 } finally {
   await client.close().catch(() => {});

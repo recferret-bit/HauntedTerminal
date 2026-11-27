@@ -132,7 +132,7 @@ export function isLevelTransitionPhase(stage: ComicStage, phase: LevelTransition
   return stateOf(stage).machine.state === phase;
 }
 
-function findExitDoorX(stage: ComicStage): number {
+export function findExitDoorX(stage: ComicStage): number {
   let portX: number | null = null;
   let bestX: number | null = null;
   for (const a of stage.actors.values()) {
@@ -149,7 +149,7 @@ function findExitDoorX(stage: ComicStage): number {
   return portX ?? bestX ?? roomSocket(stage, 'door.right')?.x ?? (stage.panelRight + 0.65);
 }
 
-function findEntryDoorX(stage: ComicStage): number {
+export function findEntryDoorX(stage: ComicStage): number {
   for (const a of stage.actors.values()) {
     if (!a.disposed && a.kind === 'door' && a.portRole === 'entry') return a.home.x;
   }
