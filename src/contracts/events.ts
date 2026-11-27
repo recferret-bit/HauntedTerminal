@@ -184,7 +184,7 @@ export type KernelEvent =
   | {
       type: 'PICKUP_COLLECTED';
       entityId: string;
-      item: 'energy' | 'ram' | 'ssd' | 'tube_transistor' | 'laptop';
+      item: 'energy' | 'ram' | 'ssd' | 'tube_transistor' | 'laptop' | 'tensor_gpu' | 'vram_module';
       /** HP healed, GB of RAM or GB of SSD gained. */
       amount: number;
       /** Short HUD/FX word, e.g. `+25HP`, `+16GB RAM`. */

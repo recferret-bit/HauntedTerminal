@@ -327,7 +327,7 @@ class Game implements LabSession, Host, ClassicShellHost {
       shortcuts: [...this.run.shortcuts],
       room,
       intro: this.run.intro,
-      inventory: { items: [...this.run.inventory.items], held: this.run.inventory.held },
+      inventory: { items: [...this.run.inventory.items], held: this.run.inventory.held, vram: this.run.inventory.vram },
       battle: null,
       ram: this.run.ram,
       ssd: this.run.ssd,

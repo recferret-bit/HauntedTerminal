@@ -1,7 +1,7 @@
 import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import type { KernelEvent } from '../contracts/events.js';
 import { maxHpFor } from '../game/bestiary.js';
-import { giveItem, hasItem, holdItem, ITEMS, starterInventory, type ItemId } from '../game/inventory.js';
+import { addVram, giveItem, hasItem, holdItem, ITEMS, starterInventory, type ItemId } from '../game/inventory.js';
 import { setHold, skipIntro as endBattleIntro, type BattleHold } from '../game/battle.js';
 import { runLine, type Host } from '../game/shell.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from '../game/types.js';
@@ -44,6 +44,7 @@ export function applyInitialLoadout(g: ChapterState, startIdx: number): void {
       bonusSsd += grant.ssd ?? 0;
       if (grant.core) core = grant.core;
       for (const item of grant.items ?? []) g.inventory = giveItem(g.inventory, item);
+      if (grant.vram) g.inventory = addVram(g.inventory, grant.vram);
     }
     // A grant that gives the tube transistor also puts it in his hand.
     if (hasItem(g.inventory, 'tube_transistor')) g.inventory = holdItem(g.inventory, 'tube_transistor');

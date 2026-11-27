@@ -176,6 +176,8 @@ export interface ChapterGrant {
   afterLevel: number;
   ram?: number;
   ssd?: number;
+  /** Spare skill charges (VRAM modules) he already holds from this point on. */
+  vram?: number;
   /** Open-weight core loaded into Kiro. The last matching grant wins. */
   core?: string;
   /** Items he owns from this point on (the tube transistor for a player who skips the level that gives it). */
