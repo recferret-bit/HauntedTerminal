@@ -141,14 +141,15 @@ function buildHand(_seed: number): ModelSpec {
 /** One registered developer per item he can hold. Registered from the items contract. */
 for (const def of Object.values(ITEMS)) {
   const heroId = def.heroModel;
-  if (!heroId) continue; // carried-only items (tensor_gpu, vram_module) have no hero hold model
+  const heroLabel = def.heroLabel;
+  if (!heroId || !heroLabel) continue; // carried-only items (tensor_gpu, vram_module) have no hero hold model
   ModelCatalog.register({
     id: heroId,
     category: 'vibecoder',
-    label: def.heroLabel,
+    label: heroLabel,
     lore: def.heroLore ?? def.lore,
     ...(def.gameKey ? { gameKey: def.gameKey } : {}),
-    build: (seed) => buildDev(heroId, def.heroLabel, ITEM_BUILDERS[def.id](seed)),
+    build: (seed) => buildDev(heroId, heroLabel, ITEM_BUILDERS[def.id](seed)),
   });
 }
 
