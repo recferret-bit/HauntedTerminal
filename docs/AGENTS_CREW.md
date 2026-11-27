@@ -10,7 +10,7 @@ Nine Kiro custom agents tune and grow Out Of Credits. They live in [`.kiro/agent
 | `comix-designer` | intro, outro and other 3D comixes, comix editor | `comix/`, `src/cinematic`, `src/comix-editor` |
 | `chapters-designer` | levels, story, dialog, comic issue, enemies, pickups, puzzles, inventory, Kiro cores, chapter editor | `chapters/`, `src/chapters`, `src/chapter-editor`, gameplay files in `src/game` |
 | `artist` | models, rooms, textures, shaders, lighting, animation, effects | `src/procgen`, `src/shaders`, `src/renderer`, `src/storybook`, `src/assets`, `public/assets` |
-| `sound-designer` | sound effects, music beds and robot voice lines, and which event plays which cue; generates with ElevenLabs only through `audio-gen.mjs` (dry run unless the brief says "generate", 15,000 credits a run at most) | `public/sfx`, `public/music`, `docs/audio`, `src/audio` |
+| `sound-designer` | sound effects, music beds and robot voice lines, and which event plays which cue; generates with ElevenLabs only through `audio-gen.mjs` (dry run unless the brief says "generate", 15,000 credits a run at most) | `public/sfx`, `public/music`, `docs/audio`, `src/audio`, `src/audio-lab` |
 | `smm-agent` | X, YouTube & TikTok campaigns, Steam/social research, and declarative gameplay video, screenshot, infographic & ElevenLabs social audio specs (`social-media.mjs`) toward $1M Steam revenue | `social/`, `docs/marketing/` |
 | `qa` | plays and tests everything, writes a report | `docs/qa/` |
 
@@ -111,7 +111,7 @@ Short, concrete requests work best. Ready to paste:
 - **A gateway "spawned subagent" is not your repo.** `kirocrew spawn run` starts the agent in an empty scratch folder (`~/workplace/kirocrew-workspace/subagent_<id>`), so it cannot see the project. Use the member's chat in the app or dashboard, not `spawn`.
 - **`kirocrew chat -m "..."` cannot approve anything** (it has no one to ask), so it is only good for read-only questions.
 - **Edit Crew's config only while the gateway is stopped, or in the dashboard.** A running gateway rewrote the member's agent back to a default once (found while testing; fixed by setting it again while stopped).
-- **MCP servers come with the agents.** `qa` starts Chrome DevTools MCP and `credits-forge`, `chapters-designer` and `comix-designer` start `credits-forge`, from the agent files (nothing in `.kiro/settings/mcp.json`). Run `npm ci` in the workspace first: `chrome-devtools-mcp` runs from `node_modules`. Kiro does not wait for a slow server, so do not switch it back to `npx`. Check with `node scripts/harness/mcp-probe.mjs`.
+- **MCP servers come with the agents.** `qa` starts Chrome DevTools MCP and `credits-forge`, and `chapters-designer`, `comix-designer`, `terminal-designer`, and `artist` start `credits-forge`, from the agent files (nothing in `.kiro/settings/mcp.json`). Run `npm ci` in the workspace first: `chrome-devtools-mcp` runs from `node_modules`. Kiro does not wait for a slow server, so do not switch it back to `npx`. Check with `node scripts/harness/mcp-probe.mjs`.
 - **Never add an `autoApprove` list** to an agent or `mcp.json`: Crew documents that such tools skip its approval gate **and `PreToolUse` hooks**, which would switch off the shell guard. `npm run crew:check` fails on it.
 - **Installed globally, the agents show up in every repo** (`~/.kiro/agents`). Their paths are repo-relative, so elsewhere they just find nothing; use them in this repo. The workspace copy takes precedence here.
 

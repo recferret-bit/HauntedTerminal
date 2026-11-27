@@ -32,7 +32,7 @@ const subtitle = args.val('--subtitle', ' Clean the Configs, Purge Malware & Shi
 const clientName = args.val('--client', 'Client Marty — Hardware & Indie Games');
 const levelCount = Math.max(2, Number(args.val('--levels', 6)));
 const pageCount = Math.max(1, Number(args.val('--pages', 3)));
-const allyName = args.val('--ally', 'hank.tty');
+const allyName = args.val('--ally', 'dad.tty');
 const bossName = args.val('--boss', 'Slop-Weaver Codec');
 const mechanicsPool = args
   .val('--mechanics', 'hub,terminal,html-css,terminal-code,docker-image,docker-compose,boss')

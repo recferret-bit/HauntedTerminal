@@ -39,17 +39,21 @@ export type SuggestName =
   | 'panels'
   | 'marks'
   | 'fixtures'
-  | 'fx';
+  | 'fx'
+  | 'sfx'
+  | 'music';
 
 export type Field =
   | (Base & { type: 'text'; rows?: number; suggest?: SuggestName; mono?: boolean; mark?: boolean })
   | (Base & { type: 'number'; step?: number; octal?: boolean })
+  | (Base & { type: 'numOrVec3'; step?: number; defaultScalar?: number })
   | (Base & { type: 'bool'; defaultTrue?: boolean })
   | (Base & { type: 'select'; options: readonly Option[] })
   | (Base & { type: 'strings'; rows?: number; mark?: boolean })
   | (Base & { type: 'numbers' })
   | (Base & { type: 'pairs'; mark?: boolean })
   | (Base & { type: 'textOrVec' })
+  | (Base & { type: 'alt'; scalar: 'number' | 'bool'; fields: Field[]; defaultScalar?: number | boolean })
   /** A free-form JSON object edited as text (a raw event). Invalid text is kept in the box and not written. */
   | (Base & { type: 'json'; rows?: number })
   | (Base & { type: 'color' })
@@ -60,6 +64,14 @@ export type Field =
 
 export const t = (key: string, label: string, extra: Partial<Extract<Field, { type: 'text' }>> = {}): Field => ({ type: 'text', key, label, ...extra });
 export const n = (key: string, label: string, extra: Partial<Extract<Field, { type: 'number' }>> = {}): Field => ({ type: 'number', key, label, ...extra });
+export const nv3 = (key: string, label: string, extra: Partial<Extract<Field, { type: 'numOrVec3' }>> = {}): Field => ({ type: 'numOrVec3', key, label, ...extra });
 export const b = (key: string, label: string, extra: Partial<Extract<Field, { type: 'bool' }>> = {}): Field => ({ type: 'bool', key, label, ...extra });
 export const sel = (key: string, label: string, options: readonly Option[], extra: Partial<Base> = {}): Field => ({ type: 'select', key, label, options, ...extra });
+export const alt = (
+  key: string,
+  label: string,
+  scalar: 'number' | 'bool',
+  fields: Field[],
+  extra: Partial<Omit<Extract<Field, { type: 'alt' }>, 'type' | 'key' | 'label' | 'scalar' | 'fields'>> = {},
+): Field => ({ type: 'alt', key, label, scalar, fields, ...extra });
 export const opt = <F extends Field>(f: F): F => ({ ...f, optional: true });

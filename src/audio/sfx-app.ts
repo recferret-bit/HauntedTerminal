@@ -1,3 +1,4 @@
+import { isSfxId } from '../contracts/audio-cues.js';
 import type { AppEvent } from '../contracts/app-bus.js';
 import type { SfxId } from './catalog.js';
 import { speakerCue } from './sfx-kernel.js';
@@ -116,6 +117,8 @@ export function appCues(event: AppEvent): SfxId[] {
       return ['page_turn'];
     case 'pointer':
       return pointerCues(event.id, event.surface);
+    case 'sfx':
+      return isSfxId(event.cue) ? [event.cue] : [];
     default:
       return [];
   }

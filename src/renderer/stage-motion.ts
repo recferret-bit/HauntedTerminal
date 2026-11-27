@@ -11,7 +11,7 @@ import { playCues, playFx, say } from './stage-fx.js';
 import { applyLantern } from './stage-layout.js';
 import { launchEnemyProjectile } from './stage-projectile.js';
 import { anchorPoint, findByModel, firstOfKind } from './stage-resolve.js';
-import { HERO_HALF_YAW, poseHeroWalk, resetHeroPose } from './stage-hero-turn.js';
+import { HERO_HALF_YAW, poseHeroWalk, resetHeroPose, restoreActorBodyPose, setActorBodyScale } from './stage-hero-turn.js';
 import type { ComicStage } from './comic-stage.js';
 
 export { claim, owns, release };
@@ -108,7 +108,7 @@ export function heroAction(stage: ComicStage, hero: StageActor, action: string, 
   }, () => {
     if (!owns(hero, g)) return;
     hero.base.x = standX;
-    if (walk) hero.body.rotation.y = (dir < 0 ? 1 : -1) * HERO_HALF_YAW;
+    if (walk) hero.body.rotation.y = hero.baseRot[1] + (dir < 0 ? 1 : -1) * HERO_HALF_YAW;
     hero.animator.setState(action === 'collect' || action === 'read' ? 'idle' : 'attack');
     if (action === 'collect' || action === 'read') hopInPlace(stage, hero, 0.1, 200);
     stage.tweens.delay(action === 'collect' ? 380 : 620, () => {
@@ -150,17 +150,26 @@ const FLINCH_POSES: ReadonlyArray<readonly [number, number]> = [
  * a beat, 500 ms on the 12 fps beat, additive
  * on `offset.x` and the body's z rotation. No animator state, no claim, no walk (a failed command never looks like a cast).
  */
+function setScaledBody(a: StageActor, factor: number): void {
+  setActorBodyScale(a, factor, factor, factor);
+}
+
+function restoreBodyTransform(a: StageActor): void {
+  restoreActorBodyPose(a);
+}
+
 export function heroFlinch(stage: ComicStage, hero: StageActor): void {
   const body = hero.body;
+  const restZ = hero.baseRot[2];
   stage.tweens.add(FLINCH_MS, (t) => {
     if (hero.disposed) return;
     const pose = FLINCH_POSES[Math.min(FLINCH_POSES.length - 1, Math.floor(t * FLINCH_POSES.length))];
     hero.offset.x = pose[0];
-    body.rotation.z = pose[1];
+    body.rotation.z = restZ + pose[1];
   }, () => {
     if (hero.disposed) return;
     hero.offset.x = 0;
-    body.rotation.z = 0;
+    body.rotation.z = restZ;
   });
 }
 
@@ -302,7 +311,7 @@ export function suckIntoNull(stage: ComicStage, a: StageActor): void {
       const ang = k * Math.PI * 3;
       const r = (1 - k) * 0.25;
       a.base.set(start.x + (hole.x - start.x) * k + Math.cos(ang) * r, start.y + (hole.y - 0.5 - start.y) * k + Math.sin(ang) * r, start.z);
-      a.body.scale.setScalar(Math.max(0.05, 1 - k));
+      setScaledBody(a, Math.max(0.05, 1 - k));
     }, () => finishExit(stage, a, g));
   });
 }
@@ -315,7 +324,7 @@ export function collect(stage: ComicStage, a: StageActor): void {
       const k = stepped(t, 4);
       const to = hero ? actorSocket(hero, 'fx') : start;
       a.base.set(start.x + (to.x - start.x) * k, start.y + 0.5 * k, start.z);
-      a.body.scale.setScalar(Math.max(0.05, 1 + 0.4 * k - 1.3 * k * k));
+      setScaledBody(a, Math.max(0.05, 1 + 0.4 * k - 1.3 * k * k));
     }, () => finishExit(stage, a, g));
   });
 }
@@ -328,7 +337,7 @@ function finishExit(stage: ComicStage, a: StageActor, g: number): void {
     a.exiting = false;
     a.lock = 0;
     a.offset.set(0, 0, 0);
-    a.body.scale.setScalar(1);
+    restoreBodyTransform(a);
     a.base.copy(a.home);
     a.animator.setState('revealed');
     fade(a, Math.max(0.04, (a as StageActor & { viewAlpha?: number }).viewAlpha ?? 1));
@@ -347,7 +356,7 @@ export function popOut(stage: ComicStage, a: StageActor): void {
   a.exiting = true;
   const g = claim(a);
   stage.tweens.add(150, (t) => {
-    if (owns(a, g)) a.body.scale.setScalar(Math.max(0.05, 1 - stepped(t, 3)));
+    if (owns(a, g)) setScaledBody(a, Math.max(0.05, 1 - stepped(t, 3)));
   }, () => {
     if (owns(a, g)) removeActor(stage, a);
   });
@@ -372,7 +381,7 @@ export function playEntrance(stage: ComicStage, a: StageActor, reason: string, e
 
 /** Natural facing of every model: screen-right (-x). A negative `scale.x` on the body mirrors it to face screen-left (+x). */
 function faceDir(a: StageActor, dir: number): void {
-  if (dir !== 0) a.body.scale.x = Math.abs(a.body.scale.x) * (dir > 0 ? -1 : 1);
+  if (dir !== 0) a.body.scale.x = Math.abs(a.scaleVec[0]) * (dir > 0 ? -1 : 1);
 }
 
 /** Turn to look at the hero (the way he is from here); keeps the facing when there is no hero. */
@@ -401,7 +410,7 @@ export function flyTo(stage: ComicStage, a: StageActor, to: THREE.Vector3, ms: n
   const dir = Math.sign(to.x - from.x);
   faceDir(a, dir);
   const path = flightPath(from, to);
-  const baseScale = Math.abs(a.body.scale.x);
+  const restZ = a.baseRot[2];
   const seconds = ms / 1000;
   let lastT = 0;
   let lean = 0;
@@ -418,14 +427,14 @@ export function flyTo(stage: ComicStage, a: StageActor, to: THREE.Vector3, ms: n
     const clock = t * seconds;
     a.offset.x = Math.sin(clock * 5.6 + 1.3) * 0.05 * env;
     a.offset.y = Math.sin(clock * 8.2) * 0.06 * env;
-    a.body.rotation.z = lean;
-    a.body.scale.y = baseScale * (1 + 0.05 * env);
+    a.body.rotation.z = restZ + lean;
+    setActorBodyScale(a, 1, 1 + 0.05 * env, 1);
   }, () => {
     if (!owns(a, g)) return;
     a.base.copy(to);
     a.offset.set(0, 0, 0);
-    a.body.rotation.z = 0;
-    a.body.scale.y = baseScale;
+    a.body.rotation.z = restZ;
+    setActorBodyScale(a);
     faceHeroNow(stage, a);
     if (!hold) release(a, g);
     then?.();

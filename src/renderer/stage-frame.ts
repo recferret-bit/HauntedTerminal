@@ -12,6 +12,7 @@ import type { FxId } from './fx-player.js';
 import { popOut } from './stage-motion.js';
 import { stepHeroYaw, yawForDx } from './stage-hero-turn.js';
 import { isLevelTransitionPhase, stepLevelTransition } from './stage-level-transition.js';
+import { stepBats } from './stage-bats.js';
 import { applyActor } from './stage-sync.js';
 import type { ComicStage } from './comic-stage.js';
 
@@ -35,6 +36,7 @@ export function stepStage(stage: ComicStage, dt: number): void {
   stage.tweens.update(dtMs);
   stepLevelTransition(stage, dtMs);
   stepActors(stage, dt);
+  stepBats(stage, dt);
   stepAgentAmbientFx(stage, dt);
   heroFidget(stage, dt);
   if (stage.stormOn && !stage.devNoStorm && !stage.stormPaused) {
@@ -199,7 +201,7 @@ function walkActor(stage: ComicStage, a: StageActor, dtMs: number): void {
         a.animator.setState('walk');
         a.animator.setFacing(dx > 0 ? 1 : -1);
       }
-      stepHeroYaw(a, yawForDx(dx), dtMs);
+      stepHeroYaw(a, a.baseRot[1] + yawForDx(dx), dtMs);
       while (a.stepClock >= 83) {
         a.stepClock -= 83;
         a.base.x += Math.sign(dx) * Math.min(Math.abs(a.home.x - a.base.x), 0.24);
@@ -216,7 +218,7 @@ function walkActor(stage: ComicStage, a: StageActor, dtMs: number): void {
   } else {
     a.base.x = a.home.x;
     if (a.kind === 'vibecoder') {
-      if (Math.abs(a.body.rotation.y) > 1e-3) stepHeroYaw(a, 0, dtMs);
+      if (Math.abs(a.body.rotation.y - a.baseRot[1]) > 1e-3) stepHeroYaw(a, a.baseRot[1], dtMs);
       if (a.animator.state === 'walk') {
         a.animator.setFacing(-1);
         setRest(a);

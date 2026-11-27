@@ -15,7 +15,10 @@ description: "[AUDIO] The house pipeline for Out Of Credits sound: write or edit
 | `docs/audio/MUSIC_LIST.md` | One row per music bed or sting, plus the tempo, key and palette rules every prompt follows. |
 | `public/sfx/*.mp3`, `public/sfx/manifest.json` | One kept file per cue name (`key_press.mp3`; a kept variant is its own cue, `key_press_2.mp3`). |
 | `public/music/*.mp3`, `public/music/manifest.json`, `public/music/plans/<name>.json` | Beds and stings; a stored composition plan wins over the prompt. |
-| `src/audio/` | `catalog.ts` (the id lists, same order as the manifests), `sfx-*.ts` (app event -> cue), `music-for.ts` (scene -> bed). |
+| `src/audio/` | `catalog.ts` (the id lists, same order as manifests), `config.ts` (`SFX_TRIM`, `LOOP_GAINS`, `LOOP_CUE_IDS`, `TYPING_SFX`, `KEY_VARIANTS`, `TAUNT_VARIANTS`, `SPEECH_SFX`, `KEY_RATES`, `KEY_GAINS`), `loop-takes.ts` (`LOOP_TAKES`), `sfx-*.ts` (app event -> cue), `music-for.ts` (scene -> bed). |
+| `src/audio-lab/`, `/audio-lab` | Browser Audio Lab workbench (`window.__audioLab`): filterable soundboard, Web Audio waveform + `SFX_TRIM` scrubber (`Play Trimmed` / `Play Raw`, copyable snippet), `LOOP_TAKES`/`LOOP_GAINS` mixer, `MusicScene` & `AppBus` tester. |
+
+Exhaustive runtime & config schema: [references/audio-config-schema.md](./references/audio-config-schema.md).
 
 ## The loop
 
@@ -25,7 +28,10 @@ description: "[AUDIO] The house pipeline for Out Of Credits sound: write or edit
 4. **Post.** With `ffmpeg` installed, the wrapper trims silence at both ends of a one-shot, sets the peak to -3 dBFS, and crossfades one bar into the head of a music loop. Without it, the raw take stays, the entry gets `"post": false` and the run exits 3 ("brew install ffmpeg"). Say so in the report; installing it is the user's job.
 5. **Manifest.** The wrapper patches only the cue's entry (read from disk right before the write, atomic). Never hand-rewrite a manifest. A new cue name is appended at the end.
 6. **Map it.** A new cue name goes into `src/audio/catalog.ts` in manifest order, and into the event or scene table that plays it (`sfx-kernel.ts`, `sfx-app.ts`, `sfx-doors.ts`, `sfx-models.ts`, `music-for.ts`). A regenerated take of an existing cue needs no code change.
-7. **Gates.** `node scripts/harness/audio-gen.mjs --check` (offline: files and entries both ways, every name in a list row, every name mapped), `node scripts/harness/audio-unit.mjs`, `node scripts/harness/audio-smoke.mjs`, `npm run quality`.
+7. **Inspect & Gates.**
+   - Headless acoustic & config inspect: `node scripts/harness/audio-gen.mjs inspect <cue>...|--all [--json]` (reports `durationSec`, `maxDb`, `meanDb`, `leadingSilenceSec`, `trailingSilenceSec`, `activeSec`, `trim`, `loopGain`).
+   - Browser workbench: `npm start` -> `/audio-lab` (`audio-lab-unit.mjs`, `audio-lab-smoke.mjs`).
+   - Required checks: `node scripts/harness/audio-gen.mjs --check`, `node scripts/harness/audio-unit.mjs`, `node scripts/harness/audio-lab-unit.mjs`, `node scripts/harness/audio-lab-smoke.mjs`, `node scripts/harness/audio-smoke.mjs`, `npm run quality`.
 8. **Listen? No.** No agent judges a sound by ear. Report "not judged: needs a person listening" and name the files.
 
 ## House settings (the wrapper applies them; listed so a prompt can be reasoned about)

@@ -6,15 +6,39 @@
 //   node scripts/harness/generate-chapter.mjs --validate   read-only and fast: every static check (references, asset ids, field tables)
 //   node scripts/harness/generate-chapter.mjs --verify     compile, validate, then a headless playthrough of every level under
 //                                                          enemy tick pressure (--ticks N, default 2) asserting 0 deaths
+//   node scripts/harness/generate-chapter.mjs --format     canonicalize JSON formatting across chapters/* (before compile)
 // The static checks are the chapter editor's Check tab (src/chapter-editor/check.ts): a human and an agent see the same errors.
-// Options: --chapter <slug> limits --validate/--verify to one chapter. Exit 1 on any error.
+// Options: --chapter <slug> limits --validate/--verify/--format to one chapter. Exit 1 on any error.
 import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { stringifyChapterJson } from './lib/chapter-json.mjs';
+import { writeAtomicText } from './lib/editor-api-common.mjs';
 import { parseArgs, withProcgen } from './lib/load.mjs';
-import { catalogFile, compileAll, writeCatalog } from './lib/chapter-compile.mjs';
+import { catalogFile, chaptersDir, compileAll, writeCatalog } from './lib/chapter-compile.mjs';
 
 const args = parseArgs(process.argv.slice(2), ['--ticks', '--chapter']);
 const ticksPerCmd = Number(args.val('--ticks', 2));
 const filterChapter = args.val('--chapter', '');
+
+if (args.flag('--format')) {
+  const { chapters: rawChapters } = compileAll();
+  let formatted = 0;
+  const writeIfChanged = (absPath, value, relPath) => {
+    const next = stringifyChapterJson(value, relPath);
+    const prev = existsSync(absPath) ? readFileSync(absPath, 'utf8') : '';
+    if (prev === next) return;
+    writeAtomicText(absPath, next);
+    formatted += 1;
+  };
+  for (const c of rawChapters) {
+    if (filterChapter && c.slug !== filterChapter) continue;
+    writeIfChanged(resolve(chaptersDir, c.slug, 'chapter.manifest.json'), c.manifest, 'chapter.manifest.json');
+    for (const l of c.levels) writeIfChanged(resolve(chaptersDir, c.slug, l.path), l.spec, l.path);
+    if (c.dialogsPath && c.dialogs) writeIfChanged(resolve(chaptersDir, c.slug, c.dialogsPath), c.dialogs, c.dialogsPath);
+    if (c.comixPath && c.comix) writeIfChanged(resolve(chaptersDir, c.slug, c.comixPath), c.comix, c.comixPath);
+  }
+  console.log(`formatted chapters/* (${formatted} file(s) updated)`);
+}
 
 const { chapters, ts: generatedTs } = compileAll();
 const levelsByChapter = Object.fromEntries(

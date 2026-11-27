@@ -1,3 +1,4 @@
+import { MUSIC_IDS, SFX_IDS } from '../contracts/audio-cues.js';
 import { ZONE_IDS } from '../procgen/core/palette.js';
 import { FxCatalog, ModelCatalog } from '../procgen/index.js';
 import type { ComixPack } from '../cinematic/spec-types.js';
@@ -32,8 +33,12 @@ export function suggestForComix(pack: ComixPack, pageId: string, name: string): 
       return fxIds();
     case 'zones':
       return [...ZONE_IDS].sort();
+    case 'sfx':
+      return [...SFX_IDS];
+    case 'music':
+      return [...MUSIC_IDS];
     case 'actors':
-      return pack.manifest.cast.map((a) => a.id);
+      return [...pack.manifest.cast.map((a) => a.id), ...(pack.manifest.stage.props ?? []).map((p) => p.id)];
     case 'points':
       return Object.keys(pack.manifest.stage.points ?? {});
     case 'fixtures':

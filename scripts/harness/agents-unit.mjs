@@ -295,6 +295,9 @@ await test('mcp gate: the real agents pass; each planted-bad change is named', (
     'a wildcard selector': [(a) => a.qa.tools.push('@chrome-devtools'), /wildcard|must be @server\/tool|differ/],
     'the @mcp selector': [(a) => a.qa.tools.push('@mcp'), /wildcard|differ/],
     'write_level for a second agent': [(a) => { a['comix-designer'].tools.push('@credits-forge/write_level'); a['comix-designer'].permissions.rules.find((r) => r.capability === 'mcp' && r.effect === 'allow').match.push('credits-forge/write_level'); }, /only chapters-designer may hold/],
+    'write_chapter_file for qa': [(a) => { a.qa.tools.push('@credits-forge/write_chapter_file'); a.qa.permissions.rules.find((r) => r.capability === 'mcp' && r.effect === 'allow').match.push('credits-forge/write_chapter_file'); }, /only chapters-designer may hold/],
+    'write_comix for a second agent': [(a) => { a['chapters-designer'].tools.push('@credits-forge/write_comix'); a['chapters-designer'].permissions.rules.find((r) => r.capability === 'mcp' && r.effect === 'allow').match.push('credits-forge/write_comix'); }, /only comix-designer may hold/],
+    'write_lab for a second agent': [(a) => { a['chapters-designer'].tools.push('@credits-forge/write_lab'); a['chapters-designer'].permissions.rules.find((r) => r.capability === 'mcp' && r.effect === 'allow').match.push('credits-forge/write_lab'); }, /only terminal-designer may hold/],
     'an unpinned npx server': [(a) => { a.qa.mcpServers['chrome-devtools'] = { ...a.qa.mcpServers['chrome-devtools'], command: 'npx', args: ['-y', 'chrome-devtools-mcp@latest', ...a.qa.mcpServers['chrome-devtools'].args.slice(1)] }; }, /pinned to an exact version/],
     'a server script that does not exist': [(a) => { a.qa.mcpServers['credits-forge'] = { command: 'node', args: ['scripts/mcp/missing.mjs'] }; }, /which does not exist/],
     'includePowers on': [(a) => { a.qa.includePowers = true; }, /includePowers must be false/],
@@ -306,7 +309,7 @@ await test('mcp gate: the real agents pass; each planted-bad change is named', (
     'no catch-all deny': [(a) => { a.artist.permissions.rules = a.artist.permissions.rules.filter((r) => r.capability !== 'mcp'); }, /mcp needs a deny/],
     'a looser allow list': [(a) => a.qa.permissions.rules.find((r) => r.capability === 'mcp' && r.effect === 'allow').match.push('credits-forge/write_level'), /mcp allow rules must be exactly|mcp rule self-test/],
     'no devtools hook': [(a) => { a.qa.hooks = a.qa.hooks.filter((h) => h.name !== 'devtools-url-guard'); }, /devtools-url-guard/],
-    'a server the table does not list': [(a) => { a.terminal_designer = undefined; a['terminal-designer'].mcpServers = { 'credits-forge': a.qa.mcpServers['credits-forge'] }; }, /mcpServers/],
+    'a server the table does not list': [(a) => { a['laptop-designer'].mcpServers = { 'credits-forge': a.qa.mcpServers['credits-forge'] }; }, /mcpServers/],
   };
   for (const [what, [mutate, expected]] of Object.entries(planted)) {
     const found = mcpWith(mutate);
@@ -317,21 +320,39 @@ await test('mcp gate: the real agents pass; each planted-bad change is named', (
   assert.ok(mcpWith(() => {}, { promptOf: () => '' }).some((p) => /must name "take_screenshot"/.test(p)));
 });
 
-await test('mcp rules, as Kiro reads them: qa looks and reads, chapters-designer alone writes, the rest and the lead follow the table', () => {
+await test('mcp rules, as Kiro reads them: per-tool writer fences, qa reads all, artist lists assets, and lead mirrors session', () => {
   const v = (name, tool) => mcpVerdict(agents[name], tool);
   assert.equal(v('qa', 'chrome-devtools/take_screenshot'), 'allow');
   assert.equal(v('qa', 'chrome-devtools/evaluate_script'), 'deny');
   assert.equal(v('qa', 'chrome-devtools/upload_file'), 'deny');
   assert.equal(v('qa', 'credits-forge/validate_level'), 'allow');
-  assert.equal(v('qa', 'credits-forge/write_level'), 'deny');
+  assert.equal(v('qa', 'credits-forge/validate_chapter'), 'allow');
+  assert.equal(v('qa', 'credits-forge/validate_comix'), 'allow');
+  assert.equal(v('qa', 'credits-forge/run_lab'), 'allow');
+  for (const w of ['write_level', 'write_chapter_file', 'write_comix', 'write_lab']) {
+    assert.equal(v('qa', `credits-forge/${w}`), 'deny', `qa denied ${w}`);
+  }
   assert.equal(v('chapters-designer', 'credits-forge/write_level'), 'allow');
+  assert.equal(v('chapters-designer', 'credits-forge/write_chapter_file'), 'allow');
+  assert.equal(v('chapters-designer', 'credits-forge/write_comix'), 'deny');
+  assert.equal(v('chapters-designer', 'credits-forge/write_lab'), 'deny');
   assert.equal(v('chapters-designer', 'chrome-devtools/take_screenshot'), 'deny');
   assert.equal(v('comix-designer', 'credits-forge/list_assets'), 'allow');
+  assert.equal(v('comix-designer', 'credits-forge/write_comix'), 'allow');
+  assert.equal(v('comix-designer', 'credits-forge/write_level'), 'deny');
   assert.equal(v('comix-designer', 'credits-forge/validate_level'), 'deny');
-  for (const name of ['terminal-designer', 'laptop-designer', 'artist']) assert.equal(v(name, 'credits-forge/list_assets'), 'deny', name);
+  assert.equal(v('terminal-designer', 'credits-forge/write_lab'), 'allow');
+  assert.equal(v('terminal-designer', 'credits-forge/run_lab'), 'allow');
+  assert.equal(v('terminal-designer', 'credits-forge/write_level'), 'deny');
+  assert.equal(v('artist', 'credits-forge/list_assets'), 'allow');
+  assert.equal(v('artist', 'credits-forge/write_level'), 'deny');
+  for (const name of ['laptop-designer', 'sound-designer', 'smm-agent']) assert.equal(v(name, 'credits-forge/list_assets'), 'deny', name);
   // The lead holds no tool of its own, but allows its sub-agents' calls (Kiro checks them against the parent session).
   assert.equal(agents['lead-dev'].tools.filter((t) => t.startsWith('@')).length, 0);
   assert.equal(v('lead-dev', 'credits-forge/write_level'), 'allow');
+  assert.equal(v('lead-dev', 'credits-forge/write_chapter_file'), 'allow');
+  assert.equal(v('lead-dev', 'credits-forge/write_comix'), 'allow');
+  assert.equal(v('lead-dev', 'credits-forge/write_lab'), 'allow');
   assert.equal(v('lead-dev', 'chrome-devtools/take_screenshot'), 'allow');
   assert.equal(v('lead-dev', 'chrome-devtools/evaluate_script'), 'deny');
 });

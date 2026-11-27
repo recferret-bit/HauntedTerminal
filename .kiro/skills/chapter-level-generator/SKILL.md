@@ -7,7 +7,7 @@ description: "[LEVEL GEN] Step 3 of level generation (compiler and solver). Comp
 
 **Category: LEVEL GEN** (see `.kiro/steering/skills-map.md`). A level here is declarative data (`level.spec.json`): files, enemies, pickups, win rules and the canonical solution. It never defines new geometry, shaders or particle presets. Kiroween scope: one chapter, about 11 levels, all of which must clear headlessly with 0 deaths.
 
-This skill compiles declarative JSON specs under `chapters/` into strongly-typed TypeScript catalog modules (`src/chapters/generated/catalog-data.ts`) executed by `createChapterSession` (`src/chapters/chapter-session.ts`), and proves every level is 100% solvable with 0 deaths.
+This skill compiles declarative JSON specs under `chapters/` into strongly-typed TypeScript catalog modules (`src/chapters/generated/catalog-data.ts`) executed by `createChapterSession` (`src/chapters/chapter-session.ts` + `session-{rules,shell,fs,code,kiro,meta,flow,level,state}.ts`), and proves every level is 100% solvable with 0 deaths.
 
 ---
 
@@ -16,12 +16,13 @@ This skill compiles declarative JSON specs under `chapters/` into strongly-typed
 Every `levels/<level-id>/level.spec.json` declares:
 - **`mechanic`:** `'hub' | 'terminal' | 'html-css' | 'terminal-code' | 'docker-image' | 'docker-compose' | 'boss'`
 - **`roomKind`:** `'desk' | 'attic' | 'crypt_entrance' | 'crypt_hall' | 'chasm' | 'cell' | 'lab_hall' | 'catwalk' | 'furnace' | 'core' | 'outro'`
-- **`files[]`:** VFS files, directories, and `.sock` UNIX domain sockets (`questCritical: true` registers automatic 2-tick `cron_restorer` protection).
-- **`enemies[]` & `pickups[]`:** Live `World` spawns (`src/game/entities.ts`).
+- **`files[]`:** VFS files, directories, and `.sock` UNIX domain sockets (`questCritical: true` registers automatic 2-tick `cron_restorer` protection); optionally place doors/files/sockets with `x`, `y`, `zOrder`, `scale`, `rotation`, `model`, `socket`, `label`, `sfx`.
+- **`enemies[]` & `pickups[]`:** Live `World` spawns (`src/game/entities.ts`), each with optional `x`, `y`, `zOrder`, `scale`, `rotation`, `model`, `label`, and `sfx` (`attackSfx`/`killSfx`).
+- **`props[]` & `stage`:** Declarative background clutter (`prop.platter`, `prop.shelf`, `prop.corner_cobweb`, `prop.spider`, `prop.bat`, etc., with `cwd?`, `zOrder`, `scale`, `rotation`) and room stage config (`hero`, `entryPort`, `kiro`, `backdrop`, `ambient`, `music`, `sfx`, `subdirs`).
 - **`patches[]`:** Optional 1-click Patch Chips surfaced inside the Split Code Mini-Editor (`edit <file>`).
 - **`winRules[]`:**
   - `read_file` (`cat <path>`)
-  - `talk_ally` (`hank` or `cat hank.tty.sock`)
+  - `talk_ally` (`<ally>` e.g. `dad` or `cat dad.tty.sock`, matching `chapter.manifest.json -> allyNpc.id`; note `story/dialogs.json` uses the legacy key `hankRungs`)
   - `file_absent` (`rm <path>`)
   - `file_contains` (`sed -i` or `edit <file>`)
   - `dir_accessible` (`chmod +rx <dir>`)
@@ -49,8 +50,9 @@ Anything a level does beyond files and rules goes in `level.spec.json -> script`
 node scripts/harness/generate-chapter.mjs
 ```
 
-### Fast read-only static check (about 1 s; what the save hook runs)
+### Format & fast read-only static check (about 1 s; what the save hook runs)
 ```bash
+node scripts/harness/generate-chapter.mjs --format     # canonicalize chapter JSON via stringifyChapterJson (preserves untouched bytes)
 node scripts/harness/generate-chapter.mjs --validate   # references, asset ids, field tables (unknown keys, wrong types)
 node scripts/harness/generate-chapter.mjs --check      # is src/chapters/generated in sync with chapters/*?
 ```
@@ -75,7 +77,7 @@ The same checks as tools, on a draft, with no file touched until it passes (spec
 
 - `list_assets` (`kind`: `models`, `rooms`, `fx`): the ids a spec may name. Use it instead of guessing.
 - `get_level` -> edit -> `validate_level` (the editor's Check tab) and `solve_level` (the headless 0-death run of that level) on the draft `spec`.
-- `write_level` with the `etag` from `get_level`: writes canonically and recompiles the catalog, or refuses (errors, a death, a stale etag) and changes nothing. Existing levels only; a new level is added to the manifest in `/editor` first.
+- `write_level` with the `etag` from `get_level`: writes canonically and recompiles the catalog, or refuses (errors, a death, a stale etag) and changes nothing. Existing levels only; to add a brand-new level, scaffold `levels/<id>/level.spec.json` on disk, register it in `chapter.manifest.json` (`write_chapter_file` or disk edit), and compile via `generate-chapter.mjs` (the `/editor` dev API also updates existing files only).
 
 Still run `generate-chapter.mjs --verify` before calling the chapter done: the forge checks one level at a time.
 

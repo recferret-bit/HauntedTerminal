@@ -2,6 +2,7 @@
 // estimated cost. House settings come from docs/audio/SFX_LIST.md and MUSIC_LIST.md. Spec: .kiro/specs/audio-agent/.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readManifest } from './audio-gen-manifest.mjs';
 import { CUE_NAME } from './audio-gen-rows.mjs';
 
 export const OUTPUT_FORMAT = 'mp3_44100_192';
@@ -59,18 +60,41 @@ function voiceArgs(row, text, voiceId) {
   return { argv, estimate: Math.max(COST.speechMin, Math.ceil(text.length * COST.speechPerChar)), seconds: row.seconds };
 }
 
+/** Runtime SFX ids declared in `src/audio/catalog.ts` (`SFX_IDS`), so music-generated stingers resolve to `public/sfx/`. */
+function catalogSfxIds(root) {
+  const path = join(root, 'src/audio/catalog.ts');
+  if (!existsSync(path)) return new Set();
+  const text = readFileSync(path, 'utf8');
+  const m = /SFX_IDS\s*=\s*\[([\s\S]*?)\]/.exec(text);
+  if (!m) return new Set();
+  return new Set([...m[1].matchAll(/'([a-z0-9_]+)'/g)].map((hit) => hit[1]));
+}
+
+/** Stingers live in `docs/audio/MUSIC_LIST.md` (`music_v2_5` / plans) but ship in `public/sfx/` and `public/sfx/manifest.json`. */
+function targetGroup(root, row, name) {
+  if (row.group !== 'music') return row.group;
+  const base = name.replace(/_\d+$/, '');
+  const names = [name, base, ...(row.names ?? [])];
+  if (names.some((n) => n.startsWith('sting_'))) return 'sfx';
+  const catalogIds = catalogSfxIds(root);
+  if (names.some((n) => catalogIds.has(n))) return 'sfx';
+  const manifestIds = new Set((readManifest(root, 'sfx').sounds ?? []).map((e) => e.name));
+  return names.some((n) => manifestIds.has(n)) ? 'sfx' : row.group;
+}
+
 /**
  * Requests for `variants` takes of cue `name` (a row name) in `row`. `voiceId` is the looked-up id of a voice row
  * (a placeholder in a dry run). The output path is computed here from the cue name; a caller never passes a path.
  */
 export function buildRequests({ root, row, name, variants = 1, text, voiceId }) {
   if (!CUE_NAME.test(name)) throw new Error(`cue name must be snake_case letters, digits and _: ${name}`);
+  const group = targetGroup(root, row, name);
   const one = row.kind === 'voice' ? voiceArgs(row, text, voiceId) : row.kind === 'music' ? musicArgs(row, root, name) : sfxArgs(row);
   return Array.from({ length: variants }, (_, i) => {
     const take = takeName(name, i + 1);
-    const out = `public/${row.group}/${take}.mp3`;
+    const out = `public/${group}/${take}.mp3`;
     const intent = `generate the ${row.kind} cue ${take} for the game's audio`;
-    return { take, out, kind: row.kind, group: row.group, estimate: one.estimate, seconds: one.seconds, plan: one.plan ?? false,
+    return { take, out, kind: row.kind, group, estimate: one.estimate, seconds: one.seconds, plan: one.plan ?? false,
       argv: [...one.argv, '--output-format', OUTPUT_FORMAT, '--intent', intent, '--output', join(root, out)] };
   });
 }

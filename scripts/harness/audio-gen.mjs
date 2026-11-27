@@ -6,27 +6,31 @@
 //   node scripts/harness/audio-gen.mjs plan <cue>... [...] --generate                  generate, post-process, patch manifest
 //   node scripts/harness/audio-gen.mjs credits                                          balance, cap and reserve
 //   node scripts/harness/audio-gen.mjs schema <resource> [<method>]                     the CLI's machine-readable --schema
+//   node scripts/harness/audio-gen.mjs inspect <cue>...|--all [--json]                  offline acoustic & config report
 //   node scripts/harness/audio-gen.mjs --check                                          offline consistency check
 // Exit: 0 ok, 1 refused or failed, 3 generated but post-processing skipped (no ffmpeg).
 import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { CAP, NOT_LOGGED_IN, RESERVE, capProblem, credits, dryRun, loggedIn, runCli, voiceId } from './lib/audio-gen-cli.mjs';
 import { checkAudio, readManifest, writeEntry, MANIFESTS } from './lib/audio-gen-manifest.mjs';
+import { formatInspectReport, inspectAudio } from './lib/audio-gen-inspect.mjs';
 import { postProcess } from './lib/audio-gen-post.mjs';
-import { buildRequests } from './lib/audio-gen-request.mjs';
+import { buildRequests, MUSIC_MODEL } from './lib/audio-gen-request.mjs';
 import { barSeconds, loadRows, rowFor } from './lib/audio-gen-rows.mjs';
 import { projectRoot } from './lib/load.mjs';
 
 const SCHEMA_WORD = /^[a-z][a-z0-9_-]*$/;
 const MAX_VARIANTS = 4;
 
-/** `{ cmd, cues, variants, text, generate, check }` from argv; throws on anything it does not know. */
+/** `{ cmd, cues, variants, text, generate, check, all, json }` from argv; throws on anything it does not know. */
 export function parseCli(argv) {
-  const opts = { cmd: null, cues: [], variants: 1, text: null, generate: false, check: false };
+  const opts = { cmd: null, cues: [], variants: 1, text: null, generate: false, check: false, all: false, json: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--check') opts.check = true;
     else if (a === '--generate') opts.generate = true;
+    else if (a === '--all') opts.all = true;
+    else if (a === '--json') opts.json = true;
     else if (a === '--variants') opts.variants = Number(argv[++i]);
     else if (a === '--text') opts.text = argv[++i] ?? '';
     else if (a.startsWith('-')) throw new Error(`unknown option ${a}`);
@@ -56,10 +60,13 @@ function entryFor(root, req, opts, post) {
   const seconds = post.seconds ? Math.round(post.seconds * 100) / 100 : req.seconds;
   const base = old ?? (req.group === 'music'
     ? { name: req.take, where: req.row.effect, listed_seconds: req.row.seconds, plan_ms: Math.round(req.seconds * 1000), loop: req.row.loop }
-    : { row: Number(req.row.row) || req.row.row, name: req.take, effect: req.row.effect, listed_seconds: req.row.seconds, duration_seconds: req.seconds, loop: req.row.loop });
+    : req.kind === 'music'
+      ? { name: req.take, effect: req.row.effect, listed_seconds: req.row.seconds, duration_seconds: req.seconds, loop: req.row.loop, source: MUSIC_MODEL }
+      : { row: Number(req.row.row) || req.row.row, name: req.take, effect: req.row.effect, listed_seconds: req.row.seconds, duration_seconds: req.seconds, loop: req.row.loop });
   const entry = { ...base, files: [file] };
   // A retake of an sfx whose row changed its length or loop flag must not keep the old numbers.
   if (old && req.group !== 'music') Object.assign(entry, { listed_seconds: req.row.seconds, duration_seconds: req.seconds, loop: req.row.loop });
+  if (req.group !== 'music' && req.kind === 'music') entry.source = old?.source ?? MUSIC_MODEL;
   if (req.kind === 'voice') Object.assign(entry, { duration_seconds: seconds, text: opts.text, voice: req.row.voice });
   if (post.post === false) entry.post = false;
   else delete entry.post;
@@ -138,7 +145,13 @@ export function main(argv, { root = projectRoot, env = process.env, log = consol
     log(runCli([...opts.cues, '--schema'], env).trimEnd());
     return 0;
   }
-  if (opts.cmd !== 'plan') throw new Error('usage: audio-gen.mjs plan <cue>... [--variants N] [--text "<line>"] [--generate] | credits | schema <resource> [<method>] | --check');
+  if (opts.cmd === 'inspect') {
+    const report = inspectAudio(root, { cues: opts.cues, all: opts.all, env });
+    if (opts.json) log(JSON.stringify(report, null, 2));
+    else for (const line of formatInspectReport(report)) log(line);
+    return 0;
+  }
+  if (opts.cmd !== 'plan') throw new Error('usage: audio-gen.mjs plan <cue>... [--variants N] [--text "<line>"] [--generate] | inspect <cue>...|--all [--json] | credits | schema <resource> [<method>] | --check');
   const reqs = planRequests(root, opts, env);
   if (!opts.generate) {
     printPlan(reqs, env, log);

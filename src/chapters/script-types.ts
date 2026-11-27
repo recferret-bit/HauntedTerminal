@@ -1,5 +1,6 @@
 import type { PosixSignal } from '../contracts/events.js';
 import type { ItemId } from '../contracts/inventory.js';
+import type { SceneTransform } from '../contracts/room-view.js';
 import type { PickupType } from '../game/bestiary.js';
 
 /**
@@ -56,7 +57,8 @@ export type ScriptCond =
 export type ScriptStep =
   | { kind: 'print'; text: string }
   | { kind: 'emote'; emote: 'shock' | 'confused' | 'determined' | 'relief' | 'panic' | 'shout'; text?: string }
-  | { kind: 'spawn'; entityId: string; model: string; /** How the stage brings it in (default `appear`). */ entrance?: 'appear' | 'glide' }
+  | ({ kind: 'spawn'; entityId: string; model: string; /** How the stage brings it in (default `appear`). */ entrance?: 'appear' | 'glide'; x?: number; y?: number; label?: string } & SceneTransform)
+  | { kind: 'despawn'; entityId: string }
   | { kind: 'kiro_action'; action: 'scan' | 'load' | 'crack_start' | 'crack_step' | 'crack_done' | 'empower'; core: string; message: string }
   | { kind: 'say'; agent: ScriptAgent; model: string; text: string; mood: ScriptMood; print?: string }
   /** The level's `agentTaunt` from dialogs.json (agent resolved from its prefix); `fallback` if the dialog has none. */
@@ -85,7 +87,13 @@ export type ScriptStep =
   /** An actor (`kiro` or a spawned entity) flies to `target`: `hero`, `home`, or the name of a socket or entity in the room. Stage only; it does not wait. */
   | { kind: 'fly_to'; entityId: string; target: string; hold?: boolean; ms?: number }
   /** Pauses the steps that follow by `sec` level seconds (paused with the game); the steps before it have already run. */
-  | { kind: 'wait'; sec: number };
+  | { kind: 'wait'; sec: number }
+  /** Plays a one-shot `SFX_IDS` cue at this beat. */
+  | { kind: 'sfx'; cue: string }
+  /** Plays a one-shot FX preset at optional design coordinates `(x, y)` with optional word override. */
+  | { kind: 'fx'; preset: string; x?: number; y?: number; text?: string }
+  /** Overrides active level music with a `MusicId`, or `null` to restore stage default. */
+  | { kind: 'music'; cue: string | null };
 
 export interface TutorialStepSpec {
   prompt: string;
@@ -194,5 +202,5 @@ export interface ChapterOutro {
   /** Runs when the player types the final `exit`. `{rank}`, `{commands}`, `{scrap}`, `{scrapTotal}` are filled in. */
   finale?: ScriptStep[];
   caption: string;
-  actors?: Array<{ id: string; model: string; label: string; x: number }>;
+  actors?: Array<{ id: string; model: string; label: string; x: number; y?: number } & SceneTransform>;
 }

@@ -1,4 +1,5 @@
 import { SSD_PER_BACKUP, maxHpFor } from '../game/bestiary.js';
+import { pickTransform, type ActorKind } from '../contracts/room-view.js';
 import { battleView } from '../game/battle.js';
 import { absPath } from '../game/tree.js';
 import type { GameSnapshot, LevelInfo, RoomActor, RoomView } from '../game/types.js';
@@ -40,7 +41,25 @@ function markStrikeCountdowns(g: ChapterState, room: RoomView): void {
   }
 }
 
-function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, exitBase: string, exitOpen: boolean, lockedCaption: string | null): void {
+function spawnedActorKind(model: string): ActorKind {
+  if (model.startsWith('vibecoder.')) return 'vibecoder';
+  if (model.startsWith('boss.')) return 'boss';
+  if (model.startsWith('malware.') || model.startsWith('agent.')) return 'enemy';
+  if (model.startsWith('door.')) return 'door';
+  if (model.startsWith('pickup.') || model.startsWith('item.')) return 'pickup';
+  if (model.startsWith('npc.')) return 'npc';
+  return 'prop';
+}
+
+function decorateSnapshotRoom(
+  g: ChapterState,
+  room: RoomView,
+  cwdPath: string,
+  exitBase: string,
+  exitOpen: boolean,
+  lockedCaption: string | null,
+  subdirCaption?: string,
+): void {
     // The HUD floor is the level index, also on the ended (stats) room.
     room.floor = g.rt.spec.index;
     if (!g.ended) {
@@ -57,23 +76,7 @@ function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, 
       const dEntry = g.rt.dialog;
       room.caption = exitOpen
         ? `SECTOR CLEAR — ${exitBase ? `cd ${exitBase}` : `run ${g.rt.spec.exitCommand ?? 'exit'}`} to advance!`
-        : lockedCaption ?? dEntry?.banner ?? g.rt.spec.summary;
-
-      if (cwdPath === g.rt.spec.cwd) {
-        for (const prop of g.rt.spec.props ?? []) {
-          room.actors.push({
-            key: 'entity',
-            id: `prop:${prop.id}`,
-            model: prop.model,
-            kind: prop.model.startsWith('door.') ? 'door' : 'prop',
-            state: 'idle',
-            x: prop.x,
-            y: prop.y,
-            hidden: false,
-            label: prop.label,
-          });
-        }
-      }
+        : lockedCaption ?? subdirCaption ?? dEntry?.banner ?? g.rt.spec.summary;
 
       // Materialize running Docker containers as physical 3D crates on the stage without overlapping existing ground actors!
       const containerNames =
@@ -99,10 +102,27 @@ function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, 
         room.actors.push(actor);
       });
 
+      for (const [id, spec] of g.rt.spawnedActors.entries()) {
+        if (room.actors.some((a) => a.id === id)) continue;
+        room.actors.push({
+          key: 'entity',
+          id,
+          model: spec.model,
+          kind: spawnedActorKind(spec.model),
+          state: 'idle',
+          x: spec.x,
+          ...(spec.y !== undefined ? { y: spec.y } : {}),
+          ...pickTransform(spec),
+          hidden: false,
+          ...(spec.label ? { label: spec.label } : {}),
+        });
+      }
+
       if (g.lab) room.actors.push(...g.lab.extraActors);
 
       // The chapter's boss cameo supervisor (manifest boss.cameoModel) stands on stage in boss levels.
       const cameoModel = g.pack.manifest.boss.cameoModel;
+      const cameoT = g.pack.manifest.boss.cameoTransform;
       if (g.rt.spec.mechanic === 'boss' && cameoModel && !room.actors.some((a) => a.model === cameoModel)) {
         room.actors.push({
           key: 'entity',
@@ -110,10 +130,13 @@ function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, 
           model: cameoModel,
           kind: 'enemy',
           state: exitOpen ? 'death' : 'idle',
-          x: -1.02,
-          y: 0.35,
+          x: cameoT?.x ?? -1.02,
+          y: cameoT?.y ?? 0.35,
+          ...(cameoT?.zOrder !== undefined ? { zOrder: cameoT.zOrder } : {}),
+          ...(cameoT?.scale !== undefined ? { scale: cameoT.scale } : {}),
+          ...(cameoT?.rotation !== undefined ? { rotation: cameoT.rotation } : {}),
           hidden: false,
-          label: g.pack.manifest.boss.cameoLabel ?? 'SUPERVISOR',
+          label: cameoT?.label ?? g.pack.manifest.boss.cameoLabel ?? 'SUPERVISOR',
         });
       }
     } else {
@@ -121,9 +144,92 @@ function decorateSnapshotRoom(g: ChapterState, room: RoomView, cwdPath: string, 
       room.title = `ISSUE CLEAR // ${title}`;
       room.caption = outro?.caption ?? 'ISSUE CLEAR';
       for (const a of outro?.actors ?? []) {
-        room.actors.push({ key: 'entity', id: a.id, model: a.model, kind: 'npc', state: 'idle', x: a.x, hidden: false, label: a.label });
+        room.actors.push({
+          key: 'entity',
+          id: a.id,
+          model: a.model,
+          kind: 'npc',
+          state: 'idle',
+          x: a.x,
+          ...(a.y !== undefined ? { y: a.y } : {}),
+          ...(a.zOrder !== undefined ? { zOrder: a.zOrder } : {}),
+          ...(a.scale !== undefined ? { scale: a.scale } : {}),
+          ...(a.rotation !== undefined ? { rotation: a.rotation } : {}),
+          hidden: false,
+          label: a.label,
+        });
       }
     }
+}
+
+function buildFactsForRoom(
+  g: ChapterState,
+  cwdPath: string,
+  exitOpen: boolean,
+  exits: Record<string, boolean>,
+  entities: ReturnType<ChapterState['rt']['world']['views']>,
+  things: ViewThing[],
+  effectiveCounts: { left: number; total: number },
+  maxHp: number,
+): { facts: SceneFacts; subdirCaption?: string; levelMusic?: string } {
+  const stage = g.rt.spec.stage;
+  const subdir = stage?.subdirs?.[cwdPath];
+  const kiroProps = kiroStageActor(g, cwdPath, exitOpen);
+  const levelProps = (g.rt.spec.props ?? [])
+    .filter((p) => (p.cwd ?? g.rt.spec.cwd) === cwdPath)
+    .map((p) => ({
+      id: p.id.startsWith('prop:') ? p.id : `prop:${p.id}`,
+      model: p.model,
+      kind: p.kind ?? (p.model.startsWith('door.') ? ('door' as const) : ('prop' as const)),
+      x: p.x,
+      y: p.y,
+      ...(p.socket ? { socket: p.socket } : {}),
+      ...pickTransform(p),
+      label: p.label,
+    }));
+  const entryOverride = subdir?.entryPort !== undefined ? subdir.entryPort : (cwdPath === g.rt.spec.cwd ? stage?.entryPort : undefined);
+  const defaultEntry = g.rt.spec.index > 1 && cwdPath === g.rt.spec.cwd;
+  const entryDoor = entryOverride === false ? false : entryOverride ? true : defaultEntry;
+  const levelMusic = g.rt.musicOverride !== undefined ? (g.rt.musicOverride || undefined) : (subdir?.music ?? stage?.music);
+  const hero = subdir?.hero ?? stage?.hero;
+  const backdrop = subdir?.backdrop ?? stage?.backdrop;
+  const ambient = subdir?.ambient ?? stage?.ambient;
+  const facts: SceneFacts = {
+    floor: g.rt.spec.floorTheme,
+    cwd: cwdPath,
+    ended: g.ended,
+    lantern: g.rt.lantern,
+    dark: !g.inventory.items.includes('tube_transistor'),
+    entryDoor,
+    ...(entryOverride ? { entryPort: entryOverride } : {}),
+    ...(hero !== undefined ? { hero } : {}),
+    ...(backdrop ? { backdrop } : {}),
+    ...(ambient ? { ambient } : {}),
+    props: levelProps,
+    held: g.inventory.held,
+    hp: g.hp,
+    maxHp,
+    xray: g.rt.xray,
+    flood: 0,
+    things,
+    entities,
+    exits,
+    ghost: entities.some((e) => e.model === 'malware.rootkit' && e.state !== 'death'),
+    mimic: false,
+    gateOpen: exitOpen,
+    plankBridged: true,
+    gargoyle: 'gone',
+    zombies: 0,
+    bossDead: effectiveCounts.left === 0,
+    bossFrozen: false,
+    phase1: computeBossPhase(g) >= 1,
+    portal: exitOpen,
+    powerOn: exitOpen,
+    valveOpen: exitOpen,
+    hostiles: effectiveCounts.left,
+    kiro: kiroProps,
+  };
+  return { facts, subdirCaption: subdir?.caption, levelMusic };
 }
 
 export function snapshot(g: ChapterState): GameSnapshot {
@@ -149,49 +255,36 @@ export function snapshot(g: ChapterState): GameSnapshot {
     const things: ViewThing[] = [];
     for (const child of g.rt.cwd.children.values()) {
       if (isNodeHidden(g, child)) continue;
+      const fSpec = g.rt.filesByPath.get(absPath(child));
       things.push({
         name: child.name,
         type: child.kind,
         open: child.kind === 'dir' ? (child.mode & 0o111) !== 0 : true,
         entity: entityTargets.has(child.name) ? child.name : undefined,
+        ...(fSpec?.x !== undefined ? { x: fSpec.x } : {}),
+        ...(fSpec?.y !== undefined ? { y: fSpec.y } : {}),
+        ...(fSpec?.zOrder !== undefined ? { zOrder: fSpec.zOrder } : {}),
+        ...(fSpec?.scale !== undefined ? { scale: fSpec.scale } : {}),
+        ...(fSpec?.rotation !== undefined ? { rotation: fSpec.rotation } : {}),
+        ...(fSpec?.model !== undefined ? { model: fSpec.model } : {}),
+        ...(fSpec?.socket !== undefined ? { socket: fSpec.socket } : {}),
+        ...(fSpec?.label !== undefined ? { label: fSpec.label } : {}),
       });
     }
 
-    const kiroProps = kiroStageActor(g, cwdPath, exitOpen);
-
-    const facts: SceneFacts = {
-      floor: g.rt.spec.floorTheme,
-      cwd: cwdPath,
-      ended: g.ended,
-      lantern: g.rt.lantern,
-      dark: !g.inventory.items.includes('tube_transistor'),
-      entryDoor: g.rt.spec.index > 1 && cwdPath === g.rt.spec.cwd,
-      held: g.inventory.held,
-      hp: g.hp,
-      maxHp,
-      xray: g.rt.xray,
-      flood: 0,
-      things,
-      entities,
+    const { facts, subdirCaption, levelMusic } = buildFactsForRoom(
+      g,
+      cwdPath,
+      exitOpen,
       exits,
-      ghost: entities.some((e) => e.model === 'malware.rootkit' && e.state !== 'death'),
-      mimic: false,
-      gateOpen: exitOpen,
-      plankBridged: true,
-      gargoyle: 'gone',
-      zombies: 0,
-      bossDead: effectiveCounts.left === 0,
-      bossFrozen: false,
-      phase1: computeBossPhase(g) >= 1,
-      portal: exitOpen,
-      powerOn: exitOpen,
-      valveOpen: exitOpen,
-      hostiles: effectiveCounts.left,
-      kiro: kiroProps,
-    };
+      entities,
+      things,
+      effectiveCounts,
+      maxHp,
+    );
 
     const room = buildRoom(facts);
-    decorateSnapshotRoom(g, room, cwdPath, exitBase, exitOpen, lockedCaption(g, cwdPath, exitOpen));
+    decorateSnapshotRoom(g, room, cwdPath, exitBase, exitOpen, lockedCaption(g, cwdPath, exitOpen), subdirCaption);
     markStrikeCountdowns(g, room);
 
     const rank = g.ended ? computeRunRank(g.commands, g.deaths, g.levels.length) : null;
@@ -203,6 +296,7 @@ export function snapshot(g: ChapterState): GameSnapshot {
       floor: g.rt.spec.floorTheme,
       hub: g.rt.spec.mechanic === 'hub',
       bossLevel: g.rt.spec.mechanic === 'boss',
+      ...(levelMusic ? { levelMusic } : {}),
       hp: g.hp,
       maxHp,
       commands: g.commands,

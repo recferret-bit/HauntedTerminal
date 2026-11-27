@@ -24,17 +24,21 @@ A comic does not simulate smoke. It draws **a pose, a word and a shake**:
 Everything is **stepped**: time is snapped to 12 frames per second, scale and opacity are a few held
 keys with no interpolation, and the whole thing is over in 150 to 1500 ms. A smooth fade or a
 60 fps fountain of specks is the look of a different game. The orthographic camera looks straight
-at the page, so all motion is **in the page plane**; there is no z velocity to author.
+at the page, so planar effects move **in the page plane** (`zSpread` layering only, no general Z velocity);
+only `emit: 'orbit'` (`wrapActor: true`, e.g. `fx.matrix-cast` / `fx.matrix-fault`) orbits in 3D `(x, y, z)`
+around the actor's vertical axis (`orbitDepth`, `orbitSweep`, `orbitRise`, `orbitTilt`, `orbitStreams`).
 
 ## Files
 
 ```
 src/procgen/fx/
-  types.ts  shapes.ts  lettering.ts   FxPreset / FxLayer; the chunk helpers (fxStarburst, fxShard, fxBolt...); the word as geometry
-  simulate.ts                         fxSimulate(preset, seed, tMs): pure, closed form, stepped
-  catalog.ts  presets.ts              FxCatalog, FX_MOMENT_WORDS; the shipped presets (see references/preset-catalog.md)
-  validate.ts  preview.ts             validateFxPreset, FX_LIMITS; fxRenderFrame for the filmstrip
-  emitter.ts                          createFxEmitter(preset, opts) -> { group, update(dtMs), done, dispose() }
+  types.ts  shapes.ts  lettering.ts   FxPreset / FxLayer / FxLightSpec; chunk helpers (fxStarburst, fxShard, fxBolt...); word geometry
+  simulate.ts                         fxSpawn, fxEvaluate, fxSimulate(preset, seed, tMs): closed-form stepped sim (incl. 3D orbit)
+  catalog.ts  presets.ts              FxCatalog, FX_MOMENT_WORDS; core presets (see references/preset-catalog.md)
+  presets-agents.ts                   Big Four villain taunt presets (fx.agent-clod, fx.agent-coffee, fx.agent-gork, fx.agent-codec)
+  validate.ts  validate-{core,layers,preset}.ts  preview.ts   validateFxPreset, validateFxCatalog, FX_LIMITS; fxRenderFrame
+src/procgen/runtime/fx-emitter/
+  index.ts  layers.ts  parts.ts  word.ts   createFxEmitter(preset, opts) -> { group, materials, light, update(dtMs), seek(tMs), done, dispose() }
 ```
 
 Full field reference: [fx-schema.md](./references/fx-schema.md). Every shipped preset and what it is
@@ -103,6 +107,7 @@ DOM overlay, so it is validated and drawn with everything else.
 
 | Game moment | Preset | Word |
 |---|---|---|
+| `BATTLE_TURN` (`first && actor === 'player'`) | `fx.fight` | FIGHT! |
 | `ROOM_TRANSITION`, ordinary `cd` | `fx.hop` | HOP! |
 | `ROOM_TRANSITION`, `upwardPanelsSmashed >= 3` | `fx.panel-smash` | PANEL SMASH x3! |
 | `ROOM_TRANSITION`, `viaSymlinkLoop` (flood rises) | `fx.flood-splash` | SPLASH! |
@@ -113,13 +118,14 @@ DOM overlay, so it is validated and drawn with everything else.
 | `SYSTEM_HAND_SPAWN` | `fx.fork-spawn` | FORK()! |
 | `PROC_SIGNALED` `KILLED` / `FROZEN` / `TRAPPED_ENRAGED` | `fx.sigkill` / `fx.sigstop-ice` / `fx.sigterm-rage` | SIGKILL! / FROZEN! / SIGTERM IGNORED! |
 | `PUZZLE_DOOR_RESOLVED` | `fx.door-unlock` | UNLOCKED! |
-| `PLAYER_DAMAGED` | `fx.hit-vibecoder` | -10HP (pass the amount) |
-| `rm`, `touch` (no event yet) | `fx.rm-ash`, `fx.touch-materialize` | |
-| Pickups | `fx.pickup-energy` `fx.pickup-ram` `fx.pickup-ssd` | +25HP, +16GB, +256GB (pass the amount) |
-| Enemy hit / removed | `fx.malware-hit`, `fx.malware-death` | SEGFAULT! |
-| Lightning (intro, storm, kill bolt) | `fx.lightning-strike` | KRAKOOM! |
+| `PLAYER_DAMAGED` | `fx.hit-vibecoder`, `fx.enemy-fireball` | -10HP (pass the amount) |
+| `rm`, `touch` (`FILE_REMOVED` / `FILE_CREATED`) | `fx.rm-ash`, `fx.touch-materialize` | |
+| Pickups (`PICKUP_COLLECTED`) | `fx.pickup-energy` `fx.pickup-ram` `fx.pickup-ssd` | +25HP, +16GB, +256GB (pass the amount) |
+| Enemy hit / removed (`ENEMY_HIT` / `ENEMY_KILLED`) | `fx.malware-hit`, `fx.malware-death` | SEGFAULT! |
+| Lightning (`INTRO` / comix; stage uses `LightningStrikeSystem`) | `fx.lightning-strike` | KRAKOOM! |
 | Kernel breaks, vibecoder dies | `fx.coredump` | COREDUMP! |
-| Terminal command typed (`VIBECODER_ACTION`) | `fx.matrix-cast` | |
+| Terminal command typed (`VIBECODER_ACTION` ok / failed) | `fx.matrix-cast` / `fx.matrix-fault` | |
+| Big Four villain taunt (`AGENT_TAUNT` / `BATTLE_STARTED`) | `fx.agent-clod` / `fx.agent-coffee` / `fx.agent-gork` / `fx.agent-codec` | CLACK! / HISS! / WARP! / PARSE! |
 
 Look a preset up by moment with `FxCatalog.forMoment('sigkill')`. The game's `ComicStage.handleEvent`
 (`src/renderer/comic-stage.ts`) plays them through `src/renderer/fx-player.ts`; the event → preset
@@ -140,9 +146,8 @@ Wiring recipe for other hosts (the cinematics use it too): [emitter-usage.ts](./
    then open `scripts/harness/out/fx.png`. Frame 1 must already be the hit. If you squint and see a
    fountain, cut the count in half and double the chunk size.
 6. **Self-test and type-check**: `node .kiro/skills/particle-effect-validator/scripts/self-test.mjs`, `npx tsc --noEmit`.
-7. **See it under the real shaders**: `npm start`, then `/storybook.html?tab=fx` plays every preset
-   (`&inspect=fx.<name>` for one). Elsewhere, mount one with `createFxEmitter` and scrub it with `seek()`.
-8. Update [preset-catalog.md](./references/preset-catalog.md).
+7. **See it under the real shaders**: `npm start`, then `/storybook.html?tab=fx` plays every preset (`&inspect=fx.<name>` for one) with `validateFxPreset` metrics (`fxInfo`), Play/Pause, 12fps frame scrubber, step controls, per-layer toggles, and custom onomatopoeia word preview (`window.__storybook` also exposes `stepFx`, `setFxTime`, `setFxLayers`, `setFxWord`). Metadata is also exposed via `credits-forge/list_assets` (`kind: 'fx'`). Elsewhere, mount one with `createFxEmitter` and scrub it with `seek()`.
+8. Update [preset-catalog.md](./references/preset-catalog.md) and check [fx-schema.md](./references/fx-schema.md).
 
 ## Mistakes this skill exists to prevent
 

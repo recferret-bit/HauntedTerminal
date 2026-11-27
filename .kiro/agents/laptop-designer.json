@@ -21,7 +21,8 @@
     "file://.kiro/steering/glossary.md",
     "file://.kiro/steering/spec-first.md",
     "file://.kiro/specs/inventory/items/laptop/requirements.md",
-    "file://.kiro/specs/inventory/items/laptop/design.md"
+    "file://.kiro/specs/inventory/items/laptop/design.md",
+    "skill://.kiro/skills/laptop-lab/SKILL.md"
   ],
   "hooks": [
     {

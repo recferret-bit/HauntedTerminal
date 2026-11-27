@@ -189,12 +189,32 @@ await withProcgen(async (_procgen, vite) => {
     brokenCh.levels[0].roomSeed = 0;
     brokenCh.levels[0].props = [{ id: 'dup', model: 'prop.missing_xyz', x: 3.5 }, { id: 'dup', model: 'prop.wire_loom', x: 4.1 }];
     brokenCh.levels[0].pickups.push({ id: 'gpu-bad', type: 'ssd', path: brokenCh.levels[0].files[0].path, model: 'pickup.missing_xyz' });
+    brokenCh.levels[0].script = {
+      ...(brokenCh.levels[0].script ?? {}),
+      arrival: [
+        { kind: 'spawn', entityId: 'ghost_orb', model: 'prop.fan', x: 2.2, y: 0.4, scale: [1.5, 1.5, 1.5], zOrder: 1, label: 'ORB' },
+        { kind: 'fx', preset: 'fx.missing_nope', x: 2.2, y: 1.0, text: 'WHOOSH' },
+        { kind: 'despawn', entityId: 'ghost_orb' },
+      ],
+    };
     const brokenChIssues = chapterCheckMod.checkPack(brokenCh);
     assert.ok(brokenChIssues.some((i) => i.severity === 'error'));
     assert.ok(brokenChIssues.some((i) => i.tab === 'overview' && i.message.includes('roomSeed')));
     assert.ok(brokenChIssues.some((i) => i.tab === 'entities' && i.message.includes('duplicate prop id "dup"')));
     assert.ok(brokenChIssues.some((i) => i.tab === 'entities' && i.message.includes('prop.missing_xyz')));
     assert.ok(brokenChIssues.some((i) => i.tab === 'entities' && i.message.includes('pickup.missing_xyz')));
+    assert.ok(brokenChIssues.some((i) => i.tab === 'script' && i.message.includes('fx.missing_nope')));
+
+    const suggestMod = await vite.ssrLoadModule('/src/chapter-editor/suggest.ts');
+    const suggest = suggestMod.makeSuggest(() => chModel.draft.levels[0]);
+    const fxList = suggest('fx');
+    assert.ok(Array.isArray(fxList) && fxList.includes('fx.sigkill') && fxList.every((id) => id.startsWith('fx.')));
+
+    const schemaScriptMod = await vite.ssrLoadModule('/src/chapter-editor/schema-script.ts');
+    const variants = schemaScriptMod.STEP_VARIANTS();
+    assert.ok(variants.spawn.some((f) => f.key === 'x') && variants.spawn.some((f) => f.key === 'scale'));
+    assert.ok(variants.despawn.some((f) => f.key === 'entityId'));
+    assert.ok(variants.fx.some((f) => f.key === 'preset' && f.suggest === 'fx'));
 
     for (const cxSlug of listComixIds()) {
       const cxModel = new comixModelMod.ComixModel(readComix(cxSlug));

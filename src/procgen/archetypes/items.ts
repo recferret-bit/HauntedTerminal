@@ -21,6 +21,8 @@ export const ITEM_BUILDERS: Record<ItemId, (seed: number) => ModelSpec> = {
   laptop: buildLaptop,
   manual: buildManual,
   map: buildMap,
+  tensor_gpu: buildTensorGpu,
+  vram_module: buildVramModule,
 };
 
 for (const def of Object.values(ITEMS)) {
@@ -31,19 +33,4 @@ for (const def of Object.values(ITEMS)) {
     lore: def.lore,
     build: ITEM_BUILDERS[def.id],
   });
-}
-
-/**
- * Items with a model but no hero hold model. Until `ITEM_IDS` and `ITEMS` (src/contracts/inventory.ts)
- * list them (spec tensor-gpu-hub-ritual, task 2) they register here with their own text; once the
- * contract lists them the loop above registers them and this block does nothing.
- */
-const PICKUP_ONLY_ITEMS = [
-  { id: 'tensor_gpu', label: 'Tensor GPU', lore: 'A PCIe graphics card with a ribbed heatsink and a die of glowing tensor cells. Kiro can load open-weight models with it.', build: buildTensorGpu },
-  { id: 'vram_module', label: 'VRAM module', lore: 'A small memory card with three chips and gold pins. Each one adds one extra skill charge.', build: buildVramModule },
-] as const;
-
-for (const item of PICKUP_ONLY_ITEMS) {
-  if (Object.prototype.hasOwnProperty.call(ITEMS, item.id)) continue;
-  ModelCatalog.register({ id: `item.${item.id}`, category: 'item', label: item.label, lore: item.lore, build: item.build });
 }

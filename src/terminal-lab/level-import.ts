@@ -54,6 +54,15 @@ function fileOp(f: LevelFileSpec): LabSetupOp {
     path: f.path,
     ...(f.mode !== undefined ? { mode: f.mode } : {}),
     ...(f.uid !== undefined ? { uid: f.uid } : {}),
+    ...(f.x !== undefined ? { x: f.x } : {}),
+    ...(f.y !== undefined ? { y: f.y } : {}),
+    ...(f.zOrder !== undefined ? { zOrder: f.zOrder } : {}),
+    ...(f.scale !== undefined ? { scale: structuredClone(f.scale) } : {}),
+    ...(f.rotation !== undefined ? { rotation: structuredClone(f.rotation) } : {}),
+    ...(f.model !== undefined ? { model: f.model } : {}),
+    ...(f.socket !== undefined ? { socket: f.socket } : {}),
+    ...(f.label !== undefined ? { label: f.label } : {}),
+    ...(f.sfx !== undefined ? { sfx: f.sfx } : {}),
   };
   if (f.kind === 'dir') return { op: 'dir', ...shared };
   if (f.kind === 'socket') return { op: 'socket', ...shared, ...(f.content !== undefined ? { content: f.content } : {}) };
@@ -110,14 +119,8 @@ export function levelToLabScript(pack: ChapterPack, level: LevelSpec, takenIds: 
   for (const p of level.props ?? []) {
     const id = usedIds.has(p.id) ? nextFreeTaskId(usedIds, 1) : p.id;
     usedIds.add(id);
-    setup.push({
-      op: 'prop',
-      id,
-      model: p.model,
-      x: p.x,
-      ...(p.y !== undefined ? { y: p.y } : {}),
-      ...(p.label ? { label: p.label } : {}),
-    });
+    const { id: _origId, ...propRest } = structuredClone(p);
+    setup.push({ op: 'prop', ...propRest, id });
   }
   setup.push(...arrivalOps(pack, level));
 
@@ -150,6 +153,8 @@ export function levelToLabScript(pack: ChapterPack, level: LevelSpec, takenIds: 
       cwd: level.cwd,
       title: level.title,
       summary: level.summary,
+      ...(level.roomSeed !== undefined ? { roomSeed: level.roomSeed } : {}),
+      ...(level.stage !== undefined ? { stage: structuredClone(level.stage) } : {}),
     },
     player: playerAtLevel(pack, level),
     clock: 'manual',

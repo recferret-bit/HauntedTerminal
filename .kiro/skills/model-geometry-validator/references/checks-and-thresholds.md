@@ -87,7 +87,7 @@ Skipped by `--geometry-only`.
 
 | Code | Sev | Rule | Why | Fix |
 |---|---|---|---|---|
-| `HUMAN_ZONE_MISUSE` | E | `skin` `hoodie` `denim` `hair` `lantern` only in categories `vibecoder` and `item` (what he carries) and in `room.outro` / `room.intro` | Warm colour means "the vibecoder" | Use `plastic`, `copper`, `gold`, `powerAmber` |
+| `HUMAN_ZONE_MISUSE` | E | `skin` `hoodie` `denim` `hair` `lantern` only in categories `vibecoder` and `item` (what he carries), `npc.greybeard_rig` (the vibecoder's human father), and in `room.outro` / `room.intro` | Warm colour means "the vibecoder" (or his human father) | Use `plastic`, `copper`, `gold`, `powerAmber` |
 | `MALWARE_ZONE_MISUSE` | E | Malware-family zones only in `malware` and `boss` | Magenta and violet mean "this will hurt you" | Use hardware, signal or glass zones |
 | `MALWARE_NO_CORRUPTION` | E | malware, boss: at least one part in a malware zone other than `malwareEye` | Without it the enemy is plain hardware | Put the growths, spikes, claws in a corruption zone |
 | `MALWARE_NO_EYE` | E | malware, boss: at least one `malwareEye` part | The one focal light every enemy has | Add an eye, core or keyhole on the −z face |

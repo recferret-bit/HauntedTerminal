@@ -14,8 +14,18 @@ There are two shells and the player must not notice: the classic floors (`src/ga
 - Terminal UI: `src/ui/terminal*.ts`, `code-editor.ts`, `tutorial.ts`, `hud.ts`.
 - Terminal skins (`skin <id>`, six window chromes): `src/ui/terminal-skin.ts`; lab `scripts/harness/terminal-lab/skin.lab.json`. The skin list (`src/contracts/terminal-skins.ts`) and its CSS (`src/styles/terminal-skins.css`) are `lead-dev`'s.
 - Esc menu: `src/ui/esc-menu.ts` (its wiring `src/play/menu.ts` and `PlayEventBus` modal routing are `lead-dev`'s).
-- Field manual (`manual [query]`, F1): `src/ui/manual-book*.ts`, `src/game/manual-*.ts`. Chapter map (`map [level]`, F3): `src/ui/chapter-map*.ts`.
-- Terminal Lab app: `src/terminal-lab/` (`run-control.ts` uses `createStateMachine`); committed lab scripts: `scripts/harness/terminal-lab/*.lab.json` (format with `scripts/harness/lib/lab-json.mjs`). Every enemy type and pickup has a lab; add one for any new terminal behaviour you tune.
+- Field manual (`manual [query]`, F1): `src/ui/manual-book*.ts`, `src/game/manual-*.ts`. Chapter map (`map [level]`, F3): `src/ui/chapter-map*.ts`. Read on-demand specs `.kiro/specs/inventory/items/{manual,map}/{requirements,design}.md` before changing them (left out of preloaded `file://` resources to stay under CLI character caps).
+- Visual Lab (`F8` Shader Lab dock): `src/ui/visual-lab*.ts` (`PIXEL_SLIDERS`, `CRT_SLIDERS`, `INK_SLIDERS`, `PALETTE_NAMES`, `write*`, and `STORAGE_VERSION` in `visual-lab-state.ts`). When `artist` changes shader defaults or adds parameters/palettes in `src/shaders/`, bump `STORAGE_VERSION` and wire the slider/state entries here.
+- Terminal Lab app: `src/terminal-lab/` (`run-control.ts` uses `createStateMachine`); committed lab scripts: `scripts/harness/terminal-lab/*.lab.json` (format with `scripts/harness/lib/lab-json.mjs`). Every enemy type and pickup has a lab; add one for any new terminal behaviour you tune. Exhaustive schema & setup/step table: skill `terminal-lab` (`references/lab-schema.md`). Entity ops (`file`, `dir`, `socket`, `enemy`, `pickup`, `prop`) accept config transforms (`x`, `y`, `zOrder`, `scale`, `rotation`) plus `model`, `socket`, `label`, `sfx` directly in `*.lab.json`.
+
+## The forge (MCP `credits-forge`) & CLI
+
+Use skill `terminal-lab` plus MCP `credits-forge` tools (`list_assets`, `list_levels`, `list_labs`, `get_lab`, `validate_lab`, `run_lab`, `write_lab`):
+1. `list_assets` (`models`, `rooms`, `fx`) to verify valid `ModelCatalog` prop/FX IDs and `ROOM_KINDS`, and `list_levels` to inspect chapter levels before using `--from-level` or mirroring level setups.
+2. `list_labs` / `get_lab` to inspect existing `*.lab.json` scripts and capture `etag`.
+3. `validate_lab` (schema + `checkLab`) and `run_lab` (`node-driver` + 30 soak ticks, zero damage) on an `id` or draft `script` without modifying disk.
+4. Save with `write_lab` (`id`, `script`, optional `baseEtag` on existing files): refuses any validation error, failed assertion, or player damage, and formats canonically via `stringifyLabJson`.
+5. Offline CLI flags: `--all`, `--run <file.lab.json>`, `--from-level <chapter>/<level>`, `--validate`, `--transcript`.
 
 ## Gates
 
@@ -24,6 +34,7 @@ npm run quality
 node scripts/harness/architecture-unit.mjs
 node scripts/harness/property-tests.mjs --only terminal
 node scripts/harness/terminal-lab-unit.mjs
+node scripts/harness/terminal-lab.mjs --validate --all
 node scripts/harness/terminal-lab.mjs --all
 node scripts/harness/terminal-lab-api-test.mjs
 node scripts/harness/generate-chapter.mjs --verify

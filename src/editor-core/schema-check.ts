@@ -71,6 +71,11 @@ export class SchemaWalk {
       case 'number':
         if (!isFiniteNum(v)) this.add('error', path, 'expected a finite number');
         break;
+      case 'numOrVec3':
+        if (!isFiniteNum(v) && (!Array.isArray(v) || v.length !== 3 || v.some((x) => !isFiniteNum(x)))) {
+          this.add('error', path, 'expected a finite number or [x, y, z]');
+        }
+        break;
       case 'bool':
         if (typeof v !== 'boolean') this.add('error', path, 'expected true or false');
         break;
@@ -92,6 +97,11 @@ export class SchemaWalk {
         break;
       case 'textOrVec':
         this.textOrVec(v, path);
+        break;
+      case 'alt':
+        if (f.scalar === 'number' ? isFiniteNum(v) : typeof v === 'boolean') break;
+        if (isRec(v)) this.object(v, f.fields, path);
+        else this.add('error', path, `expected a ${f.scalar === 'number' ? 'finite number' : 'true/false'} or object`);
         break;
       case 'json':
         if (!isRec(v)) this.add('error', path, 'expected a JSON object');

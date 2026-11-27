@@ -153,6 +153,59 @@ await withProcgen(async (p, vite) => {
   const BUBBLE_BG = 0xfffdf7;
   const SHOUT_BG = 0xffe3e0;
 
+  function normScale3(raw) {
+    if (typeof raw === 'number' && Number.isFinite(raw)) return [raw, raw, raw];
+    if (Array.isArray(raw) && raw.length === 3) return [Number(raw[0]) || 1, Number(raw[1]) || 1, Number(raw[2]) || 1];
+    return [1, 1, 1];
+  }
+
+  function normRotDeg3(raw) {
+    if (typeof raw === 'number' && Number.isFinite(raw)) return [0, 0, raw];
+    if (Array.isArray(raw) && raw.length === 3) return [Number(raw[0]) || 0, Number(raw[1]) || 0, Number(raw[2]) || 0];
+    return [0, 0, 0];
+  }
+
+  function transformBaked(baked, scaleVec, rotDeg) {
+    const [sx, sy, sz] = scaleVec;
+    const [rxDeg, ryDeg, rzDeg] = rotDeg;
+    if (sx === 1 && sy === 1 && sz === 1 && rxDeg === 0 && ryDeg === 0 && rzDeg === 0) return baked;
+    const rx = (rxDeg * Math.PI) / 180;
+    const ry = (ryDeg * Math.PI) / 180;
+    const rz = (rzDeg * Math.PI) / 180;
+    const cx = Math.cos(rx), sxr = Math.sin(rx);
+    const cy = Math.cos(ry), syr = Math.sin(ry);
+    const cz = Math.cos(rz), szr = Math.sin(rz);
+    const invX = sx !== 0 ? 1 / sx : 1;
+    const invY = sy !== 0 ? 1 / sy : 1;
+    const invZ = sz !== 0 ? 1 / sz : 1;
+    const xform = (vx, vy, vz) => {
+      const y1 = vx * 0 + vy * cx - vz * sxr;
+      const z1 = vy * sxr + vz * cx;
+      const x2 = vx * cy + z1 * syr;
+      const z2 = -vx * syr + z1 * cy;
+      const x3 = x2 * cz - y1 * szr;
+      const y3 = x2 * szr + y1 * cz;
+      return [x3, y3, z2];
+    };
+    return baked.map((part) => {
+      const pos = new Float32Array(part.pos.length);
+      const nrm = new Float32Array(part.nrm.length);
+      const min = [Infinity, Infinity, Infinity];
+      const max = [-Infinity, -Infinity, -Infinity];
+      for (let i = 0; i < part.pos.length; i += 3) {
+        const [px, py, pz] = xform(part.pos[i] * sx, part.pos[i + 1] * sy, part.pos[i + 2] * sz);
+        pos[i] = px; pos[i + 1] = py; pos[i + 2] = pz;
+        if (px < min[0]) min[0] = px; if (px > max[0]) max[0] = px;
+        if (py < min[1]) min[1] = py; if (py > max[1]) max[1] = py;
+        if (pz < min[2]) min[2] = pz; if (pz > max[2]) max[2] = pz;
+        const [nx, ny, nz] = xform(part.nrm[i] * invX, part.nrm[i + 1] * invY, part.nrm[i + 2] * invZ);
+        const len = Math.hypot(nx, ny, nz) || 1;
+        nrm[i] = nx / len; nrm[i + 1] = ny / len; nrm[i + 2] = nz / len;
+      }
+      return { ...part, pos, nrm, min, max };
+    });
+  }
+
   for (const page of comix.pages) {
     const canvas = p.makePixels(pageW, pageH, PAPER);
 
@@ -186,7 +239,7 @@ await withProcgen(async (p, vite) => {
       const pw = Math.max(80, Math.round(rWidth * areaW));
       const ph = Math.max(80, Math.round(rHeight * areaH));
       const border = 5;
-      const bgHex = parseHexColor(panel.bgHex, 0x211a36);
+      const bgHex = parseHexColor(panel.backdrop ?? panel.bgHex, 0x211a36);
 
       // Panel drop shadow + 5px ink frame + interior fill
       drawFramedBox(p, canvas, px, py, pw, ph, bgHex, INK, border, 6);
@@ -224,20 +277,29 @@ await withProcgen(async (p, vite) => {
         blitClippedToRect(p, canvas, dimmedRoom, rdx, rdy, ix, iy, iw, ih);
       }
 
-      // Foreground 3D Cast (grounded on feetY, scaled by category silhouette hierarchy)
-      for (const actor of panel.cast ?? []) {
+      // Stage props + Foreground 3D Cast (sorted by zOrder, scaled/rotated cleanly)
+      const stageItems = [
+        ...(panel.props ?? []).map((pr, idx) => ({ ...pr, _z: pr.zOrder ?? -1, _idx: idx })),
+        ...(panel.cast ?? []).map((ac, idx) => ({ ...ac, _z: ac.zOrder ?? 0, _idx: 1000 + idx })),
+      ].sort((a, b) => a._z - b._z || a._idx - b._idx);
+      for (const actor of stageItems) {
         const { spec, baked } = getBaked(actor.model);
+        const scaleVec = normScale3(actor.scale);
+        const rotDeg = normRotDeg3(actor.rotation);
         const catMult = categoryScaleFor(actor.model);
-        const baseActorPx = Math.round(Math.min(ih * 0.66, iw * 0.50) * catMult * (actor.scale ?? 1.0));
+        const sizeScale = Math.max(Math.abs(scaleVec[0]), Math.abs(scaleVec[1]));
+        const baseActorPx = Math.round(Math.min(ih * 0.66, iw * 0.50) * catMult * sizeScale);
         const clampedPx = Math.max(38, Math.min(360, baseActorPx));
+        const xformed = transformBaked(baked, scaleVec, rotDeg);
         const rendered = p.rasterizeModel(
           spec,
           { view: actor.view ?? 'front', size: clampedPx, marginPx: 4, background: null, seed },
-          baked,
+          xformed,
         );
         const centerX = ix + Math.round(iw * (0.5 + (actor.x ?? 0) * 0.36));
+        const liftY = Math.round((actor.y ?? 0) * ih * 0.42);
         const adx = centerX - Math.round(rendered.image.width / 2);
-        const ady = feetY - rendered.image.height + 6;
+        const ady = feetY - rendered.image.height + 6 - liftY;
         blitClippedToRect(p, canvas, rendered.image, adx, ady, ix, iy, iw, ih);
       }
 

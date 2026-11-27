@@ -55,6 +55,11 @@ function paintPanels(root: ParentNode, reader: Reader): void {
   });
 }
 
+function emitPanelSfx(page: ComixPageSpec, index: number): void {
+  const cue = page.panels[index]?.sfx?.cue;
+  if (cue) readerBus?.emit({ kind: 'sfx', cue });
+}
+
 function openPage(root: HTMLElement, reader: Reader): void {
   disposePanels(reader.panels);
   const spec = pageSpec(reader.comix, reader.page);
@@ -63,7 +68,10 @@ function openPage(root: HTMLElement, reader: Reader): void {
   reader.cursor = 0;
   reader.panels = mountPagePanels(wrap, spec.panels);
   for (const panel of reader.panels) panel.resize();
-  if (!reader.paused) reader.panels[0]?.replay();
+  if (!reader.paused) {
+    reader.panels[0]?.replay();
+    emitPanelSfx(spec, 0);
+  }
   paintPanels(root, reader);
   syncUrl(reader);
   syncButtons(root, reader);
@@ -73,10 +81,15 @@ function revealNext(reader: Reader): void {
   if (reader.paused) return;
   const panel = reader.panels[reader.cursor];
   if (!panel) return;
-  if (!panel.started()) panel.replay();
+  const spec = pageSpec(reader.comix, reader.page);
+  if (!panel.started()) {
+    panel.replay();
+    emitPanelSfx(spec, reader.cursor);
+  }
   if (panel.complete() && reader.cursor < reader.panels.length - 1) {
     reader.cursor += 1;
     reader.panels[reader.cursor]?.replay();
+    emitPanelSfx(spec, reader.cursor);
   }
 }
 
@@ -118,9 +131,11 @@ function bind(root: HTMLElement, reader: Reader): void {
   root.querySelector('#comix-sheet-wrap')!.addEventListener('click', (event) => {
     const article = (event.target as HTMLElement).closest<HTMLElement>('.comix-panel');
     if (!article) return;
-    const panel = reader.panels[Number(article.dataset.i)];
+    const index = Number(article.dataset.i);
+    const panel = reader.panels[index];
     if (!panel?.complete() || !panel.started()) return;
     panel.replay();
+    emitPanelSfx(pageSpec(reader.comix, reader.page), index);
     replayClass(article, 'playing');
   });
   window.addEventListener('keydown', (event) => {

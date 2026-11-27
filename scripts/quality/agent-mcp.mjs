@@ -4,8 +4,12 @@
 import { mcpVerdict } from './agent-rules.mjs';
 
 const SELECTOR = /^@([\w-]+)\/([\w-]+)$/;
-const WRITE_TOOL = 'credits-forge/write_level';
-const WRITER = 'chapters-designer';
+const WRITER_TOOLS = {
+  'credits-forge/write_level': 'chapters-designer',
+  'credits-forge/write_chapter_file': 'chapters-designer',
+  'credits-forge/write_comix': 'comix-designer',
+  'credits-forge/write_lab': 'terminal-designer',
+};
 const BROWSER_SERVER = 'chrome-devtools';
 const BROWSER_USER = 'qa';
 /** Flags that keep Chrome DevTools MCP headless, private and on the local sites (the --allowedUrlPattern values are checked separately). */
@@ -59,16 +63,22 @@ function agentProblems({ file, name, agent }, want, subTools, fileExists, pinned
     if (server === BROWSER_SERVER) out.push(...browserProblems(file, def, Array.isArray(agent.hooks) ? agent.hooks : []));
   }
   if (servers.includes(BROWSER_SERVER) && name !== BROWSER_USER) out.push(`${file}: only ${BROWSER_USER} may hold ${BROWSER_SERVER}`);
-  if (selectors.includes(`@${WRITE_TOOL}`) && name !== WRITER) out.push(`${file}: only ${WRITER} may hold ${WRITE_TOOL}`);
+  for (const [tool, owner] of Object.entries(WRITER_TOOLS)) {
+    if (selectors.includes(`@${tool}`) && name !== owner) out.push(`${file}: only ${owner} may hold ${tool}`);
+  }
 
   const session = [...new Set([...own, ...subTools])];
   const mcpRules = (agent.permissions?.rules ?? []).filter((r) => r.capability === 'mcp');
   const allow = mcpRules.filter((r) => r.effect === 'allow').flatMap((r) => r.match);
   const catchAll = mcpRules.find((r) => r.effect === 'deny' && r.match.length === 1 && r.match[0] === '*');
-  if (!subTools.length && allow.includes(WRITE_TOOL) && name !== WRITER) out.push(`${file}: only ${WRITER} may hold ${WRITE_TOOL} (its mcp allow rules list it)`);
+  if (!subTools.length) {
+    for (const [tool, owner] of Object.entries(WRITER_TOOLS)) {
+      if (allow.includes(tool) && name !== owner) out.push(`${file}: only ${owner} may hold ${tool} (its mcp allow rules list it)`);
+    }
+  }
   if (sorted(allow) !== sorted(session)) out.push(`${file}: mcp allow rules must be exactly ${session.length ? session.join(', ') : 'empty (no MCP tool)'}`);
   if (!catchAll || sorted(catchAll.exclude ?? []) !== sorted(allow)) out.push(`${file}: mcp needs a deny on "*" whose exclude list equals its allow list, so an unlisted tool is refused even under auto-approve`);
-  for (const probe of [WRITE_TOOL, 'chrome-devtools/evaluate_script', 'chrome-devtools/upload_file', 'some-server/any_tool']) {
+  for (const probe of [...Object.keys(WRITER_TOOLS), 'chrome-devtools/evaluate_script', 'chrome-devtools/upload_file', 'some-server/any_tool']) {
     const expected = session.includes(probe) ? 'allow' : 'deny';
     const got = mcpVerdict(agent, probe);
     if (got !== expected && !(expected === 'deny' && got === 'run')) out.push(`${file}: mcp rule self-test: ${probe} should be ${expected}, rules say ${got}`);

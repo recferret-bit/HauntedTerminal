@@ -1,21 +1,63 @@
 import * as THREE from 'three';
-import type { RoomSocketId } from '../contracts/room-view.js';
+import { zOrderToZOffset, type RoomSocketId } from '../contracts/room-view.js';
 import { ModelCatalog, ZONES } from '../procgen/index.js';
 import { isComic, type ComicMaterial } from '../shaders/comic-material.js';
 import { eventEntityIds } from './event-fx.js';
 import type { RoomActor, RoomView } from './room-view.js';
 import { heroFaceTierForHp, type HeroFaceTier } from './portrait.js';
 import {
-  actorId, actorSocket, buildStageActor, pipState, restStateFor, setHeroFaceTier, type StageActor,
+  actorId, actorSocket, applyActorTransform, buildStageActor, pipState, restStateFor, setHeroFaceTier,
+  type StageActor,
 } from './stage-cast.js';
 import { ACTOR_Z, lockedNames, themeFor } from './stage-const.js';
 import { doorLocked, fade, pendingQueuedSpawn, queuedFor, removeActor, setRest } from './stage-actor.js';
 import { clearBubble, playFx, say } from './stage-fx.js';
 import { applyLantern, placeX, syncFlood, syncRoomModel } from './stage-layout.js';
 import { closeDoor, kill, openDoor, playEntrance } from './stage-motion.js';
+import { setBatsAmbient } from './stage-bats.js';
 import { prepareIncomingLevelRoom } from './stage-level-transition.js';
 import { anchorPoint, roomSocket } from './stage-resolve.js';
 import type { ComicStage } from './comic-stage.js';
+
+function parseBackdropHex(backdrop?: string): number | null {
+  if (!backdrop) return null;
+  const clean = backdrop.trim().replace(/^#|^0x/i, '');
+  if (!/^[0-9a-f]{6}$/i.test(clean)) return null;
+  return Number.parseInt(clean, 16);
+}
+
+function applyStageAmbient(stage: ComicStage, view: RoomView, roomChanged: boolean): void {
+  setBatsAmbient(stage, view.ambient?.bats);
+  const key = JSON.stringify({ lm: view.ambient?.lightMode ?? null, st: view.ambient?.storm ?? null });
+  if (!roomChanged && key === stage.lastAmbientKey) return;
+  stage.lastAmbientKey = key;
+
+  const lm = view.ambient?.lightMode;
+  if (lm !== undefined) {
+    stage.prevLightMode ??= stage.lightMode;
+    stage.ambientLightOwned = true;
+    stage.setLightMode(lm);
+  } else if (stage.ambientLightOwned) {
+    stage.ambientLightOwned = false;
+    stage.setLightMode(stage.prevLightMode ?? 'lantern');
+    stage.prevLightMode = null;
+  }
+
+  const st = view.ambient?.storm;
+  if (st !== undefined) {
+    stage.prevStorm ??= { on: stage.stormOn, intensity: stage.stormIntensity };
+    stage.ambientStormOwned = true;
+    const on = typeof st === 'boolean' ? st : (st.enabled ?? true);
+    const intensity = typeof st === 'object' && typeof st.intensity === 'number'
+      ? st.intensity
+      : stage.prevStorm.intensity;
+    stage.setStorm(on, intensity);
+  } else if (stage.ambientStormOwned) {
+    stage.ambientStormOwned = false;
+    if (stage.prevStorm) stage.setStorm(stage.prevStorm.on, stage.prevStorm.intensity);
+    stage.prevStorm = null;
+  }
+}
 
 export function syncRoomInner(stage: ComicStage, view: RoomView): void {
   stage.view = view;
@@ -23,12 +65,14 @@ export function syncRoomInner(stage: ComicStage, view: RoomView): void {
   const finishTransition = prepareIncomingLevelRoom(stage);
   stage.currentFloor = view.floor;
   const theme = themeFor(view.kind);
+  const bgHex = parseBackdropHex(view.backdrop) ?? theme.bg;
   const color = stage.backdrop?.material;
-  if (color && !Array.isArray(color) && isComic(color)) color.uniforms.uColor.value.setHex(theme.bg);
-  stage.scene.background = new THREE.Color(theme.bg);
+  if (color && !Array.isArray(color) && isComic(color)) color.uniforms.uColor.value.setHex(bgHex);
+  stage.scene.background = new THREE.Color(bgHex);
   syncRoomModel(stage, view.kind, view.roomSeed ?? 1);
 
   const roomChanged = view.path !== stage.lastPath;
+  applyStageAmbient(stage, view, roomChanged);
   const layoutKey = `${stage.panelLeft.toFixed(3)}|${stage.panelRight.toFixed(3)}|${stage.feetY.toFixed(3)}`;
   const relayout = layoutKey !== stage.layoutKey;
   stage.layoutKey = layoutKey;
@@ -128,6 +172,7 @@ export function applyActor(stage: ComicStage, a: StageActor, ra: RoomActor, inde
   }
   a.label = ra.label;
   a.target = ra.target;
+  a.portRole = ra.portRole;
   if (ra.pid !== undefined) a.pid = ra.pid;
   a.strikeIn = ra.strikeIn;
   if (ra.maxHp !== undefined) a.maxHp = ra.maxHp;
@@ -137,19 +182,23 @@ export function applyActor(stage: ComicStage, a: StageActor, ra: RoomActor, inde
     if (!stage.queue.some((q) => eventEntityIds(q.ev).includes(a.id))) a.displayHp = ra.hp;
   }
   if (a.kind === 'vibecoder') syncHeroFace(stage, a);
+  applyActorTransform(a, ra);
   const y = Number.isFinite(ra.y) ? (ra.y as number) : 0;
-  const socketTagged = a as StageActor & { roomSocket?: RoomSocketId };
-  if (ra.x !== a.viewX || y !== a.viewY || ra.socket !== socketTagged.roomSocket || snap) {
+  const zOrder = ra.zOrder ?? 0;
+  const socketTagged = a as StageActor & { roomSocket?: RoomSocketId; viewZOrder?: number };
+  if (ra.x !== a.viewX || y !== a.viewY || ra.socket !== socketTagged.roomSocket || zOrder !== socketTagged.viewZOrder || snap) {
     a.viewX = ra.x;
     a.viewY = y;
     socketTagged.roomSocket = ra.socket;
+    socketTagged.viewZOrder = zOrder;
     let x = ra.socket ? (roomSocket(stage, ra.socket)?.x ?? placeX(stage, ra.x)) : placeX(stage, ra.x);
     // The plank bridges the room's own chasm socket.
     if (a.key === 'crate') {
       const bridge = roomSocket(stage, 'bridge');
       if (bridge && Math.abs(bridge.x - x) < 1.6) x = bridge.x;
     }
-    const z = ACTOR_Z - (a.kind === 'pickup' ? 0.12 : a.kind === 'vibecoder' ? 0.06 : (index % 4) * 0.015);
+    const baseZ = ACTOR_Z - (a.kind === 'pickup' ? 0.12 : a.kind === 'vibecoder' ? 0.06 : (index % 4) * 0.015);
+    const z = Math.min(ACTOR_Z + 0.86, baseZ + zOrderToZOffset(zOrder));
     a.home.set(x, stage.feetY + y, z);
     if (snap && !a.lock) a.base.copy(a.home);
   }

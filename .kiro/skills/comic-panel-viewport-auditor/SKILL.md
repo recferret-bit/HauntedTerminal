@@ -124,6 +124,5 @@ A worked example of a written verdict: [examples/qa-verdict.md](./examples/qa-ve
 The lab uses the game's camera convention, `buildModel` materials and ink shells, the game's own
 `createPixelArtPass` / `createCrtPass` defaults, the same renderer settings and the same `uTime` /
 `uFlash` / `uFlashPos` feed. It differs in: centring the camera on the subject (still level, on −z);
-no boot `setInk` (the game scales ink shells by 1.045 and forces halftone on); a lantern-dark cone the
-game does not have yet (stricter on purpose); states driven by `src/procgen/anim` (tints toward zones)
+no boot `setInk` (the game scales ink shells by 1.045 and forces halftone on); `StageLight` (`src/renderer/stage-light.ts`) is live in `/play` (with `LightMode` presets `lantern`, `monitor`, `blacklight`, `neon`, `storm`, `off`, `RoomView.dark` terminal-screen glow when without `tube_transistor`, and `FxLightSpec` dynamic FX light pools), whereas Storybook's `lantern=1` tests `lantern` mode in isolation; states driven by `src/procgen/anim` (tints toward zones)
 where the stage paints fixed colours. Details in [references/camera-and-panel.md](./references/camera-and-panel.md).

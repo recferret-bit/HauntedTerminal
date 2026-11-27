@@ -5,7 +5,8 @@ import { buildModelSubject } from './model-subject.js';
 import { buildTextureSubject } from './texture-subject.js';
 import type { Subject, SubjectOptions } from './types.js';
 
-export type { Subject, SubjectInfo, SubjectOptions } from './types.js';
+export type { FxSubjectInfo, Subject, SubjectInfo, SubjectOptions } from './types.js';
+export { FX_WORD_MAX_CHARS, fxWordUnsupported } from '../../procgen/fx/lettering.js';
 
 export function buildItemSubject(item: Pick<GalleryItem, 'kind' | 'id'>, opts: SubjectOptions): Subject {
   if (item.kind === 'model') return buildModelSubject(item.id, opts);

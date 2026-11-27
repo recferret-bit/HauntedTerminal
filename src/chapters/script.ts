@@ -1,4 +1,5 @@
 import type { KernelEvent } from '../contracts/events.js';
+import { pickTransform } from '../contracts/room-view.js';
 import type { PickupType } from '../game/bestiary.js';
 import { dialogueEvent } from '../game/dialogue.js';
 import { consumeItem, giveItem, heroModel, holdItem, ITEMS } from '../game/inventory.js';
@@ -82,6 +83,8 @@ export function stepOutput(s: ScriptStep, env: StepEnv): { events: KernelEvent[]
       return { events: [{ type: 'VIBECODER_EMOTE', emote: s.emote, text: s.text }], print: '' };
     case 'spawn':
       return { events: [{ type: 'ENTITY_SPAWNED', entityId: s.entityId, model: s.model, reason: 'script', entrance: s.entrance ?? 'appear' }], print: '' };
+    case 'despawn':
+      return { events: [], print: '' };
     case 'kiro_action':
       return { events: [{ type: 'KIRO_ACTION', action: s.action, core: s.core, message: s.message }], print: '' };
     case 'say':
@@ -140,6 +143,21 @@ export function stepOutput(s: ScriptStep, env: StepEnv): { events: KernelEvent[]
       return { events: [{ type: 'ACTOR_FLY_TO', entityId: s.entityId, target: s.target, hold: s.hold ?? false, ms: s.ms ?? FLY_TO_MS }], print: '' };
     case 'wait':
       return { events: [], print: '' };
+    case 'sfx':
+      return { events: [{ type: 'SOUND_CUE', cue: s.cue }], print: '' };
+    case 'fx':
+      return {
+        events: [{
+          type: 'FX_CUE',
+          preset: s.preset,
+          ...(s.x !== undefined ? { x: s.x } : {}),
+          ...(s.y !== undefined ? { y: s.y } : {}),
+          ...(s.text !== undefined ? { text: s.text } : {}),
+        }],
+        print: '',
+      };
+    case 'music':
+      return { events: [], print: '' };
     case 'give_item': {
       const def = ITEMS[s.item];
       return {
@@ -186,6 +204,7 @@ export function runSteps(g: ChapterState, steps: ScriptStep[], events: KernelEve
       break;
     }
     if (s.kind === 'take_item') g.inventory = consumeItem(g.inventory, s.item);
+    if (s.kind === 'music') g.rt.musicOverride = s.cue === null ? '' : s.cue;
     if (s.kind === 'give_item') {
       const wasEmpty = g.inventory.held === null;
       g.inventory = giveItem(g.inventory, s.item);
@@ -194,7 +213,22 @@ export function runSteps(g: ChapterState, steps: ScriptStep[], events: KernelEve
       env.heroModel = heroModel(g.inventory.held);
     }
     const r = stepOutput(s, env);
-    if (s.kind === 'spawn') g.rt.spawned.add(s.entityId);
+    if (s.kind === 'spawn') {
+      g.rt.spawned.add(s.entityId);
+      if (s.entityId !== 'kiro') {
+        g.rt.spawnedActors.set(s.entityId, {
+          model: s.model,
+          x: s.x ?? 1.6,
+          ...(s.y !== undefined ? { y: s.y } : {}),
+          ...(s.label ? { label: s.label } : {}),
+          ...pickTransform(s),
+        });
+      }
+    }
+    if (s.kind === 'despawn') {
+      g.rt.spawned.delete(s.entityId);
+      g.rt.spawnedActors.delete(s.entityId);
+    }
     events.push(...r.events);
     out += r.print;
   }
@@ -218,7 +252,7 @@ export function openingActive(g: ChapterState): boolean {
   return !g.rt.openingDone && !g.ended && hasOpeningGate(g);
 }
 
-const OPENING_KEEP = new Set<ScriptStep['kind']>(['spawn', 'carry_item', 'give_item', 'take_item', 'fly_to', 'kiro_action', 'tutorial_step']);
+const OPENING_KEEP = new Set<ScriptStep['kind']>(['spawn', 'despawn', 'carry_item', 'give_item', 'take_item', 'fly_to', 'kiro_action', 'tutorial_step']);
 
 /** Marks the opening dialog finished and fast-forwards any unfired state-changing beats up to `openingSec`. */
 export function completeOpeningBeats(g: ChapterState, events: KernelEvent[]): string {
@@ -346,7 +380,7 @@ export function finishTutorial(g: ChapterState, events: KernelEvent[]): void {
   if (tut) announceTutorialStep(g, tut.steps.length, true, events);
 }
 
-const SKIP_KEEP = new Set<ScriptStep['kind']>(['spawn', 'carry_item', 'give_item', 'take_item', 'fly_to']);
+const SKIP_KEEP = new Set<ScriptStep['kind']>(['spawn', 'despawn', 'carry_item', 'give_item', 'take_item', 'fly_to']);
 
 /**
  * Drops every tutorial beat that has not played yet. Dialogs, emotes and prompts
@@ -465,15 +499,28 @@ const KIRO_ENTITY = 'kiro';
 /** Where Kiro stands in the room: `undefined` = not on stage. */
 export function kiroStage<T extends object>(g: ChapterState, base: T, cwdPath: string, exitOpen: boolean): T | undefined {
   const k = levelScript(g).kiro;
-  if (!k) return base;
+  const stK = g.rt.spec.stage?.kiro;
+  const withStage = stK
+    ? {
+        ...base,
+        ...(stK.x !== undefined ? { x: stK.x } : {}),
+        ...(stK.y !== undefined ? { y: stK.y } : {}),
+        ...(stK.target !== undefined ? { target: stK.target } : {}),
+        ...(stK.zOrder !== undefined ? { zOrder: stK.zOrder } : {}),
+        ...(stK.scale !== undefined ? { scale: stK.scale } : {}),
+        ...(stK.rotation !== undefined ? { rotation: stK.rotation } : {}),
+        ...(stK.label !== undefined ? { label: stK.label } : {}),
+      }
+    : base;
+  if (!k) return withStage;
   const stage = k.stage ?? 'show';
   if (stage === 'hidden') return undefined;
-  if (stage === 'crack_only') return g.kiro.activeCrack?.dirPath === cwdPath ? base : undefined;
+  if (stage === 'crack_only') return g.kiro.activeCrack?.dirPath === cwdPath ? withStage : undefined;
   if ((k.hideWhen?.includes('intro') && g.intro) || (k.hideWhen?.includes('exit_open') && exitOpen)) return undefined;
   if (k.hideWhen?.includes('before_spawn') && !g.rt.spawned.has(KIRO_ENTITY)) return undefined;
   const loaded = k.labelLoaded?.cores.some((c) => g.rt.loadedCores.has(c));
   const label = loaded && k.labelLoaded ? k.labelLoaded.label : k.label;
-  return label ? { ...base, label } : base;
+  return label ? { ...withStage, label } : withStage;
 }
 
 /** Does the core the player typed (or now runs) satisfy the hub's wanted core? */

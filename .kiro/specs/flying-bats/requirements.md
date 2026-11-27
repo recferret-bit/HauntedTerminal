@@ -1,6 +1,6 @@
 # Flying bats: requirements
 
-Status: requirements-approved
+Status: approved
 
 Capability: Bats fly across the 3D comic stage at random intervals, in groups of 1 to 6. Each group crosses from one corner to the diagonally opposite corner (random corner, so random direction) along a smooth cubic Bézier path driven by easing tweens. The flight is fast; each bat differs a little in size and speed.
 

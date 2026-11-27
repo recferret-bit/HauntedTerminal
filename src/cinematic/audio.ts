@@ -1,4 +1,6 @@
-import type { AppBus, CineCue, LetterCue, MusicScene, MusicSurface } from '../contracts/app-bus.js';
+import type { AppBus, AppEvent, CineCue, LetterCue, MusicScene, MusicSurface } from '../contracts/app-bus.js';
+
+export type CineLoopCue = Extract<AppEvent, { kind: 'loop' }>['cue'];
 
 export function cineScene(surface: MusicSurface): MusicScene {
   return { surface, menu: false, reading: false, battle: 'none', lowHp: false, floorTheme: null, hub: false };
@@ -19,6 +21,7 @@ const CINE: Record<string, CineCue> = {
 export class CineAudio {
   private bus: AppBus | null;
   private paused = false;
+  private activeLoops = new Set<CineLoopCue>();
 
   constructor(muted: boolean, bus: AppBus | null = null) {
     this.bus = muted ? null : bus;
@@ -32,8 +35,18 @@ export class CineAudio {
     this.bus?.emit({ kind: 'cine', cue });
   }
 
+  loop(cue: CineLoopCue, on: boolean): void {
+    if (on) this.activeLoops.add(cue);
+    else this.activeLoops.delete(cue);
+    this.bus?.emit({ kind: 'loop', cue, on });
+  }
+
   rain(on: boolean): void {
-    this.bus?.emit({ kind: 'loop', cue: 'rain_loop', on });
+    this.loop('rain_loop', on);
+  }
+
+  stopLoops(): void {
+    for (const cue of [...this.activeLoops]) this.loop(cue, false);
   }
 
   key(): void {
@@ -77,7 +90,9 @@ export class CineAudio {
   }
 
   reset(): void {
-    this.rain(false);
+    const hadRain = this.activeLoops.has('rain_loop');
+    this.stopLoops();
+    if (!hadRain) this.bus?.emit({ kind: 'loop', cue: 'rain_loop', on: false });
     if (this.paused) {
       // Clear any paused bed before releasing audio-hold so skipping while paused does not restart it.
       this.bus?.emit({ kind: 'scene', scene: cineScene('play') });

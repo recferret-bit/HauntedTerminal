@@ -133,18 +133,26 @@ export function isLevelTransitionPhase(stage: ComicStage, phase: LevelTransition
 }
 
 function findExitDoorX(stage: ComicStage): number {
+  let portX: number | null = null;
   let bestX: number | null = null;
   for (const a of stage.actors.values()) {
     if (a.exiting || a.kind !== 'door') continue;
+    if (a.portRole === 'exit') {
+      if (portX === null || a.home.x < portX) portX = a.home.x;
+      continue;
+    }
     const tagged = a as StageActor & { roomSocket?: RoomSocketId };
     if (tagged.roomSocket === 'door.right' || a.key === 'gate' || a.modelId === 'door.ethernet') {
       if (bestX === null || a.home.x < bestX) bestX = a.home.x;
     }
   }
-  return bestX ?? roomSocket(stage, 'door.right')?.x ?? (stage.panelRight + 0.65);
+  return portX ?? bestX ?? roomSocket(stage, 'door.right')?.x ?? (stage.panelRight + 0.65);
 }
 
 function findEntryDoorX(stage: ComicStage): number {
+  for (const a of stage.actors.values()) {
+    if (!a.disposed && a.kind === 'door' && a.portRole === 'entry') return a.home.x;
+  }
   const entry = stage.actors.get('door:entry');
   if (entry && !entry.disposed) return entry.home.x;
   return roomSocket(stage, 'door.left')?.x ?? (stage.panelLeft - 0.65);
@@ -313,7 +321,7 @@ export function stepLevelTransition(stage: ComicStage, dtMs: number): void {
       st.machine.send('ENTER_DOOR');
       hero.base.set(st.entryDoorX, hero.home.y, hero.home.z);
       applyDoorTuck(hero, 1);
-      hero.body.rotation.y = HERO_TURN_YAW;
+      hero.body.rotation.y = hero.baseRot[1] + HERO_TURN_YAW;
       hero.animator.setState('idle');
       showLevelCaption(stage, st);
     }
@@ -336,7 +344,7 @@ export function stepLevelTransition(stage: ComicStage, dtMs: number): void {
     hero.base.set(st.entryDoorX + (hero.home.x - st.entryDoorX) * k, hero.home.y, hero.home.z);
     if (t < 0.85) poseHeroWalk(hero, dir, t);
     else {
-      hero.body.rotation.y = (dir < 0 ? 1 : -1) * HERO_HALF_YAW;
+      hero.body.rotation.y = hero.baseRot[1] + (dir < 0 ? 1 : -1) * HERO_HALF_YAW;
       if (hero.animator.state !== 'idle') hero.animator.setState('idle');
     }
     if (st.phaseElapsed >= ENTRY_WALK_MS) {

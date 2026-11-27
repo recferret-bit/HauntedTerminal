@@ -11,6 +11,10 @@
  * and `src/comix-editor/check.ts` (validator).
  */
 
+import type { SceneRotation, SceneTransform, StageAmbientConfig } from '../contracts/room-view.js';
+
+export type { SceneRotation, SceneTransform, StageAmbientConfig };
+
 export interface Vec3 {
   x: number;
   y: number;
@@ -48,11 +52,11 @@ export interface SkipRule {
 
 // ---- Stage & Cast (`comix.manifest.json`) -------------------------------------------------------------------------
 
-export interface StagePropSpec {
+export interface StagePropSpec extends SceneTransform {
   id: string;
   model: string;
   at: PointRef;
-  scale?: number;
+  visible?: boolean;
 }
 
 export type StageFixtureSpec =
@@ -87,17 +91,17 @@ export interface ComixStageSpec {
   room: string;
   background: string;
   clampToRoom?: boolean;
+  ambient?: StageAmbientConfig;
   points: Record<string, Vec3>;
   props?: StagePropSpec[];
   fixtures?: StageFixtureSpec[];
 }
 
-export interface ComixActorSpec {
+export interface ComixActorSpec extends SceneTransform {
   id: string;
   model: string;
   label?: string;
   at?: PointRef;
-  scale?: number;
   rotationZ?: number;
   visible?: boolean;
   look?: [number, number];
@@ -399,10 +403,16 @@ export type SceneTrack =
       arc?: number;
       scaleFrom?: number;
       scaleTo?: number;
+      scaleVecFrom?: [number, number, number];
+      scaleVecTo?: [number, number, number];
       stretchFrom?: [number, number];
       stretchTo?: [number, number];
       rotZFrom?: number;
       rotZTo?: number;
+      rotFrom?: SceneRotation;
+      rotTo?: SceneRotation;
+      zOrderFrom?: number;
+      zOrderTo?: number;
       deform?: 'none' | 'stretch_to_target' | 'squash_land';
       hideWhenDead?: boolean;
     }

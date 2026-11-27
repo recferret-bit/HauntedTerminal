@@ -10,7 +10,8 @@ import { setCrtSize, setCrtTime } from '../shaders/crt-pass.js';
 import { LightningStrikeSystem } from '../shaders/lightning.js';
 import { DEFAULT_PIXEL_PARAMS, setPixelArtParams, setPixelArtSize } from '../shaders/pixel-art.js';
 import {
-  animActingOptions, buildModel, collectTopFxLights, createAnimator, createFxEmitter, disposeModel, FxCatalog, ModelCatalog,
+  animActingOptions, buildModel, collectTopFxLights, compensateInkOutlines, createAnimator, createFxEmitter,
+  disposeModel, FxCatalog, ModelCatalog,
   type AnimatorOptions, type BuiltModel, type FxEmitter, type FxEmitterOptions, type ModelAnimator,
 } from '../procgen/index.js';
 
@@ -133,6 +134,11 @@ export class CinematicStage {
     const actor = { model, animator };
     this.actors.push(actor);
     return actor;
+  }
+
+  /** Re-projects ink outlines under scaled actors/props so line weight stays consistent. */
+  compensateInk(root: THREE.Object3D = this.scene): void {
+    compensateInkOutlines(root);
   }
 
   /** Fire an FX preset at a world position. The stage advances and disposes it. */

@@ -23,8 +23,7 @@ src/procgen/archetypes/rooms/floor3.ts   cell, lab_hall         floor4.ts  catwa
 src/procgen/archetypes/rooms/floor5.ts   core                   outro.ts   outro (the real world)
 ```
 
-`RoomKind` comes from `src/contracts/room-view.ts`; which actors stand in which room, and at what x, is
-in `src/game/view.ts`. One id per kind: `room.desk`, `room.attic`, `room.crypt_entrance`,
+`RoomKind` comes from `src/contracts/room-view.ts`; Classic floor layouts live in `src/game/view-layouts.ts`, while Chapter/Comix room dressing, clutter (`prop.platter`, `prop.shelf`, `prop.corner_cobweb`, `prop.hanging_cable`, `prop.pcb_plaque`, `prop.led_bar`, `prop.pc_tower`, `prop.desk_lamp`, `prop.coffee_mug`, `prop.bookshelf`, `prop.wall_poster`, `prop.sticky_note`), backdrops, and ambient presets live in JSON `props[]` & `stage`. One room id per kind: `room.desk`, `room.attic`, `room.crypt_entrance`,
 `room.crypt_hall`, `room.chasm`, `room.cell`, `room.lab_hall`, `room.catwalk`, `room.furnace`,
 `room.core`, `room.outro`.
 
@@ -137,5 +136,4 @@ what it is (`gate`, `intercom`, `chasm`, `boss`, `pedestal`, `valve` ...). Compu
 - Bright floors. The apron is 0.6 tall and directly under every actor's feet.
 - Too many accents. If more than five things glow, none of them is a signal.
 - Forgetting +x is screen-left and building the left wing at negative x.
-- Wiring a room into `comic-stage.ts` as part of an art task. The stage still draws a flat backdrop
-  plane; adopting room sets is a separate renderer change, described in [room-frame.md](./references/room-frame.md).
+- Hand-editing `comic-stage.ts` layout/transition logic as part of an art task. 3D `room.<kind>` sets are already mounted live by `syncRoomModel` (`src/renderer/stage-layout.ts`, called from `src/renderer/stage-sync.ts`); art tasks build and register the `room.<kind>` model and sockets in `src/procgen/archetypes/rooms*`, leaving renderer wiring separate ([room-frame.md](./references/room-frame.md)).

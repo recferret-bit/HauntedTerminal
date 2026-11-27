@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { createComicMaterial, createFloodMaterial, isComic } from '../shaders/comic-material.js';
-import { buildModel, createAnimator, disposeModel, ModelCatalog } from '../procgen/index.js';
+import { buildModel, compensateInkOutlines, createAnimator, disposeModel, ModelCatalog } from '../procgen/index.js';
 import { roomIdForKind, ROOM } from '../procgen/archetypes/rooms.js';
 import type { RoomKind } from './room-view.js';
 import type { ComicStage } from './comic-stage.js';
@@ -166,6 +166,7 @@ function fitRoom(stage: ComicStage): void {
   const width = Math.max(0.4, stage.panelLeft - stage.panelRight);
   stage.room.model.group.position.set((stage.panelLeft + stage.panelRight) / 2, stage.feetY, ACTOR_Z);
   stage.room.model.group.scale.set(width / ROOM.width, 1, 1);
+  compensateInkOutlines(stage.room.model.group);
 }
 
 function resizePlane(mesh: THREE.Mesh, width: number, height: number, x: number, y: number, z: number): void {

@@ -1,3 +1,4 @@
+import { isMusicId } from '../contracts/audio-cues.js';
 import type { MusicScene, MusicSurface } from '../contracts/app-bus.js';
 import type { MusicId } from './catalog.js';
 
@@ -39,10 +40,14 @@ export function musicFor(scene: MusicScene): MusicId | null {
   if (scene.surface === 'rank') return 'rank_card';
   if (scene.menu) return 'menu_bed';
   if (scene.reading) return 'manual_bed';
-  if (scene.surface !== 'play') return SURFACE_BED[scene.surface] ?? null;
+  if (scene.surface !== 'play') {
+    if (scene.music && isMusicId(scene.music)) return scene.music;
+    return SURFACE_BED[scene.surface] ?? null;
+  }
   if (scene.battle !== 'none' && scene.lowHp) return 'low_hp_bed';
-  if (scene.battle === 'boss') return 'battle_boss';
-  if (scene.battle === 'fight') return 'battle_loop';
+  if (scene.battle === 'boss') return scene.music && isMusicId(scene.music) && scene.music.startsWith('battle_') ? scene.music : 'battle_boss';
+  if (scene.battle === 'fight') return scene.music && isMusicId(scene.music) && scene.music.startsWith('battle_') ? scene.music : 'battle_loop';
+  if (scene.music && isMusicId(scene.music)) return scene.music;
   if (scene.hub) return 'hub_matrix';
   if (scene.floorTheme === null) return null;
   return FLOOR_BED[scene.floorTheme];

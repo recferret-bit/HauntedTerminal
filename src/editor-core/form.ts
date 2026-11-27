@@ -1,5 +1,16 @@
 import { h, isRec, clone, type Rec } from './dom.js';
 import {
+  altField,
+  bindScalarNum,
+  datalist,
+  groupRow,
+  numOrVec3Field,
+  put,
+  row,
+  textOrVecField,
+  trackText,
+} from './form-compound.js';
+import {
   bindOpenDetails,
   bindSelectableItem,
   blankOf,
@@ -16,43 +27,6 @@ export { blankUnion, syncSelectedDetailsDom, type FormCtx };
 type Of<T extends Field['type']> = Extract<Field, { type: T }>;
 
 // ---- small controls -----------------------------------------------------------------------------------------------
-
-function put(obj: Rec, f: { key: string; optional?: boolean }, value: unknown, empty: boolean): void {
-  if (f.optional && empty) delete obj[f.key];
-  else obj[f.key] = value;
-}
-
-function row(f: { label: string; hint?: string }, control: HTMLElement, extra = ''): HTMLElement {
-  return h('label', { class: `fld ${extra}` }, h('span', { class: 'fld-label' }, f.label), control, f.hint ? h('small', { class: 'fld-hint' }, f.hint) : null);
-}
-
-function groupRow(f: { label: string; hint?: string }, control: HTMLElement, extra = ''): HTMLElement {
-  return h(
-    'div',
-    { class: `fld ${extra}`, role: 'group', 'aria-label': f.label },
-    h('span', { class: 'fld-label' }, f.label),
-    control,
-    f.hint ? h('small', { class: 'fld-hint' }, f.hint) : null,
-  );
-}
-
-function datalist(ctx: FormCtx, name: string): string {
-  const id = `dl-${name}`;
-  let list = document.getElementById(id);
-  if (!list) {
-    list = h('datalist', { id });
-    document.body.append(list);
-  }
-  list.replaceChildren(...ctx.suggest(name).map((v) => h('option', { value: v })));
-  return id;
-}
-
-function trackText(input: HTMLInputElement | HTMLTextAreaElement, obj: Rec, f: Field, ctx: FormCtx): void {
-  input.addEventListener('input', () => {
-    put(obj, f, input.value, input.value === '');
-    ctx.changed();
-  });
-}
 
 function textField(obj: Rec, f: Of<'text'>, ctx: FormCtx): HTMLElement {
   const value = typeof obj[f.key] === 'string' ? (obj[f.key] as string) : '';
@@ -86,16 +60,7 @@ function numberField(obj: Rec, f: Of<'number'>, ctx: FormCtx): HTMLElement {
   const current = typeof obj[f.key] === 'number' ? (obj[f.key] as number) : undefined;
   const input = f.octal ? h('input', { type: 'text', class: 'mono' }) : h('input', { type: 'number', step: f.step ?? 1 });
   input.value = current === undefined ? '' : f.octal ? current.toString(8) : String(current);
-  input.addEventListener('input', () => {
-    if (input.value.trim() === '') {
-      put(obj, f, 0, true);
-    } else {
-      const parsed = f.octal ? Number.parseInt(input.value, 8) : Number(input.value);
-      if (!Number.isFinite(parsed)) return;
-      obj[f.key] = parsed;
-    }
-    ctx.changed();
-  });
+  bindScalarNum(input, obj, f, 0, ctx, Boolean(f.octal));
   return row(f, input);
 }
 
@@ -429,47 +394,16 @@ function pairsField(obj: Rec, f: Of<'pairs'>, ctx: FormCtx): HTMLElement {
   return box;
 }
 
-function textOrVecField(obj: Rec, f: Of<'textOrVec'>, ctx: FormCtx): HTMLElement {
-  const current = obj[f.key];
-  const asVec = isRec(current);
-  const mode = h(
-    'select',
-    { 'aria-label': `${f.label} mode` },
-    h('option', { value: 'name', selected: !asVec }, 'name'),
-    h('option', { value: 'vector', selected: asVec }, 'vector'),
-  );
-  mode.addEventListener('change', () => {
-    obj[f.key] = mode.value === 'vector' ? { x: 0, y: 0, z: 0 } : '';
-    ctx.restructure();
-    ctx.changed();
-  });
-  const body = h('span', { class: 'color-pair' });
-  if (asVec) {
-    for (const axis of ['x', 'y', 'z'] as const) {
-      const input = h('input', { type: 'number', step: 'any', 'aria-label': `${f.label} ${axis}` });
-      input.value = typeof current[axis] === 'number' ? String(current[axis]) : '0';
-      input.addEventListener('input', () => {
-        const parsed = Number(input.value);
-        if (Number.isFinite(parsed)) current[axis] = parsed;
-        ctx.changed();
-      });
-      body.append(input);
-    }
-  } else {
-    const input = h('input', { type: 'text', class: 'mono', list: datalist(ctx, 'points'), spellcheck: 'false', 'aria-label': f.label });
-    input.value = typeof current === 'string' ? current : '';
-    trackText(input, obj, f, ctx);
-    body.append(input);
-  }
-  return groupRow(f, h('span', { class: 'color-pair' }, mode, body));
-}
-
 function renderField(obj: Rec, f: Field, ctx: FormCtx, path: string): HTMLElement {
   switch (f.type) {
     case 'text':
       return textField(obj, f, ctx);
     case 'number':
       return numberField(obj, f, ctx);
+    case 'numOrVec3':
+      return numOrVec3Field(obj, f, ctx);
+    case 'alt':
+      return altField(obj, f, ctx, path, (host, sub, fields, p) => renderFields(host, sub, fields, ctx, p));
     case 'json':
       return jsonField(obj, f, ctx);
     case 'bool':

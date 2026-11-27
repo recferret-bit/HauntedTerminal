@@ -21,30 +21,42 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "# Hidden Tube Transistor Dotfile\nRUNE_PHRASE=warm_filament\n"
+      "content": "# Hidden Tube Transistor Dotfile\nRUNE_PHRASE=warm_filament\n",
+      "x": 1.48,
+      "model": "prop.file"
     },
     {
       "path": "/srv/kiroween/gpu_alley/transistor_gate.sock",
       "kind": "socket",
       "mode": 493,
-      "content": "Sweep hidden dotfiles with ls -la, read .transistor_rune, and echo its RUNE_PHRASE here!"
+      "content": "Sweep hidden dotfiles with ls -la, read .transistor_rune, and echo its RUNE_PHRASE here!",
+      "x": 1.88,
+      "model": "door.socket"
     },
     {
       "path": "/srv/kiroween/gpu_alley/vram_crate",
       "kind": "dir",
-      "mode": 0
+      "mode": 0,
+      "x": 3.82,
+      "model": "door.usb",
+      "sfx": "door_usb"
     },
     {
       "path": "/srv/kiroween/gpu_alley/vram_crate/manifest.txt",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "VRAM_CRATE_UNLOCKED=true\nOPEN_WEIGHTS_TARGET=qwen-coder-7b-q4.gguf\n"
+      "content": "VRAM_CRATE_UNLOCKED=true\nOPEN_WEIGHTS_TARGET=qwen-coder-7b-q4.gguf\n",
+      "x": 1.2,
+      "model": "prop.file"
     },
     {
       "path": "/srv/kiroween/gpu_alley/port_445",
       "kind": "dir",
-      "mode": 493
+      "mode": 493,
+      "x": 3.25,
+      "model": "door.usb",
+      "sfx": "door_serial"
     },
     {
       "path": "/srv/kiroween/gpu_alley/port_445/worm.bin",
@@ -73,7 +85,11 @@
     {
       "path": "/srv/kiroween/gpu_alley/server_hub_1",
       "kind": "dir",
-      "mode": 0
+      "mode": 0,
+      "x": -0.88,
+      "model": "door.ethernet",
+      "socket": "door.right",
+      "sfx": "door_ethernet"
     }
   ],
   "enemies": [
@@ -81,7 +97,8 @@
       "id": "spyware_l3",
       "type": "spyware",
       "path": "/srv/kiroween/gpu_alley/.codec_spycam",
-      "hidden": true
+      "hidden": true,
+      "x": -0.42
     },
     {
       "id": "crack_l3",
@@ -90,26 +107,31 @@
       "pid": 2104,
       "ppid": 1,
       "hidden": true,
-      "helps": "worm_l3"
+      "helps": "worm_l3",
+      "x": 0.05
     },
     {
       "id": "worm_l3",
       "type": "worm",
       "path": "/srv/kiroween/gpu_alley/port_445/worm.bin",
       "port": "/srv/kiroween/gpu_alley/port_445",
-      "hidden": true
+      "hidden": true,
+      "x": 2.82
     }
   ],
   "pickups": [
     {
       "id": "pickup_l3_ram",
       "type": "ram",
-      "path": "/srv/kiroween/gpu_alley/ram_16gb.dimm"
+      "path": "/srv/kiroween/gpu_alley/ram_16gb.dimm",
+      "x": 1.05
     },
     {
       "id": "pickup_l3_gpu",
       "type": "ssd",
-      "path": "/srv/kiroween/gpu_alley/gpu_shader_core_01.img"
+      "path": "/srv/kiroween/gpu_alley/gpu_shader_core_01.img",
+      "model": "pickup.gpu",
+      "x": 0.55
     }
   ],
   "patches": [],
@@ -136,13 +158,60 @@
       "id": "l3_spider",
       "model": "prop.spider",
       "x": 4.92,
-      "y": 2.3
+      "y": 2.3,
+      "zOrder": -2
     },
     {
       "id": "l3_bat",
       "model": "prop.bat",
       "x": -0.95,
-      "y": 2.9
+      "y": 2.9,
+      "zOrder": -2
+    },
+    {
+      "id": "l3_gpu_heatsink",
+      "model": "prop.heatsink",
+      "x": 4.78,
+      "zOrder": -1,
+      "label": "vram heatsink"
+    },
+    {
+      "id": "l3_platter",
+      "model": "prop.platter",
+      "x": 2.5,
+      "y": 2.4,
+      "zOrder": -3,
+      "scale": 0.75
+    },
+    {
+      "id": "l3_vram_chip",
+      "model": "prop.chip",
+      "x": 4.35,
+      "label": "GDDR6X bank",
+      "cwd": "/srv/kiroween/gpu_alley/vram_crate"
+    },
+    {
+      "id": "l3_vram_shelf",
+      "model": "prop.shelf",
+      "x": 2.1,
+      "y": 2.25,
+      "zOrder": -3,
+      "cwd": "/srv/kiroween/gpu_alley/vram_crate"
+    },
+    {
+      "id": "l3_port_cables",
+      "model": "prop.cables",
+      "x": 4.35,
+      "label": "SMB port wires",
+      "cwd": "/srv/kiroween/gpu_alley/port_445"
+    },
+    {
+      "id": "l3_port_led",
+      "model": "prop.led_bar",
+      "x": 1.1,
+      "y": 2.7,
+      "zOrder": -3,
+      "cwd": "/srv/kiroween/gpu_alley/port_445"
     }
   ],
   "winRules": [
@@ -299,5 +368,32 @@
       "opens": "/srv/kiroween/gpu_alley/vram_crate",
       "tokens": ["ls", "cat", "echo"]
     }
-  ]
+  ],
+  "stage": {
+    "hero": 2.35,
+    "music": "floor_crypt",
+    "sfx": {
+      "enter": "door_ethernet"
+    },
+    "entryPort": {
+      "label": "sector_in",
+      "model": "door.serial",
+      "socket": "door.left",
+      "sfx": "door_serial"
+    },
+    "subdirs": {
+      "/srv/kiroween/gpu_alley/vram_crate": {
+        "hero": 2.4,
+        "entryPort": false,
+        "sfx": "door_usb",
+        "caption": "Inside the GDDR6X VRAM crate."
+      },
+      "/srv/kiroween/gpu_alley/port_445": {
+        "hero": 2.4,
+        "entryPort": false,
+        "sfx": "door_serial",
+        "caption": "Inside port 445: the worm nest."
+      }
+    }
+  }
 }

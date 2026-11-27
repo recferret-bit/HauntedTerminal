@@ -120,7 +120,8 @@ export function cmdCd(g: ChapterState, args: string[]): Step {
     if (g.rt.spec.exitDir && destPath === g.rt.spec.exitDir) {
       refreshExitGates(g, events);
       if (!allWinRulesMet(g)) {
-        events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.node.id, command: 'cd' });
+        const denySfx = g.rt.spec.stage?.sfx?.deny;
+        events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.node.id, command: 'cd', ...(denySfx ? { sfx: denySfx } : {}) });
         return okStep('', events, 1, `bash: cd: ${res.node.name}: Sector gate locked! Remaining objectives:\n${unfinishedObjectives(g)}\n`);
       }
 
@@ -141,7 +142,8 @@ export function cmdCd(g: ChapterState, args: string[]): Step {
         lab: g.lab !== null,
       });
       if (!g.rt.tutorialSkipped) finishTutorial(g, events);
-      events.push({ type: 'FLOOR_CLEARED', floorId: clearedIndex, speedrunBonus: lvlRank === 'S', commandsCount: g.rt.levelCommands });
+      const exitSfx = g.rt.spec.stage?.sfx?.exit;
+      events.push({ type: 'FLOOR_CLEARED', floorId: clearedIndex, speedrunBonus: lvlRank === 'S', commandsCount: g.rt.levelCommands, ...(exitSfx ? { sfx: exitSfx } : {}) });
       events.push(...achUnlocked);
 
       if (g.levelIdx + 1 < g.levels.length) {
@@ -155,13 +157,41 @@ export function cmdCd(g: ChapterState, args: string[]): Step {
     }
 
     if ((res.node.mode & 0o111) === 0) {
-      events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.node.id, command: 'cd' });
+      const denySfx = g.rt.spec.stage?.sfx?.deny;
+      events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.node.id, command: 'cd', ...(denySfx ? { sfx: denySfx } : {}) });
       return okStep('', events, 1, `bash: cd: ${target}: Permission denied\n`);
     }
 
     const fromId = g.rt.cwd.id;
     g.rt.cwd = res.node;
-    events.push({ type: 'ROOM_TRANSITION', fromDir: fromId, toDir: res.node.id, toPath: destPath, upwardPanelsSmashed: 0, viaSymlinkLoop: false });
+    const stageEntry = g.rt.spec.stage?.entryPort;
+    const stageEntrySfx = stageEntry && typeof stageEntry === 'object' ? stageEntry.sfx : undefined;
+    const stageEntryModel = stageEntry && typeof stageEntry === 'object' ? stageEntry.model : undefined;
+    const sub = g.rt.spec.stage?.subdirs?.[destPath];
+    const subEntrySfx = sub?.entryPort && typeof sub.entryPort === 'object' ? sub.entryPort.sfx : undefined;
+    const fileSpec = g.rt.filesByPath.get(destPath);
+    const dirSfx =
+      fileSpec?.sfx
+      ?? sub?.sfx
+      ?? subEntrySfx
+      ?? (destPath === g.rt.spec.cwd ? (stageEntrySfx ?? g.rt.spec.stage?.sfx?.enter) : undefined);
+    const doorModel =
+      fileSpec?.model
+      ?? (destPath === g.rt.spec.exitDir
+        ? 'door.ethernet'
+        : destPath === g.rt.spec.cwd
+          ? (stageEntryModel ?? 'door.serial')
+          : 'door.usb');
+    events.push({
+      type: 'ROOM_TRANSITION',
+      fromDir: fromId,
+      toDir: res.node.id,
+      toPath: destPath,
+      upwardPanelsSmashed: 0,
+      viaSymlinkLoop: false,
+      doorModel,
+      ...(dirSfx ? { sfx: dirSfx } : {}),
+    });
     return okStep('', events);
   }
 
@@ -361,8 +391,9 @@ export function cmdRm(g: ChapterState, args: string[]): Step {
         continue;
       }
       const entityId = g.rt.world.entityOf(res.node.id);
+      const rmSfx = g.rt.filesByPath.get(absPath(res.node))?.sfx;
       res.node.parent?.children.delete(res.node.name);
-      events.push({ type: 'FILE_REMOVED', inodeId: res.node.id, name: res.node.name, entityId });
+      events.push({ type: 'FILE_REMOVED', inodeId: res.node.id, name: res.node.name, entityId, ...(rmSfx ? { sfx: rmSfx } : {}) });
       events.push({ type: 'VIBECODER_ACTION', action: 'cast', command: 'rm', targetEntityId: entityId });
     }
 
@@ -427,6 +458,7 @@ export function collectPickupNode(g: ChapterState, pickup: Pickup, node: VNode, 
       item: pickup.type,
       amount: pickup.amount,
       label,
+      ...(pickup.collectSfx ? { sfx: pickup.collectSfx } : {}),
     });
     events.push({ type: 'FILE_REMOVED', inodeId: node.id, name: node.name, entityId: pickup.id });
     events.push({ type: 'VIBECODER_ACTION', action: 'collect', command, targetEntityId: pickup.id });

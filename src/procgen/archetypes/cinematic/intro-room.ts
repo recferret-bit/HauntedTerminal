@@ -3,7 +3,7 @@ import { ModelCatalog } from '../../core/catalog.js';
 import { makeRng } from '../../core/rng.js';
 import type { ModelSpec, Vec2 } from '../../core/types.js';
 import { onWall, round, RoomBuilder, ROOM } from '../rooms/frame.js';
-import { doorSockets, realRoomShell, shelfBooks, windowFrame } from '../rooms/real-world.js';
+import { doorSockets, realRoomShell, windowFrame } from '../rooms/real-world.js';
 
 /**
  * `room.intro`: the developer's real room, at night, before the lightning. Like `room.outro` (the same
@@ -73,23 +73,11 @@ function buildIntroRoom(seed: number): ModelSpec {
   b.box('cursor', [0.06, 0.08, 0.02], 'phosphor', [m.x + (m.w - 0.3) / 2 - 0.42, m.y + m.h / 2 - 0.17 - 5 * 0.11, z - 0.1], { outline: false, anim: { type: 'blink', speed: 1.4 } });
   b.box('monitor-led', [0.05, 0.05, 0.02], 'phosphor', [m.x - m.w / 2 + 0.1, m.y - m.h / 2 + 0.035, z - 0.08], { outline: false });
 
-  // The PC tower, on the desk beside the monitor. The lightning comes down on it.
-  const t = L.tower;
-  b.box('tower', [t.w, t.h, 0.5], 'plastic', [t.x, top + t.h / 2, z]);
-  b.box('tower-face', [t.w - 0.1, t.h - 0.1, 0.03], 'rubber', [t.x, top + t.h / 2, z - 0.26]);
-  for (let i = 0; i < 2; i++) b.box('tower-bay', [t.w - 0.18, 0.08, 0.02], 'heatsink', [t.x, top + t.h - 0.16 - i * 0.13, z - 0.28]);
-  b.box('tower-led', [0.06, 0.06, 0.02], 'powerAmber', [t.x - 0.1, top + 0.18, z - 0.29], { outline: false, anim: { type: 'blink', speed: 0.8 } });
-  b.box('tower-button', [0.1, 0.1, 0.02], 'phosphor', [t.x + 0.06, top + 0.18, z - 0.29], { outline: false });
-  b.add('power-cable', { kind: 'tube', path: [[t.x - 0.1, top + 0.1, z + 0.2], [t.x - 0.2, top - 0.3, z + 0.3], [t.x + 0.1, 0.2, z + 0.32], [t.x + 0.35, 0.3, onWall(0.04)]], radius: 0.03 }, 'rubber', [0, 0, 0]);
-  b.plaque('wall-socket', [0.18, 0.24, 0.04], 'plastic', [t.x + 0.35, 0.32]);
+  // Wall power socket & keyboard (movable PC tower, lamp, mug, poster, bookshelf come from stage.props[]).
+  b.plaque('wall-socket', [0.18, 0.24, 0.04], 'plastic', [L.tower.x + 0.35, 0.22]);
 
-  // Keyboard, mug, a lamp with its warm cone.
   const k = L.keyboard;
   b.box('keyboard', [0.7, 0.05, 0.26], 'plastic', [k.x, top + 0.025, z - 0.1]);
-  b.add('mug', { kind: 'cylinder', rTop: 0.09, rBottom: 0.08, height: 0.18, sides: 10 }, 'paper', [m.x + 0.75, top + 0.09, z - 0.12]);
-  b.add('lamp-arm', { kind: 'tube', path: [[L.deskX + 1.2, top, z + 0.05], [L.deskX + 1.15, top + 0.7, z], [L.deskX + 0.95, top + 0.95, z - 0.02]], radius: 0.03 }, 'silicon', [0, 0, 0]);
-  b.add('lamp-shade', { kind: 'cone', radius: 0.17, height: 0.2, sides: 8 }, 'silicon', [L.deskX + 0.92, top + 0.9, z - 0.02], { rot: [0, 0, -0.5] });
-  b.add('lamp-bulb', { kind: 'sphere', radius: 0.06 }, 'lantern', [L.deskX + 0.84, top + 0.74, z - 0.12], { outline: false });
 
   // The office chair the developer sits on: seat, back, gas lift, star base.
   const cx = L.chairX;
@@ -102,17 +90,10 @@ function buildIntroRoom(seed: number): ModelSpec {
   b.box('chair-base', [0.7, 0.06, 0.08], 'heatsink', [cx, 0.06, 0.2]);
   b.box('chair-spine', [0.07, 0.5, 0.06], 'heatsink', [cx, 0.62, 0.42]);
 
-  // A poster and a shelf: whose room this is.
-  b.plaque('poster', [0.8, 1.05, 0.03], 'paper', [3.35, 3.0], { rot: [0, 0, -0.04] });
-  b.plaque('poster-art', [0.52, 0.52, 0.06], 'denim', [3.35, 3.12], { rot: [0, 0, -0.04] });
-  b.plaque('shelf', [1.6, 0.09, 0.3], 'hair', [1.25, 3.6]);
-  const books: ['denim' | 'hoodie' | 'paper' | 'plastic', number][] = [['hoodie', 0.46], ['paper', 0.4], ['denim', 0.52], ['plastic', 0.38], ['hoodie', 0.44]];
-  shelfBooks(b, books, 1.85, 3.645);
-
   b.socket('vibecoder', [cx, 0, ROOM.zActor])
     .socket('monitor', [m.x, m.y, z - 0.1])
     .socket('screen', [m.x, m.y + 0.01, z - 0.1])
-    .socket('tower', [t.x, top + t.h, z - 0.1])
+    .socket('tower', [L.tower.x, top + L.tower.h, z - 0.1])
     .socket('keyboard', [k.x, top + 0.05, z - 0.1])
     .socket('window', [wx, wy, onWall(0.04)])
     .socket('caption', [3.75, 4.55, ROOM.zDressNear]);

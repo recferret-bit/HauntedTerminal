@@ -7,7 +7,7 @@ import { isComic } from '../shaders/comic-material.js';
 import { setCrtParams, setCrtSize, type CrtParams } from '../shaders/crt-pass.js';
 import { LightningStrikeSystem, type LightningStrikeOptions } from '../shaders/lightning.js';
 import { DEFAULT_PIXEL_PARAMS, setPixelArtParams, setPixelArtSize, type PixelArtParams } from '../shaders/pixel-art.js';
-import type { BuiltModel, ModelAnimator } from '../procgen/index.js';
+import { compensateInkOutlines, type BuiltModel, type ModelAnimator } from '../procgen/index.js';
 import type { RoomKind, RoomView } from './room-view.js';
 import { StageLight, type LightMode } from './stage-light.js';
 import { TweenManager } from './tween.js';
@@ -23,6 +23,7 @@ import { reportStage } from './stage-actor.js';
 import { enqueueStageEvent } from './stage-events.js';
 import { buildStageScene, layoutFill } from './stage-layout.js';
 import { syncRoomInner } from './stage-sync.js';
+import { createBatsState } from './stage-bats.js';
 import { stepStage } from './stage-frame.js';
 import { say, triggerShake } from './stage-fx.js';
 import { isLevelTransitionActiveOrArmed, skipLevelTransition as stopLevelTransition } from './stage-level-transition.js';
@@ -136,7 +137,13 @@ export class ComicStage {
   devNoStorm = false;
   /** Play overlay: true while cinematics, outro, stats, or a hidden tab covers the stage. */
   stormPaused = false;
+  readonly bats = createBatsState();
   audioBus: AppBus | null = null;
+  ambientLightOwned = false;
+  ambientStormOwned = false;
+  prevLightMode: LightMode | null = null;
+  prevStorm: { on: boolean; intensity: number } | null = null;
+  lastAmbientKey = '';
 
   constructor(
     readonly mount: HTMLElement,
@@ -247,6 +254,7 @@ export class ComicStage {
       const mat = mesh.material;
       if (mat && !Array.isArray(mat) && isComic(mat)) mat.uniforms.uHalftone.value = dots;
     });
+    compensateInkOutlines(root);
   }
 
   /** Light source for the scene: 'lantern' | 'monitor' | 'blacklight' | 'neon' | 'storm' | 'off'. */

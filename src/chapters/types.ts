@@ -1,6 +1,7 @@
-import type { EnemyType, PickupType } from '../game/bestiary.js';
 import type { ItemId } from '../contracts/inventory.js';
-import type { EnemySpawn } from '../game/floors.js';
+import type { ActorKind, RoomSocketId, SceneTransform, StageAmbientConfig } from '../contracts/room-view.js';
+import type { EnemyType } from '../game/bestiary.js';
+import type { EnemySpawn, PickupSpawn } from '../game/floors.js';
 import type { ClassicLabFile } from '../game/lab-types.js';
 import type { FloorId, RoomKind } from '../game/types.js';
 import type { ChapterGrant, ChapterOutro, FirstPickupScript, LevelScript, ScriptCond } from './script-types.js';
@@ -43,6 +44,8 @@ export interface ChapterBossSpec {
   cameoModel?: string;
   /** Stage label of the cameo supervisor. */
   cameoLabel?: string;
+  /** Optional placement and SceneTransform override for the cameo supervisor. */
+  cameoTransform?: SceneTransform & { x?: number; y?: number; label?: string };
 }
 
 export interface ChapterLevelSummary {
@@ -92,29 +95,77 @@ export interface ChapterManifest {
   levels: ChapterLevelSummary[];
 }
 
-export type LevelFileSpec = ClassicLabFile;
+export interface LevelFileSpec extends ClassicLabFile, SceneTransform {
+  x?: number;
+  y?: number;
+  model?: string;
+  socket?: RoomSocketId;
+  label?: string;
+  sfx?: string;
+}
 
 /** Same spawn record as a classic floor. `showIn` stays optional and unused by chapter JSON. */
 /** A level enemy. Its `pid` only marks that it has one: the number the player sees is rolled on every load (`pids.ts`), and text names it `{pid:<enemy id>}`. */
 export type LevelEnemySpec = EnemySpawn;
 
-export interface LevelPickupSpec {
-  id: string;
-  type: PickupType;
-  path: string;
-  locked?: boolean;
-  /** Optional ModelCatalog override (e.g. `pickup.gpu` on GPU salvage items). */
-  model?: string;
+export interface LevelPickupSpec extends PickupSpawn {
   /** Optional condition: pickup and its file stay hidden until this holds, then land on the ground. */
   appearWhen?: ScriptCond;
 }
 
-export interface LevelPropSpec {
+export interface LevelPropSpec extends SceneTransform {
   id: string;
   model: string;
   x: number;
   y?: number;
+  socket?: RoomSocketId;
+  kind?: ActorKind;
   label?: string;
+  sfx?: string;
+  /** Optional VFS subdirectory path where this prop appears (defaults to `level.cwd`). */
+  cwd?: string;
+}
+
+export interface LevelStageHeroSpec extends SceneTransform {
+  x: number;
+  y?: number;
+}
+
+export interface LevelStageEntryPortSpec extends SceneTransform {
+  label?: string;
+  model?: string;
+  x?: number;
+  y?: number;
+  socket?: RoomSocketId;
+  sfx?: string;
+}
+
+export interface LevelStageKiroSpec extends SceneTransform {
+  x?: number;
+  y?: number;
+  target?: string;
+  label?: string;
+}
+
+export interface LevelStageSubdirSpec {
+  hero?: number | LevelStageHeroSpec;
+  entryPort?: false | LevelStageEntryPortSpec;
+  backdrop?: string;
+  ambient?: StageAmbientConfig;
+  music?: string;
+  sfx?: string;
+  caption?: string;
+}
+
+export interface LevelStageSpec {
+  hero?: number | LevelStageHeroSpec;
+  entryPort?: false | LevelStageEntryPortSpec;
+  kiro?: LevelStageKiroSpec;
+  backdrop?: string;
+  ambient?: StageAmbientConfig;
+  music?: string;
+  sfx?: { enter?: string; deny?: string; exit?: string };
+  subdirs?: Record<string, LevelStageSubdirSpec>;
 }
 
 export interface LevelPatchChip {
@@ -197,16 +248,26 @@ export interface LevelSpec {
   riddles?: LevelRiddleSpec[];
   /** Optional declarative visual stage props (`ModelCatalog` ids). */
   props?: LevelPropSpec[];
+  /** Optional declarative stage placement, backdrop, ambient, and audio config. */
+  stage?: LevelStageSpec;
   winRules: WinRule[];
   solutionCommands: string[];
   /** Arrival beats, tutorial, taunts, Kiro behaviour: see `script-types.ts`. */
   script?: LevelScript;
 }
 
-export interface ComixCastActor {
+export interface ComixCastActor extends SceneTransform {
   model: string;
   x: number;
-  scale?: number;
+  y?: number;
+  view?: 'front' | 'side' | 'top';
+}
+
+export interface ComixPropSpec extends SceneTransform {
+  id?: string;
+  model: string;
+  x: number;
+  y?: number;
   view?: 'front' | 'side' | 'top';
 }
 
@@ -222,15 +283,18 @@ export interface ComixPanelSpec {
   id: string;
   rect: [number, number, number, number];
   bgHex: string;
+  backdrop?: string;
   room?: string;
   caption?: string;
   cast: ComixCastActor[];
+  props?: ComixPropSpec[];
   bubbles?: ComixBubbleSpec[];
   sfx?: {
     text: string;
     x: number;
     y: number;
     color: string;
+    cue?: string;
   };
 }
 

@@ -111,6 +111,8 @@ function defaultFor(f: Field): unknown {
       return '';
     case 'number':
       return 0;
+    case 'numOrVec3':
+      return f.defaultScalar ?? 0;
     case 'bool':
       return Boolean(f.defaultTrue);
     case 'select':
@@ -122,6 +124,8 @@ function defaultFor(f: Field): unknown {
       return [];
     case 'textOrVec':
       return '';
+    case 'alt':
+      return f.defaultScalar ?? (f.scalar === 'number' ? 0 : false);
     case 'color':
       return '#000000';
     case 'object':

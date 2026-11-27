@@ -145,6 +145,8 @@ export function buildModel(spec: ModelSpec, opts: BuildOptions = {}): BuiltModel
       const s = part.scale ?? [1, 1, 1];
       const shell = new THREE.Mesh(inkShellGeometry(geo, inkWeight / Math.max(Math.abs(s[0]), Math.abs(s[1]), Math.abs(s[2]))), inkMat);
       shell.userData.outline = true;
+      shell.userData.targetInkWeight = inkWeight;
+      shell.userData.partScale = [...s];
       shell.raycast = () => {};
       mesh.add(shell);
     }
@@ -154,6 +156,57 @@ export function buildModel(spec: ModelSpec, opts: BuildOptions = {}): BuiltModel
 
   group.userData.spec = spec;
   return { spec, group, materials, allMaterials, parts, sockets: { ...(spec.sockets ?? {}) } };
+}
+
+interface InkBaseData {
+  basePos: Float32Array;
+  nrm: Float32Array;
+  baseWeight: number;
+}
+
+const _compScale = new THREE.Vector3();
+
+/** Re-projects outline shell vertices under ancestor uniform/non-uniform scaling so world-space ink weight stays consistent. */
+export function compensateInkOutlines(root: THREE.Object3D): void {
+  root.updateWorldMatrix(true, true);
+  root.traverse((obj) => {
+    if (!obj.userData.outline || !(obj instanceof THREE.Mesh) || !obj.parent) return;
+    const inkBase = obj.geometry.userData.inkBase as InkBaseData | undefined;
+    const targetWeight = typeof obj.userData.targetInkWeight === 'number' ? (obj.userData.targetInkWeight as number) : inkBase?.baseWeight;
+    if (!inkBase || !targetWeight) return;
+    obj.parent.getWorldScale(_compScale);
+    const wx = Math.max(0.12, Math.abs(_compScale.x));
+    const wy = Math.max(0.12, Math.abs(_compScale.y));
+    const wz = Math.max(0.12, Math.abs(_compScale.z));
+    const key = `${wx.toFixed(3)},${wy.toFixed(3)},${wz.toFixed(3)}`;
+    if (obj.userData.inkCompKey === key) return;
+    const ps = (obj.userData.partScale as Vec3 | undefined) ?? [1, 1, 1];
+    const unscaledMatch =
+      Math.abs(wx - Math.abs(ps[0])) < 1e-3 &&
+      Math.abs(wy - Math.abs(ps[1])) < 1e-3 &&
+      Math.abs(wz - Math.abs(ps[2])) < 1e-3;
+    const pos = obj.geometry.getAttribute('position');
+    if (!(pos instanceof THREE.BufferAttribute)) return;
+    const { basePos, nrm, baseWeight } = inkBase;
+    if (unscaledMatch) {
+      for (let i = 0; i < pos.count; i++) {
+        const o = i * 3;
+        pos.setXYZ(i, basePos[o]! + nrm[o]! * baseWeight, basePos[o + 1]! + nrm[o + 1]! * baseWeight, basePos[o + 2]! + nrm[o + 2]! * baseWeight);
+      }
+    } else {
+      for (let i = 0; i < pos.count; i++) {
+        const o = i * 3;
+        const nx = nrm[o]! / wx;
+        const ny = nrm[o + 1]! / wy;
+        const nz = nrm[o + 2]! / wz;
+        const len = Math.hypot(nx, ny, nz) || 1;
+        const factor = targetWeight / len;
+        pos.setXYZ(i, basePos[o]! + (nx * factor) / wx, basePos[o + 1]! + (ny * factor) / wy, basePos[o + 2]! + (nz * factor) / wz);
+      }
+    }
+    pos.needsUpdate = true;
+    obj.userData.inkCompKey = key;
+  });
 }
 
 export function disposeModel(model: BuiltModel): void {

@@ -7,7 +7,7 @@ Source of truth: `src/procgen/fx/types.ts`. Everything is exported from `src/pro
 Page space: `+x` screen-right, `+y` up, angles in degrees counter-clockwise from screen-right
 (0 right, 90 up, 180 left, 270 down). Units are world units (58 px at game scale). The emitter group
 mirrors x because world `+x` is screen-left. `FxParticleState.z` is layering depth toward the camera
-(`layer index x 0.02` plus `zSpread` jitter); there is no z motion.
+(`layer index x 0.02` plus `zSpread` jitter); there is no general Z velocity except `emit: 'orbit'`, which moves particles in 3D `(x, y, z)` around the actor using `orbitDepth`.
 
 ## `FxPreset`
 
@@ -24,8 +24,11 @@ mirrors x because world `+x` is screen-left. `FxParticleState.z` is layering dep
 | `onomatopoeia` | `FxOnomatopoeia` | Optional unless `FX_MOMENT_WORDS[moment]` names a word |
 | `shake` | 0..2 | Argument for `ComicStage.triggerShake(mul)`: 0.8 light, 1.6 heavy |
 | `flash` | 0..6 | Peak `uFlash` for every comic material. 5.5 is a lightning strike |
+| `light` | `FxLightSpec` | Optional stepped light pool cast onto the room (`{ zone, radius: 0..8, power: 0..2.5, envelope?: FxKey[], offset?: Vec2 }`) |
 | `fullPanel` | boolean | Allows an extent up to 7 x 5.6 units instead of 3.4 x 2.8 |
 | `loop` | boolean | Ambient effect: time wraps at `durationMs`, `done` never turns true |
+| `wrapActor` | boolean | Wraps around an actor in 3D (front renders in front, back occluded behind) |
+| `seedKey` | string | Optional RNG seed override (`default: id`) when renaming an existing preset |
 
 ## `FxLayer`
 
@@ -34,9 +37,11 @@ mirrors x because world `+x` is screen-left. `FxParticleState.z` is layering dep
 | `name` | string | | Unique in the preset |
 | `role` | `'primary' \| 'secondary' \| 'accent'` | | 60 / 30 / 10 by emitted area |
 | `shape` | `ShapeSpec` | | One chunk. Use `fx/shapes.ts`. Long axis on `+x` so `align` works |
+| `shapes` | `ShapeSpec[]` | | Optional pool of alternative shapes picked by seed / cycled with `glyphSwapSteps` |
+| `glyphSwapSteps` | integer | | If `shapes` is set, cycle particle glyph every N stepped frames |
 | `zone` | `ZoneId` | | Palette zone |
 | `count` | integer | | Particles in the layer. All layers together at most 120 |
-| `emit` | see below | | Emission shape |
+| `emit` | see below | | Emission shape (`burst`, `cone`, `ring`, `line`, `rain`, `implode`, `orbit`) |
 | `origin` | `[x, y]` | `[0, 0]` | Layer origin relative to the effect origin |
 | `spawn` | `{ radius?: [min, max], width?, height? }` | | Where particles start |
 | `angle` | `[min, max]` degrees | full circle for fans, up for `line`, down for `rain` | Direction range |
@@ -47,6 +52,13 @@ mirrors x because world `+x` is screen-left. `FxParticleState.z` is layering dep
 | `rotation` | `[min, max]` deg | 0 | Starting rotation |
 | `align` | boolean | false | Point `+x` of the shape along the direction of travel |
 | `swirl` | degrees | 0 | `implode` only: sweep around the origin on the way in |
+| `orbitSweep` | `[min, max]` deg | | `orbit` only: degrees swept around Y over life |
+| `orbitDepth` | number | | `orbit` only: Z-axis depth radius of 3D ellipse (world units) |
+| `orbitRise` | `[min, max]` units | | `orbit` only: vertical rise over life |
+| `orbitTilt` | degrees | | `orbit` only: max tilt of orbital plane (`[-tilt, +tilt]`) |
+| `orbitStreams` | integer | `3` | `orbit` only: number of helical streams around the actor |
+| `orbitLag` | degrees | | `orbit` only: azimuth lag behind stream head |
+| `orbitTrailY` | units | | `orbit` only: vertical offset behind stream head |
 | `delayMs` | `[min, max]` | 0 | Snapped down to the step grid |
 | `lifeMs` | `[min, max]` | | `delay + life` must not exceed `durationMs` |
 | `size` | `[min, max]` | 1 | Per-particle size multiplier. 0.8..1.2 looks hand-drawn |
@@ -65,6 +77,7 @@ mirrors x because world `+x` is screen-left. `FxParticleState.z` is layering dep
 | `line` | Across `spawn.width` x `spawn.height`, evenly spread on x | Along `angle` |
 | `rain` | Across `spawn.width`, at `spawn.height` above the origin | Along `angle`, default straight down |
 | `implode` | On a circle of `spawn.radius` | Pulled into the origin over the particle's life, accelerating; `speed` ignored |
+| `orbit` | On a 3D cylinder (`spawn.radius`, `spawn.height`) | Orbits around the vertical axis in 3D `(x, y, z)` using `orbit*` fields |
 
 Fans are evenly spaced on purpose: a comic burst is a drawn star, not a random spray. Offset one
 fan against another with `angle: [20, 380]`.

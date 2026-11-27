@@ -98,6 +98,76 @@ export const GENERATED_COMIX_MANIFESTS: ComixManifest[] = [
           "w": 0.96,
           "h": 0.68
         }
+      ],
+      "ambient": {
+        "lightMode": "storm",
+        "storm": {
+          "enabled": true,
+          "intensity": 0.75
+        },
+        "bats": false
+      },
+      "props": [
+        {
+          "id": "tower",
+          "model": "prop.pc_tower",
+          "at": {
+            "x": 3.72,
+            "y": 0.8,
+            "z": 0.56
+          }
+        },
+        {
+          "id": "lamp",
+          "model": "prop.desk_lamp",
+          "at": {
+            "x": 3.48,
+            "y": 0.8,
+            "z": 0.68
+          },
+          "zOrder": -1,
+          "scale": 0.8
+        },
+        {
+          "id": "mug",
+          "model": "prop.coffee_mug",
+          "at": {
+            "x": 3.34,
+            "y": 0.8,
+            "z": 0.42
+          },
+          "scale": 0.65
+        },
+        {
+          "id": "bookshelf",
+          "model": "prop.bookshelf",
+          "at": {
+            "x": 1.25,
+            "y": 3.55,
+            "z": 0.84
+          },
+          "zOrder": -1
+        },
+        {
+          "id": "poster",
+          "model": "prop.wall_poster",
+          "at": {
+            "x": 0.9,
+            "y": 2.2,
+            "z": 0.86
+          },
+          "zOrder": -2
+        },
+        {
+          "id": "sticky-note",
+          "model": "prop.sticky_note",
+          "at": {
+            "x": 1.88,
+            "y": 1.62,
+            "z": 0.82
+          },
+          "rotation": -6
+        }
       ]
     },
     "cast": [
@@ -239,6 +309,64 @@ export const GENERATED_COMIX_MANIFESTS: ComixManifest[] = [
           "id": "chair",
           "model": "prop.office_chair",
           "at": "chair"
+        },
+        {
+          "id": "tower",
+          "model": "prop.pc_tower",
+          "at": {
+            "x": 3.92,
+            "y": 0,
+            "z": 0.56
+          }
+        },
+        {
+          "id": "lamp",
+          "model": "prop.desk_lamp",
+          "at": {
+            "x": 1.9,
+            "y": 1.085,
+            "z": 0.56
+          }
+        },
+        {
+          "id": "mug",
+          "model": "prop.coffee_mug",
+          "at": {
+            "x": 3.72,
+            "y": 1.085,
+            "z": 0.45
+          },
+          "scale": 0.65
+        },
+        {
+          "id": "bookshelf",
+          "model": "prop.bookshelf",
+          "at": {
+            "x": 2.9,
+            "y": 3.2,
+            "z": 0.84
+          },
+          "zOrder": -1
+        },
+        {
+          "id": "sticky-note",
+          "model": "prop.sticky_note",
+          "at": {
+            "x": 0.25,
+            "y": 3.1,
+            "z": 0.82
+          },
+          "rotation": 5
+        },
+        {
+          "id": "poster",
+          "model": "prop.wall_poster",
+          "at": {
+            "x": 0.8,
+            "y": 2.2,
+            "z": 0.86
+          },
+          "zOrder": -2
         }
       ],
       "fixtures": [
@@ -257,7 +385,12 @@ export const GENERATED_COMIX_MANIFESTS: ComixManifest[] = [
             "z": 0.3
           }
         }
-      ]
+      ],
+      "ambient": {
+        "lightMode": "off",
+        "storm": false,
+        "bats": false
+      }
     },
     "cast": [
       {
@@ -487,7 +620,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
             },
             {
               "kind": "material_tint",
-              "target": "room",
+              "target": "tower",
               "zone": "powerAmber",
               "from": "0",
               "until": "STRIKE",
@@ -869,7 +1002,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
             },
             {
               "kind": "material_tint",
-              "target": "room",
+              "target": "tower",
               "zone": "powerAmber",
               "from": "STRIKE",
               "until": "16.5",
@@ -932,7 +1065,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
         },
         {
           "kind": "material_tint",
-          "target": "room",
+          "target": "tower",
           "zone": "powerAmber",
           "from": "16.5",
           "until": "31.9",
@@ -1948,7 +2081,7 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = {
         },
         {
           "kind": "material_tint",
-          "target": "room",
+          "target": "tower",
           "zone": "powerAmber",
           "from": "31.9",
           "until": "END",

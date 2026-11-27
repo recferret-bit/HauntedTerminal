@@ -1,0 +1,9 @@
+# Agent workbench tooling: tasks
+
+Status: see requirements.md
+
+- [x] 1. Update architectural gates (`scripts/quality/check-layers.mjs`), Storybook FX telemetry & workbench UI (`src/storybook/`, `scripts/harness/screenshot-lab.mjs`), and verify with `screenshot-lab.mjs --selftest` + `fx.sigkill` inspect.
+- [x] 2. Fix Laptop Lab `?speed=` parsing/sync bug, type `window.__laptop`, add Quest Check & `RunReport` Inspector card (`src/laptop/`), add `scripts/harness/laptop-lab.mjs --verify`, and verify with `laptop-unit.mjs`, `laptop-lab.mjs --verify`, `laptop-lab-smoke.mjs`, and `play-laptop-smoke.mjs`.
+- [x] 3. Extract `src/audio/config.ts` (keeping `src/audio/engine.ts <= 600` lines), build `/audio-lab` (`pages/audio-lab.html`, `src/audio-lab/`), wire route & dev link (`vite.config.ts`, `pages/dev.html`), implement `audio-gen.mjs inspect`, and verify with `audio-unit.mjs`, `audio-gen-unit.mjs`, `audio-lab-unit.mjs`, `audio-lab-smoke.mjs`, and `audio-smoke.mjs`.
+- [x] 4. Parameterize `comix-compile.mjs`, add `--format` to `generate-chapter.mjs` and `--validate` / `--from-level` to `terminal-lab.mjs`, expand `credits-forge` MCP tools across chapters/comix/terminal-lab/assets, implement per-tool writer fences in `agent-mcp.mjs`, update `agents-build.mjs` + `agents-unit.mjs` + `forge-unit.mjs`, and verify with `forge-unit.mjs` + `quality:agents`.
+- [x] 5. Author `.kiro/skills/{laptop-lab,terminal-lab}/` + exhaustive `references/*.md` configuration schemas across all 6 domains, update all 9 `.kiro/agents/prompts/*.md` and steering/root docs (`AGENTS.md`, `CLAUDE.md`, `.kiro/steering/*.md`), regenerate `.kiro/agents/*.json`, run `npm run agents:install`, transition spec to `done`, and pass `npm run quality`, `npm run test`, `npm run build`, `npm run quality:fingerprint`, and all smoke/validator suites.

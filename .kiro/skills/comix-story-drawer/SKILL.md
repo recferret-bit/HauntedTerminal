@@ -32,11 +32,15 @@ Place each chapter's comic script at `chapters/<chapter-id>/story/comix.spec.jso
           "id": "p1-1",
           "rect": [0.03, 0.03, 0.94, 0.30],
           "bgHex": "#211a36",
+          "backdrop": "#211a36",
           "room": "room.desk",
           "caption": "03:12 AM — CLIENT MARTY'S BYTERIG PC PARTS & GAMES STORE LAUNCHES AT 06:00.",
           "cast": [
-            { "model": "vibecoder.dev", "x": -0.5, "scale": 1.0 },
+            { "model": "vibecoder.dev", "x": -0.5, "scale": 1.0, "zOrder": 0, "rotation": 0 },
             { "model": "prop.crt", "x": 0.45, "scale": 1.1 }
+          ],
+          "props": [
+            { "model": "prop.cobweb", "x": 0.9, "y": 2.9, "zOrder": -2, "scale": 0.85, "rotation": -10 }
           ],
           "bubbles": [
             { "speaker": "marty", "style": "normal", "text": "Dev! GPU, RAM, SSD cards and cart ordering ready by 6 AM—$1,200 on delivery!", "x": 0.62, "y": 0.28 }
@@ -53,8 +57,8 @@ Place each chapter's comic script at `chapters/<chapter-id>/story/comix.spec.jso
    - Keep `2–4` panels per page with `0.02–0.03` gutters between panels so the Ben-Day paper breathes.
    - Vary panel widths (`0.94` widescreen establishing shot -> `0.45` + `0.46` side-by-side reaction beats -> `0.94` splash impact).
 2. **Valid `ModelCatalog` IDs Only:**
-   - Rooms: `room.desk`, `room.attic`, `room.crypt_entrance`, `room.crypt_hall`, `room.lab_hall`, `room.catwalk`, `room.furnace`, `room.core`.
-   - Cast: `vibecoder.dev`, `vibecoder.hand`, `door.socket` (`hank.tty`), `prop.crt`, `pickup.ram`, `pickup.ssd`, `pickup.energy`, `malware.*`, `boss.kernel`, `boss.forkbomb`.
+   - Rooms: `room.desk`, `room.attic`, `room.crypt_entrance`, `room.crypt_hall`, `room.chasm`, `room.cell`, `room.lab_hall`, `room.catwalk`, `room.furnace`, `room.core`, `room.outro`.
+   - Cast: `vibecoder.dev` (`vibecoder.dev_*`), `vibecoder.hand`, `npc.greybeard_rig` (`dad.tty`), `npc.kiro_ghost`, `door.socket`, `agent.*`, `item.*` (`item.tube_transistor`, `item.terminal`, `item.laptop`, `item.manual`, `item.map`, `item.tensor_gpu`, `item.vram_module`), `prop.crt`, `pickup.ram`, `pickup.ssd`, `pickup.energy`, `malware.*`, `boss.kernel`, `boss.forkbomb`.
 3. **Lettering Economy:**
    - Keep `caption` under `95` characters and each `bubble.text` under `100` characters so lines stay bold and readable at thumbnail and mobile sizes.
    - Use `style: "shout"` + `sfx` (`KRAKOOM!`, `SIGKILL!`, `SHIPPED!`) sparingly on climax panels (`1` per page max).

@@ -103,6 +103,18 @@ function room() {
   };
 }
 
+/** An NPC rig on the floor. */
+function npc() {
+  return {
+    id: 'npc.selftest', category: 'npc', label: 'self-test npc',
+    parts: [
+      { name: 'desk', shape: box(0.8, 0.5, 0.3), zone: 'silicon', pos: [0, 0.25, 0] },
+      { name: 'monitor', shape: box(0.35, 0.4, 0.2), zone: 'solder', pos: [-0.18, 0.68, 0] },
+      { name: 'coder', shape: box(0.28, 0.55, 0.2), zone: 'plastic', pos: [0.18, 0.75, 0] },
+    ],
+  };
+}
+
 const edit = (base, fn) => { const spec = clone(base()); fn(spec); return spec; };
 const part = (spec, name) => spec.parts.find((p) => p.name === name);
 
@@ -222,6 +234,8 @@ const CASES = [
 
   // Palette and category rules
   { name: 'human zone on a prop', expect: ['HUMAN_ZONE_MISUSE'], spec: edit(prop, (s) => { part(s, 'cap').zone = 'skin'; }) },
+  { name: 'human zone on another npc', expect: ['HUMAN_ZONE_MISUSE'], spec: edit(npc, (s) => { part(s, 'coder').zone = 'skin'; }) },
+  { name: 'human skin on npc.greybeard_rig is allowed', expect: [], spec: edit(npc, (s) => { s.id = 'npc.greybeard_rig'; part(s, 'coder').zone = 'skin'; }) },
   { name: 'malware zone on a door', expect: ['MALWARE_ZONE_MISUSE'], spec: edit(door, (s) => { for (const n of ['contact_0', 'contact_1']) part(s, n).zone = 'corruptMagenta'; }) },
   { name: 'malware without corruption', expect: ['MALWARE_NO_CORRUPTION'], spec: edit(malware, (s) => {
     for (const n of ['horn_l', 'horn_r']) part(s, n).zone = 'solder';

@@ -1,5 +1,4 @@
-import '../procgen/index.js';
-import { ModelCatalog } from '../procgen/core/catalog.js';
+import { FxCatalog, ModelCatalog } from '../procgen/index.js';
 import { patternError } from '../chapters/session-lab-checks.js';
 import { assetIssues, validatePack, type PackIssue } from '../chapters/validate-pack.js';
 import { buildFloor } from '../game/floors.js';
@@ -103,6 +102,9 @@ function stepIssues(script: LabScript): PackIssue[] {
 /** What the chapter checks say about the compiled level, plus the lab's own rules. */
 export function checkLab(script: LabScript): PackIssue[] {
   const { pack } = buildLabPack(script);
-  const level = [...validatePack(pack, { winnable: false }), ...assetIssues(pack, (id) => ModelCatalog.has(id))].map((i) => ({ ...i, where: 'lab' }));
+  const level = [
+    ...validatePack(pack, { winnable: false }),
+    ...assetIssues(pack, (id) => ModelCatalog.has(id), (id) => FxCatalog.has(id)),
+  ].map((i) => ({ ...i, where: 'lab' }));
   return [...level, ...setupIssues(script), ...stepIssues(script)];
 }

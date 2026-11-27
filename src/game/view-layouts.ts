@@ -1,14 +1,24 @@
+import type {
+  RoomSocketId, SceneRotation, SceneScale, SceneTransform, StageAmbientConfig,
+} from '../contracts/room-view.js';
 import type { EntityView } from './entities.js';
 import type { ItemId } from './inventory.js';
-import type { ActorKind, FloorId, LegacyActorKey } from './types.js';
+import type { ActorKind, ActorState, FloorId, LegacyActorKey } from './types.js';
 
-export interface ViewThing {
+export interface ViewThing extends SceneTransform {
   name: string;
   type: 'file' | 'dir' | 'symlink' | 'socket' | 'device';
   /** Directory (or link to one) the hero may enter now. */
   open: boolean;
   /** Set when this file is an enemy or pickup: the entity actor stands for it. */
   entity?: string;
+  x?: number;
+  y?: number;
+  model?: string;
+  socket?: RoomSocketId;
+  label?: string;
+  key?: LegacyActorKey;
+  kind?: ActorKind;
 }
 
 export interface SceneFacts {
@@ -20,6 +30,18 @@ export interface SceneFacts {
   dark?: boolean;
   /** True in the entry room of a floor/level after the first: places an unlocked entrance port at `door.left`. */
   entryDoor?: boolean;
+  /** Declarative hero placement/transform override (number = x, object = full transform). */
+  hero?: number | ({ x: number; y?: number } & SceneTransform);
+  /** Declarative entrance port override when `entryDoor` is active (or explicitly configured). */
+  entryPort?: { label?: string; model?: string; x?: number; y?: number; socket?: RoomSocketId } & SceneTransform;
+  /** Optional `#rrggbb` panel backdrop override. */
+  backdrop?: string;
+  /** Optional ambient lighting/bats/storm/loop overrides. */
+  ambient?: StageAmbientConfig;
+  /** Declarative props supplied directly by config (no layout table needed). */
+  props?: Prop[];
+  /** Declarative caption text override. */
+  captionText?: string;
   /** The item in his hand: picks the hero model. `null` is empty hands; default: the lantern. */
   held?: ItemId | null;
   hp?: number;
@@ -53,24 +75,30 @@ export interface SceneFacts {
     state: 'idle' | 'windup';
     target?: string;
     label: string;
+    zOrder?: number;
+    scale?: SceneScale;
+    rotation?: SceneRotation;
   };
 }
 
-interface Slot {
+export interface Slot extends SceneTransform {
   x: number;
   y?: number;
+  socket?: RoomSocketId;
   key?: LegacyActorKey;
   model?: string;
   label?: string;
 }
 
-interface Prop {
+export interface Prop extends SceneTransform {
   id: string;
   model: string;
   x: number;
   y?: number;
+  socket?: RoomSocketId;
   key?: LegacyActorKey;
   kind?: ActorKind;
+  state?: ActorState;
   label?: string;
   target?: string;
   when?: (f: SceneFacts) => boolean;
@@ -97,7 +125,10 @@ export const LAYOUTS: Record<string, Layout> = {
       { id: 'prop:cables', model: 'prop.cables', x: -0.85, label: 'ribbon cobweb' },
       { id: 'prop:ram_bank', model: 'prop.ram_bank', x: 3.65, label: 'DDR5 DIMM bank' },
       { id: 'prop:indicator', model: 'prop.indicator', x: -0.35, label: 'status tower' },
-      { id: 'prop:cobweb', model: 'prop.cobweb', x: 4.7, y: 3.0 },
+      { id: 'prop:cobweb', model: 'prop.cobweb', x: 4.7, y: 3.0, zOrder: -3 },
+      { id: 'prop:shelf-left', model: 'prop.shelf', x: 3.25, y: 2.25, zOrder: -3, scale: 0.9 },
+      { id: 'prop:platter-1', model: 'prop.platter', x: 3.35, y: 2.52, zOrder: -2, scale: 0.72 },
+      { id: 'prop:corner-web-r', model: 'prop.corner_cobweb', x: -1.0, y: 3.2, zOrder: -3, scale: 0.85 },
     ],
     slots: {
       'todo.note': { x: 1.55, key: 'scroll' },
@@ -112,7 +143,10 @@ export const LAYOUTS: Record<string, Layout> = {
       { id: 'prop:cables', model: 'prop.cables', x: 4.75, label: 'ribbon cobweb' },
       { id: 'prop:wire_loom', model: 'prop.wire_loom', x: 4.4, label: 'patch loom' },
       { id: 'prop:transistor', model: 'prop.transistor', x: 3.0, label: 'TO-220FET' },
-      { id: 'prop:spider', model: 'prop.spider', x: 3.15, y: 2.35 },
+      { id: 'prop:spider', model: 'prop.spider', x: 3.15, y: 2.35, zOrder: -2 },
+      { id: 'prop:corner-web-l', model: 'prop.corner_cobweb', x: 4.7, y: 3.18, zOrder: -3, scale: 0.95 },
+      { id: 'prop:shelf-attic', model: 'prop.shelf', x: 1.85, y: 2.35, zOrder: -3, scale: 0.9 },
+      { id: 'prop:platter-attic', model: 'prop.platter', x: 2.0, y: 2.6, zOrder: -2, scale: 0.65, rotation: 10 },
       { id: 'prop:fuse', model: 'prop.fuse', x: -0.62, y: 1.0, label: '.power_on', when: (f) => f.powerOn },
     ],
     slots: {
@@ -144,8 +178,9 @@ export const LAYOUTS: Record<string, Layout> = {
     props: [
       { id: 'prop:tomb1', model: 'prop.tombstone', x: 4.78, label: 'FATAL' },
       { id: 'prop:tomb2', model: 'prop.tombstone', x: 3.85, label: 'FATAL' },
-      { id: 'prop:bat', model: 'prop.bat', x: 4.45, y: 2.95 },
-      { id: 'prop:cobweb', model: 'prop.cobweb', x: -0.98, y: 3.05 },
+      { id: 'prop:bat', model: 'prop.bat', x: 4.45, y: 2.95, zOrder: -2 },
+      { id: 'prop:cobweb', model: 'prop.cobweb', x: -0.98, y: 3.05, zOrder: -3 },
+      { id: 'prop:platter-crypt', model: 'prop.platter', x: 2.55, y: 2.35, zOrder: -3, scale: 0.78 },
     ],
     slots: {
       chronicles: { x: 3.35, model: 'door.usb' },
@@ -206,7 +241,9 @@ export const LAYOUTS: Record<string, Layout> = {
     props: [
       { id: 'prop:capacitor', model: 'prop.capacitor', x: 4.75 },
       { id: 'prop:gpu_card', model: 'prop.gpu_card', x: 3.75, label: 'bus accelerator' },
-      { id: 'prop:spider', model: 'prop.spider', x: -0.95, y: 2.35 },
+      { id: 'prop:spider', model: 'prop.spider', x: -0.95, y: 2.35, zOrder: -2 },
+      { id: 'prop:pcb-maze', model: 'prop.pcb_plaque', x: 2.85, y: 2.2, zOrder: -3, scale: 0.9 },
+      { id: 'prop:led-maze', model: 'prop.led_bar', x: 0.55, y: 2.75, zOrder: -3 },
     ],
     slots: {
       wing_a: { x: 4.15, model: 'door.loopback' },
@@ -250,6 +287,8 @@ export const LAYOUTS: Record<string, Layout> = {
       { id: 'prop:heatsink', model: 'prop.heatsink', x: 3.68 },
       { id: 'prop:water_pipe', model: 'prop.water_pipe', x: 3.92, label: 'coolant line' },
       { id: 'prop:cooler_tower', model: 'prop.cooler_tower', x: 3.05, label: 'fin tower' },
+      { id: 'prop:hanging-catwalk', model: 'prop.hanging_cable', x: 1.9, y: 2.95, zOrder: -2 },
+      { id: 'prop:led-catwalk', model: 'prop.led_bar', x: -0.15, y: 2.75, zOrder: -3 },
       { id: 'door:furnace_hall', model: 'door.hdmi', x: -0.95, kind: 'door', target: 'furnace_hall', label: 'furnace_hall (sealed)', when: (f) => !f.valveOpen },
     ],
     slots: {
@@ -282,7 +321,9 @@ export const LAYOUTS: Record<string, Layout> = {
     hero: 2.4,
     props: [
       { id: 'prop:gpu_server', model: 'prop.gpu_server', x: -0.82, label: 'compute node' },
-      { id: 'prop:bat', model: 'prop.bat', x: 4.65, y: 2.95 },
+      { id: 'prop:bat', model: 'prop.bat', x: 4.65, y: 2.95, zOrder: -2 },
+      { id: 'prop:pcb-core', model: 'prop.pcb_plaque', x: 2.25, y: 2.3, zOrder: -3 },
+      { id: 'prop:led-core', model: 'prop.led_bar', x: -0.25, y: 2.8, zOrder: -3 },
       { id: 'hole', key: 'hole', model: 'door.devnull', x: -1.05, label: '/dev/null', when: (f) => f.phase1 },
       { id: 'door:portal', model: 'door.ethernet', x: 0.2, kind: 'door', target: 'exit', label: 'exit', when: (f) => f.portal },
     ],
@@ -296,173 +337,5 @@ export const LAYOUTS: Record<string, Layout> = {
       'wakeup.sock': { x: -0.45, key: 'socket' },
     },
     caption: (f) => (f.portal ? 'The portal is open. Type exit.' : f.phase1 ? 'The shield is down. Wake yourself up.' : 'The overlord is still armed.'),
-  },
-  '/mnt/wires_and_chips': {
-    hero: 2.5,
-    props: [
-      { id: 'prop:wires-left', model: 'prop.cables', x: 4.55, label: 'tangled ribbon wires' },
-      { id: 'prop:chip-left', model: 'prop.chip', x: 3.75, label: 'burned silicon chip' },
-      { id: 'prop:chip-right', model: 'prop.chip', x: -0.25, label: 'motherboard chip' },
-      { id: 'prop:wires-right', model: 'prop.cables', x: -1.1, label: 'bus cables' },
-    ],
-    slots: {
-      'kiro_story.txt': { x: 1.55, key: 'scroll' },
-      'starter_ram_8gb.dimm': { x: 0.9 },
-      'glitch_spark.exe': { x: 0.25 },
-      hub_uplink: { x: -0.75, key: 'gate', model: 'door.ethernet' },
-    },
-  },
-  '/srv/kiroween/cache_vault': {
-    hero: 2.5,
-    props: [
-      { id: 'prop:cache-chip', model: 'prop.chip', x: 4.78, label: 'cache controller' },
-      { id: 'prop:cache-cables', model: 'prop.cables', x: 3.85, label: 'vault bus' },
-    ],
-    slots: {
-      '.vault_beacon': { x: 2.95, key: 'scroll' },
-      'vault_notes.txt': { x: 2.05, key: 'scroll' },
-      'ollama_bus.conf': { x: 1.55, key: 'scroll' },
-      'ram_16gb.dimm': { x: 1.05 },
-      'ssd_256gb.img': { x: 0.55 },
-      tube_transistor: { x: 0.05 },
-      'gravy_sentry.bin': { x: -0.35 },
-      gpu_alley: { x: -0.95, key: 'gate', model: 'door.ethernet' },
-    },
-  },
-  '/srv/kiroween/gpu_alley': {
-    hero: 2.35,
-    props: [
-      { id: 'prop:gpu-heatsink', model: 'prop.heatsink', x: 4.78, label: 'vram heatsink' },
-    ],
-    slots: {
-      vram_crate: { x: 3.82, model: 'door.usb' },
-      port_445: { x: 3.25, model: 'door.usb' },
-      'worm.bin': { x: 2.82 },
-      'transistor_gate.sock': { x: 1.88, key: 'socket' },
-      '.transistor_rune': { x: 1.48, key: 'scroll' },
-      'ram_16gb.dimm': { x: 1.05 },
-      'gpu_shader_core_01.img': { x: 0.55 },
-      '.keygen.exe': { x: 0.05 },
-      '.codec_spycam': { x: -0.42 },
-      server_hub_1: { x: -0.88, key: 'gate', model: 'door.ethernet' },
-    },
-  },
-  '/srv/kiroween/gpu_alley/vram_crate': {
-    hero: 2.4,
-    props: [
-      { id: 'prop:vram-chip', model: 'prop.chip', x: 4.35, label: 'GDDR6X bank' },
-    ],
-    slots: {
-      'vram_manifest.txt': { x: 1.2, key: 'scroll' },
-    },
-  },
-  '/srv/kiroween/gpu_alley/port_445': {
-    hero: 2.4,
-    props: [
-      { id: 'prop:port-cables', model: 'prop.cables', x: 4.35, label: 'SMB port wires' },
-    ],
-    slots: {
-      'worm.bin': { x: 0.4 },
-    },
-  },
-  '/srv/kiroween/ui_dashboard': {
-    hero: 2.5,
-    props: [
-      { id: 'prop:ui-crt', model: 'prop.crt', x: 4.78, label: 'telemetry monitor' },
-    ],
-    slots: {
-      'index.html': { x: 3.85, key: 'scroll' },
-      'storefront.css': { x: 3.25 },
-      'ram_16gb.dimm': { x: 1.65 },
-      'gpu_tensor_chip_02.img': { x: 1.05 },
-      'css_gremlin.bug': { x: 0.35 },
-      logic_cell: { x: -0.88, key: 'gate', model: 'door.ethernet' },
-    },
-  },
-  '/srv/kiroween/logic_cell': {
-    hero: 2.5,
-    props: [
-      { id: 'prop:logic-chip', model: 'prop.chip', x: 4.78, label: 'ALU logic die' },
-    ],
-    slots: {
-      laptop: { x: 3.65 },
-      'cart.js': { x: 1.65, key: 'scroll' },
-      'ram_16gb.dimm': { x: 1.05 },
-      'gpu_shader_core_02.img': { x: 0.45 },
-      'token_skimmer.bin': { x: -0.25, key: 'gargoyle' },
-      server_hub_2: { x: -0.95, key: 'gate', model: 'door.ethernet' },
-    },
-  },
-  '/srv/kiroween/docker_forge': {
-    hero: 2.5,
-    props: [
-      { id: 'prop:forge-fan', model: 'prop.fan', x: 4.78, label: 'forge blower' },
-    ],
-    slots: {
-      'server.js': { x: 3.85 },
-      Dockerfile: { x: 3.25, key: 'scroll' },
-      'ram_16gb.dimm': { x: 1.65 },
-      'gpu_tensor_chip_03.img': { x: 1.05 },
-      'ransom.exe': { x: 0.35 },
-      compose_furnace: { x: -0.95, key: 'gate', model: 'door.ethernet' },
-    },
-  },
-  '/srv/kiroween/compose_furnace': {
-    hero: 2.5,
-    props: [
-      { id: 'prop:compose-heatsink', model: 'prop.heatsink', x: 4.78, label: 'furnace heatsink' },
-    ],
-    slots: {
-      'proxy.buf': { x: 3.88, key: 'scroll' },
-      'docker-compose.yml': { x: 3.35 },
-      'ram_16gb.dimm': { x: 1.85 },
-      'gpu_h100_core_03.img': { x: 1.35 },
-      'port_hijack.bin': { x: 0.8 },
-      server_hub_3: { x: -1.05, key: 'gate', model: 'door.ethernet' },
-    },
-  },
-  '/home/dev': {
-    hero: 2.5,
-    props: [
-      { id: 'prop:matrix-crt', model: 'prop.crt', x: 4.78, label: 'matrix server CRT' },
-      { id: 'prop:server-cables', model: 'prop.cables', x: 3.75, label: 'open-weights bus' },
-    ],
-    slots: {
-      'briefing.md': { x: 1.65, key: 'scroll' },
-      'server_rack.conf': { x: 1.65, key: 'scroll' },
-      'open_weights_node2.conf': { x: 1.65, key: 'scroll' },
-      'open_weights_cluster.conf': { x: 1.65, key: 'scroll' },
-      'spare_ram_16gb.dimm': { x: 1.05 },
-      'hank.tty.sock': { x: 0.35, key: 'socket' },
-      'dad.tty.sock': { x: 0.55, key: 'socket' },
-      staging_repo: { x: -0.82, key: 'gate', model: 'door.ethernet' },
-      sector_ui_grid: { x: -0.82, key: 'gate', model: 'door.ethernet' },
-      sector_docker_forge: { x: -0.82, key: 'gate', model: 'door.ethernet' },
-      clod_kernel_core: { x: -0.82, key: 'gate', model: 'door.ethernet' },
-    },
-  },
-  '/srv/byterig/checkout_core': {
-    hero: 2.35,
-    slots: {
-      'energy.cell': { x: 3.88 },
-      'hank.tty.sock': { x: 3.35, key: 'socket' },
-      'chaos_webhook.stream': { x: 1.62 },
-      'stripe_audit.log': { x: 1.18, key: 'scroll' },
-      'checkout_anchor.conf': { x: 0.74 },
-      'payment_verify.sock': { x: 0.15, key: 'socket' },
-      'slop_supervisor.ko': { x: -0.65, key: 'boss' },
-    },
-  },
-  '/sys/clod_overlord_core': {
-    hero: 2.3,
-    slots: {
-      'dad.tty.sock': { x: 3.75, key: 'socket' },
-      'energy.cell': { x: 3.15 },
-      'clod_prompt_flood.stream': { x: 1.62 },
-      'open_weights_advisor.log': { x: 1.22, key: 'scroll' },
-      'core_anchor.conf': { x: 0.82 },
-      'kiro_override.sock': { x: 0.25, key: 'socket' },
-      'clod_overlord.ko': { x: -0.45, key: 'boss' },
-    },
   },
 };

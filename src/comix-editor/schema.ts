@@ -1,4 +1,5 @@
 import { b, n, opt, sel, t, type Field } from '../editor-core/schema.js';
+import { ambientObjectField, transformFields } from '../editor-core/scene-fields.js';
 import { timeField as time, VEC3_FIELDS } from './schema-fields.js';
 import { LETTER_VARIANTS, OVERLAY_VARIANTS, letterTitle } from './schema-letters.js';
 import { BEAT_VARIANTS, FIXTURE_VARIANTS, TRACK_VARIANTS, beatTitle, trackTitle } from './schema-tracks.js';
@@ -33,6 +34,7 @@ const STAGE_INNER_FIELDS: Field[] = [
   t('room', 'Room model', { suggest: 'rooms', mono: true }),
   { type: 'color', key: 'background', label: 'Sky / stage background' },
   opt(b('clampToRoom', 'Clamp camera inside room shell', { defaultTrue: true })),
+  ambientObjectField(),
   { type: 'record', key: 'points', label: 'Named 3D landmarks', keyLabel: 'pointId', value: VEC3_FIELDS },
   opt({
     type: 'array',
@@ -44,7 +46,8 @@ const STAGE_INNER_FIELDS: Field[] = [
         t('id', 'Prop id', { mono: true }),
         t('model', 'Model', { suggest: 'models', mono: true }),
         { type: 'textOrVec', key: 'at', label: 'Position' },
-        opt(n('scale', 'Scale', { step: 0.05 })),
+        opt(b('visible', 'Visible at t = 0', { defaultTrue: true })),
+        ...transformFields(),
       ],
     },
   }),
@@ -75,8 +78,7 @@ export const COMIX_CAST_FIELDS: Field[] = [
         t('model', 'Catalog model', { suggest: 'models', mono: true }),
         opt(t('label', 'Display label')),
         opt({ type: 'textOrVec', key: 'at', label: 'Initial position' }),
-        opt(n('scale', 'Initial scale', { step: 0.02 })),
-        opt(n('rotationZ', 'Initial Z rotation (rad)', { step: 0.02 })),
+        ...transformFields({ includeRotationZ: true }),
         opt(b('visible', 'Visible at t = 0', { defaultTrue: true })),
         opt({ type: 'numbers', key: 'look', label: 'Initial look [x, y]' }),
       ],

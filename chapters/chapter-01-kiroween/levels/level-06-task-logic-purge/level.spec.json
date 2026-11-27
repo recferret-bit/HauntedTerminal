@@ -28,7 +28,9 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "// Open-Weights VRAM Allocation Calculator (cart.js)\nexport function computeCartTotal(price, shipping, qty = 1) {\n  if (qty <= 0) return 0;\n  // BUG: Gork left raw string concatenation so ('549', '15', 1) returns '54915'!\n  return price + shipping;\n}\n"
+      "content": "// Open-Weights VRAM Allocation Calculator (cart.js)\nexport function computeCartTotal(price, shipping, qty = 1) {\n  if (qty <= 0) return 0;\n  // BUG: Gork left raw string concatenation so ('549', '15', 1) returns '54915'!\n  return price + shipping;\n}\n",
+      "x": 1.65,
+      "model": "prop.file"
     },
     {
       "path": "/srv/kiroween/logic_cell/ram_16gb.dimm",
@@ -45,13 +47,19 @@
     {
       "path": "/srv/kiroween/logic_cell/server_hub_2",
       "kind": "dir",
-      "mode": 0
+      "mode": 0,
+      "x": -0.95,
+      "model": "door.ethernet",
+      "socket": "door.right",
+      "sfx": "door_ethernet"
     },
     {
       "path": "/srv/kiroween/logic_cell/skimmer_ledger.txt",
       "kind": "file",
       "mode": 420,
-      "content": "TOKEN SKIMMER LEDGER\nI skimmed a spare VRAM module and hid it in the dot folder `.spare_parts` of this room, a pile of 130 shelves (`ls -a` shows it).\nI logged the exact shelf in a skimmer.log, and I stamped the line with STASH.\nSearch: `grep -r STASH .spare_parts`, or `find / -name vram.mod`, or `tree -a .spare_parts`.\n"
+      "content": "TOKEN SKIMMER LEDGER\nI skimmed a spare VRAM module and hid it in the dot folder `.spare_parts` of this room, a pile of 130 shelves (`ls -a` shows it).\nI logged the exact shelf in a skimmer.log, and I stamped the line with STASH.\nSearch: `grep -r STASH .spare_parts`, or `find / -name vram.mod`, or `tree -a .spare_parts`.\n",
+      "x": 2.1,
+      "model": "prop.file"
     },
     {
       "path": "/srv/kiroween/logic_cell/.spare_parts/crate_a/crate_b/skimmer.log",
@@ -70,29 +78,35 @@
     {
       "id": "trojan_l6",
       "type": "trojan",
-      "path": "/srv/kiroween/logic_cell/token_skimmer.bin"
+      "path": "/srv/kiroween/logic_cell/token_skimmer.bin",
+      "x": -0.25
     },
     {
       "id": "bug_js_l6",
       "type": "bug",
-      "path": "/srv/kiroween/logic_cell/cart.js"
+      "path": "/srv/kiroween/logic_cell/cart.js",
+      "x": 1.35
     }
   ],
   "pickups": [
     {
       "id": "pickup_l6_laptop",
       "type": "laptop",
-      "path": "/srv/kiroween/logic_cell/laptop"
+      "path": "/srv/kiroween/logic_cell/laptop",
+      "x": 3.65
     },
     {
       "id": "pickup_l6_ram",
       "type": "ram",
-      "path": "/srv/kiroween/logic_cell/ram_16gb.dimm"
+      "path": "/srv/kiroween/logic_cell/ram_16gb.dimm",
+      "x": 1.05
     },
     {
       "id": "pickup_l6_gpu",
       "type": "ssd",
-      "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img"
+      "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img",
+      "model": "pickup.gpu",
+      "x": 0.45
     },
     {
       "id": "pickup_l6_vram",
@@ -137,13 +151,36 @@
       "id": "l6_web",
       "model": "prop.cobweb",
       "x": 4.92,
-      "y": 3
+      "y": 3,
+      "zOrder": -3
     },
     {
       "id": "l6_bat",
       "model": "prop.bat",
       "x": 3.05,
-      "y": 2.95
+      "y": 2.95,
+      "zOrder": -2
+    },
+    {
+      "id": "l6_logic_chip",
+      "model": "prop.chip",
+      "x": 4.78,
+      "zOrder": -1,
+      "label": "ALU logic die"
+    },
+    {
+      "id": "l6_pcb",
+      "model": "prop.pcb_plaque",
+      "x": 2.9,
+      "y": 2.3,
+      "zOrder": -3
+    },
+    {
+      "id": "l6_led",
+      "model": "prop.led_bar",
+      "x": 0.5,
+      "y": 2.75,
+      "zOrder": -3
     }
   ],
   "winRules": [
@@ -258,5 +295,18 @@
       "hiddenFiles": 45,
       "seed": "l6-vram"
     }
-  ]
+  ],
+  "stage": {
+    "hero": 2.5,
+    "music": "floor_maze",
+    "sfx": {
+      "enter": "door_ethernet"
+    },
+    "entryPort": {
+      "label": "sector_in",
+      "model": "door.serial",
+      "socket": "door.left",
+      "sfx": "door_serial"
+    }
+  }
 }

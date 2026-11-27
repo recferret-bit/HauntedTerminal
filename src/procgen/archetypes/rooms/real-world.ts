@@ -28,15 +28,6 @@ export function windowFrame(b: RoomBuilder, wx: number, wy: number, ww: number, 
   b.plaque('window-bar', [ww, 0.07, 0.1], 'plastic', [wx, wy + 0.1]);
 }
 
-/** A row of books standing on a shelf at `shelfY`, starting at x and stepping screen-right by 0.2. */
-export function shelfBooks(b: RoomBuilder, books: ReadonlyArray<readonly [ZoneId, number]>, x: number, shelfY: number): void {
-  let bx = x;
-  for (const [zoneId, h] of books) {
-    b.plaque('book', [0.17, h, 0.22], zoneId, [bx, shelfY + h / 2]);
-    bx -= 0.2;
-  }
-}
-
 /** The three door sockets every room ends with. */
 export function doorSockets(b: RoomBuilder): RoomBuilder {
   return b

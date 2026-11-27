@@ -5,6 +5,7 @@ import { KIRO_CORE_ORDER } from '../game/kiro.js';
 import { allStrings, pidRefs, RESERVED_PIDS } from './pids.js';
 import { isRec } from './record.js';
 import type { ChapterMechanic, ChapterPack, LevelSpec, ScriptCond, ScriptStep, WinRule } from './types.js';
+import { checkActorKind, checkComixStory, checkMusicCue, checkSfxCue, checkSocket, checkStageSpec, checkTransform } from './validate-stage.js';
 
 export interface PackIssue {
   severity: 'error' | 'warn';
@@ -112,8 +113,19 @@ class LevelCheck {
         if (s.holdSec !== undefined && !(s.holdSec > 0)) this.add('error', 'script', `${what}: dialog_box holdSec must be above 0`);
         if (s.speaker !== 'vibecoder' && !SPEAKERS.includes(s.speaker)) this.add('error', 'script', `${what}: dialog_box speaker "${s.speaker}" is not vibecoder or an agent`);
       }
-      if (s.kind === 'spawn' && s.entrance !== undefined && s.entrance !== 'appear' && s.entrance !== 'glide') {
-        this.add('error', 'script', `${what}: spawn entrance "${String(s.entrance)}" must be appear or glide`);
+      if (s.kind === 'spawn') {
+        if (s.entrance !== undefined && s.entrance !== 'appear' && s.entrance !== 'glide') {
+          this.add('error', 'script', `${what}: spawn entrance "${String(s.entrance)}" must be appear or glide`);
+        }
+        checkTransform((sev, tab, msg) => this.add(sev, tab, msg), 'script', `${what}: spawn`, s);
+      }
+      if (s.kind === 'despawn' && !s.entityId.trim()) {
+        this.add('error', 'script', `${what}: despawn missing entityId`);
+      }
+      if (s.kind === 'fx') {
+        if (!s.preset.trim()) this.add('error', 'script', `${what}: fx missing preset id`);
+        if (s.x !== undefined && !Number.isFinite(s.x)) this.add('error', 'script', `${what}: fx.x must be finite`);
+        if (s.y !== undefined && !Number.isFinite(s.y)) this.add('error', 'script', `${what}: fx.y must be finite`);
       }
       if (s.kind === 'carry_item' || s.kind === 'give_item') {
         if (!isItemId(s.item)) this.add('error', 'script', `${what}: unknown item "${String(s.item)}" (${ITEM_IDS.join(', ')})`);
@@ -136,6 +148,8 @@ class LevelCheck {
       if (s.kind === 'taunt' && !s.fallback && !this.pack.dialogs?.levels[this.spec.id]?.agentTaunt) {
         this.add('warn', 'script', `${what}: taunt step has no dialog agentTaunt and no fallback, so it says nothing`);
       }
+      if (s.kind === 'sfx') checkSfxCue((sev, tab, msg) => this.add(sev, tab, msg), 'script', `${what}: sfx`, s.cue);
+      if (s.kind === 'music') checkMusicCue((sev, tab, msg) => this.add(sev, tab, msg), 'script', `${what}: music`, s.cue ?? undefined, true);
     }
   }
 }
@@ -257,21 +271,32 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack, winnable: boolean): Pack
   if (winnable && !spec.exitDir && !spec.exitCommand) c.add('error', 'overview', 'set exitDir (a gate to cd into) or exitCommand (e.g. exit)');
   if (spec.exitDir) c.needPath('overview', 'exitDir', spec.exitDir, 'dir');
 
+  const add = (sev: PackIssue['severity'], tab: string, msg: string): void => c.add(sev, tab, msg);
   const seen = new Set<string>();
   for (const f of spec.files) {
     if (!f.path.startsWith('/')) c.add('error', 'files', `file path "${f.path}" must be absolute`);
     if (seen.has(f.path)) c.add('error', 'files', `duplicate file path "${f.path}"`);
     seen.add(f.path);
+    checkTransform(add, 'files', `file "${f.path}"`, f);
+    checkSocket(add, 'files', `file "${f.path}"`, f.socket);
+    checkSfxCue(add, 'files', `file "${f.path}".sfx`, f.sfx);
   }
   for (const e of spec.enemies) {
     if (!ENEMY_TYPES.some((t) => t === e.type)) c.add('error', 'entities', `enemy "${e.id}": unknown type "${e.type}"`);
     // A zombie is a bare process: its path is the room it haunts.
     c.needPath('entities', `enemy "${e.id}"`, e.path, e.type === 'zombie' ? 'dir' : 'file');
     if (e.helps) c.needEnemy('entities', `enemy "${e.id}" helps`, e.helps);
+    checkTransform(add, 'entities', `enemy "${e.id}"`, e);
+    checkSocket(add, 'entities', `enemy "${e.id}"`, e.socket);
+    checkSfxCue(add, 'entities', `enemy "${e.id}".attackSfx`, e.attackSfx);
+    checkSfxCue(add, 'entities', `enemy "${e.id}".killSfx`, e.killSfx);
   }
   for (const p of spec.pickups) {
     c.needPath('entities', `pickup "${p.id}"`, p.path, 'file');
     if (p.appearWhen) c.cond('entities', `pickup "${p.id}".appearWhen`, p.appearWhen);
+    checkTransform(add, 'entities', `pickup "${p.id}"`, p);
+    checkSocket(add, 'entities', `pickup "${p.id}"`, p.socket);
+    checkSfxCue(add, 'entities', `pickup "${p.id}".sfx`, p.sfx);
   }
   for (const p of spec.patches) {
     if (![...c.paths.keys()].some((f) => baseName(f) === p.file)) c.add('error', 'entities', `patch "${p.label}": file "${p.file}" is not in files[]`);
@@ -301,8 +326,13 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack, winnable: boolean): Pack
     else propIds.add(p.id);
     if (!p.model?.trim()) c.add('error', 'entities', `prop "${p.id || idx}": missing model id`);
     if (!Number.isFinite(p.x)) c.add('error', 'entities', `prop "${p.id || idx}": x must be finite`);
-    if (p.y !== undefined && !Number.isFinite(p.y)) c.add('error', 'entities', `prop "${p.id || idx}": y must be finite`);
+    if (p.cwd !== undefined && !p.cwd.startsWith('/')) c.add('error', 'entities', `prop "${p.id || idx}".cwd: must be absolute`);
+    checkTransform(add, 'entities', `prop "${p.id || idx}"`, p);
+    checkSocket(add, 'entities', `prop "${p.id || idx}"`, p.socket);
+    checkActorKind(add, 'entities', `prop "${p.id || idx}".kind`, p.kind);
+    checkSfxCue(add, 'entities', `prop "${p.id || idx}".sfx`, p.sfx);
   });
+  checkStageSpec(add, spec.stage);
 
   if (winnable && spec.winRules.length === 0) c.add('error', 'rules', 'a level needs at least one win rule');
   spec.winRules.forEach((r, i) => checkRule(c, r, i));
@@ -412,6 +442,12 @@ export function validatePack(pack: ChapterPack, { winnable = true }: ValidateOpt
       }
     }
   });
+  const manifestAdd = (sev: PackIssue['severity'], tab: string, msg: string): void => {
+    issues.push({ severity: sev, where: 'chapter', tab, message: msg });
+  };
+  checkTransform(manifestAdd, 'manifest', 'boss.cameoTransform', pack.manifest.boss.cameoTransform);
+  (pack.manifest.outro?.actors ?? []).forEach((a, i) => checkTransform(manifestAdd, 'manifest', `outro.actors[${i}]`, a));
+  checkComixStory(issues, pack.comix);
   return issues;
 }
 
@@ -436,20 +472,36 @@ function walkModels(value: unknown, where: string, tab: string, has: (id: string
   }
 }
 
+function walkFx(value: unknown, where: string, tab: string, hasFx: (id: string) => boolean, out: PackIssue[]): void {
+  if (Array.isArray(value)) {
+    value.forEach((v) => walkFx(v, where, tab, hasFx, out));
+    return;
+  }
+  if (!isRec(value)) return;
+  if (value.kind === 'fx' && typeof value.preset === 'string' && !hasFx(value.preset)) {
+    out.push({ severity: 'error', where, tab, message: `unknown fx preset "${value.preset}"; pick an id from the FX catalog` });
+  }
+  for (const v of Object.values(value)) walkFx(v, where, tab, hasFx, out);
+}
+
 /**
- * Every model and room id a chapter mentions must exist. `hasModel` is the asset layer's `ModelCatalog.has`,
- * passed in so the chapters layer stays free of procgen.
+ * Every model, room and FX id a chapter mentions must exist. `hasModel` and `hasFx` are passed in from the asset layer
+ * (`ModelCatalog.has` / `FxCatalog.has`) so the chapters layer stays free of procgen.
  */
-export function assetIssues(pack: ChapterPack, hasModel: (id: string) => boolean): PackIssue[] {
+export function assetIssues(pack: ChapterPack, hasModel: (id: string) => boolean, hasFx?: (id: string) => boolean): PackIssue[] {
   const out: PackIssue[] = [];
   walkModels(pack.manifest, 'chapter', 'manifest', hasModel, out, false);
+  if (hasFx) walkFx(pack.manifest, 'chapter', 'manifest', hasFx, out);
   for (const level of pack.levels) {
+    walkModels(level.files, level.id, 'files', hasModel, out, false);
+    walkModels(level.stage, level.id, 'overview', hasModel, out, false);
     walkModels(level.script, level.id, 'script', hasModel, out, false);
+    if (hasFx) walkFx(level.script, level.id, 'script', hasFx, out);
     walkModels(level.props, level.id, 'entities', hasModel, out, false);
     walkModels(level.pickups, level.id, 'entities', hasModel, out, false);
     for (const e of level.enemies) {
-      const model = BESTIARY[e.type]?.model;
-      if (!model || !hasModel(model)) out.push({ severity: 'error', where: level.id, tab: 'entities', message: `enemy "${e.id}": no model for type "${e.type}"` });
+      const model = e.model ?? BESTIARY[e.type]?.model;
+      if (!model || !hasModel(model)) out.push({ severity: 'error', where: level.id, tab: 'entities', message: `enemy "${e.id}": invalid model "${String(model)}"` });
     }
   }
   walkModels(pack.comix, 'comix', 'comic', hasModel, out, true);

@@ -1,5 +1,6 @@
 import { MECHANICS, ROOM_KINDS } from '../chapters/validate-pack.js';
 import { AGENTS, ENEMY_FIELDS, FILE_FIELDS, MOODS, PATCH_FIELDS, PICKUP_FIELDS, PROP_FIELDS, RIDDLE_FIELDS, RULE_VARIANTS, STEP_VARIANTS as SCRIPT_STEP_VARIANTS } from '../chapter-editor/schema.js';
+import { STAGE_OBJECT_FIELD } from '../chapter-editor/schema-stage.js';
 import { b, n, opt, sel, t, type Field } from '../editor-core/schema.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
 import { LAB_FLOORS, type LabCond, type LabSetupKind, type LabStepKind } from './lab-types.js';
@@ -26,9 +27,9 @@ const COND_VARIANTS = (): Record<LabCond['kind'], Field[]> => ({
 });
 
 export const SETUP_VARIANTS = (): Record<LabSetupKind, Field[]> => ({
-  file: keep(FILE_FIELDS, ['path', 'mode', 'uid', 'questCritical', 'content']),
-  dir: keep(FILE_FIELDS, ['path', 'mode', 'uid']),
-  socket: keep(FILE_FIELDS, ['path', 'content', 'mode', 'uid']),
+  file: keep(FILE_FIELDS, ['path', 'mode', 'uid', 'questCritical', 'content', 'x', 'y', 'zOrder', 'scale', 'rotation', 'model', 'socket', 'label', 'sfx']),
+  dir: keep(FILE_FIELDS, ['path', 'mode', 'uid', 'x', 'y', 'zOrder', 'scale', 'rotation', 'model', 'socket', 'label', 'sfx']),
+  socket: keep(FILE_FIELDS, ['path', 'content', 'mode', 'uid', 'x', 'y', 'zOrder', 'scale', 'rotation', 'model', 'socket', 'label', 'sfx']),
   enemy: ENEMY_FIELDS,
   pickup: PICKUP_FIELDS,
   patch: PATCH_FIELDS,
@@ -71,6 +72,8 @@ export const SETTINGS: Field[] = [
       t('cwd', 'Start directory', { mono: true }),
       t('title', 'Level title'),
       t('summary', 'Goal line', { rows: 2 }),
+      opt(n('roomSeed', 'Room seed', { step: 1 })),
+      STAGE_OBJECT_FIELD,
     ],
   },
   {

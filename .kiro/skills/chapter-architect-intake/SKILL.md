@@ -22,11 +22,11 @@ Never dump a static 30-question form on the user, and never guess unstated creat
 ### Round 1 — Story Premise, Client Contract & Cast
 Ask for:
 1. **Premise & Client Stakes:** What broken system or client disaster pulled `DEV` in? (e.g., *Freelance PC Parts Storefront*, *Port Authority API Gateway*, *Full-Stack Bank Vault*, *Kubernetes Cluster Meltdown*).
-2. **Veteran Ally Spirit (`allyNpc`):** Which hardware-bound mentor rides shotgun?
-   - `(Recommended) hank.tty` (`door.socket` — 1978 UNIX sysadmin)
+2. **Veteran Ally Spirit (`allyNpc`):** Which mentor rides shotgun?
+   - `(Recommended) dad.tty` (`npc.greybeard_rig` — Old Bearded Matrix Coder / Father; or `door.socket` for socket-bound NPCs)
    - `ada.sh` (`door.loopback` — NetOps / TLS packet-routing specialist)
    - `linus.ko` (`door.firewall` — grumpy kernel / container architect)
-   - Custom socket spirit (must use `hardware` + `signal` zones, never `human` zones per `HUMAN_ZONE_MISUSE`).
+   - Custom socket spirit (must use `hardware` + `signal` zones, never `human` zones per `HUMAN_ZONE_MISUSE`; only `vibecoder.*`, `item.*`, `npc.greybeard_rig`, `room.outro`, and `room.intro` may use `human` zones)
 3. **Chapter Boss (`boss`):** Name, corrupted daemon process (`PID 1` or custom), and visual `ModelCatalog` ID (`boss.kernel` or `boss.forkbomb`).
 
 ### Round 2 — Scope, Level Count & Mechanics Mix
@@ -47,7 +47,7 @@ Ask which malware archetypes from `BESTIARY` should haunt the chapter (`is_multi
 - **Tier 1 (Early rooms):** `bug`, `spyware`, `rootkit` (hidden dotfiles revealed by `ls -la`)
 - **Tier 2 (Mid rooms):** `worm` + `crack` (`kill` PID before `rm`), `virus` (`kill -9`, never `rm`), `trojan` (`chmod -x` petrifies to stone)
 - **Tier 3 (Container/Network rooms):** `ransomware` (locks pickups `mode 000`), `exploit` (`chmod -w` on overflow buffer), `zombie` (kill parent daemon)
-- **Bosses:** `fork_bomb`, `kernel` (3-phase `kernelPhase()` shield -> verify -> anchor takedown)
+- **Bosses:** `forkbomb`, `kernel` (3-phase `kernelPhase()` shield -> verify -> anchor takedown)
 
 Map rooms across `desk` -> `attic` -> `crypt_entrance` -> `lab_hall` -> `crypt_hall` -> `catwalk` -> `furnace` -> `core`.
 
@@ -55,7 +55,7 @@ Map rooms across `desk` -> `attic` -> `crypt_entrance` -> `lab_hall` -> `crypt_h
 Ask for:
 1. **Comix Issue Length:** How many full Comix pages (`2`, `4` *(Recommended)*, `6`, or `8` pages) and panels per page (`3`–`4` panels/page).
 2. **Dialogue & Taunt Tone:**
-   - `(Recommended) Vibe-Coder Satire + Gritty UNIX Mentor` (overconfident AI agent taunts vs. `hank.tty` dry Socratic hints)
+   - `(Recommended) Vibe-Coder Satire + Gritty UNIX Mentor` (overconfident AI agent taunts vs. `dad.tty` dry Socratic hints; `dialogs.json` uses the legacy `hankRungs` JSON key)
    - `Cyberpunk Thriller`
    - `Pure Deadpan Sysadmin`
 3. **Hint Granularity:** Confirm the 3-rung Socratic hint ladder (`Rung 1: Symptom`, `Rung 2: Tool/Concept`, `Rung 3: Exact Command`).
@@ -86,7 +86,7 @@ chapters/<chapter-id>/
 ├── chapter.manifest.json         # Issue metadata, allyNpc, boss, mechanicsSummary, level summaries
 ├── story/
 │   ├── comix.spec.json           # Multi-page Comix script (pages -> panels -> rect, room, cast, caption, bubbles, sfx)
-│   └── dialogs.json              # Cast colors + per-level banner, 3 hankRungs, and agentTaunt
+│   └── dialogs.json              # Cast colors + per-level banner, 3 hankRungs (Socratic rungs), agentTaunt, completion
 └── levels/
     ├── level-01-.../
     │   ├── LEVEL.md              # Human design doc & narrative beat
@@ -106,7 +106,7 @@ Put arrival lines, tutorials, taunts and Kiro/boss reactions in each `level.spec
    - `exploit`: `kill` is blocked (`Operation not permitted`); make its `buffer` read-only (`chmod -w <buffer>`).
    - `kernel` boss: `kill` is blocked; complete the 3-phase stream/socket/anchor sequence so `kernelPhase()` reaches `3/3`, which automatically drops `hp` to `0` and unlocks `exit`.
 2. **Art-Bible Palette Guard (`HUMAN_ZONE_MISUSE`):**
-   - Only the vibecoder models (`vibecoder.*`) and his items (`item.*`) use `human` palette zones. Ally NPCs must use `door.socket`, `door.loopback`, or `door.firewall`.
+   - Only `vibecoder.*`, `item.*`, `npc.greybeard_rig`, `room.outro`, and `room.intro` may use `human` palette zones (`semantic-checks.ts`). Hardware/socket ally NPCs must use `door.socket`, `door.loopback`, or `door.firewall`.
 3. **Anti-Softlock Protection:**
    - Mark every config, HTML, CSS, JS, `Dockerfile`, and `docker-compose.yml` required by `winRules` with `"questCritical": true` so `cron_restorer` respawns it if a player runs `rm` by mistake.
 

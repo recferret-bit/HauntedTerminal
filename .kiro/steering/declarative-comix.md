@@ -11,7 +11,7 @@ The cinematic player is a generic 3D comic engine. A comix sequence is data. **N
 
 | What | File | Played / checked by |
 |---|---|---|
-| Sequence metadata, `durationSec`, `holdAtEnd`, `skip`, shared `cues`, 3D `stage` (`room`, `background`, `points`, `props`, `fixtures`), `cast`, and ordered `pages[]` summaries (`specPath`) | `comix.manifest.json` | `src/cinematic/play-pack.ts`, `timeline.ts`, `set.ts` |
+| Sequence metadata, `durationSec`, `holdAtEnd`, `skip`, shared `cues`, 3D `stage` (`room`, `background`, `ambient`, `points`, `props` with transforms, `fixtures`), `cast` (with transforms), and ordered `pages[]` summaries (`specPath`) | `comix.manifest.json` | `src/cinematic/play-pack.ts`, `timeline.ts`, `set.ts` |
 | Self-contained page window (`from`, `until`), local `cues`, 3D page-flip `turn`, `overlays`, page `tracks`, and `panels[]` (`layout`, `camera`, `letters`, `beats`, `tracks`) | `pages/page-XX-<slug>/page.spec.json` | `tracks.ts`, `beats.ts`, `letters-build.ts`, `letters-draw.ts` |
 | Human-readable sequence overview & page/panel timing table | `README.md` | `scripts/harness/validate-comix.mjs` |
 

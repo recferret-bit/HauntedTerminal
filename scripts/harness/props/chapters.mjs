@@ -23,6 +23,13 @@ const BREAKAGES = [
   ['a solution that is not a list', (p, i) => { p.levels[i].solutionCommands = 'x'; }],
   ['a missing level title', (p, i) => { delete p.levels[i].title; }],
   ['an unknown model on the ally', (p) => { p.manifest.allyNpc.model = 'npc.nope'; }],
+  ['an unknown stage.sfx cue', (p, i) => { (p.levels[i].stage ??= {}).sfx = { enter: 'nope_sfx' }; }],
+  ['an unknown stage.music cue', (p, i) => { (p.levels[i].stage ??= {}).music = 'nope_music'; }],
+  ['an invalid stage.backdrop hex', (p, i) => { (p.levels[i].stage ??= {}).backdrop = 'not-a-color'; }],
+  ['an invalid prop scale tuple', (p, i) => { p.levels[i].props[0].scale = [1, 2]; }],
+  ['an invalid enemy socket', (p, i) => { p.levels[i].enemies[0].socket = 'door.invalid'; }],
+  ['an invalid pickup socket', (p, i) => { p.levels[i].pickups[0].socket = 'door.invalid'; }],
+  ['an unknown prop sfx cue', (p, i) => { p.levels[i].props[0].sfx = 'nope_sfx'; }],
 ];
 import { chapterWorld } from './sessions.mjs';
 import { revisitProps } from './revisit.mjs';
@@ -383,6 +390,60 @@ function pidProps(world, pids, lab) {
   ];
 }
 
+function configDrivenSceneProps(world) {
+  return [
+    {
+      name: 'config-driven scene overrides (transforms, stage backdrop/ambient/music, props) propagate from level.spec.json to snapshot without code changes',
+      build: () =>
+        fc.property(
+          fc.nat(world.levels.length - 1),
+          fc.record({
+            x: fc.double({ min: -0.5, max: 4.5, noNaN: true }).map((n) => Number(n.toFixed(2))),
+            y: fc.double({ min: 0, max: 2.5, noNaN: true }).map((n) => Number(n.toFixed(2))),
+            zOrder: fc.double({ min: -3, max: 3, noNaN: true }).map((n) => Number(n.toFixed(1))),
+            scale: fc.tuple(
+              fc.double({ min: 0.5, max: 2, noNaN: true }).map((n) => Number(n.toFixed(2))),
+              fc.double({ min: 0.5, max: 2, noNaN: true }).map((n) => Number(n.toFixed(2))),
+              fc.double({ min: 0.5, max: 2, noNaN: true }).map((n) => Number(n.toFixed(2))),
+            ),
+            rotation: fc.tuple(
+              fc.integer({ min: -30, max: 30 }),
+              fc.integer({ min: -30, max: 30 }),
+              fc.integer({ min: -45, max: 45 }),
+            ),
+            backdrop: fc.constantFrom('#112233', '#2a1840', '#0d1b1e'),
+            lightMode: fc.constantFrom('lantern', 'monitor', 'neon', 'storm'),
+            music: fc.constantFrom('floor_attic', 'hub_matrix', 'floor_core'),
+          }),
+          (idx, cfg) => {
+            const session = world.openWith(idx, (pack) => {
+              const lvl = pack.levels[idx];
+              lvl.stage = {
+                ...(lvl.stage ?? {}),
+                backdrop: cfg.backdrop,
+                music: cfg.music,
+                ambient: { ...(lvl.stage?.ambient ?? {}), lightMode: cfg.lightMode, bats: false, storm: false },
+              };
+              lvl.props = [
+                ...(lvl.props ?? []),
+                { id: 'cfg_probe_prop', model: 'prop.platter', x: cfg.x, y: cfg.y, zOrder: cfg.zOrder, scale: cfg.scale, rotation: cfg.rotation },
+              ];
+            });
+            const snap = session.snapshot();
+            expect(snap.room.backdrop === cfg.backdrop, `backdrop mismatch: got ${snap.room.backdrop}, want ${cfg.backdrop}`);
+            expect(snap.room.ambient?.lightMode === cfg.lightMode, `lightMode mismatch: got ${snap.room.ambient?.lightMode}`);
+            expect(snap.levelMusic === cfg.music, `levelMusic mismatch: got ${snap.levelMusic}, want ${cfg.music}`);
+            const found = snap.room.actors.find((a) => a.id === 'prop:cfg_probe_prop');
+            expect(Boolean(found), 'cfg_probe_prop missing from room.actors');
+            expect(found.x === cfg.x && found.y === cfg.y && found.zOrder === cfg.zOrder, 'prop x/y/zOrder mismatch');
+            expect(JSON.stringify(found.scale) === JSON.stringify(cfg.scale), `prop scale mismatch: ${JSON.stringify(found.scale)}`);
+            expect(JSON.stringify(found.rotation) === JSON.stringify(cfg.rotation), `prop rotation mismatch: ${JSON.stringify(found.rotation)}`);
+          },
+        ),
+    },
+  ];
+}
+
 export default async function chaptersSuite(ctx) {
   const { checkPack } = await ctx.load('/src/chapter-editor/check.ts');
   const { readAchievements, unlockAchievement } = await ctx.load('/src/chapters/achievements.ts');
@@ -516,6 +577,7 @@ export default async function chaptersSuite(ctx) {
     ...scriptBeatProps(world),
     ...revisitProps(world),
     ...ritualProps(world),
+    ...configDrivenSceneProps(world),
     ...(await treeSearchProps(ctx, world)),
     ...portableSaveAndPreviewProps({
       world,

@@ -130,7 +130,14 @@ export function signal(world: WorldLike, pid: number, sig: PosixSignal, events: 
   if (sig === 'SIGTERM' && e.type === 'forkbomb') {
     e.enraged = true;
     proc('TRAPPED_ENRAGED');
-    world.host.push(events, { type: 'ENEMY_ATTACK', entityId: e.id, model: e.model, damage: FORKBOMB_RAGE_DAMAGE, attack: 'SIGTERM IGNORED' });
+    world.host.push(events, {
+      type: 'ENEMY_ATTACK',
+      entityId: e.id,
+      model: e.model,
+      damage: FORKBOMB_RAGE_DAMAGE,
+      attack: 'SIGTERM IGNORED',
+      ...(e.attackSfx ? { sfx: e.attackSfx } : {}),
+    });
     sync(world, events);
     const boom = world.host.hurt(FORKBOMB_RAGE_DAMAGE, 'necromancer_forkd', events);
     return { code: 0, stdout: '', stderr: `SIGTERM IGNORED!\n${boom}` };
@@ -165,7 +172,7 @@ function kill(world: WorldLike, e: Enemy, how: KillHow, events: KernelEvent[]): 
     node.parent = null;
     world.host.push(events, { type: 'FILE_REMOVED', inodeId: node.id, name: node.name, entityId: e.id });
   }
-  world.host.push(events, { type: 'ENEMY_KILLED', entityId: e.id, model: e.model, how });
+  world.host.push(events, { type: 'ENEMY_KILLED', entityId: e.id, model: e.model, how, ...(e.killSfx ? { sfx: e.killSfx } : {}) });
   world.notes.push(epitaph(world, e, how));
   for (const child of world.enemies) {
     if (child.dead || child === e || e.pid === null || child.ppid !== e.pid) continue;
@@ -405,7 +412,7 @@ function act(world: WorldLike, e: Enemy, events: KernelEvent[]): string {
     const attack = wants(world, e);
     if (attack) {
       e.told = true;
-      world.host.push(events, { type: 'ENEMY_ATTACK', entityId: e.id, model: e.model, damage: 0, attack });
+      world.host.push(events, { type: 'ENEMY_ATTACK', entityId: e.id, model: e.model, damage: 0, attack, ...(e.attackSfx ? { sfx: e.attackSfx } : {}) });
     }
     return '';
   }
@@ -420,7 +427,7 @@ function act(world: WorldLike, e: Enemy, events: KernelEvent[]): string {
     const attack = wants(world, e);
     if (attack) {
       e.told = true;
-      world.host.push(events, { type: 'ENEMY_ATTACK', entityId: e.id, model: e.model, damage: damage(world, e), attack });
+      world.host.push(events, { type: 'ENEMY_ATTACK', entityId: e.id, model: e.model, damage: damage(world, e), attack, ...(e.attackSfx ? { sfx: e.attackSfx } : {}) });
     }
   }
   return out;

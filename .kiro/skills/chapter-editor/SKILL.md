@@ -12,8 +12,11 @@ description: "[LEVEL GEN] Step 5 of level generation (human review and final tun
 ```bash
 npm start                                  # dev server; then open http://localhost:5400/editor
 # deep links: /editor/<chapter>/<level>?tab=script    /editor/<chapter>?tab=comic
+node scripts/harness/generate-chapter.mjs --format --check  # canonicalize JSON across chapters/* + check sync
 node scripts/harness/editor-smoke.mjs      # headless Chrome drives the whole loop (own server on 5343)
 ```
+
+For automated agent editing without a browser, MCP `credits-forge` provides `list_assets`, `list_levels`, `get_level`, `validate_level`, `solve_level`, `write_level` (for `level.spec.json`, proving 0 deaths), and `get_chapter_file` / `validate_chapter` / `write_chapter_file` (for `chapter.manifest.json` and `story/*.json`). Full declarative field schema: [references/chapter-schema.md](./references/chapter-schema.md).
 
 Writing needs the dev server (`/api/chapters`, a Vite plugin that exists only under `vite serve`). A built site opens the editor read-only from the compiled catalog.
 

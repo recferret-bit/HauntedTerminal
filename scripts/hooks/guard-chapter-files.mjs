@@ -14,7 +14,7 @@
 import { readFileSync } from 'node:fs';
 
 const GENERATED = /(^|\/)src\/(chapters|cinematic)\/generated(\/|$)/;
-const VOCABULARY = /(^|\/)src\/(chapters\/(types|script-types|script|validate-pack|session-lab-types)\.ts|terminal-lab\/(lab-types|schema|lab-check|store)\.ts|chapter-editor\/schema(-check)?\.ts|editor-core\/schema(-check)?\.ts|cinematic\/(spec-types|simulate)\.ts|comix-editor\/(schema(-fields|-letters|-tracks)?|check)\.ts)$/;
+const VOCABULARY = /(^|\/)src\/(chapters\/(types|script-types|script|validate-pack|validate-stage|session-lab-types)\.ts|terminal-lab\/(lab-types|schema|lab-check|store)\.ts|chapter-editor\/schema(-stage|-script|-check)?\.ts|editor-core\/(schema(-check)?|scene-fields)\.ts|cinematic\/(spec-types|simulate)\.ts|comix-editor\/(schema(-fields|-letters|-tracks)?|check)\.ts)$/;
 
 let raw = '';
 try {

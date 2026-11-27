@@ -50,6 +50,30 @@ function taskStrip(): { el: HTMLElement; show(task: LaptopTask | null): void; re
   };
 }
 
+function buildToolbar(handlers: { run: () => void; check: () => void; reset: () => void; clear: () => void; quests: () => void }): HTMLElement {
+  return h('div', { class: 'lt-toolbar' },
+    h('button', { class: 'lt-btn95', onclick: handlers.run, title: 'Run (Ctrl+Enter)' }, 'Run'),
+    h('button', { class: 'lt-btn95', onclick: handlers.check, title: 'Check the quest' }, 'Check'),
+    h('button', { class: 'lt-btn95', onclick: handlers.reset, title: 'Reset code to starter' }, 'Reset'),
+    h('button', { class: 'lt-btn95', onclick: handlers.clear }, 'Clear'),
+    h('span', { class: 'lt-grow' }),
+    h('button', { class: 'lt-btn95', onclick: handlers.quests }, 'Quests'),
+  );
+}
+
+function buildFileTabs(app: WorkbenchConfig['app'], files: readonly CodeFile[], initial: CodeFile, onSelect: (f: CodeFile) => void): HTMLElement {
+  return h('div', { class: 'lt-tabs', role: 'tablist', 'aria-label': `${app} files` }, ...files.map((f) =>
+    h('button', { class: 'lt-tab', role: 'tab', 'aria-selected': f === initial ? 'true' : 'false', 'data-file': f, onclick: () => onSelect(f) }, TAB_LABEL[f])));
+}
+
+function markActiveTab(tabs: HTMLElement, active: CodeFile): void {
+  tabs.querySelectorAll<HTMLButtonElement>('.lt-tab').forEach((b) => {
+    const on = b.dataset.file === active;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+}
+
 export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workbench {
   let files: CodeFiles = { ...cfg.scratch };
   let tab: CodeFile = cfg.files[0]!;
@@ -62,6 +86,8 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
   const strip = taskStrip();
   const preview: PreviewSlot | null = mode === 'page' ? { frame: h('iframe', { class: 'lt-preview', title: 'Page preview', sandbox: 'allow-scripts' }) } : null;
 
+  const cancelAutoRun = (): void => { window.clearTimeout(timer); timer = 0; };
+
   const editor = createCodeEditor({
     label: `${cfg.app} code`,
     onRun: () => void bench.run(),
@@ -69,13 +95,14 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
       files = { ...files, [tab]: text };
       if (task) ctx.setProgress(saveDraft(ctx.progress(), task.id, files));
       if (cfg.autoRunMs > 0) {
-        window.clearTimeout(timer);
+        cancelAutoRun();
         timer = window.setTimeout(() => void bench.run(), cfg.autoRunMs);
       }
     },
   });
 
   const resetCode = (): void => {
+    cancelAutoRun();
     if (task) {
       files = { ...task.starter };
       ctx.setProgress(saveDraft(ctx.progress(), task.id, files));
@@ -87,36 +114,39 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
     void bench.run();
   };
 
-  const tabs = h('div', { class: 'lt-tabs', role: 'tablist', 'aria-label': `${cfg.app} files` }, ...cfg.files.map((f) =>
-    h('button', { class: 'lt-tab', role: 'tab', 'aria-selected': f === tab ? 'true' : 'false', 'data-file': f, onclick: () => select(f) }, TAB_LABEL[f])));
+  const tabs = buildFileTabs(cfg.app, cfg.files, tab, (f) => select(f));
   const select = (f: CodeFile): void => {
     tab = f;
     editor.value = files[f];
-    tabs.querySelectorAll<HTMLButtonElement>('.lt-tab').forEach((b) => {
-      const on = b.dataset.file === f;
-      b.classList.toggle('on', on);
-      b.setAttribute('aria-selected', on ? 'true' : 'false');
-    });
+    markActiveTab(tabs, f);
   };
-  const toolbar = h('div', { class: 'lt-toolbar' },
-    h('button', { class: 'lt-btn95', onclick: () => void bench.run(), title: 'Run (Ctrl+Enter)' }, 'Run'),
-    h('button', { class: 'lt-btn95', onclick: () => void bench.check(), title: 'Check the quest' }, 'Check'),
-    h('button', { class: 'lt-btn95', onclick: () => resetCode(), title: 'Reset code to starter' }, 'Reset'),
-    h('button', { class: 'lt-btn95', onclick: () => consolePane.clear() }, 'Clear'),
-    h('span', { class: 'lt-grow' }),
-    h('button', { class: 'lt-btn95', onclick: () => ctx.open('quests') }, 'Quests'),
-  );
+  const toolbar = buildToolbar({
+    run: () => void bench.run(),
+    check: () => void bench.check(),
+    reset: resetCode,
+    clear: () => consolePane.clear(),
+    quests: () => ctx.open('quests'),
+  });
   const code = h('div', { class: 'lt-codecol' }, cfg.files.length > 1 ? tabs : null, editor.el);
   const work = h('div', { class: `lt-work${preview ? ' split' : ''}` }, code, preview?.frame);
   const el = h('div', { class: `lt-bench ${cfg.app}` }, toolbar, strip.el, work, consolePane.el);
 
-  const exec = async (report: Promise<RunReport>): Promise<RunReport> => {
+  let runSeq = 0;
+
+  const startRun = async (req: ReturnType<typeof plainRequest>): Promise<{ r: RunReport; current: boolean }> => {
+    cancelAutoRun();
+    const seq = ++runSeq;
     hasRun = true;
     ctx.sound.note('run');
-    const r = await report;
+    consolePane.clear();
+    const r = await runCode(req, preview, (line) => {
+      if (seq === runSeq) consolePane.add(line);
+    });
+    const current = seq === runSeq;
+    if (!current) return { r, current: false };
     consolePane.finish(r);
     if (r.timedOut) ctx.sound.note('loop-guard');
-    return r;
+    return { r, current: true };
   };
 
   const bench: Workbench = {
@@ -128,26 +158,31 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
       select(tab);
     },
     loadTask(next, saved) {
+      cancelAutoRun();
       task = next;
       strip.show(next);
       bench.setFiles(saved);
       select(cfg.files.find((f) => saved[f].trim()) ?? cfg.files[0]!);
       consolePane.clear();
+      ctx.onInspect?.({ app: cfg.app, taskId: next.id, taskTitle: next.title, mode, report: null, checks: null });
       void bench.run();
     },
-    run() {
-      consolePane.clear();
-      return exec(runCode(plainRequest(mode, files), preview, consolePane.add));
+    async run() {
+      const { r, current } = await startRun(plainRequest(mode, files));
+      if (current) ctx.onInspect?.({ app: cfg.app, taskId: task?.id ?? null, taskTitle: task?.title ?? null, mode, report: r, checks: null });
+      return r;
     },
     async check() {
       if (!task) return [];
-      const current = task;
-      consolePane.clear();
-      const report = await exec(runCode(requestFor(mode, files, current.checks, current.actions ?? []), preview, consolePane.add));
-      const results = judge(current.checks, report, files);
+      const activeTask = task;
+      const req = requestFor(mode, files, activeTask.checks, activeTask.actions ?? []);
+      const { r: report, current } = await startRun(req);
+      const results = judge(activeTask.checks, report, files);
+      if (!current) return results;
       strip.results(results);
+      ctx.onInspect?.({ app: cfg.app, taskId: activeTask.id, taskTitle: activeTask.title, mode, report, checks: results });
       if (allPassed(results)) {
-        ctx.setProgress(markDone(ctx.progress(), current.id));
+        ctx.setProgress(markDone(ctx.progress(), activeTask.id));
         ctx.sound.note('solved');
         ctx.pow('SOLVED!');
       } else {
@@ -156,6 +191,7 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
       return results;
     },
     dispose() {
+      runSeq += 1;
       window.clearTimeout(timer);
       window.clearTimeout(initTimer);
       preview?.cancel?.();

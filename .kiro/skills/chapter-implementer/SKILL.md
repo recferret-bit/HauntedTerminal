@@ -36,7 +36,7 @@ Always inspect `chapters/<chapter-id>/story/out/contact-sheet.png` via `read_fil
 ---
 
 ## Step 3 — Compile Level Specs & Custom Mechanics (`chapter-level-generator`)
-1. If the chapter introduces a brand-new `WinRule` kind or domain validator (e.g., SQL query plans, Kubernetes Deployment YAML, Nginx TLS blocks), add a deterministic, zero-LLM validator to `src/chapters/validators.ts`, declare the `WinRule` variant in `src/chapters/types.ts`, and wire `evalWinRule` + `liveLintFeedback` in `src/chapters/chapter-session.ts`.
+1. If the chapter introduces a brand-new `WinRule` kind or domain validator (e.g., SQL query plans, Kubernetes Deployment YAML, Nginx TLS blocks), follow the 4-place rule (spec first): add the deterministic, zero-LLM validator to `src/chapters/validators.ts`, declare the `WinRule` variant in `src/chapters/types.ts` (and `script-types.ts` for script additions), wire `evalWinRule` + `liveLintFeedback` in `src/chapters/session-rules.ts` (plus command/tab-completion wiring in `src/chapters/session-shell.ts` if needed), update exhaustive editor forms in `src/chapter-editor/schema.ts` and pack checks in `src/chapters/validate-pack.ts`, and verify `node scripts/harness/terminal-lab-unit.mjs`.
 2. Compile `chapters/*` into `src/chapters/generated/catalog-data.ts`:
    ```bash
    node scripts/harness/generate-chapter.mjs

@@ -15,8 +15,11 @@ npm start                                         # dev server on http://localho
 # deep links:
 #   /comix-editor/intro/manifest?tab=stage
 #   /comix-editor/intro/page-01-desk-storm?tab=panels
+node scripts/harness/generate-comix.mjs --format --check   # canonicalize JSON across comix/* + check sync
 node scripts/harness/comix-editor-smoke.mjs       # headless Chrome smoke test across UI, preview & dev API
 ```
+
+For headless MCP checks and conflict-safe editing (`comix-designer` owns writes, `qa` reads), `credits-forge` provides `list_assets`, `list_comix`, `get_comix`, `validate_comix` (including 60fps `runComixSim`), and `write_comix`. Exhaustive declarative schema: [references/comix-schema.md](./references/comix-schema.md).
 
 Saving requires the dev server (`/api/comix`, a Vite serve-only plugin). In production builds, `/comix-editor` opens read-only from `src/cinematic/generated/catalog-data.ts`.
 

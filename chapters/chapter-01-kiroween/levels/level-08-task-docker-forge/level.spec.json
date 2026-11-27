@@ -21,14 +21,18 @@
       "kind": "file",
       "mode": 0,
       "questCritical": true,
-      "content": "# Open-Weights Inference Worker Container\nFROM node:99-vibe-turbo\nWORKDIR /app\nCOPY . .\nEXPOSE 9999\nCMD [\"node\", \"broken_server.js\"]\n"
+      "content": "# Open-Weights Inference Worker Container\nFROM node:99-vibe-turbo\nWORKDIR /app\nCOPY . .\nEXPOSE 9999\nCMD [\"node\", \"broken_server.js\"]\n",
+      "x": 3.25,
+      "model": "prop.file"
     },
     {
       "path": "/srv/kiroween/docker_forge/server.js",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "// Open-Weights Worker HTTP Node (port 3000)\nconsole.log('Kiro.d open-weights worker listening on :3000');\n"
+      "content": "// Open-Weights Worker HTTP Node (port 3000)\nconsole.log('Kiro.d open-weights worker listening on :3000');\n",
+      "x": 3.85,
+      "model": "prop.file"
     },
     {
       "path": "/srv/kiroween/docker_forge/ram_16gb.dimm",
@@ -45,7 +49,11 @@
     {
       "path": "/srv/kiroween/docker_forge/compose_furnace",
       "kind": "dir",
-      "mode": 0
+      "mode": 0,
+      "x": -0.95,
+      "model": "door.ethernet",
+      "socket": "door.right",
+      "sfx": "door_ethernet"
     }
   ],
   "enemies": [
@@ -54,19 +62,23 @@
       "type": "ransomware",
       "path": "/srv/kiroween/docker_forge/ransom.exe",
       "pid": 4108,
-      "ppid": 1
+      "ppid": 1,
+      "x": 0.35
     }
   ],
   "pickups": [
     {
       "id": "pickup_l8_ram",
       "type": "ram",
-      "path": "/srv/kiroween/docker_forge/ram_16gb.dimm"
+      "path": "/srv/kiroween/docker_forge/ram_16gb.dimm",
+      "x": 1.65
     },
     {
       "id": "pickup_l8_gpu",
       "type": "ssd",
-      "path": "/srv/kiroween/docker_forge/gpu_tensor_chip_03.img"
+      "path": "/srv/kiroween/docker_forge/gpu_tensor_chip_03.img",
+      "model": "pickup.gpu",
+      "x": 1.05
     }
   ],
   "patches": [
@@ -100,13 +112,36 @@
       "id": "l8_bat",
       "model": "prop.bat",
       "x": 4.62,
-      "y": 2.9
+      "y": 2.9,
+      "zOrder": -2
     },
     {
       "id": "l8_web",
       "model": "prop.cobweb",
       "x": -1.02,
-      "y": 3.05
+      "y": 3.05,
+      "zOrder": -3
+    },
+    {
+      "id": "l8_forge_fan",
+      "model": "prop.fan",
+      "x": 4.78,
+      "zOrder": -1,
+      "label": "forge blower"
+    },
+    {
+      "id": "l8_hanging",
+      "model": "prop.hanging_cable",
+      "x": 1.9,
+      "y": 2.95,
+      "zOrder": -2
+    },
+    {
+      "id": "l8_led",
+      "model": "prop.led_bar",
+      "x": -0.1,
+      "y": 2.75,
+      "zOrder": -3
     }
   ],
   "winRules": [
@@ -196,5 +231,18 @@
         ]
       }
     ]
+  },
+  "stage": {
+    "hero": 2.5,
+    "music": "floor_furnace",
+    "sfx": {
+      "enter": "door_ethernet"
+    },
+    "entryPort": {
+      "label": "sector_in",
+      "model": "door.serial",
+      "socket": "door.left",
+      "sfx": "door_serial"
+    }
   }
 }

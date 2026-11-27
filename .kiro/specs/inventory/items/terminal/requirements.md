@@ -41,3 +41,8 @@ Capability: `item.terminal` is the developer's handheld field cyberdeck slate, c
 ## Verification
 
 `validate-model.mjs item.terminal vibecoder.dev_terminal --seeds 4`, `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs`, `node scripts/harness/terminal-lab.mjs --all`, `node scripts/harness/terminal-lab-smoke.mjs`, `npm run quality:fingerprint`, and `npm run quality`.
+
+## Later changes
+
+- **2026-11-26 (`4317ccf`)**: `lantern` (`item.lantern`) was renamed to `tube_transistor` (`item.tube_transistor` in `src/contracts/inventory.ts` and `src/procgen/archetypes/items/tube-transistor.ts`), preserving `vibecoder.dev` (`light: true`) as its hero model while locking `ls` flags behind `tube_transistor` (bypassed in Terminal Lab).
+- **2026-11-27 (`.kiro/specs/agent-workbench-tooling/`)**: Added `terminal-lab.mjs --validate` / `--from-level <chapter>/<level>`, `credits-forge` lab tools (`list_labs`, `get_lab`, `validate_lab`, `run_lab`, `write_lab`), and the `terminal-lab` skill (`references/lab-schema.md`).

@@ -1,9 +1,12 @@
 import * as THREE from 'three';
 import type { KernelEvent } from '../contracts/events.js';
 import type { FxCue } from './event-fx.js';
+import type { FxId } from './fx-player.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
 import { setRest } from './stage-actor.js';
+import { ACTOR_Z } from './stage-const.js';
 import { clearBubble, playCues, playFx, say } from './stage-fx.js';
+import { placeX } from './stage-layout.js';
 import { claim, flashActor, heroAction, heroFlinch, hopInPlace, owns, playEntrance, playHand, playSpawn, release } from './stage-motion.js';
 import { heroEmote } from './stage-emote.js';
 import { actorFlyTo, itemCarried, itemGiven } from './stage-carry.js';
@@ -59,9 +62,25 @@ export function handleCastEvent(stage: ComicStage, ev: KernelEvent, subject: Sta
     case 'ACTOR_FLY_TO':
       actorFlyTo(stage, ev);
       return true;
+    case 'FX_CUE':
+      onFxCue(stage, ev);
+      return true;
     default:
       return false;
   }
+}
+
+function onFxCue(stage: ComicStage, ev: Extract<KernelEvent, { type: 'FX_CUE' }>): void {
+  const preset = stage.fxPlayer.preset(ev.preset as FxId);
+  if (!preset) return;
+  const fallbackAnchor = !preset.fullPanel && stage.hero() ? (preset.anchor === 'feet' ? 'hero-feet' : 'vibecoder') : 'panel';
+  const fallback = anchorPoint(stage, fallbackAnchor, null);
+  const at = ev.x !== undefined
+    ? new THREE.Vector3(placeX(stage, ev.x), stage.feetY + (ev.y ?? 0.9), ACTOR_Z)
+    : ev.y !== undefined
+      ? new THREE.Vector3(fallback.x, stage.feetY + ev.y, fallback.z)
+      : fallback;
+  playFx(stage, ev.preset as FxId, at, ev.text !== undefined ? { text: ev.text } : {});
 }
 
 function onSystemHand(stage: ComicStage, ev: Extract<KernelEvent, { type: 'SYSTEM_HAND_SPAWN' }>, subject: StageActor | null, cues: FxCue[]): void {

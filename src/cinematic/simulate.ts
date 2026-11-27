@@ -226,7 +226,10 @@ function collectTimelineItems(
   timeline: ResolvedTimeline,
   errors: string[],
 ): Array<{ at: number; count: number; step: number }> {
-  const actors = new Set(pack.manifest.cast.map((a) => a.id));
+  const actors = new Set([
+    ...pack.manifest.cast.map((a) => a.id),
+    ...(pack.manifest.stage.props ?? []).map((p) => p.id),
+  ]);
   const fixtures = new Set((pack.manifest.stage.fixtures ?? []).map((f) => f.id));
   const resolvedBeats: Array<{ at: number; count: number; step: number }> = [];
 

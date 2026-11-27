@@ -11,7 +11,7 @@ Every check below has a failing case in `../scripts/self-test.mjs`.
 | `FX_ID` | error | `id` matches `fx.kebab-name` | Catalog keys and filmstrip captions | Rename |
 | `FX_LAYERS` | error | 2 to 6 layers, unique names | One layer is a texture, not a hit; more than 6 is noise | Merge or split layers |
 | `FX_ROLES` | error | At least one `primary` and one `accent` | Without a mass there is nothing to read; without an accent nothing sparkles | Assign roles |
-| `FX_EMIT` | error | `cone` has `angle` and `speed`; `ring` has `spawn.radius`; `implode` has `spawn.radius[0] > 0`; `line` has `spawn.width` or `height`; `rain` has `spawn.width` and `speed` or `gravity`; `count` is a positive integer; `lifeMs` is `[min, max]`, `0 < min <= max` | These combinations otherwise produce a pile of particles on one point | Add the missing field |
+| `FX_EMIT` | error | `cone` has `angle` and `speed`; `ring` and `orbit` have `spawn.radius` (`radius[1] > 0`); `implode` has `spawn.radius[0] > 0`; `line` has `spawn.width` or `height`; `rain` has `spawn.width` and `speed` or `gravity`; `count` is a positive integer; `lifeMs` is `[min, max]`, `0 < min <= max` | These combinations otherwise produce a pile of particles on one point | Add the missing field |
 | `FX_KEYS` | error | `scale` and `alpha` keys: 1 to 5 keys, first at `t = 0`, strictly increasing `t` in `[0, 1)`, scale 0..4, alpha 0..1 | More than 5 steps reads as a tween; a track not starting at 0 hides the particle at birth | Use the shared tracks in `presets.ts` |
 
 ## Composition
@@ -65,7 +65,7 @@ Known close pairs: `ice`/`dataCyan` 14.9, `powerAmber`/`gold` 10.5, `paper`/`pla
 
 | Code | Level | Rule | Why | Fix |
 |---|---|---|---|---|
-| `FX_IMPACT` | error | `shake` 0..2, `flash` 0..6 | `triggerShake` multipliers in the game run 0.8 to 1.6; lightning is flash 5.5 | Stay at or below lightning |
+| `FX_IMPACT` | error | `shake` 0..2, `flash` 0..6; when `light` is set: `light.zone` passes `FX_ZONE`/`FX_FAMILY` and is not `'ink'`, `light.radius` in `(0..8]` (`maxLightRadius`), `light.power` in `(0..2.5]` (`maxLightPower`), `light.offset` finite in `[-4, 4]`, and `light.envelope` passes `FX_KEYS` (`1..5` keys, first at `t = 0`, values in `0..2`) | `triggerShake` multipliers in the game run 0.8 to 1.6; lightning is flash 5.5; light pools must stay bounded and stepped | Stay at or below lightning and light bounds |
 | `FX_MOMENT_MISSING` | error | Every `FxMoment` has a preset (`--all` only) | A game moment with no feedback | Add the preset |
 | `FX_MOMENT_DUPLICATE` | error | No moment has two presets (`--all` only) | `FxCatalog.forMoment` must be unambiguous | Remove or re-key one |
 

@@ -1,5 +1,5 @@
-import '../procgen/index.js';
-import { ModelCatalog } from '../procgen/core/catalog.js';
+import { FxCatalog, ModelCatalog } from '../procgen/index.js';
+import { MUSIC_IDS, SFX_IDS } from '../contracts/audio-cues.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
 import { baseName } from '../game/tree.js';
 import { ROOM_KINDS } from '../chapters/validate-pack.js';
@@ -13,8 +13,14 @@ function catalogNames(name: string): string[] | undefined {
       return ModelCatalog.list().map((m) => m.id).sort();
     case 'rooms':
       return ROOM_KINDS.map((k) => `room.${k}`);
+    case 'fx':
+      return FxCatalog.list().map((p) => p.id).sort();
     case 'cores':
       return [...KIRO_CORE_ORDER];
+    case 'sfx':
+      return [...SFX_IDS];
+    case 'music':
+      return [...MUSIC_IDS];
     default:
       return undefined;
   }

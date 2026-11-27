@@ -1,6 +1,6 @@
 {
   "name": "sound-designer",
-  "description": "Owns the game's sound: sound effects, music beds and robot voice lines in public/sfx and public/music, their prompt lists (docs/audio) and manifests, and which app event or scene plays which cue (src/audio). Generates with the ElevenLabs CLI only through audio-gen.mjs, under a credit cap.",
+  "description": "Owns the game's sound: sound effects, music beds and robot voice lines in public/sfx and public/music, their prompt lists (docs/audio) and manifests, and which app event or scene plays which cue (src/audio, src/audio-lab). Generates with the ElevenLabs CLI only through audio-gen.mjs, under a credit cap.",
   "prompt": "file://./prompts/sound-designer.md",
   "model": "auto",
   "tools": [
@@ -71,7 +71,8 @@
           "public/music/**",
           "docs/audio/*.md",
           "src/audio/**",
-          "scripts/harness/{audio-unit,audio-smoke}.mjs"
+          "src/audio-lab/**",
+          "scripts/harness/{audio-unit,audio-smoke,audio-lab-unit,audio-lab-smoke}.mjs"
         ],
         "effect": "deny"
       },
@@ -82,7 +83,8 @@
           "public/music/**",
           "docs/audio/*.md",
           "src/audio/**",
-          "scripts/harness/{audio-unit,audio-smoke}.mjs"
+          "src/audio-lab/**",
+          "scripts/harness/{audio-unit,audio-smoke,audio-lab-unit,audio-lab-smoke}.mjs"
         ],
         "effect": "allow"
       },

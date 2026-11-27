@@ -1,7 +1,7 @@
 import type { ModelSpec, Vec2 } from '../../core/types.js';
 import { makeRng } from '../../core/rng.js';
 import { designToRoomX, onWall, round, RoomBuilder, ROOM } from './frame.js';
-import { doorSockets, realRoomShell, shelfBooks, windowFrame } from './real-world.js';
+import { doorSockets, realRoomShell, windowFrame } from './real-world.js';
 
 /**
  * The outro: the real desk at dawn. This is the one room that is NOT inside the machine, so it is the
@@ -38,14 +38,6 @@ export function buildOutro(seed: number): ModelSpec {
   b.box('prompt', [0.3, 0.05, 0.02], 'phosphor', [3.24, 1.78, z - 0.09], { outline: false });
   b.box('cursor', [0.07, 0.09, 0.02], 'phosphor', [2.98, 1.78, z - 0.09], { outline: false, anim: { type: 'blink', speed: 1 } });
   b.box('keyboard', [0.8, 0.06, 0.3], 'plastic', [2.25, 1.115, z - 0.06]);
-  b.add('mug', { kind: 'cylinder', rTop: 0.1, rBottom: 0.09, height: 0.2, sides: 10 }, 'paper', [3.8, 1.185, z - 0.1]);
-
-  // A bookshelf high on the left: the only clutter that is his, not the machine's.
-  b.plaque('bookshelf', [1.9, 0.09, 0.3], 'hair', [2.9, 3.2]);
-  const books: ['denim' | 'hoodie' | 'paper' | 'plastic' | 'skin', number][] = [['hoodie', 0.5], ['paper', 0.42], ['plastic', 0.56], ['skin', 0.4], ['hoodie', 0.46], ['paper', 0.52]];
-  shelfBooks(b, books, 3.7, 3.245);
-  // A sticky note by the window: the todo.note, done.
-  b.plaque('sticky-note', [0.3, 0.3, 0.03], 'lantern', [0.25, 3.1], { rot: [0, 0, 0.08] });
 
   b.socket('vibecoder', [designToRoomX(0.4), 0, ROOM.zActor])
     .socket('caption', [3.75, 4.55, ROOM.zDressNear])

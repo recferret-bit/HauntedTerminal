@@ -1,9 +1,12 @@
 import type * as THREE from 'three';
 import type { ZoneId } from '../procgen/core/palette.js';
+import {
+  normalizeRotationRad, zOrderToRenderOrder, zOrderToZOffset,
+} from '../contracts/room-view.js';
 import type { ComicMaterial } from '../shaders/comic-material.js';
 import { DEFAULT_PIXEL_PARAMS } from '../shaders/pixel-art.js';
 import { resolveTime } from './expr.js';
-import { panelAt, worldPoint, type ComixWorld } from './reel.js';
+import { panelAt, worldPoint, type ComixActor, type ComixProp, type ComixWorld } from './reel.js';
 import { applyActorRig, partsNamed } from './set.js';
 import type { EaseName, SceneTrack } from './spec-types.js';
 import { easeIn, easeOut, easeOutBack, lerp, span, stepped, type Actor, type Shot } from './stage.js';
@@ -30,6 +33,12 @@ function evalCamera(world: ComixWorld, panelId: string, cam: ResolvedCamera, t: 
   return lerpShot(cam.from, cam.to, k);
 }
 
+function scaledRatioVec(base: readonly [number, number, number], s: number): [number, number, number] {
+  const bx = base[0];
+  if (Math.abs(bx) <= 1e-4) return [s, s, s];
+  return [s, s * (base[1] / bx), s * (base[2] / bx)];
+}
+
 function setMatColor(mat: ComicMaterial | undefined, color: string | number): void {
   const value = mat?.uniforms.uColor?.value as THREE.Color | undefined;
   if (!value) return;
@@ -39,7 +48,25 @@ function setMatColor(mat: ComicMaterial | undefined, color: string | number): vo
 
 function targetActor(world: ComixWorld, target: string): Actor | null {
   if (target === 'room') return world.room;
-  return world.actors.get(target)?.actor ?? null;
+  return world.actors.get(target)?.actor ?? world.props.get(target)?.actor ?? null;
+}
+
+function trackedMember(world: ComixWorld, id: string): ComixActor | ComixProp | undefined {
+  return world.actors.get(id) ?? world.props.get(id);
+}
+
+function resetMember(stage: NonNullable<ComixWorld['stage']>, member: ComixActor | ComixProp): void {
+  const g = member.actor.model.group;
+  g.position.set(member.basePos.x, member.basePos.y, member.basePos.z + zOrderToZOffset(member.baseZOrder));
+  g.scale.set(member.baseScaleVec[0], member.baseScaleVec[1], member.baseScaleVec[2]);
+  g.rotation.set(member.baseRot[0], member.baseRot[1], member.baseRot[2]);
+  g.visible = member.baseVisible;
+  const ro = zOrderToRenderOrder(member.baseZOrder);
+  g.traverse((obj) => {
+    obj.renderOrder = ro;
+  });
+  for (const mesh of member.actor.model.parts.values()) mesh.visible = true;
+  stage.compensateInk(g);
 }
 
 function resetBaseline(world: ComixWorld): void {
@@ -48,14 +75,8 @@ function resetBaseline(world: ComixWorld): void {
   stage.shake = 0;
   stage.flash = 0;
   stage.setPixelSize(DEFAULT_PIXEL_PARAMS.pixelSize);
-  for (const member of world.actors.values()) {
-    const g = member.actor.model.group;
-    g.position.copy(member.basePos);
-    g.scale.setScalar(member.baseScale);
-    g.rotation.z = member.baseRotZ;
-    g.visible = member.baseVisible;
-    for (const mesh of member.actor.model.parts.values()) mesh.visible = true;
-  }
+  for (const member of world.actors.values()) resetMember(stage, member);
+  for (const prop of world.props.values()) resetMember(stage, prop);
   for (const pb of world.partBases) pb.mesh.visible = pb.visible;
   for (const zb of world.zoneBases.values()) setMatColor(zb.material, zb.hex);
   for (const fx of world.fixtures.values()) {
@@ -66,7 +87,7 @@ function resetBaseline(world: ComixWorld): void {
 }
 
 function applyMotion(world: ComixWorld, tr: ResolvedTrack, spec: Extract<SceneTrack, { kind: 'actor_motion' }>, t: number): void {
-  const member = world.actors.get(spec.actor);
+  const member = trackedMember(world, spec.actor);
   if (!member) return;
   const g = member.actor.model.group;
   if (spec.hideWhenDead && member.actor.animator.deathProgress >= 0.999) {
@@ -80,6 +101,14 @@ function applyMotion(world: ComixWorld, tr: ResolvedTrack, spec: Extract<SceneTr
   const raw = spec.toPos ? span(t, s0, s1) : 0;
   const eased = EASE[spec.ease ?? 'linear'](raw);
   const k = spec.steps ? stepped(eased, spec.steps) : eased;
+  const kc = Math.min(1, Math.max(0, k));
+  const zo0 = spec.zOrderFrom ?? member.baseZOrder;
+  const zo1 = spec.zOrderTo ?? zo0;
+  const zo = lerp(zo0, zo1, kc);
+  const ro = zOrderToRenderOrder(zo);
+  g.traverse((obj) => {
+    obj.renderOrder = ro;
+  });
 
   if (spec.deform === 'stretch_to_target') {
     const dx = to.x - from.x;
@@ -90,33 +119,55 @@ function applyMotion(world: ComixWorld, tr: ResolvedTrack, spec: Extract<SceneTr
     const sy = lerp(1, 1.65, Math.min(1, k * 1.6)) * lerp(1, 0.08, span(k, 0.55, 1));
     const sx = lerp(1, 0.32, k) * lerp(1, 0.2, span(k, 0.55, 1));
     const reach = 1.25 * sy;
-    g.position.set(lerp(from.x, to.x - ux * reach, k), lerp(from.y, to.y - uy * reach, k), lerp(from.z, 0.3, k));
+    g.position.set(lerp(from.x, to.x - ux * reach, k), lerp(from.y, to.y - uy * reach, k), lerp(from.z, 0.3, k) + zOrderToZOffset(zo));
     g.rotation.z = -(Math.PI / 2 - Math.atan2(uy, ux)) * Math.min(1, k * 2.2);
     g.scale.set(sx, sy, 1);
+    world.stage?.compensateInk(g);
     return;
   }
 
   if (spec.deform === 'squash_land' && raw >= 1) {
     const land = t - s1;
     const squash = land < 0.08 ? 0.82 : land < 0.16 ? 1.06 : 1;
-    g.position.copy(to);
-    g.scale.set(2 - squash, squash, 1);
-    g.rotation.z = spec.rotZTo ?? 0;
+    const endSv = spec.scaleVecTo ?? (spec.scaleTo !== undefined ? scaledRatioVec(member.baseScaleVec, spec.scaleTo) : member.baseScaleVec);
+    const endRot = spec.rotTo !== undefined ? normalizeRotationRad(spec.rotTo) : ([member.baseRot[0], member.baseRot[1], spec.rotZTo ?? member.baseRot[2]] as const);
+    g.position.set(to.x, to.y, to.z + zOrderToZOffset(zo));
+    g.scale.set((2 - squash) * endSv[0], squash * endSv[1], endSv[2]);
+    g.rotation.set(endRot[0], endRot[1], endRot[2]);
+    world.stage?.compensateInk(g);
     return;
   }
 
-  const arcLift = spec.arc ? Math.sin(Math.min(1, Math.max(0, k)) * Math.PI) * spec.arc : 0;
-  g.position.set(lerp(from.x, to.x, k), lerp(from.y, to.y, k) + arcLift, lerp(from.z, to.z, Math.min(1, Math.max(0, k))));
+  const arcLift = spec.arc ? Math.sin(kc * Math.PI) * spec.arc : 0;
+  g.position.set(lerp(from.x, to.x, k), lerp(from.y, to.y, k) + arcLift, lerp(from.z, to.z, kc) + zOrderToZOffset(zo));
   if (spec.stretchFrom && spec.stretchTo) {
     g.scale.set(lerp(spec.stretchFrom[0], spec.stretchTo[0], k), lerp(spec.stretchFrom[1], spec.stretchTo[1], k), 1);
+  } else if (spec.scaleVecFrom || spec.scaleVecTo) {
+    const sv0 = spec.scaleVecFrom ?? member.baseScaleVec;
+    const sv1 = spec.scaleVecTo ?? sv0;
+    const sk = Math.min(1.06, Math.max(0, k));
+    g.scale.set(lerp(sv0[0], sv1[0], sk), lerp(sv0[1], sv1[1], sk), lerp(sv0[2], sv1[2], sk));
   } else {
-    const sc0 = spec.scaleFrom ?? member.baseScale;
+    const sc0 = spec.scaleFrom ?? member.baseScaleVec[0];
     const sc1 = spec.scaleTo ?? sc0;
-    g.scale.setScalar(lerp(sc0, sc1, Math.min(1.06, Math.max(0, k))));
+    const s = lerp(sc0, sc1, Math.min(1.06, Math.max(0, k)));
+    if (spec.scaleFrom !== undefined || spec.scaleTo !== undefined) {
+      const sv = scaledRatioVec(member.baseScaleVec, s);
+      g.scale.set(sv[0], sv[1], sv[2]);
+    } else {
+      g.scale.set(member.baseScaleVec[0], member.baseScaleVec[1], member.baseScaleVec[2]);
+    }
   }
-  const rz0 = spec.rotZFrom ?? member.baseRotZ;
-  const rz1 = spec.rotZTo ?? rz0;
-  g.rotation.z = lerp(rz0, rz1, Math.min(1, Math.max(0, k)));
+  if (spec.rotFrom !== undefined || spec.rotTo !== undefined) {
+    const r0 = spec.rotFrom !== undefined ? normalizeRotationRad(spec.rotFrom) : member.baseRot;
+    const r1 = spec.rotTo !== undefined ? normalizeRotationRad(spec.rotTo) : r0;
+    g.rotation.set(lerp(r0[0], r1[0], kc), lerp(r0[1], r1[1], kc), lerp(r0[2], r1[2], kc));
+  } else {
+    const rz0 = spec.rotZFrom ?? member.baseRot[2];
+    const rz1 = spec.rotZTo ?? rz0;
+    g.rotation.set(member.baseRot[0], member.baseRot[1], lerp(rz0, rz1, kc));
+  }
+  world.stage?.compensateInk(g);
 }
 
 function applyFixture(world: ComixWorld, tr: ResolvedTrack, spec: Extract<SceneTrack, { kind: 'fixture' }>, t: number): void {
@@ -148,7 +199,7 @@ function applyTrack(world: ComixWorld, tr: ResolvedTrack, t: number): void {
   if (!stage) return;
   switch (spec.kind) {
     case 'actor_visibility': {
-      const member = world.actors.get(spec.actor);
+      const member = trackedMember(world, spec.actor);
       if (!member) return;
       const alive = !spec.hideWhenDead || member.actor.animator.deathProgress < 0.999;
       member.actor.model.group.visible = spec.visible && alive;
@@ -158,7 +209,7 @@ function applyTrack(world: ComixWorld, tr: ResolvedTrack, t: number): void {
       applyMotion(world, tr, spec, t);
       return;
     case 'actor_rig': {
-      const member = world.actors.get(spec.actor);
+      const member = trackedMember(world, spec.actor);
       if (member) applyActorRig(member.actor, t, spec.typing ?? 0, !!spec.restRightArm, spec.hideParts ?? []);
       return;
     }

@@ -1,4 +1,5 @@
 import { isRec } from '../editor-core/dom.js';
+import { isSfxId } from '../contracts/audio-cues.js';
 import { objectShape } from '../editor-core/schema-check.js';
 import { cssHex, resolvePoint, resolveTime } from '../cinematic/expr.js';
 import { simulateComixPack, type ComixSimResult } from '../cinematic/simulate.js';
@@ -103,6 +104,11 @@ function checkCatalogRefs(out: ComixIssue[], pack: ComixPack): void {
     out.push({ severity: 'error', where: 'comix', tab: 'stage', message: `stage.room "${stage.room}" is not in ModelCatalog` });
   }
   pushHexErr(out, 'comix', 'stage', 'stage.background', stage?.background);
+  for (const cue of stage?.ambient?.loops ?? []) {
+    if (!isSfxId(cue)) {
+      out.push({ severity: 'error', where: 'comix', tab: 'stage', message: `stage.ambient.loops: unknown SFX cue "${cue}"` });
+    }
+  }
   const propIds = new Set<string>();
   for (const prop of stage?.props ?? []) {
     if (propIds.has(prop.id)) {
@@ -125,6 +131,7 @@ function checkCatalogRefs(out: ComixIssue[], pack: ComixPack): void {
     }
     pushPointErr(out, 'comix', 'cast', `cast.${actor.id}`, actor.at, points);
   }
+  const targetIds = new Set([...actorIds, ...propIds]);
   const fixtureIds = new Set<string>();
   for (const fx of stage?.fixtures ?? []) {
     if (fixtureIds.has(fx.id)) {
@@ -139,7 +146,7 @@ function checkCatalogRefs(out: ComixIssue[], pack: ComixPack): void {
     }
   }
   for (const page of pack.pages) {
-    checkPageRefs(out, page, actorIds, fixtureIds, points);
+    checkPageRefs(out, page, targetIds, fixtureIds, points);
   }
 }
 
