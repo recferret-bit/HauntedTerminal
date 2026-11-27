@@ -114,6 +114,9 @@ class LevelCheck {
         if (s.speaker !== 'vibecoder' && !SPEAKERS.includes(s.speaker)) this.add('error', 'script', `${what}: dialog_box speaker "${s.speaker}" is not vibecoder or an agent`);
       }
       if (s.kind === 'spawn') {
+        if (!s.entityId.trim()) {
+          this.add('error', 'script', `${what}: spawn missing entityId`);
+        }
         if (s.entrance !== undefined && s.entrance !== 'appear' && s.entrance !== 'glide') {
           this.add('error', 'script', `${what}: spawn entrance "${String(s.entrance)}" must be appear or glide`);
         }

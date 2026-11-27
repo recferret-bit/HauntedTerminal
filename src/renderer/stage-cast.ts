@@ -278,6 +278,7 @@ export function applyActorTransform(actor: StageActor, ra: RoomActor, force = fa
       : actor.laidTransistor
         ? [0, 0, Math.PI / 2]
         : [0, 0, 0];
+  const prevScaleX = actor.scaleVec[0];
   const sx = actor.baseScale[0] * sxMul;
   const sy = actor.baseScale[1] * syMul;
   const sz = actor.baseScale[2] * szMul;
@@ -285,7 +286,8 @@ export function applyActorTransform(actor: StageActor, ra: RoomActor, force = fa
   const restZ = rzRad;
   actor.baseRot = [rxRad, ryRad, restZ];
   actor.renderOrder = zOrderToRenderOrder(ra.zOrder);
-  const facingSign = sx >= 0 && actor.body.scale.x < 0 ? -1 : 1;
+  const wasFlipped = (prevScaleX < 0 ? -actor.body.scale.x : actor.body.scale.x) < 0;
+  const facingSign = sx >= 0 && wasFlipped ? -1 : 1;
   if (!actor.exiting) {
     actor.body.scale.set(sx * facingSign, sy, sz);
     if (!actor.lock) actor.body.rotation.set(rxRad, ryRad, restZ);

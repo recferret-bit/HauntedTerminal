@@ -69,14 +69,22 @@ const genGuard = spawnSync(process.execPath, [guardScript], {
 if (genGuard.status !== 2) {
   throw new Error(`Expected guard hook exit 2 on src/chapters/generated/catalog-data.ts, got ${genGuard.status}`);
 }
-const vocabGuard = spawnSync(process.execPath, [guardScript], {
-  cwd: projectRoot,
-  input: JSON.stringify({ tool_input: { file_path: 'src/chapter-editor/schema.ts' } }),
-  encoding: 'utf8',
-});
-const vocabDecision = JSON.parse(vocabGuard.stdout || '{}')?.hookSpecificOutput?.permissionDecision;
-if (vocabGuard.status !== 0 || vocabDecision !== 'ask') {
-  throw new Error(`Expected guard hook ask on src/chapter-editor/schema.ts, got status=${vocabGuard.status} decision=${vocabDecision}`);
+for (const vocabPath of [
+  'src/chapter-editor/schema.ts',
+  'src/chapters/validate-stage.ts',
+  'src/chapter-editor/schema-stage.ts',
+  'src/chapter-editor/schema-script.ts',
+  'src/editor-core/scene-fields.ts',
+]) {
+  const vocabGuard = spawnSync(process.execPath, [guardScript], {
+    cwd: projectRoot,
+    input: JSON.stringify({ tool_input: { file_path: vocabPath } }),
+    encoding: 'utf8',
+  });
+  const vocabDecision = JSON.parse(vocabGuard.stdout || '{}')?.hookSpecificOutput?.permissionDecision;
+  if (vocabGuard.status !== 0 || vocabDecision !== 'ask') {
+    throw new Error(`Expected guard hook ask on ${vocabPath}, got status=${vocabGuard.status} decision=${vocabDecision}`);
+  }
 }
 
 console.log(`=== [5/5] chapter-implementer verification PASS (${chapterId}) ===`);

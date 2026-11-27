@@ -156,6 +156,7 @@ export function allEvents(): KernelEvent[] {
     { type: 'ACTOR_FLY_TO', entityId: 'socket', target: 'home', hold: false, ms: 600 },
     { type: 'BATTLE_STARTED', battle: 1, agent: 'antigravy', model: 'agent.antigravy', taunt: 'Eat fireballs!', advice: 'TROJAN: chmod -x it.', enemyIds: ['trojan-1'] },
     { type: 'BATTLE_TURN', battle: 1, actor: 'player', first: true, reason: 'start' },
+    { type: 'FX_CUE', preset: 'fx.coredump', x: 1.5, y: 0.9, text: 'DUMP!' },
   ];
 }
 

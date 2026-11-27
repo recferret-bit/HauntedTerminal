@@ -195,6 +195,7 @@ await withProcgen(async (_procgen, vite) => {
       ...(brokenCh.levels[0].script ?? {}),
       arrival: [
         { kind: 'spawn', entityId: 'ghost_orb', model: 'prop.fan', x: 2.2, y: 0.4, scale: [1.5, 1.5, 1.5], zOrder: 1, label: 'ORB' },
+        { kind: 'spawn', entityId: '   ', model: 'prop.fan' },
         { kind: 'fx', preset: 'fx.missing_nope', x: 2.2, y: 1.0, text: 'WHOOSH' },
         { kind: 'despawn', entityId: 'ghost_orb' },
       ],
@@ -205,6 +206,7 @@ await withProcgen(async (_procgen, vite) => {
     assert.ok(brokenChIssues.some((i) => i.tab === 'entities' && i.message.includes('duplicate prop id "dup"')));
     assert.ok(brokenChIssues.some((i) => i.tab === 'entities' && i.message.includes('prop.missing_xyz')));
     assert.ok(brokenChIssues.some((i) => i.tab === 'entities' && i.message.includes('pickup.missing_xyz')));
+    assert.ok(brokenChIssues.some((i) => i.tab === 'script' && i.message.includes('spawn missing entityId')));
     assert.ok(brokenChIssues.some((i) => i.tab === 'script' && i.message.includes('fx.missing_nope')));
 
     const suggest = chapterSuggestMod.makeSuggest(() => chModel.draft.levels[0]);
