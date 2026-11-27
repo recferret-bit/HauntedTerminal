@@ -25,7 +25,7 @@
 
 html, body {
   height: 100%;
-  background: var(--paper);
+  background: var(--void);
   color: var(--ink);
   font-family: var(--mono);
 }
@@ -33,9 +33,7 @@ html, body {
 body {
   min-height: 100vh;
   overflow: hidden;
-  background-color: var(--paper);
-  background-image: radial-gradient(var(--paper-dot) 0.7px, transparent 0.8px);
-  background-size: 5px 5px;
+  background-color: var(--void);
 }
 
 /* Edge to edge (spec .kiro/specs/play-edge-layout-terminal-skin/): no page padding or gutter on /play. */

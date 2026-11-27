@@ -3,8 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07080a" />
     <title>Out Of Credits — Play</title>
+    <link rel="preload" href="/fonts/chakra-petch-700-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23140f12'/%3E%3Crect x='2' y='3' width='12' height='9' fill='%23ffd166'/%3E%3Crect x='4' y='6' width='2' height='2' fill='%23140f12'/%3E%3Crect x='7' y='9' width='5' height='1' fill='%23ff6a13'/%3E%3C/svg%3E" />
+    <style>
+      html, body { height: 100%; margin: 0; background: #07080a; overflow: hidden; }
+      body.hud-hidden #topbar, body.hud-hidden #sandbox-toggle-btn,
+      body.term-off #terminal-bezel, body.cine #page, .hidden { visibility: hidden; }
+      #stage-caption { display: none; }
+    </style>
+    <link rel="stylesheet" href="/src/styles/game.css" />
+    <link rel="stylesheet" href="/src/styles/dialog.css" />
+    <link rel="stylesheet" href="/src/styles/esc-menu.css" />
+    <link rel="stylesheet" href="/src/styles/hint-dialog.css" />
+    <link rel="stylesheet" href="/src/styles/chapter-map.css" />
+    <link rel="stylesheet" href="/src/styles/terminal-skins.css" />
   </head>
   <body class="term-off hud-hidden">
     <div id="page">
