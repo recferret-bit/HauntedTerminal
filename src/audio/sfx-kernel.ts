@@ -104,8 +104,7 @@ function actorCues(ev: KernelEvent): SfxId[] {
       crack_start: 'kiro_crack_start',
       crack_step: 'kiro_crack_step',
       crack_done: 'kiro_crack_done',
-      // Placeholder until `kiro_magic` (docs/audio/SFX_LIST.md row 150) is generated.
-      empower: 'kiro_load',
+      empower: 'kiro_magic',
     };
     return ev.action === 'scan' ? ['kiro_scan', 'sting_kiro'] : [cue[ev.action]];
   }
@@ -128,8 +127,7 @@ function lifeCues(ev: KernelEvent): SfxId[] {
   }
   if (ev.type === 'LANTERN_REVEAL') return ['lantern_on', 'reveal', 'sting_lantern'];
   if (ev.type === 'ITEM_CARRIED') return ['pickup_hover'];
-  // Placeholder until `kiro_fly` (docs/audio/SFX_LIST.md row 149) is generated.
-  if (ev.type === 'ACTOR_FLY_TO') return ['pickup_hover'];
+  if (ev.type === 'ACTOR_FLY_TO') return ['kiro_fly'];
   if (ev.type === 'ITEM_GIVEN') return [ev.item === 'terminal' ? 'term_boot' : 'item_lit'];
   if (ev.type === 'ENEMY_STATE') {
     if (ev.state === 'petrified') return ['petrify'];

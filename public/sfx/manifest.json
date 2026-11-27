@@ -2931,6 +2931,34 @@
           "bytes": 121670
         }
       ]
+    },
+    {
+      "row": 149,
+      "name": "kiro_fly",
+      "effect": "Kiro flies to the old coder (`ACTOR_FLY_TO`, the Tensor GPU ritual)",
+      "listed_seconds": 1.2,
+      "duration_seconds": 1.2,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_fly.mp3",
+          "bytes": 24494
+        }
+      ]
+    },
+    {
+      "row": 150,
+      "name": "kiro_magic",
+      "effect": "Kiro gains a skill (`KIRO_ACTION` `empower`, the Tensor GPU ritual)",
+      "listed_seconds": 2.0,
+      "duration_seconds": 2.0,
+      "loop": false,
+      "files": [
+        {
+          "file": "kiro_magic.mp3",
+          "bytes": 32017
+        }
+      ]
     }
   ],
   "variant_note": "One kept take per cue. The _1/_2/_3 suffix was removed. Near-duplicate clicks, sweeps, page flips and confirm chimes were dropped."

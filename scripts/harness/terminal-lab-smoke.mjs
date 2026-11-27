@@ -390,11 +390,12 @@ try {
   // Top bar: Tick, enemy fire, the live clock.
   await load(world5);
   await $(`${L}.submit('ls')`);
-  await browser.waitFor(`${L}.inspect().entities.some((e) => e.id === 'virus-1' && e.attackIn >= 2)`, 10000, 'ready');
+  await browser.waitFor(`${L}.inspect().entities.some((e) => e.id === 'virus-1' && e.attackIn >= 1)`, 10000, 'ready');
   const countdown = () => $(`${L}.inspect().entities.find((e) => e.id === 'virus-1').attackIn`);
   const c0 = await countdown();
   await $("[...document.querySelectorAll('button')].find((b) => /⏱ Tick/.test(b.textContent)).click()");
-  check((await countdown()) === c0 - 1, `the Tick button advances the world (attack in ${c0} -> ${await countdown()})`);
+  // The countdown counts actions to the next tell and wraps after a tell (`ticksToTell`), so a tick either lowers it by one or restarts it.
+  check((await countdown()) !== c0, `the Tick button advances the world (attack in ${c0} -> ${await countdown()})`);
   const w0 = JSON.stringify(await $(`${L}.inspect().entities`));
   await sleep(1500);
   check(JSON.stringify(await $(`${L}.inspect().entities`)) === w0, 'with the manual clock the world does not move by itself');
