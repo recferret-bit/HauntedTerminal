@@ -21,7 +21,7 @@ export function firstOfKind(stage: ComicStage, kind: StageActor['kind'], pred?: 
   return null;
 }
 
-function findByName(stage: ComicStage, name: string | undefined, exact = false): StageActor | null {
+export function findByName(stage: ComicStage, name: string | undefined, exact = false): StageActor | null {
   if (!name) return null;
   const n = name.toLowerCase();
   for (const a of stage.actors.values()) {

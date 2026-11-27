@@ -150,6 +150,10 @@ export function allEvents(): KernelEvent[] {
     { type: 'ITEM_CARRIED', entityId: 'socket', item: 'terminal', model: 'item.terminal' },
     { type: 'ITEM_GIVEN', item: 'terminal', model: 'item.terminal', from: 'socket', held: true },
     { type: 'ITEM_GIVEN', item: 'terminal', model: 'item.terminal', held: true },
+    // The Tensor GPU ritual: a flight to the hero and home, then the magic.
+    { type: 'ACTOR_FLY_TO', entityId: 'socket', target: 'hero', hold: true, ms: 600 },
+    { type: 'KIRO_ACTION', action: 'empower', core: 'qwen', message: 'WEIGHTS ONLINE' },
+    { type: 'ACTOR_FLY_TO', entityId: 'socket', target: 'home', hold: false, ms: 600 },
     { type: 'BATTLE_STARTED', battle: 1, agent: 'antigravy', model: 'agent.antigravy', taunt: 'Eat fireballs!', advice: 'TROJAN: chmod -x it.', enemyIds: ['trojan-1'] },
     { type: 'BATTLE_TURN', battle: 1, actor: 'player', first: true, reason: 'start' },
   ];
@@ -187,6 +191,11 @@ function bogusEvents(): KernelEvent[] {
     { type: 'ITEM_CARRIED', entityId: 'socket', item: 'terminal', model: 'not.a.model' },
     { type: 'ITEM_GIVEN', item: 'terminal', model: 'item.terminal', from: 'nobody', held: false },
     { type: 'ITEM_GIVEN' },
+    { type: 'ACTOR_FLY_TO', entityId: 'nobody', target: 'hero', hold: true, ms: 600 },
+    { type: 'ACTOR_FLY_TO', entityId: 'socket', target: 'no-such-socket', hold: false, ms: 600 },
+    { type: 'ACTOR_FLY_TO', entityId: 'socket', target: 'hero', hold: false, ms: Number.NaN },
+    { type: 'ACTOR_FLY_TO' },
+    { type: 'KIRO_ACTION', action: 'empower', core: 'x', message: '' },
     { type: 'BATTLE_STARTED' },
     { type: 'VIBECODER_EMOTE', emote: 'shout' },
     { type: 'VIBECODER_EMOTE' },

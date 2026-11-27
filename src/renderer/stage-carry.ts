@@ -6,6 +6,7 @@ import { setRest } from './stage-actor.js';
 import { playFx, say } from './stage-fx.js';
 import { stampMaterialBases } from './procgen-cast.js';
 import { flyTo, hopInPlace } from './stage-motion.js';
+import { findByName } from './stage-resolve.js';
 import { easeOutBack, stepped } from './tween.js';
 import type { ComicStage } from './comic-stage.js';
 
@@ -32,6 +33,7 @@ const carriedOf = (stage: ComicStage): Map<string, Carried> => {
 };
 
 const HOLD_Z = -0.2;
+const DEFAULT_FLY_MS = 2400;
 const POP_MS = 260;
 
 function dropCarried(stage: ComicStage, c: Carried): void {
@@ -73,14 +75,37 @@ function followCarrier(stage: ComicStage, c: Carried): void {
   stage.tweens.add(83, () => {}, () => followCarrier(stage, c));
 }
 
-/** Where a carrier hovers while it waits: beside the hero, on the side it came from, a little above its slot. */
-function waitingSpot(stage: ComicStage, a: StageActor): THREE.Vector3 {
-  const hero = stage.hero();
-  const side = Math.sign(a.home.x - (hero?.base.x ?? a.home.x)) || 1;
-  const x = (hero?.base.x ?? a.home.x) + 0.85 * side;
+/** A hover spot at stage x, kept inside the panel and a little above the actor's slot. */
+function hoverSpot(stage: ComicStage, a: StageActor, x: number): THREE.Vector3 {
   const lo = stage.panelRight + 0.3;
   const hi = stage.panelLeft - 0.3;
   return new THREE.Vector3(Math.min(hi, Math.max(lo, x)), a.home.y + 0.45, a.home.z);
+}
+
+/** Where a carrier hovers while it waits: beside the hero, on the side it came from. */
+function waitingSpot(stage: ComicStage, a: StageActor): THREE.Vector3 {
+  const hero = stage.hero();
+  const side = Math.sign(a.home.x - (hero?.base.x ?? a.home.x)) || 1;
+  return hoverSpot(stage, a, (hero?.base.x ?? a.home.x) + 0.85 * side);
+}
+
+/** Where a flier hovers beside `other`: on the side it comes from. */
+function beside(stage: ComicStage, a: StageActor, other: StageActor): THREE.Vector3 {
+  return hoverSpot(stage, a, other.base.x + 0.85 * (Math.sign(a.base.x - other.base.x) || 1));
+}
+
+/**
+ * ACTOR_FLY_TO: the actor flies to the hero (hovering beside him), back home, or beside the socket or entity named by
+ * `target`. An unknown actor or target is ignored. With `hold` it keeps hovering there; otherwise it settles on arrival.
+ */
+export function actorFlyTo(stage: ComicStage, ev: Extract<KernelEvent, { type: 'ACTOR_FLY_TO' }>): void {
+  const a = stage.actors.get(ev.entityId);
+  if (!a || a.disposed || a.exiting) return;
+  const other = ev.target === 'hero' ? stage.hero() : ev.target === 'home' ? null : findByName(stage, ev.target, true);
+  if (ev.target !== 'home' && (!other || other.disposed || other === a)) return;
+  const to = other ? (ev.target === 'hero' ? waitingSpot(stage, a) : beside(stage, a, other)) : a.home.clone();
+  const ms = Number.isFinite(ev.ms) && ev.ms > 0 ? ev.ms : DEFAULT_FLY_MS;
+  flyTo(stage, a, to, ms, ev.hold ? undefined : () => setRest(a), undefined, ev.hold);
 }
 
 /** ITEM_CARRIED: the item pops into the carrier's hands (materialize, stepped scale-in), then the carrier flies next to the hero. */
