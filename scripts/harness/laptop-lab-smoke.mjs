@@ -35,6 +35,12 @@ try {
   await sleep(300);
   check(await state() === 'closed', 'starts closed');
   check(await $(`[...document.querySelectorAll('.lt-key')].length`) >= 70, 'the deck has a full keyboard');
+  check(await $(`(() => {
+    const sc = getComputedStyle(document.querySelector('.lt-scene'));
+    const st = getComputedStyle(document.querySelector('.ll-stage'));
+    return sc.backgroundColor === 'rgb(33, 26, 54)' && sc.backgroundImage.includes('radial-gradient') && parseFloat(st.borderTopWidth) > 0;
+  })()`), '/laptop-lab keeps its comic-panel border and purple halftone .lt-scene background');
+  check(await $(`Boolean(document.querySelector('.lt-topstrip .lt-power'))`), 'the deck has a physical Power button beside the speaker grille');
   await browser.shoot(shot('1-closed'));
 
   // ---- lifecycle, with a frame in the middle of each animation ----
@@ -46,7 +52,8 @@ try {
   await sleep(200);
   await browser.shoot(shot('3-open'));
   check(JSON.stringify(await $(`[...document.querySelectorAll('.ll-actions [data-event]')].map((b) => b.dataset.event)`)) === '["POWER","CLOSE"]', 'the lab offers exactly the events the open state takes');
-  await $(`${L}.machine.send('POWER')`);
+  check(await $(`(() => { const b = document.querySelector('.lt-power'); return b?.dataset.power === 'ready' && !b.disabled; })()`), 'the Power button highlights ready when the lid is open');
+  await $(`document.querySelector('.lt-power').click()`);
   await sleep(600);
   await browser.shoot(shot('4-diving'));
   await waitState('booting');
@@ -58,6 +65,7 @@ try {
   await browser.shoot(shot('6-splash'));
   await waitState('desktop');
   await sleep(300);
+  check(await $(`document.querySelector('.lt-power')?.dataset.power === 'on'`), 'the Power button shows on while on the desktop');
   check(await $(`!!document.querySelector('.lt-window[data-app="quests"]')`), 'the desktop opens with Quests');
   await browser.shoot(shot('7-desktop'));
 

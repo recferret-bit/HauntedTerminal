@@ -1,6 +1,6 @@
 # Laptop rework: requirements
 
-Status: design-approved (requirements approved by the user 2026-11-27; design approved by the user 2026-11-27)
+Status: done (implemented and verified against all quality gates 2026-11-27)
 
 Capability: reworks the developer's CSS 3D clamshell laptop (`src/laptop/`) and its in-game `/play` overlay (`src/play/laptop.ts`) so running the laptop in-game is immediately obvious (auto-opening the lid on launch and adding a prominent physical Power button top-right of the deck beside the speaker grille) and removes all rectangular backgrounds behind the floating 3D laptop on `/play` while keeping `/laptop-lab`'s comic-panel stage intact.
 

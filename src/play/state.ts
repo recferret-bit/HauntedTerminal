@@ -137,7 +137,7 @@ export class Play {
   unmountAudio?: () => void;
   manualBook: ManualBook | null = null;
   /** The in-game laptop overlay while it is open (`src/play/laptop.ts`), else null. It never holds the turn timer. */
-  laptopOverlay: { close(): void; state(): string } | null = null;
+  laptopOverlay: { close(immediate?: boolean): void; state(): string } | null = null;
   /** Every event the session produced, newest last (capped). The chapter editor reads it through `__game.events()`. */
   eventLog: KernelEvent[] = [];
   /** The lab's config in a Terminal Lab game (`?lab=1` on a draft), else null. */
@@ -211,5 +211,5 @@ export function closeOtherModals(play: Play, keep?: Exclude<OverlayId, 'editor'>
   if (keep !== 'manual' && play.manualBook?.isOpen()) play.manualBook.close();
   if (keep !== 'map' && play.chapterMap?.isOpen()) play.chapterMap.close();
   if (keep !== 'hint' && play.hintDialog?.isOpen()) play.hintDialog.close();
-  if (keep !== 'laptop') play.laptopOverlay?.close();
+  if (keep !== 'laptop') play.laptopOverlay?.close(true);
 }

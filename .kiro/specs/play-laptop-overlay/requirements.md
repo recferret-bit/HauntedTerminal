@@ -35,3 +35,7 @@ Capability: the developer's laptop opens during the game on `/play`. It reuses t
 ## Verification
 
 - `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/manual-smoke.mjs` (slot click and `F4` open and close the overlay only when carried; Escape closes it without the Esc menu), `npm run quality` (layers: `play/` may import `laptop/ui/`), `node scripts/harness/generate-chapter.mjs --verify --ticks 3`.
+
+## Later changes
+
+- **2026-11-27 (`.kiro/specs/laptop-rework/`)**: `/play` overlay now floats with a completely transparent background (removing `.laptop-overlay`, `.laptop-overlay-panel`, and `.laptop-overlay .lt-scene` backgrounds/borders while keeping `/laptop-lab`'s comic-panel stage intact), auto-opens the lid on launch (`closed` -> `opening` -> `open`), adds a physical `POWER` button (`.lt-power`) top-right beside `.lt-grille` on `.lt-deck`, and closes on clicks outside `.lt-deck`.

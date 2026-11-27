@@ -5,7 +5,7 @@ description: "[WORKFLOW] Test bench and developer workflow for the developer's l
 
 # Laptop Lab (`laptop-lab`)
 
-**Category: WORKFLOW.** Owner: `laptop-designer` (`src/laptop/**`, `scripts/harness/props/laptop.mjs`). CSS lives in `src/styles/laptop*.css` (`lead-dev`), and `/play` in-game overlay wiring lives in `src/play/laptop.ts` (`lead-dev`). Orthogonal to `.kiro/specs/play-laptop-overlay/` and `.kiro/specs/laptop-web-studio/`.
+**Category: WORKFLOW.** Owner: `laptop-designer` (`src/laptop/**`, `scripts/harness/props/laptop.mjs`). CSS lives in `src/styles/laptop*.css` (`lead-dev`), and `/play` in-game overlay wiring lives in `src/play/laptop.ts` (`lead-dev`). Orthogonal to `.kiro/specs/play-laptop-overlay/`, `.kiro/specs/laptop-rework/`, and `.kiro/specs/laptop-web-studio/`.
 
 ## Run It
 

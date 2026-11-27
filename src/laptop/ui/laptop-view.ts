@@ -5,7 +5,7 @@
  */
 import { h } from '../../editor-core/dom.js';
 import { framing, geometryVars } from '../domain/geometry.js';
-import { LAPTOP_STATES, LOOKS, PHASE_MS, type LaptopState } from '../domain/machine.js';
+import { LAPTOP_STATES, LOOKS, nextState, PHASE_MS, type LaptopState } from '../domain/machine.js';
 import { createBootView, type BootView } from './boot-view.js';
 import { createKeyboard, type KeyboardView } from './keyboard-view.js';
 import { paletteVars } from './palette.js';
@@ -17,6 +17,7 @@ export interface LaptopView {
   el: HTMLElement;
   /** The 640 x 480 panel: the desktop goes in here. */
   screen: HTMLElement;
+  powerBtn: HTMLButtonElement;
   keyboard: KeyboardView;
   trackpad: TrackpadView;
   boot: BootView;
@@ -28,6 +29,9 @@ export interface LaptopView {
   frame(animate: boolean): void;
   pow(word: string): void;
 }
+
+const powerMode = (s: LaptopState): 'ready' | 'on' | 'off' =>
+  s === 'open' ? 'ready' : s === 'diving' || s === 'booting' || s === 'desktop' || s === 'shutting' ? 'on' : 'off';
 
 function leds(): { el: HTMLElement; set: (id: LedId, mode: 'off' | 'on' | 'blink') => void } {
   const map = new Map<LedId, HTMLElement>();
@@ -44,15 +48,24 @@ export function createLaptopView(onKey: (code: string, down: boolean) => void): 
   const trackpad = createTrackpad();
   const boot = createBootView();
   const lights = leds();
+  const powerBtn = h(
+    'button',
+    { class: 'lt-power', type: 'button', 'aria-label': 'Power', 'data-power': 'off', disabled: true },
+    h('i', { class: 'lt-power-led', 'aria-hidden': 'true' }),
+    h('span', { class: 'lt-power-glyph', 'aria-hidden': 'true' }, '\u23FB'),
+    h('span', {}, 'POWER'),
+  );
+  const topstrip = h('div', { class: 'lt-topstrip' }, h('div', { class: 'lt-grille' }), powerBtn);
   const screen = h('div', { class: 'lt-screen', 'data-screen': 'off' }, boot.el, boot.bye, h('i', { class: 'lt-glare' }));
   const lid = h('div', { class: 'lt-lid' },
     h('div', { class: 'lt-lid-face' }, screen, h('div', { class: 'lt-brand' }, h('b', {}, 'HAUNTED'), ' BOOK 486')),
     h('div', { class: 'lt-lid-back' }, h('div', { class: 'lt-sticker' }, h('b', {}, '>_'))));
   const deck = h('div', { class: 'lt-deck' },
-    h('div', { class: 'lt-grille' }),
+    topstrip,
     keyboard.el,
     h('div', { class: 'lt-palm' }, lights.el, trackpad.el, h('div', { class: 'lt-badge' }, '486', h('small', {}, 'DX2/66'))),
     h('div', { class: 'lt-front' }, h('i', { class: 'lt-latch' })),
+    h('div', { class: 'lt-hinge' }),
     lid);
   const rig = h('div', { class: 'lt-rig' }, h('div', { class: 'lt-shadow' }), deck);
   const sfx = h('div', { class: 'lt-sfx', 'aria-hidden': 'true' });
@@ -61,7 +74,7 @@ export function createLaptopView(onKey: (code: string, down: boolean) => void): 
 
   let state: LaptopState = 'closed';
   const view: LaptopView = {
-    el, screen, keyboard, trackpad, boot,
+    el, screen, powerBtn, keyboard, trackpad, boot,
     show(next) {
       state = next;
       const look = LOOKS[next];
@@ -69,6 +82,8 @@ export function createLaptopView(onKey: (code: string, down: boolean) => void): 
       el.dataset.camera = look.camera;
       el.dataset.lid = look.lid;
       screen.dataset.screen = look.screen;
+      powerBtn.dataset.power = powerMode(next);
+      powerBtn.disabled = !nextState(next, 'POWER');
       view.frame(true);
     },
     led: lights.set,
@@ -79,9 +94,10 @@ export function createLaptopView(onKey: (code: string, down: boolean) => void): 
       }
     },
     frame(animate) {
-      const box = el.getBoundingClientRect();
-      if (!box.width || !box.height) return;
-      const f = framing(LOOKS[state], box.width, box.height);
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      if (!w || !h) return;
+      const f = framing(LOOKS[state], w, h);
       rig.classList.toggle('still', !animate);
       rig.style.transform = `translateY(${f.shiftY.toFixed(1)}px) scale(${f.zoom.toFixed(4)}) rotateX(${-f.tilt}deg)`;
       if (!animate) void rig.offsetWidth;

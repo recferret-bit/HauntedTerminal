@@ -95,7 +95,7 @@ function wireInput(view: LaptopView, hooks: InputHooks): () => void {
   const onPointerDown = (ev: PointerEvent): void => {
     view.trackpad.button(ev.button, true);
     const t = ev.target;
-    if (t instanceof Element && view.el.contains(t) && !t.closest('.lt-key')) hooks.onClick();
+    if (t instanceof Element && view.el.contains(t) && t.closest('.lt-deck') && !t.closest('.lt-key')) hooks.onClick();
   };
   const onPointerUp = (ev: PointerEvent): void => view.trackpad.button(ev.button, false);
   const onPointerCancel = (ev: PointerEvent): void => {
@@ -164,6 +164,19 @@ function createCapsController(
   };
 }
 
+/** Hardware controls on the chassis: shut lid opens, Power button toggles power, dark screen boots. */
+function wireChassisClicks(view: LaptopView, machine: Machine): void {
+  view.powerBtn.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    machine.send('POWER');
+  });
+  view.el.addEventListener('click', (ev) => {
+    const on = (ev.target as HTMLElement).closest('.lt-lid');
+    if (on && machine.state === 'closed') machine.send('OPEN');
+    else if (on && machine.state === 'open') machine.send('POWER');
+  });
+}
+
 export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): LaptopHandle {
   const sound = createLaptopSound(opts.hear);
   sound.muted = !!opts.muted;
@@ -183,12 +196,6 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
     caps: capsCtrl.caps,
     onCapsKey: capsCtrl.onCapsKey,
     syncCaps: capsCtrl.sync,
-  });
-  // The device answers clicks too: the shut lid opens, the dark screen powers on.
-  view.el.addEventListener('click', (ev) => {
-    const on = (ev.target as HTMLElement).closest('.lt-lid');
-    if (on && machine.state === 'closed') machine.send('OPEN');
-    else if (on && machine.state === 'open') machine.send('POWER');
   });
 
   const ctx: LaptopContext = {
@@ -244,6 +251,7 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
     stateFns.forEach((fn) => fn(state, event));
   };
   const machine = createMachine({ after: (ms, fn) => { const t = window.setTimeout(fn, ms); return () => window.clearTimeout(t); } }, enter);
+  wireChassisClicks(view, machine);
 
   const setSpeed = (speed: number): void => {
     const next = Number.isFinite(speed) && speed >= 0 ? speed : 1;
@@ -277,6 +285,7 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
     },
     resetProgress: () => ctx.setProgress(emptyProgress()),
     dispose() {
+      machine.dispose();
       capsCtrl.clear();
       unhookInput();
       ro.disconnect();

@@ -1,24 +1,34 @@
-/* In-game laptop overlay (src/play/laptop.ts): the Laptop Lab laptop in a full-window comic panel, over the stage and the terminal. */
+/* In-game laptop overlay (src/play/laptop.ts): floating 3D laptop with transparent background over gameplay (/play only; /laptop-lab keeps its comic-panel stage). */
 .laptop-overlay {
+  --laptop-book-io: 160ms;
   position: fixed;
   inset: 0;
   z-index: 300;
-  padding: 18px;
-  background: rgba(20, 15, 18, 0.82);
+  overflow: hidden;
+  background: transparent;
 }
+.laptop-overlay.is-closing { pointer-events: none; }
 .laptop-overlay-panel {
   position: absolute;
   inset: 18px;
-  border: 5px solid var(--ink);
-  background: var(--paper);
-  box-shadow: 6px 6px 0 var(--ink);
-  overflow: hidden;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  animation: laptop-book-in var(--laptop-book-io) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.laptop-overlay.is-hiding .laptop-overlay-panel {
+  animation: laptop-book-out var(--laptop-book-io) cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+.laptop-overlay .lt-scene {
+  background: none;
+  overflow: visible;
 }
 .laptop-overlay-close {
   position: absolute;
   top: 28px;
   right: 28px;
-  z-index: 1;
+  z-index: 10;
   padding: 6px 12px;
   border: 3px solid var(--ink);
   background: var(--yellow);
@@ -27,5 +37,28 @@
   font: 700 13px/1 var(--display);
   letter-spacing: 0.5px;
   cursor: pointer;
+  animation: laptop-close-in var(--laptop-book-io) ease-out both;
+  transition: opacity var(--laptop-book-io) ease-out, background-color 80ms;
 }
+.laptop-overlay.is-closing .laptop-overlay-close { opacity: 0; }
 .laptop-overlay-close:hover { background: var(--paper); }
+@keyframes laptop-book-in {
+  from { opacity: 0; transform: translateY(32px) scale(0.94); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes laptop-book-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(32px) scale(0.94); }
+}
+@keyframes laptop-close-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .laptop-overlay-panel,
+  .laptop-overlay.is-hiding .laptop-overlay-panel,
+  .laptop-overlay-close {
+    animation: none;
+    transition: none;
+  }
+}

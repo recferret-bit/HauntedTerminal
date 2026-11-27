@@ -7,7 +7,8 @@ Status: see requirements.md
 ```
 src/laptop/ui/laptop-view.ts      Adds powerBtn: HTMLButtonElement (`button.lt-power`, type="button", aria-label="Power",
                                   containing `.lt-power-led`, `.lt-power-glyph` '⏻', and 'POWER') on the right of a new
-                                  `.lt-topstrip` flex row alongside `.lt-grille` at the top of `.lt-deck`. `show(next)`
+                                  `.lt-topstrip` flex row alongside `.lt-grille` at the top of `.lt-deck`, plus `.lt-hinge`
+                                  bridging the 3D seam between `.lt-lid` and `.lt-deck`. `show(next)`
                                   syncs `powerBtn.disabled = !nextState(next, 'POWER')` and `powerBtn.dataset.power`
                                   ('ready' in 'open'; 'on' in 'diving' | 'booting' | 'desktop' | 'shutting'; 'off' else)
                                   (Req 2, 3).
@@ -18,7 +19,9 @@ src/laptop/ui/laptop.ts           Extracts `wireChassisClicks(view, machine)` (k
                                   so clicking transparent empty space around the laptop plays no hardware click (Req 3, 4, 6).
 src/styles/laptop.css             Styles `.lt-topstrip` (height 24px + margin-bottom 8px = 32px total, identical to the
                                   old 22px + 10px `.lt-grille` budget so `.lt-keys` and `.lt-palm` shift 0px), `.lt-grille`
-                                  (`flex: 1`), and `.lt-power` / `.lt-power-led` using `--z-*` palette custom properties
+                                  (`flex: 1`), `.lt-hinge` (closing the 3D gap between lid and deck with flush square
+                                  hinge-side corners on `.lt-deck`, `.lt-lid-face`, and `.lt-lid-back`), and `.lt-power` /
+                                  `.lt-power-led` using `--z-*` palette custom properties
                                   only: stepped cel-shaded amber pulse (`lt-power-pulse` via `steps(2, jump-none)`) when
                                   `data-power="ready"`, phosphor green LED when `data-power="on"`, and tactile 3D press on
                                   `:active:not(:disabled)`. Sets `pointer-events: none` on `.lt-shadow` so cast-shadow pixels
@@ -30,11 +33,14 @@ src/play/laptop.ts                After `mountLaptop(panel, { start: 'closed', .
                                   `.closest('.lt-deck, .laptop-overlay-close')`) and closes on `click` (`stopPropagation()`)
                                   when neither `pointerdown` nor `click` hit `.lt-deck` or `.laptop-overlay-close`, preventing
                                   drag-release accidental closes and blocking propagation to the stage/HUD (Req 6, 7).
+                                  Animated closes first fold the lid shut (`220ms`) then hide the closed book (`160ms`),
+                                  matching the `160ms` appear motion (unless `close(true)` for modal switches or reduced motion).
 src/styles/play-laptop.css        Makes `.laptop-overlay` (`background: transparent; overflow: hidden`), `.laptop-overlay-panel`
                                   (`border: 0; background: transparent; box-shadow: none; overflow: visible`), and
                                   `.laptop-overlay .lt-scene` (`background: none; overflow: visible`) completely transparent
                                   so only the 3D laptop, its `.lt-shadow`, comic SFX words, and `CLOSE [Esc]` float over `/play`,
-                                  while `/laptop-lab` keeps its comic-panel frame and purple halftone `.lt-scene` intact (Req 5).
+                                  while `/laptop-lab` keeps its comic-panel frame and purple halftone `.lt-scene` intact (Req 5),
+                                  and defines the symmetric `160ms` `laptop-book-in` / `laptop-book-out` animations.
 scripts/harness/play-laptop-smoke.mjs  Updates `/play` headless Chrome E2E checks (1600x950 and 1280x820) for auto-open on
                                   launch (`opening` -> `open`), `.lt-power` visibility + `data-power="ready"` + boot/shutdown
                                   clicks, `.lt-screen` click-to-boot in `'open'`, computed transparent backgrounds on
