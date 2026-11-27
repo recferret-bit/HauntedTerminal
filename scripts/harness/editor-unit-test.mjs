@@ -27,6 +27,8 @@ await withProcgen(async (_procgen, vite) => {
   const httpMod = await vite.ssrLoadModule('/src/editor-core/http.ts');
   const chapterModelMod = await vite.ssrLoadModule('/src/chapter-editor/chapter-model.ts');
   const chapterCheckMod = await vite.ssrLoadModule('/src/chapter-editor/check.ts');
+  const chapterSuggestMod = await vite.ssrLoadModule('/src/chapter-editor/suggest.ts');
+  const chapterSchemaScriptMod = await vite.ssrLoadModule('/src/chapter-editor/schema-script.ts');
   const comixModelMod = await vite.ssrLoadModule('/src/comix-editor/model.ts');
   const comixCheckMod = await vite.ssrLoadModule('/src/comix-editor/check.ts');
   const comixSelMod = await vite.ssrLoadModule('/src/comix-editor/selection.ts');
@@ -205,13 +207,11 @@ await withProcgen(async (_procgen, vite) => {
     assert.ok(brokenChIssues.some((i) => i.tab === 'entities' && i.message.includes('pickup.missing_xyz')));
     assert.ok(brokenChIssues.some((i) => i.tab === 'script' && i.message.includes('fx.missing_nope')));
 
-    const suggestMod = await vite.ssrLoadModule('/src/chapter-editor/suggest.ts');
-    const suggest = suggestMod.makeSuggest(() => chModel.draft.levels[0]);
+    const suggest = chapterSuggestMod.makeSuggest(() => chModel.draft.levels[0]);
     const fxList = suggest('fx');
     assert.ok(Array.isArray(fxList) && fxList.includes('fx.sigkill') && fxList.every((id) => id.startsWith('fx.')));
 
-    const schemaScriptMod = await vite.ssrLoadModule('/src/chapter-editor/schema-script.ts');
-    const variants = schemaScriptMod.STEP_VARIANTS();
+    const variants = chapterSchemaScriptMod.STEP_VARIANTS();
     assert.ok(variants.spawn.some((f) => f.key === 'x') && variants.spawn.some((f) => f.key === 'scale'));
     assert.ok(variants.despawn.some((f) => f.key === 'entityId'));
     assert.ok(variants.fx.some((f) => f.key === 'preset' && f.suggest === 'fx'));
