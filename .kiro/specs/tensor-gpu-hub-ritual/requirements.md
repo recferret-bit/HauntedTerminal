@@ -1,6 +1,6 @@
 # Tensor GPU hub ritual: requirements
 
-Status: approved (requirements, design, tasks approved by the user 2026-11-27)
+Status: done
 
 Capability: a new inventory item, the Tensor GPU, drops in Level 2. When the vibecoder brings it to Hub 1, Kiro flies from the vibecoder to the Old Bearded Coder (dad.tty). Kiro says, in effect, "look whom I found, a vibecoder from the prophecy, and he found a Tensor GPU". The old coder answers that open-weight models can now be loaded into Kiro. Magic plays, and the dialogs explain that every open-weight model gives Kiro a skill (`qwen` heals, `deepseek` gives riddle hints), that each skill has one charge per level, and that hidden VRAM modules add charges. The old coder then gives the vibecoder the map and the manual. The dialogs must explain all of it.
 
