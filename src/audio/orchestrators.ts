@@ -1,5 +1,6 @@
-import type { AppBus, AppEvent } from '../contracts/app-bus.js';
-import type { SfxId } from './catalog.js';
+import { isMusicId } from '../contracts/audio-cues.js';
+import type { AppBus, AppEvent, MusicScene, MusicSurface } from '../contracts/app-bus.js';
+import type { MusicId, SfxId } from './catalog.js';
 import type { AudioGraph } from './engine.js';
 import { musicFor } from './music-for.js';
 import { hpBand, sfxFor } from './sfx-for.js';
@@ -12,6 +13,9 @@ export function attachOrchestrators(bus: AppBus, graph: AudioGraph): () => void 
   let dropShock = false;
   let dropHeroType = false;
   let dropArmed = false;
+  let lastScene: MusicScene | null = null;
+  let lastSurface: MusicSurface | null = null;
+  let musicOverride: MusicId | undefined;
 
   const armCommandFollowupDrop = (ok: boolean): void => {
     if (ok) dropHeroType = true;
@@ -41,8 +45,23 @@ export function attachOrchestrators(bus: AppBus, graph: AudioGraph): () => void 
       graph.hold(event.paused);
       return;
     }
+    if (event.kind === 'music') {
+      if (event.cue === null) {
+        musicOverride = undefined;
+        if (lastScene) graph.bed(musicFor(lastScene));
+      } else if (isMusicId(event.cue)) {
+        musicOverride = event.cue;
+        graph.bed(musicOverride);
+      }
+      return;
+    }
     if (event.kind === 'scene') {
-      const bed = musicFor(event.scene);
+      if (lastSurface !== event.scene.surface) {
+        musicOverride = undefined;
+        lastSurface = event.scene.surface;
+      }
+      lastScene = event.scene;
+      const bed = musicOverride ?? musicFor(event.scene);
       graph.bed(bed);
       const under = event.scene.surface === 'play' && event.scene.lowHp && event.scene.battle === 'none';
       graph.loop('low_hp_loop', under);

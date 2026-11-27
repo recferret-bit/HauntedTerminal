@@ -15,6 +15,10 @@ export interface LabApi {
   };
   inspect(id: string | null, options?: Record<string, unknown>): Promise<unknown>;
   setOption(key: string, value: unknown): Promise<unknown>;
+  stepFx(delta: -1 | 1): Promise<unknown>;
+  setFxTime(tMs: number): Promise<unknown>;
+  setFxLayers(hidden: string[]): Promise<unknown>;
+  setFxWord(text: string | null): Promise<unknown>;
   stats(): unknown;
   options(): LabOptions;
   /** Not API: the live stage and views, for debugging the lab itself from the console. */
@@ -40,7 +44,16 @@ function galleryStats(app: LabApp): unknown {
 function subjectStats(app: LabApp): unknown {
   const subject = app.inspect?.mounted ?? null;
   return subject
-    ? { kind: subject.kind, id: subject.id, category: subject.category, bounds: subject.bounds, sockets: subject.sockets, info: subject.info }
+    ? {
+        kind: subject.kind,
+        id: subject.id,
+        category: subject.category,
+        bounds: subject.bounds,
+        sockets: subject.sockets,
+        info: subject.info,
+        fxInfo: subject.fxInfo ?? null,
+        fxState: subject.fxControl?.getState() ?? null,
+      }
     : null;
 }
 
@@ -82,6 +95,26 @@ export function installLabApi(app: LabApp): void {
     },
     setOption: async (key, value) => {
       if (!app.setOption(key, value)) throw new Error(`unknown storybook option "${key}"`);
+      await app.gate.afterPaint();
+      return stats(app);
+    },
+    stepFx: async (delta) => {
+      app.stepFx(delta);
+      await app.gate.afterPaint();
+      return stats(app);
+    },
+    setFxTime: async (tMs) => {
+      app.scrubFx(tMs);
+      await app.gate.afterPaint();
+      return stats(app);
+    },
+    setFxLayers: async (hidden) => {
+      app.setFxLayers(hidden);
+      await app.gate.afterPaint();
+      return stats(app);
+    },
+    setFxWord: async (text) => {
+      app.setFxWord(text);
       await app.gate.afterPaint();
       return stats(app);
     },

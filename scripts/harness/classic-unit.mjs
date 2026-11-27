@@ -403,7 +403,9 @@ await withProcgen(async (_procgen, vite) => {
     const s = fresh();
     for (const floor of [1, 2, 3, 4, 5]) {
       s.debugTeleport(floor);
-      for (const actor of s.snapshot().room.actors) {
+      const actors = s.snapshot().room.actors;
+      assert.ok(actors.some((a) => a.kind === 'prop'), `classic floor ${floor} includes LAYOUTS props`);
+      for (const actor of actors) {
         if (actor.model) models.add(actor.model);
       }
     }

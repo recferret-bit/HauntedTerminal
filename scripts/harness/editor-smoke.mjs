@@ -288,6 +288,63 @@ try {
     'Chapter summary table uses semantic th[scope=col] + Open button, multi-control fields avoid multi-input <label>, and Clear button fits cleanly',
   );
 
+  // 8d. Interactive config-first form widgets: stage hero `alt` toggle & prop `numOrVec3` vec3 scale editing
+  await click('.ed-item', chapter.levels[0].spec.title);
+  await click('.ed-tab', 'Overview');
+  await sleep(60);
+  const stageWidgetsOk = await $(`(() => {
+    const heroMode = document.querySelector('.ed-pane select[aria-label="Hero placement (number = X, or object) mode"]');
+    if (!heroMode) return false;
+    const orig = heroMode.value;
+    heroMode.value = 'object';
+    heroMode.dispatchEvent(new Event('change', { bubbles: true }));
+    const zLbl = [...document.querySelectorAll('.ed-pane fieldset.grp label.fld')].find((l) => l.querySelector('.fld-label')?.textContent?.startsWith('Z order'));
+    const zInput = zLbl?.querySelector('input');
+    if (!zInput) return false;
+    zInput.value = '2';
+    zInput.dispatchEvent(new Event('input', { bubbles: true }));
+    const heroModeAfter = document.querySelector('.ed-pane select[aria-label="Hero placement (number = X, or object) mode"]');
+    if (!heroModeAfter) return false;
+    heroModeAfter.value = orig;
+    heroModeAfter.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  })()`);
+  await click('.ed-tab', 'Enemies & items');
+  await sleep(60);
+  const propVecOk = await $(`(() => {
+    const findProp = () => [...document.querySelectorAll('.ed-pane details.item')].find((d) => (d.dataset.itemPath || '').includes('props['));
+    const det = findProp();
+    if (!det) return false;
+    const path = det.dataset.itemPath;
+    det.open = true;
+    det.dispatchEvent(new Event('toggle'));
+    const modeSel = det.querySelector('select[aria-label="Scale (number or [x, y, z]) mode"]');
+    if (!modeSel) return false;
+    modeSel.value = 'vec3';
+    modeSel.dispatchEvent(new Event('change', { bubbles: true }));
+    const det2 = [...document.querySelectorAll('.ed-pane details.item')].find((d) => d.dataset.itemPath === path);
+    const sx = det2?.querySelector('input[aria-label="Scale (number or [x, y, z]) 0"]');
+    const sy = det2?.querySelector('input[aria-label="Scale (number or [x, y, z]) 1"]');
+    if (!sx || !sy) return false;
+    sx.value = '1.25';
+    sx.dispatchEvent(new Event('input', { bubbles: true }));
+    sy.value = '0.85';
+    sy.dispatchEvent(new Event('input', { bubbles: true }));
+    return Boolean(det2?.open) && Number(sx.value) === 1.25 && Number(sy.value) === 0.85;
+  })()`);
+  await browser.waitFor(
+    `(localStorage.getItem('credits.editor.draft:${chapter.manifest.id}') || '').includes('1.25')`,
+    5000,
+    'editor draft vec3 update',
+  ).catch(() => false);
+  const draftHasVec = await $(`(localStorage.getItem('credits.editor.draft:${chapter.manifest.id}') || '').includes('1.25')`);
+  await click('.ed-top .btn', 'Revert file');
+  await sleep(60);
+  check(
+    stageWidgetsOk && propVecOk && draftHasVec,
+    `interactive Stage hero alt-mode and prop numOrVec3 vec3 scale widgets update draft cleanly (stage=${stageWidgetsOk}, prop=${propVecOk}, draft=${draftHasVec})`,
+  );
+
   // 9. a file changed on disk by someone else is noticed, and a stale save is refused
   const last = chapter.levels[chapter.levels.length - 1];
   const lastPath = resolve(chaptersDir, slug, last.path);

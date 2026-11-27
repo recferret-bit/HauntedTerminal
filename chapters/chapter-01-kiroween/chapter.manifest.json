@@ -22,7 +22,13 @@
     "pid": 1,
     "model": "boss.kernel",
     "cameoModel": "agent.clod",
-    "cameoLabel": "CLOD [SUPERVISOR]"
+    "cameoLabel": "CLOD [SUPERVISOR]",
+    "cameoTransform": {
+      "x": -1.02,
+      "y": 0.35,
+      "zOrder": 0,
+      "scale": 1
+    }
   },
   "comix": {
     "specPath": "story/comix.spec.json",
@@ -252,7 +258,38 @@
         "id": "father:outro",
         "model": "npc.greybeard_rig",
         "label": "FATHER (OLD BEARDED CODER)",
-        "x": 1.5
+        "x": 1.5,
+        "y": 0,
+        "zOrder": 0,
+        "scale": 1
+      },
+      {
+        "id": "outro:mug",
+        "model": "prop.coffee_mug",
+        "label": "Coffee Mug",
+        "x": 4.75,
+        "y": 1.085,
+        "zOrder": -1,
+        "scale": 0.65
+      },
+      {
+        "id": "outro:bookshelf",
+        "model": "prop.bookshelf",
+        "label": "Bookshelf",
+        "x": 4.07,
+        "y": 3.2,
+        "zOrder": -1,
+        "scale": 1
+      },
+      {
+        "id": "outro:sticky-note",
+        "model": "prop.sticky_note",
+        "label": "Sticky Note",
+        "x": 2.06,
+        "y": 3.1,
+        "zOrder": -1,
+        "scale": 1,
+        "rotation": 5
       }
     ],
     "finale": [

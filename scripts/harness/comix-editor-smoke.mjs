@@ -825,6 +825,37 @@ try {
   })()`);
   check(stageA11yOk, 'Stage & Set multi-control fields use role=group (<=1 control per <label>) and Space inside summary key input keeps <details> open');
 
+  const propVecEditOk = await $(`(() => {
+    const findProp = () => [...document.querySelectorAll('.ed-pane details.item')].find((d) => (d.dataset.itemPath || '').includes('props['));
+    const det = findProp();
+    if (!det) return false;
+    const path = det.dataset.itemPath;
+    det.open = true;
+    det.dispatchEvent(new Event('toggle'));
+    const modeSel = det.querySelector('select[aria-label="Scale (number or [x, y, z]) mode"]');
+    if (!modeSel) return false;
+    modeSel.value = 'vec3';
+    modeSel.dispatchEvent(new Event('change', { bubbles: true }));
+    const det2 = [...document.querySelectorAll('.ed-pane details.item')].find((d) => d.dataset.itemPath === path);
+    const sy = det2?.querySelector('input[aria-label="Scale (number or [x, y, z]) 1"]');
+    if (!sy) return false;
+    sy.value = '1.35';
+    sy.dispatchEvent(new Event('input', { bubbles: true }));
+    return Boolean(det2?.open);
+  })()`);
+  await browser.waitFor(
+    `window.__comixEditor.state().dirty.includes('comix.manifest.json') && (localStorage.getItem('ht-comix-draft') || '').includes('1.35')`,
+    5000,
+    'comix draft vec3 update',
+  ).catch(() => false);
+  const propDraftOk = await $(`window.__comixEditor.state().dirty.includes('comix.manifest.json') && (localStorage.getItem('ht-comix-draft') || '').includes('1.35')`);
+  await clickText('.ed-top .btn', 'Revert');
+  await sleep(60);
+  check(
+    propVecEditOk && propDraftOk,
+    `Stage & Set prop numOrVec3 vec3 scale toggle edits manifest draft and reverts cleanly (edit=${propVecEditOk}, draft=${propDraftOk})`,
+  );
+
   await $(`window.__comixEditor.select({ slug: 'intro', target: 'page-01-desk-storm', tab: 'beats' })`);
   await sleep(60);
   await $(`(() => {

@@ -8,7 +8,8 @@ function panelStyle(panel: ComixPanelSpec): string {
   const [rx, ry, rw, rh] = panel.rect;
   const left = AREA.x + rx * AREA.w;
   const top = AREA.y + ry * AREA.h;
-  const bg = /^#[0-9a-fA-F]{6}$/.test(panel.bgHex) ? panel.bgHex : '#12091c';
+  const rawBg = panel.backdrop ?? panel.bgHex;
+  const bg = /^#[0-9a-fA-F]{6}$/.test(rawBg) ? rawBg : '#12091c';
   return `left:${left}%;top:${top}%;width:${rw * AREA.w}%;height:${rh * AREA.h}%;background:${bg}`;
 }
 

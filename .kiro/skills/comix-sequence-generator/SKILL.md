@@ -43,8 +43,8 @@ Each item in `page.panels[]` bundles **all** visual and audio behaviour for that
    - Fired once as `t` crosses `at` (and replayed deterministically during `?t=<sec>` freeze-frame fast-forward): `lightning`, `fx`, `fx_repeat`, `arc`, `look`, `state`, `audio`, `key_clicks`.
    - `preset` on `fx` / `fx_repeat` must exist in `FxCatalog` (`fx.hop`, `fx.malware-hit`, `fx.malware-death`, ...).
 6. **Continuous Tracks (`tracks[]` on Page or Panel):**
-   - Pure functions of `t` evaluated every frame by `poseComix(world, t)` after resetting actors, mesh parts, palette zones, fixtures, and stage lights to their manifest baselines:
-   - `actor_visibility`, `actor_motion` (`arc`, `steps`, `stretchFrom`/`stretchTo`, `deform: "stretch_to_target" | "squash_land"`, `hideWhenDead`), `actor_rig` (`typing`, `restRightArm`, `hideParts`), `part_visibility`, `material_tint` (`zone`, `color`, optional `glitchColors` + `glitchHz`), `fixture` (`rain`, `bolt` flicker, `vortex` grow), `stage_light`, `camera_shake`, `pixelate`.
+   - Pure functions of `t` evaluated every frame by `poseComix(world, t)` after resetting actors, `stage.props[]`, mesh parts, palette zones, fixtures, and stage lights to their manifest baselines (`zOrder`, `scale`, `rotation`):
+   - `actor_visibility`, `actor_motion` (`arc`, `steps`, `scaleVecFrom`/`To`, `stretchFrom`/`To`, `rotFrom`/`To`, `zOrderFrom`/`To`, `deform: "stretch_to_target" | "squash_land"`, `hideWhenDead`), `actor_rig` (`typing`, `restRightArm`, `hideParts`), `part_visibility`, `material_tint` (`zone`, `color`, optional `glitchColors` + `glitchHz`, targeting `"room"`, `cast[]`, or `stage.props[]`), `fixture` (`rain`, `bolt` flicker, `vortex` grow), `stage_light`, `camera_shake`, `pixelate`.
    - **Baseline rule:** Because `poseComix` resets actor parts to visible each frame before applying active tracks, any rig override (such as `hideParts: ["lantern"]` on `vibecoder.dev` in an office scene) must span the entire window where that actor is on camera. Put cross-panel tracks in `page.tracks[]`!
 
 ---

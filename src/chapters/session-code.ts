@@ -399,7 +399,8 @@ export function cmdExit(g: ChapterState): Step {
         lab: g.lab !== null,
       }),
     ];
-    events.push({ type: 'FLOOR_CLEARED', floorId: g.rt.spec.index, speedrunBonus: runRank === 'S', commandsCount: g.commands });
+    const exitSfx = g.rt.spec.stage?.sfx?.exit;
+    events.push({ type: 'FLOOR_CLEARED', floorId: g.rt.spec.index, speedrunBonus: runRank === 'S', commandsCount: g.commands, ...(exitSfx ? { sfx: exitSfx } : {}) });
     events.push(...achUnlocked);
     events.push({ type: 'GAME_ENDED', rank: runRank, timeSec, commands: g.commands });
 

@@ -1,4 +1,5 @@
 import type { KernelEvent, ProcState } from '../contracts/events.js';
+import type { RoomSocketId, SceneTransform } from '../contracts/room-view.js';
 import type { EnemyType, PickupType } from './bestiary.js';
 import type { EnemySpawn } from './floors.js';
 import type { VNode } from './tree.js';
@@ -23,7 +24,7 @@ export interface WorldHost {
   bossDown(id: string, how: 'frozen' | 'thawed' | 'killed'): void;
 }
 
-export interface Enemy {
+export interface Enemy extends SceneTransform {
   id: string;
   type: EnemyType;
   model: string;
@@ -60,9 +61,15 @@ export interface Enemy {
   deathZone: string[];
   shown: ShownState;
   shownHp: number;
+  x?: number;
+  y?: number;
+  socket?: RoomSocketId;
+  displayLabel?: string;
+  attackSfx?: string;
+  killSfx?: string;
 }
 
-export interface Pickup {
+export interface Pickup extends SceneTransform {
   id: string;
   type: PickupType;
   model: string;
@@ -70,6 +77,11 @@ export interface Pickup {
   name: string;
   amount: number;
   collected: boolean;
+  x?: number;
+  y?: number;
+  socket?: RoomSocketId;
+  displayLabel?: string;
+  collectSfx?: string;
 }
 
 export interface ProcRow {
@@ -89,7 +101,7 @@ export interface SignalResult {
 }
 
 /** What the stage needs to draw an enemy or a pickup in the current room. */
-export interface EntityView {
+export interface EntityView extends SceneTransform {
   id: string;
   model: string;
   kind: 'enemy' | 'boss' | 'pickup';
@@ -98,6 +110,9 @@ export interface EntityView {
   hp?: number;
   maxHp?: number;
   pid?: number;
+  x?: number;
+  y?: number;
+  socket?: RoomSocketId;
   /** Present but unseen (dotfile before the lantern, a worm sunk into its port). */
   unseen: boolean;
   label: string;

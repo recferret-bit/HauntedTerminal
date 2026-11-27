@@ -55,7 +55,7 @@ async function handle(req, res, url) {
   const parts = url.pathname.split('/').filter(Boolean); // api comix [slug action]
   const slug = parts[2] ?? '';
   if (req.method === 'GET' && parts.length === 2) {
-    return sendJson(res, 200, { writable: true, comixes: listComixIds().map(readComix) });
+    return sendJson(res, 200, { writable: true, comixes: listComixIds().map((id) => readComix(id)) });
   }
   if (req.method === 'GET' && parts[3] === 'etags') {
     const slugs = listComixIds();

@@ -4,13 +4,15 @@
 // first on PATH: nothing here spends credits or touches the network.
 //   node scripts/harness/audio-gen-unit.mjs
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { main, parseCli } from './audio-gen.mjs';
 import { CAP, NOT_LOGGED_IN, RESERVE, capProblem } from './lib/audio-gen-cli.mjs';
 import { makeFixture } from './lib/audio-gen-fakes.mjs';
 import { patchManifest } from './lib/audio-gen-manifest.mjs';
-import { NO_FFMPEG, postFilter } from './lib/audio-gen-post.mjs';
+import { NO_FFMPEG, hasFfmpeg, postFilter, resolveFfmpeg } from './lib/audio-gen-post.mjs';
 import { buildRequests } from './lib/audio-gen-request.mjs';
 import { expandNames, loadRows, parseLength, rowFor } from './lib/audio-gen-rows.mjs';
 import { testRunner } from './lib/test-kit.mjs';
@@ -190,6 +192,143 @@ await test('--check: the fixture passes; orphans both ways, unlisted and unmappe
   assert.match(out, /audio check FAILED \(5\)/, 'not_listed is also unmapped');
   assert.equal(f.calls().length, 0);
   assert.ok(existsSync(join(f.root, 'public/music/menu_bed.mp3')));
+});
+
+await test('inspect: parses metrics, reads SFX_TRIM/LOOP_GAINS, handles no-ffmpeg and unknown cues', async () => {
+  const { parseSilenceAndVolume, readAudioConfig } = await import('./lib/audio-gen-inspect.mjs');
+  const parsed = parseSilenceAndVolume([
+    'Duration: 00:00:00.50, start: 0.000000, bitrate: 192 kb/s',
+    '[silencedetect @ 0x1] silence_start: 0',
+    '[silencedetect @ 0x1] silence_end: 0.105 | silence_duration: 0.105',
+    '[silencedetect @ 0x1] silence_start: 0.320',
+    '[Parsed_volumedetect_0 @ 0x1] mean_volume: -18.4 dB',
+    '[Parsed_volumedetect_0 @ 0x1] max_volume: -3.1 dB',
+  ].join('\n'));
+  assert.equal(parsed.durationSec, 0.5);
+  assert.equal(parsed.maxDb, -3.1);
+  assert.equal(parsed.meanDb, -18.4);
+  assert.equal(parsed.leadingSilenceSec, 0.105);
+  assert.equal(parsed.trailingSilenceSec, 0.18);
+
+  const f = fixture();
+  const cfgDir = join(f.root, 'src/audio');
+  writeFileSync(join(cfgDir, 'config.ts'), [
+    'export const DEFAULT_LOOP_GAIN = 0.35;',
+    "export const LOOP_CUE_IDS = ['rain_loop'] as const;",
+    'export const LOOP_GAINS = { rain_loop: 0.22 };',
+    'export const SFX_TRIM = { key_press: { offset: 0.105, duration: 0.215 } };',
+  ].join('\n'));
+  const cfg = readAudioConfig(f.root);
+  assert.deepEqual(cfg.sfxTrim.key_press, { offset: 0.105, duration: 0.215 });
+  assert.equal(cfg.loopGains.rain_loop, 0.22);
+
+  const one = run(f, ['inspect', 'key_press', '--json']);
+  assert.equal(one.code, 0);
+  const json = JSON.parse(one.out);
+  assert.equal(json.count, 1);
+  assert.equal(json.ffmpegAvailable, true);
+  assert.deepEqual(json.cues[0].trim, { offset: 0.105, duration: 0.215 });
+  assert.equal(json.cues[0].metrics.maxDb, -6);
+  assert.equal(json.cues[0].metrics.durationSec, 4);
+  assert.deepEqual(json.cues[0].trimCheck, {
+    offsetValid: true,
+    durationValid: true,
+    uncoveredLeadSec: 0,
+    trimmedActiveSec: 0.215,
+  });
+  assert.equal(json.cues[0].listRow.present, true);
+
+  assert.equal(run(f, ['plan', 'menu_bed', '--generate']).code, 0);
+  const menuBed = run(f, ['inspect', 'menu_bed', '--json']);
+  assert.equal(menuBed.code, 0);
+  const menuJson = JSON.parse(menuBed.out);
+  assert.equal(menuJson.cues[0].group, 'music');
+  assert.equal(menuJson.cues[0].loop, true);
+  assert.equal(menuJson.cues[0].loopGain, null);
+
+  const all = run(f, ['inspect', '--all']);
+  assert.equal(all.code, 0);
+  assert.match(all.out, /audio inspect:/);
+  assert.match(all.out, /key_press/);
+
+  const noFfmpeg = fixture({ ffmpeg: false });
+  const noFf = run(noFfmpeg, ['inspect', 'key_press', '--json']);
+  assert.equal(noFf.code, 0);
+  const noFfJson = JSON.parse(noFf.out);
+  assert.equal(noFfJson.ffmpegAvailable, false);
+  assert.equal(noFfJson.cues[0].metrics, null);
+
+  assert.throws(() => run(f, ['inspect', 'nonexistent_cue']), /unknown cue/);
+});
+
+await test('stingers: music-list cues in SFX_IDS/stingers use music_v2_5 + plans while writing public/sfx/', () => {
+  const f = fixture();
+  const musicList = join(f.root, 'docs/audio/MUSIC_LIST.md');
+  writeFileSync(
+    musicList,
+    `${readFileSync(musicList, 'utf8')}| 19 | \`sting_clear\` | Level cleared | 5 s, one-shot | Pulse resolve. Total length: 5 seconds. |\n| 20 | \`custom_fanfare\` | Secret chime | 5 s, one-shot | Triangle chime. Total length: 5 seconds. |\n`,
+  );
+  writeFileSync(
+    join(f.root, 'public/music/plans/sting_clear.json'),
+    JSON.stringify({ name: 'sting_clear', plan_ms: 5000, plan: { chunks: [{ duration_ms: 5000, text: '[Level Clear]' }] } }),
+  );
+  writeFileSync(
+    join(f.root, 'src/audio/catalog.ts'),
+    "export const SFX_IDS = ['key_press', 'only_in_catalog', 'sting_clear', 'custom_fanfare'];\n",
+  );
+  const dry = run(f, ['plan', 'sting_clear']);
+  assert.equal(dry.code, 0);
+  assert.match(dry.out, /sting_clear \(music, composition plan\) -> public\/sfx\/sting_clear\.mp3/);
+  const rows = loadRows(f.root);
+  const [stingReq] = buildRequests({ root: f.root, row: rowFor(rows, 'sting_clear').row, name: 'sting_clear' });
+  assert.equal(stingReq.group, 'sfx');
+  assert.equal(stingReq.out, 'public/sfx/sting_clear.mp3');
+  assert.equal(stingReq.plan, true);
+  assert.equal(JSON.parse(stingReq.argv[stingReq.argv.indexOf('--json') + 1]).model_id, 'music_v2_5');
+  const musicBefore = read(f, 'public/music/manifest.json');
+  assert.equal(run(f, ['plan', 'sting_clear', 'custom_fanfare', '--generate']).code, 0);
+  assert.equal(read(f, 'public/music/manifest.json'), musicBefore, 'music manifest untouched by stingers');
+  assert.ok(existsSync(join(f.root, 'public/sfx/sting_clear.mp3')));
+  assert.ok(existsSync(join(f.root, 'public/sfx/custom_fanfare.mp3')));
+  const sfxDoc = JSON.parse(read(f, 'public/sfx/manifest.json'));
+  const clearEntry = sfxDoc.sounds.find((s) => s.name === 'sting_clear');
+  const fanfareEntry = sfxDoc.sounds.find((s) => s.name === 'custom_fanfare');
+  assert.equal(clearEntry.source, 'music_v2_5');
+  assert.equal(fanfareEntry.source, 'music_v2_5');
+});
+
+await test('resolveFfmpeg & postProcess: uses ffmpeg-static fallback when PATH lacks ffmpeg while keeping custom no-ffmpeg env null', () => {
+  const missingEnv = { PATH: '/nonexistent-bin-dir' };
+  assert.equal(resolveFfmpeg(missingEnv), null);
+  assert.equal(hasFfmpeg(missingEnv), false);
+  const bin = resolveFfmpeg(process.env);
+  assert.ok(bin !== null && hasFfmpeg(process.env), 'process.env resolves PATH ffmpeg or pinned ffmpeg-static');
+  const tmp = mkdtempSync(join(tmpdir(), 'ht-ffmpeg-static-'));
+  try {
+    const src = join(process.cwd(), 'public/sfx/key_press.mp3');
+    const copy = join(tmp, 'sample.mp3');
+    copyFileSync(src, copy);
+    const script = [
+      "import { postProcess, resolveFfmpeg, measure } from './scripts/harness/lib/audio-gen-post.mjs';",
+      'const bin = resolveFfmpeg(process.env);',
+      'const res = postProcess(process.argv[1], { kind: "sfx", loop: false });',
+      'const stats = measure(process.argv[1]);',
+      'console.log(JSON.stringify({ bin, res, stats }));',
+    ].join('\n');
+    const child = spawnSync(process.execPath, ['--input-type=module', '-e', script, copy], {
+      cwd: process.cwd(),
+      env: { PATH: '/nonexistent-bin-dir' },
+      encoding: 'utf8',
+    });
+    assert.equal(child.status, 0, `child stderr: ${child.stderr}`);
+    const out = JSON.parse(child.stdout.trim());
+    assert.ok(typeof out.bin === 'string' && out.bin.length > 0 && out.bin !== 'ffmpeg', `expected ffmpeg-static path, got ${out.bin}`);
+    assert.equal(out.res.post, true);
+    assert.ok(Number.isFinite(out.res.seconds) && out.res.seconds > 0);
+    assert.ok(Number.isFinite(out.stats.maxDb) && out.stats.maxDb <= 0 && out.stats.maxDb >= -12);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
 });
 
 for (const dir of fixtures) rmSync(dir, { recursive: true, force: true });

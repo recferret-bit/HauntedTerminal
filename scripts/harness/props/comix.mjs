@@ -21,6 +21,9 @@ const BREAKAGES = [
   ['a track for an actor that is not in the cast', (p, i) => { (p.pages[i].tracks ??= []).push({ kind: 'actor_visibility', actor: 'ghost', from: '0', until: '1', visible: true }); }],
   ['a page window that ends before it starts', (p, i) => { p.pages[i].from = 9999; }],
   ['an unknown room', (p) => { p.manifest.stage.room = 'room.nope'; }],
+  ['an unknown stage prop model', (p) => { (p.manifest.stage.props ??= []).push({ id: 'bad_prop', model: 'prop.nope', at: 'screen' }); }],
+  ['a track targeting an unknown stage prop', (p, i) => { (p.pages[i].tracks ??= []).push({ kind: 'material_tint', target: 'missing_prop', zone: 'accent', from: '0', until: '1', color: '#ff0000' }); }],
+  ['an invalid cast scale tuple', (p) => { p.manifest.cast[0].scale = [1, 2]; }],
 ];
 
 /** Keys whose number is a duration or a step in seconds; tuning scales them. */
@@ -139,6 +142,51 @@ export default async function comixSuite({ load }) {
             expect(Number.isFinite(got) && close(got, want), `resolveTime(${JSON.stringify(expr)}) = ${got}, want ${want}`);
           }
         }),
+    },
+    {
+      name: 'stage.props transforms (zOrder, scale, rotation) and prop-targeted actor_motion tracks validate & simulate cleanly',
+      build: () =>
+        fc.property(
+          packId,
+          fc.record({
+            zOrder: fc.double({ min: -3, max: 3, noNaN: true }).map((n) => Number(n.toFixed(1))),
+            scale: fc.tuple(
+              fc.double({ min: 0.6, max: 1.6, noNaN: true }).map((n) => Number(n.toFixed(2))),
+              fc.double({ min: 0.6, max: 1.6, noNaN: true }).map((n) => Number(n.toFixed(2))),
+              fc.double({ min: 0.6, max: 1.6, noNaN: true }).map((n) => Number(n.toFixed(2))),
+            ),
+            rot: fc.tuple(fc.integer({ min: -25, max: 25 }), fc.integer({ min: -25, max: 25 }), fc.integer({ min: -35, max: 35 })),
+          }),
+          (id, xform) => {
+            const copy = structuredClone(packs.get(id));
+            const page = copy.pages[0];
+            copy.manifest.stage.props = [
+              ...(copy.manifest.stage.props ?? []),
+              { id: 'cfg_prop_probe', model: 'prop.coffee_mug', at: { x: 2.1, y: 0.8, z: 0.4 }, visible: true, zOrder: xform.zOrder, scale: xform.scale, rotation: xform.rot },
+            ];
+            page.tracks = [
+              ...(page.tracks ?? []),
+              {
+                kind: 'actor_motion',
+                actor: 'cfg_prop_probe',
+                from: String(page.from),
+                until: String(page.until),
+                fromPos: { x: 2.1, y: 0.8, z: 0.4 },
+                toPos: { x: 2.5, y: 0.9, z: 0.4 },
+                zOrderFrom: xform.zOrder,
+                zOrderTo: xform.zOrder + 1,
+                scaleVecFrom: xform.scale,
+                scaleVecTo: [1, 1, 1],
+                rotFrom: xform.rot,
+                rotTo: 0,
+              },
+            ];
+            const issues = checkComixPack(copy);
+            expect(errorCount(issues) === 0, `${id} prop track check errors: ${JSON.stringify(issues.filter((x) => x.severity === 'error'))}`);
+            const sim = simulateComixPack(copy);
+            expect(sim.ok && sim.errors.length === 0, `${id} prop track sim errors: ${sim.errors.join('; ')}`);
+          },
+        ),
     },
   ];
 }

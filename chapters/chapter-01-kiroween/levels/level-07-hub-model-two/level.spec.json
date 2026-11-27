@@ -15,17 +15,25 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #2 ===\nOLD BEARDED CODER: *flicks cigarette ash into an empty coffee mug as green hex streams across his glasses*\n\"Oh, you've found more RAM and GPU parts for hosting our second open-weight model, nice!\"\n\"When my enterprise bosses forced us onto cloud LLMs, Codec replaced half my team's code with hallucinated slop. Let's return the favor.\"\n\n[SERVER SOFT READY]:\n  1. Check in with the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro.d with the second open-weight model: `kiro load deepseek` (`deepseek-r1-distill-q4.gguf`).\n  3. Watch Kiro.d disable Codec of the Big Four, then advance via `cd sector_docker_forge`!\n"
+      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #2 ===\nOLD BEARDED CODER: *flicks cigarette ash into an empty coffee mug as green hex streams across his glasses*\n\"Oh, you've found more RAM and GPU parts for hosting our second open-weight model, nice!\"\n\"When my enterprise bosses forced us onto cloud LLMs, Codec replaced half my team's code with hallucinated slop. Let's return the favor.\"\n\n[SERVER SOFT READY]:\n  1. Check in with the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro.d with the second open-weight model: `kiro load deepseek` (`deepseek-r1-distill-q4.gguf`).\n  3. Watch Kiro.d disable Codec of the Big Four, then advance via `cd sector_docker_forge`!\n",
+      "x": 1.65,
+      "model": "prop.file"
     },
     {
       "path": "/home/dev/dad.tty.sock",
       "kind": "socket",
-      "mode": 493
+      "mode": 493,
+      "x": 0.55,
+      "model": "npc.greybeard_rig"
     },
     {
       "path": "/home/dev/sector_docker_forge",
       "kind": "dir",
-      "mode": 0
+      "mode": 0,
+      "x": -0.82,
+      "model": "door.ethernet",
+      "socket": "door.right",
+      "sfx": "door_ethernet"
     }
   ],
   "enemies": [],
@@ -66,7 +74,36 @@
       "id": "hub2_spider",
       "model": "prop.spider",
       "x": 4.85,
-      "y": 2.35
+      "y": 2.35,
+      "zOrder": -2
+    },
+    {
+      "id": "hub2_matrix_crt",
+      "model": "prop.crt",
+      "x": 4.78,
+      "zOrder": -1,
+      "label": "matrix server CRT"
+    },
+    {
+      "id": "hub2_server_cables",
+      "model": "prop.cables",
+      "x": 3.75,
+      "zOrder": -1,
+      "label": "open-weights bus"
+    },
+    {
+      "id": "hub2_pcb",
+      "model": "prop.pcb_plaque",
+      "x": 1.4,
+      "y": 2.35,
+      "zOrder": -3
+    },
+    {
+      "id": "hub2_led",
+      "model": "prop.led_bar",
+      "x": -0.2,
+      "y": 2.75,
+      "zOrder": -3
     }
   ],
   "winRules": [
@@ -154,5 +191,24 @@
         ]
       }
     ]
+  },
+  "stage": {
+    "hero": 2.5,
+    "backdrop": "#101b18",
+    "ambient": {
+      "lightMode": "monitor",
+      "storm": false,
+      "bats": false
+    },
+    "music": "hub_matrix",
+    "sfx": {
+      "enter": "door_ethernet"
+    },
+    "entryPort": {
+      "label": "sector_in",
+      "model": "door.serial",
+      "socket": "door.left",
+      "sfx": "door_serial"
+    }
   }
 }

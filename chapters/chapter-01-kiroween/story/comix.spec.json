@@ -28,7 +28,40 @@
               "y": 0.22
             }
           ],
-          "sfx": { "text": "ZZZZT-SHK!", "x": 0.52, "y": 0.82, "color": "#00f5d4" }
+          "sfx": {
+            "text": "ZZZZT-SHK!",
+            "x": 0.52,
+            "y": 0.82,
+            "color": "#00f5d4",
+            "cue": "lightning"
+          },
+          "props": [
+            {
+              "id": "p1_shelf",
+              "model": "prop.shelf",
+              "x": -0.78,
+              "y": 0.55,
+              "zOrder": -2,
+              "scale": 0.72
+            },
+            {
+              "id": "p1_platter",
+              "model": "prop.platter",
+              "x": -0.74,
+              "y": 0.62,
+              "zOrder": -1,
+              "scale": 0.52,
+              "rotation": 8
+            },
+            {
+              "id": "p1_web",
+              "model": "prop.corner_cobweb",
+              "x": 0.8,
+              "y": 0.75,
+              "zOrder": -2,
+              "scale": 0.8
+            }
+          ]
         },
         {
           "id": "p1_big_four_story",
@@ -74,7 +107,7 @@
               "y": 0.21
             }
           ],
-          "sfx": { "text": "SIGKILL!", "x": 0.74, "y": 0.82, "color": "#ffd166" }
+          "sfx": { "text": "SIGKILL!", "x": 0.74, "y": 0.82, "color": "#ffd166", "cue": "kill" }
         }
       ]
     },
@@ -174,7 +207,25 @@
               "y": 0.22
             }
           ],
-          "sfx": { "text": "CLACK-CLACK!", "x": 0.54, "y": 0.82, "color": "#06d6a0" }
+          "sfx": { "text": "CLACK-CLACK!", "x": 0.54, "y": 0.82, "color": "#06d6a0" },
+          "props": [
+            {
+              "id": "p3_pcb",
+              "model": "prop.pcb_plaque",
+              "x": -0.72,
+              "y": 0.55,
+              "zOrder": -2,
+              "scale": 0.75
+            },
+            {
+              "id": "p3_led",
+              "model": "prop.led_bar",
+              "x": 0.7,
+              "y": 0.65,
+              "zOrder": -2,
+              "scale": 0.8
+            }
+          ]
         },
         {
           "id": "p3_enterprise_story",
@@ -339,7 +390,13 @@
               "y": 0.22
             }
           ],
-          "sfx": { "text": "KRAKOOM!", "x": 0.56, "y": 0.82, "color": "#ffd166" }
+          "sfx": {
+            "text": "KRAKOOM!",
+            "x": 0.56,
+            "y": 0.82,
+            "color": "#ffd166",
+            "cue": "boss_defeated"
+          }
         },
         {
           "id": "p5_clod_escapes_teleport",
@@ -361,7 +418,13 @@
               "y": 0.21
             }
           ],
-          "sfx": { "text": "WARP-FLASH!", "x": 0.48, "y": 0.82, "color": "#ffd166" }
+          "sfx": {
+            "text": "WARP-FLASH!",
+            "x": 0.48,
+            "y": 0.82,
+            "color": "#ffd166",
+            "cue": "teleport_zap"
+          }
         }
       ]
     },
@@ -409,7 +472,26 @@
               "y": 0.22
             }
           ],
-          "sfx": { "text": "12H X 7D...", "x": 0.5, "y": 0.82, "color": "#ffd166" }
+          "sfx": { "text": "12H X 7D...", "x": 0.5, "y": 0.82, "color": "#ffd166" },
+          "props": [
+            {
+              "id": "p6_poster",
+              "model": "prop.wall_poster",
+              "x": -0.75,
+              "y": 0.6,
+              "zOrder": -2,
+              "scale": 0.78,
+              "rotation": -3
+            },
+            {
+              "id": "p6_mug",
+              "model": "prop.coffee_mug",
+              "x": 0.9,
+              "y": 0,
+              "zOrder": -1,
+              "scale": 0.6
+            }
+          ]
         },
         {
           "id": "p6_work_life_unicorn",
@@ -431,7 +513,18 @@
               "y": 0.21
             }
           ],
-          "sfx": { "text": "UNICORN UP!", "x": 0.5, "y": 0.82, "color": "#06d6a0" }
+          "sfx": { "text": "UNICORN UP!", "x": 0.5, "y": 0.82, "color": "#06d6a0" },
+          "props": [
+            {
+              "id": "p6_lamp",
+              "model": "prop.desk_lamp",
+              "x": 0.92,
+              "y": 0,
+              "zOrder": -1,
+              "scale": 0.68,
+              "rotation": [0, 0, -6]
+            }
+          ]
         }
       ]
     }

@@ -38,6 +38,7 @@ src/
   renderer/       # comic stage
   cinematic/      # generic 3D comix player & viewport selector; generated/ is compiled from comix/
   editor-core/    # shared workstation UI primitives: dom, schema, form/form-state, schema-check, http, file-tracker, dock-state/layout, workspace, view-resizer, viewport-stage, play-frame, game-preview, console-dock, chrome
+  audio-lab/      # /audio-lab: soundboard, SFX_TRIM waveform scrubber, LOOP_TAKES/LOOP_GAINS mixer & AppBus tester
   comix-editor/   # /comix-editor: schema forms, bidirectional element selection, layout map, preview & 60fps verifier
   ui/             # terminal, HUD (items strip), dialog box, editor, interactive field manual book
   sandbox/        # dev inspector
@@ -56,7 +57,7 @@ chapters/<chapter-slug>/     # LEVEL GEN data, one chapter for Kiroween
   chapter.manifest.json
   story/comix.spec.json, dialogs.json, out/
   levels/level-XX-<slug>/level.spec.json, LEVEL.md
-pages/                       # HTML entry pages: index.html (player front door: Home), desktop.html, achievements.html and comix.html (the landing's tab pages), play.html (game at /play/...), manual.html (/manual, interactive terminal field manual), hub.html (redirect to /), chapter-editor.html (/editor, /editor/<chapter>/<level>), comix-editor.html (/comix-editor, /comix-editor/<slug>/<target>), terminal-lab.html (/terminal-lab, /terminal-lab/<lab-id>), laptop-lab.html (/laptop-lab), dev.html (level select, jumps, QA labs), chapters.html, comic.html, cinematic.html, storybook.html
+pages/                       # HTML entry pages: index.html (Home), desktop.html, achievements.html, comix.html, play.html, manual.html (/manual), hub.html, chapter-editor.html (/editor), comix-editor.html (/comix-editor), terminal-lab.html (/terminal-lab), laptop-lab.html (/laptop-lab), audio-lab.html (/audio-lab), dev.html, chapters.html, comic.html, cinematic.html, storybook.html
 public/assets/               # external sprites/meshes (ai-mesh-pipeline)
 public/sfx/                  # ElevenLabs SFX v3 takes: one file per cue for most (`name.mp3`), a few numbered variants (`key_press` 3, `key_backspace` 2: `name_2.mp3`), 10 per voice line (`kiro_advice`, `taunt_<agent>_<n>.mp3`), plus manifest.json
 public/music/                # ElevenLabs Music v2.5 beds, three takes per cue from one locked plan, plus plans/ and manifest.json

@@ -392,6 +392,7 @@ try {
   await $(`${L}.submit('ls')`);
   await browser.waitFor(`${L}.inspect().entities.some((e) => e.id === 'virus-1' && e.attackIn >= 1)`, 10000, 'ready');
   const countdown = () => $(`${L}.inspect().entities.find((e) => e.id === 'virus-1').attackIn`);
+  if ((await countdown()) < 2) await $(`${L}.tick()`);
   const c0 = await countdown();
   await $("[...document.querySelectorAll('button')].find((b) => /⏱ Tick/.test(b.textContent)).click()");
   // The countdown counts actions to the next tell and wraps after a tell (`ticksToTell`), so a tick either lowers it by one or restarts it.
@@ -457,7 +458,30 @@ try {
   }
 
   // ---- keyboard, assistive technology, hooks --------------------------------------------------------------------
+  await load(world5);
+  await $(`${L}.select('setup[1]')`);
   await $(`${L}.setTab('object')`);
+  const labWidgetOk = await $(`(() => {
+    const modeSel = document.querySelector('.lab-form select[aria-label="Scale (number or [x, y, z]) mode"]');
+    if (!modeSel) return false;
+    modeSel.value = 'vec3';
+    modeSel.dispatchEvent(new Event('change', { bubbles: true }));
+    const sx = document.querySelector('.lab-form input[aria-label="Scale (number or [x, y, z]) 0"]');
+    const sy = document.querySelector('.lab-form input[aria-label="Scale (number or [x, y, z]) 1"]');
+    if (!sx || !sy) return false;
+    sx.value = '1.2';
+    sx.dispatchEvent(new Event('input', { bubbles: true }));
+    sy.value = '1.4';
+    sy.dispatchEvent(new Event('input', { bubbles: true }));
+    const sockLbl = [...document.querySelectorAll('.lab-form label.fld')].find((l) => l.querySelector('.fld-label')?.textContent === 'Room socket');
+    const sockSel = sockLbl?.querySelector('select');
+    if (!sockSel) return false;
+    sockSel.value = 'door.down';
+    sockSel.dispatchEvent(new Event('change', { bubbles: true }));
+    const op = window.__terminalLab.script().setup[1];
+    return Array.isArray(op.scale) && op.scale[0] === 1.2 && op.scale[1] === 1.4 && op.socket === 'door.down';
+  })()`);
+  check(labWidgetOk, 'Terminal Lab Object tab numOrVec3 vec3 scale & Room socket widgets update the script cleanly');
   const roving = await $("[...document.querySelectorAll('.ed-tabs [role=tab]')].map((t) => t.tabIndex + ':' + t.getAttribute('aria-selected'))");
   check(roving[0] === '0:true' && roving.slice(1).every((x) => x === '-1:false'), 'the Inspector tabs use a roving tabindex');
   const key = async (k) => {

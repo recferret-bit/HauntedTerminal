@@ -15,7 +15,9 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== KIRO.D // CHAPTER MISSION & SURVIVAL BRIEFING ===\n1. YOUR CHAPTER GOAL: Raid 6 sectors for hardware, visit the Matrix Server Hub 3 times so the Old Bearded Coder can reboot Kiro.d with open-weight models (silencing Anti-Gravy, Codec, and Gork), then defeat Clod + PID 1 and run `exit` to return home!\n2. TOOLS & TUBE TRANSISTOR GATE: You dropped your Tube Transistor, Map, and Field Manual. Basic `ls` shows visible files in the room, while `ls -la` and all `ls` flags stay locked until you recover your glowing Tube Transistor in Sector 02 (Cache Vault)!\n3. SURVIVAL COMMANDS HERE: `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`.\n4. SECRET VRAM MODULE: a spare VRAM module hides in the dot folder `.old_archive` of this room, a huge pile of old folders. Plain `ls` never shows dot folders, but `cd .old_archive` works: follow the notes in `lost_and_found`. Or search the pile: `find / -name vram.mod`, `grep -r vram .`. Each module adds a spare charge for Kiro.d skills later!\n"
+      "content": "=== KIRO.D // CHAPTER MISSION & SURVIVAL BRIEFING ===\n1. YOUR CHAPTER GOAL: Raid 6 sectors for hardware, visit the Matrix Server Hub 3 times so the Old Bearded Coder can reboot Kiro.d with open-weight models (silencing Anti-Gravy, Codec, and Gork), then defeat Clod + PID 1 and run `exit` to return home!\n2. TOOLS & TUBE TRANSISTOR GATE: You dropped your Tube Transistor, Map, and Field Manual. Basic `ls` shows visible files in the room, while `ls -la` and all `ls` flags stay locked until you recover your glowing Tube Transistor in Sector 02 (Cache Vault)!\n3. SURVIVAL COMMANDS HERE: `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`.\n4. SECRET VRAM MODULE: a spare VRAM module hides in the dot folder `.old_archive` of this room, a huge pile of old folders. Plain `ls` never shows dot folders, but `cd .old_archive` works: follow the notes in `lost_and_found`. Or search the pile: `find / -name vram.mod`, `grep -r vram .`. Each module adds a spare charge for Kiro.d skills later!\n",
+      "x": 1.55,
+      "model": "prop.file"
     },
     {
       "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
@@ -32,7 +34,11 @@
     {
       "path": "/mnt/wires_and_chips/hub_uplink",
       "kind": "dir",
-      "mode": 0
+      "mode": 0,
+      "x": -0.75,
+      "model": "door.ethernet",
+      "socket": "door.right",
+      "sfx": "door_ethernet"
     },
     {
       "path": "/mnt/wires_and_chips/.old_archive/lost_and_found/note.txt",
@@ -59,14 +65,16 @@
       "type": "virus",
       "path": "/mnt/wires_and_chips/glitch_spark.exe",
       "pid": 1011,
-      "ppid": 1
+      "ppid": 1,
+      "x": 0.25
     }
   ],
   "pickups": [
     {
       "id": "pickup_tutorial_ram",
       "type": "ram",
-      "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm"
+      "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
+      "x": 0.9
     },
     {
       "id": "pickup_l1_vram",
@@ -92,13 +100,68 @@
       "id": "l1_web",
       "model": "prop.cobweb",
       "x": 4.92,
-      "y": 3.05
+      "y": 3.05,
+      "zOrder": -3
     },
     {
       "id": "l1_spider",
       "model": "prop.spider",
       "x": 2.02,
-      "y": 2.35
+      "y": 2.35,
+      "zOrder": -2
+    },
+    {
+      "id": "l1_wires_left",
+      "model": "prop.cables",
+      "x": 4.55,
+      "zOrder": -1,
+      "label": "tangled ribbon wires"
+    },
+    {
+      "id": "l1_chip_left",
+      "model": "prop.chip",
+      "x": 3.75,
+      "zOrder": -1,
+      "label": "burned silicon chip"
+    },
+    {
+      "id": "l1_chip_right",
+      "model": "prop.chip",
+      "x": -0.25,
+      "zOrder": -1,
+      "label": "motherboard chip"
+    },
+    {
+      "id": "l1_wires_right",
+      "model": "prop.cables",
+      "x": -1.1,
+      "zOrder": -1,
+      "label": "bus cables"
+    },
+    {
+      "id": "l1_corner_web",
+      "model": "prop.corner_cobweb",
+      "x": -1.02,
+      "y": 3.15,
+      "zOrder": -3,
+      "scale": 0.9
+    },
+    {
+      "id": "l1_shelf",
+      "model": "prop.shelf",
+      "x": 3.25,
+      "y": 2.2,
+      "zOrder": -3,
+      "scale": 0.9
+    },
+    {
+      "id": "l1_platter",
+      "model": "prop.platter",
+      "x": 3.38,
+      "y": 2.46,
+      "zOrder": -2,
+      "scale": 0.72,
+      "rotation": 8
     }
   ],
   "winRules": [
@@ -416,5 +479,26 @@
       "hiddenFiles": 40,
       "seed": "l1-vram"
     }
-  ]
+  ],
+  "stage": {
+    "hero": 2.5,
+    "backdrop": "#1a1330",
+    "ambient": {
+      "lightMode": "lantern",
+      "storm": {
+        "enabled": true,
+        "intensity": 0.65
+      },
+      "bats": {
+        "enabled": true,
+        "minGapSec": 8,
+        "maxGapSec": 16,
+        "count": [1, 3]
+      }
+    },
+    "music": "floor_attic",
+    "sfx": {
+      "enter": "door_usb"
+    }
+  }
 }

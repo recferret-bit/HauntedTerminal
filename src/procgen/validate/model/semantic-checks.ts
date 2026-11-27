@@ -18,7 +18,8 @@ const names = (list: PartSpec[]): string[] => list.map((p) => p.name);
 function checkPaletteFamilies(spec: ModelSpec, sink: ModelIssueSink): void {
   const cat = spec.category;
   const human = spec.parts.filter((p) => family(p) === 'human');
-  if (human.length && cat !== 'vibecoder' && cat !== 'item' && spec.id !== 'npc.greybeard_rig' && spec.id !== 'room.outro' && spec.id !== 'room.intro') {
+  const realWorldProp = (spec.tags ?? []).includes('real-world');
+  if (human.length && !realWorldProp && cat !== 'vibecoder' && cat !== 'item' && spec.id !== 'npc.greybeard_rig' && spec.id !== 'room.outro' && spec.id !== 'room.intro') {
     sink.add('error', 'HUMAN_ZONE_MISUSE',
       `${modelPartList(names(human))} use${human.length > 1 ? '' : 's'} human zones (${[...new Set(human.map((p) => p.zone))].join(', ')}) on a ${cat}: warm colour means "the vibecoder"`,
       'Use hardware zones instead: plastic for pale, copper or gold for warm, rubber or silicon for dark. Light is powerAmber, not lantern.', names(human));

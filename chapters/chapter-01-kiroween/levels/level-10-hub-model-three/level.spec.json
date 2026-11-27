@@ -15,17 +15,25 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS CLUSTER #3 ===\nOLD BEARDED CODER: *stubs out his cigarette, eyes blazing behind green Matrix reflections*\n\"Oh, you've found the final RAM and H100 GPU parts for hosting our third open-weight model, nice!\"\n\"Watch this bare-metal magic: once we boot `llama-3-8b-local-q4.gguf`, Kiro.d will wipe Gork off the bus.\"\n\"That leaves only one surviving member of the Big Four: CLOD. Clod is managing the Final Boss down in the Kernel Core, and Kiro.d is going to be your advisor in the battle with the help of all our open-weight models!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro.d with the third open-weight model: `kiro load llama` (`llama-3-8b-local-q4.gguf`).\n  3. Watch Kiro.d disable Gork, then march into the final battle via `cd clod_kernel_core`!\n"
+      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS CLUSTER #3 ===\nOLD BEARDED CODER: *stubs out his cigarette, eyes blazing behind green Matrix reflections*\n\"Oh, you've found the final RAM and H100 GPU parts for hosting our third open-weight model, nice!\"\n\"Watch this bare-metal magic: once we boot `llama-3-8b-local-q4.gguf`, Kiro.d will wipe Gork off the bus.\"\n\"That leaves only one surviving member of the Big Four: CLOD. Clod is managing the Final Boss down in the Kernel Core, and Kiro.d is going to be your advisor in the battle with the help of all our open-weight models!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro.d with the third open-weight model: `kiro load llama` (`llama-3-8b-local-q4.gguf`).\n  3. Watch Kiro.d disable Gork, then march into the final battle via `cd clod_kernel_core`!\n",
+      "x": 1.65,
+      "model": "prop.file"
     },
     {
       "path": "/home/dev/dad.tty.sock",
       "kind": "socket",
-      "mode": 493
+      "mode": 493,
+      "x": 0.55,
+      "model": "npc.greybeard_rig"
     },
     {
       "path": "/home/dev/clod_kernel_core",
       "kind": "dir",
-      "mode": 0
+      "mode": 0,
+      "x": -0.82,
+      "model": "door.ethernet",
+      "socket": "door.right",
+      "sfx": "door_firewall"
     }
   ],
   "enemies": [],
@@ -78,7 +86,36 @@
       "id": "hub3_bat",
       "model": "prop.bat",
       "x": 4.65,
-      "y": 2.85
+      "y": 2.85,
+      "zOrder": -2
+    },
+    {
+      "id": "hub3_matrix_crt",
+      "model": "prop.crt",
+      "x": 4.78,
+      "zOrder": -1,
+      "label": "matrix server CRT"
+    },
+    {
+      "id": "hub3_server_cables",
+      "model": "prop.cables",
+      "x": 3.75,
+      "zOrder": -1,
+      "label": "open-weights bus"
+    },
+    {
+      "id": "hub3_pcb",
+      "model": "prop.pcb_plaque",
+      "x": 1.4,
+      "y": 2.35,
+      "zOrder": -3
+    },
+    {
+      "id": "hub3_led",
+      "model": "prop.led_bar",
+      "x": -0.2,
+      "y": 2.75,
+      "zOrder": -3
     }
   ],
   "winRules": [
@@ -169,5 +206,24 @@
         ]
       }
     ]
+  },
+  "stage": {
+    "hero": 2.5,
+    "backdrop": "#101b18",
+    "ambient": {
+      "lightMode": "monitor",
+      "storm": false,
+      "bats": false
+    },
+    "music": "hub_matrix",
+    "sfx": {
+      "enter": "door_ethernet"
+    },
+    "entryPort": {
+      "label": "sector_in",
+      "model": "door.serial",
+      "socket": "door.left",
+      "sfx": "door_serial"
+    }
   }
 }

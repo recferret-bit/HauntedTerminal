@@ -16,7 +16,7 @@ Nine custom agents tune and grow the game. `lead-dev` is the entry point and the
 
 ## MCP tools of the team
 
-Each agent lists exactly the MCP tools it may call (`@server/tool`) and a rule refuses every other: `qa` has Chrome DevTools MCP (screenshots, console, network of `localhost` and `*.netlify.app` only, CPU throttling through `emulate` and performance traces, no JavaScript evaluation) and the read-only `credits-forge` tools; `chapters-designer` has every `credits-forge` tool and is the only one with `write_level`; `comix-designer` has `list_assets`; the others and `lead-dev` have none. Report each MCP call and what it returned. `npm run quality:agents` checks the lists; `node scripts/harness/mcp-probe.mjs` proves them in the real CLI.
+Each agent lists exact `@server/tool` selectors and a rule refuses every other: `qa` holds Chrome DevTools MCP (localhost and `*.netlify.app` only, no JS eval) + read-only `credits-forge` across all domains; `chapters-designer` owns `write_level` & `write_chapter_file`; `comix-designer` owns `write_comix`; `terminal-designer` owns `write_lab` + lab read/run tools; `artist` holds read-only `list_assets`; `lead-dev` holds no direct MCP tools (parent session allows sub-agent calls). `npm run quality:agents` enforces per-tool writer fences (`agent-mcp.mjs`); `node scripts/harness/mcp-probe.mjs` probes them in the real CLI.
 
 ## The visual audit
 

@@ -79,6 +79,9 @@ await withProcgen(async (procgen, vite) => {
     if (!manifest.boss?.model || !modelIds.has(manifest.boss.model)) {
       errors.push(`${manifestPath}: boss.model "${manifest.boss?.model}" is not a registered ModelCatalog ID`);
     }
+    if (manifest.boss?.cameoModel && !modelIds.has(manifest.boss.cameoModel)) {
+      errors.push(`${manifestPath}: boss.cameoModel "${manifest.boss.cameoModel}" is not a registered ModelCatalog ID`);
+    }
     if (!Array.isArray(manifest.levels) || manifest.levels.length === 0) {
       errors.push(`${manifestPath}: levels[] must be non-empty`);
       continue;
@@ -121,6 +124,11 @@ await withProcgen(async (procgen, vite) => {
               for (const actor of panel.cast ?? []) {
                 if (!modelIds.has(actor.model)) {
                   errors.push(`${comixPath}: panel "${panel.id}" unknown cast model "${actor.model}"`);
+                }
+              }
+              for (const prop of panel.props ?? []) {
+                if (!modelIds.has(prop.model)) {
+                  errors.push(`${comixPath}: panel "${panel.id}" unknown prop model "${prop.model}"`);
                 }
               }
             }

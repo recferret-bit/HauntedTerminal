@@ -68,8 +68,10 @@ function cornerPoint(bounds: BatBounds, corner: number, margin: number = BAT_MAR
 }
 
 /** One flock: 1 to 6 bats from a random corner to the opposite one, each a little different. */
-export function makeFlock(rand: Rand, bounds: BatBounds): BatFlight[] {
-  const count = MIN_FLOCK + Math.min(MAX_FLOCK - MIN_FLOCK, Math.floor(rand() * (MAX_FLOCK - MIN_FLOCK + 1)));
+export function makeFlock(rand: Rand, bounds: BatBounds, countRange?: [number, number]): BatFlight[] {
+  const minCount = countRange ? Math.max(1, Math.round(countRange[0])) : MIN_FLOCK;
+  const maxCount = countRange ? Math.max(minCount, Math.round(countRange[1])) : MAX_FLOCK;
+  const count = minCount + Math.min(maxCount - minCount, Math.floor(rand() * (maxCount - minCount + 1)));
   const corner = Math.min(3, Math.floor(rand() * 4));
   const from = cornerPoint(bounds, corner);
   const to = cornerPoint(bounds, oppositeCorner(corner));

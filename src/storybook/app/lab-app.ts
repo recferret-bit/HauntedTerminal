@@ -4,7 +4,7 @@ import { DEFAULT_OPTIONS, type LabOptions } from '../domain/options.js';
 import { writeOptions } from '../domain/options-io.js';
 import { LabStage } from '../stage/lab-stage.js';
 import { itemsFor, tabOf } from '../subjects/catalog-items.js';
-import { buildSubjectById } from '../subjects/index.js';
+import { buildSubjectById, type Subject } from '../subjects/index.js';
 import { Controls } from '../ui/controls.js';
 import { el } from '../ui/dom.js';
 import { Gallery } from '../ui/gallery.js';
@@ -53,7 +53,7 @@ export class LabApp {
     if (!this.state.set(key, value)) return false;
     this.gate.invalidate();
     history.replaceState(null, '', this.hrefWith({}));
-    this.controls?.sync(this.opts);
+    this.controls?.sync(this.opts, this.inspect?.mounted ?? null);
     return true;
   }
 
@@ -103,7 +103,63 @@ export class LabApp {
       },
       strike: () => stage.strike(new THREE.Vector3(...this.strikePoint())),
       reset: () => this.resetOptions(),
+      fx: {
+        togglePlay: () => this.toggleFxPlay(),
+        step: (delta) => this.stepFx(delta),
+        scrub: (tMs) => this.scrubFx(tMs),
+        toggleLayer: (name) => this.toggleFxLayer(name),
+        setWord: (text) => this.setFxWord(text),
+      },
     });
+  }
+
+  toggleFxPlay(): void {
+    const ctrl = this.inspect?.mounted?.fxControl;
+    if (!ctrl) return;
+    if (this.state.clockRunning) {
+      this.scrubFx(ctrl.getState().tMs);
+    } else {
+      this.setOption('anim', true);
+      this.setOption('time', null);
+    }
+  }
+
+  stepFx(delta: -1 | 1): void {
+    const ctrl = this.inspect?.mounted?.fxControl;
+    if (!ctrl) return;
+    const st = ctrl.getState();
+    const stepMs = 1000 / Math.max(1, st.stepFps);
+    const curFrame = Math.round(st.tMs / stepMs);
+    const maxFrame = Math.max(1, Math.round((st.totalMs * st.stepFps) / 1000));
+    const nextFrame = (curFrame + delta + maxFrame + 1) % (maxFrame + 1);
+    this.scrubFx(Math.min(st.totalMs, Math.round(nextFrame * stepMs)));
+  }
+
+  scrubFx(tMs: number): void {
+    const sec = Math.max(0, Math.round(tMs)) / 1000;
+    this.setOption('anim', true);
+    this.setOption('time', sec);
+  }
+
+  private updateFxControl(apply: (ctrl: NonNullable<Subject['fxControl']>) => void): void {
+    const ctrl = this.inspect?.mounted?.fxControl;
+    if (!ctrl) return;
+    apply(ctrl);
+    this.state.dirty.paint = true;
+    this.gate.invalidate();
+    this.controls?.sync(this.opts, this.inspect?.mounted ?? null);
+  }
+
+  toggleFxLayer(name: string): void {
+    this.updateFxControl((ctrl) => ctrl.toggleLayer(name));
+  }
+
+  setFxLayers(hidden: readonly string[]): void {
+    this.updateFxControl((ctrl) => ctrl.setHiddenLayers(hidden));
+  }
+
+  setFxWord(text: string | null): void {
+    this.updateFxControl((ctrl) => ctrl.setWord(text));
   }
 
   private strikePoint(): [number, number, number] {
@@ -146,7 +202,7 @@ export class LabApp {
     inspect.mounted?.dispose();
     if (this.opts.inspect) this.layoutInspect(gallery, inspect, this.opts.inspect);
     else this.layoutGallery(gallery, inspect, stage);
-    this.controls?.sync(this.opts);
+    this.controls?.sync(this.opts, inspect.mounted);
   }
 
   private layoutInspect(gallery: Gallery, inspect: InspectView, id: string): void {
@@ -213,6 +269,9 @@ export class LabApp {
   private drawInspect(inspect: InspectView): boolean {
     const { state } = this;
     inspect.render(this.opts, state.time, state.clockMode);
+    if (inspect.mounted?.fxControl && this.controls) {
+      this.controls.fx.syncFrame(inspect.mounted, state.time * 1000, state.clockRunning);
+    }
     if (state.dirty.info && this.controls) {
       state.dirty.info = false;
       this.controls.info.replaceChildren(inspect.info());

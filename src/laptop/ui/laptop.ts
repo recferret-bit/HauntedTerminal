@@ -9,7 +9,7 @@ import type { CheckResult } from '../domain/checks.js';
 import type { CodeFiles } from '../domain/run.js';
 import { taskById } from '../domain/tasks.js';
 import { createLaptopSound } from '../runtime/sound.js';
-import type { LaptopContext } from './apps/app-types.js';
+import type { LaptopContext, WorkbenchInspectEvent } from './apps/app-types.js';
 import type { Workbench } from './apps/workbench.js';
 import { createDesktopView, type DesktopView } from './desktop-view.js';
 import { createLaptopView, type LaptopView } from './laptop-view.js';
@@ -23,6 +23,10 @@ export interface LaptopOptions {
   storageKey?: string | null;
   /** Hears laptop actions (`open`, `key`, `fan-on`, ...). The lab turns them into app events. */
   hear?: (action: string) => void;
+  /** Optional observer for /laptop-lab's Quest Check & RunReport Inspector. */
+  onInspect?: (ev: WorkbenchInspectEvent) => void;
+  /** Optional observer called when `setSpeed` updates animation speed. */
+  onSpeed?: (speed: number) => void;
 }
 
 export interface LaptopHandle {
@@ -205,6 +209,7 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
     },
     shutdown: () => { machine.send('POWER'); },
     pow: (word) => view.pow(word),
+    onInspect: opts.onInspect,
   };
   // The screen is zoomed by the camera: desktop drags divide by this.
   const desktop = createDesktopView(ctx, () => view.screen.getBoundingClientRect().width / view.screen.offsetWidth);
@@ -241,8 +246,10 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
   const machine = createMachine({ after: (ms, fn) => { const t = window.setTimeout(fn, ms); return () => window.clearTimeout(t); } }, enter);
 
   const setSpeed = (speed: number): void => {
-    machine.speed = speed;
-    view.setSpeed(speed);
+    const next = Number.isFinite(speed) && speed >= 0 ? speed : 1;
+    machine.speed = next;
+    view.setSpeed(next);
+    opts.onSpeed?.(next);
   };
   setSpeed(opts.speed ?? 1);
   view.show('closed');

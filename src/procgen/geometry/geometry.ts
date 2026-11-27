@@ -72,6 +72,9 @@ export function inkShellGeometry(geo: THREE.BufferGeometry, thickness: number): 
   shell.computeVertexNormals();
   const pos = shell.getAttribute('position');
   const nrm = shell.getAttribute('normal');
+  const basePos = new Float32Array(pos.array as Float32Array);
+  const baseNrm = new Float32Array(nrm.array as Float32Array);
+  shell.userData.inkBase = { basePos, nrm: baseNrm, baseWeight: thickness };
   for (let i = 0; i < pos.count; i++) {
     pos.setXYZ(
       i,

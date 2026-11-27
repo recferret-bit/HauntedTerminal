@@ -12,10 +12,10 @@ export const comixCatalogFile = resolve(projectRoot, 'src/cinematic/generated/ca
 
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
 
-export function listComixIds() {
-  if (!existsSync(comixDir)) return [];
-  return readdirSync(comixDir)
-    .filter((d) => statSync(resolve(comixDir, d)).isDirectory() && existsSync(resolve(comixDir, d, 'comix.manifest.json')))
+export function listComixIds(rootDir = comixDir) {
+  if (!existsSync(rootDir)) return [];
+  return readdirSync(rootDir)
+    .filter((d) => statSync(resolve(rootDir, d)).isDirectory() && existsSync(resolve(rootDir, d, 'comix.manifest.json')))
     .sort();
 }
 
@@ -23,8 +23,8 @@ export function listComixIds() {
  * One comix sequence as the editor and compiler see it. Paths are relative to `comix/<slug>/`.
  * `pages[i].path` is `manifest.pages[i].specPath`. `etags` hashes `comix.manifest.json` + every page spec.
  */
-export function readComix(slug) {
-  const dir = resolve(comixDir, slug);
+export function readComix(slug, rootDir = comixDir) {
+  const dir = resolve(rootDir, slug);
   const manifestPath = resolve(dir, 'comix.manifest.json');
   const manifest = readJson(manifestPath);
   const pages = [];
@@ -55,16 +55,16 @@ export const GENERATED_COMIX_PAGES_BY_ID: Record<string, ComixPageSpec[]> = ${js
 `;
 }
 
-export function compileAllComix() {
-  const comixes = listComixIds().map(readComix);
+export function compileAllComix(rootDir = comixDir) {
+  const comixes = listComixIds(rootDir).map((slug) => readComix(slug, rootDir));
   return { comixes, ts: renderComixCatalogTs(comixes) };
 }
 
 /** Writes `src/cinematic/generated/catalog-data.ts` only when it changed. Returns whether it did. */
-export function writeComixCatalog(ts) {
-  const existing = existsSync(comixCatalogFile) ? readFileSync(comixCatalogFile, 'utf8') : '';
+export function writeComixCatalog(ts, file = comixCatalogFile) {
+  const existing = existsSync(file) ? readFileSync(file, 'utf8') : '';
   if (existing === ts) return false;
-  mkdirSync(dirname(comixCatalogFile), { recursive: true });
-  writeFileSync(comixCatalogFile, ts);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, ts);
   return true;
 }

@@ -1,7 +1,7 @@
 import type { RoomKind } from '../contracts/room-view.js';
 import type { KernelEvent } from '../contracts/events.js';
 import type { LabCond } from '../chapters/session-lab-types.js';
-import type { LevelEnemySpec, LevelFileSpec, LevelPatchChip, LevelPickupSpec, LevelRiddleSpec, ChapterMechanic, ScriptAgent, ScriptMood, ScriptStep, WinRule } from '../chapters/types.js';
+import type { LevelEnemySpec, LevelFileSpec, LevelPatchChip, LevelPickupSpec, LevelPropSpec, LevelRiddleSpec, LevelStageSpec, ChapterMechanic, ScriptAgent, ScriptMood, ScriptStep, WinRule } from '../chapters/types.js';
 
 export type { LabCond };
 
@@ -22,6 +22,8 @@ export interface LabRoom {
   cwd: string;
   title: string;
   summary: string;
+  roomSeed?: number;
+  stage?: LevelStageSpec;
 }
 
 /** What the player already owns when the lab starts. */
@@ -35,13 +37,13 @@ export interface LabPlayer {
 /** One thing in the scene. Files, enemies, pickups and patches reuse the chapter spec records, so they behave exactly like level data. */
 export type LabSetupOp =
   | ({ op: 'file' } & Omit<LevelFileSpec, 'kind'>)
-  | ({ op: 'dir' } & Pick<LevelFileSpec, 'path' | 'mode' | 'uid'>)
-  | ({ op: 'socket' } & Pick<LevelFileSpec, 'path' | 'content' | 'mode' | 'uid'>)
+  | ({ op: 'dir' } & Pick<LevelFileSpec, 'path' | 'mode' | 'uid' | 'x' | 'y' | 'zOrder' | 'scale' | 'rotation' | 'model' | 'socket' | 'label' | 'sfx'>)
+  | ({ op: 'socket' } & Pick<LevelFileSpec, 'path' | 'content' | 'mode' | 'uid' | 'x' | 'y' | 'zOrder' | 'scale' | 'rotation' | 'model' | 'socket' | 'label' | 'sfx'>)
   | ({ op: 'enemy' } & LevelEnemySpec)
   | ({ op: 'pickup' } & LevelPickupSpec)
   | ({ op: 'patch' } & LevelPatchChip)
   /** A visual prop with no file behind it (any `ModelCatalog` id). `x` is the stage position; the room spans about -1 to 5. */
-  | { op: 'prop'; id: string; model: string; x: number; y?: number; label?: string }
+  | ({ op: 'prop' } & LevelPropSpec)
   /** An agent cameo that speaks when the level starts. */
   | { op: 'npc'; agent: ScriptAgent; mood: ScriptMood; text: string; print?: string }
   /** The level's taunt when it starts. The agent is the one the text begins with (`CLOD: ...`, `KIRO: ...`). */

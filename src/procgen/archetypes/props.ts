@@ -10,6 +10,9 @@ import { buildCoolerAio, buildCoolerTower, buildIndicator, buildWaterPipe } from
 import { buildCables, buildCapacitor, buildChip, buildCrt, buildFan, buildHeatsink } from './props/hardware.js';
 import { buildFile, buildFuse, buildTar, buildTombstone } from './props/items.js';
 import { buildBat, buildCobweb, buildSpider } from './props/kiroween.js';
+import {
+  buildCornerCobweb, buildHangingCable, buildLedBar, buildPcbPlaque, buildPlatter, buildShelf,
+} from './props/clutter.js';
 
 ModelCatalog.register({
   id: 'prop.file', category: 'prop', label: 'File', gameKey: 'item_scroll',
@@ -120,4 +123,34 @@ ModelCatalog.register({
   id: 'prop.bat', category: 'prop', label: 'Circuit bat',
   lore: 'A folded matte-black PCB bat with copper ribs flapping in the upper shadows. Kiroween set dressing.',
   build: buildBat,
+});
+ModelCatalog.register({
+  id: 'prop.platter', category: 'prop', label: 'Disk platter',
+  lore: 'A gleaming compact disk or hard-drive platter mounted on the wall. Set dressing.',
+  build: buildPlatter,
+});
+ModelCatalog.register({
+  id: 'prop.shelf', category: 'prop', label: 'Wall shelf',
+  lore: 'A bracketed shelf for holding drive platters or hardware junk. Set dressing.',
+  build: buildShelf,
+});
+ModelCatalog.register({
+  id: 'prop.corner_cobweb', category: 'prop', label: 'Corner cable web',
+  lore: 'Ribbon cable sagging across an upper corner like a cobweb. Set dressing.',
+  build: buildCornerCobweb,
+});
+ModelCatalog.register({
+  id: 'prop.hanging_cable', category: 'prop', label: 'Hanging cable',
+  lore: 'A bundled lead hanging from the ceiling beam and swaying gently. Set dressing.',
+  build: buildHangingCable,
+});
+ModelCatalog.register({
+  id: 'prop.pcb_plaque', category: 'prop', label: 'PCB wall plaque',
+  lore: 'A colored textolite board mounted to the wall with surface IC chips. Set dressing.',
+  build: buildPcbPlaque,
+});
+ModelCatalog.register({
+  id: 'prop.led_bar', category: 'prop', label: 'Diagnostic LED bar',
+  lore: 'A 3-LED diagnostic bezel mounted high on the wall. Set dressing.',
+  build: buildLedBar,
 });

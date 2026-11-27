@@ -1,8 +1,7 @@
 import type { ModelSpec } from '../../core/types.js';
 import { makeRng } from '../../core/rng.js';
 import { designToRoomX, RoomBuilder, ROOM } from './frame.js';
-import { cobweb, hangingCable, led, platter, seams, shell } from './kit.js';
-import { danglingSpider, indicatorPanel, perchedBat, radialCobweb, roomBoardTheme, textoliteBoardPlaque } from './kit-kiroween.js';
+import { led, seams, shell } from './kit.js';
 
 /**
  * Floor 1, the storage attic: drive bays, dusty platters, ribbon-cable cobwebs, a dead CRT.
@@ -48,8 +47,7 @@ function driveBay(b: RoomBuilder, x: number, width: number, sleds: number, z: nu
   return height;
 }
 
-export function buildDesk(seed: number): ModelSpec {
-  const rng = makeRng(seed);
+export function buildDesk(_seed: number): ModelSpec {
   const b = new RoomBuilder('desk', 'Desk nook');
   shell(b, { floor: 1, wall: 'silicon', ground: 'rubber', trim: 'pcbDark' });
   gable(b);
@@ -64,22 +62,6 @@ export function buildDesk(seed: number): ModelSpec {
   deadCrt(b, 3.0, 1.085, z);
   b.box('keyboard', [0.8, 0.07, 0.3], 'silicon', [2.2, 1.12, z - 0.06]);
   led(b, 'powerAmber', [2.0, 0.8, z - 0.24], 0.4, 0.1);
-
-  // A shelf of dusty platters, high on the screen-right side.
-  b.plaque('shelf', [2.3, 0.09, 0.28], 'rubber', [-2.3, 2.62]);
-  const lean = rng.range(0.25, 0.4);
-  platter(b, -2.9, 3.06, 0.4, 'heatsink', 'silicon', 0.1);
-  platter(b, -2.2, 3.02 + lean * 0.1, 0.36, 'rubber', 'silicon', 0.14);
-  platter(b, -1.6, 2.96, 0.3, 'heatsink', 'silicon', 0.1);
-
-  cobweb(b, 1, 1.25, 'heatsink');
-  radialCobweb(b, -3.3, 4.15, 0.46, 'solder');
-  hangingCable(b, rng.range(-1.2, -0.6), 0.95, 'rubber', rng.next());
-  const board = roomBoardTheme(seed, rng, 'pcbAmber');
-  textoliteBoardPlaque(b, 2.75, 2.95, 1.15, 0.62, board);
-  indicatorPanel(b, -0.5, 4.15, ['phosphor', 'powerAmber', 'phosphor']);
-  if (seed % 2 === 0) perchedBat(b, rng.range(-1.4, -0.5), 3.72, 0.44, 'pcbBlack', rng.next());
-  else danglingSpider(b, rng.range(1.9, 2.4), rng.range(0.65, 1.05), 'silicon', rng.next());
 
   b.standardSockets(2.4)
     .socket('note', [designToRoomX(0.2), 0.5, ROOM.zActor])
@@ -105,23 +87,9 @@ export function buildAttic(seed: number): ModelSpec {
   led(b, 'powerAmber', [-3.3, 3.22, 0.74], 0.3, 0);
   b.add('relay-conduit', { kind: 'tube', path: [[-3.3, 2.58, 0.86], [-3.34, 1.6, 0.87], [-3.5, 0.1, 0.87]], radius: 0.04 }, 'rubber', [0, 0, 0]);
 
-  // Platters nailed to the wall like plates, high up.
-  platter(b, -0.95, 2.95, 0.34, 'heatsink', 'silicon', 0.03);
-  platter(b, -0.4, 3.08, 0.26, 'rubber', 'silicon', 0.06);
-
   // The hatch to the cellar: a striped plate in the floor apron under the gate actor.
   const hatchX = designToRoomX(-1.0);
   b.box('hatch-plate', [0.95, 0.3, 0.05], 'rubber', [hatchX + 0.25, -0.26, ROOM.zApron - 0.02], { texture: 'tex.caution-stripes' });
-
-  cobweb(b, 1, 1.1, 'heatsink');
-  cobweb(b, -1, 1.45, 'heatsink');
-  radialCobweb(b, 0.15, 3.45, 0.44, 'solder');
-  hangingCable(b, rng.range(0.9, 1.5), 0.8, 'rubber', rng.next());
-  hangingCable(b, rng.range(-2.3, -1.7), 0.55, 'rubber', rng.next());
-  const board = roomBoardTheme(seed, rng, 'pcbBlue');
-  textoliteBoardPlaque(b, -2.05, 3.1, 1.1, 0.58, board);
-  danglingSpider(b, rng.range(2.05, 2.55), rng.range(0.65, 1.0), 'silicon', rng.next());
-  perchedBat(b, rng.range(-1.5, -0.6), 4.05, 0.44, 'pcbBlack', rng.next());
 
   b.standardSockets(2.5)
     .socket('readme', [designToRoomX(1.3), 0.5, ROOM.zActor])

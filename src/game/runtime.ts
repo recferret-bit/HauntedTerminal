@@ -230,7 +230,14 @@ export function die(g: Play, events: KernelEvent[]): string {
   return g.deathText;
 }
 
-export function applyPickup(g: Play, type: PickupType, amount: number, entityId: string, events: KernelEvent[]): string {
+export function applyPickup(
+  g: Play,
+  type: PickupType,
+  amount: number,
+  entityId: string,
+  events: KernelEvent[],
+  sfx?: string,
+): string {
   const info = PICKUP_INFO[type];
   let gained = amount;
   if (type === 'energy') {
@@ -243,7 +250,14 @@ export function applyPickup(g: Play, type: PickupType, amount: number, entityId:
   } else if (type === 'ssd') {
     g.run.ssd += amount;
   }
-  push(g, events, { type: 'PICKUP_COLLECTED', entityId, item: type, amount: gained, label: info.label(gained) });
+  push(g, events, {
+    type: 'PICKUP_COLLECTED',
+    entityId,
+    item: type,
+    amount: gained,
+    label: info.label(gained),
+    ...(sfx ? { sfx } : {}),
+  });
   if (type === 'tube_transistor') {
     g.run.inventory = holdItem(giveItem(g.run.inventory, 'tube_transistor'), 'tube_transistor');
     return 'You hold the glowing Tube Transistor.\n';
@@ -270,7 +284,7 @@ function collect(g: Play, pickup: Pickup, node: VNode, events: KernelEvent[]): s
   push(g, events, { type: 'FILE_REMOVED', inodeId: node.id, name: node.name, entityId: pickup.id });
   g.run.world.collect(pickup);
   g.act = { action: 'collect', target: pickup.id };
-  return `${node.name}: ${applyPickup(g, pickup.type, pickup.amount, pickup.id, events)}`;
+  return `${node.name}: ${applyPickup(g, pickup.type, pickup.amount, pickup.id, events, pickup.collectSfx)}`;
 }
 
 export function bump(g: Play, action: HeroAction, target?: string): void {

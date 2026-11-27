@@ -15,14 +15,18 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>Open-Weights GPU Telemetry Grid</title>\n  <link rel=\"stylesheet\" href=\"storefront.css\" />\n</head>\n<body>\n  <header class=\"site-header\">\n    <h1>KIRO.D OPEN-WEIGHTS HARDWARE MONITOR</h1>\n  </header>\n  <main class=\"product-grid\">\n    <article class=\"gpu-card\" data-sku=\"gpu\">\n      <h2>RTX 4090 24GB Tensor Core</h2>\n      <span class=\"price\">$1599</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ram\">\n      <h2>64GB DDR5 ECC Server Kit</h2>\n      <span class=\"price\">$249</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ssd\">\n      <h2>2TB Gen5 NVMe Weights Vault</h2>\n      <span class=\"price\">$189</span>\n    </article>\n  </main>\n  <!-- BUG: Codec disabled #checkout-btn -->\n  <aside id=\"cart-drawer\" class=\"cart-drawer\">\n    <h3>Mounted Open-Weights Parts</h3>\n    <p>Total Power: <span data-bind=\"cart-total\">$0.00</span></p>\n    <button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>\n  </aside>\n</body>\n</html>\n"
+      "content": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>Open-Weights GPU Telemetry Grid</title>\n  <link rel=\"stylesheet\" href=\"storefront.css\" />\n</head>\n<body>\n  <header class=\"site-header\">\n    <h1>KIRO.D OPEN-WEIGHTS HARDWARE MONITOR</h1>\n  </header>\n  <main class=\"product-grid\">\n    <article class=\"gpu-card\" data-sku=\"gpu\">\n      <h2>RTX 4090 24GB Tensor Core</h2>\n      <span class=\"price\">$1599</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ram\">\n      <h2>64GB DDR5 ECC Server Kit</h2>\n      <span class=\"price\">$249</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ssd\">\n      <h2>2TB Gen5 NVMe Weights Vault</h2>\n      <span class=\"price\">$189</span>\n    </article>\n  </main>\n  <!-- BUG: Codec disabled #checkout-btn -->\n  <aside id=\"cart-drawer\" class=\"cart-drawer\">\n    <h3>Mounted Open-Weights Parts</h3>\n    <p>Total Power: <span data-bind=\"cart-total\">$0.00</span></p>\n    <button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>\n  </aside>\n</body>\n</html>\n",
+      "x": 3.85,
+      "model": "prop.file"
     },
     {
       "path": "/srv/kiroween/ui_dashboard/storefront.css",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "/* Open-Weights GPU Telemetry Stylesheet */\nbody {\n  background: #0d0814;\n  color: #f4f0e8;\n}\n/* BUG: Codec hid the entire GPU grid with display: none */\n.product-grid {\n  display: none;\n  gap: 16px;\n}\n.cart-drawer {\n  width: 320px;\n  z-index: 10;\n  border: 2px solid #00f5d4;\n}\n"
+      "content": "/* Open-Weights GPU Telemetry Stylesheet */\nbody {\n  background: #0d0814;\n  color: #f4f0e8;\n}\n/* BUG: Codec hid the entire GPU grid with display: none */\n.product-grid {\n  display: none;\n  gap: 16px;\n}\n.cart-drawer {\n  width: 320px;\n  z-index: 10;\n  border: 2px solid #00f5d4;\n}\n",
+      "x": 3.25,
+      "model": "prop.file"
     },
     {
       "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm",
@@ -39,26 +43,34 @@
     {
       "path": "/srv/kiroween/ui_dashboard/logic_cell",
       "kind": "dir",
-      "mode": 0
+      "mode": 0,
+      "x": -0.88,
+      "model": "door.ethernet",
+      "socket": "door.right",
+      "sfx": "door_ethernet"
     }
   ],
   "enemies": [
     {
       "id": "bug_css_l5",
       "type": "bug",
-      "path": "/srv/kiroween/ui_dashboard/storefront.css"
+      "path": "/srv/kiroween/ui_dashboard/storefront.css",
+      "x": 0.35
     }
   ],
   "pickups": [
     {
       "id": "pickup_l5_ram",
       "type": "ram",
-      "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm"
+      "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm",
+      "x": 1.65
     },
     {
       "id": "pickup_l5_gpu",
       "type": "ssd",
-      "path": "/srv/kiroween/ui_dashboard/gpu_tensor_chip_02.img"
+      "path": "/srv/kiroween/ui_dashboard/gpu_tensor_chip_02.img",
+      "model": "pickup.gpu",
+      "x": 1.05
     }
   ],
   "patches": [
@@ -103,7 +115,37 @@
       "id": "l5_spider",
       "model": "prop.spider",
       "x": -0.96,
-      "y": 2.4
+      "y": 2.4,
+      "zOrder": -2
+    },
+    {
+      "id": "l5_ui_crt",
+      "model": "prop.crt",
+      "x": 4.78,
+      "zOrder": -1,
+      "label": "telemetry monitor"
+    },
+    {
+      "id": "l5_pcb",
+      "model": "prop.pcb_plaque",
+      "x": 1.35,
+      "y": 2.3,
+      "zOrder": -3
+    },
+    {
+      "id": "l5_led",
+      "model": "prop.led_bar",
+      "x": 3,
+      "y": 2.75,
+      "zOrder": -3
+    },
+    {
+      "id": "l5_platter",
+      "model": "prop.platter",
+      "x": 0.25,
+      "y": 2.35,
+      "zOrder": -3,
+      "scale": 0.75
     }
   ],
   "winRules": [
@@ -186,5 +228,18 @@
       "stage": "crack_only"
     },
     "openingSec": 17
+  },
+  "stage": {
+    "hero": 2.5,
+    "music": "floor_maze",
+    "sfx": {
+      "enter": "door_ethernet"
+    },
+    "entryPort": {
+      "label": "sector_in",
+      "model": "door.serial",
+      "socket": "door.left",
+      "sfx": "door_serial"
+    }
   }
 }

@@ -8,9 +8,9 @@ You are one of nine agents that tune Out Of Credits. The team (`.kiro/specs/agen
 | `terminal-designer` | `src/game/{shell,commands-*,unix-applets,tree*,manual,manual-*,lab-*}.ts`, `src/ui/`, `src/terminal-lab/`, `scripts/harness/terminal-lab/`, `scripts/harness/props/terminal*.mjs`, `scripts/harness/{manual-unit,manual-smoke}.mjs` |
 | `laptop-designer` | `src/laptop/`, `scripts/harness/props/laptop.mjs` |
 | `comix-designer` | `comix/`, `src/cinematic/`, `src/comix-editor/`, `scripts/harness/props/comix.mjs` |
-| `chapters-designer` | `chapters/`, `src/chapters/`, `src/chapter-editor/`, `src/game/{entities*,bestiary,puzzle,inventory,kiro,kiro-commands,dialogue,agents,battle}.ts`, `scripts/harness/props/{chapters,gameplay,gameplay-fsm,sessions}.mjs`, `scripts/harness/battle-unit.mjs` |
+| `chapters-designer` | `chapters/`, `src/chapters/`, `src/chapter-editor/`, `src/game/{entities*,bestiary,puzzle,inventory,kiro,kiro-commands,dialogue,agents,battle,ouch}.ts`, `scripts/harness/props/{chapters,gameplay,gameplay-fsm,sessions}.mjs`, `scripts/harness/battle-unit.mjs` |
 | `artist` | `src/procgen/`, `src/shaders/`, `src/renderer/`, `src/storybook/`, `src/assets/`, `public/assets/` |
-| `sound-designer` | `public/sfx/`, `public/music/`, `docs/audio/*.md`, `src/audio/`, `scripts/harness/{audio-unit,audio-smoke}.mjs` |
+| `sound-designer` | `public/sfx/`, `public/music/`, `docs/audio/*.md`, `src/audio/`, `src/audio-lab/`, `scripts/harness/{audio-unit,audio-smoke,audio-lab-unit,audio-lab-smoke}.mjs` |
 | `smm-agent` | `social/*.md`, `social/campaigns/`, `social/research/`, `social/media/README.md`, `social/media/specs/`, `docs/marketing/` |
 | `qa` | `docs/qa/*.md`, `docs/qa/media/`, `docs/qa/labs/` (not `docs/qa/baselines/`: a person approves those) |
 
@@ -29,7 +29,7 @@ Nobody writes `src/chapters/generated/`, `src/cinematic/generated/` or `chapters
 9. **Nobody may be waiting.** You may run unattended through Kiro Crew, where an approval prompt has no one to answer it and is denied. Use only the commands above. If you need a decision, finish what you can and put the question in your report.
 10. **Be honest about what ran.** Say "not run" and why. A claim in your report must be backed by a command you ran in this session.
 
-11. **MCP tools are an allow-list too.** Your `tools` name exactly the MCP tools you may call (`@server/tool`), and a rule refuses every other. Use them where your prompt says to. Report each MCP call you made and what it returned; if a server is unavailable, say so and use the scripts instead. Browser tools open only `localhost`, `127.0.0.1` and `https://*.netlify.app`. Only `chapters-designer` may call `write_level`. Nobody deploys, releases or builds the desktop app (`.kiro/powers/credits-ship`, `credits-release`, `credits-tauri-local` are the user's).
+11. **MCP tools are an allow-list too.** Your `tools` name exactly the MCP tools you may call (`@server/tool`), and a rule refuses every other. Use them where your prompt says to. Report each MCP call you made and what it returned; if a server is unavailable, say so and use the scripts instead. Browser tools open only `localhost`, `127.0.0.1` and `https://*.netlify.app`. Per-domain forge writers stay strictly fenced: only `chapters-designer` calls `write_level` / `write_chapter_file`, only `comix-designer` calls `write_comix`, and only `terminal-designer` calls `write_lab`. Nobody deploys, releases or builds the desktop app (`.kiro/powers/credits-ship`, `credits-release`, `credits-tauri-local` are the user's).
 
 ## Report format (your final message)
 

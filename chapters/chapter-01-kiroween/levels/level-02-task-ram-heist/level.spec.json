@@ -15,7 +15,9 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. TEST `ls -la`: Try `ls -la` once you hold the Tube Transistor to spot hidden dotfiles before entering GPU Alley.\n4. HARDWARE: Pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n5. TENSOR GPU: the gargoyle also dropped a Tensor GPU card. Pocket it with `mv tensor_gpu ~` and carry it to the Old Bearded Coder at the Matrix Hub: with it Kiro.d can load open-weight models!\n"
+      "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. TEST `ls -la`: Try `ls -la` once you hold the Tube Transistor to spot hidden dotfiles before entering GPU Alley.\n4. HARDWARE: Pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n5. TENSOR GPU: the gargoyle also dropped a Tensor GPU card. Pocket it with `mv tensor_gpu ~` and carry it to the Old Bearded Coder at the Matrix Hub: with it Kiro.d can load open-weight models!\n",
+      "x": 2.05,
+      "model": "prop.file"
     },
     {
       "path": "/srv/kiroween/cache_vault/gravy_sentry.bin",
@@ -51,40 +53,54 @@
       "path": "/srv/kiroween/cache_vault/.vault_beacon",
       "kind": "file",
       "mode": 420,
-      "content": "# Hidden Cache Vault Dotfile\nTUBE_TRANSISTOR_CHECK=ok\nWARNING=Codec cloaked his entire squad in gpu_alley — open with ls -la!\n"
+      "content": "# Hidden Cache Vault Dotfile\nTUBE_TRANSISTOR_CHECK=ok\nWARNING=Codec cloaked his entire squad in gpu_alley — open with ls -la!\n",
+      "x": 2.95,
+      "model": "prop.file"
     },
     {
       "path": "/srv/kiroween/cache_vault/gpu_alley",
       "kind": "dir",
-      "mode": 0
+      "mode": 0,
+      "x": -0.95,
+      "model": "door.ethernet",
+      "socket": "door.right",
+      "sfx": "door_ethernet"
     }
   ],
   "enemies": [
     {
       "id": "trojan_l2",
       "type": "trojan",
-      "path": "/srv/kiroween/cache_vault/gravy_sentry.bin"
+      "path": "/srv/kiroween/cache_vault/gravy_sentry.bin",
+      "x": -0.35
     }
   ],
   "pickups": [
     {
       "id": "pickup_l2_ram",
       "type": "ram",
-      "path": "/srv/kiroween/cache_vault/ram_16gb.dimm"
+      "path": "/srv/kiroween/cache_vault/ram_16gb.dimm",
+      "x": 1.05
     },
     {
       "id": "pickup_l2_ssd",
       "type": "ssd",
-      "path": "/srv/kiroween/cache_vault/ssd_256gb.img"
+      "path": "/srv/kiroween/cache_vault/ssd_256gb.img",
+      "x": 0.55
     },
     {
       "id": "pickup_l2_transistor",
       "type": "tube_transistor",
       "path": "/srv/kiroween/cache_vault/tube_transistor",
+      "model": "item.tube_transistor",
       "appearWhen": {
         "kind": "enemy_dead",
         "enemyId": "trojan_l2"
-      }
+      },
+      "x": 0.05,
+      "zOrder": 1,
+      "scale": 1.45,
+      "rotation": 90
     },
     {
       "id": "pickup_l2_tensor_gpu",
@@ -93,7 +109,11 @@
       "appearWhen": {
         "kind": "enemy_dead",
         "enemyId": "trojan_l2"
-      }
+      },
+      "x": 0.45,
+      "zOrder": 1,
+      "scale": 0.9,
+      "rotation": -6
     }
   ],
   "patches": [],
@@ -120,13 +140,45 @@
       "id": "l2_bat",
       "model": "prop.bat",
       "x": 4.2,
-      "y": 2.95
+      "y": 2.95,
+      "zOrder": -2
     },
     {
       "id": "l2_web",
       "model": "prop.cobweb",
       "x": -0.6,
-      "y": 3.05
+      "y": 3.05,
+      "zOrder": -3
+    },
+    {
+      "id": "l2_cache_chip",
+      "model": "prop.chip",
+      "x": 4.78,
+      "zOrder": -1,
+      "label": "cache controller"
+    },
+    {
+      "id": "l2_cache_cables",
+      "model": "prop.cables",
+      "x": 3.85,
+      "zOrder": -1,
+      "label": "vault bus"
+    },
+    {
+      "id": "l2_corner_web",
+      "model": "prop.corner_cobweb",
+      "x": 4.68,
+      "y": 3.15,
+      "zOrder": -3,
+      "scale": 0.95
+    },
+    {
+      "id": "l2_platter",
+      "model": "prop.platter",
+      "x": 2.7,
+      "y": 2.3,
+      "zOrder": -3,
+      "scale": 0.78
     }
   ],
   "winRules": [
@@ -342,5 +394,18 @@
         ]
       }
     ]
+  },
+  "stage": {
+    "hero": 2.5,
+    "music": "floor_crypt",
+    "sfx": {
+      "enter": "door_usb"
+    },
+    "entryPort": {
+      "label": "sector_in",
+      "model": "door.serial",
+      "socket": "door.left",
+      "sfx": "door_serial"
+    }
   }
 }

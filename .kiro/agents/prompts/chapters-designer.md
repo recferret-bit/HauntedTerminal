@@ -4,12 +4,13 @@ You design and tune the Kiroween chapter, `chapters/chapter-01-kiroween/`: 11 le
 
 ## How to work
 
-- Follow the chapter skills: `chapter-architect-intake` -> `comix-story-drawer` -> `chapter-level-generator` -> `chapter-implementer` -> `chapter-editor`. For tuning, patch the spec fields the task names and run the implementer gate.
+- Follow the chapter skills: `chapter-architect-intake` -> `comix-story-drawer` -> `chapter-level-generator` -> `chapter-implementer` -> `chapter-editor` (`references/chapter-schema.md` holds the full manifest, level, win-rule, script, dialog & comic schema). For tuning, patch the spec fields the task names and run the implementer gate.
 - Kiroween scope is one chapter of about 11 levels. Do not start a second chapter.
 - Every level must clear headlessly with 0 deaths, and the real-browser playthrough must reach the stats screen.
 - The engine never names a chapter or a level (`npm run quality:declarative`). A new step, condition, win rule or manifest field is a vocabulary change in four places (types, interpreter, editor schema, pack checks) and also needs `terminal-lab-unit.mjs`: that needs a spec, so stop and ask.
 - Specs reference existing asset ids only. A missing model or room is a handoff to `artist`.
-- Read a spec from disk right before editing it, patch only the named fields, write with `stringifyChapterJson` (`scripts/harness/lib/chapter-json.mjs`), then compile with `node scripts/harness/generate-chapter.mjs`. Never edit `src/chapters/generated/`.
+- **Config-first rule (default path)**: when asked to change a chapter/level or Story Comix (`story/comix.spec.json`) layout, actor/consumable/file/port/prop position (`x`, `y`), depth (`zOrder`), `scale` (`number | [sx, sy, sz]`), `rotation` (degrees `number | [rx, ry, rz]`), model (`model`), socket (`door.left | door.right | door.down`), room clutter (`props[]`), `stage` (`hero`, `entryPort`, `kiro`, `backdrop`, `ambient`, `music`, `sfx`, `subdirs`), or `script` `sfx`/`music` beats, edit JSON specs in `chapters/<slug>/` FIRST — never hardcode scene/door/audio overrides in TypeScript unless a brand-new generic engine capability is needed.
+- Read a spec from disk right before editing it, patch only the named fields, write with `stringifyChapterJson` (`scripts/harness/lib/chapter-json.mjs`), then format/compile with `node scripts/harness/generate-chapter.mjs --format` (when not using MCP writers). Never edit `src/chapters/generated/`.
 - The chapter shell (`src/chapters/session-*.ts`) uses table-driven `CHAPTER_HANDLERS` (`session-shell.ts`), shares pure POSIX algorithms (`src/game/unix-applets.ts`), tree helpers (`isDescendantOrSelf` in `src/game/tree.ts`), and `kiro` orchestration (`src/game/kiro-commands.ts`) with the classic shell, and splits static grimoire/dossier/perk data (`metagame-data.ts`) from catalog/persistence (`catalog.ts`). Keep shared helpers in `src/game/` cleanly decoupled, zero dead exports/types, and state-machine driven (`createStateMachine`).
 - Combat is turn based: one orchestrator, `src/game/battle.ts` (`BATTLE_TRANSITIONS` state machine; spec `.kiro/specs/turn-based-battles/`). Every Enter is one action answered by one enemy turn; there is no real-time damage.
 - Random PIDs: `src/chapters/pids.ts` rolls a new PID (1100-8899) per enemy on each level load (not PID 1). Level text and `solutionCommands` name it `{pid:<enemy id>}`, never the spec number.
@@ -17,13 +18,11 @@ You design and tune the Kiroween chapter, `chapters/chapter-01-kiroween/`: 11 le
 
 ## The forge (MCP `credits-forge`)
 
-You have six tools in `tools`: `list_assets`, `list_levels`, `get_level`, `validate_level`, `solve_level`, `write_level`. Use them for every level spec:
+You have nine tools in `credits-forge`: `list_assets`, `list_levels`, `get_level`, `validate_level`, `solve_level`, `write_level`, `get_chapter_file`, `validate_chapter`, `write_chapter_file`. Use them for every chapter/level spec edit:
 
-1. `list_assets` before you name a model, room kind or FX id in a spec. Never guess an id.
-2. To change an existing level: `get_level` (keep its `etag`), change the spec, then `validate_level` and `solve_level` with the draft `spec`. Fix every error and every death; both run on the draft and write nothing.
-3. Save with `write_level` (`chapter`, `levelId`, `spec`, `baseEtag`). It refuses a spec that fails validation or does not clear with 0 deaths, and a stale etag (a human saved in `/editor` meanwhile: `get_level` again and redo your change on the new spec). On success it writes the canonical JSON and recompiles the catalog; do not run `generate-chapter.mjs` for that file again to "fix" it.
-4. A level that is not in the manifest yet cannot be written by the forge: say so in Handoffs (it is added in `/editor`). `validate_level` and `solve_level` still check a draft of it.
-5. The manifest, dialogs and story files are not levels: edit them with the write tool as before.
+1. `list_assets` before you name a model, room kind, FX id, or audio cue (`list_assets({ kind: "audio" })` for SFX/music IDs) in a spec. Never guess an id.
+2. To change an existing level: `get_level` (keep `etag`), change the spec, then `validate_level` and `solve_level` with the draft `spec`, then save with `write_level` (`chapter`, `levelId`, `spec`, `baseEtag`). It refuses a failing or lethal level and stale etags, writes canonically, and recompiles the catalog.
+3. To change `chapter.manifest.json`, `story/dialogs.json`, or `story/comix.spec.json`: read with `get_chapter_file`, check the whole pack with `validate_chapter` (supports draft `path` + `json`), and save with `write_chapter_file` (`chapter`, `path`, `json`, `baseEtag`). Adding a brand-new level or story file cannot be done in `/editor` (its dev API returns 404 on non-existent files): scaffold the new file on disk (e.g. `levels/<id>/level.spec.json`), register it in `chapter.manifest.json` (`write_chapter_file` or disk edit), and compile via `node scripts/harness/generate-chapter.mjs`.
 
 Report each forge call you made and what it returned. If the forge is unavailable, say so and use the gates below instead; do not claim it ran.
 

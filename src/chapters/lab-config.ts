@@ -1,6 +1,7 @@
+import type { RoomActor, RoomSocketId, SceneRotation, SceneScale } from '../contracts/room-view.js';
 import type { EnemySpawn, PickupSpawn } from '../game/floors.js';
 import type { ClassicLabFile, ClassicLabSpec } from '../game/lab-types.js';
-import type { FloorId, RoomActor } from '../game/types.js';
+import type { FloorId } from '../game/types.js';
 import { isRec } from './record.js';
 import type { LabCheckSpec, LabConfig, LabRiddle } from './session-lab-types.js';
 import { ENEMY_TYPES, PICKUP_TYPES } from './validate-pack.js';
@@ -38,9 +39,33 @@ function check(v: unknown): LabCheckSpec | null {
   return { id: v.id, description: str(v.description) ? v.description : v.id, when: v.when as LabCheckSpec['when'] };
 }
 
+function numOrVec3(v: unknown): [number, number, number] | number | undefined {
+  if (num(v)) return v;
+  if (Array.isArray(v) && v.length === 3 && v.every(num)) return [v[0], v[1], v[2]];
+  return undefined;
+}
+
+const SOCKETS = new Set<RoomSocketId>(['door.left', 'door.right', 'door.down']);
+
 function actor(v: unknown): RoomActor | null {
   if (!isRec(v) || !str(v.id) || !str(v.model) || !num(v.x)) return null;
-  return { key: 'entity', id: v.id, model: v.model, kind: 'prop', state: 'idle', x: v.x, y: num(v.y) ? v.y : undefined, hidden: false, label: str(v.label) ? v.label : v.id };
+  const scale = numOrVec3(v.scale) as SceneScale | undefined;
+  const rotation = numOrVec3(v.rotation) as SceneRotation | undefined;
+  return {
+    key: 'entity',
+    id: v.id,
+    model: v.model,
+    kind: 'prop',
+    state: 'idle',
+    x: v.x,
+    y: num(v.y) ? v.y : undefined,
+    ...(num(v.zOrder) ? { zOrder: v.zOrder } : {}),
+    ...(scale !== undefined ? { scale } : {}),
+    ...(rotation !== undefined ? { rotation } : {}),
+    ...(str(v.socket) && SOCKETS.has(v.socket as RoomSocketId) ? { socket: v.socket as RoomSocketId } : {}),
+    hidden: false,
+    label: str(v.label) ? v.label : v.id,
+  };
 }
 
 function classicFile(v: unknown): ClassicLabFile | null {

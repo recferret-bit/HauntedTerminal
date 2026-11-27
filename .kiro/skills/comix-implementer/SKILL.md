@@ -29,13 +29,25 @@ description: "[LEVEL GEN] Step 3 of animated 3D Comix generation. Compile `comix
    npm start
    node scripts/harness/screenshot-lab.mjs --page "/cinematic.html?play=intro&t=4.5&muted=1" --out scripts/harness/out/comix-intro-t4.5.png
    ```
+   Supported `/cinematic.html` URL query flags (`src/cinematic/preview.ts`):
+   - `?play=<slug>` (start immediately; omit for interactive catalog menu)
+   - `&t=<seconds>` (deterministic freeze-frame stepped at `1/60s`)
+   - `&muted=1`, `&skippable=0` (playback options)
+   - `&draft=1` (play `localStorage['ht-comix-draft']` when it matches `<slug>`)
+   - `&editor=1` (interactive wheel zoom, drag pan, element selection overlay)
+   - `&rank=S|A|B|C&time=<seconds>&commands=<n>&shortcuts=a,b` (scorecard stats for ending sequences)
+   `window.__cinematic` also exposes `seek()`, `setPaused()`, `playFromStart()`, `sceneView()`, `setSceneView()`, `resetSceneView()`, `effectiveShot()`, `selectedElement()`, `selectElement()`, and `pickAt()`.
 
-4. **Runtime Integration (`playComix`):**
+4. **Runtime Integration (`playComix`) & `AppBus` Audio Routing:**
    Game UI triggers any sequence generically by slug:
    ```ts
    import { playComix } from '../cinematic/index.js';
    await playComix(slug, hostEl, { skippable: true, muted: false }, stats);
    ```
+   `CineAudio` (`src/cinematic/audio.ts`) routes beats through `AppBus` -> `src/audio/sfx-app.ts`:
+   - `CINE` (`kind: 'cine'`): `thunder` (`thunder_close`), `thunder-far` (`thunder_far`), `burst` (`glass_burst`), `zap` (`teleport_zap`), `shatter` (`shatter`), `lightning` (`lightning`), `boot` (`term_boot`).
+   - `LETTER` (`kind: 'letter'`): `slam` (`cine_sfx_slam`), `bubble` (`cine_bubble_pop`), `caption` (`cine_caption_in`), `glitch` (`cine_glitch_text`), `flash` (`cine_panel_flash`), `invert` (`cine_invert`), `shake` (`cine_shake`), `pixel` (`cine_pixelate`).
+   - `loop` (`rain_loop`), `audio-hold` (`paused`), and `scene` (`cine-intro` -> `cine_intro`, `cine-outro` -> `cine_outro`, `comic` -> `comic_reader`).
    Never hardcode scene choreography, actor IDs, or page numbers in `src/cinematic/` or `src/play/`.
 
 ---

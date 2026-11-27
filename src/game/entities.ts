@@ -6,6 +6,7 @@
  * Enemies only act while the hero stands in their zone; nothing here is random.
  */
 import type { KernelEvent, PosixSignal } from '../contracts/events.js';
+import { pickSpatial } from '../contracts/room-view.js';
 import { BESTIARY, PICKUP_INFO } from './bestiary.js';
 import {
   calm as calmWorld,
@@ -85,7 +86,7 @@ export class World implements WorldLike {
     const e: Enemy = {
       id: spec.id,
       type: spec.type,
-      model: info.model,
+      model: spec.model ?? info.model,
       boss: info.kind === 'boss',
       minion,
       name: spec.type === 'zombie' ? String(spec.pid ?? 0) : baseName(spec.path),
@@ -114,6 +115,11 @@ export class World implements WorldLike {
       deathZone: [],
       shown: hidden ? 'hidden' : 'idle',
       shownHp: info.hp,
+      ...pickSpatial(spec),
+      ...(spec.socket ? { socket: spec.socket } : {}),
+      displayLabel: spec.label,
+      attackSfx: spec.attackSfx,
+      killSfx: spec.killSfx,
     };
     this.enemies.push(e);
     return e;
@@ -125,7 +131,19 @@ export class World implements WorldLike {
     const info = PICKUP_INFO[spec.type];
     if (spec.locked) node.mode = 0;
     const model = spec.model ?? (spec.type === 'ssd' && /gpu/i.test(node.name) ? 'pickup.gpu' : info.model);
-    const p: Pickup = { id: spec.id, type: spec.type, model, inode: node.id, name: node.name, amount: info.amount, collected: false };
+    const p: Pickup = {
+      id: spec.id,
+      type: spec.type,
+      model,
+      inode: node.id,
+      name: node.name,
+      amount: info.amount,
+      collected: false,
+      ...pickSpatial(spec),
+      ...(spec.socket ? { socket: spec.socket } : {}),
+      displayLabel: spec.label,
+      collectSfx: spec.sfx,
+    };
     this.pickups.push(p);
     return p;
   }
@@ -270,8 +288,10 @@ export class World implements WorldLike {
         hp: e.dead ? 0 : e.hp,
         maxHp: e.maxHp,
         pid: e.pid ?? undefined,
+        ...pickSpatial(e),
+        ...(e.socket ? { socket: e.socket } : {}),
         unseen,
-        label: e.pid !== null && e.revealed ? `${e.name} [${e.pid}]` : e.name,
+        label: e.displayLabel ?? (e.pid !== null && e.revealed ? `${e.name} [${e.pid}]` : e.name),
       });
     }
     for (const p of this.pickups) {
@@ -285,8 +305,10 @@ export class World implements WorldLike {
         kind: 'pickup',
         target: node.name,
         state: locked ? 'frozen' : 'idle',
+        ...pickSpatial(p),
+        ...(p.socket ? { socket: p.socket } : {}),
         unseen: false,
-        label: locked ? `${node.name} [encrypted]` : `${node.name} ${PICKUP_INFO[p.type].label(p.amount)}`,
+        label: p.displayLabel ?? (locked ? `${node.name} [encrypted]` : `${node.name} ${PICKUP_INFO[p.type].label(p.amount)}`),
         locked,
       });
     }

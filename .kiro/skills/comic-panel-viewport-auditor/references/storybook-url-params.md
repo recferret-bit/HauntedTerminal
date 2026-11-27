@@ -58,14 +58,20 @@ Examples:
 | `list()` | `{ models, textures, fx, errors }` registered at load time, plus module load errors. |
 | `inspect(id, opts?)` | Sets options, opens `id`, resolves with `stats()` after the next complete frame. `inspect(null)` returns to the gallery. |
 | `setOption(key, value)` | Any key from the table (plus `post`), resolves with `stats()` after the next complete frame. Throws on an unknown key. |
-| `stats()` | Mode, options, clock, animator source, load errors, camera frame check (`direction`, `screenRightX`, `game`: the `assertFrame` test), canvas size, draw calls and triangles, framing (px per unit), subject info (parts, triangles, size, minY, depth ratio, zones with front-view share, anim tags, sockets), gallery cells (painted, error, to scale). |
+| `stepFx(delta)` | Steps the inspected FX emitter by `-1` or `+1` 12fps frame (`anim=1`, `t = tMs/1000`, seek-paused with `clockRunning: false`), updates UI, resolves with `stats()`. |
+| `setFxTime(tMs)` | Seeks the inspected FX preset to `tMs` milliseconds (`anim=1`, `t = tMs/1000`, seek-paused with `clockRunning: false`), updates scrubber, resolves with `stats()`. |
+| `setFxLayers(hidden)` | Hides named FX layers (`layer.name` strings) without touching `presets.ts`; updates chips & resolves with `stats()`. |
+| `setFxWord(text)` | Overrides preview onomatopoeia text (`null` resets to preset word; invalid chars checked via `fxWordUnsupported`), resolves with `stats()`. |
+| `stats()` | Mode, options, clock, animator source, load errors, camera frame check, canvas size, draw calls and triangles, framing, `subject` (`info` for models/textures, `fxInfo` validator metrics + `fxState` workbench state for FX presets), and gallery cells. |
 | `options()` | A copy of the current options. |
+
+When inspecting `fx.*` in `/storybook.html`, the side panel replaces model-only texture text with the `validateFxPreset` metrics table (`fxInfo`: `pass`, `60/30/10` share %, particles, extent, word/light checks, issues) plus the **FX WORKBENCH** (`Play/Pause`, `◀`/`▶` step, `12fps` frame scrubber, per-layer chips, custom word input + `Reset`).
 
 ## Headless screenshots
 
 `node scripts/harness/screenshot-lab.mjs --query "<params>" --name <stem> [--width 1280 --height 800 --dpr 1]`
 starts Vite, opens the page in the installed Chrome (headless, real WebGL), waits for `ready`,
-writes `scripts/harness/out/lab-<stem>.png`, prints the stats, and exits 1 on a page error or a
+writes `scripts/harness/out/lab-<stem>.png`, prints the stats (including `fx`, `fxMetric`, `fxWord` when inspecting `fx.*`), and exits 1 on a page error or a
 blank WebGL frame. `--eval "<js>"` runs in the page before the shot (it may `await`), for example
-`--eval "await __storybook.setOption('state','attack')"`. `--url http://localhost:5400` reuses a
+`--eval "await __storybook.setFxLayers(['pixel']).then(() => __storybook.setFxWord('KRAKOW!'))"`. `--url http://localhost:5400` reuses a
 running dev server. `--selftest` shoots the lab fixture and proves Chrome plus WebGL work here.

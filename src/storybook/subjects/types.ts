@@ -1,6 +1,7 @@
 import type * as THREE from 'three';
 import type { BuiltModel } from '../../procgen/runtime/build.js';
 import type { ModelSpec, Vec3 } from '../../procgen/core/types.js';
+import type { FxPreset } from '../../procgen/fx/types.js';
 import type { ComicFxLight, ComicMaterial } from '../../shaders/comic-material.js';
 import type { Bounds } from '../domain/framing.js';
 import type { PartAnimator } from './part-animator.js';
@@ -21,6 +22,66 @@ export interface SubjectInfo {
   textures: string[];
 }
 
+export interface FxSubjectLayerInfo {
+  name: string;
+  role: 'primary' | 'secondary' | 'accent';
+  zone: string;
+  count: number;
+  emit: string;
+}
+
+export interface FxSubjectInfo {
+  id: string;
+  label: string;
+  family: string;
+  event: string;
+  moment: string;
+  when: string;
+  anchor: string;
+  durationMs: number;
+  totalMs: number;
+  stepFps: number;
+  loop: boolean;
+  fullPanel: boolean;
+  shake: number;
+  flash: number;
+  light: { zone: string; radius: number; power: number };
+  word: { text: string; style: string; zone: string; holdMs: number } | null;
+  layers: FxSubjectLayerInfo[];
+  metrics: {
+    layers: number;
+    instances: number;
+    triangles: number;
+    share: { primary: number; secondary: number; accent: number };
+    deltaE: number | null;
+    minParticlePx: number;
+    bounds: { width: number; height: number };
+    lastParticleMs: number;
+  };
+  pass: boolean;
+  errors: number;
+  warnings: number;
+  issues: Array<{ code: string; severity: string; layer?: string; message: string }>;
+}
+
+export interface FxControlState {
+  tMs: number;
+  totalMs: number;
+  stepFps: number;
+  hiddenLayers: string[];
+  wordText: string;
+  baseWord: string;
+}
+
+export interface FxSubjectControl {
+  readonly preset: FxPreset;
+  getState(): FxControlState;
+  setHiddenLayers(names: readonly string[]): void;
+  toggleLayer(name: string): string[];
+  setWord(text: string | null): void;
+  cycleDurationMs(): number;
+}
+
 /** One thing the stage can draw: a procgen model, a texture on a quad, or an FX preset. */
 export interface Subject {
   kind: 'model' | 'texture' | 'fx';
@@ -39,6 +100,10 @@ export interface Subject {
   animator: PartAnimator | null;
   sockets: Record<string, Vec3>;
   info: SubjectInfo | null;
+  /** Structured validator & preset telemetry for `kind: 'fx'`. */
+  fxInfo?: FxSubjectInfo | null;
+  /** Live playback / layer / lettering workbench hooks for `kind: 'fx'`. */
+  fxControl?: FxSubjectControl | null;
   /** Optional live comic light source emitted by an FX subject. */
   fxLight?: () => ComicFxLight | null;
   dispose(): void;

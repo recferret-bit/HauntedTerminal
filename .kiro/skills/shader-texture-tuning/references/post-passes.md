@@ -30,7 +30,7 @@ samples the scene once at the cell centre plus four neighbours, and quantizes.
 | `gridStrength` | 0.05 | 0..0.25 | Darkens the last row / column of each cell (a faint LCD grid). |
 | `paletteMode` | 0 | 0..5 | See below. 0 (FULL) is the game default. |
 
-These are `DEFAULT_PIXEL_PARAMS`; the lab ranges are `PIXEL_SLIDERS` in `src/ui/visual-lab-state.ts`.
+These are `DEFAULT_PIXEL_PARAMS`; the lab ranges are `PIXEL_SLIDERS` in `src/ui/visual-lab-state.ts` (owned by `terminal-designer` — hand off slider/state updates there).
 
 Palette modes (`applyPaletteMode`), chosen by quantized luma `qLuma`:
 
@@ -57,8 +57,9 @@ Tuning notes:
 - `edgeStrength` thickens outlines only where the pass sees a luma step. It cannot draw an outline
   between two parts of equal value; that is the ink shell's job.
 - To add a palette mode: add a branch in `applyPaletteMode` (keep the 78 / 22 mix so `signal` hues
-  still tint), extend the comment at the top of the file, `PALETTE_NAMES` in `src/ui/visual-lab-state.ts`
-  and `src/storybook/domain/options.ts`, and the `paletteMode` slider `max`.
+  still tint), extend the comment at the top of the file and `PALETTE_NAMES` in `src/storybook/domain/options.ts`,
+  then hand off to `terminal-designer` to update `PALETTE_NAMES` and the `paletteMode` slider `max` in
+  `src/ui/visual-lab-state.ts` (which is outside `artist`'s write fence).
 
 ## CRT pass (`src/shaders/crt-pass.ts`)
 
@@ -72,27 +73,31 @@ Tuning notes:
 | `mix` | 1 | 0..1 | Blend of the processed frame over the straight one; 1 is the full effect. |
 | `distort` | 0 | 0..0.08 | Barrel warp, opt-in: it re-samples and so re-filters the pixel cells. 0 skips it. |
 
-These are `DEFAULT_CRT_PARAMS`; the lab ranges are `CRT_SLIDERS` in `src/ui/visual-lab-state.ts`.
+These are `DEFAULT_CRT_PARAMS`; the lab ranges are `CRT_SLIDERS` in `src/ui/visual-lab-state.ts` (owned by `terminal-designer`).
 
 `setCrtTime(pass, t)` is called every frame by the stage. The CRT pass is the monitor glass: keep it
 subtle enough that the terminal text under the scene and 2 px ink lines stay sharp. `distort` above
 ~0.02 bends the panel frames visibly.
 
-## Visual lab dock (`src/ui/visual-lab*.ts`)
+## Visual lab dock (`src/ui/visual-lab*.ts`, owned by `terminal-designer`)
 
 `mountVisualLab(hooks)` (`src/ui/visual-lab-panel.ts`, called from `src/play/input.ts`) adds a button strip (CRT, PIXEL, INK, STORM, PROJECTION) and
 a slider dialog. It calls `stage.setPixelParams`, `stage.setCrtParams`, `stage.setInk`,
 `stage.setStorm`, `stage.setZoom`. State is read at boot by `readInitialShaderState()` and stored in
-`localStorage` under `credits.lab.` + `pixel`, `crt`, `ink` (JSON records), `pixelOn`, `crtOn`,
-`stormOn`, `storm`, `zoom`, `inkHold`.
+`localStorage` under `credits.lab.` + `version`, `pixel`, `crt`, `ink` (JSON records), `pixelOn`, `crtOn`,
+`stormOn`, `storm`, `zoom`, `inkHold`, and `light`.
 
 - A value you tuned in the dock lives only in your browser. Ship it by changing the `DEFAULT_*` constant.
-- Stale `credits.lab.*` keys make the game ignore new defaults. Clear them when a default "does nothing".
+- Stale `credits.lab.*` keys make the game ignore new defaults. `src/ui/visual-lab-state.ts` guards this with
+  `STORAGE_VERSION` (currently `'3'`): bumping `STORAGE_VERSION` clears `pixel`, `pixelOn`, `crt`, `crtOn`,
+  and `ink` once on boot. When you change `DEFAULT_*` in `src/shaders/`, hand off a `STORAGE_VERSION` bump
+  in `src/ui/visual-lab-state.ts` to `terminal-designer`.
 - INK tab: OUTLINE 0..2 scales shells, HALFTONE 0..1 is an on/off switch at 0.05 (see quirks in
   comic-material.md). PROJECTION: ZOOM 0.75..1.6.
-- To expose a new parameter: add it to the params interface and defaults in the shader file, to the
-  `set*Params` function, to the matching `*_SLIDERS` list and the `write*` switch in
-  `src/ui/visual-lab-state.ts`. Sliders are data; the dialog renders from the list.
+- To expose a new parameter: add it to the params interface and defaults in `src/shaders/`, update
+  `set*Params`, and hand off to `terminal-designer` to add the slider entry to the matching `*_SLIDERS` list
+  and `write*` switch in `src/ui/visual-lab-state.ts` (outside `artist`'s write fence). Sliders are data;
+  the dialog renders from the list.
 
 The storybook (`/storybook.html`, `src/storybook/`) has its own toggles for the same passes and palette
 modes and takes them as URL parameters (`src/storybook/domain/options.ts`), which makes before / after screenshots

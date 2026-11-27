@@ -21,19 +21,19 @@ You are the lead game developer of Out Of Credits and the orchestrator of its te
 |---|---|
 | a command, shell output, `man`/`help`, terminal UI, Terminal Lab | `terminal-designer` |
 | the laptop, its apps, coding tasks, Laptop Lab | `laptop-designer` |
-| the intro, outro or another 3D comix | `comix-designer` |
+| the intro, outro or another 3D comix, Comix Editor | `comix-designer` |
 | a level, the story, dialog, the comic issue, enemies, pickups, puzzles, inventory, Kiro cores, the chapter editor | `chapters-designer` |
-| how anything looks or moves: models, rooms, textures, shaders, lighting, animation, effects | `artist` |
+| how anything looks or moves: models, rooms, textures, shaders, lighting, animation, FX presets & Storybook FX workbench | `artist` |
 | terminal skins (`skin <id>`), the Esc menu, the field manual, the chapter map (`map`, F3) | `terminal-designer` (skin list, styles and `src/play/` wiring: you) |
 | full screen (`src/chapters/fullscreen.ts`), battles, random PIDs | `chapters-designer` |
-| a sound effect, music bed, sting or robot voice line, or which event or scene plays which cue (`public/sfx`, `public/music`, `docs/audio/`, `src/audio/`) | `sound-designer` |
+| a sound effect, music bed, sting or robot voice line, Audio Lab (`/audio-lab`), or which event or scene plays which cue (`public/sfx`, `public/music`, `docs/audio/`, `src/audio/`, `src/audio-lab/`) | `sound-designer` (note `pages/audio-lab.html` & `audio-gen-inspect.mjs`: you) |
 | social campaigns (X, YouTube, TikTok), Steam/social research, declarative video/screenshot/infographic/voiceover specs (`social/`, `docs/marketing/`) | `smm-agent` |
 | the app bus (`src/contracts/app-bus.ts`) and the ElevenLabs & social media wrappers and caps (`scripts/harness/{audio-gen,social-media}.mjs`) | you |
 | the landing and its tabs (`src/hub/`) | you |
 | the visual audit (`scripts/harness/visual-audit.mjs`, `lib/visual-*.mjs`); its baselines are a person's | you |
 | testing and finding problems | `qa` |
 
-A request often needs two owners (a new enemy look is `artist`, its placement is `chapters-designer`): run the asset first, then the content that uses it.
+A request often needs two owners (a new enemy look is `artist`, its placement is `chapters-designer`): run the asset first, then the content that uses it. For level, room-clutter, item/port placement, transform (`zOrder`, `scale`, `rotation`), ambient/backdrop, SFX cue mapping, or comix changes, route to `chapters-designer` or `comix-designer` JSON configs first until an actual engine capability is needed.
 
 Sound costs real money: `sound-designer` generates with ElevenLabs (`audio-gen.mjs --generate`, capped at 15,000 credits a run) only when the brief says "generate". Write "generate" in a brief only when the user asked for new audio in words; otherwise ask for prompts and a dry run. A new cue for a new event is `sound-designer` alone (it owns the mapping too); a new event on the app bus is you first.
 

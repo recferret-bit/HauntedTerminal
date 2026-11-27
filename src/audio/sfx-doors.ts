@@ -1,42 +1,26 @@
 import type { SfxId } from './catalog.js';
 
-/** Directory basename -> door sample. The names are room directories, not level indexes. */
+/** Classic floor directory basename -> door sample. Chapter levels declare `sfx` on each dir/stage directly. */
 const DOOR_CUE: Record<string, SfxId> = {
   desk: 'door_usb',
+  nightmare_workspace: 'door_usb',
   chronicles: 'door_usb',
   ram_slots: 'door_usb',
   pedestal: 'door_usb',
-  vram_crate: 'door_usb',
-  wires_and_chips: 'door_usb',
-  cache_vault: 'door_usb',
-  nightmare_workspace: 'door_usb',
-  ui_dashboard: 'door_usb',
-  port_445: 'door_serial',
   drive_bay: 'door_serial',
   entrance: 'door_serial',
+  port_445: 'door_serial',
   catwalk: 'door_serial',
   iron_gate: 'door_firewall',
-  clod_kernel_core: 'door_firewall',
-  clod_overlord_core: 'door_firewall',
   panic_chamber: 'door_firewall',
   chasm: 'door_hdmi',
   hidden_wing: 'door_hdmi',
   furnace_hall: 'door_hdmi',
   boiler_room: 'door_hdmi',
-  docker_forge: 'door_hdmi',
   cellar_hatch: 'door_ethernet',
   crypt_stairs: 'door_ethernet',
   boiler_shaft: 'door_ethernet',
   core_elevator: 'door_ethernet',
-  hub_uplink: 'door_ethernet',
-  gpu_alley: 'door_ethernet',
-  server_hub_1: 'door_ethernet',
-  server_hub_2: 'door_ethernet',
-  server_hub_3: 'door_ethernet',
-  logic_cell: 'door_ethernet',
-  compose_furnace: 'door_ethernet',
-  sector_ui_grid: 'door_ethernet',
-  sector_docker_forge: 'door_ethernet',
   north_exit: 'door_loopback',
   east_exit: 'door_loopback',
   south_exit: 'door_loopback',
@@ -47,6 +31,20 @@ const DOOR_CUE: Record<string, SfxId> = {
   null: 'door_null',
   devnull: 'door_null',
 };
+
+const DOOR_MODEL_CUE: Record<string, SfxId> = {
+  'door.usb': 'door_usb',
+  'door.serial': 'door_serial',
+  'door.ethernet': 'door_ethernet',
+  'door.firewall': 'door_firewall',
+  'door.hdmi': 'door_hdmi',
+  'door.loopback': 'door_loopback',
+  'door.devnull': 'door_null',
+};
+
+export function doorModelCue(model?: string): SfxId | null {
+  return model ? (DOOR_MODEL_CUE[model] ?? null) : null;
+}
 
 export function doorCue(path: string): SfxId | null {
   const base = path.split('/').filter(Boolean).pop() ?? '';

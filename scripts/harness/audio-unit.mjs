@@ -287,25 +287,58 @@ await withProcgen(async (_procgen, vite) => {
     assert.deepEqual(sfxMod.sfxFor({ kind: 'cine', cue: 'boot' }), ['term_boot']);
   });
 
-  await test('every chapter and classic directory resolves to a door cue while unknown rooms fall back to hop', () => {
-    const dirs = [
-      'desk', 'chronicles', 'ram_slots', 'pedestal', 'vram_crate', 'port_445', 'drive_bay',
+  await test('classic directories resolve to door cues, unknown rooms fall back to hop, and declarative sfx/music overrides win', () => {
+    const classicDirs = [
+      'desk', 'nightmare_workspace', 'chronicles', 'ram_slots', 'pedestal', 'drive_bay', 'port_445',
       'iron_gate', 'chasm', 'hidden_wing', 'furnace_hall', 'cellar_hatch', 'crypt_stairs',
-      'boiler_shaft', 'core_elevator', 'hub_uplink', 'gpu_alley', 'server_hub_1', 'server_hub_2',
-      'server_hub_3', 'logic_cell', 'compose_furnace', 'north_exit', 'east_exit', 'south_exit',
-      'wing_a', 'null', 'devnull', 'catwalk', 'entrance', 'cell_9', 'floor_3',
-      'nightmare_workspace', 'boiler_room', 'panic_chamber', 'labyrinth', 'cache_vault',
-      'wires_and_chips', 'ui_dashboard', 'sector_ui_grid', 'docker_forge',
-      'sector_docker_forge', 'clod_kernel_core', 'clod_overlord_core',
+      'boiler_shaft', 'core_elevator', 'north_exit', 'east_exit', 'south_exit', 'wing_a',
+      'null', 'devnull', 'catwalk', 'entrance', 'cell_9', 'floor_3', 'boiler_room', 'panic_chamber', 'labyrinth',
     ];
-    for (const d of dirs) {
+    for (const d of classicDirs) {
       const cues = sfxMod.sfxFor({
         kind: 'kernel',
         event: { type: 'ROOM_TRANSITION', fromDir: 1, toDir: 2, toPath: `/root/${d}`, upwardPanelsSmashed: 0, viaSymlinkLoop: false },
       });
       assert.equal(cues.length, 1);
-      assert.notEqual(cues[0], 'hop', `${d} should map to a door cue`);
+      assert.notEqual(cues[0], 'hop', `${d} should map to a classic door cue`);
     }
+    for (const d of ['wires_and_chips', 'gpu_alley', 'clod_overlord_core']) {
+      assert.deepEqual(
+        sfxMod.sfxFor({
+          kind: 'kernel',
+          event: { type: 'ROOM_TRANSITION', fromDir: 1, toDir: 2, toPath: `/srv/${d}`, upwardPanelsSmashed: 0, viaSymlinkLoop: false },
+        }),
+        ['hop'],
+        `chapter-specific basename ${d} is no longer hardcoded in sfx-doors`,
+      );
+    }
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'ROOM_TRANSITION', fromDir: 1, toDir: 2, toPath: '/srv/gpu_alley', upwardPanelsSmashed: 0, viaSymlinkLoop: false, sfx: 'door_ethernet' } }),
+      ['door_ethernet'],
+    );
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'PERMISSION_DENIED_RATTLE', targetId: 'd1', command: 'cd', sfx: 'door_firewall' } }),
+      ['door_firewall'],
+    );
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'ENEMY_ATTACK', entityId: 'e1', enemyType: 'bug', amount: 1, sfx: 'atk_bug' } }),
+      ['atk_bug'],
+    );
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'ENEMY_KILLED', entityId: 'e1', enemyType: 'virus', how: 'rm', sfx: 'kill_null' } }),
+      ['kill_null'],
+    );
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'PICKUP_COLLECTED', entityId: 'p1', pickupType: 'ram', amount: 16, sfx: 'pickup_ssd' } }),
+      ['pickup_ssd', 'hero_collect'],
+    );
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'FILE_REMOVED', path: '/a/b', kind: 'file', sfx: 'crate_bridge' } }),
+      ['crate_bridge'],
+    );
+    assert.deepEqual(sfxMod.sfxFor({ kind: 'kernel', event: { type: 'SOUND_CUE', cue: 'shatter' } }), ['shatter']);
+    assert.deepEqual(sfxMod.sfxFor({ kind: 'sfx', cue: 'teleport_zap' }), ['teleport_zap']);
+    assert.deepEqual(sfxMod.sfxFor({ kind: 'sfx', cue: 'not_a_real_cue' }), []);
   });
 
   await test('all app events and pointer control ids map cleanly without nulls or double triggers', () => {
@@ -437,6 +470,52 @@ await withProcgen(async (_procgen, vite) => {
     ended = true;
     sync.syncPlayAudio(play);
     assert.deepEqual(loops(), ['dad_typing_loop:false', 'dad_smoke_loop:false'], 'the rank screen is not the play surface');
+
+    ended = false;
+    actors = [];
+    let ambient = { loops: ['rain_loop'] };
+    play.session.snapshot = () => ({
+      battle: null, ended, rank: null, hp: 100, maxHp: 100, floor: 1, hub: false,
+      inventory: { held }, room: { actors, ambient },
+    });
+    sync.syncPlayAudio(play);
+    assert.deepEqual(loops(), ['rain_loop:true'], 'room.ambient.loops starts declared loop cue');
+    ambient = { loops: [] };
+    sync.syncPlayAudio(play);
+    assert.deepEqual(loops(), ['rain_loop:false'], 'removing room.ambient.loops stops it');
+  });
+
+  await test('musicFor & orchestrators honor declarative levelMusic and script music AppEvents', async () => {
+    const musicMod = await vite.ssrLoadModule('/src/audio/music-for.ts');
+    const orchMod = await vite.ssrLoadModule('/src/audio/orchestrators.ts');
+    assert.equal(
+      musicMod.musicFor(musicMod.sceneFor('play', { floorTheme: 2, music: 'floor_core' })),
+      'floor_core',
+      'valid music override replaces default floor bed outside battle',
+    );
+    assert.equal(
+      musicMod.musicFor(musicMod.sceneFor('play', { floorTheme: 2, music: 'invalid_bed' })),
+      'floor_crypt',
+      'unknown music string falls back cleanly to floor bed',
+    );
+    assert.equal(
+      musicMod.musicFor(musicMod.sceneFor('play', { floorTheme: 5, battle: 'fight', music: 'battle_boss' })),
+      'battle_boss',
+      'explicit battle_* track overrides default battle loop',
+    );
+    const bus = busMod.createAppBus();
+    const beds = [];
+    const fakePlayer = { live: true, muted: false, volume: 1, play() {}, loop() {}, bed(id) { beds.push(id); }, hold() {}, setMuted() {}, setVolume() {}, dispose() {} };
+    const off = orchMod.attachOrchestrators(bus, fakePlayer);
+    try {
+      bus.emit({ kind: 'music', cue: 'cine_outro' });
+      bus.emit({ kind: 'music', cue: null });
+      bus.emit({ kind: 'scene', scene: musicMod.sceneFor('play', { floorTheme: 3, music: 'hub_matrix' }) });
+    } finally {
+      off();
+    }
+    assert.equal(beds[0], 'cine_outro');
+    assert.equal(beds[beds.length - 1], 'hub_matrix');
   });
 
   await test('loop events for the dad loops start and stop their cue on the graph', async () => {
@@ -1102,6 +1181,90 @@ await withProcgen(async (_procgen, vite) => {
       assert.equal(new Set(dadUrls).size, 10, 'every one of the ten old coder cheers is reachable');
       eng.dispose();
     });
+  });
+
+  await test('FLOOR_CLEARED sfx override, locked subdir deny sfx, entryPort return sfx, and CineAudio ambient loops work cleanly', async () => {
+    const { createChapterSession } = await vite.ssrLoadModule('/src/chapters/chapter-session.ts');
+    const { CineAudio } = await vite.ssrLoadModule('/src/cinematic/audio.ts');
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'FLOOR_CLEARED', floorId: 1, speedrunBonus: false, commandsCount: 2, sfx: 'rank_reveal' } }),
+      ['rank_reveal', 'sting_clear'],
+      'FLOOR_CLEARED honors valid sfx override',
+    );
+    assert.deepEqual(
+      sfxMod.sfxFor({ kind: 'kernel', event: { type: 'FLOOR_CLEARED', floorId: 1, speedrunBonus: false, commandsCount: 2 } }),
+      ['level_clear', 'sting_clear'],
+      'FLOOR_CLEARED falls back to level_clear',
+    );
+
+    const real = readChapter(listChapterSlugs()[0]);
+    const customPack = {
+      manifest: { ...real.manifest, id: 'sfx-stage-unit', levels: [{ index: 1, id: 's1', title: 'S1', cwd: '/lvl', roomKind: 'lab_hall', floorTheme: 2, mechanic: 'terminal', mechanicLabel: 'T', difficulty: 1, teaches: [], enemies: [] }] },
+      levels: [{
+        id: 's1', index: 1, title: 'S1', cwd: '/lvl', roomKind: 'lab_hall', floorTheme: 2, mechanic: 'terminal', summary: 'sfx test',
+        stage: {
+          entryPort: { sfx: 'door_serial' },
+          sfx: { enter: 'title_card', exit: 'rank_reveal', deny: 'gate_locked' },
+          subdirs: { '/lvl/open_sub': { sfx: 'door_hdmi' } },
+        },
+        files: [
+          { path: '/lvl/locked_sub', kind: 'dir', mode: 0o644 },
+          { path: '/lvl/open_sub', kind: 'dir', mode: 0o755 },
+          { path: '/lvl/fw_sub', kind: 'dir', mode: 0o755, model: 'door.firewall' },
+          { path: '/lvl/plain_sub', kind: 'dir', mode: 0o755 },
+          { path: '/lvl/exit_gate', kind: 'dir', mode: 0o755 },
+        ],
+        enemies: [],
+        pickups: [],
+        patches: [],
+        winRules: [{ kind: 'dir_accessible', path: '/lvl/exit_gate', description: 'open' }],
+        exitDir: '/lvl/exit_gate',
+        solutionCommands: ['cd exit_gate'],
+      }],
+      dialogs: { levels: {} },
+    };
+    const sess = createChapterSession({ chapterId: 'sfx-stage-unit', pack: customPack, preview: true, startLevelId: 's1' });
+    sess.skipIntro();
+    const denyRes = sess.exec('cd locked_sub');
+    const denyEv = denyRes.events.find((e) => e.type === 'PERMISSION_DENIED_RATTLE');
+    assert.equal(denyEv?.sfx, 'gate_locked', 'locked subdir cd uses stage.sfx.deny');
+    const subRes = sess.exec('cd open_sub');
+    assert.equal(subRes.events.find((e) => e.type === 'ROOM_TRANSITION')?.sfx, 'door_hdmi', 'subdir entry uses subdir sfx');
+    const backRes = sess.exec('cd ..');
+    assert.equal(backRes.events.find((e) => e.type === 'ROOM_TRANSITION')?.sfx, 'door_serial', 'returning to cwd uses stage.entryPort.sfx');
+    const fwRes = sess.exec('cd fw_sub');
+    const fwTr = fwRes.events.find((e) => e.type === 'ROOM_TRANSITION');
+    assert.equal(fwTr?.doorModel, 'door.firewall');
+    assert.deepEqual(sfxMod.sfxFor({ kind: 'kernel', event: fwTr }), ['door_firewall'], 'ROOM_TRANSITION falls back to doorModelCue from LevelFileSpec.model');
+    assert.equal(sess.exec('cd ..').code, 0);
+    const plainRes = sess.exec('cd plain_sub');
+    const plainTr = plainRes.events.find((e) => e.type === 'ROOM_TRANSITION');
+    assert.equal(plainTr?.doorModel, 'door.usb');
+    assert.deepEqual(sfxMod.sfxFor({ kind: 'kernel', event: plainTr }), ['door_usb'], 'plain subdir falls back to door.usb -> door_usb');
+    assert.equal(sess.exec('cd ..').code, 0);
+    assert.deepEqual(
+      sfxMod.sfxFor({
+        kind: 'kernel',
+        event: { type: 'ROOM_TRANSITION', fromDir: 1, toDir: 2, toPath: '/var/dungeon/entrance/iron_gate', upwardPanelsSmashed: 0, viaSymlinkLoop: false, doorModel: 'door.usb', sfx: 'hop' },
+      }),
+      ['hop'],
+      'ROOM_TRANSITION explicit sfx wins over doorModelCue and path doorCue',
+    );
+    const clearRes = sess.exec('cd exit_gate');
+    assert.equal(clearRes.events.find((e) => e.type === 'FLOOR_CLEARED')?.sfx, 'rank_reveal', 'exiting level attaches stage.sfx.exit');
+
+    const bus = busMod.createAppBus();
+    const emitted = [];
+    const off = bus.subscribe((ev) => { if (ev.kind === 'loop') emitted.push(`${ev.cue}:${ev.on}`); });
+    try {
+      const ca = new CineAudio(false, bus);
+      ca.loop('dad_smoke_loop', true);
+      ca.rain(true);
+      ca.stopLoops();
+      assert.deepEqual(emitted, ['dad_smoke_loop:true', 'rain_loop:true', 'dad_smoke_loop:false', 'rain_loop:false']);
+    } finally {
+      off();
+    }
   });
 }, '/src/audio/sfx-for.ts');
 

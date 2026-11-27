@@ -26,7 +26,13 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       "pid": 1,
       "model": "boss.kernel",
       "cameoModel": "agent.clod",
-      "cameoLabel": "CLOD [SUPERVISOR]"
+      "cameoLabel": "CLOD [SUPERVISOR]",
+      "cameoTransform": {
+        "x": -1.02,
+        "y": 0.35,
+        "zOrder": 0,
+        "scale": 1
+      }
     },
     "comix": {
       "specPath": "story/comix.spec.json",
@@ -350,7 +356,38 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
           "id": "father:outro",
           "model": "npc.greybeard_rig",
           "label": "FATHER (OLD BEARDED CODER)",
-          "x": 1.5
+          "x": 1.5,
+          "y": 0,
+          "zOrder": 0,
+          "scale": 1
+        },
+        {
+          "id": "outro:mug",
+          "model": "prop.coffee_mug",
+          "label": "Coffee Mug",
+          "x": 4.75,
+          "y": 1.085,
+          "zOrder": -1,
+          "scale": 0.65
+        },
+        {
+          "id": "outro:bookshelf",
+          "model": "prop.bookshelf",
+          "label": "Bookshelf",
+          "x": 4.07,
+          "y": 3.2,
+          "zOrder": -1,
+          "scale": 1
+        },
+        {
+          "id": "outro:sticky-note",
+          "model": "prop.sticky_note",
+          "label": "Sticky Note",
+          "x": 2.06,
+          "y": 3.1,
+          "zOrder": -1,
+          "scale": 1,
+          "rotation": 5
         }
       ],
       "finale": [
@@ -450,7 +487,9 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== KIRO.D // CHAPTER MISSION & SURVIVAL BRIEFING ===\n1. YOUR CHAPTER GOAL: Raid 6 sectors for hardware, visit the Matrix Server Hub 3 times so the Old Bearded Coder can reboot Kiro.d with open-weight models (silencing Anti-Gravy, Codec, and Gork), then defeat Clod + PID 1 and run `exit` to return home!\n2. TOOLS & TUBE TRANSISTOR GATE: You dropped your Tube Transistor, Map, and Field Manual. Basic `ls` shows visible files in the room, while `ls -la` and all `ls` flags stay locked until you recover your glowing Tube Transistor in Sector 02 (Cache Vault)!\n3. SURVIVAL COMMANDS HERE: `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`.\n4. SECRET VRAM MODULE: a spare VRAM module hides in the dot folder `.old_archive` of this room, a huge pile of old folders. Plain `ls` never shows dot folders, but `cd .old_archive` works: follow the notes in `lost_and_found`. Or search the pile: `find / -name vram.mod`, `grep -r vram .`. Each module adds a spare charge for Kiro.d skills later!\n"
+          "content": "=== KIRO.D // CHAPTER MISSION & SURVIVAL BRIEFING ===\n1. YOUR CHAPTER GOAL: Raid 6 sectors for hardware, visit the Matrix Server Hub 3 times so the Old Bearded Coder can reboot Kiro.d with open-weight models (silencing Anti-Gravy, Codec, and Gork), then defeat Clod + PID 1 and run `exit` to return home!\n2. TOOLS & TUBE TRANSISTOR GATE: You dropped your Tube Transistor, Map, and Field Manual. Basic `ls` shows visible files in the room, while `ls -la` and all `ls` flags stay locked until you recover your glowing Tube Transistor in Sector 02 (Cache Vault)!\n3. SURVIVAL COMMANDS HERE: `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`.\n4. SECRET VRAM MODULE: a spare VRAM module hides in the dot folder `.old_archive` of this room, a huge pile of old folders. Plain `ls` never shows dot folders, but `cd .old_archive` works: follow the notes in `lost_and_found`. Or search the pile: `find / -name vram.mod`, `grep -r vram .`. Each module adds a spare charge for Kiro.d skills later!\n",
+          "x": 1.55,
+          "model": "prop.file"
         },
         {
           "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
@@ -467,7 +506,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "path": "/mnt/wires_and_chips/hub_uplink",
           "kind": "dir",
-          "mode": 0
+          "mode": 0,
+          "x": -0.75,
+          "model": "door.ethernet",
+          "socket": "door.right",
+          "sfx": "door_ethernet"
         },
         {
           "path": "/mnt/wires_and_chips/.old_archive/lost_and_found/note.txt",
@@ -494,14 +537,16 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "type": "virus",
           "path": "/mnt/wires_and_chips/glitch_spark.exe",
           "pid": 1011,
-          "ppid": 1
+          "ppid": 1,
+          "x": 0.25
         }
       ],
       "pickups": [
         {
           "id": "pickup_tutorial_ram",
           "type": "ram",
-          "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm"
+          "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
+          "x": 0.9
         },
         {
           "id": "pickup_l1_vram",
@@ -527,13 +572,68 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "l1_web",
           "model": "prop.cobweb",
           "x": 4.92,
-          "y": 3.05
+          "y": 3.05,
+          "zOrder": -3
         },
         {
           "id": "l1_spider",
           "model": "prop.spider",
           "x": 2.02,
-          "y": 2.35
+          "y": 2.35,
+          "zOrder": -2
+        },
+        {
+          "id": "l1_wires_left",
+          "model": "prop.cables",
+          "x": 4.55,
+          "zOrder": -1,
+          "label": "tangled ribbon wires"
+        },
+        {
+          "id": "l1_chip_left",
+          "model": "prop.chip",
+          "x": 3.75,
+          "zOrder": -1,
+          "label": "burned silicon chip"
+        },
+        {
+          "id": "l1_chip_right",
+          "model": "prop.chip",
+          "x": -0.25,
+          "zOrder": -1,
+          "label": "motherboard chip"
+        },
+        {
+          "id": "l1_wires_right",
+          "model": "prop.cables",
+          "x": -1.1,
+          "zOrder": -1,
+          "label": "bus cables"
+        },
+        {
+          "id": "l1_corner_web",
+          "model": "prop.corner_cobweb",
+          "x": -1.02,
+          "y": 3.15,
+          "zOrder": -3,
+          "scale": 0.9
+        },
+        {
+          "id": "l1_shelf",
+          "model": "prop.shelf",
+          "x": 3.25,
+          "y": 2.2,
+          "zOrder": -3,
+          "scale": 0.9
+        },
+        {
+          "id": "l1_platter",
+          "model": "prop.platter",
+          "x": 3.38,
+          "y": 2.46,
+          "zOrder": -2,
+          "scale": 0.72,
+          "rotation": 8
         }
       ],
       "winRules": [
@@ -855,7 +955,31 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "hiddenFiles": 40,
           "seed": "l1-vram"
         }
-      ]
+      ],
+      "stage": {
+        "hero": 2.5,
+        "backdrop": "#1a1330",
+        "ambient": {
+          "lightMode": "lantern",
+          "storm": {
+            "enabled": true,
+            "intensity": 0.65
+          },
+          "bats": {
+            "enabled": true,
+            "minGapSec": 8,
+            "maxGapSec": 16,
+            "count": [
+              1,
+              3
+            ]
+          }
+        },
+        "music": "floor_attic",
+        "sfx": {
+          "enter": "door_usb"
+        }
+      }
     },
     {
       "id": "level-02-task-ram-heist",
@@ -874,7 +998,9 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. TEST `ls -la`: Try `ls -la` once you hold the Tube Transistor to spot hidden dotfiles before entering GPU Alley.\n4. HARDWARE: Pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n5. TENSOR GPU: the gargoyle also dropped a Tensor GPU card. Pocket it with `mv tensor_gpu ~` and carry it to the Old Bearded Coder at the Matrix Hub: with it Kiro.d can load open-weight models!\n"
+          "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. TEST `ls -la`: Try `ls -la` once you hold the Tube Transistor to spot hidden dotfiles before entering GPU Alley.\n4. HARDWARE: Pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n5. TENSOR GPU: the gargoyle also dropped a Tensor GPU card. Pocket it with `mv tensor_gpu ~` and carry it to the Old Bearded Coder at the Matrix Hub: with it Kiro.d can load open-weight models!\n",
+          "x": 2.05,
+          "model": "prop.file"
         },
         {
           "path": "/srv/kiroween/cache_vault/gravy_sentry.bin",
@@ -910,40 +1036,54 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "path": "/srv/kiroween/cache_vault/.vault_beacon",
           "kind": "file",
           "mode": 420,
-          "content": "# Hidden Cache Vault Dotfile\nTUBE_TRANSISTOR_CHECK=ok\nWARNING=Codec cloaked his entire squad in gpu_alley — open with ls -la!\n"
+          "content": "# Hidden Cache Vault Dotfile\nTUBE_TRANSISTOR_CHECK=ok\nWARNING=Codec cloaked his entire squad in gpu_alley — open with ls -la!\n",
+          "x": 2.95,
+          "model": "prop.file"
         },
         {
           "path": "/srv/kiroween/cache_vault/gpu_alley",
           "kind": "dir",
-          "mode": 0
+          "mode": 0,
+          "x": -0.95,
+          "model": "door.ethernet",
+          "socket": "door.right",
+          "sfx": "door_ethernet"
         }
       ],
       "enemies": [
         {
           "id": "trojan_l2",
           "type": "trojan",
-          "path": "/srv/kiroween/cache_vault/gravy_sentry.bin"
+          "path": "/srv/kiroween/cache_vault/gravy_sentry.bin",
+          "x": -0.35
         }
       ],
       "pickups": [
         {
           "id": "pickup_l2_ram",
           "type": "ram",
-          "path": "/srv/kiroween/cache_vault/ram_16gb.dimm"
+          "path": "/srv/kiroween/cache_vault/ram_16gb.dimm",
+          "x": 1.05
         },
         {
           "id": "pickup_l2_ssd",
           "type": "ssd",
-          "path": "/srv/kiroween/cache_vault/ssd_256gb.img"
+          "path": "/srv/kiroween/cache_vault/ssd_256gb.img",
+          "x": 0.55
         },
         {
           "id": "pickup_l2_transistor",
           "type": "tube_transistor",
           "path": "/srv/kiroween/cache_vault/tube_transistor",
+          "model": "item.tube_transistor",
           "appearWhen": {
             "kind": "enemy_dead",
             "enemyId": "trojan_l2"
-          }
+          },
+          "x": 0.05,
+          "zOrder": 1,
+          "scale": 1.45,
+          "rotation": 90
         },
         {
           "id": "pickup_l2_tensor_gpu",
@@ -952,7 +1092,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "appearWhen": {
             "kind": "enemy_dead",
             "enemyId": "trojan_l2"
-          }
+          },
+          "x": 0.45,
+          "zOrder": 1,
+          "scale": 0.9,
+          "rotation": -6
         }
       ],
       "patches": [],
@@ -979,13 +1123,45 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "l2_bat",
           "model": "prop.bat",
           "x": 4.2,
-          "y": 2.95
+          "y": 2.95,
+          "zOrder": -2
         },
         {
           "id": "l2_web",
           "model": "prop.cobweb",
           "x": -0.6,
-          "y": 3.05
+          "y": 3.05,
+          "zOrder": -3
+        },
+        {
+          "id": "l2_cache_chip",
+          "model": "prop.chip",
+          "x": 4.78,
+          "zOrder": -1,
+          "label": "cache controller"
+        },
+        {
+          "id": "l2_cache_cables",
+          "model": "prop.cables",
+          "x": 3.85,
+          "zOrder": -1,
+          "label": "vault bus"
+        },
+        {
+          "id": "l2_corner_web",
+          "model": "prop.corner_cobweb",
+          "x": 4.68,
+          "y": 3.15,
+          "zOrder": -3,
+          "scale": 0.95
+        },
+        {
+          "id": "l2_platter",
+          "model": "prop.platter",
+          "x": 2.7,
+          "y": 2.3,
+          "zOrder": -3,
+          "scale": 0.78
         }
       ],
       "winRules": [
@@ -1201,6 +1377,19 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             ]
           }
         ]
+      },
+      "stage": {
+        "hero": 2.5,
+        "music": "floor_crypt",
+        "sfx": {
+          "enter": "door_usb"
+        },
+        "entryPort": {
+          "label": "sector_in",
+          "model": "door.serial",
+          "socket": "door.left",
+          "sfx": "door_serial"
+        }
       }
     },
     {
@@ -1226,30 +1415,42 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "# Hidden Tube Transistor Dotfile\nRUNE_PHRASE=warm_filament\n"
+          "content": "# Hidden Tube Transistor Dotfile\nRUNE_PHRASE=warm_filament\n",
+          "x": 1.48,
+          "model": "prop.file"
         },
         {
           "path": "/srv/kiroween/gpu_alley/transistor_gate.sock",
           "kind": "socket",
           "mode": 493,
-          "content": "Sweep hidden dotfiles with ls -la, read .transistor_rune, and echo its RUNE_PHRASE here!"
+          "content": "Sweep hidden dotfiles with ls -la, read .transistor_rune, and echo its RUNE_PHRASE here!",
+          "x": 1.88,
+          "model": "door.socket"
         },
         {
           "path": "/srv/kiroween/gpu_alley/vram_crate",
           "kind": "dir",
-          "mode": 0
+          "mode": 0,
+          "x": 3.82,
+          "model": "door.usb",
+          "sfx": "door_usb"
         },
         {
           "path": "/srv/kiroween/gpu_alley/vram_crate/manifest.txt",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "VRAM_CRATE_UNLOCKED=true\nOPEN_WEIGHTS_TARGET=qwen-coder-7b-q4.gguf\n"
+          "content": "VRAM_CRATE_UNLOCKED=true\nOPEN_WEIGHTS_TARGET=qwen-coder-7b-q4.gguf\n",
+          "x": 1.2,
+          "model": "prop.file"
         },
         {
           "path": "/srv/kiroween/gpu_alley/port_445",
           "kind": "dir",
-          "mode": 493
+          "mode": 493,
+          "x": 3.25,
+          "model": "door.usb",
+          "sfx": "door_serial"
         },
         {
           "path": "/srv/kiroween/gpu_alley/port_445/worm.bin",
@@ -1278,7 +1479,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "path": "/srv/kiroween/gpu_alley/server_hub_1",
           "kind": "dir",
-          "mode": 0
+          "mode": 0,
+          "x": -0.88,
+          "model": "door.ethernet",
+          "socket": "door.right",
+          "sfx": "door_ethernet"
         }
       ],
       "enemies": [
@@ -1286,7 +1491,8 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "spyware_l3",
           "type": "spyware",
           "path": "/srv/kiroween/gpu_alley/.codec_spycam",
-          "hidden": true
+          "hidden": true,
+          "x": -0.42
         },
         {
           "id": "crack_l3",
@@ -1295,26 +1501,31 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "pid": 2104,
           "ppid": 1,
           "hidden": true,
-          "helps": "worm_l3"
+          "helps": "worm_l3",
+          "x": 0.05
         },
         {
           "id": "worm_l3",
           "type": "worm",
           "path": "/srv/kiroween/gpu_alley/port_445/worm.bin",
           "port": "/srv/kiroween/gpu_alley/port_445",
-          "hidden": true
+          "hidden": true,
+          "x": 2.82
         }
       ],
       "pickups": [
         {
           "id": "pickup_l3_ram",
           "type": "ram",
-          "path": "/srv/kiroween/gpu_alley/ram_16gb.dimm"
+          "path": "/srv/kiroween/gpu_alley/ram_16gb.dimm",
+          "x": 1.05
         },
         {
           "id": "pickup_l3_gpu",
           "type": "ssd",
-          "path": "/srv/kiroween/gpu_alley/gpu_shader_core_01.img"
+          "path": "/srv/kiroween/gpu_alley/gpu_shader_core_01.img",
+          "model": "pickup.gpu",
+          "x": 0.55
         }
       ],
       "patches": [],
@@ -1341,13 +1552,60 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "l3_spider",
           "model": "prop.spider",
           "x": 4.92,
-          "y": 2.3
+          "y": 2.3,
+          "zOrder": -2
         },
         {
           "id": "l3_bat",
           "model": "prop.bat",
           "x": -0.95,
-          "y": 2.9
+          "y": 2.9,
+          "zOrder": -2
+        },
+        {
+          "id": "l3_gpu_heatsink",
+          "model": "prop.heatsink",
+          "x": 4.78,
+          "zOrder": -1,
+          "label": "vram heatsink"
+        },
+        {
+          "id": "l3_platter",
+          "model": "prop.platter",
+          "x": 2.5,
+          "y": 2.4,
+          "zOrder": -3,
+          "scale": 0.75
+        },
+        {
+          "id": "l3_vram_chip",
+          "model": "prop.chip",
+          "x": 4.35,
+          "label": "GDDR6X bank",
+          "cwd": "/srv/kiroween/gpu_alley/vram_crate"
+        },
+        {
+          "id": "l3_vram_shelf",
+          "model": "prop.shelf",
+          "x": 2.1,
+          "y": 2.25,
+          "zOrder": -3,
+          "cwd": "/srv/kiroween/gpu_alley/vram_crate"
+        },
+        {
+          "id": "l3_port_cables",
+          "model": "prop.cables",
+          "x": 4.35,
+          "label": "SMB port wires",
+          "cwd": "/srv/kiroween/gpu_alley/port_445"
+        },
+        {
+          "id": "l3_port_led",
+          "model": "prop.led_bar",
+          "x": 1.1,
+          "y": 2.7,
+          "zOrder": -3,
+          "cwd": "/srv/kiroween/gpu_alley/port_445"
         }
       ],
       "winRules": [
@@ -1508,7 +1766,34 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             "echo"
           ]
         }
-      ]
+      ],
+      "stage": {
+        "hero": 2.35,
+        "music": "floor_crypt",
+        "sfx": {
+          "enter": "door_ethernet"
+        },
+        "entryPort": {
+          "label": "sector_in",
+          "model": "door.serial",
+          "socket": "door.left",
+          "sfx": "door_serial"
+        },
+        "subdirs": {
+          "/srv/kiroween/gpu_alley/vram_crate": {
+            "hero": 2.4,
+            "entryPort": false,
+            "sfx": "door_usb",
+            "caption": "Inside the GDDR6X VRAM crate."
+          },
+          "/srv/kiroween/gpu_alley/port_445": {
+            "hero": 2.4,
+            "entryPort": false,
+            "sfx": "door_serial",
+            "caption": "Inside port 445: the worm nest."
+          }
+        }
+      }
     },
     {
       "id": "level-04-hub-model-one",
@@ -1527,17 +1812,25 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. Worked in enterprise for decades, kid. Take my PCB Motherboard Map (`map` / `F3`) and Unix Field Manual (`manual` / `F1`)—you'll need both deeper in the machine.\"\nOLD BEARDED CODER: \"And nice haul of RAM + GPU chips! Let's slot them into my server and reboot Kiro.d!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro.d's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro.d disable Anti-Gravy of the Big Four, then step through `cd sector_ui_grid`!\n"
+          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. Worked in enterprise for decades, kid. Take my PCB Motherboard Map (`map` / `F3`) and Unix Field Manual (`manual` / `F1`)—you'll need both deeper in the machine.\"\nOLD BEARDED CODER: \"And nice haul of RAM + GPU chips! Let's slot them into my server and reboot Kiro.d!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro.d's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro.d disable Anti-Gravy of the Big Four, then step through `cd sector_ui_grid`!\n",
+          "x": 1.65,
+          "model": "prop.file"
         },
         {
           "path": "/home/dev/dad.tty.sock",
           "kind": "socket",
-          "mode": 493
+          "mode": 493,
+          "x": 0.55,
+          "model": "npc.greybeard_rig"
         },
         {
           "path": "/home/dev/sector_ui_grid",
           "kind": "dir",
-          "mode": 0
+          "mode": 0,
+          "x": -0.82,
+          "model": "door.ethernet",
+          "socket": "door.right",
+          "sfx": "door_ethernet"
         }
       ],
       "enemies": [],
@@ -1572,7 +1865,36 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "hub1_web",
           "model": "prop.cobweb",
           "x": 4.85,
-          "y": 2.95
+          "y": 2.95,
+          "zOrder": -3
+        },
+        {
+          "id": "hub1_matrix_crt",
+          "model": "prop.crt",
+          "x": 4.78,
+          "zOrder": -1,
+          "label": "matrix server CRT"
+        },
+        {
+          "id": "hub1_server_cables",
+          "model": "prop.cables",
+          "x": 3.75,
+          "zOrder": -1,
+          "label": "open-weights bus"
+        },
+        {
+          "id": "hub1_pcb",
+          "model": "prop.pcb_plaque",
+          "x": 1.4,
+          "y": 2.35,
+          "zOrder": -3
+        },
+        {
+          "id": "hub1_led",
+          "model": "prop.led_bar",
+          "x": -0.2,
+          "y": 2.75,
+          "zOrder": -3
         }
       ],
       "winRules": [
@@ -1830,6 +2152,25 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             ]
           }
         ]
+      },
+      "stage": {
+        "hero": 2.5,
+        "backdrop": "#101b18",
+        "ambient": {
+          "lightMode": "monitor",
+          "storm": false,
+          "bats": false
+        },
+        "music": "hub_matrix",
+        "sfx": {
+          "enter": "door_ethernet"
+        },
+        "entryPort": {
+          "label": "sector_in",
+          "model": "door.serial",
+          "socket": "door.left",
+          "sfx": "door_serial"
+        }
       }
     },
     {
@@ -1849,14 +2190,18 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>Open-Weights GPU Telemetry Grid</title>\n  <link rel=\"stylesheet\" href=\"storefront.css\" />\n</head>\n<body>\n  <header class=\"site-header\">\n    <h1>KIRO.D OPEN-WEIGHTS HARDWARE MONITOR</h1>\n  </header>\n  <main class=\"product-grid\">\n    <article class=\"gpu-card\" data-sku=\"gpu\">\n      <h2>RTX 4090 24GB Tensor Core</h2>\n      <span class=\"price\">$1599</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ram\">\n      <h2>64GB DDR5 ECC Server Kit</h2>\n      <span class=\"price\">$249</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ssd\">\n      <h2>2TB Gen5 NVMe Weights Vault</h2>\n      <span class=\"price\">$189</span>\n    </article>\n  </main>\n  <!-- BUG: Codec disabled #checkout-btn -->\n  <aside id=\"cart-drawer\" class=\"cart-drawer\">\n    <h3>Mounted Open-Weights Parts</h3>\n    <p>Total Power: <span data-bind=\"cart-total\">$0.00</span></p>\n    <button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>\n  </aside>\n</body>\n</html>\n"
+          "content": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>Open-Weights GPU Telemetry Grid</title>\n  <link rel=\"stylesheet\" href=\"storefront.css\" />\n</head>\n<body>\n  <header class=\"site-header\">\n    <h1>KIRO.D OPEN-WEIGHTS HARDWARE MONITOR</h1>\n  </header>\n  <main class=\"product-grid\">\n    <article class=\"gpu-card\" data-sku=\"gpu\">\n      <h2>RTX 4090 24GB Tensor Core</h2>\n      <span class=\"price\">$1599</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ram\">\n      <h2>64GB DDR5 ECC Server Kit</h2>\n      <span class=\"price\">$249</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ssd\">\n      <h2>2TB Gen5 NVMe Weights Vault</h2>\n      <span class=\"price\">$189</span>\n    </article>\n  </main>\n  <!-- BUG: Codec disabled #checkout-btn -->\n  <aside id=\"cart-drawer\" class=\"cart-drawer\">\n    <h3>Mounted Open-Weights Parts</h3>\n    <p>Total Power: <span data-bind=\"cart-total\">$0.00</span></p>\n    <button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>\n  </aside>\n</body>\n</html>\n",
+          "x": 3.85,
+          "model": "prop.file"
         },
         {
           "path": "/srv/kiroween/ui_dashboard/storefront.css",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "/* Open-Weights GPU Telemetry Stylesheet */\nbody {\n  background: #0d0814;\n  color: #f4f0e8;\n}\n/* BUG: Codec hid the entire GPU grid with display: none */\n.product-grid {\n  display: none;\n  gap: 16px;\n}\n.cart-drawer {\n  width: 320px;\n  z-index: 10;\n  border: 2px solid #00f5d4;\n}\n"
+          "content": "/* Open-Weights GPU Telemetry Stylesheet */\nbody {\n  background: #0d0814;\n  color: #f4f0e8;\n}\n/* BUG: Codec hid the entire GPU grid with display: none */\n.product-grid {\n  display: none;\n  gap: 16px;\n}\n.cart-drawer {\n  width: 320px;\n  z-index: 10;\n  border: 2px solid #00f5d4;\n}\n",
+          "x": 3.25,
+          "model": "prop.file"
         },
         {
           "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm",
@@ -1873,26 +2218,34 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "path": "/srv/kiroween/ui_dashboard/logic_cell",
           "kind": "dir",
-          "mode": 0
+          "mode": 0,
+          "x": -0.88,
+          "model": "door.ethernet",
+          "socket": "door.right",
+          "sfx": "door_ethernet"
         }
       ],
       "enemies": [
         {
           "id": "bug_css_l5",
           "type": "bug",
-          "path": "/srv/kiroween/ui_dashboard/storefront.css"
+          "path": "/srv/kiroween/ui_dashboard/storefront.css",
+          "x": 0.35
         }
       ],
       "pickups": [
         {
           "id": "pickup_l5_ram",
           "type": "ram",
-          "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm"
+          "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm",
+          "x": 1.65
         },
         {
           "id": "pickup_l5_gpu",
           "type": "ssd",
-          "path": "/srv/kiroween/ui_dashboard/gpu_tensor_chip_02.img"
+          "path": "/srv/kiroween/ui_dashboard/gpu_tensor_chip_02.img",
+          "model": "pickup.gpu",
+          "x": 1.05
         }
       ],
       "patches": [
@@ -1937,7 +2290,37 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "l5_spider",
           "model": "prop.spider",
           "x": -0.96,
-          "y": 2.4
+          "y": 2.4,
+          "zOrder": -2
+        },
+        {
+          "id": "l5_ui_crt",
+          "model": "prop.crt",
+          "x": 4.78,
+          "zOrder": -1,
+          "label": "telemetry monitor"
+        },
+        {
+          "id": "l5_pcb",
+          "model": "prop.pcb_plaque",
+          "x": 1.35,
+          "y": 2.3,
+          "zOrder": -3
+        },
+        {
+          "id": "l5_led",
+          "model": "prop.led_bar",
+          "x": 3,
+          "y": 2.75,
+          "zOrder": -3
+        },
+        {
+          "id": "l5_platter",
+          "model": "prop.platter",
+          "x": 0.25,
+          "y": 2.35,
+          "zOrder": -3,
+          "scale": 0.75
         }
       ],
       "winRules": [
@@ -2020,6 +2403,19 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "stage": "crack_only"
         },
         "openingSec": 17
+      },
+      "stage": {
+        "hero": 2.5,
+        "music": "floor_maze",
+        "sfx": {
+          "enter": "door_ethernet"
+        },
+        "entryPort": {
+          "label": "sector_in",
+          "model": "door.serial",
+          "socket": "door.left",
+          "sfx": "door_serial"
+        }
       }
     },
     {
@@ -2052,7 +2448,9 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "// Open-Weights VRAM Allocation Calculator (cart.js)\nexport function computeCartTotal(price, shipping, qty = 1) {\n  if (qty <= 0) return 0;\n  // BUG: Gork left raw string concatenation so ('549', '15', 1) returns '54915'!\n  return price + shipping;\n}\n"
+          "content": "// Open-Weights VRAM Allocation Calculator (cart.js)\nexport function computeCartTotal(price, shipping, qty = 1) {\n  if (qty <= 0) return 0;\n  // BUG: Gork left raw string concatenation so ('549', '15', 1) returns '54915'!\n  return price + shipping;\n}\n",
+          "x": 1.65,
+          "model": "prop.file"
         },
         {
           "path": "/srv/kiroween/logic_cell/ram_16gb.dimm",
@@ -2069,13 +2467,19 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "path": "/srv/kiroween/logic_cell/server_hub_2",
           "kind": "dir",
-          "mode": 0
+          "mode": 0,
+          "x": -0.95,
+          "model": "door.ethernet",
+          "socket": "door.right",
+          "sfx": "door_ethernet"
         },
         {
           "path": "/srv/kiroween/logic_cell/skimmer_ledger.txt",
           "kind": "file",
           "mode": 420,
-          "content": "TOKEN SKIMMER LEDGER\nI skimmed a spare VRAM module and hid it in the dot folder `.spare_parts` of this room, a pile of 130 shelves (`ls -a` shows it).\nI logged the exact shelf in a skimmer.log, and I stamped the line with STASH.\nSearch: `grep -r STASH .spare_parts`, or `find / -name vram.mod`, or `tree -a .spare_parts`.\n"
+          "content": "TOKEN SKIMMER LEDGER\nI skimmed a spare VRAM module and hid it in the dot folder `.spare_parts` of this room, a pile of 130 shelves (`ls -a` shows it).\nI logged the exact shelf in a skimmer.log, and I stamped the line with STASH.\nSearch: `grep -r STASH .spare_parts`, or `find / -name vram.mod`, or `tree -a .spare_parts`.\n",
+          "x": 2.1,
+          "model": "prop.file"
         },
         {
           "path": "/srv/kiroween/logic_cell/.spare_parts/crate_a/crate_b/skimmer.log",
@@ -2094,29 +2498,35 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "id": "trojan_l6",
           "type": "trojan",
-          "path": "/srv/kiroween/logic_cell/token_skimmer.bin"
+          "path": "/srv/kiroween/logic_cell/token_skimmer.bin",
+          "x": -0.25
         },
         {
           "id": "bug_js_l6",
           "type": "bug",
-          "path": "/srv/kiroween/logic_cell/cart.js"
+          "path": "/srv/kiroween/logic_cell/cart.js",
+          "x": 1.35
         }
       ],
       "pickups": [
         {
           "id": "pickup_l6_laptop",
           "type": "laptop",
-          "path": "/srv/kiroween/logic_cell/laptop"
+          "path": "/srv/kiroween/logic_cell/laptop",
+          "x": 3.65
         },
         {
           "id": "pickup_l6_ram",
           "type": "ram",
-          "path": "/srv/kiroween/logic_cell/ram_16gb.dimm"
+          "path": "/srv/kiroween/logic_cell/ram_16gb.dimm",
+          "x": 1.05
         },
         {
           "id": "pickup_l6_gpu",
           "type": "ssd",
-          "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img"
+          "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img",
+          "model": "pickup.gpu",
+          "x": 0.45
         },
         {
           "id": "pickup_l6_vram",
@@ -2161,13 +2571,36 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "l6_web",
           "model": "prop.cobweb",
           "x": 4.92,
-          "y": 3
+          "y": 3,
+          "zOrder": -3
         },
         {
           "id": "l6_bat",
           "model": "prop.bat",
           "x": 3.05,
-          "y": 2.95
+          "y": 2.95,
+          "zOrder": -2
+        },
+        {
+          "id": "l6_logic_chip",
+          "model": "prop.chip",
+          "x": 4.78,
+          "zOrder": -1,
+          "label": "ALU logic die"
+        },
+        {
+          "id": "l6_pcb",
+          "model": "prop.pcb_plaque",
+          "x": 2.9,
+          "y": 2.3,
+          "zOrder": -3
+        },
+        {
+          "id": "l6_led",
+          "model": "prop.led_bar",
+          "x": 0.5,
+          "y": 2.75,
+          "zOrder": -3
         }
       ],
       "winRules": [
@@ -2282,7 +2715,20 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "hiddenFiles": 45,
           "seed": "l6-vram"
         }
-      ]
+      ],
+      "stage": {
+        "hero": 2.5,
+        "music": "floor_maze",
+        "sfx": {
+          "enter": "door_ethernet"
+        },
+        "entryPort": {
+          "label": "sector_in",
+          "model": "door.serial",
+          "socket": "door.left",
+          "sfx": "door_serial"
+        }
+      }
     },
     {
       "id": "level-07-hub-model-two",
@@ -2301,17 +2747,25 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #2 ===\nOLD BEARDED CODER: *flicks cigarette ash into an empty coffee mug as green hex streams across his glasses*\n\"Oh, you've found more RAM and GPU parts for hosting our second open-weight model, nice!\"\n\"When my enterprise bosses forced us onto cloud LLMs, Codec replaced half my team's code with hallucinated slop. Let's return the favor.\"\n\n[SERVER SOFT READY]:\n  1. Check in with the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro.d with the second open-weight model: `kiro load deepseek` (`deepseek-r1-distill-q4.gguf`).\n  3. Watch Kiro.d disable Codec of the Big Four, then advance via `cd sector_docker_forge`!\n"
+          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #2 ===\nOLD BEARDED CODER: *flicks cigarette ash into an empty coffee mug as green hex streams across his glasses*\n\"Oh, you've found more RAM and GPU parts for hosting our second open-weight model, nice!\"\n\"When my enterprise bosses forced us onto cloud LLMs, Codec replaced half my team's code with hallucinated slop. Let's return the favor.\"\n\n[SERVER SOFT READY]:\n  1. Check in with the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro.d with the second open-weight model: `kiro load deepseek` (`deepseek-r1-distill-q4.gguf`).\n  3. Watch Kiro.d disable Codec of the Big Four, then advance via `cd sector_docker_forge`!\n",
+          "x": 1.65,
+          "model": "prop.file"
         },
         {
           "path": "/home/dev/dad.tty.sock",
           "kind": "socket",
-          "mode": 493
+          "mode": 493,
+          "x": 0.55,
+          "model": "npc.greybeard_rig"
         },
         {
           "path": "/home/dev/sector_docker_forge",
           "kind": "dir",
-          "mode": 0
+          "mode": 0,
+          "x": -0.82,
+          "model": "door.ethernet",
+          "socket": "door.right",
+          "sfx": "door_ethernet"
         }
       ],
       "enemies": [],
@@ -2352,7 +2806,36 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "hub2_spider",
           "model": "prop.spider",
           "x": 4.85,
-          "y": 2.35
+          "y": 2.35,
+          "zOrder": -2
+        },
+        {
+          "id": "hub2_matrix_crt",
+          "model": "prop.crt",
+          "x": 4.78,
+          "zOrder": -1,
+          "label": "matrix server CRT"
+        },
+        {
+          "id": "hub2_server_cables",
+          "model": "prop.cables",
+          "x": 3.75,
+          "zOrder": -1,
+          "label": "open-weights bus"
+        },
+        {
+          "id": "hub2_pcb",
+          "model": "prop.pcb_plaque",
+          "x": 1.4,
+          "y": 2.35,
+          "zOrder": -3
+        },
+        {
+          "id": "hub2_led",
+          "model": "prop.led_bar",
+          "x": -0.2,
+          "y": 2.75,
+          "zOrder": -3
         }
       ],
       "winRules": [
@@ -2442,6 +2925,25 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             ]
           }
         ]
+      },
+      "stage": {
+        "hero": 2.5,
+        "backdrop": "#101b18",
+        "ambient": {
+          "lightMode": "monitor",
+          "storm": false,
+          "bats": false
+        },
+        "music": "hub_matrix",
+        "sfx": {
+          "enter": "door_ethernet"
+        },
+        "entryPort": {
+          "label": "sector_in",
+          "model": "door.serial",
+          "socket": "door.left",
+          "sfx": "door_serial"
+        }
       }
     },
     {
@@ -2467,14 +2969,18 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 0,
           "questCritical": true,
-          "content": "# Open-Weights Inference Worker Container\nFROM node:99-vibe-turbo\nWORKDIR /app\nCOPY . .\nEXPOSE 9999\nCMD [\"node\", \"broken_server.js\"]\n"
+          "content": "# Open-Weights Inference Worker Container\nFROM node:99-vibe-turbo\nWORKDIR /app\nCOPY . .\nEXPOSE 9999\nCMD [\"node\", \"broken_server.js\"]\n",
+          "x": 3.25,
+          "model": "prop.file"
         },
         {
           "path": "/srv/kiroween/docker_forge/server.js",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "// Open-Weights Worker HTTP Node (port 3000)\nconsole.log('Kiro.d open-weights worker listening on :3000');\n"
+          "content": "// Open-Weights Worker HTTP Node (port 3000)\nconsole.log('Kiro.d open-weights worker listening on :3000');\n",
+          "x": 3.85,
+          "model": "prop.file"
         },
         {
           "path": "/srv/kiroween/docker_forge/ram_16gb.dimm",
@@ -2491,7 +2997,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "path": "/srv/kiroween/docker_forge/compose_furnace",
           "kind": "dir",
-          "mode": 0
+          "mode": 0,
+          "x": -0.95,
+          "model": "door.ethernet",
+          "socket": "door.right",
+          "sfx": "door_ethernet"
         }
       ],
       "enemies": [
@@ -2500,19 +3010,23 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "type": "ransomware",
           "path": "/srv/kiroween/docker_forge/ransom.exe",
           "pid": 4108,
-          "ppid": 1
+          "ppid": 1,
+          "x": 0.35
         }
       ],
       "pickups": [
         {
           "id": "pickup_l8_ram",
           "type": "ram",
-          "path": "/srv/kiroween/docker_forge/ram_16gb.dimm"
+          "path": "/srv/kiroween/docker_forge/ram_16gb.dimm",
+          "x": 1.65
         },
         {
           "id": "pickup_l8_gpu",
           "type": "ssd",
-          "path": "/srv/kiroween/docker_forge/gpu_tensor_chip_03.img"
+          "path": "/srv/kiroween/docker_forge/gpu_tensor_chip_03.img",
+          "model": "pickup.gpu",
+          "x": 1.05
         }
       ],
       "patches": [
@@ -2546,13 +3060,36 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "l8_bat",
           "model": "prop.bat",
           "x": 4.62,
-          "y": 2.9
+          "y": 2.9,
+          "zOrder": -2
         },
         {
           "id": "l8_web",
           "model": "prop.cobweb",
           "x": -1.02,
-          "y": 3.05
+          "y": 3.05,
+          "zOrder": -3
+        },
+        {
+          "id": "l8_forge_fan",
+          "model": "prop.fan",
+          "x": 4.78,
+          "zOrder": -1,
+          "label": "forge blower"
+        },
+        {
+          "id": "l8_hanging",
+          "model": "prop.hanging_cable",
+          "x": 1.9,
+          "y": 2.95,
+          "zOrder": -2
+        },
+        {
+          "id": "l8_led",
+          "model": "prop.led_bar",
+          "x": -0.1,
+          "y": 2.75,
+          "zOrder": -3
         }
       ],
       "winRules": [
@@ -2642,6 +3179,19 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             ]
           }
         ]
+      },
+      "stage": {
+        "hero": 2.5,
+        "music": "floor_furnace",
+        "sfx": {
+          "enter": "door_ethernet"
+        },
+        "entryPort": {
+          "label": "sector_in",
+          "model": "door.serial",
+          "socket": "door.left",
+          "sfx": "door_serial"
+        }
       }
     },
     {
@@ -2667,14 +3217,18 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 438,
           "questCritical": true,
-          "content": "RING_BUFFER_STREAM_ACTIVE\n"
+          "content": "RING_BUFFER_STREAM_ACTIVE\n",
+          "x": 3.88,
+          "model": "prop.file"
         },
         {
           "path": "/srv/kiroween/compose_furnace/docker-compose.yml",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "services:\n  nginx:\n    image: nginx:alpine\n    ports:\n      - \"8080:80\"\n    depends_on:\n      - website\n  website:\n    image: byterig-web:1.0\n    environment:\n      - PAYMENT_URL=http://localhost:9999\n    depends_on:\n      - payment\n  payment:\n    image: byterig-pay:1.0\n    environment:\n      - PAYMENT_MODE=live\n    ports:\n      - \"4002:4002\"\n"
+          "content": "services:\n  nginx:\n    image: nginx:alpine\n    ports:\n      - \"8080:80\"\n    depends_on:\n      - website\n  website:\n    image: byterig-web:1.0\n    environment:\n      - PAYMENT_URL=http://localhost:9999\n    depends_on:\n      - payment\n  payment:\n    image: byterig-pay:1.0\n    environment:\n      - PAYMENT_MODE=live\n    ports:\n      - \"4002:4002\"\n",
+          "x": 3.35,
+          "model": "prop.file"
         },
         {
           "path": "/srv/kiroween/compose_furnace/ram_16gb.dimm",
@@ -2691,7 +3245,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         {
           "path": "/srv/kiroween/compose_furnace/server_hub_3",
           "kind": "dir",
-          "mode": 0
+          "mode": 0,
+          "x": -1.05,
+          "model": "door.ethernet",
+          "socket": "door.right",
+          "sfx": "door_ethernet"
         }
       ],
       "enemies": [
@@ -2699,19 +3257,23 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "exploit_l9",
           "type": "exploit",
           "path": "/srv/kiroween/compose_furnace/port_hijack.bin",
-          "buffer": "/srv/kiroween/compose_furnace/proxy.buf"
+          "buffer": "/srv/kiroween/compose_furnace/proxy.buf",
+          "x": 0.8
         }
       ],
       "pickups": [
         {
           "id": "pickup_l9_ram",
           "type": "ram",
-          "path": "/srv/kiroween/compose_furnace/ram_16gb.dimm"
+          "path": "/srv/kiroween/compose_furnace/ram_16gb.dimm",
+          "x": 1.85
         },
         {
           "id": "pickup_l9_gpu",
           "type": "ssd",
-          "path": "/srv/kiroween/compose_furnace/gpu_h100_core_03.img"
+          "path": "/srv/kiroween/compose_furnace/gpu_h100_core_03.img",
+          "model": "pickup.gpu",
+          "x": 1.35
         }
       ],
       "patches": [
@@ -2751,7 +3313,29 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "l9_spider",
           "model": "prop.spider",
           "x": 4.92,
-          "y": 2.35
+          "y": 2.35,
+          "zOrder": -2
+        },
+        {
+          "id": "l9_compose_heatsink",
+          "model": "prop.heatsink",
+          "x": 4.78,
+          "zOrder": -1,
+          "label": "furnace heatsink"
+        },
+        {
+          "id": "l9_hanging",
+          "model": "prop.hanging_cable",
+          "x": 1.7,
+          "y": 2.95,
+          "zOrder": -2
+        },
+        {
+          "id": "l9_pcb",
+          "model": "prop.pcb_plaque",
+          "x": -0.1,
+          "y": 2.35,
+          "zOrder": -3
         }
       ],
       "winRules": [
@@ -2839,6 +3423,19 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             ]
           }
         ]
+      },
+      "stage": {
+        "hero": 2.5,
+        "music": "floor_furnace",
+        "sfx": {
+          "enter": "door_hdmi"
+        },
+        "entryPort": {
+          "label": "sector_in",
+          "model": "door.serial",
+          "socket": "door.left",
+          "sfx": "door_serial"
+        }
       }
     },
     {
@@ -2858,17 +3455,25 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS CLUSTER #3 ===\nOLD BEARDED CODER: *stubs out his cigarette, eyes blazing behind green Matrix reflections*\n\"Oh, you've found the final RAM and H100 GPU parts for hosting our third open-weight model, nice!\"\n\"Watch this bare-metal magic: once we boot `llama-3-8b-local-q4.gguf`, Kiro.d will wipe Gork off the bus.\"\n\"That leaves only one surviving member of the Big Four: CLOD. Clod is managing the Final Boss down in the Kernel Core, and Kiro.d is going to be your advisor in the battle with the help of all our open-weight models!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro.d with the third open-weight model: `kiro load llama` (`llama-3-8b-local-q4.gguf`).\n  3. Watch Kiro.d disable Gork, then march into the final battle via `cd clod_kernel_core`!\n"
+          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS CLUSTER #3 ===\nOLD BEARDED CODER: *stubs out his cigarette, eyes blazing behind green Matrix reflections*\n\"Oh, you've found the final RAM and H100 GPU parts for hosting our third open-weight model, nice!\"\n\"Watch this bare-metal magic: once we boot `llama-3-8b-local-q4.gguf`, Kiro.d will wipe Gork off the bus.\"\n\"That leaves only one surviving member of the Big Four: CLOD. Clod is managing the Final Boss down in the Kernel Core, and Kiro.d is going to be your advisor in the battle with the help of all our open-weight models!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder (`cat dad.tty.sock` or `dad`).\n  2. Reboot Kiro.d with the third open-weight model: `kiro load llama` (`llama-3-8b-local-q4.gguf`).\n  3. Watch Kiro.d disable Gork, then march into the final battle via `cd clod_kernel_core`!\n",
+          "x": 1.65,
+          "model": "prop.file"
         },
         {
           "path": "/home/dev/dad.tty.sock",
           "kind": "socket",
-          "mode": 493
+          "mode": 493,
+          "x": 0.55,
+          "model": "npc.greybeard_rig"
         },
         {
           "path": "/home/dev/clod_kernel_core",
           "kind": "dir",
-          "mode": 0
+          "mode": 0,
+          "x": -0.82,
+          "model": "door.ethernet",
+          "socket": "door.right",
+          "sfx": "door_firewall"
         }
       ],
       "enemies": [],
@@ -2921,7 +3526,36 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "hub3_bat",
           "model": "prop.bat",
           "x": 4.65,
-          "y": 2.85
+          "y": 2.85,
+          "zOrder": -2
+        },
+        {
+          "id": "hub3_matrix_crt",
+          "model": "prop.crt",
+          "x": 4.78,
+          "zOrder": -1,
+          "label": "matrix server CRT"
+        },
+        {
+          "id": "hub3_server_cables",
+          "model": "prop.cables",
+          "x": 3.75,
+          "zOrder": -1,
+          "label": "open-weights bus"
+        },
+        {
+          "id": "hub3_pcb",
+          "model": "prop.pcb_plaque",
+          "x": 1.4,
+          "y": 2.35,
+          "zOrder": -3
+        },
+        {
+          "id": "hub3_led",
+          "model": "prop.led_bar",
+          "x": -0.2,
+          "y": 2.75,
+          "zOrder": -3
         }
       ],
       "winRules": [
@@ -3017,6 +3651,25 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             ]
           }
         ]
+      },
+      "stage": {
+        "hero": 2.5,
+        "backdrop": "#101b18",
+        "ambient": {
+          "lightMode": "monitor",
+          "storm": false,
+          "bats": false
+        },
+        "music": "hub_matrix",
+        "sfx": {
+          "enter": "door_ethernet"
+        },
+        "entryPort": {
+          "label": "sector_in",
+          "model": "door.serial",
+          "socket": "door.left",
+          "sfx": "door_serial"
+        }
       }
     },
     {
@@ -3042,31 +3695,41 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "CLOD_SUPERVISOR: I apologize, but I cannot allow you to leave this computer. Deploying 10,000 polite enterprise compliance tokens/sec...\n"
+          "content": "CLOD_SUPERVISOR: I apologize, but I cannot allow you to leave this computer. Deploying 10,000 polite enterprise compliance tokens/sec...\n",
+          "x": 1.62,
+          "model": "prop.file"
         },
         {
           "path": "/sys/clod_overlord_core/open_weights_advisor.log",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "INFO kiro.d: Qwen-7B + DeepSeek-R1 + Llama-3-8B ensemble online\nWARN clod: polite_guardrail_shield=ACTIVE\nOK kiro.d: OPEN_WEIGHT_SIG=KIRO_QWEN_DEEPSEEK_LLAMA_99\nINFO dad.tty: Pipe that signature straight into kiro_override.sock, kid!\n"
+          "content": "INFO kiro.d: Qwen-7B + DeepSeek-R1 + Llama-3-8B ensemble online\nWARN clod: polite_guardrail_shield=ACTIVE\nOK kiro.d: OPEN_WEIGHT_SIG=KIRO_QWEN_DEEPSEEK_LLAMA_99\nINFO dad.tty: Pipe that signature straight into kiro_override.sock, kid!\n",
+          "x": 1.22,
+          "model": "prop.file"
         },
         {
           "path": "/sys/clod_overlord_core/core_anchor.conf",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "# Kernel Core Reality Anchor\nclod_supervisor_lock=true\nteleport_real_world=armed\n"
+          "content": "# Kernel Core Reality Anchor\nclod_supervisor_lock=true\nteleport_real_world=armed\n",
+          "x": 0.82,
+          "model": "prop.file"
         },
         {
           "path": "/sys/clod_overlord_core/kiro_override.sock",
           "kind": "socket",
-          "mode": 493
+          "mode": 493,
+          "x": 0.25,
+          "model": "door.socket"
         },
         {
           "path": "/sys/clod_overlord_core/dad.tty.sock",
           "kind": "socket",
-          "mode": 493
+          "mode": 493,
+          "x": 3.75,
+          "model": "npc.greybeard_rig"
         },
         {
           "path": "/sys/clod_overlord_core/energy.cell",
@@ -3081,14 +3744,16 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "type": "kernel",
           "path": "/sys/clod_overlord_core/clod_overlord.ko",
           "pid": 1,
-          "ppid": 0
+          "ppid": 0,
+          "x": -0.45
         }
       ],
       "pickups": [
         {
           "id": "pickup_l11_energy",
           "type": "energy",
-          "path": "/sys/clod_overlord_core/energy.cell"
+          "path": "/sys/clod_overlord_core/energy.cell",
+          "x": 3.15
         }
       ],
       "patches": [
@@ -3117,6 +3782,27 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "model": "prop.cooler_aio",
           "x": -0.1,
           "label": "die chiller"
+        },
+        {
+          "id": "l11_pcb",
+          "model": "prop.pcb_plaque",
+          "x": 2.15,
+          "y": 2.35,
+          "zOrder": -3
+        },
+        {
+          "id": "l11_led",
+          "model": "prop.led_bar",
+          "x": 0.5,
+          "y": 2.8,
+          "zOrder": -3
+        },
+        {
+          "id": "l11_hanging",
+          "model": "prop.hanging_cable",
+          "x": -0.8,
+          "y": 2.95,
+          "zOrder": -2
         }
       ],
       "winRules": [
@@ -3195,6 +3881,19 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             ]
           }
         ]
+      },
+      "stage": {
+        "hero": 2.3,
+        "music": "floor_core",
+        "sfx": {
+          "enter": "door_firewall"
+        },
+        "entryPort": {
+          "label": "sector_in",
+          "model": "door.serial",
+          "socket": "door.left",
+          "sfx": "door_firewall"
+        }
       }
     }
   ]
@@ -3252,8 +3951,36 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
               "text": "ZZZZT-SHK!",
               "x": 0.52,
               "y": 0.82,
-              "color": "#00f5d4"
-            }
+              "color": "#00f5d4",
+              "cue": "lightning"
+            },
+            "props": [
+              {
+                "id": "p1_shelf",
+                "model": "prop.shelf",
+                "x": -0.78,
+                "y": 0.55,
+                "zOrder": -2,
+                "scale": 0.72
+              },
+              {
+                "id": "p1_platter",
+                "model": "prop.platter",
+                "x": -0.74,
+                "y": 0.62,
+                "zOrder": -1,
+                "scale": 0.52,
+                "rotation": 8
+              },
+              {
+                "id": "p1_web",
+                "model": "prop.corner_cobweb",
+                "x": 0.8,
+                "y": 0.75,
+                "zOrder": -2,
+                "scale": 0.8
+              }
+            ]
           },
           {
             "id": "p1_big_four_story",
@@ -3350,7 +4077,8 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
               "text": "SIGKILL!",
               "x": 0.74,
               "y": 0.82,
-              "color": "#ffd166"
+              "color": "#ffd166",
+              "cue": "kill"
             }
           }
         ]
@@ -3539,7 +4267,25 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
               "x": 0.54,
               "y": 0.82,
               "color": "#06d6a0"
-            }
+            },
+            "props": [
+              {
+                "id": "p3_pcb",
+                "model": "prop.pcb_plaque",
+                "x": -0.72,
+                "y": 0.55,
+                "zOrder": -2,
+                "scale": 0.75
+              },
+              {
+                "id": "p3_led",
+                "model": "prop.led_bar",
+                "x": 0.7,
+                "y": 0.65,
+                "zOrder": -2,
+                "scale": 0.8
+              }
+            ]
           },
           {
             "id": "p3_enterprise_story",
@@ -3853,7 +4599,8 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
               "text": "KRAKOOM!",
               "x": 0.56,
               "y": 0.82,
-              "color": "#ffd166"
+              "color": "#ffd166",
+              "cue": "boss_defeated"
             }
           },
           {
@@ -3897,7 +4644,8 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
               "text": "WARP-FLASH!",
               "x": 0.48,
               "y": 0.82,
-              "color": "#ffd166"
+              "color": "#ffd166",
+              "cue": "teleport_zap"
             }
           }
         ]
@@ -3982,7 +4730,26 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
               "x": 0.5,
               "y": 0.82,
               "color": "#ffd166"
-            }
+            },
+            "props": [
+              {
+                "id": "p6_poster",
+                "model": "prop.wall_poster",
+                "x": -0.75,
+                "y": 0.6,
+                "zOrder": -2,
+                "scale": 0.78,
+                "rotation": -3
+              },
+              {
+                "id": "p6_mug",
+                "model": "prop.coffee_mug",
+                "x": 0.9,
+                "y": 0,
+                "zOrder": -1,
+                "scale": 0.6
+              }
+            ]
           },
           {
             "id": "p6_work_life_unicorn",
@@ -4026,7 +4793,22 @@ export const GENERATED_COMIX_BY_CHAPTER: Record<string, ComixStorySpec> = {
               "x": 0.5,
               "y": 0.82,
               "color": "#06d6a0"
-            }
+            },
+            "props": [
+              {
+                "id": "p6_lamp",
+                "model": "prop.desk_lamp",
+                "x": 0.92,
+                "y": 0,
+                "zOrder": -1,
+                "scale": 0.68,
+                "rotation": [
+                  0,
+                  0,
+                  -6
+                ]
+              }
+            ]
           }
         ]
       }

@@ -6,7 +6,8 @@ Code follows clean architecture: dependencies point inward, and the rules are en
 
 ```
 contracts/            pure types, `createStateMachine` (`state-machine.ts`), `AppBus` (`app-bus.ts`), `brand.ts`, and saved-key migration (`legacy-keys.ts`). `dom.ts` (`dom`, `el`, `setText`, `replayClass`) is the one documented exception: it touches `document`, and it stays here because `renderer/` and `ui/` both need it and `renderer/` may not import `ui/`
-audio/                sample playback. Imports contracts only. The SFX orchestrator and the music orchestrator subscribe to the app bus. One-shot voices default to 10 (`SOUND_SOURCES`). Game and chapters emit; they do not import this layer.
+audio/                sample playback (`config.ts`, `catalog.ts`, `engine.ts`). Imports contracts only.
+audio-lab/            /audio-lab. contracts, audio, editor-core. Soundboard, waveform trim scrubber, mixer, bus tester (`window.__audioLab`). Three-free.
 procgen/core          domain: palette, rng, types, catalogs, pixel buffers. No three.
 procgen/geometry      shape -> geometry, software raster (three math only)
 procgen/kit, textures, archetypes, fx, anim, validate

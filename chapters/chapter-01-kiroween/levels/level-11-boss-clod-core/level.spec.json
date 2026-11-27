@@ -21,31 +21,41 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "CLOD_SUPERVISOR: I apologize, but I cannot allow you to leave this computer. Deploying 10,000 polite enterprise compliance tokens/sec...\n"
+      "content": "CLOD_SUPERVISOR: I apologize, but I cannot allow you to leave this computer. Deploying 10,000 polite enterprise compliance tokens/sec...\n",
+      "x": 1.62,
+      "model": "prop.file"
     },
     {
       "path": "/sys/clod_overlord_core/open_weights_advisor.log",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "INFO kiro.d: Qwen-7B + DeepSeek-R1 + Llama-3-8B ensemble online\nWARN clod: polite_guardrail_shield=ACTIVE\nOK kiro.d: OPEN_WEIGHT_SIG=KIRO_QWEN_DEEPSEEK_LLAMA_99\nINFO dad.tty: Pipe that signature straight into kiro_override.sock, kid!\n"
+      "content": "INFO kiro.d: Qwen-7B + DeepSeek-R1 + Llama-3-8B ensemble online\nWARN clod: polite_guardrail_shield=ACTIVE\nOK kiro.d: OPEN_WEIGHT_SIG=KIRO_QWEN_DEEPSEEK_LLAMA_99\nINFO dad.tty: Pipe that signature straight into kiro_override.sock, kid!\n",
+      "x": 1.22,
+      "model": "prop.file"
     },
     {
       "path": "/sys/clod_overlord_core/core_anchor.conf",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "# Kernel Core Reality Anchor\nclod_supervisor_lock=true\nteleport_real_world=armed\n"
+      "content": "# Kernel Core Reality Anchor\nclod_supervisor_lock=true\nteleport_real_world=armed\n",
+      "x": 0.82,
+      "model": "prop.file"
     },
     {
       "path": "/sys/clod_overlord_core/kiro_override.sock",
       "kind": "socket",
-      "mode": 493
+      "mode": 493,
+      "x": 0.25,
+      "model": "door.socket"
     },
     {
       "path": "/sys/clod_overlord_core/dad.tty.sock",
       "kind": "socket",
-      "mode": 493
+      "mode": 493,
+      "x": 3.75,
+      "model": "npc.greybeard_rig"
     },
     {
       "path": "/sys/clod_overlord_core/energy.cell",
@@ -60,14 +70,16 @@
       "type": "kernel",
       "path": "/sys/clod_overlord_core/clod_overlord.ko",
       "pid": 1,
-      "ppid": 0
+      "ppid": 0,
+      "x": -0.45
     }
   ],
   "pickups": [
     {
       "id": "pickup_l11_energy",
       "type": "energy",
-      "path": "/sys/clod_overlord_core/energy.cell"
+      "path": "/sys/clod_overlord_core/energy.cell",
+      "x": 3.15
     }
   ],
   "patches": [
@@ -96,6 +108,27 @@
       "model": "prop.cooler_aio",
       "x": -0.1,
       "label": "die chiller"
+    },
+    {
+      "id": "l11_pcb",
+      "model": "prop.pcb_plaque",
+      "x": 2.15,
+      "y": 2.35,
+      "zOrder": -3
+    },
+    {
+      "id": "l11_led",
+      "model": "prop.led_bar",
+      "x": 0.5,
+      "y": 2.8,
+      "zOrder": -3
+    },
+    {
+      "id": "l11_hanging",
+      "model": "prop.hanging_cable",
+      "x": -0.8,
+      "y": 2.95,
+      "zOrder": -2
     }
   ],
   "winRules": [
@@ -174,5 +207,18 @@
         ]
       }
     ]
+  },
+  "stage": {
+    "hero": 2.3,
+    "music": "floor_core",
+    "sfx": {
+      "enter": "door_firewall"
+    },
+    "entryPort": {
+      "label": "sector_in",
+      "model": "door.serial",
+      "socket": "door.left",
+      "sfx": "door_firewall"
+    }
   }
 }

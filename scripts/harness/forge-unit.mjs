@@ -20,7 +20,29 @@ import { testRunner } from './lib/test-kit.mjs';
 const { test, count } = testRunner();
 const SLUG = 'chapter-01-kiroween';
 const LEVEL = 'level-02-task-ram-heist';
-export const FORGE_TOOLS = ['get_level', 'list_assets', 'list_levels', 'solve_level', 'validate_level', 'write_level'];
+const COMIX = 'intro';
+const LAB = 'basics';
+const WRITE_TOOLS = new Set(['write_chapter_file', 'write_comix', 'write_lab', 'write_level']);
+export const FORGE_TOOLS = [
+  'get_chapter_file',
+  'get_comix',
+  'get_lab',
+  'get_level',
+  'list_assets',
+  'list_comix',
+  'list_labs',
+  'list_levels',
+  'run_lab',
+  'solve_level',
+  'validate_chapter',
+  'validate_comix',
+  'validate_lab',
+  'validate_level',
+  'write_chapter_file',
+  'write_comix',
+  'write_lab',
+  'write_level',
+];
 
 /** Hash of every file under `dir` (paths and bytes): "the disk is byte-identical" as one comparable string. */
 function treeHash(dir) {
@@ -46,16 +68,39 @@ const tmp = mkdtempSync(join(tmpdir(), 'forge-unit-'));
 const chaptersCopy = join(tmp, 'chapters');
 cpSync(join(projectRoot, 'chapters', SLUG), join(chaptersCopy, SLUG), { recursive: true, filter: (src) => !src.includes(`${SLUG}/story/out`) });
 const catalogCopy = join(tmp, 'catalog-data.ts');
-const ctx = createContext({ root: chaptersCopy, catalog: catalogCopy });
+const comixCopy = join(tmp, 'comix');
+cpSync(join(projectRoot, 'comix'), comixCopy, { recursive: true });
+const comixCatalogCopy = join(tmp, 'comix-catalog-data.ts');
+const labsCopy = join(tmp, 'labs');
+cpSync(join(projectRoot, 'scripts/harness/terminal-lab'), labsCopy, { recursive: true });
+const ctx = createContext({
+  root: chaptersCopy,
+  catalog: catalogCopy,
+  comixRoot: comixCopy,
+  comixCatalog: comixCatalogCopy,
+  labsRoot: labsCopy,
+});
 const run = (name, input) => TOOLS[name].run(ctx, input);
 const specFile = join(chaptersCopy, SLUG, 'levels', LEVEL, 'level.spec.json');
 const realChaptersBefore = treeHash(join(projectRoot, 'chapters'));
+const realComixBefore = treeHash(join(projectRoot, 'comix'));
+const realLabsBefore = treeHash(join(projectRoot, 'scripts/harness/terminal-lab'));
 
 try {
-  await test('list_assets: the catalogs the game uses (models with category, rooms, fx)', async () => {
+  await test('list_assets: models with category, rooms, enriched FX metadata, and audio cues', async () => {
     const all = await run('list_assets', {});
     assert.ok(all.models.some((m) => m.id === 'item.tube_transistor' && m.category === 'item'));
     assert.ok(all.rooms.includes('desk') && all.fx.length > 5 && all.fx.every((p) => p.id.startsWith('fx.')));
+    const sigkill = all.fx.find((p) => p.id === 'fx.sigkill');
+    assert.ok(
+      sigkill && sigkill.family && sigkill.anchor && typeof sigkill.durationMs === 'number'
+      && typeof sigkill.stepFps === 'number' && sigkill.layerCount === sigkill.layers.length && sigkill.particleCount > 0,
+    );
+    assert.ok(all.audio && Array.isArray(all.audio.sfx) && all.audio.sfx.includes('hop'));
+    assert.ok(Array.isArray(all.audio.music) && all.audio.music.length > 0);
+    const audioOnly = await run('list_assets', { kind: 'audio' });
+    assert.deepEqual(Object.keys(audioOnly), ['audio']);
+    assert.deepEqual(audioOnly.audio, all.audio);
     assert.deepEqual(Object.keys(await run('list_assets', { kind: 'rooms' })), ['rooms']);
     await refusal(run('list_assets', { kind: 'sprites' }), 'invalid_input');
   });
@@ -171,13 +216,89 @@ try {
     );
     assert.ok(wrote > 0 && refused > 0, `the property must reach both outcomes (wrote ${wrote}, refused ${refused})`);
   });
+  await test('chapter files: get_chapter_file, validate_chapter, and write_chapter_file with conflict & validation fences', async () => {
+    const chk = await run('validate_chapter', { chapter: SLUG });
+    assert.equal(chk.ok, true);
+    const man = await run('get_chapter_file', { chapter: SLUG, path: 'chapter.manifest.json' });
+    assert.equal(man.json.id, SLUG);
+    await refusal(run('get_chapter_file', { chapter: SLUG, path: '../escape.json' }), 'refused');
+    await refusal(run('write_chapter_file', { chapter: SLUG, path: `levels/${LEVEL}/level.spec.json`, json: man.json, baseEtag: man.etag }), 'refused');
+    await refusal(run('write_chapter_file', { chapter: SLUG, path: 'story/unreferenced.json', json: man.json, baseEtag: man.etag }), 'refused');
+    await refusal(run('write_chapter_file', { chapter: SLUG, path: 'chapter.manifest.json', json: { ...man.json, id: 'other' }, baseEtag: man.etag }), 'refused');
+    await refusal(run('write_chapter_file', { chapter: SLUG, path: 'chapter.manifest.json', json: { ...man.json, onFirstPickup: [{ pickup: 'bad', steps: [{ kind: 'dialog_box', speaker: 'nobody', text: '' }] }] }, baseEtag: man.etag }), 'refused');
+    await refusal(run('write_chapter_file', { chapter: SLUG, path: 'chapter.manifest.json', json: man.json, baseEtag: 'stale' }), 'conflict');
+
+    const dlg = await run('get_chapter_file', { chapter: SLUG, path: 'story/dialogs.json' });
+    const tunedDlg = structuredClone(dlg.json);
+    tunedDlg.levels[LEVEL].banner = `${tunedDlg.levels[LEVEL].banner} (tuned)`;
+    const wrote = await run('write_chapter_file', { chapter: SLUG, path: 'story/dialogs.json', json: tunedDlg, baseEtag: dlg.etag });
+    assert.equal(wrote.ok, true);
+    const repeat = await run('write_chapter_file', { chapter: SLUG, path: 'story/dialogs.json', json: tunedDlg, baseEtag: wrote.etag });
+    assert.deepEqual([repeat.changed, repeat.regenerated, repeat.etag], [false, false, wrote.etag]);
+  });
+
+  await test('comix tools: list_comix, get_comix, validate_comix (60fps sim), and write_comix', async () => {
+    const listed = await run('list_comix', {});
+    assert.ok(listed.comixes.some((c) => c.comix === COMIX && c.pages.length >= 1));
+    const full = await run('get_comix', { comix: COMIX });
+    const pagePath = full.pages[0].path;
+    const one = await run('get_comix', { comix: COMIX, path: pagePath });
+    assert.equal(one.etag, full.pages[0].etag);
+    const checked = await run('validate_comix', { comix: COMIX });
+    assert.equal(checked.ok, true);
+    assert.ok(checked.sim.ok && checked.sim.frames > 10);
+
+    const badPage = structuredClone(one.json);
+    badPage.panels[0].layout.landscape = [0, 0, 2, 2];
+    const badCheck = await run('validate_comix', { comix: COMIX, path: pagePath, json: badPage });
+    assert.equal(badCheck.ok, false);
+    await refusal(run('write_comix', { comix: COMIX, path: pagePath, json: badPage, baseEtag: one.etag }), 'refused');
+    await refusal(run('write_comix', { comix: COMIX, path: pagePath, json: one.json, baseEtag: 'stale' }), 'conflict');
+
+    const editedPage = { ...structuredClone(one.json), title: `${one.json.title ?? 'Page'} (tuned)` };
+    const saved = await run('write_comix', { comix: COMIX, path: pagePath, json: editedPage, baseEtag: one.etag });
+    assert.deepEqual([saved.ok, saved.changed, saved.regenerated], [true, true, true]);
+    assert.ok(readFileSync(comixCatalogCopy, 'utf8').includes('(tuned)'));
+    const repeat = await run('write_comix', { comix: COMIX, path: pagePath, json: editedPage, baseEtag: saved.etag });
+    assert.deepEqual([repeat.changed, repeat.regenerated], [false, false]);
+  });
+
+  await test('terminal lab tools: list_labs, get_lab, validate_lab, run_lab (+30 soak ticks), and write_lab', async () => {
+    const listed = await run('list_labs', {});
+    assert.ok(listed.labs.some((l) => l.id === LAB));
+    const got = await run('get_lab', { id: LAB });
+    const chk = await run('validate_lab', { id: LAB });
+    assert.equal(chk.ok, true);
+    const ran = await run('run_lab', { id: LAB });
+    assert.deepEqual([ran.ok, ran.failed, ran.hurt, ran.soakTicks], [true, 0, null, 30]);
+
+    const broken = structuredClone(got.script);
+    broken.steps.push({ op: 'run', line: 'false', expect: { code: 0 } });
+    const badRun = await run('run_lab', { script: broken });
+    assert.equal(badRun.ok, false);
+    assert.ok(badRun.failed >= 1);
+
+    await refusal(run('write_lab', { id: LAB, script: broken, baseEtag: got.etag }), 'refused');
+    await refusal(run('write_lab', { id: LAB, script: got.script, baseEtag: 'stale' }), 'conflict');
+    await refusal(run('write_lab', { id: LAB, script: got.script }), 'conflict');
+
+    const edited = { ...structuredClone(got.script), title: `${got.script.title} (tuned)` };
+    const saved = await run('write_lab', { id: LAB, script: edited, baseEtag: got.etag });
+    assert.deepEqual([saved.ok, saved.created, saved.changed], [true, false, true]);
+    const fresh = { ...structuredClone(got.script), id: 'forge-created-lab', title: 'Forge Created Lab' };
+    const created = await run('write_lab', { id: 'forge-created-lab', script: fresh });
+    assert.deepEqual([created.ok, created.created], [true, true]);
+  });
+
 } finally {
   await ctx.close();
   rmSync(tmp, { recursive: true, force: true });
 }
 
-await test('part 1 never touched the repository: chapters/ is byte-identical', () => {
+await test('part 1 never touched the repository: chapters/, comix/, and terminal-lab/ are byte-identical', () => {
   assert.equal(treeHash(join(projectRoot, 'chapters')), realChaptersBefore);
+  assert.equal(treeHash(join(projectRoot, 'comix')), realComixBefore);
+  assert.equal(treeHash(join(projectRoot, 'scripts/harness/terminal-lab')), realLabsBefore);
 });
 
 // ---- part 2: the real server over stdio ---------------------------------------------------------------------------
@@ -195,17 +316,23 @@ const catalogBefore = readFileSync(join(projectRoot, 'src/chapters/generated/cat
 try {
   await client.connect(transport);
 
-  await test('server: exactly the six forge tools, each with a description and an input schema', async () => {
+  await test('server: all 18 forge tools, descriptions, schemas, and exact readOnlyHint annotations', async () => {
     const { tools } = await client.listTools();
     assert.deepEqual(tools.map((t) => t.name).sort(), FORGE_TOOLS);
-    for (const t of tools) assert.ok(t.description.length > 40 && t.inputSchema.type === 'object', t.name);
-    assert.equal(tools.find((t) => t.name === 'write_level').annotations.readOnlyHint, false);
-    assert.ok(tools.filter((t) => t.name !== 'write_level').every((t) => t.annotations.readOnlyHint === true));
+    for (const t of tools) assert.ok(t.description.length > 30 && t.inputSchema.type === 'object', t.name);
+    for (const name of WRITE_TOOLS) assert.equal(tools.find((t) => t.name === name).annotations.readOnlyHint, false, name);
+    assert.ok(tools.filter((t) => !WRITE_TOOLS.has(t.name)).every((t) => t.annotations.readOnlyHint === true));
   });
 
-  await test('server: a tool result is JSON text; a refusal is an MCP error with a code and a message', async () => {
+  await test('server: tool results are JSON text across chapters, comix, and labs; refusals carry code + message', async () => {
     const ok = await call('validate_level', { chapter: SLUG, levelId: LEVEL });
     assert.deepEqual([ok.isError, ok.body.ok], [false, true]);
+    const chFile = await call('get_chapter_file', { chapter: SLUG, path: 'chapter.manifest.json' });
+    assert.equal(chFile.isError, false);
+    const cmx = await call('validate_comix', { comix: COMIX });
+    assert.deepEqual([cmx.isError, cmx.body.ok], [false, true]);
+    const lab = await call('run_lab', { id: LAB });
+    assert.deepEqual([lab.isError, lab.body.ok], [false, true]);
     const got = await call('get_level', { chapter: SLUG, levelId: LEVEL });
     const bad = await call('write_level', { chapter: SLUG, levelId: LEVEL, spec: got.body.spec, baseEtag: 'stale' });
     assert.deepEqual([bad.isError, bad.body.error], [true, 'conflict']);
@@ -221,8 +348,10 @@ try {
   await client.close().catch(() => {});
 }
 
-await test('part 2 never touched the repository: chapters/, the catalog and the level file are unchanged', () => {
+await test('part 2 never touched the repository: chapters/, comix/, terminal-lab/, the catalog and the level file are unchanged', () => {
   assert.equal(treeHash(join(projectRoot, 'chapters')), realBefore);
+  assert.equal(treeHash(join(projectRoot, 'comix')), realComixBefore);
+  assert.equal(treeHash(join(projectRoot, 'scripts/harness/terminal-lab')), realLabsBefore);
   assert.equal(readFileSync(join(projectRoot, 'src/chapters/generated/catalog-data.ts'), 'utf8'), catalogBefore);
   assert.ok(readFileSync(realLevel, 'utf8').length > 100);
 });

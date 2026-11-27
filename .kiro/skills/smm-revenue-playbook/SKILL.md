@@ -18,9 +18,9 @@ Never write generic "check out our indie game!" copy. Every asset must radiate *
 - **Tactile Gameplay Proof:**
   - Real POSIX commands (`ls -la` exposes dotfile spyware, `chmod -x` petrifies Trojans to stone, `ps` + `kill -9 <pid>` calls down lightning, `mv` bridges `/dev/null` gaps) under a tense **30-second turn-based battle clock** (player always acts first; timer holds while coding).
   - Recoverable **clamshell laptop (`item.laptop`)** running real JavaScript in a sandboxed Worker and real HTML/CSS in a sandboxed iframe, plus Dockerfile & Compose repairs.
-  - Tactile items: oil **lantern** (`dark` room reveal), hardcover comic **Terminal Field Manual (`F1`)**, live PCB **Motherboard Map (`F3`)**, and **6 terminal skins** (`iTerm2`, `VT100`, `PuTTY`, `Windows Terminal`, `GNOME`, `macOS Terminal`).
+  - Tactile items: **Tube Transistor** (`item.tube_transistor`, `dark` room reveal & `ls -la`), hardcover comic **Terminal Field Manual (`F1`)**, live PCB **Motherboard Map (`F3`)**, and **6 terminal skins** (`iTerm2`, `VT100`, `PuTTY`, `Windows Terminal`, `GNOME`, `macOS Terminal`).
   - Satirical cast: cheering **Kiro Ghost**, cigarette-smoking bare-metal **Old Bearded Matrix Coder (`dad.tty`)** rebooting open-weight models (`Qwen`, `DeepSeek`, `Llama`), and the 4 smug parody AI supervisors (**Anti-Gravy**, **Codec**, **Gork**, and **PID 1 Supervisor Clod**).
-- **Frictionless Conversion Hook:** All **11 zero-death-verified sectors** of Chapter 1 boot instantly in the browser (`0` install, `0` signup), and players export their `.json` save & **13 `ACH_*` trophies** straight into the offline-verified Tauri v2 + Steamworks desktop edition (Mac, Windows, Linux, Steam Deck).
+- **Frictionless Conversion Hook:** All **11 zero-death-verified sectors** of Chapter 1 boot instantly in the browser (`0` install, `0` signup), and players export their `.json` save & **15 `ACH_*` trophies** straight into the offline-verified Tauri v2 + Steamworks desktop edition (Mac, Windows, Linux, Steam Deck).
 
 ---
 
@@ -54,7 +54,7 @@ From `social/research/competitors-and-benchmarks.json`:
 
 ### YouTube Long-Form & Steam Trailer (`1920×1080` `16:9`, `45–60s` Trailer + `8–12m` Devlogs)
 - **First 3 Seconds:** Lightning strike -> terminal command -> 3D malware hit before any title card.
-- **Escalation Arc:** `ls` awakening -> lantern & `chmod -x` battle -> Clamshell Laptop JS/Docker repair -> Dad's Matrix Hub open-weights reboot -> Clod & PID 1 boss -> **Play Free Browser Demo & Wishlist on Steam** end card.
+- **Escalation Arc:** `ls` awakening -> Tube Transistor & `chmod -x` battle -> Clamshell Laptop JS/Docker repair -> Dad's Matrix Hub open-weights reboot -> Clod & PID 1 boss -> **Play Free Browser Demo & Wishlist on Steam** end card.
 - **Above-the-Fold Conversion:** First two lines of description + pinned comment MUST hold UTM-tracked Steam Wishlist and Browser Demo links.
 
 ---

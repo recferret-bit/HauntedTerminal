@@ -2,7 +2,7 @@ import type { KernelEvent } from '../contracts/events.js';
 import { actorSocket, type StageActor } from './stage-cast.js';
 import { clearCarried } from './stage-carry.js';
 import { clearBubble, floorCaptionInfo, playCaptionBox, playCard, playFx, say, triggerShake } from './stage-fx.js';
-import { poseHeroWalk, resetHeroPose } from './stage-hero-turn.js';
+import { poseHeroWalk, resetHeroPose, setActorBodyScale } from './stage-hero-turn.js';
 import { applyLantern, syncFlood } from './stage-layout.js';
 import { isLevelTransitionActiveOrArmed } from './stage-level-transition.js';
 import { claim, hopInPlace, owns, rattle, release, slideToHome, suckIntoNull } from './stage-motion.js';
@@ -94,7 +94,11 @@ function onObjectMoved(stage: ComicStage, ev: Extract<KernelEvent, { type: 'OBJE
   if (ev.suckedIntoNull) {
     const hole = findByModel(stage, 'door.devnull');
     if (hole) {
-      stage.tweens.add(650, (t) => !hole.disposed && hole.body.scale.setScalar(1 + Math.sin(t * Math.PI) * 0.45), () => !hole.disposed && hole.body.scale.setScalar(1));
+      stage.tweens.add(650, (t) => {
+        if (hole.disposed) return;
+        const f = 1 + Math.sin(t * Math.PI) * 0.45;
+        setActorBodyScale(hole, f, f, f);
+      }, () => !hole.disposed && setActorBodyScale(hole));
     }
     say(stage, '/DEV/NULL VORTEX!', anchorPoint(stage, 'devnull', subject), '#b5179e', 0.7);
     if (subject && subject !== hole && subject.key === 'crate') suckIntoNull(stage, subject);

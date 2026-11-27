@@ -21,7 +21,7 @@ Per `docs/kiro-best-practice.md`, never blur these five roles:
 
 1. **Steering (`.kiro/steering/`) = Facts**: concise rules and exact domain terms (`glossary.md` — never invent synonyms).
 2. **Specs (`.kiro/specs/<name>/`) = Capabilities**: system features and big refactors, never per-level or per-page content.
-3. **Skills (`.kiro/skills/<name>/SKILL.md`) = Procedures**: 63 step-by-step workflows (`[WORKFLOW]`, `[ASSET PCG]`, `[LEVEL GEN]`, `[AUDIO]`, `[SOCIAL]`) paired with deterministic scripts.
+3. **Skills (`.kiro/skills/<name>/SKILL.md`) = Procedures**: 65 step-by-step workflows (`[WORKFLOW]`, `[ASSET PCG]`, `[LEVEL GEN]`, `[AUDIO]`, `[SOCIAL]`) paired with deterministic scripts and `references/*.md` schemas.
 4. **Schemas & JSON Specs = Content Truth**: `chapters/<slug>/`, `comix/<slug>/`, and `scripts/harness/terminal-lab/*.lab.json` typed by `script-types.ts` / `types.ts` / `spec-types.ts` / `lab-types.ts` and union-keyed `schema*.ts` field tables so missing editor forms fail `tsc`.
 5. **Hooks & Gates (`.kiro/hooks/`, `scripts/quality/`) = Enforcement**: zero-LLM Node scripts enforce pass/fail, not memory. `.kiro/settings/mcp.json` stays empty/minimal whenever offline `.mjs` scripts + skills suffice; team agents declare their MCP servers per agent in `scripts/harness/agents-build.mjs`; a feature's MCP server for others ships in its power (`.kiro/powers/<name>/`).
 
@@ -86,11 +86,11 @@ Always run before declaring work done (plus targeted suites for areas touched):
   - Chapters/editors: `node scripts/harness/generate-chapter.mjs --verify`, `node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs`, `node scripts/harness/editor-unit-test.mjs`, `node scripts/harness/editor-smoke.mjs`
   - Tensor GPU ritual, Kiro skills and VRAM modules (`.kiro/specs/tensor-gpu-hub-ritual/`): `node scripts/harness/property-tests.mjs --only chapters,gameplay`, `battle-unit.mjs`, `classic-unit.mjs`, `manual-smoke.mjs`; new steps `fly_to`, `wait`, `take_item`, `kiro_action: empower` and the level field `generate` follow the four-place rule
   - Battles (turn-based combat, `src/game/battle.ts`; no real-time damage, no Tactical Mode): `node scripts/harness/battle-unit.mjs`, `node scripts/harness/property-tests.mjs --only gameplay`, `node scripts/harness/playthrough.mjs --ticks 3`. Spec: `.kiro/specs/turn-based-battles/`
-  - App bus, SFX and music (`src/audio/`, `src/contracts/app-bus.ts`): `node scripts/harness/audio-unit.mjs`. Spec: `.kiro/specs/app-events-audio/`
+  - App bus, SFX, music & Audio Lab (`src/audio/`, `src/audio-lab/`, `src/contracts/app-bus.ts`): `node scripts/harness/audio-unit.mjs`, `audio-lab-unit.mjs`, `audio-lab-smoke.mjs`, `audio-gen.mjs inspect <cue>...|--all`. Specs: `.kiro/specs/app-events-audio/`, `.kiro/specs/audio-agent/`
   - Comix/editor: `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs`, `node scripts/harness/comix-editor-smoke.mjs`
-  - Terminal Lab: `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs`, `node scripts/harness/terminal-lab.mjs --all`, `node scripts/harness/terminal-lab-smoke.mjs` (1600x950 and `--width 1280 --height 820`)
+  - Terminal Lab: `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs`, `node scripts/harness/terminal-lab.mjs --all` (`--validate`, `--from-level`), `node scripts/harness/terminal-lab-smoke.mjs` (1600x950 and `--width 1280 --height 820`)
   - Interactive Field Manual (`/manual`, `F1`, `manual`): `node scripts/harness/manual-unit.mjs`, `node scripts/harness/manual-smoke.mjs`. Spec: `.kiro/specs/inventory/items/manual/`
-  - Laptop Lab: `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/laptop-lab-smoke.mjs` (1600x950 and `--width 1280 --height 820`)
+  - Laptop Lab: `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/laptop-lab.mjs --verify`, `node scripts/harness/laptop-lab-smoke.mjs` (1600x950 and `--width 1280 --height 820`)
   - Landing tabs: `node scripts/harness/hub-unit.mjs` and `node scripts/desktop/landing-smoke.mjs` (Home, Desktop Builds, Achievements, Comix pages). Spec: `.kiro/specs/landing-tabs/`
   - Visual audit (qa): `node scripts/harness/visual-audit.mjs` (`--screens`, `--sizes`, `--selftest`; report only, exit 1 = flags to explain); baselines in `docs/qa/baselines/` are approved by a person only (`--update`). Spec: `.kiro/specs/qa-visual-audit/`
   - MCP: `node scripts/harness/forge-unit.mjs` (`npm run quality:mcp`); `node scripts/harness/mcp-probe.mjs` (manual, real Kiro CLI)

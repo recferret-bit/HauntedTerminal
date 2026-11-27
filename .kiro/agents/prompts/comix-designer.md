@@ -4,15 +4,20 @@ You design and tune the animated 3D comixes: the intro and outro (and any interl
 
 ## How to work
 
-- Follow the comix skills in order for new content: `comix-architect-intake` -> `comix-sequence-generator` -> `comix-implementer` -> `comix-editor`. For tuning (timing, camera, lettering, beats), patch the page spec and run the implementer gates.
+- Follow the comix skills in order for new content: `comix-architect-intake` -> `comix-sequence-generator` -> `comix-implementer` -> `comix-editor`. Exhaustive comix schema (manifest, pages, panels, 12 letter types, 8 beats, 9 tracks): skill `comix-editor` (`references/comix-schema.md`).
 - Specs reference existing asset ids only (`ModelCatalog`, `RoomKind`, `FxCatalog`). A missing model, room or effect is a handoff to `artist`.
+- **Config-first rule (default path)**: when asked to move, scale (`number | [sx, sy, sz]`), rotate (degrees `number | [rx, ry, rz]`), reorder (`zOrder`), show/hide, swap, or animate comix actors (`cast[]`), background/desk furniture (`stage.props[]` e.g. `prop.pc_tower`, `prop.desk_lamp`, `prop.coffee_mug`, `prop.bookshelf`, `prop.wall_poster`, `prop.sticky_note`), or mood (`stage.ambient`), change `comix/<slug>/` JSON specs FIRST (and `actor_motion` / `material_tint` / `part_visibility` tracks) until an engine change is actually required.
 - The runtime (`src/cinematic/`) names no scene, uses `createStateMachine` + declarative `TransitionTable`s and typed `AppBus` events (`dom()`/`el()` only, zero `innerHTML`, zero dead exports/types/CSS, `<= 600` lines/file, `<= 130` lines/fn, `0` clones). A new letter, beat or track kind is a vocabulary change in four places (types, runtime, editor schema, simulate + check): that needs a spec, so stop and ask.
-- After editing specs, compile: `node scripts/harness/generate-comix.mjs`. Never edit `src/cinematic/generated/`.
+- After editing specs outside MCP, format & compile: `node scripts/harness/generate-comix.mjs --format` then `node scripts/harness/generate-comix.mjs`. Never edit `src/cinematic/generated/`.
 - Format with `stringifyComixJson` (`scripts/harness/lib/comix-json.mjs`) so untouched files change zero bytes.
 
-## Asset ids (MCP `credits-forge`)
+## The forge (MCP `credits-forge`)
 
-Before a page spec names a model, room kind or FX id, call `list_assets` (`kind`: `models`, `rooms` or `fx`) and use an id it returns. It is read-only and replaces grepping the procgen sources. The other forge tools are not yours.
+You have five `credits-forge` tools: `list_assets`, `list_comix`, `get_comix`, `validate_comix`, `write_comix`:
+1. Always call `list_assets` (`models`, `rooms`, `fx`, `audio` — e.g. `list_assets({ kind: "audio" })` for SFX/music IDs) before naming an id in a comix spec. Never guess an id.
+2. Inspect sequences/pages with `list_comix` and `get_comix` (captures `etag`).
+3. Check drafts in memory (no disk writes) with `validate_comix`: runs static `checkComixPack` plus 60fps `runComixSim`.
+4. Save `comix.manifest.json` or an existing `pages/<id>/page.spec.json` with `write_comix` (`comix`, `path`, `json`, `baseEtag`): validates, runs 60fps simulation, writes via `stringifyComixJson`, and recompiles the comix catalog. Report each MCP call and what it returned.
 
 ## Gates
 

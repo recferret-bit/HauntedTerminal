@@ -1,8 +1,7 @@
 import type { ModelSpec } from '../../core/types.js';
 import { makeRng } from '../../core/rng.js';
 import { designToRoomX, onWall, RoomBuilder, ROOM } from './frame.js';
-import { arch, combOutline, hangingCable, led, pillar, shell, tombstone, trace } from './kit.js';
-import { danglingSpider, indicatorPanel, perchedBat, radialCobweb, roomBoardTheme, textoliteBoardPlaque } from './kit-kiroween.js';
+import { arch, combOutline, led, pillar, shell, tombstone, trace } from './kit.js';
 
 /**
  * Floor 2, the firewall crypt: port-shell vaults, pin grilles, log tombstones, a gap in the bus.
@@ -38,12 +37,6 @@ export function buildCryptEntrance(seed: number): ModelSpec {
   b.plaque('niche', [0.9, 1.3, 0.05], 'silicon', [nicheX, 1.0]);
   for (let i = 0; i < 3; i++) b.plaque('niche-slot', [0.66, 0.08, 0.08], 'rubber', [nicheX, 0.62 + i * 0.36]);
 
-  hangingCable(b, rng.range(1.2, 1.5), 0.7, 'rubber', rng.next(), 0.7);
-  radialCobweb(b, 3.45, 4.15, 0.44, 'heatsink');
-  danglingSpider(b, rng.range(1.9, 2.35), rng.range(0.65, 1.05), 'silicon', rng.next());
-  perchedBat(b, rng.range(-3.0, -2.4), 2.95, 0.4, 'pcbBlack', rng.next());
-  indicatorPanel(b, 2.7, 3.0, ['phosphor', 'lockRed', 'phosphor']);
-
   b.standardSockets(2.4)
     .socket('chronicles', [nicheX, 0.5, ROOM.zActor])
     .socket('archivist', [designToRoomX(0.0), 0, ROOM.zActor])
@@ -75,12 +68,6 @@ export function buildCryptHall(seed: number): ModelSpec {
   // Left wing: a tombstone and a snapped capacitor column.
   tombstone(b, 3.4, 0.74, 1.3, 'rubber', 0.58, rng.range(-0.1, -0.03));
   pillar(b, 2.5, 0.85, 0.24, 'silicon', 'rubber', 0.56);
-
-  hangingCable(b, rng.range(-0.95, -0.7), 0.6, 'rubber', rng.next(), 0.7);
-  hangingCable(b, rng.range(0.7, 0.95), 0.75, 'rubber', rng.next(), 0.7);
-  radialCobweb(b, -3.4, 4.1, 0.44, 'heatsink');
-  textoliteBoardPlaque(b, 2.45, 3.05, 0.96, 0.52, roomBoardTheme(seed, rng, 'pcbRed'));
-  perchedBat(b, rng.range(-0.6, 0.6), 4.3, 0.42, 'pcbBlack', rng.next());
 
   b.standardSockets(2.3)
     .socket('plank', [designToRoomX(0.7), 0, ROOM.zActor])
@@ -130,16 +117,10 @@ export function buildChasm(seed: number): ModelSpec {
   // A broken vault over the pit, and stalactite pins above it.
   arch(b, 'vault', gapX, 3.5, 4.55, 0.2, 'rubber', 0.8, 0.12);
   b.relief('stalactite-pins', combOutline(1.9, 0.75, 6, 0.42, 0.1, true, 0.95), 0.06, 'heatsink', [gapX, 4.7]);
-  // Cut cables hang into the gap from the vault.
-  hangingCable(b, gapX + 0.45, rng.range(1.5, 1.8), 'rubber', rng.next(), 0.72);
-  hangingCable(b, gapX - 0.3, rng.range(1.0, 1.3), 'rubber', rng.next(), 0.72);
 
   // Left wing.
   tombstone(b, 3.4, 0.72, 1.2, 'rubber', 0.58, rng.range(0.03, 0.1));
   pillar(b, 2.45, 3.0, 0.2, 'silicon', 'rubber', 0.7);
-  radialCobweb(b, 3.45, 4.1, 0.42, 'heatsink');
-  danglingSpider(b, rng.range(1.85, 2.2), rng.range(0.7, 1.1), 'silicon', rng.next());
-  perchedBat(b, rng.range(0.85, 1.35), 4.15, 0.36, 'pcbBlack', rng.next());
 
   b.standardSockets(2.2)
     .socket('chasm', [gapX, 0, ROOM.zActor])

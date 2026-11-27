@@ -4,7 +4,8 @@ Skills live in `.kiro/skills/`. Every skill description starts with its category
 
 ## Before all: WORKFLOW
 
-`feature-spec-grill`: a new feature or a big refactor starts here, before any other skill (`spec-first.md`). It writes `.kiro/specs/<name>/`, grills the user until every open question is answered, and gets requirements, design and tasks approved. The approved tasks then name the ASSET PCG and LEVEL GEN skills that do the work.
+- `feature-spec-grill`: new features / big refactors start here before any other skill (`spec-first.md`), writing `.kiro/specs/<name>/`, grilling interactively, and advancing `draft` -> `approved`.
+- `terminal-lab` & `laptop-lab`: developer workbench workflows for `/terminal-lab` (`*.lab.json`, headless `--validate` / `--from-level`, `credits-forge` lab tools, `references/lab-schema.md`) and `/laptop-lab` (`laptop-lab.mjs --verify`, Quest Inspector, `window.__laptop`, `references/laptop-schema.md`).
 
 ## Category 1: ASSET PCG (procedural content generation of game assets)
 
@@ -61,7 +62,7 @@ The 36 `elevenlabs-*` skills are the ElevenLabs CLI's own (`elevenlabs generate-
 
 ## Who uses which skills (agent team)
 
-The team agents in `.kiro/agents/` split these skills by owner: `artist` uses every ASSET PCG skill; `chapters-designer` the chapter LEVEL GEN chain; `comix-designer` the comix LEVEL GEN chain; `sound-designer` the AUDIO skills; `smm-agent` the SOCIAL skills; `lead-dev` the WORKFLOW skill; `qa` the validators and auditors. Kiro CLI 3.3 shows every workspace skill to every agent, so this split is each agent's focus, not a lock. See `docs/AGENTS_CREW.md`.
+The team agents in `.kiro/agents/` split these skills by owner: `artist` uses every ASSET PCG skill; `chapters-designer` the chapter LEVEL GEN chain; `comix-designer` the comix LEVEL GEN chain; `terminal-designer` `terminal-lab` + `chapter-level-generator`; `laptop-designer` `laptop-lab`; `sound-designer` the AUDIO skills; `smm-agent` the SOCIAL skills; `lead-dev` `feature-spec-grill`; `qa` the validators, lab/editor workflows, and auditors. See `docs/AGENTS_CREW.md`.
 
 ## Boundary
 

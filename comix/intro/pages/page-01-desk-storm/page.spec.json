@@ -168,7 +168,7 @@
         },
         {
           "kind": "material_tint",
-          "target": "room",
+          "target": "tower",
           "zone": "powerAmber",
           "from": "0",
           "until": "STRIKE",
@@ -550,7 +550,7 @@
         },
         {
           "kind": "material_tint",
-          "target": "room",
+          "target": "tower",
           "zone": "powerAmber",
           "from": "STRIKE",
           "until": "16.5",

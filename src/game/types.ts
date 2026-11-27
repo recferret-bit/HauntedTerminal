@@ -1,10 +1,12 @@
 import type { BattlePhase, KernelEvent } from '../contracts/events.js';
 import type { ItemId } from '../contracts/inventory.js';
 import type {
-  ActorKind, ActorState, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomSocketId, RoomView,
+  ActorKind, ActorState, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomSocketId, RoomView, SceneTransform,
 } from '../contracts/room-view.js';
 
-export type { ActorKind, ActorState, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomSocketId, RoomView };
+export type {
+  ActorKind, ActorState, LegacyActorKey, NeighborPanel, RoomActor, RoomKind, RoomSocketId, RoomView, SceneTransform,
+};
 
 export interface GameSnapshot {
   cwd: string;
@@ -21,6 +23,8 @@ export interface GameSnapshot {
   hub?: boolean;
   /** Level mechanic is `boss`. Absent on the classic floors. */
   bossLevel?: boolean;
+  /** Optional MusicId override declared by the active level config. */
+  levelMusic?: string;
   /** The level the hero is in, for the HUD level block and the Esc menu. */
   level?: LevelInfo;
   /** Minimal command-free tasks and goals for the centered `? Hint` dialog. */

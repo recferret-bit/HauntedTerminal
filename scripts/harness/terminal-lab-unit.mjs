@@ -1813,6 +1813,70 @@ await withProcgen(async (_p, vite) => {
       assert.notEqual(s1[i].bobPhase, s2[i].bobPhase, `${ids[i]} bob tact/phase must vary by seed`);
     }
   });
+
+  await test('levelToLabScript & buildLabPack preserve roomSeed, stage config, entity sockets, prop sfx & prop: id dedupe', async () => {
+    const customLab = {
+      ...lab(),
+      id: 'stage-xform-lab',
+      room: {
+        ...lab().room,
+        roomSeed: 77,
+        stage: {
+          backdrop: '#1a2b3c',
+          hero: { x: 1.8, zOrder: 1, scale: [1.1, 1.2, 1.1], rotation: [0, 5, 0] },
+          entryPort: { socket: 'door.left', model: 'door.serial', sfx: 'door_serial' },
+          ambient: { lightMode: 'neon', bats: { enabled: true, scale: 1.2 } },
+          sfx: { exit: 'rank_reveal', deny: 'gate_locked' },
+          music: 'battle_boss',
+        },
+      },
+      setup: [
+        { op: 'enemy', id: 'v-sock', type: 'virus', path: '/lab/v.exe', pid: 4001, socket: 'door.down', scale: [1.2, 1.3, 1.2], rotation: [5, 10, 15] },
+        { op: 'pickup', id: 'p-sock', type: 'ram', path: '/lab/ram.dimm', socket: 'door.left', sfx: 'pickup_ram' },
+        { op: 'prop', id: 'prop:already-prefixed', model: 'prop.platter', x: 2.5, sfx: 'reveal' },
+      ],
+    };
+    assert.deepEqual(store.validateLab(customLab), []);
+    assert.deepEqual(checkLab(customLab).filter((i) => i.severity === 'error'), []);
+    const built = buildLabPack(customLab);
+    const lvl = built.pack.levels[0];
+    assert.equal(lvl.roomSeed, 77);
+    assert.equal(lvl.stage?.backdrop, '#1a2b3c');
+    assert.equal(lvl.stage?.sfx?.exit, 'rank_reveal');
+    assert.equal(lvl.enemies[0].socket, 'door.down');
+    assert.equal(lvl.pickups[0].socket, 'door.left');
+
+    // Imported chapter level retains roomSeed & stage and compiles cleanly in ChapterSession.
+    const real = readChapter(listChapterSlugs()[0]);
+    const packLevel = { ...structuredClone(real.levels[0].spec), roomSeed: 42, stage: { backdrop: '#102030', sfx: { exit: 'rank_reveal' } }, props: [{ id: 'prop:web', model: 'prop.corner_cobweb', x: 4.5, sfx: 'reveal' }] };
+    const imported = levelToLabScript({ manifest: real.manifest, levels: [packLevel], dialogs: real.dialogs }, packLevel);
+    assert.equal(imported.room.roomSeed, 42);
+    assert.equal(imported.room.stage?.backdrop, '#102030');
+    assert.equal(imported.setup.find((op) => op.op === 'prop')?.sfx, 'reveal');
+
+    // ChapterSession snapshot uses socket on enemies/pickups and avoids prop:prop: double prefix.
+    const sess = createChapterSession({
+      chapterId: 'lab-stage-snap',
+      pack: {
+        manifest: { ...real.manifest, id: 'lab-stage-snap', levels: [real.manifest.levels[0]] },
+        levels: [{
+          ...lvl,
+          files: built.pack.levels[0].files,
+          props: [{ id: 'prop:web', model: 'prop.corner_cobweb', x: 4.5 }],
+          winRules: [{ kind: 'read_file', path: '/lab/ram.dimm', description: 'r' }],
+        }],
+        dialogs: { levels: {} },
+      },
+      preview: true,
+      startLevelId: lvl.id,
+    });
+    sess.skipIntro();
+    const actors = sess.snapshot().room.actors;
+    assert.equal(actors.find((a) => a.id === 'v-sock')?.socket, 'door.down');
+    assert.equal(actors.find((a) => a.id === 'p-sock')?.socket, 'door.left');
+    assert.ok(actors.some((a) => a.id === 'prop:web'), 'prop id starting with prop: stays prop:web');
+    assert.equal(actors.some((a) => a.id === 'prop:prop:web'), false, 'never double-prefixes prop:');
+  });
 });
 
 console.log(`terminal-lab-unit: ${count()} checks passed`);

@@ -54,6 +54,8 @@ const LAYERS = [
   { area: 'laptop/runtime/', may: ['laptop/domain/'], three: false },
   { area: 'laptop/ui/', may: ['laptop/domain/', 'laptop/runtime/', 'editor-core/', 'procgen/core/'], three: false },
   { area: 'laptop/', may: ['contracts/', 'laptop/', 'editor-core/', 'audio/'], three: false },
+  // Audio Lab: interactive soundboard, SFX_TRIM waveform scrubber, loop mixer & AppBus tester; no three.
+  { area: 'audio-lab/', may: ['contracts/', 'audio/', 'editor-core/'], three: false },
   { area: 'hub/', may: ['contracts/', 'chapters/', 'cinematic/catalog', 'audio/'], three: false },
   // Play page composition. main.ts only starts it. Helpers live in play/ so the entry stays small.
   { area: 'play/', may: ['assets/', 'audio/', 'chapters/', 'cinematic/', 'contracts/', 'game/', 'laptop/', 'renderer/', 'sandbox/', 'ui/'], three: true },

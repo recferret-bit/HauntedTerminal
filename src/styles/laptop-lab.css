@@ -40,3 +40,16 @@
 .ll-link { background: none; border: 0; cursor: pointer; color: inherit; text-align: left; font: inherit; }
 .ll-link:hover { color: var(--yellow); }
 .ll-side select { background: var(--plate-2); border: 2px solid var(--line); padding: 2px 4px; }
+.ll-insp-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.ll-insp-title { font-size: 12px; color: var(--paper); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ll-badge { font: 700 10px var(--display); letter-spacing: 1px; padding: 1px 6px; border: 1px solid var(--line); }
+.ll-badge.pass { background: var(--teal); color: var(--ink); border-color: var(--ink); }
+.ll-badge.fail { background: var(--fault); color: var(--ink); border-color: var(--ink); }
+.ll-badge.run { background: var(--yellow); color: var(--ink); border-color: var(--ink); }
+.ll-badge.idle { color: var(--muted); }
+.ll-insp-err { background: #2d141c; color: #ff8ea5; border: 1px solid #8a334a; padding: 4px 6px; font-size: 11px; white-space: pre-wrap; max-height: 70px; overflow: auto; }
+.ll-insp-checks, .ll-insp-logs { list-style: none; display: flex; flex-direction: column; gap: 2px; font-size: 11px; max-height: 90px; overflow: auto; }
+.ll-insp-checks li.ok { color: var(--teal); }
+.ll-insp-checks li.bad { color: #ff8ea5; }
+.ll-log-error { color: #ff8ea5; }
+.ll-log-warn { color: var(--yellow); }

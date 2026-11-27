@@ -113,7 +113,9 @@ const DEVTOOLS_LOOK = [
   'click', 'hover', 'fill', 'type_text', 'press_key',
   'emulate', 'performance_start_trace', 'performance_stop_trace', 'performance_analyze_insight',
 ];
-const FORGE_READ = ['list_levels', 'get_level', 'validate_level', 'solve_level'];
+const FORGE_CHAPTER_READ = ['list_levels', 'get_level', 'validate_level', 'solve_level', 'get_chapter_file', 'validate_chapter'];
+const FORGE_COMIX_READ = ['list_comix', 'get_comix', 'validate_comix'];
+const FORGE_LAB_READ = ['list_labs', 'get_lab', 'validate_lab', 'run_lab'];
 
 const TEAM = {
   'lead-dev': {
@@ -133,14 +135,16 @@ const TEAM = {
     writes: ['src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,search-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts', 'src/ui/**', 'src/terminal-lab/**', 'scripts/harness/terminal-lab/**', 'scripts/harness/props/terminal*.mjs', 'scripts/harness/{manual-unit,manual-smoke}.mjs'],
     // The manual's spec (done) is left out, read it when needed: the resources must keep >= 8,000 of the CLI's 100,000 characters free.
     resources: [steer('terminal-lab-rules'), 'file://.kiro/specs/inventory/items/terminal/requirements.md', 'file://.kiro/specs/inventory/items/terminal/design.md'],
-    skills: ['chapter-level-generator'],
+    skills: ['terminal-lab', 'chapter-level-generator'],
+    mcp: { 'credits-forge': ['list_assets', 'list_levels', ...FORGE_LAB_READ, 'write_lab'] },
+    mcpNames: ['credits-forge', 'list_labs', 'get_lab', 'validate_lab', 'run_lab', 'write_lab'],
     welcome: 'terminal-designer: which command, output or terminal behaviour should change?',
   },
   'laptop-designer': {
     description: "Designs and tunes the developer's laptop (src/laptop, props/laptop.mjs): state-machine lifecycle, desktop and apps, coding tasks and checks, sandboxed code runner, AppBus sound cues, keyboard, boot.",
     writes: ['src/laptop/**', 'scripts/harness/props/laptop.mjs'],
     resources: ['file://.kiro/specs/inventory/items/laptop/requirements.md', 'file://.kiro/specs/inventory/items/laptop/design.md'],
-    skills: [],
+    skills: ['laptop-lab'],
     welcome: 'laptop-designer: what should the laptop do differently?',
   },
   'comix-designer': {
@@ -148,8 +152,8 @@ const TEAM = {
     writes: ['comix/**', 'src/cinematic/**', 'src/comix-editor/**', 'scripts/harness/props/comix.mjs'],
     resources: [steer('declarative-comix'), steer('comix-editor-rules'), steer('skills-map')],
     skills: ['comix-architect-intake', 'comix-sequence-generator', 'comix-implementer', 'comix-editor'],
-    mcp: { 'credits-forge': ['list_assets'] },
-    mcpNames: ['credits-forge', 'list_assets'],
+    mcp: { 'credits-forge': ['list_assets', ...FORGE_COMIX_READ, 'write_comix'] },
+    mcpNames: ['credits-forge', 'list_assets', 'list_comix', 'get_comix', 'validate_comix', 'write_comix'],
     welcome: 'comix-designer: which comix, page or beat should change?',
   },
   'chapters-designer': {
@@ -157,8 +161,8 @@ const TEAM = {
     writes: ['chapters/**', 'src/chapters/**', 'src/chapter-editor/**', 'src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,kiro-skills,dialogue,agents,battle,ouch}.ts', 'scripts/harness/props/{chapters,gameplay,gameplay-fsm,sessions,kiro-skills,revisit,ritual,script-beats,tree-search}.mjs', 'scripts/harness/battle-unit.mjs'],
     resources: [steer('level-gen-rules'), steer('declarative-chapters'), steer('chapter-editor-rules'), steer('skills-map')],
     skills: ['chapter-architect-intake', 'comix-story-drawer', 'chapter-level-generator', 'chapter-implementer', 'chapter-editor'],
-    mcp: { 'credits-forge': ['list_assets', ...FORGE_READ, 'write_level'] },
-    mcpNames: ['credits-forge', 'list_assets', 'validate_level', 'solve_level', 'write_level'],
+    mcp: { 'credits-forge': ['list_assets', ...FORGE_CHAPTER_READ, 'write_level', 'write_chapter_file'] },
+    mcpNames: ['credits-forge', 'list_assets', 'validate_level', 'solve_level', 'write_level', 'get_chapter_file', 'validate_chapter', 'write_chapter_file'],
     welcome: 'chapters-designer: which level, enemy, pickup, puzzle or line of dialogue should change?',
   },
   artist: {
@@ -170,11 +174,13 @@ const TEAM = {
       'comic-lighting-and-lightning', 'procedural-animation-3d', 'procedural-malware-animation', 'procedural-particles-3d', 'ai-mesh-pipeline',
       'model-geometry-validator', 'particle-effect-validator', 'comic-panel-viewport-auditor',
     ],
+    mcp: { 'credits-forge': ['list_assets'] },
+    mcpNames: ['credits-forge', 'list_assets'],
     welcome: 'artist: which model, room, texture, effect or animation should I make or change?',
   },
   'sound-designer': {
-    description: "Owns the game's sound: sound effects, music beds and robot voice lines in public/sfx and public/music, their prompt lists (docs/audio) and manifests, and which app event or scene plays which cue (src/audio). Generates with the ElevenLabs CLI only through audio-gen.mjs, under a credit cap.",
-    writes: ['public/sfx/**', 'public/music/**', 'docs/audio/*.md', 'src/audio/**', 'scripts/harness/{audio-unit,audio-smoke}.mjs'],
+    description: "Owns the game's sound: sound effects, music beds and robot voice lines in public/sfx and public/music, their prompt lists (docs/audio) and manifests, and which app event or scene plays which cue (src/audio, src/audio-lab). Generates with the ElevenLabs CLI only through audio-gen.mjs, under a credit cap.",
+    writes: ['public/sfx/**', 'public/music/**', 'docs/audio/*.md', 'src/audio/**', 'src/audio-lab/**', 'scripts/harness/{audio-unit,audio-smoke,audio-lab-unit,audio-lab-smoke}.mjs'],
     // Not skills-map (AGENTS.md carries the AUDIO pipeline) nor app-events-audio/design.md (spec done): read them when
     // needed. Keeps >= 8,000 of the CLI's 100,000 characters free.
     resources: ['file://.kiro/specs/app-events-audio/requirements.md', 'file://.kiro/specs/audio-agent/requirements.md'],
@@ -195,9 +201,12 @@ const TEAM = {
     shellExtra: ['mkdir -p docs/qa/media', 'cp scripts/harness/out/* docs/qa/media/*'],
     // Not skills-map (AGENTS.md carries the same map; read it when needed): keeps >= 8,000 of 100,000 characters free.
     resources: [steer('declarative-chapters'), steer('declarative-comix'), steer('terminal-lab-rules')],
-    skills: ['comic-panel-viewport-auditor', 'chapter-implementer', 'comix-implementer', 'model-geometry-validator', 'particle-effect-validator'],
-    mcp: { 'chrome-devtools': DEVTOOLS_LOOK, 'credits-forge': ['list_assets', ...FORGE_READ] },
-    mcpNames: ['chrome-devtools', 'take_screenshot', 'list_console_messages', 'credits-forge', 'validate_level'],
+    skills: [
+      'comic-panel-viewport-auditor', 'chapter-implementer', 'chapter-editor', 'comix-implementer', 'comix-editor',
+      'terminal-lab', 'laptop-lab', 'sfx-and-music-pipeline', 'model-geometry-validator', 'particle-effect-validator', 'procedural-particles-3d',
+    ],
+    mcp: { 'chrome-devtools': DEVTOOLS_LOOK, 'credits-forge': ['list_assets', ...FORGE_CHAPTER_READ, ...FORGE_COMIX_READ, ...FORGE_LAB_READ] },
+    mcpNames: ['chrome-devtools', 'take_screenshot', 'list_console_messages', 'credits-forge', 'list_assets', 'validate_level', 'validate_chapter', 'validate_comix', 'run_lab'],
     welcome: 'qa: which features should I play and test? (default: a full pass)',
   },
 };

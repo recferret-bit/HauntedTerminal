@@ -52,7 +52,7 @@
     },
     {
       "kind": "material_tint",
-      "target": "room",
+      "target": "tower",
       "zone": "powerAmber",
       "from": "31.9",
       "until": "END",

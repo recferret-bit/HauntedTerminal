@@ -94,6 +94,76 @@
         "w": 0.96,
         "h": 0.68
       }
+    ],
+    "ambient": {
+      "lightMode": "storm",
+      "storm": {
+        "enabled": true,
+        "intensity": 0.75
+      },
+      "bats": false
+    },
+    "props": [
+      {
+        "id": "tower",
+        "model": "prop.pc_tower",
+        "at": {
+          "x": 3.72,
+          "y": 0.8,
+          "z": 0.56
+        }
+      },
+      {
+        "id": "lamp",
+        "model": "prop.desk_lamp",
+        "at": {
+          "x": 3.48,
+          "y": 0.8,
+          "z": 0.68
+        },
+        "zOrder": -1,
+        "scale": 0.8
+      },
+      {
+        "id": "mug",
+        "model": "prop.coffee_mug",
+        "at": {
+          "x": 3.34,
+          "y": 0.8,
+          "z": 0.42
+        },
+        "scale": 0.65
+      },
+      {
+        "id": "bookshelf",
+        "model": "prop.bookshelf",
+        "at": {
+          "x": 1.25,
+          "y": 3.55,
+          "z": 0.84
+        },
+        "zOrder": -1
+      },
+      {
+        "id": "poster",
+        "model": "prop.wall_poster",
+        "at": {
+          "x": 0.9,
+          "y": 2.2,
+          "z": 0.86
+        },
+        "zOrder": -2
+      },
+      {
+        "id": "sticky-note",
+        "model": "prop.sticky_note",
+        "at": {
+          "x": 1.88,
+          "y": 1.62,
+          "z": 0.82
+        },
+        "rotation": -6
+      }
     ]
   },
   "cast": [

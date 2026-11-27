@@ -100,7 +100,21 @@ function collectFiles(setup: readonly LabSetupOp[]): LevelFileSpec[] {
 }
 
 function propActor(op: Extract<LabSetupOp, { op: 'prop' }>): RoomActor {
-  return { key: 'entity', id: `lab:${op.id}`, model: op.model, kind: 'prop', state: 'idle', x: op.x, y: op.y, hidden: false, label: op.label ?? op.id };
+  return {
+    key: 'entity',
+    id: `lab:${op.id}`,
+    model: op.model,
+    kind: op.kind ?? 'prop',
+    state: 'idle',
+    x: op.x,
+    ...(op.y !== undefined ? { y: op.y } : {}),
+    ...(op.zOrder !== undefined ? { zOrder: op.zOrder } : {}),
+    ...(op.scale !== undefined ? { scale: op.scale } : {}),
+    ...(op.rotation !== undefined ? { rotation: op.rotation } : {}),
+    ...(op.socket !== undefined ? { socket: op.socket } : {}),
+    hidden: false,
+    label: op.label ?? op.id,
+  };
 }
 
 function arrivalSteps(setup: readonly LabSetupOp[]): ScriptStep[] {
@@ -150,8 +164,10 @@ function levelOf(script: LabScript): LevelSpec {
     cwd: room.cwd,
     roomKind: room.roomKind,
     floorTheme: room.floorTheme,
+    ...(room.roomSeed !== undefined ? { roomSeed: room.roomSeed } : {}),
     mechanic: room.mechanic,
     summary: room.summary,
+    ...(room.stage !== undefined ? { stage: structuredClone(room.stage) } : {}),
     files,
     enemies: setup.flatMap((op) => (op.op === 'enemy' ? [bare(op)] : [])),
     pickups: setup.flatMap((op) => (op.op === 'pickup' ? [bare(op)] : [])),

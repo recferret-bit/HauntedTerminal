@@ -1,11 +1,14 @@
 import { bgColor, bgLabel } from '../domain/backgrounds.js';
 import { BG_IDS, PALETTE_NAMES, STATE_IDS, type LabOptions, type OptionKey } from '../domain/options.js';
+import type { Subject } from '../subjects/index.js';
 import { button, el } from './dom.js';
+import { FxControlsPanel, type FxControlsHooks } from './fx-controls.js';
 
 export interface ControlHooks {
   set(key: OptionKey | 'post', value: unknown): void;
   strike(): void;
   reset(): void;
+  fx: FxControlsHooks;
 }
 
 interface ToggleDef {
@@ -40,13 +43,16 @@ function section(title: string, ...children: HTMLElement[]): HTMLElement {
 /** The control column. It owns no state: it reports changes through hooks and redraws from sync(). */
 export class Controls {
   readonly info = el('div', 'lab-info');
+  readonly fx: FxControlsPanel;
   private readonly syncers: ((opts: LabOptions) => void)[] = [];
 
   constructor(host: HTMLElement, private readonly hooks: ControlHooks) {
     const strike = button('lab-btn lab-btn-hot', 'Lightning flash', () => hooks.strike());
     const reset = button('lab-btn', 'Reset options', () => hooks.reset());
+    this.fx = new FxControlsPanel(hooks.fx);
 
     host.replaceChildren(
+      this.fx.section,
       section('RENDER', this.toggles(RENDER_TOGGLES)),
       section('PIXEL PALETTE', this.palette()),
       section('READ TESTS', this.toggles(TEST_TOGGLES), strike),
@@ -60,8 +66,9 @@ export class Controls {
     );
   }
 
-  sync(opts: LabOptions): void {
+  sync(opts: LabOptions, subject: Subject | null = null): void {
     this.syncers.forEach((fn) => fn(opts));
+    this.fx.sync(opts, subject);
   }
 
   private toggles(defs: ToggleDef[]): HTMLElement {

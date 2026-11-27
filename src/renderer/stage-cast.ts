@@ -1,8 +1,11 @@
 import * as THREE from 'three';
-import type { ActorKind, ActorState, RoomActor } from '../contracts/room-view.js';
 import {
-  animActingOptions, ANIM_MALWARE_ACTING, buildModel, createAnimator, createAnimMaterialTint, disposeModel,
-  ModelCatalog, TextureCatalog, toDataTexture,
+  normalizeRotationRad, normalizeScale, zOrderToRenderOrder,
+  type ActorKind, type ActorState, type RoomActor,
+} from '../contracts/room-view.js';
+import {
+  animActingOptions, ANIM_MALWARE_ACTING, buildModel, compensateInkOutlines, createAnimator, createAnimMaterialTint,
+  disposeModel, ModelCatalog, TextureCatalog, toDataTexture,
   type AnimState, type AnimTint, type BuiltModel, type ModelAnimator, type ZoneId,
 } from '../procgen/index.js';
 import { createVortexMaterial, type ComicMaterial } from '../shaders/comic-material.js';
@@ -54,9 +57,25 @@ export interface StageActor {
   pid?: number;
   label?: string;
   target?: string;
+  portRole?: 'entry' | 'exit' | 'sub';
   /** Last view x / y (design space), to tell a real move from a re-sync. */
   viewX: number;
   viewY: number;
+  /** Inherited stage scale before per-actor JSON `scale` multiplier. */
+  baseScale: [number, number, number];
+  /** Effective [sx, sy, sz] resting scale on `body` (before facing sign). */
+  scaleVec: [number, number, number];
+  /** Effective [rx, ry, rz] resting rotation on `body` in radians. */
+  baseRot: [number, number, number];
+  /** Model raw dimensions for clearance & height updates when `scale` changes. */
+  baseRawTop: number;
+  rawMinY: number;
+  rawMidY: number;
+  rawHalfWidthX: number;
+  isPickupModel: boolean;
+  laidTransistor: boolean;
+  transformKey: string;
+  renderOrder: number;
   /** Killed / collected / removed: plays its exit, ignored by syncRoom, disposed at the end. */
   exiting: boolean;
   /** Death finished but the view still lists it: kept invisible until it leaves. */
@@ -227,11 +246,66 @@ export function setHeroFaceTier(
   actor.glow = built.model.materials.get('lantern');
   actor.retint = () => built.tint.again();
   actor.faceTier = tier;
+  applyActorRenderOrder(actor);
+  compensateInkOutlines(actor.body);
   onSwap?.(actor.group);
 }
 
 const PICKUP_STAGE_SCALE = 2.4;
 const PICKUP_FLOOR_CLEARANCE = 0.22;
+
+function applyActorRenderOrder(actor: StageActor): void {
+  actor.group.renderOrder = actor.renderOrder;
+  actor.body.traverse((obj) => {
+    obj.renderOrder = actor.renderOrder;
+  });
+}
+
+/** Applies JSON `scale`, `rotation`, and `zOrder` renderOrder onto `actor.body` with ink compensation. */
+export function applyActorTransform(actor: StageActor, ra: RoomActor, force = false): void {
+  const key = JSON.stringify([ra.scale ?? null, ra.rotation ?? null, ra.zOrder ?? 0]);
+  if (!force && actor.transformKey === key) return;
+  actor.transformKey = key;
+  const [sxMul, syMul, szMul] =
+    ra.scale !== undefined
+      ? normalizeScale(ra.scale)
+      : actor.laidTransistor
+        ? [1.45, 1.45, 1.45]
+        : [1, 1, 1];
+  const [rxRad, ryRad, rzRad] =
+    ra.rotation !== undefined
+      ? normalizeRotationRad(ra.rotation)
+      : actor.laidTransistor
+        ? [0, 0, Math.PI / 2]
+        : [0, 0, 0];
+  const sx = actor.baseScale[0] * sxMul;
+  const sy = actor.baseScale[1] * syMul;
+  const sz = actor.baseScale[2] * szMul;
+  actor.scaleVec = [sx, sy, sz];
+  const restZ = rzRad;
+  actor.baseRot = [rxRad, ryRad, restZ];
+  actor.renderOrder = zOrderToRenderOrder(ra.zOrder);
+  const facingSign = sx >= 0 && actor.body.scale.x < 0 ? -1 : 1;
+  if (!actor.exiting) {
+    actor.body.scale.set(sx * facingSign, sy, sz);
+    if (!actor.lock) actor.body.rotation.set(rxRad, ryRad, restZ);
+  }
+  const sideways = actor.laidTransistor && Math.abs(Math.abs(restZ) - Math.PI / 2) < 0.35;
+  if (actor.isPickupModel && Number.isFinite(actor.rawMinY)) {
+    actor.body.position.set(0, PICKUP_FLOOR_CLEARANCE - actor.rawMinY * Math.abs(sy), 0);
+  } else if (sideways) {
+    actor.body.position.set(actor.rawMidY * Math.abs(sx), actor.rawHalfWidthX * Math.abs(sy), 0);
+  } else {
+    actor.body.position.set(0, 0, 0);
+  }
+  actor.body.userData.restRotZ = restZ;
+  actor.body.userData.baseRot = [...actor.baseRot];
+  actor.body.userData.scaleVec = [...actor.scaleVec];
+  const topY = sideways ? actor.rawHalfWidthX : actor.baseRawTop;
+  actor.height = Math.max(0.3, topY * Math.abs(sy) + actor.body.position.y);
+  applyActorRenderOrder(actor);
+  compensateInkOutlines(actor.body);
+}
 
 export function buildStageActor(ra: RoomActor, seed: number): StageActor {
   const modelId = modelIdFor(ra);
@@ -261,17 +335,15 @@ export function buildStageActor(ra: RoomActor, seed: number): StageActor {
     ? legacy.scale
     : isPickup
       ? PICKUP_STAGE_SCALE
-      : laidTransistor
-        ? 1.45
-        : 1;
-  body.scale.setScalar(scale);
+      : 1;
+  body.scale.setScalar(laidTransistor && ra.scale === undefined ? 1.45 : scale);
   // Pickups bake ~0.5 hover into geometry; compensate so 2.4x scale keeps them near waist height instead of floating too high.
   if (isPickup && Number.isFinite(rawBox.min.y)) {
     body.position.y = PICKUP_FLOOR_CLEARANCE - rawBox.min.y * scale;
   } else if (laidTransistor && Number.isFinite(rawBox.max.x) && Number.isFinite(rawBox.max.y)) {
     // Lay the Tube Transistor on its side flush on the floor (y = 0), centered on its slot.
     body.rotation.z = Math.PI / 2;
-    body.position.set(((rawBox.min.y + rawBox.max.y) * 0.5) * scale, ((rawBox.max.x - rawBox.min.x) * 0.5) * scale, 0);
+    body.position.set(((rawBox.min.y + rawBox.max.y) * 0.5) * 1.45, ((rawBox.max.x - rawBox.min.x) * 0.5) * 1.45, 0);
   }
   body.userData.restRotZ = body.rotation.z;
 
@@ -289,11 +361,10 @@ export function buildStageActor(ra: RoomActor, seed: number): StageActor {
     if (voidPart) voidPart.visible = false;
   }
 
-  const rawTop = laidTransistor && Number.isFinite(rawBox.max.x)
-    ? (rawBox.max.x - rawBox.min.x) * 0.5
-    : Number.isFinite(rawBox.max.y)
-      ? rawBox.max.y
-      : 1;
+  const rawTop = Number.isFinite(rawBox.max.y) ? rawBox.max.y : 1;
+  const rawMinY = Number.isFinite(rawBox.min.y) ? rawBox.min.y : 0;
+  const rawMidY = Number.isFinite(rawBox.min.y) && Number.isFinite(rawBox.max.y) ? (rawBox.min.y + rawBox.max.y) * 0.5 : 0;
+  const rawHalfWidthX = Number.isFinite(rawBox.min.x) && Number.isFinite(rawBox.max.x) ? (rawBox.max.x - rawBox.min.x) * 0.5 : 0;
   const height = Math.max(0.3, rawTop * scale + body.position.y);
   const sheet = ANIM_MALWARE_ACTING[modelId];
   const actor: StageActor = {
@@ -325,8 +396,20 @@ export function buildStageActor(ra: RoomActor, seed: number): StageActor {
     pid: ra.pid,
     label: ra.label,
     target: ra.target,
+    portRole: ra.portRole,
     viewX: Number.NaN,
     viewY: Number.NaN,
+    baseScale: [scale, scale, scale],
+    scaleVec: [scale, scale, scale],
+    baseRot: [0, 0, body.rotation.z],
+    baseRawTop: rawTop,
+    rawMinY,
+    rawMidY,
+    rawHalfWidthX,
+    isPickupModel: isPickup,
+    laidTransistor,
+    transformKey: '',
+    renderOrder: 0,
     exiting: false,
     dead: false,
     disposed: false,
@@ -342,6 +425,7 @@ export function buildStageActor(ra: RoomActor, seed: number): StageActor {
     onBeat: null,
     retint: () => tint.again(),
   };
+  applyActorTransform(actor, ra, true);
   actorRef.a = actor;
   return actor;
 }

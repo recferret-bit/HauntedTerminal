@@ -519,8 +519,8 @@ await withProcgen(async (_p, vite) => {
     bossActors.some((a) => a.model === 'agent.clod'),
     'Boss room must render agent.clod alongside boss.kernel',
   );
-  // Check that no two ground actors in Level 11 overlap in x
-  const groundActors = bossActors.filter((a) => a.id !== 'kiro');
+  // Check that no two same-plane ground actors in Level 11 overlap in x (background wall clutter lives on y >= 1.5 or zOrder < 0)
+  const groundActors = bossActors.filter((a) => a.id !== 'kiro' && (a.y ?? 0) < 1.5 && (a.zOrder ?? 0) >= 0);
   for (let i = 0; i < groundActors.length; i++) {
     for (let j = i + 1; j < groundActors.length; j++) {
       const dx = Math.abs(groundActors[i].x - groundActors[j].x);

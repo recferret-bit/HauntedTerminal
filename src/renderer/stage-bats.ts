@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { buildModel, createAnimator, disposeModel, ModelCatalog, type BuiltModel, type ModelAnimator } from '../procgen/index.js';
+import type { StageBatsAmbient } from '../contracts/room-view.js';
+import { buildModel, compensateInkOutlines, createAnimator, disposeModel, ModelCatalog, type BuiltModel, type ModelAnimator } from '../procgen/index.js';
 import { stampMaterialBases } from './procgen-cast.js';
 import { ACTOR_Z } from './stage-const.js';
 import {
@@ -15,11 +16,17 @@ interface FlyingBat {
   animator: ModelAnimator;
   /** Seconds since the flock spawned, minus this bat's delay. */
   age: number;
+  lastSize: number;
 }
 
 export interface BatsState {
   nextIn: number;
   flying: FlyingBat[];
+  enabled: boolean;
+  minGapSec: number;
+  maxGapSec: number;
+  countRange?: [number, number];
+  scaleMul: number;
 }
 
 const BAT_MODEL = 'prop.bat';
@@ -31,10 +38,48 @@ const FLAP_RATE = 3.2;
 const FLIGHT_SCALE = 2.6;
 const BAT_Z = ACTOR_Z - 0.45;
 
-const gap = (): number => FLOCK_GAP_SEC[0] + Math.random() * (FLOCK_GAP_SEC[1] - FLOCK_GAP_SEC[0]);
+const nextGap = (minSec: number, maxSec: number): number =>
+  minSec + Math.random() * Math.max(0.05, maxSec - minSec);
 
 export function createBatsState(): BatsState {
-  return { nextIn: gap(), flying: [] };
+  return {
+    nextIn: nextGap(FLOCK_GAP_SEC[0], FLOCK_GAP_SEC[1]),
+    flying: [],
+    enabled: true,
+    minGapSec: FLOCK_GAP_SEC[0],
+    maxGapSec: FLOCK_GAP_SEC[1],
+    scaleMul: 1,
+  };
+}
+
+function clearBats(stage: ComicStage): void {
+  for (const bat of [...stage.bats.flying]) removeBat(stage, bat);
+  stage.bats.flying = [];
+}
+
+/** Applies optional JSON `ambient.bats` overrides (resetting to defaults when omitted). */
+export function setBatsAmbient(stage: ComicStage, cfg?: StageBatsAmbient): void {
+  const bats = stage.bats;
+  if (cfg === undefined || cfg === true) {
+    bats.enabled = true;
+    bats.minGapSec = FLOCK_GAP_SEC[0];
+    bats.maxGapSec = FLOCK_GAP_SEC[1];
+    bats.countRange = undefined;
+    bats.scaleMul = 1;
+    return;
+  }
+  if (cfg === false) {
+    bats.enabled = false;
+    clearBats(stage);
+    return;
+  }
+  bats.enabled = cfg.enabled ?? true;
+  bats.minGapSec = Math.max(0.2, cfg.minGapSec ?? FLOCK_GAP_SEC[0]);
+  bats.maxGapSec = Math.max(bats.minGapSec, cfg.maxGapSec ?? FLOCK_GAP_SEC[1]);
+  bats.countRange = cfg.count;
+  bats.scaleMul = typeof cfg.scale === 'number' && cfg.scale > 0 ? cfg.scale : 1;
+  if (!bats.enabled) clearBats(stage);
+  else bats.nextIn = Math.min(bats.nextIn, bats.maxGapSec);
 }
 
 function viewBounds(stage: ComicStage): BatBounds {
@@ -49,7 +94,7 @@ function viewBounds(stage: ComicStage): BatBounds {
 }
 
 function spawnFlock(stage: ComicStage): void {
-  const flock = makeFlock(Math.random, viewBounds(stage));
+  const flock = makeFlock(Math.random, viewBounds(stage), stage.bats.countRange);
   for (const flight of flock) {
     const seed = Math.floor(Math.random() * 0x7fffffff);
     const model = buildModel(ModelCatalog.build(BAT_MODEL, seed), { seed });
@@ -59,7 +104,7 @@ function spawnFlock(stage: ComicStage): void {
     model.group.visible = false;
     stage.world.add(model.group);
     for (const mat of model.allMaterials) stage.extraComics.add(mat);
-    stage.bats.flying.push({ flight, model, animator, age: -flight.delaySec });
+    stage.bats.flying.push({ flight, model, animator, age: -flight.delaySec, lastSize: 0 });
   }
 }
 
@@ -70,7 +115,7 @@ function removeBat(stage: ComicStage, bat: FlyingBat): void {
   disposeModel(bat.model);
 }
 
-function placeBat(bat: FlyingBat): void {
+function placeBat(bat: FlyingBat, scaleMul: number): void {
   const { flight } = bat;
   const t = Math.min(1, Math.max(0, bat.age / flight.durationSec));
   const e = easeInOutSine(t);
@@ -78,8 +123,12 @@ function placeBat(bat: FlyingBat): void {
   const ahead = cubicBezier(flight.p0, flight.p1, flight.p2, flight.p3, Math.min(1, e + 0.02));
   const g = bat.model.group;
   g.visible = bat.age >= 0;
-  const size = flight.scale * FLIGHT_SCALE;
+  const size = flight.scale * FLIGHT_SCALE * scaleMul;
   g.scale.setScalar(size);
+  if (Math.abs(bat.lastSize - size) > 1e-4) {
+    bat.lastSize = size;
+    compensateInkOutlines(g);
+  }
   g.position.set(at.x, at.y - BODY_CENTRE_Y * size, BAT_Z);
   // Bank into the turn: lean with the vertical part of the heading, kept small so the bat still reads front-on.
   const bank = Math.atan2(ahead.y - at.y, Math.abs(ahead.x - at.x) + 1e-6);
@@ -90,14 +139,13 @@ function placeBat(bat: FlyingBat): void {
 export function stepBats(stage: ComicStage, dt: number): void {
   const bats = stage.bats;
   if (stage.stormPaused || stage.devNoStorm) return;
-  if (stage.reducedMotion.on) {
-    for (const bat of [...bats.flying]) removeBat(stage, bat);
-    bats.flying = [];
+  if (!bats.enabled || stage.reducedMotion.on) {
+    if (bats.flying.length > 0) clearBats(stage);
     return;
   }
   bats.nextIn -= dt;
   if (bats.nextIn <= 0) {
-    bats.nextIn = gap();
+    bats.nextIn = nextGap(bats.minGapSec, bats.maxGapSec);
     if (bats.flying.length === 0) spawnFlock(stage);
   }
   const alive: FlyingBat[] = [];
@@ -108,7 +156,7 @@ export function stepBats(stage: ComicStage, dt: number): void {
       continue;
     }
     bat.animator.update(dt * FLAP_RATE);
-    placeBat(bat);
+    placeBat(bat, bats.scaleMul);
     alive.push(bat);
   }
   bats.flying = alive;

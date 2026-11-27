@@ -43,3 +43,9 @@ Capability: `item.laptop` is the developer's old clamshell laptop carried like a
 ## Verification
 
 `node scripts/harness/laptop-unit.mjs` (lifecycle, desktop, checks, tasks, keyboard, boot, framing, loop guard, timeout cancellation), `node scripts/harness/laptop-lab-smoke.mjs` (both 1600x950 and 1280x820), `validate-model.mjs item.laptop vibecoder.dev_laptop --seeds 4`, and `npm run quality`.
+
+## Later changes
+
+- **2026-11-26 (`4317ccf`)**: `lantern` (`item.lantern`) was renamed to `tube_transistor` (`item.tube_transistor`).
+- **2026-11-24+ (`.kiro/specs/app-events-audio/`)**: Laptop boot, keyboard, and desktop SFX moved from synthesized WebAudio oscillators to sample-based `AppBus` `laptop` events (`src/audio/sfx-app.ts`).
+- **2026-11-27 (`.kiro/specs/agent-workbench-tooling/`)**: Added `parseLabSpeed` `?speed=` normalization/sync, typed `window.__laptop`, the Quest Check & `RunReport` Inspector card in `/laptop-lab`, `scripts/harness/laptop-lab.mjs --verify`, and skill `laptop-lab` (`references/laptop-schema.md`).

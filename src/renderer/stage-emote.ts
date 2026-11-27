@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { actorSocket, type StageActor } from './stage-cast.js';
 import { setRest } from './stage-actor.js';
 import { playFx, say, triggerShake } from './stage-fx.js';
+import { setActorBodyScale } from './stage-hero-turn.js';
 import { hopInPlace } from './stage-motion.js';
 import { anchorPoint } from './stage-resolve.js';
 import { stepped } from './tween.js';
@@ -17,7 +18,7 @@ export function heroEmote(stage: ComicStage, hero: StageActor, emote: string, te
   const head = () => actorSocket(hero, 'fx').add(new THREE.Vector3(0, 0.55, 0));
   const word = (fallback: string, color: string, big = false) => say(stage, text?.trim() || fallback, head(), color, 0.35, big ? 1.5 : 1);
   const body = hero.body;
-  const base = body.scale.x;
+  const restZ = hero.baseRot[2];
   switch (emote) {
     case 'shock':
       hero.animator.setState('hit');
@@ -29,38 +30,38 @@ export function heroEmote(stage: ComicStage, hero: StageActor, emote: string, te
         hero.offset.x = 0.32 * (t < 0.5 ? stepped(t / 0.5, 3) : 1 - stepped((t - 0.5) / 0.5, 3));
         hero.offset.y = Math.sin(Math.min(1, k * 1.6) * Math.PI) * 0.26;
         // Eyes-wide beat: a two-pose stretch.
-        body.scale.set(base * (k < 0.34 ? 0.94 : 1), base * (k < 0.34 ? 1.12 : 1), base);
+        setActorBodyScale(hero, k < 0.34 ? 0.94 : 1, k < 0.34 ? 1.12 : 1, 1);
       }, () => {
         if (hero.disposed) return;
         hero.offset.set(0, 0, 0);
-        body.scale.setScalar(base);
+        setActorBodyScale(hero);
       });
       break;
     case 'confused':
       word('???', '#4cc9f0', true);
       stage.tweens.add(700, (t) => {
-        if (!hero.disposed) body.rotation.z = (Math.floor(t * 6) % 2 ? 0.07 : -0.05);
+        if (!hero.disposed) body.rotation.z = restZ + (Math.floor(t * 6) % 2 ? 0.07 : -0.05);
       }, () => {
-        if (!hero.disposed) body.rotation.z = 0;
+        if (!hero.disposed) body.rotation.z = restZ;
       });
       break;
     case 'determined':
       hero.animator.setState('windup');
       word('LET\'S GO.', '#ffd166');
       stage.tweens.add(420, (t) => {
-        if (!hero.disposed) body.rotation.z = t < 0.7 ? -0.08 : 0;
+        if (!hero.disposed) body.rotation.z = restZ + (t < 0.7 ? -0.08 : 0);
       }, () => {
         if (hero.disposed) return;
-        body.rotation.z = 0;
+        body.rotation.z = restZ;
         setRest(hero);
       });
       break;
     case 'relief':
       word('PHEW...', '#06d6a0');
       stage.tweens.add(600, (t) => {
-        if (!hero.disposed) body.scale.set(base * (t < 0.6 ? 1.04 : 1), base * (t < 0.6 ? 0.92 : 1), base);
+        if (!hero.disposed) setActorBodyScale(hero, t < 0.6 ? 1.04 : 1, t < 0.6 ? 0.92 : 1, 1);
       }, () => {
-        if (!hero.disposed) body.scale.setScalar(base);
+        if (!hero.disposed) setActorBodyScale(hero);
       });
       break;
     case 'panic':
@@ -92,17 +93,17 @@ function shout(stage: ComicStage, hero: StageActor, word: string): void {
   triggerShake(stage, 1.4);
   hopInPlace(stage, hero, 0.12, 300);
   const body = hero.body;
-  const base = body.scale.x;
+  const restZ = hero.baseRot[2];
   stage.tweens.add(640, (t) => {
     if (hero.disposed) return;
     const k = stepped(t, 8);
     // Chest out, then a held lean back, then settle.
-    body.scale.set(base * (k < 0.25 ? 0.95 : 1), base * (k < 0.25 ? 1.1 : k < 0.7 ? 1.04 : 1), base);
-    body.rotation.z = k < 0.25 ? 0 : k < 0.7 ? 0.06 : 0;
+    setActorBodyScale(hero, k < 0.25 ? 0.95 : 1, k < 0.25 ? 1.1 : k < 0.7 ? 1.04 : 1, 1);
+    body.rotation.z = restZ + (k < 0.25 ? 0 : k < 0.7 ? 0.06 : 0);
   }, () => {
     if (hero.disposed) return;
-    body.scale.setScalar(base);
-    body.rotation.z = 0;
+    setActorBodyScale(hero);
+    body.rotation.z = restZ;
   });
 }
 

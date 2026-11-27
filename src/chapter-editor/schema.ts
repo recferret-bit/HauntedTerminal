@@ -1,6 +1,5 @@
-import type { ScriptCond, ScriptStep, WinRule } from '../chapters/types.js';
+import type { WinRule } from '../chapters/types.js';
 import { ENEMY_TYPES, MECHANICS, PICKUP_TYPES, ROOM_KINDS } from '../chapters/validate-pack.js';
-import { ITEM_IDS } from '../contracts/inventory.js';
 import {
   b,
   n,
@@ -8,103 +7,18 @@ import {
   sel,
   t,
   type Field,
-  type FieldBase,
 } from '../editor-core/schema.js';
+import { ROOM_SOCKETS, transformFields } from '../editor-core/scene-fields.js';
 import { KIRO_CORE_ORDER } from '../game/kiro.js';
+import { AGENTS, COND_VARIANTS, condTitle, MOODS, STEP_VARIANTS, stepsField, type Variants } from './schema-script.js';
+import { STAGE_OBJECT_FIELD } from './schema-stage.js';
 
 /**
  * The editor is driven by these tables, not by per-chapter code. A new spec field is: one line in
  * `src/chapters/script-types.ts` (or types.ts), one interpreter branch in `script.ts`, one entry here.
  */
+export { AGENTS, MOODS, STEP_VARIANTS };
 export type { Field };
-
-export const AGENTS = ['kiro', 'clod', 'gork', 'codec', 'antigravy'] as const;
-export const MOODS = ['laugh', 'order', 'smug', 'annoyed'] as const;
-const EMOTES = ['shock', 'confused', 'determined', 'relief', 'panic', 'shout'] as const;
-const KIRO_ACTIONS = ['scan', 'load', 'crack_start', 'crack_step', 'crack_done', 'empower'] as const;
-
-// ---- conditions and script steps ---------------------------------------------------------------------------------
-
-/** One entry per `kind` of the union, enforced by the type: adding a kind to the spec types fails the build until the form exists. */
-type Variants<K extends string> = Record<K, Field[]>;
-
-const COND_VARIANTS = (): Variants<ScriptCond['kind']> => ({
-  ran_command: [t('name', 'Command', { mono: true, hint: 'first word the player typed, e.g. ls or ps' })],
-  file_absent: [t('path', 'Path', { suggest: 'paths', mono: true })],
-  file_read: [t('path', 'Path', { suggest: 'paths', mono: true })],
-  enemy_dead: [t('enemyId', 'Enemy id', { suggest: 'enemies' })],
-  any_enemy_dead: [],
-  core_loaded: [t('core', 'Core', { suggest: 'cores' })],
-  has_item: [sel('item', 'Item', ITEM_IDS)],
-  room_swept: [],
-  tutorial_skipped: [],
-  any: [{ type: 'array', key: 'of', label: 'Any of', item: { union: COND_VARIANTS, title: condTitle } }],
-  all: [{ type: 'array', key: 'of', label: 'All of', item: { union: COND_VARIANTS, title: condTitle } }],
-});
-
-function condTitle(c: Record<string, unknown>): string {
-  const detail = c.name ?? c.path ?? c.enemyId ?? c.core ?? c.item ?? (Array.isArray(c.of) ? `${c.of.length} conditions` : '');
-  return `${String(c.kind)}${detail ? `: ${String(detail)}` : ''}`;
-}
-
-const TEXT_ROWS = 3;
-export const STEP_VARIANTS = (): Variants<ScriptStep['kind']> => ({
-  print: [t('text', 'Terminal text', { rows: 5, mono: true })],
-  emote: [sel('emote', 'Emote', EMOTES), opt(t('text', 'Bubble text'))],
-  spawn: [t('entityId', 'Entity id'), t('model', 'Model', { suggest: 'models' }), opt(sel('entrance', 'Entrance', ['appear', 'glide']))],
-  kiro_action: [sel('action', 'Action', KIRO_ACTIONS), t('core', 'Core'), t('message', 'Message', { rows: 2 })],
-  say: [
-    sel('agent', 'Agent', AGENTS),
-    t('model', 'Model', { suggest: 'models' }),
-    sel('mood', 'Mood', MOODS),
-    t('text', 'Line', { rows: TEXT_ROWS }),
-    opt(t('print', 'Also print', { mono: true, hint: '{text} is the line' })),
-  ],
-  taunt: [
-    sel('mood', 'Mood', MOODS),
-    opt(t('fallback', 'Fallback line', { rows: 2, hint: 'used when dialogs.json has no agentTaunt for this level' })),
-    opt(t('print', 'Also print', { mono: true, hint: '{text} is the line' })),
-  ],
-  dialogue: [
-    t('obstacleId', 'Obstacle id'),
-    t('speaker', 'Speaker'),
-    opt(t('portrait', 'Portrait sprite')),
-    sel('mood', 'Mood', ['cryptic', 'hinting']),
-    t('anchorSocket', 'Anchor socket', { suggest: 'sockets', mono: true }),
-    t('text', 'Bubble text', { rows: 4 }),
-    { type: 'strings', key: 'highlight', label: 'Highlighted commands (one per line)' },
-    t('banner', 'Terminal banner'),
-  ],
-  tutorial_step: [n('step', 'Tutorial step (1-based)')],
-  carry_item: [t('entityId', 'Carrier (kiro or a spawned entity id)'), sel('item', 'Item', ITEM_IDS)],
-  give_item: [sel('item', 'Item', ITEM_IDS), opt(t('from', 'Giver (kiro or a spawned entity id)'))],
-  take_item: [sel('item', 'Item', ITEM_IDS)],
-  fly_to: [
-    t('entityId', 'Flier (kiro or a spawned entity id)'),
-    t('target', 'Target (hero, home, or a socket or entity name)', { suggest: 'sockets', mono: true }),
-    opt(b('hold', 'Hover beside the target afterwards')),
-    opt(n('ms', 'Flight time in ms (default 2400)', { step: 100 })),
-  ],
-  wait: [n('sec', 'Seconds to wait before the next steps', { step: 1 })],
-  dialog_box: [
-    sel('speaker', 'Speaker', ['vibecoder', 'dad', ...AGENTS]),
-    t('text', 'Line', { rows: TEXT_ROWS }),
-    opt(n('holdSec', 'Hold seconds after the text (default 12)', { step: 0.5 })),
-  ],
-});
-
-function stepTitle(s: Record<string, unknown>): string {
-  const text = s.text ?? s.message ?? s.entityId ?? s.step ?? s.mood ?? '';
-  return `${String(s.kind)}: ${String(text).replace(/\s+/g, ' ').slice(0, 70)}`;
-}
-
-const stepsField = (key: string, label: string, extra: Partial<FieldBase> = {}): Field => ({
-  type: 'array',
-  key,
-  label,
-  ...extra,
-  item: { union: STEP_VARIANTS, title: stepTitle, play: 'steps' },
-});
 
 // ---- level --------------------------------------------------------------------------------------------------------
 
@@ -118,6 +32,7 @@ export const OVERVIEW: Field[] = [
   sel('mechanic', 'Mechanic', MECHANICS),
   opt(t('exitDir', 'Exit gate (cd into it to advance)', { suggest: 'paths', mono: true })),
   opt(t('exitCommand', 'Exit command (final level)', { mono: true })),
+  STAGE_OBJECT_FIELD,
 ];
 
 /** Fields of one entry of `files[]`, `enemies[]`, `pickups[]` and `patches[]`; the Terminal Lab builds its setup forms from them. */
@@ -128,6 +43,12 @@ export const FILE_FIELDS: Field[] = [
   opt(n('uid', 'Owner uid')),
   opt(b('questCritical', 'Quest critical (restored if deleted)')),
   opt(t('content', 'Content', { rows: 8, mono: true })),
+  opt(n('x', 'Stage X', { step: 0.05 })),
+  opt(t('model', 'Stage model', { suggest: 'models' })),
+  opt(sel('socket', 'Room socket', ROOM_SOCKETS)),
+  opt(t('label', 'Stage label')),
+  opt(t('sfx', 'SFX cue override', { suggest: 'sfx', mono: true })),
+  ...transformFields({ includeY: true }),
 ];
 
 export const ENEMY_FIELDS: Field[] = [
@@ -140,6 +61,14 @@ export const ENEMY_FIELDS: Field[] = [
   opt(t('port', 'Port dir (worm)', { suggest: 'paths', mono: true })),
   opt(t('buffer', 'Buffer (exploit)', { suggest: 'paths', mono: true })),
   opt(t('helps', 'Helps enemy (crack)', { suggest: 'enemies' })),
+  opt({ type: 'strings', key: 'showIn', label: 'Also shown in subdirs (one path per line)' }),
+  opt(n('x', 'Stage X', { step: 0.05 })),
+  opt(t('model', 'Override model', { suggest: 'models' })),
+  opt(sel('socket', 'Room socket', ROOM_SOCKETS)),
+  opt(t('label', 'Stage label')),
+  opt(t('attackSfx', 'Attack SFX override', { suggest: 'sfx', mono: true })),
+  opt(t('killSfx', 'Kill SFX override', { suggest: 'sfx', mono: true })),
+  ...transformFields({ includeY: true }),
 ];
 
 export const PICKUP_FIELDS: Field[] = [
@@ -148,6 +77,11 @@ export const PICKUP_FIELDS: Field[] = [
   t('path', 'File', { suggest: 'paths', mono: true }),
   opt(b('locked', 'Starts encrypted')),
   opt(t('model', 'Override pickup model', { suggest: 'models' })),
+  opt(n('x', 'Stage X', { step: 0.05 })),
+  opt(sel('socket', 'Room socket', ROOM_SOCKETS)),
+  opt(t('label', 'Stage label')),
+  opt(t('sfx', 'Pickup SFX override', { suggest: 'sfx', mono: true })),
+  ...transformFields({ includeY: true }),
   opt({ type: 'union', key: 'appearWhen', label: 'Appears when (drops onto ground)', union: COND_VARIANTS }),
 ];
 
@@ -155,8 +89,12 @@ export const PROP_FIELDS: Field[] = [
   t('id', 'Id'),
   t('model', 'Model', { suggest: 'models' }),
   n('x', 'Stage x (room spans about -1 to 5)', { step: 0.1 }),
-  opt(n('y', 'Height above the floor', { step: 0.1 })),
+  opt(sel('socket', 'Room socket', ROOM_SOCKETS)),
+  opt(sel('kind', 'Actor kind', ['prop', 'npc', 'door', 'pickup', 'enemy', 'boss', 'vibecoder'])),
   opt(t('label', 'Label')),
+  opt(t('sfx', 'SFX cue override', { suggest: 'sfx', mono: true })),
+  opt(t('cwd', 'Only visible in cwd', { mono: true, suggest: 'paths' })),
+  ...transformFields({ includeY: true }),
 ];
 
 export const PATCH_FIELDS: Field[] = [t('file', 'File name'), t('label', 'Label'), t('find', 'Find', { rows: 2, mono: true }), t('replace', 'Replace', { rows: 2, mono: true })];
@@ -420,7 +358,21 @@ export const MANIFEST: Field[] = [
     type: 'object',
     key: 'boss',
     label: 'Boss',
-    fields: [t('id', 'Id'), t('name', 'Name'), t('processName', 'Process'), n('pid', 'PID'), t('model', 'Model', { suggest: 'models' }), opt(t('cameoModel', 'Cameo supervisor model', { suggest: 'models' })), opt(t('cameoLabel', 'Cameo stage label'))],
+    fields: [
+      t('id', 'Id'),
+      t('name', 'Name'),
+      t('processName', 'Process'),
+      n('pid', 'PID'),
+      t('model', 'Model', { suggest: 'models' }),
+      opt(t('cameoModel', 'Cameo supervisor model', { suggest: 'models' })),
+      opt(t('cameoLabel', 'Cameo stage label')),
+      opt({
+        type: 'object',
+        key: 'cameoTransform',
+        label: 'Cameo placement & transform',
+        fields: [opt(n('x', 'X', { step: 0.05 })), opt(t('label', 'Label')), ...transformFields({ includeY: true })],
+      }),
+    ],
   },
   { type: 'strings', key: 'mechanicsSummary', label: 'Mechanics summary (one per line)', rows: 6 },
   {
@@ -467,7 +419,10 @@ export const MANIFEST: Field[] = [
         key: 'actors',
         label: 'Closing actors',
         optional: true,
-        item: { title: (a) => `${String(a.id)} (${String(a.model)})`, fields: [t('id', 'Id'), t('model', 'Model', { suggest: 'models' }), t('label', 'Label'), n('x', 'X', { step: 0.05 })] },
+        item: {
+          title: (a) => `${String(a.id)} (${String(a.model)})`,
+          fields: [t('id', 'Id'), t('model', 'Model', { suggest: 'models' }), t('label', 'Label'), n('x', 'X', { step: 0.05 }), ...transformFields({ includeY: true })],
+        },
       },
     ],
   },
@@ -488,6 +443,7 @@ export const COMIX_PAGE: Field[] = [
         t('id', 'Id'),
         { type: 'numbers', key: 'rect', label: 'Rect x, y, w, h (0..1)' },
         { type: 'color', key: 'bgHex', label: 'Background' },
+        opt({ type: 'color', key: 'backdrop', label: 'Backdrop sky colour (#rrggbb)' }),
         opt(t('room', 'Room', { suggest: 'rooms' })),
         opt(t('caption', 'Caption', { rows: 2 })),
         {
@@ -496,9 +452,18 @@ export const COMIX_PAGE: Field[] = [
           label: 'Cast',
           item: {
             title: (c) => `${String(c.model)} @ ${String(c.x)}`,
-            fields: [t('model', 'Model', { suggest: 'models' }), n('x', 'X', { step: 0.02 }), opt(n('scale', 'Scale', { step: 0.02 })), opt(sel('view', 'View', ['front', 'side', 'top']))],
+            fields: [t('model', 'Model', { suggest: 'models' }), n('x', 'X', { step: 0.02 }), opt(sel('view', 'View', ['front', 'side', 'top'])), ...transformFields({ includeY: true })],
           },
         },
+        opt({
+          type: 'array',
+          key: 'props',
+          label: 'Stage props',
+          item: {
+            title: (c) => `${String(c.model)} @ ${String(c.x)}`,
+            fields: [opt(t('id', 'Id')), t('model', 'Model', { suggest: 'models' }), n('x', 'X', { step: 0.02 }), opt(sel('view', 'View', ['front', 'side', 'top'])), ...transformFields({ includeY: true })],
+          },
+        }),
         {
           type: 'array',
           key: 'bubbles',
@@ -514,7 +479,7 @@ export const COMIX_PAGE: Field[] = [
           key: 'sfx',
           label: 'Sound effect',
           optional: true,
-          fields: [t('text', 'Lettering'), n('x', 'X', { step: 0.02 }), n('y', 'Y', { step: 0.02 }), { type: 'color', key: 'color', label: 'Colour' }],
+          fields: [t('text', 'Lettering'), n('x', 'X', { step: 0.02 }), n('y', 'Y', { step: 0.02 }), { type: 'color', key: 'color', label: 'Colour' }, opt(t('cue', 'Audio SFX cue', { suggest: 'sfx', mono: true }))],
         },
       ],
     },

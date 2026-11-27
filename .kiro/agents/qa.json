@@ -33,7 +33,16 @@
     "@credits-forge/list_levels",
     "@credits-forge/get_level",
     "@credits-forge/validate_level",
-    "@credits-forge/solve_level"
+    "@credits-forge/solve_level",
+    "@credits-forge/get_chapter_file",
+    "@credits-forge/validate_chapter",
+    "@credits-forge/list_comix",
+    "@credits-forge/get_comix",
+    "@credits-forge/validate_comix",
+    "@credits-forge/list_labs",
+    "@credits-forge/get_lab",
+    "@credits-forge/validate_lab",
+    "@credits-forge/run_lab"
   ],
   "allowedTools": [],
   "mcpServers": {
@@ -87,9 +96,15 @@
     "file://.kiro/steering/terminal-lab-rules.md",
     "skill://.kiro/skills/comic-panel-viewport-auditor/SKILL.md",
     "skill://.kiro/skills/chapter-implementer/SKILL.md",
+    "skill://.kiro/skills/chapter-editor/SKILL.md",
     "skill://.kiro/skills/comix-implementer/SKILL.md",
+    "skill://.kiro/skills/comix-editor/SKILL.md",
+    "skill://.kiro/skills/terminal-lab/SKILL.md",
+    "skill://.kiro/skills/laptop-lab/SKILL.md",
+    "skill://.kiro/skills/sfx-and-music-pipeline/SKILL.md",
     "skill://.kiro/skills/model-geometry-validator/SKILL.md",
-    "skill://.kiro/skills/particle-effect-validator/SKILL.md"
+    "skill://.kiro/skills/particle-effect-validator/SKILL.md",
+    "skill://.kiro/skills/procedural-particles-3d/SKILL.md"
   ],
   "hooks": [
     {
@@ -359,7 +374,16 @@
           "credits-forge/list_levels",
           "credits-forge/get_level",
           "credits-forge/validate_level",
-          "credits-forge/solve_level"
+          "credits-forge/solve_level",
+          "credits-forge/get_chapter_file",
+          "credits-forge/validate_chapter",
+          "credits-forge/list_comix",
+          "credits-forge/get_comix",
+          "credits-forge/validate_comix",
+          "credits-forge/list_labs",
+          "credits-forge/get_lab",
+          "credits-forge/validate_lab",
+          "credits-forge/run_lab"
         ],
         "effect": "allow"
       },
@@ -395,7 +419,16 @@
           "credits-forge/list_levels",
           "credits-forge/get_level",
           "credits-forge/validate_level",
-          "credits-forge/solve_level"
+          "credits-forge/solve_level",
+          "credits-forge/get_chapter_file",
+          "credits-forge/validate_chapter",
+          "credits-forge/list_comix",
+          "credits-forge/get_comix",
+          "credits-forge/validate_comix",
+          "credits-forge/list_labs",
+          "credits-forge/get_lab",
+          "credits-forge/validate_lab",
+          "credits-forge/run_lab"
         ],
         "effect": "deny"
       }

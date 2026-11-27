@@ -68,6 +68,6 @@ Cinematic lettering and beats emit `letter` and `cine` events on the shared bus.
 - `src/play/audio-sync.ts` play-page scene, timer, menu and manual edges.
 - `scripts/harness/audio-unit.mjs` the gate.
 
-Layers: `audio/` may import `contracts/` only. `play/`, `pages/`, `hub/`, `laptop/` and `terminal-lab/` may import `audio/`. `lead-dev` owns `src/audio/**`.
+Layers: `audio/` may import `contracts/` only. `play/`, `pages/`, `hub/`, `laptop/`, `terminal-lab/`, and `audio-lab/` may import `audio/`. `sound-designer` owns `src/audio/**` and `src/audio-lab/**`.
 - Ambient loops (requirement 10): `syncPlayAudio` (`src/play/audio-sync.ts`) keeps the set of ambient `LoopCue`s of the hero's room (`ambientLoopsFor(room actor models)`, `src/audio/sfx-models.ts`) and publishes `loop` on/off for the difference on every sync; the set is kept per `Play` and reset by `mountPlayAudio`. `startLoop` in `src/audio/engine.ts` reads the per-cue gain from `LOOP_GAINS`.
 

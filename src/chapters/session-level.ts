@@ -1,5 +1,6 @@
 import { growTree } from './tree-gen.js';
 import type { KernelEvent } from '../contracts/events.js';
+import { pickSpatial } from '../contracts/room-view.js';
 import { endBattle } from '../game/battle.js';
 import { rollOuch } from '../game/ouch.js';
 import { SSD_PER_BACKUP, maxHpFor } from '../game/bestiary.js';
@@ -26,25 +27,34 @@ function rebootLevel(g: ChapterState, events: KernelEvent[]): string {
 
 /** `spec` is the level as played: its enemies already carry their rolled PIDs (`applyPids`). */
 function levelSpawns(spec: LevelSpec): { enemySpawns: EnemySpawn[]; pickupSpawns: PickupSpawn[] } {
-  const enemySpawns: EnemySpawn[] = spec.enemies.map((e) => {
-    return {
-      id: e.id,
-      type: e.type,
-      path: e.path,
-      pid: e.pid,
-      ppid: e.ppid,
-      hidden: e.hidden,
-      port: e.port,
-      buffer: e.buffer,
-      helps: e.helps,
-    };
-  });
+  const enemySpawns: EnemySpawn[] = spec.enemies.map((e) => ({
+    id: e.id,
+    type: e.type,
+    path: e.path,
+    pid: e.pid,
+    ppid: e.ppid,
+    hidden: e.hidden,
+    port: e.port,
+    buffer: e.buffer,
+    helps: e.helps,
+    ...(e.showIn ? { showIn: e.showIn } : {}),
+    ...pickSpatial(e),
+    ...(e.socket ? { socket: e.socket } : {}),
+    ...(e.model ? { model: e.model } : {}),
+    ...(e.label ? { label: e.label } : {}),
+    ...(e.attackSfx ? { attackSfx: e.attackSfx } : {}),
+    ...(e.killSfx ? { killSfx: e.killSfx } : {}),
+  }));
   const pickupSpawns: PickupSpawn[] = spec.pickups.map((p) => ({
     id: p.id,
     type: p.type,
     path: p.path,
     locked: p.locked,
     ...(p.model ? { model: p.model } : {}),
+    ...pickSpatial(p),
+    ...(p.socket ? { socket: p.socket } : {}),
+    ...(p.label ? { label: p.label } : {}),
+    ...(p.sfx ? { sfx: p.sfx } : {}),
   }));
   return { enemySpawns, pickupSpawns };
 }
@@ -115,6 +125,7 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
 
     g.rt = {
       spec,
+      filesByPath: new Map(spec.files.map((f) => [f.path, f])),
       root,
       cwd,
       world: null as unknown as World,
@@ -145,6 +156,7 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       tutorialLastStep: 1,
       hiddenRevealed: false,
       spawned: new Set(),
+      spawnedActors: new Map(),
       levelTicks: 0,
       timedFired: new Set(),
       deferred: [],
@@ -172,6 +184,7 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       floorId: spec.index,
       title: `LEVEL ${String(spec.index).padStart(2, '0')} — ${spec.title.toUpperCase()}`,
       path: spec.cwd,
+      ...(spec.stage?.sfx?.enter ? { sfx: spec.stage.sfx.enter } : {}),
     });
     for (const present of g.rt.world.presentIn(spec.cwd)) {
       if (present.id === hiddenEnemyId(g) || isPickupHidden(g, present.id)) continue;

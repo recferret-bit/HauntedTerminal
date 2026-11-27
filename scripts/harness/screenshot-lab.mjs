@@ -105,7 +105,9 @@ async function main() {
     }
     const pagePath = args.val('--page', '/storybook.html');
     const isLab = pagePath.includes('storybook');
-    const url = `${base.replace(/\/$/, '')}${pagePath}?${query}${query ? '&' : ''}dpr=${dpr}`;
+    const sep = pagePath.includes('?') ? '&' : '?';
+    const tail = query ? `${query}&dpr=${dpr}` : `dpr=${dpr}`;
+    const url = `${base.replace(/\/$/, '')}${pagePath}${sep}${tail}`;
 
     chrome = spawn(chromePath, [
       '--headless=new',
@@ -211,11 +213,18 @@ async function main() {
     cdp.close();
 
     console.log(`url      ${url}`);
-    console.log(`mode     ${stats.mode}${stats.id ? ` ${stats.id}` : ''}   catalog: ${list.models.length} models, ${list.textures.length} textures`);
+    console.log(`mode     ${stats.mode}${stats.id ? ` ${stats.id}` : ''}   catalog: ${list.models.length} models, ${list.textures.length} textures, ${list.fx?.length ?? 0} fx`);
     if (stats.subject?.info) {
       const i = stats.subject.info;
       console.log(`model    ${i.parts} parts, ${i.triangles} tris, w ${i.size[0].toFixed(2)} h ${i.size[1].toFixed(2)} d ${i.size[2].toFixed(2)}, minY ${i.minY.toFixed(3)}, depth ratio ${i.depthRatio.toFixed(2)}`);
       console.log(`zones    ${i.zones.map((z) => `${z.zone} ${Math.round(z.share * 100)}%`).join(', ')}`);
+    }
+    if (stats.subject?.fxInfo) {
+      const f = stats.subject.fxInfo;
+      const m = f.metrics;
+      console.log(`fx       ${f.pass ? 'PASS' : 'FAIL'} (${f.errors}e/${f.warnings}w) ${f.family} ${f.moment} · ${f.durationMs}ms@${f.stepFps}fps · ${m.layers}L ${m.instances}p ${m.triangles}t`);
+      console.log(`fxMetric P/S/A ${Math.round(m.share.primary)}/${Math.round(m.share.secondary)}/${Math.round(m.share.accent)}% · dE=${m.deltaE ?? '-'} · min=${m.minParticlePx}px · ${m.bounds.width}x${m.bounds.height}u · last=${m.lastParticleMs}ms`);
+      if (f.word) console.log(`fxWord   "${f.word.text}" (${f.word.style}, ${f.word.zone}, ${f.word.holdMs}ms)`);
     }
     if (stats.framing) console.log(`scale    ${stats.framing.ppu.toFixed(1)} px/unit`);
     if (stats.gallery) {

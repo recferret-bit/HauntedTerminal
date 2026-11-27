@@ -34,8 +34,10 @@ functions of a `seed`.
 |---|---|
 | `src/procgen/kit/shapes.ts` | Outlines (`outlineRoundRect`, `outlineArch`, `outlineComb`, `outlineStroke`, ...), part constructors (`kitPlate`, `kitBox`, `kitDisc`, `kitRing`), list transforms (`mirrorX`, `offsetParts`, `prefixParts`, `tiltParts`, `animateParts`) |
 | `src/procgen/kit/greebles.ts` | The hardware vocabulary, `greeble*()`. Re-exports `shapes.ts`, so import everything from here |
-| `src/procgen/archetypes/vibecoder.ts` | `vibecoder.dev` (holds the lantern), `vibecoder.dev_terminal`, `vibecoder.dev_laptop`, `vibecoder.dev_manual`, `vibecoder.dev_map`, `vibecoder.dev_bare` (empty hands), `vibecoder.hand`. The developer is his body plus one held item: one model is registered per entry of `ITEMS` (`src/contracts/inventory.ts`, its `heroModel`), and `holdItem()` puts the item's `grip` socket in his hand |
-| `src/procgen/archetypes/items.ts`, `items/` | The inventory, one builder per `ITEM_IDS` entry (`ITEM_BUILDERS`): `item.lantern`, `item.terminal`, `item.laptop`, `item.manual`, `item.map` |
+| `src/procgen/archetypes/vibecoder.ts` | `vibecoder.dev` (holds `item.tube_transistor`), `vibecoder.dev_terminal`, `vibecoder.dev_laptop`, `vibecoder.dev_manual`, `vibecoder.dev_map`, `vibecoder.dev_bare` (empty hands), `vibecoder.hand`. The developer is his body plus one held item: one holdable model variant is registered per entry of `ITEMS` (`src/contracts/inventory.ts`, its `heroModel`), and `holdItem()` puts the item's `grip` socket in his hand |
+| `src/procgen/archetypes/items.ts`, `items/` | The inventory (`ITEM_BUILDERS` for `ITEM_IDS`): `item.tube_transistor`, `item.terminal`, `item.laptop`, `item.manual`, `item.map`, `item.tensor_gpu`, `item.vram_module` |
+| `src/procgen/archetypes/npc.ts`, `npc/` | Friendly/mentor rigs: `npc.greybeard_rig` (`dad.tty`), `npc.kiro_ghost` |
+| `src/procgen/archetypes/agents.ts`, `agents/` | Big Four parody AI agent villains: `agent.clod`, `agent.antigravy`, `agent.gork`, `agent.codec` |
 | `src/procgen/archetypes/pickups.ts` | `pickup.energy`, `pickup.ram`, `pickup.ssd` |
 | `src/procgen/archetypes/doors.ts` | `door.usb` `.ethernet` `.hdmi` `.serial` `.firewall` `.loopback` `.devnull` `.socket` |
 | `src/procgen/archetypes/props.ts` | `prop.file` `.tar` `.fuse` `.chip` `.capacitor` `.heatsink` `.fan` `.cables` `.crt` `.tombstone` |
@@ -56,7 +58,7 @@ triangle costs). Worked example: [examples/prop-floppy.ts](./examples/prop-flopp
    Keep 6 to 40 parts and under 3500 triangles. Use greebles for hardware detail instead of
    hand-placing boxes; they already handle layering and naming.
 4. **Zones, 60 / 30 / 10.** One dominant zone, one secondary, accents and light for the rest; at most
-   five zones plus ink. Family rules are enforced: `human` zones only on the vibecoder and the hand,
+   five zones plus ink. Family rules are enforced: `human` zones only on `vibecoder.*`, `item.*`, and `npc.greybeard_rig` (`HUMAN_ZONE_MISUSE`),
    `malware` zones never here, `signal` zones only for light that means something.
 5. **Ground it.** Feet at `y = 0`. Bevels grow an outline by their size, so lift a bevelled base
    part by its bevel. Pickups and hanging things carry `tags: ['hover']` instead.

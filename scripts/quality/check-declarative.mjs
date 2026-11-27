@@ -8,7 +8,7 @@ import { join, relative, resolve } from 'node:path';
 
 const SRC = resolve('src');
 const COMIX = resolve('comix');
-const AREAS = ['chapters', 'play', 'ui', 'pages', 'renderer', 'cinematic', 'sandbox', 'editor-core', 'chapter-editor', 'comix-editor', 'terminal-lab', 'hub', 'main.ts'];
+const AREAS = ['chapters', 'game', 'audio', 'play', 'ui', 'pages', 'renderer', 'cinematic', 'sandbox', 'editor-core', 'chapter-editor', 'comix-editor', 'terminal-lab', 'hub', 'main.ts'];
 const SKIP = ['chapters/generated/', 'cinematic/generated/'];
 const comixSlugs = existsSync(COMIX)
   ? readdirSync(COMIX).filter((n) => statSync(join(COMIX, n)).isDirectory() && /^[a-z0-9-]+$/.test(n))
@@ -25,6 +25,7 @@ const RULES = [
   { rx: /page-\d{2}-[a-z]/, what: 'a comix page id' },
   { rx: /\b(?:spec|level|rt\.spec)\.index\s*(?:===|!==|<=|>=|<|>)\s*(?![01]\b)\d/, what: 'a branch on a level number' },
   { rx: /\blevelIdx\s*(?:===|!==|<=|>=|<|>)\s*\d/, what: 'a branch on a level number' },
+  { rx: /['"`]\/?(?:mnt\/wires_and_chips|srv\/kiroween\/|sys\/clod_overlord_core)\b/, what: 'a chapter-specific VFS path' },
   ...(comixSlugRx ? [{ rx: comixSlugRx, what: 'a comix sequence id', only: ['cinematic/', 'comix-editor/'] }] : []),
   ...(comixCallRx ? [{ rx: comixCallRx, what: 'a comix sequence id' }] : []),
   ...(nonPhaseSlugRx ? [{ rx: nonPhaseSlugRx, what: 'a comix sequence id' }] : []),

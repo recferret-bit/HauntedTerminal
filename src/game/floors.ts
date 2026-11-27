@@ -1,3 +1,4 @@
+import type { RoomSocketId, SceneTransform } from '../contracts/room-view.js';
 import type { EnemyType, PickupType } from './bestiary.js';
 import { makeNode, makeRoot, type VNode } from './tree.js';
 
@@ -28,7 +29,7 @@ function root0(node: VNode): VNode {
 }
 
 /** An enemy placed on a floor. Its file (if any) is created by the floor builder at `path`. */
-export interface EnemySpawn {
+export interface EnemySpawn extends SceneTransform {
   /** Stable entity id; equals the RoomActor id and the event entityId. */
   id: string;
   type: EnemyType;
@@ -46,9 +47,16 @@ export interface EnemySpawn {
   helps?: string;
   /** Extra rooms (absolute paths) where it is drawn, e.g. the mimic seen from the hall. */
   showIn?: string[];
+  x?: number;
+  y?: number;
+  socket?: RoomSocketId;
+  model?: string;
+  label?: string;
+  attackSfx?: string;
+  killSfx?: string;
 }
 
-export interface PickupSpawn {
+export interface PickupSpawn extends SceneTransform {
   id: string;
   type: PickupType;
   path: string;
@@ -56,6 +64,11 @@ export interface PickupSpawn {
   locked?: boolean;
   /** Optional ModelCatalog override (e.g. `pickup.gpu`). */
   model?: string;
+  x?: number;
+  y?: number;
+  socket?: RoomSocketId;
+  label?: string;
+  sfx?: string;
 }
 
 export interface FloorTree {

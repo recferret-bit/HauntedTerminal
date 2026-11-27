@@ -12,7 +12,10 @@
     "@credits-forge/get_level",
     "@credits-forge/validate_level",
     "@credits-forge/solve_level",
-    "@credits-forge/write_level"
+    "@credits-forge/get_chapter_file",
+    "@credits-forge/validate_chapter",
+    "@credits-forge/write_level",
+    "@credits-forge/write_chapter_file"
   ],
   "allowedTools": [],
   "mcpServers": {
@@ -284,7 +287,10 @@
           "credits-forge/get_level",
           "credits-forge/validate_level",
           "credits-forge/solve_level",
-          "credits-forge/write_level"
+          "credits-forge/get_chapter_file",
+          "credits-forge/validate_chapter",
+          "credits-forge/write_level",
+          "credits-forge/write_chapter_file"
         ],
         "effect": "allow"
       },
@@ -299,7 +305,10 @@
           "credits-forge/get_level",
           "credits-forge/validate_level",
           "credits-forge/solve_level",
-          "credits-forge/write_level"
+          "credits-forge/get_chapter_file",
+          "credits-forge/validate_chapter",
+          "credits-forge/write_level",
+          "credits-forge/write_chapter_file"
         ],
         "effect": "deny"
       }

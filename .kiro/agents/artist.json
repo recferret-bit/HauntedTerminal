@@ -6,9 +6,18 @@
   "tools": [
     "read",
     "write",
-    "shell"
+    "shell",
+    "@credits-forge/list_assets"
   ],
   "allowedTools": [],
+  "mcpServers": {
+    "credits-forge": {
+      "command": "node",
+      "args": [
+        "scripts/mcp/credits-forge/server.mjs"
+      ]
+    }
+  },
   "includeMcpJson": false,
   "includePowers": false,
   "resources": [
@@ -272,7 +281,17 @@
       {
         "capability": "mcp",
         "match": [
+          "credits-forge/list_assets"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "mcp",
+        "match": [
           "*"
+        ],
+        "exclude": [
+          "credits-forge/list_assets"
         ],
         "effect": "deny"
       }

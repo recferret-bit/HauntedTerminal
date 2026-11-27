@@ -1,4 +1,4 @@
-import { b, n, opt, sel, t, type Field } from '../editor-core/schema.js';
+import { b, n, nv3, opt, sel, t, type Field } from '../editor-core/schema.js';
 import type { AudioCue, EaseName, PanelBeat, SceneTrack, StageFixtureSpec } from '../cinematic/spec-types.js';
 import { ANIM_STATE_IDS } from '../procgen/anim/states.js';
 import { ZONE_IDS } from '../procgen/core/palette.js';
@@ -99,10 +99,16 @@ export const TRACK_VARIANTS = (): Record<SceneTrack['kind'], Field[]> => ({
     opt(n('arc', 'Parabolic Y arc height', { step: 0.05 })),
     opt(n('scaleFrom', 'Uniform start scale', { step: 0.02 })),
     opt(n('scaleTo', 'Uniform end scale', { step: 0.02 })),
+    opt({ type: 'numbers', key: 'scaleVecFrom', label: 'Start 3D scale [sx, sy, sz]' }),
+    opt({ type: 'numbers', key: 'scaleVecTo', label: 'End 3D scale [sx, sy, sz]' }),
     opt({ type: 'numbers', key: 'stretchFrom', label: 'Non-uniform start [sx, sy]' }),
     opt({ type: 'numbers', key: 'stretchTo', label: 'Non-uniform end [sx, sy]' }),
     opt(n('rotZFrom', 'Start Z rotation (rad)', { step: 0.02 })),
     opt(n('rotZTo', 'End Z rotation (rad)', { step: 0.02 })),
+    opt(nv3('rotFrom', 'Start rotation deg (Z or [rx, ry, rz])', { step: 1 })),
+    opt(nv3('rotTo', 'End rotation deg (Z or [rx, ry, rz])', { step: 1 })),
+    opt(n('zOrderFrom', 'Start Z order', { step: 0.5 })),
+    opt(n('zOrderTo', 'End Z order', { step: 0.5 })),
     opt(sel('deform', 'Comic deform', ['none', 'stretch_to_target', 'squash_land'])),
     opt(b('hideWhenDead', 'Hide once death animation finishes')),
   ],
@@ -113,14 +119,14 @@ export const TRACK_VARIANTS = (): Record<SceneTrack['kind'], Field[]> => ({
     opt({ type: 'strings', key: 'hideParts', label: 'Hidden part prefixes (one per line)', rows: 2 }),
   ],
   part_visibility: [
-    t('target', 'Target ("room" or actor id)', { suggest: 'actors', mono: true }),
+    t('target', 'Target ("room", actor, or prop id)', { suggest: 'actors', mono: true }),
     { type: 'strings', key: 'parts', label: 'Part prefixes (one per line)', rows: 2 },
     time('from', 'From'),
     opt(time('until', 'Until')),
     b('visible', 'Visible'),
   ],
   material_tint: [
-    t('target', 'Target ("room" or actor id)', { suggest: 'actors', mono: true }),
+    t('target', 'Target ("room", actor, or prop id)', { suggest: 'actors', mono: true }),
     sel('zone', 'Palette zone', ZONE_IDS),
     time('from', 'From'),
     opt(time('until', 'Until')),

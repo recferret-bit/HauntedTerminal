@@ -1,3 +1,4 @@
+import { isSfxId, type SfxId } from './audio-cues.js';
 import type { KernelEvent } from './events.js';
 
 export type MusicSurface =
@@ -29,6 +30,8 @@ export interface MusicScene {
   floorTheme: 1 | 2 | 3 | 4 | 5 | null;
   /** Level mechanic is `hub`. */
   hub: boolean;
+  /** Optional MusicId override declared by the active level config. */
+  music?: string;
 }
 
 export type LaptopAction =
@@ -37,6 +40,12 @@ export type LaptopAction =
   | 'solved' | 'check-fail' | 'win-open' | 'win-min' | 'win-close';
 
 export type LoopCue = 'rain_loop' | 'low_hp_loop' | 'lap_fan' | 'dad_typing_loop' | 'dad_smoke_loop';
+
+const LOOP_SET = new Set<string>(['rain_loop', 'low_hp_loop', 'lap_fan', 'dad_typing_loop', 'dad_smoke_loop']);
+
+export function isLoopCue(cue: string): cue is LoopCue | SfxId {
+  return LOOP_SET.has(cue) || isSfxId(cue);
+}
 
 export type CineCue = 'thunder' | 'thunder-far' | 'burst' | 'zap' | 'shatter' | 'lightning' | 'boot';
 
@@ -53,11 +62,13 @@ export type AppEvent =
   | { kind: 'manual'; open: boolean }
   | { kind: 'timer'; secondsLeft: number }
   | { kind: 'laptop'; action: LaptopAction }
-  | { kind: 'loop'; cue: LoopCue; on: boolean }
+  | { kind: 'loop'; cue: LoopCue | SfxId; on: boolean }
   | { kind: 'cine'; cue: CineCue }
   | { kind: 'letter'; letter: LetterCue }
   | { kind: 'dialog'; speaker: string }
   | { kind: 'page' }
+  | { kind: 'sfx'; cue: string }
+  | { kind: 'music'; cue: string | null }
   | { kind: 'audio-hold'; paused: boolean };
 
 /** Mute and volume, forwarded from the session onto the sample graph. */

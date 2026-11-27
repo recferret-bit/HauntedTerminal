@@ -21,14 +21,18 @@
       "kind": "file",
       "mode": 438,
       "questCritical": true,
-      "content": "RING_BUFFER_STREAM_ACTIVE\n"
+      "content": "RING_BUFFER_STREAM_ACTIVE\n",
+      "x": 3.88,
+      "model": "prop.file"
     },
     {
       "path": "/srv/kiroween/compose_furnace/docker-compose.yml",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "services:\n  nginx:\n    image: nginx:alpine\n    ports:\n      - \"8080:80\"\n    depends_on:\n      - website\n  website:\n    image: byterig-web:1.0\n    environment:\n      - PAYMENT_URL=http://localhost:9999\n    depends_on:\n      - payment\n  payment:\n    image: byterig-pay:1.0\n    environment:\n      - PAYMENT_MODE=live\n    ports:\n      - \"4002:4002\"\n"
+      "content": "services:\n  nginx:\n    image: nginx:alpine\n    ports:\n      - \"8080:80\"\n    depends_on:\n      - website\n  website:\n    image: byterig-web:1.0\n    environment:\n      - PAYMENT_URL=http://localhost:9999\n    depends_on:\n      - payment\n  payment:\n    image: byterig-pay:1.0\n    environment:\n      - PAYMENT_MODE=live\n    ports:\n      - \"4002:4002\"\n",
+      "x": 3.35,
+      "model": "prop.file"
     },
     {
       "path": "/srv/kiroween/compose_furnace/ram_16gb.dimm",
@@ -45,7 +49,11 @@
     {
       "path": "/srv/kiroween/compose_furnace/server_hub_3",
       "kind": "dir",
-      "mode": 0
+      "mode": 0,
+      "x": -1.05,
+      "model": "door.ethernet",
+      "socket": "door.right",
+      "sfx": "door_ethernet"
     }
   ],
   "enemies": [
@@ -53,19 +61,23 @@
       "id": "exploit_l9",
       "type": "exploit",
       "path": "/srv/kiroween/compose_furnace/port_hijack.bin",
-      "buffer": "/srv/kiroween/compose_furnace/proxy.buf"
+      "buffer": "/srv/kiroween/compose_furnace/proxy.buf",
+      "x": 0.8
     }
   ],
   "pickups": [
     {
       "id": "pickup_l9_ram",
       "type": "ram",
-      "path": "/srv/kiroween/compose_furnace/ram_16gb.dimm"
+      "path": "/srv/kiroween/compose_furnace/ram_16gb.dimm",
+      "x": 1.85
     },
     {
       "id": "pickup_l9_gpu",
       "type": "ssd",
-      "path": "/srv/kiroween/compose_furnace/gpu_h100_core_03.img"
+      "path": "/srv/kiroween/compose_furnace/gpu_h100_core_03.img",
+      "model": "pickup.gpu",
+      "x": 1.35
     }
   ],
   "patches": [
@@ -105,7 +117,29 @@
       "id": "l9_spider",
       "model": "prop.spider",
       "x": 4.92,
-      "y": 2.35
+      "y": 2.35,
+      "zOrder": -2
+    },
+    {
+      "id": "l9_compose_heatsink",
+      "model": "prop.heatsink",
+      "x": 4.78,
+      "zOrder": -1,
+      "label": "furnace heatsink"
+    },
+    {
+      "id": "l9_hanging",
+      "model": "prop.hanging_cable",
+      "x": 1.7,
+      "y": 2.95,
+      "zOrder": -2
+    },
+    {
+      "id": "l9_pcb",
+      "model": "prop.pcb_plaque",
+      "x": -0.1,
+      "y": 2.35,
+      "zOrder": -3
     }
   ],
   "winRules": [
@@ -189,5 +223,18 @@
         ]
       }
     ]
+  },
+  "stage": {
+    "hero": 2.5,
+    "music": "floor_furnace",
+    "sfx": {
+      "enter": "door_hdmi"
+    },
+    "entryPort": {
+      "label": "sector_in",
+      "model": "door.serial",
+      "socket": "door.left",
+      "sfx": "door_serial"
+    }
   }
 }

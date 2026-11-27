@@ -43,6 +43,8 @@ export type KernelEvent =
       toPath: string;
       upwardPanelsSmashed: number;
       viaSymlinkLoop: boolean;
+      doorModel?: string;
+      sfx?: string;
     }
   | {
       type: 'LANTERN_REVEAL';
@@ -53,6 +55,7 @@ export type KernelEvent =
       type: 'PERMISSION_DENIED_RATTLE';
       targetId: InodeId;
       command: string;
+      sfx?: string;
     }
   | {
       type: 'INODE_MODE_CHANGED';
@@ -110,6 +113,7 @@ export type KernelEvent =
       floorId: number;
       speedrunBonus: boolean;
       commandsCount: number;
+      sfx?: string;
      }
   // ---- Added for the full campaign (enemies, pickups, files, lifecycle). Entity ids match RoomActor.id.
   | {
@@ -128,6 +132,7 @@ export type KernelEvent =
       model: string;
       damage: number;
       attack: string;
+      sfx?: string;
     }
   | {
       type: 'ENEMY_HIT';
@@ -174,6 +179,7 @@ export type KernelEvent =
       entityId: string;
       model: string;
       how: 'SIGKILL' | 'SIGTERM' | 'rm' | 'chmod' | 'devnull' | 'other';
+      sfx?: string;
     }
   | {
       type: 'ENEMY_STATE';
@@ -189,12 +195,14 @@ export type KernelEvent =
       amount: number;
       /** Short HUD/FX word, e.g. `+25HP`, `+16GB RAM`. */
       label: string;
+      sfx?: string;
     }
   | {
       type: 'FILE_REMOVED';
       inodeId: InodeId;
       name: string;
       entityId?: string;
+      sfx?: string;
     }
   | {
       type: 'FILE_CREATED';
@@ -213,6 +221,20 @@ export type KernelEvent =
       floorId: number;
       title: string;
       path: string;
+      sfx?: string;
+    }
+  | {
+      /** Declarative sound effect triggered by a level config/script (`SOUND_CUE`). */
+      type: 'SOUND_CUE';
+      cue: string;
+    }
+  | {
+      /** Declarative visual FX cue triggered by a level script (`FX_CUE`). */
+      type: 'FX_CUE';
+      preset: string;
+      x?: number;
+      y?: number;
+      text?: string;
     }
   | {
       /** The vibecoder acts out the command just typed (typing pose, lantern raise, cast at a target). */

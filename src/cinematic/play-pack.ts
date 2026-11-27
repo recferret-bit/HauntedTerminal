@@ -1,6 +1,9 @@
 import type * as THREE from 'three';
 import type { ZoneId } from '../procgen/core/palette.js';
-import type { AppBus } from '../contracts/app-bus.js';
+import { isLoopCue, type AppBus } from '../contracts/app-bus.js';
+import {
+  normalizeRotationRad, normalizeScale, zOrderToRenderOrder, zOrderToZOffset,
+} from '../contracts/room-view.js';
 import { cueComixAudio } from './audio-cues.js';
 import { CineAudio, safeAudio } from './audio.js';
 import { stepBeats } from './beats.js';
@@ -28,21 +31,42 @@ function buildPageDom(host: HTMLElement, timeline: ResolvedTimeline): ComicPage 
   return new ComicPage(host, defs, timeline.pageCount);
 }
 
+function applyBaseTransform(
+  stage: CinematicStage,
+  actor: Actor,
+  pos: THREE.Vector3,
+  scaleVec: [number, number, number],
+  rotRad: [number, number, number],
+  zOrder: number,
+  visible: boolean,
+): void {
+  const g = actor.model.group;
+  g.position.set(pos.x, pos.y, pos.z + zOrderToZOffset(zOrder));
+  g.scale.set(scaleVec[0], scaleVec[1], scaleVec[2]);
+  g.rotation.set(rotRad[0], rotRad[1], rotRad[2]);
+  g.visible = visible;
+  const ro = zOrderToRenderOrder(zOrder);
+  g.traverse((obj) => {
+    obj.renderOrder = ro;
+  });
+  stage.compensateInk(g);
+}
+
 function buildCast(stage: CinematicStage, pack: ComixPack, timeline: ResolvedTimeline): Map<string, ComixActor> {
   const actors = new Map<string, ComixActor>();
   for (const spec of pack.manifest.cast) {
     const actor = stage.addModel(spec.model, 1);
     const pos = spec.at ? resolvePoint(spec.at, timeline.points) : { x: 0, y: 0, z: 0 };
     const basePos = v3(pos.x, pos.y, pos.z);
-    const baseScale = spec.scale ?? 1;
-    const baseRotZ = spec.rotationZ ?? 0;
+    const baseScaleVec = normalizeScale(spec.scale);
+    const baseScale = typeof spec.scale === 'number' ? spec.scale : baseScaleVec[0];
+    const baseRot = spec.rotation !== undefined ? normalizeRotationRad(spec.rotation) : ([0, 0, spec.rotationZ ?? 0] as [number, number, number]);
+    const baseRotZ = baseRot[2];
+    const baseZOrder = spec.zOrder ?? 0;
     const baseVisible = spec.visible !== false;
-    actor.model.group.position.copy(basePos);
-    actor.model.group.scale.setScalar(baseScale);
-    actor.model.group.rotation.z = baseRotZ;
-    actor.model.group.visible = baseVisible;
+    applyBaseTransform(stage, actor, basePos, baseScaleVec, baseRot, baseZOrder, baseVisible);
     if (spec.look) actor.animator.setLook(spec.look[0], spec.look[1]);
-    actors.set(spec.id, { spec, actor, basePos, baseScale, baseRotZ, baseVisible });
+    actors.set(spec.id, { spec, actor, basePos, baseScale, baseScaleVec, baseRot, baseRotZ, baseZOrder, baseVisible });
   }
   return actors;
 }
@@ -72,18 +96,25 @@ function buildFixtures(stage: CinematicStage, pack: ComixPack, timeline: Resolve
   return fixtures;
 }
 
-function collectTrackBases(room: Actor, actors: Map<string, ComixActor>, timeline: ResolvedTimeline): {
+function collectTrackBases(
+  room: Actor,
+  actors: Map<string, ComixActor>,
+  props: Map<string, ComixProp>,
+  timeline: ResolvedTimeline,
+): {
   partBases: TrackedPartBase[];
   zoneBases: Map<string, TrackedZoneBase>;
 } {
   const seenParts = new Set<THREE.Mesh>();
   const partBases: TrackedPartBase[] = [];
   const zoneBases = new Map<string, TrackedZoneBase>();
+  const resolveTarget = (target: string): Actor | undefined =>
+    target === 'room' ? room : (actors.get(target)?.actor ?? props.get(target)?.actor);
 
   for (const tr of timeline.tracks) {
     const spec = tr.spec;
     if (spec.kind === 'part_visibility') {
-      const target = spec.target === 'room' ? room : actors.get(spec.target)?.actor;
+      const target = resolveTarget(spec.target);
       if (!target) continue;
       for (const prefix of spec.parts) {
         for (const mesh of partsNamed(target, prefix)) {
@@ -95,7 +126,7 @@ function collectTrackBases(room: Actor, actors: Map<string, ComixActor>, timelin
     } else if (spec.kind === 'material_tint') {
       const key = `${spec.target}:${spec.zone}`;
       if (zoneBases.has(key)) continue;
-      const target = spec.target === 'room' ? room : actors.get(spec.target)?.actor;
+      const target = resolveTarget(spec.target);
       const material = target?.model.materials.get(spec.zone as ZoneId);
       const color = material?.uniforms.uColor?.value as THREE.Color | undefined;
       if (material && color) zoneBases.set(key, { material, hex: color.getHex() });
@@ -121,6 +152,7 @@ function buildWorld(pack: ComixPack, timeline: ResolvedTimeline, page: ComicPage
     current: '',
     prev: 0,
     kept: new Set(),
+    ambientLoopsStarted: false,
   };
   if (!stage) return base;
   stage.clampToRoom = timeline.clampToRoom;
@@ -130,13 +162,17 @@ function buildWorld(pack: ComixPack, timeline: ResolvedTimeline, page: ComicPage
   (pack.manifest.stage.props ?? []).forEach((prop, index) => {
     const placed = stage.addModel(prop.model, 1);
     const pos = resolvePoint(prop.at, timeline.points);
-    placed.model.group.position.set(pos.x, pos.y, pos.z);
-    if (prop.scale !== undefined) placed.model.group.scale.setScalar(prop.scale);
-    props.set(prop.id, { spec: prop, actor: placed, index });
+    const basePos = v3(pos.x, pos.y, pos.z);
+    const baseScaleVec = normalizeScale(prop.scale);
+    const baseRot = normalizeRotationRad(prop.rotation);
+    const baseZOrder = prop.zOrder ?? 0;
+    const baseVisible = prop.visible !== false;
+    applyBaseTransform(stage, placed, basePos, baseScaleVec, baseRot, baseZOrder, baseVisible);
+    props.set(prop.id, { spec: prop, actor: placed, index, basePos, baseScaleVec, baseRot, baseZOrder, baseVisible });
   });
   const actors = buildCast(stage, pack, timeline);
   const fixtures = buildFixtures(stage, pack, timeline);
-  const { partBases, zoneBases } = collectTrackBases(room, actors, timeline);
+  const { partBases, zoneBases } = collectTrackBases(room, actors, props, timeline);
   return { ...base, room, actors, props, fixtures, partBases, zoneBases };
 }
 
@@ -167,6 +203,12 @@ function snapKept(world: ComixWorld, letters: LetterNodes, id: string, t: number
 }
 
 function stepWorld(world: ComixWorld, letters: LetterNodes, t: number, dt: number, live: boolean): void {
+  if (live && !world.ambientLoopsStarted) {
+    world.ambientLoopsStarted = true;
+    for (const cue of world.pack.manifest.stage.ambient?.loops ?? []) {
+      if (isLoopCue(cue)) world.sound.loop(cue, true);
+    }
+  }
   const panels = world.timeline.panels;
   for (let i = 1; i < panels.length; i++) {
     const panel = panels[i]!;
@@ -185,6 +227,8 @@ function stepWorld(world: ComixWorld, letters: LetterNodes, t: number, dt: numbe
 
 function resetWorld(world: ComixWorld, letters: LetterNodes): void {
   world.kept.clear();
+  world.ambientLoopsStarted = false;
+  world.audio.stopLoops();
   world.prev = 0;
   world.current = '';
   world.page.reset();

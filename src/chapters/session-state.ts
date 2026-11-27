@@ -1,4 +1,5 @@
 import type { TerminalSkinId } from '../contracts/terminal-skins.js';
+import type { SceneTransform } from '../contracts/room-view.js';
 import type { BattleHold, BattleState } from '../game/battle.js';
 import type { PickupType } from '../game/bestiary.js';
 import type { RestartPending } from '../game/commands-proc.js';
@@ -15,7 +16,7 @@ import { absPath, hasWrite, lookup, type VNode } from '../game/tree.js';
 import type { CommandResult, TickResult } from '../game/types.js';
 import type { RankGrade } from './catalog.js';
 import type { LabConfig, LabInjection, LabInspect, LabLevelState } from './session-lab-types.js';
-import type { ChapterPack, LevelDialogEntry, LevelPatchChip, LevelSpec, ScriptStep } from './types.js';
+import type { ChapterPack, LevelDialogEntry, LevelFileSpec, LevelPatchChip, LevelSpec, ScriptStep } from './types.js';
 
 export { empty as emptyStep, out as okStep } from '../game/play.js';
 
@@ -110,6 +111,8 @@ export interface RunningContainer {
 
 export interface LevelRuntime {
   spec: LevelSpec;
+  filesByPath: ReadonlyMap<string, LevelFileSpec>;
+  musicOverride?: string;
   root: VNode;
   cwd: VNode;
   world: World;
@@ -141,6 +144,8 @@ export interface LevelRuntime {
   hiddenRevealed: boolean;
   /** Entity ids a `spawn` step has brought in on this level (Kiro stays off stage until his is, with `hideWhen: before_spawn`). */
   spawned: Set<string>;
+  /** Non-`kiro` actors materialized onto the stage by `spawn` script steps (removed by `despawn`). */
+  spawnedActors: Map<string, { model: string; x: number; y?: number; label?: string } & SceneTransform>;
   /** Seconds (world ticks) since the level started: drives `script.timed`. */
   levelTicks: number;
   /** The PIDs rolled for this load, by enemy id (`{pid:<enemy id>}` in text). Empty in a lab session. */

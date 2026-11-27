@@ -1,19 +1,27 @@
+import { isSfxId } from '../contracts/audio-cues.js';
 import type { KernelEvent } from '../contracts/events.js';
 import type { SfxId } from './catalog.js';
-import { doorCue } from './sfx-doors.js';
+import { doorCue, doorModelCue } from './sfx-doors.js';
 import { attackCue, isBossModel, isEnemyModel, pickupCue } from './sfx-models.js';
 
+function validSfx(cue: string | undefined): SfxId | null {
+  return cue && isSfxId(cue) ? cue : null;
+}
+
 function roomCues(ev: KernelEvent): SfxId[] {
+  if (ev.type === 'SOUND_CUE') {
+    const id = validSfx(ev.cue);
+    return id ? [id] : [];
+  }
   if (ev.type !== 'ROOM_TRANSITION') return [];
   if (ev.viaSymlinkLoop) return ['symlink_loop', 'data_flood'];
   if (ev.upwardPanelsSmashed >= 3) return ['panels_smash'];
-  const door = doorCue(ev.toPath);
-  return door ? [door] : ['hop'];
+  return [validSfx(ev.sfx) ?? doorModelCue(ev.doorModel) ?? doorCue(ev.toPath) ?? 'hop'];
 }
 
 function fileCues(ev: KernelEvent): SfxId[] {
   if (ev.type === 'FILE_CREATED') return ['file_create'];
-  if (ev.type === 'FILE_REMOVED') return ['file_remove'];
+  if (ev.type === 'FILE_REMOVED') return [validSfx(ev.sfx) ?? 'file_remove'];
   if (ev.type === 'OBJECT_MOVED') {
     if (ev.suckedIntoNull) return ['null_suck'];
     if (ev.formedBridge) return ['crate_bridge'];
@@ -51,7 +59,7 @@ function battleCues(ev: KernelEvent): SfxId[] {
     return cues;
   }
   if (ev.type === 'ENEMY_ACTING') return ['enemy_tell'];
-  if (ev.type === 'ENEMY_ATTACK') return [attackCue(ev.model, ev.damage)];
+  if (ev.type === 'ENEMY_ATTACK') return [validSfx(ev.sfx) ?? attackCue(ev.model, ev.damage)];
   if (ev.type === 'ENEMY_HIT') return ['enemy_hit'];
   return [];
 }
@@ -65,7 +73,7 @@ function killCues(ev: Extract<KernelEvent, { type: 'ENEMY_KILLED' }>): SfxId[] {
     devnull: 'kill_null',
     other: 'kill',
   };
-  const cues: SfxId[] = [how[ev.how]];
+  const cues: SfxId[] = [validSfx(ev.sfx) ?? how[ev.how]];
   if (isBossModel(ev.model)) cues.push('boss_defeated');
   return cues;
 }
@@ -104,7 +112,8 @@ function actorCues(ev: KernelEvent): SfxId[] {
       crack_start: 'kiro_crack_start',
       crack_step: 'kiro_crack_step',
       crack_done: 'kiro_crack_done',
-      empower: 'kiro_magic',
+      // Placeholder until `kiro_magic` (docs/audio/SFX_LIST.md row 150) is generated.
+      empower: 'kiro_load',
     };
     return ev.action === 'scan' ? ['kiro_scan', 'sting_kiro'] : [cue[ev.action]];
   }
@@ -119,7 +128,7 @@ function lifeCues(ev: KernelEvent): SfxId[] {
   }
   if (ev.type === 'PLAYER_RESPAWNED') return [ev.from === 'floor_restart' ? 'level_restart' : 'respawn'];
   if (ev.type === 'PICKUP_COLLECTED') {
-    const cue = pickupCue(ev.item);
+    const cue = validSfx(ev.sfx) ?? pickupCue(ev.item);
     const cues: SfxId[] = cue ? [cue, 'hero_collect'] : ['hero_collect'];
     if (ev.item === 'tube_transistor') cues.push('sting_lantern', 'lantern_on');
     if (ev.item === 'laptop') cues.push('item_lit');
@@ -127,7 +136,8 @@ function lifeCues(ev: KernelEvent): SfxId[] {
   }
   if (ev.type === 'LANTERN_REVEAL') return ['lantern_on', 'reveal', 'sting_lantern'];
   if (ev.type === 'ITEM_CARRIED') return ['pickup_hover'];
-  if (ev.type === 'ACTOR_FLY_TO') return ['kiro_fly'];
+  // Placeholder until `kiro_fly` (docs/audio/SFX_LIST.md row 149) is generated.
+  if (ev.type === 'ACTOR_FLY_TO') return ['pickup_hover'];
   if (ev.type === 'ITEM_GIVEN') return [ev.item === 'terminal' ? 'term_boot' : 'item_lit'];
   if (ev.type === 'ENEMY_STATE') {
     if (ev.state === 'petrified') return ['petrify'];
@@ -150,13 +160,13 @@ function signalCues(ev: KernelEvent): SfxId[] {
 }
 
 function worldCues(ev: KernelEvent): SfxId[] {
-  if (ev.type === 'PERMISSION_DENIED_RATTLE') return ['perm_denied'];
+  if (ev.type === 'PERMISSION_DENIED_RATTLE') return [validSfx(ev.sfx) ?? 'perm_denied'];
   if (ev.type === 'HUD_OVERLAY_TOGGLED') return [(ev.active ?? ev.processes.length > 0) ? 'xray_on' : 'xray_off'];
   if (ev.type === 'OBSTACLE_DIALOGUE_RENDERED') return ['socket_crackle'];
   if (ev.type === 'PUZZLE_DOOR_RESOLVED') return ['puzzle_solved'];
   if (ev.type === 'ACHIEVEMENT_UNLOCKED') return ['achievement'];
-  if (ev.type === 'FLOOR_CLEARED') return ['level_clear', 'sting_clear'];
-  if (ev.type === 'FLOOR_ENTERED') return ['title_card'];
+  if (ev.type === 'FLOOR_CLEARED') return [validSfx(ev.sfx) ?? 'level_clear', 'sting_clear'];
+  if (ev.type === 'FLOOR_ENTERED') return [validSfx(ev.sfx) ?? 'title_card'];
   if (ev.type === 'GAME_ENDED') return ['lightning', 'rank_reveal'];
   return [];
 }

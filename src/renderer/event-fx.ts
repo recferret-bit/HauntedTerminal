@@ -127,6 +127,8 @@ export function fxCuesFor(ev: KernelEvent): FxCue[] {
     case 'PLAYER_RESPAWNED':
       return [cue('fx.coredump', 'panel'), cue('fx.touch-materialize', 'vibecoder', 1100)];
     case 'FLOOR_ENTERED':
+    case 'SOUND_CUE':
+    case 'FX_CUE':
       return [];
     case 'VIBECODER_ACTION':
       return [cue(ev.failed ? 'fx.matrix-fault' : 'fx.matrix-cast', 'vibecoder-body', 0)];

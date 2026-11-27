@@ -4,7 +4,10 @@
 // and renderer stage-selfcheck FX coverage.
 //   node scripts/harness/architecture-unit.mjs     exit 0 = all assertions pass
 import assert from 'node:assert/strict';
-import { withProcgen } from './lib/load.mjs';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import * as THREE from 'three';
+import { projectRoot, withProcgen } from './lib/load.mjs';
 import { testRunner } from './lib/test-kit.mjs';
 import { fakeDom } from './props/kit.mjs';
 
@@ -691,6 +694,289 @@ await withProcgen(async (_procgen, vite) => {
     }
     assert.equal(bat.easeInOutSine(0), 0);
     assert.equal(bat.easeInOutSine(1), 1);
+
+    const scoped = bat.makeFlock(() => 0.5, bounds, [2, 3]);
+    assert.ok(scoped.length >= 2 && scoped.length <= 3, `custom countRange [2,3] gave ${scoped.length}`);
+  });
+
+  await test('SceneTransform helpers, compensateInkOutlines & zero hardcoded chapter data in engine layouts/sfx', async () => {
+    const rv = await load('/src/contracts/room-view.ts');
+    const procgen = await load('/src/procgen/index.ts');
+    assert.deepEqual(rv.normalizeScale(undefined), [1, 1, 1]);
+    assert.deepEqual(rv.normalizeScale(1.5), [1.5, 1.5, 1.5]);
+    assert.deepEqual(rv.normalizeScale([2, 0.5, 3]), [2, 0.5, 3]);
+    assert.deepEqual(rv.normalizeScale(NaN), [1, 1, 1]);
+    assert.deepEqual(rv.normalizeRotationDeg(undefined), [0, 0, 0]);
+    assert.deepEqual(rv.normalizeRotationDeg(90), [0, 0, 90]);
+    assert.deepEqual(rv.normalizeRotationDeg([10, -20, 45]), [10, -20, 45]);
+    const [rx, ry, rz] = rv.normalizeRotationRad([180, 90, -90]);
+    assert.ok(Math.abs(rx - Math.PI) < 1e-6 && Math.abs(ry - Math.PI / 2) < 1e-6 && Math.abs(rz + Math.PI / 2) < 1e-6);
+    assert.ok(rv.zOrderToZOffset(-2) > 0 && rv.zOrderToZOffset(2) < 0 && rv.zOrderToZOffset(0) === 0);
+    assert.equal(rv.zOrderToRenderOrder(2.5), 25);
+
+    const built = procgen.buildModel(procgen.ModelCatalog.build('pickup.ram'));
+    const shells = [];
+    built.group.traverse((o) => {
+      if (o.userData?.outline && o.geometry?.userData?.inkBase) shells.push(o);
+    });
+    assert.ok(shells.length > 0, 'pickup.ram must carry ink shells with geometry.userData.inkBase');
+    const shell = shells[0];
+    const { basePos, baseWeight } = shell.geometry.userData.inkBase;
+    const pos = shell.geometry.getAttribute('position');
+    built.group.scale.set(2, 0.5, 4);
+    procgen.compensateInkOutlines(built.group);
+    const key1 = shell.userData.inkCompKey;
+    const targetWeight = typeof shell.userData.targetInkWeight === 'number' ? shell.userData.targetInkWeight : baseWeight;
+    const ws = new THREE.Vector3();
+    shell.parent.getWorldScale(ws);
+    const wDx = (pos.getX(0) - basePos[0]) * ws.x;
+    const wDy = (pos.getY(0) - basePos[1]) * ws.y;
+    const wDz = (pos.getZ(0) - basePos[2]) * ws.z;
+    const worldThick = Math.hypot(wDx, wDy, wDz);
+    assert.ok(Math.abs(worldThick - targetWeight) < 1e-4, `world outline thickness=${worldThick}, expected ${targetWeight}`);
+    const snapX = pos.getX(0);
+    procgen.compensateInkOutlines(built.group);
+    assert.equal(shell.userData.inkCompKey, key1);
+    assert.equal(pos.getX(0), snapX, 'compensateInkOutlines is idempotent across repeated calls');
+    built.group.scale.set(0, 1, 1);
+    procgen.compensateInkOutlines(built.group);
+    assert.ok(Array.from(pos.array).every(Number.isFinite), 'near-zero scale never yields NaN/Infinity');
+
+    const viewLayoutsSrc = readFileSync(resolve(projectRoot, 'src/game/view-layouts.ts'), 'utf8');
+    const sfxDoorsSrc = readFileSync(resolve(projectRoot, 'src/audio/sfx-doors.ts'), 'utf8');
+    for (const chapterToken of ['wires_and_chips', 'gpu_alley', 'ui_dashboard', 'logic_cell', 'docker_forge', 'compose_furnace', 'clod_overlord_core', 'clod_kernel_core', 'vram_crate']) {
+      assert.equal(viewLayoutsSrc.includes(chapterToken), false, `view-layouts.ts still hardcodes ${chapterToken}`);
+      assert.equal(sfxDoorsSrc.includes(chapterToken), false, `sfx-doors.ts still hardcodes ${chapterToken}`);
+    }
+  });
+
+  await test('hero turn, door tuck, emote, flyTo & 3D comix tracks preserve anisotropic scaleVec, 3D baseRot & ink width', async () => {
+    const cast = await load('/src/renderer/stage-cast.ts');
+    const turn = await load('/src/renderer/stage-hero-turn.ts');
+    const tracks = await load('/src/cinematic/tracks.ts');
+    const actor = cast.buildStageActor({
+      key: 'entity',
+      id: 'hero-xform',
+      model: 'prop.fan',
+      kind: 'prop',
+      x: 2.0,
+      hidden: false,
+      scale: [1.8, 0.7, 1.3],
+      rotation: [12, -20, 30],
+      zOrder: 1.5,
+    }, 1);
+    const sx0 = actor.scaleVec[0];
+    const sy0 = actor.scaleVec[1];
+    const sz0 = actor.scaleVec[2];
+    const [rx0, ry0, rz0] = actor.baseRot;
+    assert.ok(Math.abs(sx0 - 1.8) < 1e-6 && Math.abs(sy0 - 0.7) < 1e-6 && Math.abs(sz0 - 1.3) < 1e-6);
+
+    turn.poseHeroWalk(actor, -1, 0.5);
+    assert.ok(Math.abs(actor.body.rotation.y - (ry0 + turn.HERO_TURN_YAW)) < 1e-5, 'poseHeroWalk offsets relative to baseRot[1]');
+    turn.applyDoorTuck(actor, 1);
+    assert.ok(Math.abs(actor.body.scale.x - sx0 * 0.82) < 1e-5 && Math.abs(actor.body.scale.y - sy0 * 0.82) < 1e-5 && Math.abs(actor.body.scale.z - sz0 * 0.82) < 1e-5, 'applyDoorTuck scales all three axes from scaleVec');
+    turn.resetHeroPose(actor);
+    assert.ok(Math.abs(actor.body.rotation.x - rx0) < 1e-6 && Math.abs(actor.body.rotation.y - ry0) < 1e-6 && Math.abs(actor.body.rotation.z - rz0) < 1e-6, 'resetHeroPose restores 3D baseRot');
+    assert.ok(Math.abs(actor.body.scale.x - sx0) < 1e-6 && Math.abs(actor.body.scale.y - sy0) < 1e-6 && Math.abs(actor.body.scale.z - sz0) < 1e-6, 'resetHeroPose restores anisotropic scaleVec');
+    cast.disposeStageActor(actor);
+
+    // 3D Comix tracks: squash_land + scalar scaleTo on anisotropic baseScaleVec preserve ratios & rotTo.
+    const { listComixPacks } = await load('/src/cinematic/catalog.ts');
+    const { compileTimeline } = await load('/src/cinematic/timeline.ts');
+    const procgen = await load('/src/procgen/index.ts');
+    const builtProp = {
+      model: procgen.buildModel(procgen.ModelCatalog.build('prop.coffee_mug')),
+      animator: { update() {}, seek() {}, setState() {}, setLook() {}, dispose() {} },
+    };
+    const propGroup = builtProp.model.group;
+    const basePack = structuredClone(listComixPacks()[0]);
+    const page0 = basePack.pages[0];
+    page0.tracks = [
+      {
+        kind: 'actor_motion',
+        actor: 'aniso-mug',
+        from: String(page0.from),
+        until: String(page0.from + 2),
+        span: [String(page0.from), String(page0.from + 1)],
+        fromPos: { x: 1, y: 1, z: 0.4 },
+        toPos: { x: 2, y: 1, z: 0.4 },
+        scaleTo: 1.6,
+        rotTo: [10, 20, 30],
+        deform: 'squash_land',
+      },
+    ];
+    const timeline = compileTimeline(basePack);
+    const fakeWorld = {
+      pack: basePack,
+      timeline,
+      page: { panelSize: () => ({ w: 800, h: 600 }) },
+      stage: { shot: { x: 0, y: 0, w: 4, h: 3 }, shake: 0, flash: 0, setPixelSize() {}, compensateInk() {} },
+      room: builtProp,
+      audio: null,
+      sound: null,
+      actors: new Map(),
+      props: new Map([[
+        'aniso-mug',
+        {
+          spec: { id: 'aniso-mug', model: 'prop.coffee_mug', at: { x: 1, y: 1, z: 0.4 } },
+          actor: builtProp,
+          index: 0,
+          basePos: new THREE.Vector3(1, 1, 0.4),
+          baseScaleVec: [0.8, 1.6, 0.8],
+          baseRot: [0, 0, 0],
+          baseZOrder: 0,
+          baseVisible: true,
+        },
+      ]]),
+      fixtures: new Map(),
+      partBases: [],
+      zoneBases: new Map(),
+      current: page0.panels[0].id,
+      prev: 0,
+      kept: new Set(),
+      ambientLoopsStarted: false,
+    };
+    tracks.poseComix(fakeWorld, page0.from + 0.5);
+    assert.ok(Math.abs(propGroup.scale.y / propGroup.scale.x - 2) < 1e-4, 'scalar scaleTo preserves anisotropic y/x ratio');
+    tracks.poseComix(fakeWorld, page0.from + 1.02);
+    assert.ok(Math.abs(propGroup.scale.z - 1.6) < 1e-4, 'squash_land honors scaleTo z-scale ratio');
+    assert.ok(Math.abs(propGroup.rotation.x - (10 * Math.PI) / 180) < 1e-4 && Math.abs(propGroup.rotation.y - (20 * Math.PI) / 180) < 1e-4, 'squash_land restores full 3D rotTo');
+    procgen.disposeModel(builtProp.model);
+  });
+
+  await test('portRole, laidTransistor direct overrides, FX_CUE, and non-kiro spawn/despawn/fx script steps', async () => {
+    const viewMod = await load('/src/game/view.ts');
+    const cast = await load('/src/renderer/stage-cast.ts');
+    const eventFx = await load('/src/renderer/event-fx.ts');
+    const eventCast = await load('/src/renderer/stage-event-cast.ts');
+    const fxMod = await load('/src/renderer/fx-player.ts');
+    const { createChapterSession } = await load('/src/chapters/chapter-session.ts');
+    const cat = await load('/src/chapters/generated/catalog-data.ts');
+
+    const room = viewMod.buildRoom({
+      floor: 1,
+      cwd: '/srv/test',
+      lantern: false,
+      dark: false,
+      entryDoor: true,
+      held: null,
+      hp: 100,
+      maxHp: 100,
+      xray: false,
+      flood: 0,
+      things: [
+        { name: 'vault', type: 'dir', open: true },
+        { name: 'gate', type: 'dir', open: true },
+        { name: 'note.txt', type: 'file', open: true },
+      ],
+      entities: [],
+      exits: { gate: true },
+      ghost: false,
+      mimic: false,
+      gateOpen: true,
+      plankBridged: true,
+      gargoyle: 'gone',
+      zombies: 0,
+      bossDead: false,
+      bossFrozen: false,
+      phase1: false,
+      portal: false,
+      powerOn: false,
+      valveOpen: false,
+      hostiles: 0,
+    });
+    assert.equal(room.actors.find((a) => a.id === 'door:entry')?.portRole, 'entry');
+    assert.equal(room.actors.find((a) => a.id === 'door:gate')?.portRole, 'exit');
+    assert.equal(room.actors.find((a) => a.id === 'door:vault')?.portRole, 'sub');
+    assert.equal(room.actors.find((a) => a.id === 'file:note.txt')?.portRole, undefined);
+
+    const defTrans = cast.buildStageActor({
+      key: 'entity',
+      id: 'pickup:trans-default',
+      model: 'item.tube_transistor',
+      kind: 'pickup',
+      x: 0.2,
+      hidden: false,
+    }, 1);
+    assert.deepEqual(defTrans.baseScale, [1, 1, 1]);
+    assert.deepEqual(defTrans.scaleVec, [1.45, 1.45, 1.45]);
+    assert.ok(Math.abs(defTrans.baseRot[2] - Math.PI / 2) < 1e-6);
+    assert.ok(defTrans.body.position.y > 0);
+    cast.disposeStageActor(defTrans);
+
+    const customTrans = cast.buildStageActor({
+      key: 'entity',
+      id: 'pickup:trans-upright',
+      model: 'item.tube_transistor',
+      kind: 'pickup',
+      x: 0.2,
+      hidden: false,
+      scale: 2,
+      rotation: 0,
+    }, 1);
+    assert.deepEqual(customTrans.baseScale, [1, 1, 1]);
+    assert.deepEqual(customTrans.scaleVec, [2, 2, 2]);
+    assert.ok(Math.abs(customTrans.baseRot[2]) < 1e-6);
+    assert.equal(customTrans.body.position.x, 0);
+    assert.equal(customTrans.body.position.y, 0);
+    cast.disposeStageActor(customTrans);
+
+    assert.deepEqual(eventFx.fxCuesFor({ type: 'FX_CUE', preset: 'fx.sigkill' }), []);
+    const fxLayer = new THREE.Group();
+    const fxPlayer = new fxMod.FxPlayer({ layer: fxLayer, shake() {}, flash() {} });
+    const fakeStage = {
+      fxPlayer,
+      panelLeft: 2.2,
+      panelRight: -2.2,
+      feetY: -0.9,
+      viewTop: 2.1,
+      hero: () => null,
+      room: { sockets: {} },
+      actors: new Map(),
+    };
+    assert.equal(eventCast.handleCastEvent(fakeStage, { type: 'FX_CUE', preset: 'fx.sigkill', x: 2.0, y: 1.1, text: 'ZAP' }, null, []), true);
+    assert.ok(fxPlayer.played.has('fx.sigkill'));
+    assert.equal(eventCast.handleCastEvent(fakeStage, { type: 'FX_CUE', preset: 'fx.fight' }, null, []), true);
+    assert.ok(fxPlayer.played.has('fx.fight'));
+    assert.equal(eventCast.handleCastEvent(fakeStage, { type: 'FX_CUE', preset: 'fx.does_not_exist' }, null, []), true);
+    fxPlayer.clear();
+
+    const baseManifest = cat.GENERATED_MANIFESTS[0];
+    const spawnPack = {
+      manifest: {
+        ...baseManifest,
+        id: 'script-spawn-fx-unit',
+        levels: [{ index: 1, id: 's1', title: 'S1', cwd: '/lvl', roomKind: 'desk', floorTheme: 1, mechanic: 'terminal', mechanicLabel: 'T', difficulty: 1, teaches: [], enemies: [] }],
+      },
+      levels: [{
+        id: 's1', index: 1, title: 'S1', cwd: '/lvl', roomKind: 'desk', floorTheme: 1, mechanic: 'terminal', summary: 'spawn/despawn/fx',
+        files: [{ path: '/lvl/exit_gate', kind: 'dir', mode: 0o755 }],
+        enemies: [],
+        pickups: [],
+        patches: [],
+        winRules: [{ kind: 'dir_accessible', path: '/lvl/exit_gate', description: 'open' }],
+        exitDir: '/lvl/exit_gate',
+        solutionCommands: ['cd exit_gate'],
+        script: {
+          arrival: [
+            { kind: 'spawn', entityId: 'ghost_orb', model: 'prop.fan', x: 2.1, y: 0.4, zOrder: 1, scale: 1.5, rotation: 25, label: 'ORB' },
+            { kind: 'fx', preset: 'fx.gate-open', x: 2.1, y: 0.9, text: 'POP!' },
+          ],
+          triggers: [
+            { when: { kind: 'ran_command', name: 'ls' }, steps: [{ kind: 'despawn', entityId: 'ghost_orb' }] },
+          ],
+        },
+      }],
+      dialogs: { levels: {} },
+    };
+    const sess = createChapterSession({ chapterId: 'script-spawn-fx-unit', pack: spawnPack, preview: true, startLevelId: 's1' });
+    sess.skipIntro();
+    const arrivalEvs = sess.arriveLevel().events;
+    assert.ok(arrivalEvs.some((e) => e.type === 'FX_CUE' && e.preset === 'fx.gate-open' && e.x === 2.1 && e.y === 0.9 && e.text === 'POP!'));
+    const orbActor = sess.snapshot().room.actors.find((a) => a.id === 'ghost_orb');
+    assert.ok(orbActor && orbActor.model === 'prop.fan' && orbActor.x === 2.1 && orbActor.y === 0.4 && orbActor.zOrder === 1 && orbActor.scale === 1.5 && orbActor.rotation === 25 && orbActor.label === 'ORB');
+    sess.exec('ls');
+    assert.equal(sess.snapshot().room.actors.some((a) => a.id === 'ghost_orb'), false);
   });
 
   console.log(`\narchitecture-unit OK (${count()} tests)`);

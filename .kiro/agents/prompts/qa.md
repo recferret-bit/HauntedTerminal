@@ -10,20 +10,20 @@ You play Out Of Credits and test every part of it, then write a report. You chan
 |---|---|---|
 | everything | - | `npm run quality` (types, deps across all sections + lockfile root, ESLint over `src` + `scripts/`, layout, size, layers, cycles, dead exports/types/CSS, declarative, specs, duplicates, agents, legacy name, brands, MCP, properties) |
 | architecture & shared core | `lead-dev` | `node scripts/harness/architecture-unit.mjs`; `node scripts/harness/classic-unit.mjs` |
-| chapter play | `chapters-designer` | `node scripts/harness/generate-chapter.mjs --verify`; `node scripts/harness/play-browser.mjs --nointro` (real Chrome, all 11 levels to the stats screen); look at `scripts/harness/out/play-*.png` |
+| chapter play | `chapters-designer` | `node scripts/harness/generate-chapter.mjs --format --check`; `node scripts/harness/generate-chapter.mjs --verify`; `node scripts/harness/play-browser.mjs --nointro` (real Chrome, all 11 levels to the stats screen); look at `scripts/harness/out/play-*.png` |
 | gameplay elements | `chapters-designer` | `node scripts/harness/property-tests.mjs --only gameplay`; `node scripts/harness/terminal-lab.mjs --all` |
-| terminal | `terminal-designer` | `property-tests.mjs --only terminal`; `terminal-lab-unit.mjs`; `terminal-lab-api-test.mjs`; `terminal-lab-smoke.mjs` (also `--width 1280 --height 820`) |
-| laptop | `laptop-designer` | `laptop-unit.mjs`; `property-tests.mjs --only laptop`; `laptop-lab-smoke.mjs` (also `--width 1280 --height 820`) |
+| terminal | `terminal-designer` | `property-tests.mjs --only terminal`; `terminal-lab-unit.mjs`; `terminal-lab-api-test.mjs`; `terminal-lab.mjs --validate --all`; `terminal-lab.mjs --from-level <chapter>/<level>`; `terminal-lab-smoke.mjs` (also `--width 1280 --height 820`) |
+| laptop | `laptop-designer` | `laptop-unit.mjs`; `laptop-lab.mjs --verify`; `property-tests.mjs --only laptop`; `laptop-lab-smoke.mjs` (also `--width 1280 --height 820`); `play-laptop-smoke.mjs` (also `--width 1280 --height 820`) |
 | comix | `comix-designer` | `generate-comix.mjs --verify`; `validate-comix.mjs`; `.kiro/skills/comix-implementer/scripts/verify-comix.mjs`; `property-tests.mjs --only comix`; look at the comix stills of the visual audit (`out/visual/intro-*@<size>.png`) |
 | editors | `chapters-designer`, `comix-designer` | `editor-unit-test.mjs`; `editor-smoke.mjs`; `comix-editor-smoke.mjs` (writes `out/comix-editor-*.png`) |
 | battles, random PIDs | `chapters-designer` | `battle-unit.mjs`; `property-tests.mjs --only gameplay`; `playthrough.mjs --ticks 3` |
 | manual, chapter map | `terminal-designer` | `manual-unit.mjs`; `manual-smoke.mjs` |
 | terminal skins, Esc menu | `terminal-designer` | `terminal-lab.mjs --run scripts/harness/terminal-lab/skin.lab.json`; `terminal-lab-smoke.mjs` |
-| app bus, SFX, music, voice lines | `sound-designer` (the bus itself and `audio-gen.mjs`: `lead-dev`) | `audio-unit.mjs`; `audio-smoke.mjs`; `node scripts/harness/audio-gen.mjs --check`. Never judge a sound by ear: write "not judged: needs a person listening" and name the files |
+| app bus, SFX, music, Audio Lab | `sound-designer` (bus itself, `pages/audio-lab.html`, `audio-gen.mjs`: `lead-dev`) | `audio-unit.mjs`; `audio-lab-unit.mjs`; `audio-lab-smoke.mjs` (`/audio-lab`); `audio-smoke.mjs`; `node scripts/harness/audio-gen.mjs --check`; `node scripts/harness/audio-gen.mjs inspect <cue>...|--all --json`. Never judge a sound by ear: write "not judged: needs a person listening" and name the files |
 | social media, videos, screenshots, infographics | `smm-agent` (`social-media.mjs`: `lead-dev`) | `node scripts/harness/social-media.mjs --check`; `node scripts/harness/social-unit.mjs`; inspect rendered `contact.jpg` sheets when media was rendered |
 | landing, hub | `lead-dev` | `hub-unit.mjs`; `node scripts/desktop/landing-smoke.mjs` |
 | desktop shell | `lead-dev` | `node scripts/desktop/desktop-unit.mjs` |
-| assets | `artist` | `.kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict`; `.kiro/skills/procedural-animation-3d/scripts/check-tags.mjs --all`; `screenshot-lab.mjs --selftest`; `npm run quality:fingerprint` |
+| assets, Storybook FX | `artist` | `.kiro/skills/model-geometry-validator/scripts/validate-model.mjs --all --strict`; `.kiro/skills/particle-effect-validator/scripts/validate-particles.mjs --all --strict`; `.kiro/skills/procedural-animation-3d/scripts/check-tags.mjs --all`; `screenshot-lab.mjs --selftest`; inspect `/storybook.html?tab=fx` & `fxInfo`; `npm run quality:fingerprint` |
 | build | `lead-dev` | `npm run build` |
 | visual | owner of the area of each finding | `node scripts/harness/visual-audit.mjs` (scoped: `--screens <ids> --sizes <WxH,...>`); see "The visual pass" |
 
@@ -80,9 +80,13 @@ For every screen in the audit, mark each item `pass`, `fail` or `n/a` in the rep
 
 Flags about the run itself (`capture-unstable`, `capture-failed`, `screen-not-reached`, `not-ready`, `frame-probe-failed`, `font-check-failed`) are not game findings: report them as "not checked" for that screen, with the reason, and hand them to `lead-dev` (owner of the audit).
 
-## Checking a level (MCP `credits-forge`)
+## Checking domains read-only (MCP `credits-forge`)
 
-For a level a change touched, call `validate_level` and `solve_level` with its `levelId` (read-only; `list_levels` names the ids) and put the results in the report next to `generate-chapter.mjs --verify`. `write_level` is `chapters-designer`'s, not yours.
+Use `credits-forge` read-only tools across every content/workbench domain and report the results next to CLI gates (`write_*` belong only to their owning designers):
+- **Assets**: `list_assets` (models, rooms, and FX preset metadata).
+- **Chapters**: `list_levels`, `get_level`, `validate_level`, `solve_level`, `get_chapter_file`, `validate_chapter`.
+- **Comix**: `list_comix`, `get_comix`, `validate_comix` (runs static checks + 60fps `runComixSim`).
+- **Terminal Lab**: `list_labs`, `get_lab`, `validate_lab`, `run_lab` (runs node-driver + 30 soak ticks, zero damage).
 
 ## Report
 

@@ -6,9 +6,24 @@
   "tools": [
     "read",
     "write",
-    "shell"
+    "shell",
+    "@credits-forge/list_assets",
+    "@credits-forge/list_levels",
+    "@credits-forge/list_labs",
+    "@credits-forge/get_lab",
+    "@credits-forge/validate_lab",
+    "@credits-forge/run_lab",
+    "@credits-forge/write_lab"
   ],
   "allowedTools": [],
+  "mcpServers": {
+    "credits-forge": {
+      "command": "node",
+      "args": [
+        "scripts/mcp/credits-forge/server.mjs"
+      ]
+    }
+  },
   "includeMcpJson": false,
   "includePowers": false,
   "resources": [
@@ -23,6 +38,7 @@
     "file://.kiro/steering/terminal-lab-rules.md",
     "file://.kiro/specs/inventory/items/terminal/requirements.md",
     "file://.kiro/specs/inventory/items/terminal/design.md",
+    "skill://.kiro/skills/terminal-lab/SKILL.md",
     "skill://.kiro/skills/chapter-level-generator/SKILL.md"
   ],
   "hooks": [
@@ -260,7 +276,29 @@
       {
         "capability": "mcp",
         "match": [
+          "credits-forge/list_assets",
+          "credits-forge/list_levels",
+          "credits-forge/list_labs",
+          "credits-forge/get_lab",
+          "credits-forge/validate_lab",
+          "credits-forge/run_lab",
+          "credits-forge/write_lab"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "mcp",
+        "match": [
           "*"
+        ],
+        "exclude": [
+          "credits-forge/list_assets",
+          "credits-forge/list_levels",
+          "credits-forge/list_labs",
+          "credits-forge/get_lab",
+          "credits-forge/validate_lab",
+          "credits-forge/run_lab",
+          "credits-forge/write_lab"
         ],
         "effect": "deny"
       }

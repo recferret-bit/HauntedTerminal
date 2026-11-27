@@ -1,5 +1,9 @@
 import * as THREE from 'three';
-import type { ComixCastActor, ComixPanelSpec } from '../chapters/types.js';
+import type { ComixCastActor, ComixPanelSpec, ComixPropSpec } from '../chapters/types.js';
+import {
+  normalizeRotationRad, normalizeScale, zOrderToRenderOrder, zOrderToZOffset,
+  type SceneRotation, type SceneScale,
+} from '../contracts/room-view.js';
 import { CinematicStage } from '../cinematic/stage.js';
 
 /**
@@ -58,11 +62,16 @@ interface PlacedCast {
   group: THREE.Object3D;
   animator: { seek(t: number): void };
   specX: number;
+  specY: number;
+  zOrder: number;
+  scaleVec: [number, number, number];
+  rotRad: [number, number, number];
   heightMul: number;
+  isProp: boolean;
   homeX: number;
   homeY: number;
   homeZ: number;
-  homeScale: number;
+  homeScale: [number, number, number];
 }
 
 /** Held comic poses: four snaps, then ease into the last one. */
@@ -71,17 +80,30 @@ function comicIn(k: number): number {
   return 1 - (1 - stepped) * (1 - stepped);
 }
 
-/** Feet on y = 0, height in world units. The box is measured after a unit scale so resize is not cumulative. */
-function stand(group: THREE.Object3D, height: number, x: number, z: number): void {
-  group.scale.setScalar(1);
+/** Feet on y = 0 (plus optional `specY` elevation), applying non-uniform scale, Euler rotation, zOrder renderOrder & ink compensation. */
+function stand(stage: CinematicStage, actor: PlacedCast, height: number, x: number, z: number): void {
+  const { group, scaleVec, rotRad, specY, zOrder } = actor;
+  group.scale.set(1, 1, 1);
+  group.rotation.set(0, 0, 0);
   group.position.set(0, 0, z);
   group.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(group);
   const measured = Math.max(0.05, box.max.y - box.min.y);
-  group.scale.setScalar(height / measured);
+  const fit = height / measured;
+  const sx = fit * scaleVec[0];
+  const sy = fit * scaleVec[1];
+  const sz = fit * scaleVec[2];
+  group.scale.set(sx, sy, sz);
+  group.rotation.set(rotRad[0], rotRad[1], rotRad[2]);
   group.position.set(x, 0, z);
   group.updateMatrixWorld(true);
-  group.position.y -= new THREE.Box3().setFromObject(group).min.y;
+  group.position.y += specY * 1.4 - new THREE.Box3().setFromObject(group).min.y;
+  const ro = zOrderToRenderOrder(zOrder);
+  group.traverse((obj) => {
+    obj.renderOrder = ro;
+  });
+  stage.compensateInk(group);
+  actor.homeScale = [sx, sy, sz];
 }
 
 /**
@@ -98,44 +120,64 @@ function frameCast(stage: CinematicStage, cast: PlacedCast[], aspect: number): v
   stage.shot = { x: 0, y: 1.2, w: 0.02, h: halfH * 2 };
   const visibleHalfW = Math.min(3.6, halfH * aspectSafe);
   const span = (visibleHalfW * 0.7) / 0.78;
-  const crowd = cast.length >= 4 ? 0.62 : 1;
+  const castCount = cast.filter((a) => !a.isProp).length;
+  const crowd = castCount >= 4 ? 0.62 : 1;
   cast.forEach((actor, index) => {
-    const height = 1.55 * actor.heightMul * crowd;
-    const z = -0.12 - index * 0.05;
-    stand(actor.group, height, specXToWorld(actor.specX, span), z);
+    const height = 1.55 * actor.heightMul * (actor.isProp ? 1 : crowd);
+    const z = -0.12 - index * 0.04 + zOrderToZOffset(actor.zOrder);
+    stand(stage, actor, height, specXToWorld(actor.specX, span), z);
     actor.homeX = actor.group.position.x;
     actor.homeY = actor.group.position.y;
     actor.homeZ = actor.group.position.z;
-    actor.homeScale = actor.group.scale.x;
   });
 }
 
-function applyEntrance(cast: PlacedCast[], k: number): void {
+function applyEntrance(stage: CinematicStage, cast: PlacedCast[], k: number): void {
   const rise = (1 - k) * 0.95;
   const scale = 0.12 + 0.88 * k;
   for (const actor of cast) {
-    actor.group.position.set(actor.homeX, actor.homeY + rise, actor.homeZ);
-    actor.group.scale.setScalar(actor.homeScale * scale);
+    actor.group.position.set(actor.homeX, actor.homeY + rise * (actor.isProp ? 0.35 : 1), actor.homeZ);
+    actor.group.scale.set(actor.homeScale[0] * scale, actor.homeScale[1] * scale, actor.homeScale[2] * scale);
+    stage.compensateInk(actor.group);
   }
 }
 
-function placeCast(stage: CinematicStage, cast: ComixCastActor[]): PlacedCast[] {
+type ComixEntitySpec = {
+  model: string;
+  x: number;
+  y?: number;
+  zOrder?: number;
+  scale?: SceneScale;
+  rotation?: SceneRotation;
+};
+
+function placeEntities(stage: CinematicStage, items: ComixEntitySpec[], isProp: boolean): PlacedCast[] {
   const placed: PlacedCast[] = [];
-  cast.forEach((actor) => {
-    const live = addModel(stage, actor.model);
-    if (!live) return;
+  for (const item of items) {
+    const live = addModel(stage, item.model);
+    if (!live) continue;
+    const scaleVec = normalizeScale(item.scale);
     placed.push({
       group: live.model.group,
       animator: live.animator,
-      specX: actor.x ?? 0,
-      heightMul: actorMul(actor.model) * (actor.scale ?? 1),
+      specX: item.x ?? 0,
+      specY: item.y ?? 0,
+      zOrder: item.zOrder ?? (isProp ? -1 : 0),
+      scaleVec,
+      rotRad: normalizeRotationRad(item.rotation),
+      heightMul: actorMul(item.model),
+      isProp,
       homeX: 0,
       homeY: 0,
       homeZ: 0,
-      homeScale: 1,
+      homeScale: [1, 1, 1],
     });
-  });
+  }
   return placed;
+}
+
+function placeCast(stage: CinematicStage, cast: ComixCastActor[], props: ComixPropSpec[]): PlacedCast[] {
+  return [...placeEntities(stage, props, true), ...placeEntities(stage, cast, false)].sort((a, b) => a.zOrder - b.zOrder);
 }
 
 const dead: LivePanel = {
@@ -160,14 +202,14 @@ function mountPanel(host: HTMLElement, panel: ComixPanelSpec): LivePanel {
     return dead;
   }
   host.appendChild(stage.canvas);
-  stage.setBackground(parseHex(panel.bgHex, 0x12091c));
+  stage.setBackground(parseHex(panel.backdrop ?? panel.bgHex, 0x12091c));
   if (panel.room) addModel(stage, panel.room);
-  const cast = placeCast(stage, panel.cast ?? []);
+  const cast = placeCast(stage, panel.cast ?? [], panel.props ?? []);
 
   let age = -1;
   const pose = (): void => {
     if (age < 0) return;
-    applyEntrance(cast, comicIn(Math.min(1, age / ENTRANCE)));
+    applyEntrance(stage, cast, comicIn(Math.min(1, age / ENTRANCE)));
   };
   const resize = (): void => {
     const rect = host.getBoundingClientRect();

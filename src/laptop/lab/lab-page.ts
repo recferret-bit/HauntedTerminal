@@ -1,7 +1,7 @@
 /**
  * /laptop-lab: a test bench for the laptop, the way /terminal-lab is one for the terminal. The laptop
  * sits in a comic panel; the side panel shows the lifecycle machine (and sends its events), the live
- * input mirror and the quests. URL: `?state=<state>` starts there, `?speed=0|0.5|1`, `?mute=1`.
+ * input mirror, the quests, and the Quest Check & RunReport Inspector. URL: `?state=<state>`, `?speed=0|0.4|0.5|1`, `?mute=1`.
  */
 import { startPageAudio } from '../../audio/page.js';
 import { h } from '../../editor-core/dom.js';
@@ -10,6 +10,21 @@ import { LAPTOP_STATES, userEvents, type LaptopEvent, type LaptopState } from '.
 import { TASKS } from '../domain/tasks.js';
 import { laptopHear } from '../app-bus.js';
 import { mountLaptop, type LaptopHandle } from '../ui/laptop.js';
+import { createInspectorCard } from './inspector.js';
+
+export const LAB_SPEED_PRESETS: ReadonlyArray<readonly [string, string]> = [
+  ['1', 'Speed 1x'],
+  ['0.5', 'Half speed (0.5x)'],
+  ['0.4', 'Slow motion (0.4x)'],
+  ['0', 'Instant'],
+];
+
+/** Normalizes `?speed=` query text: accepts finite numbers >= 0, defaults invalid/empty inputs to 1. */
+export function parseLabSpeed(raw: string | null): number {
+  if (raw === null || raw.trim() === '') return 1;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : 1;
+}
 
 const EVENT_LABEL: Record<Exclude<LaptopEvent, 'DONE'>, string> = { OPEN: 'Open the lid', CLOSE: 'Close the lid', POWER: 'Power' };
 
@@ -29,13 +44,23 @@ function section(title: string, ...body: HTMLElement[]): HTMLElement {
   return h('section', { class: 'll-box' }, h('h3', {}, title), ...body);
 }
 
-function machineBox(lt: LaptopHandle): HTMLElement {
+function machineBox(lt: LaptopHandle): { el: HTMLElement; syncSpeed(v: number): void } {
   const now = h('div', { class: 'll-state' });
   const chips = h('div', { class: 'll-chips' }, ...LAPTOP_STATES.map((s) => h('span', { class: 'll-chip', 'data-state': s }, s)));
   const actions = h('div', { class: 'll-actions' });
-  const speed = h('select', { 'aria-label': 'Animation speed' },
-    ...[['1', 'Speed 1x'], ['0.4', 'Slow motion'], ['0', 'Instant']].map(([v, l]) => h('option', { value: v }, l)));
-  speed.value = String(lt.machine.speed);
+  const speed = h(
+    'select',
+    { 'aria-label': 'Animation speed' },
+    ...LAB_SPEED_PRESETS.map(([v, l]) => h('option', { value: v }, l)),
+  );
+  const syncSpeed = (val: number): void => {
+    const str = String(val);
+    if (![...speed.options].some((o) => o.value === str)) {
+      speed.append(h('option', { value: str }, `Custom (${str}x)`));
+    }
+    speed.value = str;
+  };
+  syncSpeed(lt.machine.speed);
   speed.addEventListener('change', () => lt.setSpeed(Number(speed.value)));
   const draw = (state: LaptopState): void => {
     now.textContent = state.toUpperCase();
@@ -46,7 +71,7 @@ function machineBox(lt: LaptopHandle): HTMLElement {
   };
   draw(lt.machine.state);
   lt.onState((s) => draw(s));
-  return section('Machine', now, chips, actions, speed);
+  return { el: section('Machine', now, chips, actions, speed), syncSpeed };
 }
 
 function inputBox(lt: LaptopHandle): HTMLElement {
@@ -106,16 +131,28 @@ export function startLaptopLab(root: HTMLElement): LaptopHandle {
   const page = startPageAudio('laptop', root, q.get('mute') === '1' ? { muted: true } : undefined);
   const muted = page.muted;
   const hear = laptopHear(page.bus);
+  let onSpeedSync: ((v: number) => void) | null = null;
+  let ltRef: LaptopHandle | null = null;
+  const inspector = createInspectorCard(() => {
+    if (!ltRef) throw new Error('laptop handle not ready');
+    return ltRef;
+  });
   const lt = mountLaptop(stage, {
     start: start && LAPTOP_STATES.includes(start) ? start : 'closed',
-    speed: q.has('speed') ? Number(q.get('speed')) : 1,
+    speed: parseLabSpeed(q.get('speed')),
     muted,
     hear,
+    onInspect: (ev) => inspector.update(ev),
+    onSpeed: (v) => onSpeedSync?.(v),
   });
+  ltRef = lt;
+  const machine = machineBox(lt);
+  onSpeedSync = machine.syncSpeed;
   side.append(
-    machineBox(lt),
+    machine.el,
     inputBox(lt),
     questBox(lt),
+    inspector.el,
     soundBox(lt, (next) => page.setMuted(next), () => page.bus.emit({ kind: 'laptop', action: 'trackpad' })),
   );
   const say = (s: LaptopState): void => { caption.textContent = CAPTION[s]; };

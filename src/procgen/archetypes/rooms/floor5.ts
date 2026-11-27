@@ -2,7 +2,7 @@ import type { ModelSpec, Vec2 } from '../../core/types.js';
 import { makeRng } from '../../core/rng.js';
 import { designToRoomX, onWall, RoomBuilder, ROOM } from './frame.js';
 import { boltOutline, combOutline, pillar, shell } from './kit.js';
-import { indicatorPanel, perchedBat, radialCobweb, roomBoardTheme, textoliteBoardPlaque, waterPipeRun } from './kit-kiroween.js';
+import { waterPipeRun } from './kit-kiroween.js';
 
 /**
  * Floor 5, the kernel core: a cracked CPU die in its socket, a storm in the cracks.
@@ -53,11 +53,7 @@ export function buildCore(seed: number): ModelSpec {
   spire(2.75, 1.9, 0.56);
   spire(-4.0, 2.4, 0.7);
 
-  textoliteBoardPlaque(b, 2.65, 3.35, 1.05, 0.56, roomBoardTheme(seed, rng, 'pcbBlack'));
   waterPipeRun(b, [-3.6, 3.95], [-1.85, 3.95], 'copper', onWall(0.18), true);
-  indicatorPanel(b, -2.75, 3.15, ['dataCyan', 'lockRed', 'dataCyan']);
-  radialCobweb(b, -3.5, 4.3, 0.4, 'heatsink');
-  perchedBat(b, rng.range(2.45, 2.75), 4.2, 0.38, 'pcbBlack', rng.next());
 
   // The floor is breaking up: shards in the foreground at the very edges, and a cracked apron.
   b.add('floor-shard', { kind: 'extrude', outline: [[-0.45, 0], [0.5, 0], [0.3, 0.42], [-0.1, 0.3]], depth: 0.12 }, 'silicon', [3.85, -0.02, ROOM.zFront]);

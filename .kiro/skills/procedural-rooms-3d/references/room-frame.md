@@ -87,12 +87,12 @@ uses. If `view.ts` moves an actor, update the argument, not the number.
 - The main panel is the view width minus a neighbour column on screen-right
   (`colW = clamp(viewW × 0.2, 1.7, 2.8)` plus a 0.14 gutter). Its width depends on the window's
   aspect ratio; it is not 8.
-- Actors are placed at z = 0.22. The current flat backdrop is at z = 1.7, the plinth box at z = 0.35,
+- Actors are placed at z = 0.22. The fallback fill backdrop is at z = 1.7, the plinth box at z = 0.35,
   the paper at z = 2.4.
 
 ## How the stage uses the rooms now
 
-`ComicStage` (`syncRoomModel` and `fitRoom` in `src/renderer/comic-stage.ts`) builds `room.<kind>` from
+`ComicStage` (`syncRoomModel` and `fitRoom` in `src/renderer/stage-layout.ts`) builds `room.<kind>` from
 `ModelCatalog` whenever `view.kind` changes, animates it with `createAnimator`, and lays it over the main
 panel: y = 0 at `feetY`, z = 0.22 (the actor plane), x scaled by `(panelLeft - panelRight) / ROOM.width`
 so room sockets match `placeX`. The old flat backdrop plane stays behind it as a fill colour, the old

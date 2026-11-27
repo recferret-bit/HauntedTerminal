@@ -1,6 +1,6 @@
 import type { ZoneId } from '../../core/palette.js';
 import type { Vec2, Vec3 } from '../../core/types.js';
-import { blink, onWall, ROOM, round, type RoomBuilder } from './frame.js';
+import { blink, ROOM, round, type RoomBuilder } from './frame.js';
 
 /**
  * Room part-builders: gothic shapes made out of hardware. Each adds a handful of parts to a RoomBuilder.
@@ -140,40 +140,6 @@ export function fan(b: RoomBuilder, x: number, y: number, size: number, z: numbe
     anim: { type: 'spin', axis: 'z', speed, pivot: [x, y, z - 0.13] },
   });
   b.add('fan-hub', { kind: 'cylinder', rTop: r * 0.2, rBottom: r * 0.2, height: 0.05, sides: 8 }, frameZone, [x, y, z - 0.16], { rot: [Math.PI / 2, 0, 0] });
-}
-
-/** A ribbon cable sagging across an upper corner like a cobweb. `side` +1 is the screen-left corner. */
-export function cobweb(b: RoomBuilder, side: 1 | -1, size: number, zone: ZoneId): void {
-  const x = side * ROOM.halfWidth;
-  const top = ROOM.height - 0.3;
-  const o: Vec2[] = [[0, 0], [-side * size, 0]];
-  for (let i = 1; i <= 5; i++) {
-    const t = i / 6;
-    // A sagging hypotenuse: pulled toward the corner.
-    const sag = Math.sin(t * Math.PI) * size * 0.28;
-    o.push([round(-side * (size * (1 - t) - sag * 0.7)), round(-size * 0.85 * t + sag * 0.7)]);
-  }
-  o.push([0, -size * 0.85]);
-  b.relief('ribbon-cobweb', o, 0.04, zone, [x, top], { texture: 'tex.ribbon-cable' });
-}
-
-/** A cable hanging from the ceiling beam, swinging a little. */
-export function hangingCable(b: RoomBuilder, x: number, length: number, zone: ZoneId, phase = 0, z = 0.6): void {
-  const top = ROOM.height - 0.3;
-  b.add(
-    'cable',
-    { kind: 'tube', path: [[0, 0, 0], [0.05, -length * 0.5, 0], [-0.04, -length * 0.85, 0], [0.1, -length, 0]], radius: 0.035 },
-    zone,
-    [x, top, z],
-    { anim: { type: 'swing', axis: 'z', speed: 0.22, amp: 0.07, phase, pivot: [x, top, z] } },
-  );
-}
-
-/** A disk platter (or any disc) hung flat on the wall, with a hub. */
-export function platter(b: RoomBuilder, x: number, y: number, radius: number, zone: ZoneId, hubZone: ZoneId, lift = 0): void {
-  const z = onWall(0.05) - lift;
-  b.add('platter', { kind: 'cylinder', rTop: radius, rBottom: radius, height: 0.05, sides: 16 }, zone, [x, y, z], { rot: [Math.PI / 2, 0, 0], texture: 'tex.platter' });
-  b.add('platter-hub', { kind: 'cylinder', rTop: radius * 0.28, rBottom: radius * 0.28, height: 0.05, sides: 8 }, hubZone, [x, y, z - 0.04], { rot: [Math.PI / 2, 0, 0] });
 }
 
 /** A log tombstone: a chip package stood on end, with ink lines where the FATAL entries are. */

@@ -14,7 +14,10 @@ export interface ComixActor {
   actor: Actor;
   basePos: THREE.Vector3;
   baseScale: number;
+  baseScaleVec: [number, number, number];
+  baseRot: [number, number, number];
   baseRotZ: number;
+  baseZOrder: number;
   baseVisible: boolean;
 }
 
@@ -22,6 +25,11 @@ export interface ComixProp {
   spec: StagePropSpec;
   actor: Actor;
   index: number;
+  basePos: THREE.Vector3;
+  baseScaleVec: [number, number, number];
+  baseRot: [number, number, number];
+  baseZOrder: number;
+  baseVisible: boolean;
 }
 
 export type ComixFixture =
@@ -56,6 +64,7 @@ export interface ComixWorld {
   current: string;
   prev: number;
   kept: Set<string>;
+  ambientLoopsStarted: boolean;
 }
 
 export interface DebugOptions {
