@@ -95,7 +95,7 @@ One palette, defined once in [`src/procgen/core/palette.ts`](../../../src/procge
 
 | Family | Zones | Who may use it |
 |---|---|---|
-| `human` | `skin` `hoodie` `denim` `hair` `lantern` | The vibecoder, the System Hand, and the items he carries (`item.*`) |
+| `human` | `skin` `hoodie` `denim` `hair` `lantern` | The vibecoder, the System Hand, the items he carries (`item.*`), and his human father (`npc.greybeard_rig`) |
 | `hardware` | `pcb` `pcbDark` `matrixDark` `solder` `heatsink` `gold` `copper` `silicon` `plastic` `rubber` | The world: rooms, doors, props, pickups, Matrix trail glyphs, and the bodies of malware |
 | `signal` | `phosphor` `matrixBright` `matrixGlow` `dataCyan` `powerAmber` `lockRed` (all emissive) | System light: LEDs, pickups, ports, Matrix digital-rain glyphs |
 | `malware` | `corruptMagenta` `corruptViolet` `toxicGreen` `voidPurple` `malwareEye` `ghostViolet` | Hostile things only, and every hostile thing must use it |

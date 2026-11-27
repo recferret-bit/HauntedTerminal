@@ -8,25 +8,25 @@ Model ids are `<category>.<name>`. `gameKey` is the key the game's stage and
 
 | id | gameKey | Brief |
 |---|---|---|
-| `vibecoder.dev` | `vibecoder` | Tired developer, 1.6 units. Orange hoodie with the hood up, jeans, pale sneakers, messy hair edge, a lantern held out at the screen-right side. The only round, soft shapes in the game. Legs and arms tagged for `legWalk` / `armSwing`. |
+| `vibecoder.dev` | `vibecoder` | Tired developer, 1.6 units. Orange hoodie with the hood up, jeans, pale sneakers, messy hair edge, holding a glowing `item.tube_transistor` at the screen-right side. The only round, soft shapes in the game. Legs and arms tagged for `legWalk` / `armSwing`. |
 | `vibecoder.dev_bare` |  | Same developer with empty hands standing with both arms hanging relaxed at his sides (`held === null`, before receiving `terminal` in Level 1). |
 | `vibecoder.hand` | `system_hand` | The System Hand: a paper-white hand holding a stylus, palm to the camera, fingers pointing down. Enters from above the panel. |
 
 ## Inventory items
 
-What he carries. Each stands on the floor with a `grip` socket; the developer holds one at a time (`vibecoder.dev_<item>`).
+What he carries. Holdable items stand on the floor with a `grip` socket; the developer holds one at a time (`vibecoder.dev_<item>`, or `vibecoder.dev` for `tube_transistor`).
 
 | id | Brief |
 |---|---|
-| `item.lantern` | The oil lantern from his desk: brown cap, handle ring and foot around a glowing `lantern` glass. `ls -a` lights it. Held by `vibecoder.dev` |
-| `item.terminal` | His handheld field cyberdeck slate, stood on its edge: dark `silicon` shell, brown `hair` leather grip handle on top, a recessed `ink` bezel with a glowing `phosphor` `>_` prompt and block cursor, and a `silicon` keypad (`tex.grille`). No `light` socket: holding it casts no lantern light. Held by `vibecoder.dev_terminal` |
-| `vibecoder.dev_terminal` | The developer holding his field cyberdeck slate in his screen-right hand instead of the lantern |
+| `item.tube_transistor` | A glowing vacuum-tube transistor with three gold leads (`lantern` filament glow). Unlocks `ls` flags (`-a`, `-l`, `-la`). Held by `vibecoder.dev` |
+| `item.terminal` | His handheld field cyberdeck slate, stood on its edge: dark `silicon` shell, brown `hair` leather grip handle on top, a recessed `ink` bezel with a glowing `phosphor` `>_` prompt and block cursor, and a `silicon` keypad (`tex.grille`). No `light` socket: holding it casts no tube-transistor light. Held by `vibecoder.dev_terminal` |
+| `vibecoder.dev_terminal` | The developer holding his field cyberdeck slate in his screen-right hand instead of the tube transistor |
 | `item.laptop` | His old clamshell, shut and carried like a briefcase: beige `plastic` with a brown handle and hinge, a `>_` sticker and one `powerAmber` sleep light. Opened, it is the Laptop Lab emulator. Held by `vibecoder.dev_laptop` |
-| `vibecoder.dev_laptop` | The developer with the laptop in his screen-right hand instead of the lantern |
+| `vibecoder.dev_laptop` | The developer with the laptop in his screen-right hand instead of the tube transistor |
 | `item.manual` | His dog-eared hardcover Unix Field Manual, carried by a leather handle: `pcb` teal boards, brown `hair` spine and strap, creamy `paper` page block, orange `hoodie` bookmark ribbon, and a `phosphor` `>_` emblem. Held by `vibecoder.dev_manual` |
-| `vibecoder.dev_manual` | The developer holding the hardcover Unix Field Manual in his screen-right hand instead of the lantern |
+| `vibecoder.dev_manual` | The developer holding the hardcover Unix Field Manual in his screen-right hand instead of the tube transistor |
 | `item.map` | His trace-etched PCB motherboard schematic slate, carried by a leather top strap: `pcb` board, `hair` strap and side rails, `ink` schematic bed, `paper` channel buses, `hoodie` / `pcb` IC blocks, and glowing `phosphor` node beacons. Held by `vibecoder.dev_map` |
-| `vibecoder.dev_map` | The developer holding the PCB motherboard schematic map in his screen-right hand instead of the lantern |
+| `vibecoder.dev_map` | The developer holding the PCB motherboard schematic map in his screen-right hand instead of the tube transistor |
 
 ## Malware bestiary
 
@@ -108,6 +108,7 @@ Every door has a metal or plastic shell, visible contacts, a status LED part nam
 | `prop.spider` |  | 8-pin `silicon` IC + `pcbAmber` capacitor spider dangling on a wire thread with swinging legs (`hover`, `wall`) |
 | `prop.bat` |  | Folded `pcbBlack` circuit-board bat with `copper` chest coil and flapping wings (`hover`, `wall`) |
 | `npc.kiro_ghost` |  | `kiro.d`: self-hosted Ghost companion (`localhost` `.gguf` daemon). Swooshing `paper`-white Kiro sheet ghost with a trailing screen-left tail, two rounded bottom hem lobes, and two sleek vertical `ink` oval eyes looking screen-right |
+| `npc.greybeard_rig` |  | Old Bearded Coder (`dad.tty`): the vibecoder's human father hunched at a Matrix CRT and server tower rig, taller than the vibecoder, warm `skin` face and bare hands, chest-length `paper` beard, phosphor terminal glasses, and a cigarette burning hot (`lockRed` + `powerAmber` flame) with rising comic smoke clouds |
 
 ## Rooms
 
