@@ -46,6 +46,24 @@
       "path": "/srv/kiroween/logic_cell/server_hub_2",
       "kind": "dir",
       "mode": 0
+    },
+    {
+      "path": "/srv/kiroween/logic_cell/skimmer_ledger.txt",
+      "kind": "file",
+      "mode": 420,
+      "content": "TOKEN SKIMMER LEDGER\nI skimmed a spare VRAM module and hid it in the dot folder `.spare_parts` of this room, a pile of 130 shelves (`ls -a` shows it).\nI logged the exact shelf in a skimmer.log, and I stamped the line with STASH.\nSearch: `grep -r STASH .spare_parts`, or `find / -name vram.mod`, or `tree -a .spare_parts`.\n"
+    },
+    {
+      "path": "/srv/kiroween/logic_cell/.spare_parts/crate_a/crate_b/skimmer.log",
+      "kind": "file",
+      "mode": 420,
+      "content": "skimmer.log\nSTASH: the module sleeps in the dot folder .safe on this shelf (cd .safe, then mv vram.mod ~)\n"
+    },
+    {
+      "path": "/srv/kiroween/logic_cell/.spare_parts/crate_a/crate_b/.safe/vram.mod",
+      "kind": "file",
+      "mode": 420,
+      "content": "VRAM_MODULE_16GB_HBM_STOLEN\n"
     }
   ],
   "enemies": [
@@ -75,6 +93,11 @@
       "id": "pickup_l6_gpu",
       "type": "ssd",
       "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img"
+    },
+    {
+      "id": "pickup_l6_vram",
+      "type": "vram_module",
+      "path": "/srv/kiroween/logic_cell/.spare_parts/crate_a/crate_b/.safe/vram.mod"
     }
   ],
   "patches": [
@@ -226,5 +249,14 @@
       "stage": "crack_only"
     },
     "openingSec": 18
-  }
+  },
+  "generate": [
+    {
+      "kind": "tree",
+      "root": "/srv/kiroween/logic_cell/.spare_parts",
+      "folders": 130,
+      "hiddenFiles": 45,
+      "seed": "l6-vram"
+    }
+  ]
 }

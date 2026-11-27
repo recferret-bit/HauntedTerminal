@@ -23,7 +23,30 @@ export async function treeSearchProps(ctx, world) {
     level.generate = [g];
     level.files.push({ path: TARGET, kind: 'file', content: 'NEEDLE-VRAM\n' });
   };
+  // The chapter's own VRAM modules (data: every level that places one), whichever levels those are.
+  const hunts = world.levels.map((level, index) => ({ level, index, pick: level.pickups.find((p) => p.type === 'vram_module') })).filter((h) => h.pick);
   return [
+    {
+      name: 'every VRAM module of the chapter hides in a 100+ folder tree and is found by find, grep -r and tree -a, reached with plain cd, and taken with mv',
+      build: () =>
+        fc.property(fc.constantFrom(...hunts.keys()), (h) => {
+          const { level, index, pick } = hunts[h];
+          const gen = (level.generate ?? []).find((g) => pick.path.startsWith(`${g.root}/`));
+          expect(gen !== undefined && gen.folders >= 100 && gen.hiddenFiles > 0, `${level.id}: the module is not inside a generated tree of 100+ folders with hidden files`);
+          const session = world.open(index);
+          const dir = pick.path.slice(0, pick.path.lastIndexOf('/'));
+          expect(text(session.exec('find / -name vram.mod')).includes(pick.path), `${level.id}: find missed ${pick.path}`);
+          const grep = session.exec(`grep -r -e . ${gen.root}`);
+          expect(text(grep).includes(`${pick.path}:`), `${level.id}: grep -r missed the module file`);
+          expect(!text(session.exec(`tree ${gen.root}`)).includes('vram.mod'), `${level.id}: plain tree shows the module in a dot folder`);
+          session.inventory = { ...session.inventory, items: [...session.inventory.items, 'tube_transistor'] };
+          expect(text(session.exec(`tree -a ${gen.root}`)).includes('vram.mod'), `${level.id}: tree -a missed the module`);
+          expect(session.exec(`cd ${dir}`).code === 0, `${level.id}: cd ${dir} failed`);
+          const before = session.inventory.vram;
+          expect(session.exec('mv vram.mod ~').code === 0, `${level.id}: mv vram.mod ~ failed`);
+          expect(session.inventory.vram === before + 1 && session.inventory.taken.includes(`${level.id}:${pick.id}`), `${level.id}: the module did not become a charge`);
+        }),
+    },
     {
       name: 'a generated tree has at least the asked folders, only the asked dot files at most, and is the same for the same seed',
       build: () =>
