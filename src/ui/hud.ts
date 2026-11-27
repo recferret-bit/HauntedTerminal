@@ -1,6 +1,7 @@
 import { ACHIEVEMENT_SPECS, readAchievements } from '../chapters/achievements.js';
 import { downloadPortableSaveFile } from '../chapters/portable-save.js';
 import { wireExternalLinksForDesktop, wireSteamWishlistLink } from '../chapters/steam-bridge.js';
+import { ITEMS } from '../contracts/inventory.js';
 import { heroModel, type ItemId } from '../game/inventory.js';
 import type { GameSnapshot } from '../game/types.js';
 import {
@@ -55,6 +56,7 @@ function q<T extends HTMLElement>(sel: string, from: ParentNode): T {
 }
 
 const HERO_AVATAR_PX = 64;
+const VRAM_ICON_PX = 18;
 const HERO_IDLE_MS = 180;
 const HERO_OUCH_MS = 600;
 const DEFAULT_HERO_MODEL = 'vibecoder.dev';
@@ -127,6 +129,8 @@ interface HudView {
   hpText: HTMLElement;
   hpBar: HTMLElement;
   turn: HTMLElement;
+  /** `VRAM x N`: spare skill charges, shown while he holds any. */
+  vramCell: HTMLElement;
   battleCallout: HTMLElement;
   skipDialogBtn: HTMLButtonElement;
   mapBtn: HTMLButtonElement;
@@ -171,7 +175,7 @@ function renderHeroAvatar(view: HudView): void {
 function mountHeroHud(
   stageWrap: HTMLElement,
   drawPortrait?: DrawPortrait,
-): { root: HTMLElement; avatar: HTMLElement; hpCell: HTMLElement; hpText: HTMLElement; hpBar: HTMLElement; turn: HTMLElement } {
+): { root: HTMLElement; avatar: HTMLElement; hpCell: HTMLElement; hpText: HTMLElement; hpBar: HTMLElement; turn: HTMLElement; vramCell: HTMLElement } {
   stageWrap.querySelector('#hero-hud')?.remove();
   const avatar = el('div', 'hero-avatar');
   avatar.id = 'hero-avatar';
@@ -205,7 +209,13 @@ function mountHeroHud(
   turn.hidden = true;
   turn.setAttribute('aria-live', 'polite');
 
-  const statusCol = el('div', 'hero-status-col', [avatar, hpCell, turn]);
+  // Spare skill charges (VRAM modules): the memory-chip icon of the item and a count; hidden while there are none.
+  const vramCell = el('div', 'hud-cell hud-vram', [el('span', 'hud-vram-icon', drawPortrait ? [drawPortrait(ITEMS.vram_module.model, VRAM_ICON_PX)] : []), el('b', '', ['VRAM x 0'])]);
+  vramCell.id = 'hud-vram-cell';
+  vramCell.hidden = true;
+  vramCell.setAttribute('title', 'Spare skill charges: each VRAM module adds one use of kiro heal or kiro hint');
+
+  const statusCol = el('div', 'hero-status-col', [avatar, hpCell, vramCell, turn]);
   const root = el('div', 'hero-hud', [statusCol, drawer]);
   root.id = 'hero-hud';
   root.dataset.tier = '0';
@@ -214,7 +224,7 @@ function mountHeroHud(
   const host = stageWrap.querySelector<HTMLElement>('#titleblock') ?? stageWrap;
   if (typeof host.prepend === 'function') host.prepend(root);
   else host.appendChild(root);
-  return { root, avatar, hpCell, hpText, hpBar, turn };
+  return { root, avatar, hpCell, hpText, hpBar, turn, vramCell };
 }
 
 function pop(anchor: HTMLElement, text: string, cls: string): void {
@@ -260,6 +270,14 @@ function updateHud(view: HudView, snap: GameSnapshot): void {
   view.time.textContent = clock(snap.timeSec);
   view.pause.classList.toggle('on', !!snap.paused);
   if (snap.inventory) view.items?.update(snap.inventory);
+  const vram = snap.inventory?.vram ?? 0;
+  const label = `VRAM x ${vram}`;
+  const count = q('b', view.vramCell);
+  if (count.textContent !== label) {
+    if (vram > (Number(/\d+/.exec(count.textContent ?? '')?.[0]) || 0)) replayClass(view.vramCell, 'bump');
+    count.textContent = label;
+  }
+  view.vramCell.hidden = vram <= 0;
   const hideMap = !snap.inventory?.items.includes('map');
   view.mapBtn.hidden = hideMap;
   view.mapBtn.classList.toggle('hidden', hideMap);
@@ -448,6 +466,7 @@ export function mountHud(root: HTMLElement, stageWrap: HTMLElement, stats: HTMLE
     hpText: hero.hpText,
     hpBar: hero.hpBar,
     turn: hero.turn,
+    vramCell: hero.vramCell,
     battleCallout,
     skipDialogBtn: skipBtn,
     mapBtn: q<HTMLButtonElement>('#hud-map', root),

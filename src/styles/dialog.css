@@ -113,6 +113,18 @@
   text-transform: uppercase;
 }
 .item-slot.pop { animation: hud-bump 0.45s ease-out; }
+.item-count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0 3px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--paper);
+  background: var(--ink);
+}
+.item-count:empty { display: none; }
 
 @media (max-width: 1100px) {
   .items-strip { gap: 4px; }
