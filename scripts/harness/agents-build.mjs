@@ -130,7 +130,7 @@ const TEAM = {
   },
   'terminal-designer': {
     description: 'Designs and tunes the terminal: the shell, its commands, the virtual file system, man pages, terminal UI and the Terminal Lab (src/game shell files, src/ui, src/terminal-lab, lab scripts).',
-    writes: ['src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts', 'src/ui/**', 'src/terminal-lab/**', 'scripts/harness/terminal-lab/**', 'scripts/harness/props/terminal*.mjs', 'scripts/harness/{manual-unit,manual-smoke}.mjs'],
+    writes: ['src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,search-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts', 'src/ui/**', 'src/terminal-lab/**', 'scripts/harness/terminal-lab/**', 'scripts/harness/props/terminal*.mjs', 'scripts/harness/{manual-unit,manual-smoke}.mjs'],
     // The manual's spec (done) is left out, read it when needed: the resources must keep >= 8,000 of the CLI's 100,000 characters free.
     resources: [steer('terminal-lab-rules'), 'file://.kiro/specs/inventory/items/terminal/requirements.md', 'file://.kiro/specs/inventory/items/terminal/design.md'],
     skills: ['chapter-level-generator'],
@@ -154,7 +154,7 @@ const TEAM = {
   },
   'chapters-designer': {
     description: 'Designs and tunes the Kiroween chapter: its levels, story, dialogs and comic issue (chapters/), the chapter runtime and editor, and the gameplay elements levels place (enemies, pickups, puzzles, inventory, Kiro cores). Uses the chapter LEVEL GEN skills.',
-    writes: ['chapters/**', 'src/chapters/**', 'src/chapter-editor/**', 'src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,dialogue,agents,battle,ouch}.ts', 'scripts/harness/props/{chapters,gameplay,gameplay-fsm,sessions}.mjs', 'scripts/harness/battle-unit.mjs'],
+    writes: ['chapters/**', 'src/chapters/**', 'src/chapter-editor/**', 'src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,kiro-skills,dialogue,agents,battle,ouch}.ts', 'scripts/harness/props/{chapters,gameplay,gameplay-fsm,sessions,kiro-skills,revisit,ritual,script-beats,tree-search}.mjs', 'scripts/harness/battle-unit.mjs'],
     resources: [steer('level-gen-rules'), steer('declarative-chapters'), steer('chapter-editor-rules'), steer('skills-map')],
     skills: ['chapter-architect-intake', 'comix-story-drawer', 'chapter-level-generator', 'chapter-implementer', 'chapter-editor'],
     mcp: { 'credits-forge': ['list_assets', ...FORGE_READ, 'write_level'] },

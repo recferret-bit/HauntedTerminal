@@ -82,8 +82,8 @@
           "chapters/**",
           "src/chapters/**",
           "src/chapter-editor/**",
-          "src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,dialogue,agents,battle,ouch}.ts",
-          "scripts/harness/props/{chapters,gameplay,gameplay-fsm,sessions}.mjs",
+          "src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,kiro-skills,dialogue,agents,battle,ouch}.ts",
+          "scripts/harness/props/{chapters,gameplay,gameplay-fsm,sessions,kiro-skills,revisit,ritual,script-beats,tree-search}.mjs",
           "scripts/harness/battle-unit.mjs"
         ],
         "effect": "deny"
@@ -94,8 +94,8 @@
           "chapters/**",
           "src/chapters/**",
           "src/chapter-editor/**",
-          "src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,dialogue,agents,battle,ouch}.ts",
-          "scripts/harness/props/{chapters,gameplay,gameplay-fsm,sessions}.mjs",
+          "src/game/{entities,entities-combat,entities-types,bestiary,puzzle,inventory,kiro,kiro-commands,kiro-skills,dialogue,agents,battle,ouch}.ts",
+          "scripts/harness/props/{chapters,gameplay,gameplay-fsm,sessions,kiro-skills,revisit,ritual,script-beats,tree-search}.mjs",
           "scripts/harness/battle-unit.mjs"
         ],
         "effect": "allow"
