@@ -172,6 +172,34 @@ export const MANUAL_NAV_AND_FILES: readonly ManualCommandEntry[] = [
     keywords: ['search', 'files', 'recursive', 'glob', 'pattern', 'locate'],
   },
   {
+    command: 'tree',
+    aliases: [],
+    section: 'look-move',
+    categoryLabel: 'Look & Inspect',
+    filters: ['beginner', 'files'],
+    availability: 'both',
+    syntax: 'tree [-a] [-L level] [dir]',
+    summary: 'Draw the folders and files below a directory as one indented picture.',
+    realWorld:
+      'Prints the directory structure with branch lines and a closing count of directories and files. Dot files are left out unless `-a` is given; `-L n` stops `n` levels down.',
+    inGame:
+      'The quick way to see a huge folder structure at once, such as a machine archive with a hundred rooms. Skips rooms without `+x` permission, and `-a` needs the Tube Transistor like `ls -a`.',
+    flags: [
+      { flag: '-a', kind: 'flag', meaning: 'Also list dot files and dot directories', detail: 'Needs the Tube Transistor (the same lantern as `ls -a`).', example: 'tree -a' },
+      { flag: '-L <n>', kind: 'flag', meaning: 'Stop n levels down', detail: 'Use `tree -L 2` first on a big tree.', example: 'tree -L 2 archive' },
+    ],
+    pitfalls: [
+      'A big tree prints a lot: pipe it (`tree | grep note`) or limit it with `-L`.',
+      'Rooms without `+x` show `[error opening dir]` and are not opened.',
+    ],
+    examples: [
+      { command: 'tree -L 2', outcome: 'Shows this room and its sub-rooms, two levels deep.' },
+      { command: 'tree archive | grep vram', outcome: 'Finds a name inside a big folder structure.' },
+    ],
+    related: ['ls', 'find', 'grep'],
+    keywords: ['tree', 'structure', 'folders', 'recursive', 'hidden', 'search'],
+  },
+  {
     command: 'status',
     aliases: [],
     section: 'look-move',

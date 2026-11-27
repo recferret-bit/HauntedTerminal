@@ -1,3 +1,4 @@
+import { growTree } from './tree-gen.js';
 import type { KernelEvent } from '../contracts/events.js';
 import { endBattle } from '../game/battle.js';
 import { rollOuch } from '../game/ouch.js';
@@ -86,6 +87,8 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
         });
       }
     }
+
+    for (const gen of spec.generate ?? []) growTree(root, gen);
 
     const cwd = lookup(root, spec.cwd) ?? root;
     const { enemySpawns, pickupSpawns } = levelSpawns(spec);

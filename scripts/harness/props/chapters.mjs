@@ -26,6 +26,7 @@ const BREAKAGES = [
 ];
 import { chapterWorld } from './sessions.mjs';
 import { scriptBeatProps } from './script-beats.mjs';
+import { treeSearchProps } from './tree-search.mjs';
 
 function portableSaveAndPreviewProps(deps) {
   const {
@@ -511,6 +512,7 @@ export default async function chaptersSuite(ctx) {
     ...lockAndTimedProps(world),
     ...exitDoorProps(world),
     ...scriptBeatProps(world),
+    ...(await treeSearchProps(ctx, world)),
     ...portableSaveAndPreviewProps({
       world,
       readAchievements,

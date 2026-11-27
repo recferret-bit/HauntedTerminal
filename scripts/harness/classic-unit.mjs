@@ -412,5 +412,21 @@ await withProcgen(async (_procgen, vite) => {
     assert.ok(models.size >= 15, `expected broad model coverage, saw ${models.size}`);
   });
 
+  await test('classic shell: tree draws the rooms, tree -a works once the Tube Transistor is held (classic starts with it), grep -r names hits by path, kiro heal/hint answer in the classic shell', () => {
+    const s = createSession();
+    s.skipIntro?.();
+    const tree = s.exec('tree -L 1');
+    assert.equal(tree.code, 0, tree.output);
+    assert.match(tree.output, /\d+ directories?, \d+ files?/);
+    assert.equal(s.exec('tree -a -L 1').code, 0, 'the classic hero starts with the Tube Transistor');
+    assert.notEqual(s.exec('tree -x').code, 0, 'unknown tree flag');
+    const grep = s.exec('grep -r zzzz-no-such-text .');
+    assert.equal(grep.code, 1, 'no hit is exit 1');
+    const full = s.exec('kiro heal');
+    assert.equal(full.code, 1);
+    assert.match(full.output, /full HP/);
+    assert.notEqual(s.exec('kiro hint').code, 0, 'hint needs the deepseek core');
+  });
+
   console.log(`\nclassic-unit OK (${count()} tests)`);
 }, '/src/game/session.ts');
