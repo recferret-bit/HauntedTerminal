@@ -42,10 +42,10 @@ Sector 03 (*GPU Alley*) running with the Tube Transistor lit, five-slot inventor
 | ![Laptop Lab showing the CSS 3D clamshell laptop, Web Weaver quest solved, and 7/7 quests checklist](docs/media/laptop-lab.png) | ![Chapter Editor showing level 01 preview, script inspector, and live console solution runner](docs/media/chapter-editor.png) |
 | **Sandboxed coding laptop emulator.** Full lid/boot/BIOS/desktop state machine with real keyboard & trackpad telemetry. Runs player JS in an isolated Worker and HTML/CSS in a `sandbox="allow-scripts"` iframe with loop guards across 7 quests. | **Schema-driven campaign studio.** Edits `chapters/<slug>/` JSON specs with live `/play?draft=1` preview, 8-tab typed forms, cross-reference checks, conflict-safe etag `409` saves, and one-click headless 0-death chapter solving. |
 
-| Comix Lab / Editor (`/comix-editor`) |
-|---|
-| ![Comix Editor showing intro Day 847 comic panels, 2D landscape and portrait layout sheets, timeline cues, and camera inspector](docs/media/comix-editor.png) |
-| **3D animated comix choreographer.** Edits `comix/<slug>/` multi-page specs with bidirectional 2D layout mini-maps (Landscape & Portrait sheets), orthographic camera controls, keyframe scrubber, and 60 fps timeline verification. |
+| Comix Lab / Editor (`/comix-editor`) | Interactive Field Manual (`/manual`) |
+|---|---|
+| ![Comix Editor showing intro Day 847 comic panels, 2D landscape and portrait layout sheets, timeline cues, and camera inspector](docs/media/comix-editor.png) | ![Interactive Terminal Field Manual hardcover spread showing cover stats, search bar, category filters, and full clickable Table of Contents](docs/media/manual.png) |
+| **3D animated comix choreographer.** Edits `comix/<slug>/` multi-page specs with bidirectional 2D layout mini-maps (Landscape & Portrait sheets), orthographic camera controls, keyframe scrubber, and 60 fps timeline verification. | **Hardcover Unix & code handbook (`F1` / `manual`).** Searchable two-page comic spread covering `48` commands, `4` interactive guides (`chmod` octal calculator, POSIX signal tester, shell operator explorer, malware counterplay), and `54` pages with instant `/` search and keyboard page flips. |
 
 ---
 
