@@ -38,7 +38,7 @@ export function complete(g: ChapterState, line: string): { line: string; matches
     const last = endsWithSpace ? '' : (parts[parts.length - 1] ?? '');
     const isKiroCmd = parts[0] === 'kiro' || parts[0] === 'kiro.d';
     if (isKiroCmd && (parts.length === 1 || (parts.length === 2 && !endsWithSpace)) && !last.includes('/')) {
-      const kiroOpts = ['scan', 'load', 'crack', 'status', ...KIRO_CORE_ORDER].filter((k) => k.startsWith(last));
+      const kiroOpts = ['scan', 'load', 'crack', 'heal', 'hint', 'status', ...KIRO_CORE_ORDER].filter((k) => k.startsWith(last));
       if (kiroOpts.length > 0) return finishTabCompletion(line, lead, token, kiroOpts);
     }
     if (isKiroCmd && parts[1] === 'load' && !last.includes('/')) {
@@ -206,7 +206,7 @@ function dispatchRev(g: ChapterState, args: string[], stdin: string): Step {
 
 function dispatchHelp(g: ChapterState): Step {
   return okStep(
-    `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack] local Unix .gguf daemon Kiro.d (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 15 local trophies & Steamworks ACH_* payload\n  restart-level [--yes]  reload this level (asks twice; alias: retry)\n`,
+    `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack|heal|hint] local Unix .gguf daemon Kiro.d (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 15 local trophies & Steamworks ACH_* payload\n  restart-level [--yes]  reload this level (asks twice; alias: retry)\n`,
   );
 }
 

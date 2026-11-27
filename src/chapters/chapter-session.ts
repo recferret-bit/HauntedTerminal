@@ -78,6 +78,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   intro = true;
   ended = false;
   reloadedNow = false;
+  freeAction = false;
   fullRun = true;
   deadNow = false;
   deathText = '';

@@ -78,6 +78,8 @@ class Game implements LabSession, Host, ClassicShellHost {
   readonly lab: LabConfig | null;
   readonly ouch = createOuch();
   deadNow = false;
+  freeAction = false;
+  readonly skillsUsed: Record<number, Set<string>> = {};
   /** Set by a confirmed `restart-level`: the confirming line is not answered by an enemy turn. */
   private reloadedNow = false;
   private restartPending: RestartPending | null = null;
@@ -110,6 +112,7 @@ class Game implements LabSession, Host, ClassicShellHost {
   exec(line: string): CommandResult {
     this.deadNow = false;
     this.reloadedNow = false;
+    this.freeAction = false;
     const typed = line.trim();
     if (typed) {
       this.run.commands += 1;
@@ -128,13 +131,13 @@ class Game implements LabSession, Host, ClassicShellHost {
     }
     if (typed) {
       const startedCrack = this.lineArgs.some(
-        (argv) => argv[0] === 'kiro' && ['crack', 'decrypt', 'hack'].includes((argv[1] ?? '').toLowerCase()),
+        (argv) => argv[0] === 'kiro' && ['crack', 'decrypt'].includes((argv[1] ?? '').toLowerCase()),
       );
       if (!startedCrack && this.kiro.activeCrack) {
         output += stepKiroCrack(this, events);
       }
       // Turn-based: the world (quests, enemies) steps once per command, never in real time.
-      if (!this.run.ended && !this.reloadedNow) output += this.stepEnemies(events);
+      if (!this.run.ended && !this.reloadedNow && !this.freeAction) output += this.stepEnemies(events);
       this.agents.cool();
       const tutoring = this.agents.active();
       const progress = this.agents.observe(this.lineArgs, { failed: ran.code !== 0, leftDesk: this.leftDesk() });

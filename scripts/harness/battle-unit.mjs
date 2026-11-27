@@ -276,5 +276,54 @@ await withProcgen(async (_p, vite) => {
     assert.equal(r.snapshot.room.actors.find((a) => a.id === 'v1')?.strikeIn, undefined, 'frozen: no badge');
   });
 
+  // ---- Kiro skills (`.kiro/specs/tensor-gpu-hub-ritual/`) ----------------------------------------------------------
+  const hurt = (s) => {
+    for (let i = 0; i < 12 && s.snapshot().hp >= s.snapshot().maxHp; i++) s.exec('pwd');
+    assert.ok(s.snapshot().hp < s.snapshot().maxHp, 'the virus hurt the vibecoder');
+  };
+
+  await test('skills: `kiro heal` in a battle is one action then one enemy turn, restores half the max HP capped at max, and the level charge is single use', () => {
+    const s = fighting([VIRUS]);
+    hurt(s);
+    const before = s.snapshot();
+    const r = s.exec('kiro heal');
+    assert.equal(r.code, 0, r.output);
+    assert.deepEqual(of(r.events, 'BATTLE_TURN').map((t) => [t.actor, t.reason]), [['enemy', 'action'], ['player', 'action']]);
+    const want = Math.min(Math.floor(before.maxHp / 2), before.maxHp - before.hp);
+    const hit = of(r.events, 'PLAYER_DAMAGED').reduce((n, e) => n + e.amount, 0);
+    assert.equal(r.snapshot.hp, before.hp + want - hit, `healed ${want}, struck for ${hit}`);
+    hurt(s);
+    const again = s.exec('kiro heal');
+    assert.equal(again.code, 1, 'no charge left');
+    assert.match(again.output, /no charge left/);
+    assert.deepEqual(of(again.events, 'BATTLE_TURN'), [], 'a refusal is not an action: no enemy turn');
+  });
+
+  await test('skills: a refusal (wrong core, full HP) takes no turn and costs nothing; `kiro hint` needs deepseek', () => {
+    const s = fighting([VIRUS]);
+    const full = s.exec('kiro heal');
+    assert.equal(full.code, 1);
+    assert.match(full.output, /full HP/);
+    assert.deepEqual(of(full.events, 'BATTLE_TURN'), []);
+    const hint = s.exec('kiro hint');
+    assert.equal(hint.code, 1);
+    assert.match(hint.output, /deepseek/);
+    assert.deepEqual(of(hint.events, 'BATTLE_TURN'), []);
+    hurt(s);
+    assert.equal(s.exec('kiro heal').code, 0, 'the refused heal spent nothing: the level charge is still there');
+  });
+
+  await test('skills: outside a battle `kiro hint` and `kiro heal` take no turn; `hack` is no longer an alias of crack', () => {
+    const s = session([]);
+    s.exec('kiro load deepseek');
+    const r = s.exec('kiro hint');
+    assert.equal(r.code, 0, r.output);
+    assert.match(r.output, /whispers/);
+    assert.deepEqual(of(r.events, 'BATTLE_TURN'), []);
+    const hack = s.exec('kiro hack notes.txt');
+    assert.equal(hack.code, 1);
+    assert.match(hack.output, /unknown subcommand/);
+  });
+
   console.log(`battle-unit: ${count()} checks passed`);
 });
