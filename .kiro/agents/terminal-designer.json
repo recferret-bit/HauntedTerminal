@@ -60,7 +60,7 @@
           "**"
         ],
         "exclude": [
-          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts",
+          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,search-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts",
           "src/ui/**",
           "src/terminal-lab/**",
           "scripts/harness/terminal-lab/**",
@@ -72,7 +72,7 @@
       {
         "capability": "fs_write",
         "match": [
-          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts",
+          "src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,search-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts",
           "src/ui/**",
           "src/terminal-lab/**",
           "scripts/harness/terminal-lab/**",
