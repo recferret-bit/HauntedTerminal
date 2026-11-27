@@ -6,7 +6,8 @@ Code follows clean architecture: dependencies point inward, and the rules are en
 
 ```
 contracts/            pure types, `createStateMachine` (`state-machine.ts`), `AppBus` (`app-bus.ts`), `brand.ts`, and saved-key migration (`legacy-keys.ts`). `dom.ts` (`dom`, `el`, `setText`, `replayClass`) is the one documented exception: it touches `document`, and it stays here because `renderer/` and `ui/` both need it and `renderer/` may not import `ui/`
-audio/                sample playback. Imports contracts only. The SFX orchestrator and the music orchestrator subscribe to the app bus. One-shot voices default to 10 (`SOUND_SOURCES`). Game and chapters emit; they do not import this layer.
+audio/                sample playback (`config.ts`, `catalog.ts`, `engine.ts`). Imports contracts only.
+audio-lab/            /audio-lab. contracts, audio, editor-core. Soundboard, waveform trim scrubber, mixer, bus tester (`window.__audioLab`). Three-free.
 procgen/core          domain: palette, rng, types, catalogs, pixel buffers. No three.
 procgen/geometry      shape -> geometry, software raster (three math only)
 procgen/kit, textures, archetypes, fx, anim, validate
@@ -28,7 +29,7 @@ chapter-editor/       /editor. contracts, editor-core, game, chapters, procgen. 
 terminal-lab/         /terminal-lab. contracts, editor-core, chapter-editor (field tables, suggest), game, chapters, procgen. Builds a throwaway pack from a lab script (or imports a chapter level read-only) and plays it in the game iframe with in-page session swaps; no game rules of its own. What it needs from the game is one generic session option, `lab?: LabConfig` on `ChapterSession` and classic `createSession`, plus read-only `inspect()`, `labTick()` and `inject()` (`src/game/lab-*.ts`, `src/chapters/session-lab*.ts`).
 laptop/               /laptop-lab. domain/ (pure: lifecycle state machine, desktop reducer, tasks and checks, keyboard, boot, geometry, progress) <- runtime/ (Worker and sandboxed-iframe runner, loop guard, WebAudio) <- ui/ (editor-core, procgen/core palette) <- lab/. No three; no game rules. Player code never runs in the page's own realm.
 hub/                  the landing: Home (`pages/index.html`) and the tab pages Desktop Builds, Achievements, Comix (`pages/{desktop,achievements,comix}.html`), one shared header (`nav.ts`, items in `tabs.ts`) and one entry script per page. Imports contracts, chapters and `cinematic/catalog` (the comix manifests, data only); no three. Spec: `.kiro/specs/landing-tabs/`, `.kiro/specs/comix-intro-outro-wiring/`.
-play/                 play page composition. Wires the outer layers. main.ts only starts it.
+play/                 play page composition. Wires the outer layers, including the laptop (`laptop/`: the in-game laptop overlay, `src/play/laptop.ts`). main.ts only starts it.
 main.ts               loads the play page. Imports play/ and styles only.
 ```
 

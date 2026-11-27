@@ -8,11 +8,14 @@ export interface ItemsStrip {
   pop(item: ItemId): void;
 }
 
+/** Slots that open a dialog on click, with the key that opens it too. */
+const CLICK_KEYS: Partial<Record<ItemId, string>> = { manual: 'F1', map: 'F3', laptop: 'F4' };
+
 /** Icon size in CSS px. */
 const ICON_PX = 36;
 
 /**
- * Always-visible HUD strip: one slot per item (`tube_transistor`, `terminal`, `laptop`, `manual`, `map`).
+ * Always-visible HUD strip: one slot per item (`tube_transistor`, `terminal`, `laptop`, `manual`, `map`); `manual`, `map` and `laptop` open their dialog on click when carried.
  * Classes: `items-strip`, `item-slot` (`carried`, `held`, `pop`, `item-<id>`), `item-icon`, `item-label`.
  */
 export function mountItemsStrip(
@@ -22,16 +25,17 @@ export function mountItemsStrip(
 ): ItemsStrip {
   const slotTitle = (id: ItemId, carried: boolean): string => {
     const base = `${ITEMS[id].label}: ${ITEMS[id].use}`;
-    if (!onItemClick || (id !== 'map' && id !== 'manual')) return base;
+    const key = CLICK_KEYS[id];
+    if (!onItemClick || !key) return base;
     if (!carried) return `${base} (Not carried yet)`;
-    return id === 'map' ? `${base} (Click or F3)` : `${base} (Click or F1)`;
+    return `${base} (Click or ${key})`;
   };
   const slots = new Map<ItemId, HTMLElement>();
   for (const id of ITEM_IDS) {
     const slot = el('div', `item-slot item-${id}`, [el('span', 'item-icon', [drawPortrait(ITEMS[id].model, ICON_PX)]), el('span', 'item-label', [ITEMS[id].label])]);
     slot.title = slotTitle(id, false);
     slot.dataset.item = id;
-    if ((id === 'map' || id === 'manual') && onItemClick) {
+    if (CLICK_KEYS[id] && onItemClick) {
       slot.classList.add('clickable');
       slot.setAttribute('role', 'button');
       slot.setAttribute('aria-disabled', 'true');
@@ -62,7 +66,7 @@ export function mountItemsStrip(
         slot.classList.toggle('carried', carried);
         slot.classList.toggle('held', carried && inventory.held === id);
         slot.title = slotTitle(id, carried);
-        if ((id === 'map' || id === 'manual') && onItemClick) {
+        if (CLICK_KEYS[id] && onItemClick) {
           slot.tabIndex = carried ? 0 : -1;
           slot.setAttribute('aria-disabled', String(!carried));
         }

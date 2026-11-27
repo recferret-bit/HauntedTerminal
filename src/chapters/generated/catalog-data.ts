@@ -548,7 +548,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "What is going on?! Where am I—inside my own computer?!",
+                "text": "What is going on?! Where am I? Why does everything hum like a fan?",
                 "holdSec": 6
               }
             ]
@@ -563,7 +563,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "It is pitch dark and my hands are empty—no terminal, no Tube Transistor, no map, no manual!",
+                "text": "It is pitch dark and my hands are empty. How am I supposed to find my way out of here?",
                 "holdSec": 6
               }
             ]
@@ -651,7 +651,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "My terminal slate! Hand it over, Kiro.d—let us look around with ls and start scavenging!",
+                "text": "What is that glowing thing? Hand it over, Kiro.d—maybe it can tell me where I am!",
                 "holdSec": 6
               }
             ]

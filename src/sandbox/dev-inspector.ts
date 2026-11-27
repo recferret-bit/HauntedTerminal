@@ -26,7 +26,7 @@ function inspSection(title: string, children: ReadonlyArray<HTMLElement>): HTMLE
 }
 
 const GRANT_ITEMS: ReadonlyArray<readonly [ItemId, string]> = [
-  ['tube_transistor', 'Lantern / Transistor'], ['map', 'Map'], ['terminal', 'Terminal'], ['laptop', 'Laptop'],
+  ['tube_transistor', 'Lantern / Transistor'], ['map', 'Map'], ['terminal', 'Terminal'], ['laptop', 'Laptop'], ['manual', 'Manual'],
 ];
 
 function buildInspectorNodes(

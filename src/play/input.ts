@@ -17,6 +17,7 @@ import { colourise, mountShell } from '../ui/terminal.js';
 import { mountVisualLab } from '../ui/visual-lab.js';
 import { holdForComix, mountPlayAudio, syncPlayAudio } from './audio-sync.js';
 import { routeModalAction } from './events.js';
+import { closeLaptop, isLaptopOpen, openLaptop } from './laptop.js';
 import { recordExec } from './lab.js';
 import { finishPlayLevelTransition } from './loop.js';
 import { mountPlayMenu } from './menu.js';
@@ -259,6 +260,7 @@ export function mountPlayHud(play: Play): void {
     onHint: () => play.events.emit({ kind: 'modal', modal: 'hint', action: 'toggle' }),
     onMap: () => play.events.emit({ kind: 'modal', modal: 'map', action: 'toggle' }),
     onManual: () => play.events.emit({ kind: 'modal', modal: 'manual', action: 'toggle' }),
+    onLaptop: () => play.events.emit({ kind: 'modal', modal: 'laptop', action: 'toggle' }),
     onSkipDialog: () => {
       const statsOpen = play.dom.statsEl.classList.contains('open');
       if (!play.lifecycle.canOpenEscMenu(statsOpen) || !isChapterSession(play.session)) return;
@@ -286,6 +288,9 @@ export function bindPlayInput(play: Play): void {
     openMenu: () => openMenuModal(play),
     closeMenu: () => play.menu?.close(),
     isMenuOpen: () => Boolean(play.menu?.isOpen()),
+    openLaptop: () => openLaptop(play, () => handleNonPausingModalClose(play)),
+    closeLaptop: () => closeLaptop(play),
+    isLaptopOpen: () => isLaptopOpen(play),
   };
   play.events.subscribe((ev) => {
     if (ev.kind === 'session-swapped') {
@@ -330,7 +335,7 @@ export function bindPlayInput(play: Play): void {
       }, 0);
       return;
     }
-    if (e.key === 'F1' || e.key === 'F2' || e.key === 'F3' || e.key === 'F8' || e.key === 'F9' || e.key === 'F10') {
+    if (e.key === 'F1' || e.key === 'F2' || e.key === 'F3' || e.key === 'F4' || e.key === 'F8' || e.key === 'F9' || e.key === 'F10') {
       e.preventDefault();
       e.stopPropagation();
       if (e.repeat) return;
@@ -338,6 +343,7 @@ export function bindPlayInput(play: Play): void {
     if (e.key === 'F1') play.events.emit({ kind: 'modal', modal: 'manual', action: 'toggle' });
     else if (e.key === 'F2') toggleInspector();
     else if (e.key === 'F3') play.events.emit({ kind: 'modal', modal: 'map', action: 'toggle' });
+    else if (e.key === 'F4') play.events.emit({ kind: 'modal', modal: 'laptop', action: 'toggle' });
     else if (e.key === 'F8') {
       play.lab.toggle();
       play.session.bus?.emit({ kind: 'menu', action: 'move' });
@@ -363,7 +369,7 @@ export function bindPlayInput(play: Play): void {
 
   document.addEventListener('click', (e) => {
     const el = e.target as Element | null;
-    if (!el?.closest('button, .item-slot.clickable') || el.closest('#outro, #cinematic, #code-editor-pane, #manual-book-modal, #esc-menu, #hint-dialog, #hud-hint, #chapter-map-dialog, #hud-map, .item-slot.item-map, .item-slot.item-manual')) return;
+    if (!el?.closest('button, .item-slot.clickable') || el.closest('#outro, #cinematic, #code-editor-pane, #manual-book-modal, #esc-menu, #hint-dialog, #hud-hint, #chapter-map-dialog, #hud-map, .item-slot.item-map, .item-slot.item-manual, #laptop-overlay, .item-slot.item-laptop')) return;
     if (play.lifecycle.phase() === 'play' && !anyModalOpen(play)) {
       window.setTimeout(() => play.shell.focus(), 0);
     }
