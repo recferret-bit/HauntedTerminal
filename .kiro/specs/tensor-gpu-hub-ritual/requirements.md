@@ -1,6 +1,6 @@
 # Tensor GPU hub ritual: requirements
 
-Status: draft
+Status: approved (requirements, design, tasks approved by the user 2026-11-27)
 
 Capability: a new inventory item, the Tensor GPU, drops in Level 2. When the vibecoder brings it to Hub 1, Kiro flies from the vibecoder to the Old Bearded Coder (dad.tty). Kiro says, in effect, "look whom I found, a vibecoder from the prophecy, and he found a Tensor GPU". The old coder answers that open-weight models can now be loaded into Kiro. Magic plays, and the dialogs explain that every open-weight model gives Kiro a skill (`qwen` heals, `deepseek` gives riddle hints), that each skill has one charge per level, and that hidden VRAM modules add charges. The old coder then gives the vibecoder the map and the manual. The dialogs must explain all of it.
 
@@ -30,18 +30,21 @@ The requirements are proposed until the user approves them. The decisions below 
 5. WHEN those dialogs end, THE SYSTEM SHALL play a magic effect on Kiro with existing FX presets, remove `tensor_gpu` from the inventory (the strip slot goes dim), and play one sound for the flight and one for the magic.
 6. WHEN the magic ends, THE SYSTEM SHALL play further dialogs (about 10-12 lines for the whole ritual, in the old coder's gruff tone) that explain: open-weight models give Kiro a skill; `kiro load <core>` loads one; `qwen` gives `kiro heal`, `deepseek` gives `kiro hint`; each skill has one charge per level; VRAM modules hidden in the machine add charges; the `VRAM x N` chip shows them.
 7. WHEN the explanation ends, THE SYSTEM SHALL have the old coder give the vibecoder the map and the manual with the existing `give_item` flights and explain `map` / `F3` and `manual` / `F1`. The 18 s timed beat that gives them today moves into the ritual, and `manifest.grants` (`afterLevel: 4`) keeps giving both to a player who enters later levels directly.
-8. IF the player clicks Skip Dialog during the ritual, THEN THE SYSTEM SHALL still fly Kiro, consume the GPU and grant the map and the manual (`OPENING_KEEP`, `SKIP_KEEP`).
-9. WHEN the vibecoder has loaded `qwen` and sends `kiro heal` during a battle, THE SYSTEM SHALL spend one charge, restore half of his max HP, and count it as one player action followed by one enemy turn.
-10. WHEN the vibecoder has loaded `deepseek` and sends `kiro hint` near a riddle, THE SYSTEM SHALL spend one charge and print the riddle's `hint` line from the level spec, or one generic line when it has none. Outside a battle it takes no turn.
+8. IF the player clicks Skip Dialog during the ritual, THEN THE SYSTEM SHALL still fly Kiro, consume the GPU and grant the map and the manual (`OPENING_KEEP`, `SKIP_KEEP`). To make Skip Dialog available, Hub 1's `openingSec` covers the whole ritual (about 100 s).
+9. WHEN the vibecoder has `qwen` as Kiro's active core and sends `kiro heal`, THE SYSTEM SHALL spend one charge and restore half of his max HP (`floor(max HP / 2)`, capped at max). In a battle it counts as one player action followed by one enemy turn; outside a battle it takes no turn. At full HP it is refused and spends nothing.
+10. WHEN the vibecoder has `deepseek` as Kiro's active core and sends `kiro hint` in a room with an unsolved riddle, THE SYSTEM SHALL spend one charge and print the next line of that riddle's existing `hints` list, or one generic line when there is no riddle or no line left. Outside a battle it takes no turn.
 11. WHEN a skill command is sent with no charge, or with its core not loaded, THE SYSTEM SHALL refuse it with one line, spend nothing and take no turn.
-12. THE SYSTEM SHALL give each skill one charge at the start of every level once its core is loaded, and each VRAM module taken SHALL add one extra charge, kept until used and across levels.
+12. THE SYSTEM SHALL give each skill one charge at the start of every level once its core is loaded, and each VRAM module taken SHALL add one extra charge to one shared pool that either skill spends once its own charge is gone, kept until used and across levels.
 13. THE SYSTEM SHALL place one VRAM module in Level 1 and one in Level 6, each inside a folder tree of 100 or more subfolders with hidden files, built by a new generator field in the level spec (count and seed). The module SHALL be reachable by every normal means (`ls` along a visible clue trail, `tree`, `find`, `grep -r`, and `ls -a` wherever the lantern lock allows it), so the player may search freely.
 14. WHEN the vibecoder takes a VRAM module with `mv`, THE SYSTEM SHALL remove the file, add one extra charge and raise the `vram_module` slot count in the items strip.
 15. THE SYSTEM SHALL show a `VRAM x N` chip with a memory-chip glyph in the hero card, and a `vram_module` slot in the items strip.
 16. THE SYSTEM SHALL no longer treat `hack` as an alias of `kiro crack`, and `kiro crack` SHALL stay as it is.
-17. THE SYSTEM SHALL add the new vocabulary (`fly_to`, the tree generator field, the riddle `hint` field) through the four-place rule, with Terminal Lab coverage, and the engine SHALL name no chapter or level. Every dialog line and hint SHALL live in `level.spec.json`.
+17. THE SYSTEM SHALL add the new vocabulary (`fly_to`, `wait`, `take_item`, `kiro_action: empower`, the tree generator field) through the four-place rule, with Terminal Lab coverage, and the engine SHALL name no chapter or level. Every dialog line and riddle hint SHALL live in `level.spec.json` or `dialogs.json`.
 18. THE SYSTEM SHALL provide `item.tensor_gpu` and `item.vram_module` (with their pickup models and icon) as procedural models under the art bible, validated, before any level spec names them. No hero hold model is needed.
-19. THE SYSTEM SHALL keep every level solvable headlessly with 0 deaths; the skills are optional and the solutions do not depend on them.
+19. IF the vibecoder enters Hub 1 without `tensor_gpu`, THEN THE SYSTEM SHALL give the map and the manual in a short fallback beat (a few `dad` lines, the same `give_item` flights) without the ritual, once.
+20. WHEN the player deploys with the chapter map to a level already reached this session, THE SYSTEM SHALL keep his run state (inventory, Kiro's core, RAM, SSD, HP, VRAM pool and taken pickups) instead of resetting it, so he can return to Level 1 and search it with `ls -a`. THE SYSTEM SHALL NOT lift the `ls` flag lock before the Tube Transistor is held, and a pickup already taken SHALL NOT reappear on a return. A deploy beyond the highest level reached, and a direct entry, keep today's behaviour (grants).
+21. THE SYSTEM SHALL keep every level solvable headlessly with 0 deaths; the skills are optional and the solutions do not depend on them.
+22. WHILE the player is in a hub, THE SYSTEM SHALL let him load any open-weight core with `kiro load <core>`, not only the core of the hub's win rule; the hub's own win rule still needs its core, and the old coder's wrong-core line stays as a hint.
 
 ## Out of scope
 
@@ -76,12 +79,20 @@ The requirements are proposed until the user approves them. The decisions below 
 - **Q24: How does the player take a module?** **A (user, 2026-11-27):** A. `mv vram.mod ~`; it is consumed into a charge and the strip slot counts them.
 - **Q25: Charges.** **A (user, 2026-11-27):** A. Each loaded core starts every level with 1 charge; module charges are kept; with none, a refusal line and no turn.
 - **Q26: Heal and hint.** **A (user, 2026-11-27):** A. `heal` restores half max HP; `hint` prints the riddle's `hint` line or a generic line.
+- **Q27: What if the GPU is not taken in level 2?** **A (user, 2026-11-27):** A. A short fallback beat at Hub 1 gives the map and manual without the ritual.
+- **Q28: Is `ls -a` allowed in level 1?** **A (user, 2026-11-27):** Own answer. The lock stays: `ls -a` / `-l` / `-la` work only once the player holds the Tube Transistor. The player may go back to level 1 with the map and search there.
+- **Q29: Extra charges.** **A (user, 2026-11-27):** A. One shared pool, spent by either skill.
+- **Q30: Req 20, going back to level 1 (design round 1 Q1).** **A (user, 2026-11-27):** A. A revisit rule: a map deploy to an already reached level keeps run state. Req 20 reworded.
+- **Q31: Skip Dialog (design Q2).** **A (user, 2026-11-27):** A. Raise Hub 1's `openingSec` to about 100 s so the whole ritual is skippable; the fallback beat is locked until the player skips.
+- **Q32: One active core (design Q3).** **A (user, 2026-11-27):** A, plus: make it possible to load any model in a hub. Hubs no longer refuse a wrong core (Req 22). Only one skill works at a time, the one of the active core.
+- **Q33: Riddle hint (design Q4).** **A (user, 2026-11-27):** A. `kiro hint` reads the existing `hints[]`; no new `hint` field (Req 10 and 17 reworded).
+- **Q34: Heal rules (design Q5).** **A (user, 2026-11-27):** A. `floor(max HP / 2)`, works in or out of a battle, refused at full HP without spending a charge (Req 9 reworded).
+- **Design choices adopted without objection (2026-11-27):** `wait`, `take_item`, `kiro_action: empower`, the `ACTOR_FLY_TO` event, `Inventory.vram` and `Inventory.taken`, optional `ItemDef.heroModel`; the two new items excluded from the achievements loops; free actions (a refused skill, a hint outside a battle) take no turn; the classic shell gets the commands but no modules or riddles; all pickup types recorded as taken; VRAM state lives in the session with an optional `ChapterGrant.vram`; level 2's solution takes the GPU.
+- **Approval (user, 2026-11-27):** "i approve" for the 21 requirements, including the requirement 20 caveat (the map deploy back to level 1 is to be confirmed in the design).
 
 ## Open questions
 
-- [ ] Level 2 can be left without taking the GPU, and the map and manual beat now lives in the ritual. If the GPU is missing at Hub 1: (a) add a Level 2 win rule that needs the GPU, (b) give the map and manual in a short fallback beat without the ritual, or (c) have the old coder send the player back?
-- [ ] `ls -a` and `ls -l` are refused until the lantern (Tube Transistor, Level 2), so in Level 1 they stay refused. Keep that lock (the module is reachable by the `ls` trail, `tree`, `find`, `grep -r`) or lift it in Level 1?
-- [ ] Is the extra charge from a VRAM module one shared pool that either skill can spend, or tied to one core?
+(none)
 
 ## Verification
 
