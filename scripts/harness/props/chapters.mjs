@@ -26,6 +26,7 @@ const BREAKAGES = [
 ];
 import { chapterWorld } from './sessions.mjs';
 import { revisitProps } from './revisit.mjs';
+import { ritualProps } from './ritual.mjs';
 import { scriptBeatProps } from './script-beats.mjs';
 import { treeSearchProps } from './tree-search.mjs';
 
@@ -514,6 +515,7 @@ export default async function chaptersSuite(ctx) {
     ...exitDoorProps(world),
     ...scriptBeatProps(world),
     ...revisitProps(world),
+    ...ritualProps(world),
     ...(await treeSearchProps(ctx, world)),
     ...portableSaveAndPreviewProps({
       world,
