@@ -121,12 +121,12 @@ ModelCatalog.register({
 });
 ModelCatalog.register({
   id: 'prop.bat', category: 'prop', label: 'Perched cartoon bat',
-  lore: 'A plump comic Halloween bat hanging upside down in folded slate-blue scalloped wings, fur ruff, and copper ears. Kiroween set dressing.',
+  lore: 'A plump comic Halloween bat hanging upside down in folded slate-blue scalloped wings, fur ruff, copper ears, and glowing amber eyes lined in ink. Kiroween set dressing.',
   build: buildBat,
 });
 ModelCatalog.register({
   id: 'prop.bat_flying', category: 'prop', label: 'Flying cartoon bat',
-  lore: 'A plump comic Halloween bat swooping in 3/4 profile with wide 3-scallop slate-blue wings, twin pointed ears, and zero camera eyes. Stage flock decoration.',
+  lore: 'A plump comic Halloween bat swooping in 3/4 profile with wide 3-scallop slate-blue wings, twin pointed ears, and glowing amber eyes lined in ink. Stage flock decoration.',
   build: buildFlyingBat,
 });
 ModelCatalog.register({

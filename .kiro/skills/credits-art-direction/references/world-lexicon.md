@@ -106,8 +106,8 @@ Every door has a metal or plastic shell, visible contacts, a status LED part nam
 | `prop.water_pipe` |  | Flanged `copper` coolant standpipe, translucent `glass` reservoir with bobbing `dataCyan` liquid, and shutoff valve wheel |
 | `prop.cobweb` |  | Radial silver `solder` and `heatsink` cobweb spanning an upper corner (`hover`, `wall`; zero malware zones) |
 | `prop.spider` |  | 8-pin `silicon` IC + `pcbAmber` capacitor spider dangling on a wire thread with swinging legs (`hover`, `wall`) |
-| `prop.bat` |  | Perched upside-down cartoon Halloween bat with folded scalloped `pcbBlack` wings, `copper`/`solder` rim highlights, `gold` gripping claws, and tucked head with zero camera-facing eyes (`hover`, `wall`) |
-| `prop.bat_flying` |  | Side / 3/4 swooping cartoon Halloween bat with oversized pointed ears, upturned snout silhouette, zero camera-facing eyes, and two-part 12 fps 3-scallop wings (`hover`, stage flock decoration) |
+| `prop.bat` |  | Perched upside-down cartoon Halloween bat with folded scalloped `pcbBlack` wings, `copper`/`solder` rim highlights, `gold` gripping claws, and tucked 3/4 head with glowing `powerAmber` eyes lined in `ink` (`hover`, `wall`) |
+| `prop.bat_flying` |  | Side / 3/4 swooping cartoon Halloween bat with oversized pointed ears, upturned snout silhouette, glowing `powerAmber` 3/4 eyes lined in `ink`, and two-part 12 fps 3-scallop wings (`hover`, stage flock decoration) |
 | `npc.kiro_ghost` |  | `kiro.d`: self-hosted Ghost companion (`localhost` `.gguf` daemon). Swooshing `paper`-white Kiro sheet ghost with a trailing screen-left tail, two rounded bottom hem lobes, and two sleek vertical `ink` oval eyes looking screen-right |
 | `npc.greybeard_rig` |  | Old Bearded Coder (`dad.tty`): the vibecoder's human father hunched at a Matrix CRT and server tower rig, taller than the vibecoder, warm `skin` face and bare hands, chest-length `paper` beard, phosphor terminal glasses, and a cigarette burning hot (`lockRed` + `powerAmber` flame) with rising comic smoke clouds |
 

@@ -113,6 +113,42 @@ function taperedCrescent(pts: Vec2[], halfWidths: number[]): Vec2[] {
 
 const flipIf = (pts: Vec2[], flip: boolean): Vec2[] => (flip ? outlineFlipX(pts) : pts);
 
+interface BatEyeSpec {
+  name: string;
+  x: number;
+  y: number;
+  zRim: number;
+  zGlow: number;
+  rx: number;
+  ry: number;
+  rimPad: number;
+}
+
+function batEyeShape(rx: number, ry: number, flipX: boolean): Vec2[] {
+  // Fierce-cute 3/4 comic almond eye: fuller belly + gently slanted brow for crisp pixel-grid readability.
+  const pts: Vec2[] = [
+    [-rx, ry * 0.36],
+    ...quadArc([-rx, ry * 0.36], [rx * 0.14, ry * 1.04], [rx * 0.96, ry * 0.08], 4),
+    ...quadArc([rx * 0.96, ry * 0.08], [rx * 0.10, -ry * 1.08], [-rx, ry * 0.36], 5),
+  ];
+  return flipIf(pts, flipX);
+}
+
+function batEyeParts(specs: readonly BatEyeSpec[], anim: AnimTag): PartSpec[] {
+  const out: PartSpec[] = [];
+  for (const s of specs) {
+    out.push(
+      kitPlate(`${s.name}.rim`, batEyeShape(s.rx + s.rimPad, s.ry + s.rimPad, true), 0.016, 'ink', [s.x * SCREEN_RIGHT, s.y, s.zRim], {
+        outline: false, anim,
+      }),
+      kitPlate(s.name, batEyeShape(s.rx, s.ry, true), 0.016, 'powerAmber', [s.x * SCREEN_RIGHT, s.y, s.zGlow], {
+        outline: false, anim,
+      }),
+    );
+  }
+  return out;
+}
+
 export function buildBat(seed: number): ModelSpec {
   const rng = makeRng(seed);
   const cy = 0.54;
@@ -139,7 +175,7 @@ export function buildBat(seed: number): ModelSpec {
     ...quadArc([0.046, -0.015], [0.088, -0.042], [0.082, -0.125], 3),
     ...quadArc([0.082, -0.125], [0.054, -0.082], [0.046, -0.015], 3),
   ];
-  // Turned head in 3/4 with clean upturned bat snout on SCREEN_RIGHT (-x), zero camera eyes.
+  // Turned head in 3/4 with upturned bat snout on SCREEN_RIGHT (-x) and glowing ink-rimmed amber eyes.
   const headPts = outlineFlipX([
     [-0.10, 0.015],
     ...quadArc([-0.10, 0.015], [-0.085, 0.098], [0.005, 0.098], 4),
@@ -163,6 +199,10 @@ export function buildBat(seed: number): ModelSpec {
     kitPlate('head', headPts, 0.068, 'solder', [0.01 * SCREEN_RIGHT, 0.295, -0.048], {
       bevel: 0.01, anim: roostSway,
     }),
+    ...batEyeParts([
+      { name: 'eye.l', x: -0.004, y: 0.292, zRim: -0.082, zGlow: -0.094, rx: 0.031, ry: 0.037, rimPad: 0.008 },
+      { name: 'eye.r', x: 0.074, y: 0.298, zRim: -0.082, zGlow: -0.094, rx: 0.024, ry: 0.030, rimPad: 0.007 },
+    ], roostSway),
     kitPlate('nose.tip', outlineEllipse(0.018, 0.015, 10), 0.018, 'copper', [0.14 * SCREEN_RIGHT, 0.305, -0.072], {
       outline: false, anim: roostSway,
     }),
@@ -338,6 +378,10 @@ export function buildFlyingBat(seed: number): ModelSpec {
     kitPlate('head', headPts, 0.068, 'solder', [wx(0.09), cy + 0.058, -0.044], {
       bevel: 0.012, anim: recoilBob,
     }),
+    ...batEyeParts([
+      { name: 'eye.near', x: 0.088, y: cy + 0.088, zRim: -0.078, zGlow: -0.090, rx: 0.032, ry: 0.038, rimPad: 0.008 },
+      { name: 'eye.far', x: 0.166, y: cy + 0.094, zRim: -0.078, zGlow: -0.090, rx: 0.025, ry: 0.031, rimPad: 0.007 },
+    ], recoilBob),
     kitPlate('fang', fangPts, 0.022, 'paper', [wx(0.195), cy + 0.022, -0.072], {
       outline: false, anim: recoilBob,
     }),

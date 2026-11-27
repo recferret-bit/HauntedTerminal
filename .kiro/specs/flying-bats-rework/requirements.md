@@ -2,7 +2,7 @@
 
 Status: done (implemented and verified 2026-11-27)
 
-Capability: Rework the game's bats into plump, expressive comic Halloween bats that never look at the player, flap with snappy 12 fps cartoon wing articulation, and play a fast cartoon wing-claps sound effect when a flock crosses the stage. Room wall props (`prop.bat`) become an upside-down perched cartoon bat with folded scalloped wings and its head tucked away from the camera, while flying stage flocks (`src/renderer/stage-bats.ts`) use a dedicated `prop.bat_flying` model sculpted in a side / 3/4 flight profile with zero camera-facing eyes, oriented head-first along its cubic Bézier flight tangent, and accompanied by a new ElevenLabs `bat_wings` SFX cue on flock entry.
+Capability: Rework the game's bats into plump, expressive comic Halloween bats flying in a clean 3/4 profile with glowing comic eyes, snappy 12 fps cartoon wing articulation, and a fast cartoon wing-claps sound effect when a flock crosses the stage. Room wall props (`prop.bat`) become an upside-down perched cartoon bat with folded scalloped wings and glowing `powerAmber` eyes lined in `ink` in 3/4 alignment, while flying stage flocks (`src/renderer/stage-bats.ts`) use a dedicated `prop.bat_flying` model sculpted in a side / 3/4 flight profile with glowing `powerAmber` 3/4 eyes lined in `ink`, oriented head-first along its cubic Bézier flight tangent, and accompanied by a new ElevenLabs `bat_wings` SFX cue on flock entry.
 
 ## What exists today (read from the code, 2026-11-27)
 
@@ -13,10 +13,10 @@ Capability: Rework the game's bats into plump, expressive comic Halloween bats t
 ## Requirements
 
 1. **Perched cartoon wall bat (`prop.bat`):**
-   WHEN `prop.bat` is built (`src/procgen/archetypes/props/kiroween.ts`), THE SYSTEM SHALL render a plump comic Halloween bat hanging upside-down in a folded/perched roost pose (`category: 'prop'`, `tags: ['hover', 'wall']`), featuring a rounded dark body, big pointed ears, wrapped curved cartoon wing folds with bold struts and subtle pale/copper (`solder`, `heatsink`, `copper`, `gold`) comic rim highlights so the silhouette pops against dark room backdrops, tiny claws gripping above, a gentle roost idle (`breathe` / subtle sway, no mid-air flapping), and a tucked/turned head with zero camera-facing eyes (`-z` eye discs or signal/malware eye lights).
+   WHEN `prop.bat` is built (`src/procgen/archetypes/props/kiroween.ts`), THE SYSTEM SHALL render a plump comic Halloween bat hanging upside-down in a folded/perched roost pose (`category: 'prop'`, `tags: ['hover', 'wall']`), featuring a rounded dark body, big pointed ears, wrapped curved cartoon wing folds with bold struts and subtle pale/copper (`solder`, `heatsink`, `copper`, `gold`) comic rim highlights so the silhouette pops against dark room backdrops, tiny claws gripping above, a gentle roost idle (`breathe` / subtle sway, no mid-air flapping), and a tucked/turned 3/4 head with glowing `powerAmber` cartoon eyes lined in `ink` (`eye.l`/`eye.r`, zero `malware` or `human` eye zones) rigidly synced to the head roost animation.
 
 2. **Dedicated flying cartoon bat (`prop.bat_flying`):**
-   WHEN `prop.bat_flying` is built and registered in `ModelCatalog` (`category: 'prop'`, `tags: ['hover']`), THE SYSTEM SHALL render a plump comic Halloween bat sculpted in a side / 3/4 flight profile facing along one canonical horizontal travel direction, with a rounded body and head, oversized pointed ears, upturned snout silhouette with zero camera-facing eyes, tiny tucked trailing feet, classic 3-scallop curved cartoon wings with bold rib struts, and subtle pale/copper comic rim highlights that read clearly at game scale (`58 px/unit`) against dark backdrops.
+   WHEN `prop.bat_flying` is built and registered in `ModelCatalog` (`category: 'prop'`, `tags: ['hover']`), THE SYSTEM SHALL render a plump comic Halloween bat sculpted in a side / 3/4 flight profile facing along one canonical horizontal travel direction, with a rounded body and head, oversized pointed ears, upturned snout silhouette, glowing `powerAmber` 3/4 cartoon eyes lined in `ink` (`eye.near`/`eye.far`, zero `malware` or `human` eye zones) rigidly synced to the head `recoilBob`, tiny tucked trailing feet, classic 3-scallop curved cartoon wings with bold rib struts, and subtle pale/copper comic rim highlights that read clearly at game scale (`58 px/unit`) against dark backdrops.
 
 3. **Two-part articulated 12 fps cartoon wing flap and body recoil:**
    WHEN `prop.bat_flying` is animated via `createAnimator` (`src/procgen/anim`), THE SYSTEM SHALL drive a two-part articulated cartoon wing flap on the 12 fps stepped comic clock — swinging each inner wing arm (`swing`) and whipping its outer 3-scallop wingtip (`swing` with a slight phase lag) across a wide upstroke/downstroke arc paired with a subtle body recoil (`bob`) on each clap.
@@ -52,6 +52,9 @@ Capability: Rework the game's bats into plump, expressive comic Halloween bats t
   **A (user, 2026-11-27):** Generate a new ElevenLabs SFX cue (`bat_wings`) via `audio-gen.mjs` with fast, punchy cartoon wing claps, triggered as the flock enters the view (plus a staggered second burst on larger flocks), paused/muted when stage is paused or reduced-motion is on — lively without drowning out combat or dialog `(Recommended)`.
 - **Q5:** How should the cartoon wings animate in flight?
   **A (user, 2026-11-27):** Two-part articulated cartoon wing flap at 12 fps (inner wing + outer scalloped tip whipping with slight phase lag and body recoil on each clap) — extra-expressive cartoon snap at low triangle cost `(Recommended)`.
+
+- **Q6:** How should the bats' glowing cartoon eyes be built so they fit the art palette, stage lighting, and 3/4 flight/roost silhouettes?
+  **A (user, 2026-11-27):** Add glowing eyes to the bats using `powerAmber` (`0xffd166`, `emissive: 0.6`, exempt `signal` zone) plates framed by slightly larger `ink` (`0x110e1b`) comic liner rims (`outline: false`) in 3/4 alignment on `head` (`eye.l`/`eye.r` tagged `roostSway` on `prop.bat`; `eye.near`/`eye.far` tagged `recoilBob` on `prop.bat_flying`), preserving `0` malware/human zones and `4` hardware zones.
 
 ## Open questions
 
