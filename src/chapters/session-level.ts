@@ -128,6 +128,7 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       spawned: new Set(),
       levelTicks: 0,
       timedFired: new Set(),
+      deferred: [],
       roomSwept: false,
       droppedPickups: new Set(),
       triggersFired: new Set(),

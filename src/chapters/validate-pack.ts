@@ -122,6 +122,17 @@ class LevelCheck {
           this.add('warn', 'script', `${what}: "${who}" is not kiro and no spawn step in this level creates it`);
         }
       }
+      if (s.kind === 'take_item' && !isItemId(s.item)) this.add('error', 'script', `${what}: unknown item "${String(s.item)}" (${ITEM_IDS.join(', ')})`);
+      if (s.kind === 'wait' && !(s.sec > 0)) this.add('error', 'script', `${what}: wait seconds must be above 0`);
+      if (s.kind === 'fly_to') {
+        if (s.entityId !== 'kiro' && !this.spawnedIds().has(s.entityId)) {
+          this.add('warn', 'script', `${what}: "${s.entityId}" is not kiro and no spawn step in this level creates it`);
+        }
+        if (s.target !== 'hero' && s.target !== 'home' && !this.sockets.has(s.target) && !this.spawnedIds().has(s.target)) {
+          this.add('warn', 'script', `${what}: fly_to target "${s.target}" is not hero, home, a socket here or a spawned entity`);
+        }
+        if (s.ms !== undefined && !(s.ms > 0)) this.add('error', 'script', `${what}: fly_to ms must be above 0`);
+      }
       if (s.kind === 'taunt' && !s.fallback && !this.pack.dialogs?.levels[this.spec.id]?.agentTaunt) {
         this.add('warn', 'script', `${what}: taunt step has no dialog agentTaunt and no fallback, so it says nothing`);
       }
@@ -265,6 +276,14 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack, winnable: boolean): Pack
   for (const p of spec.patches) {
     if (![...c.paths.keys()].some((f) => baseName(f) === p.file)) c.add('error', 'entities', `patch "${p.label}": file "${p.file}" is not in files[]`);
   }
+  (spec.generate ?? []).forEach((gen, idx) => {
+    const what = `generate[${idx}]`;
+    if (gen.kind !== 'tree') c.add('error', 'files', `${what}: unknown kind "${String(gen.kind)}" (tree)`);
+    if (!gen.root?.startsWith('/')) c.add('error', 'files', `${what}: root "${String(gen.root)}" must be an absolute path`);
+    if (!Number.isInteger(gen.folders) || gen.folders < 1) c.add('error', 'files', `${what}: folders must be a whole number of at least 1`);
+    if (!Number.isInteger(gen.hiddenFiles) || gen.hiddenFiles < 0) c.add('error', 'files', `${what}: hiddenFiles must be a whole number, 0 or more`);
+    if (!gen.seed?.trim()) c.add('error', 'files', `${what}: seed is empty`);
+  });
   const riddleIds = new Set<string>();
   (spec.riddles ?? []).forEach((r, idx) => {
     if (!r.id?.trim()) c.add('error', 'entities', `riddles[${idx}]: missing riddle id`);

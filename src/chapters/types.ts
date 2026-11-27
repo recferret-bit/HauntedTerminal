@@ -161,6 +161,19 @@ export type WinRule =
       description: string;
     };
 
+/** A seeded decoy folder tree built under `root` when the level loads (`src/chapters/tree-gen.ts`). The author places the real file and the clue trail in `files`. */
+export interface LevelTreeGenerate {
+  kind: 'tree';
+  /** Existing or new directory the decoys grow under. */
+  root: string;
+  /** How many decoy folders (at least). */
+  folders: number;
+  /** How many hidden (dot) decoy files. */
+  hiddenFiles: number;
+  /** Same seed, same tree. */
+  seed: string;
+}
+
 export interface LevelSpec {
   id: string;
   index: number;
@@ -178,6 +191,8 @@ export interface LevelSpec {
   enemies: LevelEnemySpec[];
   pickups: LevelPickupSpec[];
   patches: LevelPatchChip[];
+  /** Optional generated decoy trees that hide a file in a big folder structure. */
+  generate?: LevelTreeGenerate[];
   /** Optional talking-socket riddles (`cat <sock>`, `echo <answer> > <sock>`). */
   riddles?: LevelRiddleSpec[];
   /** Optional declarative visual stage props (`ModelCatalog` ids). */

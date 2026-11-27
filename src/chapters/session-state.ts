@@ -15,7 +15,7 @@ import { absPath, hasWrite, lookup, type VNode } from '../game/tree.js';
 import type { CommandResult, TickResult } from '../game/types.js';
 import type { RankGrade } from './catalog.js';
 import type { LabConfig, LabInjection, LabInspect, LabLevelState } from './session-lab-types.js';
-import type { ChapterPack, LevelDialogEntry, LevelPatchChip, LevelSpec } from './types.js';
+import type { ChapterPack, LevelDialogEntry, LevelPatchChip, LevelSpec, ScriptStep } from './types.js';
 
 export { empty as emptyStep, out as okStep } from '../game/play.js';
 
@@ -149,6 +149,8 @@ export interface LevelRuntime {
   dialog: LevelDialogEntry | undefined;
   /** Indexes of `script.timed` entries that already fired. */
   timedFired: Set<number>;
+  /** Steps a `wait` step pushed back: they run on the level tick `dueTick` (in order), or are flushed when the opening is skipped. */
+  deferred: Array<{ dueTick: number; steps: ScriptStep[]; vars: Record<string, string> }>;
   /** True once the player swept the room with `ls -a` / `ls -la` / `ls -A` on this level. */
   roomSwept: boolean;
   /** Pickup ids whose `appearWhen` condition has triggered and dropped onto the ground. */
