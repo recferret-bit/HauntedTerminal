@@ -25,6 +25,7 @@ const BREAKAGES = [
   ['an unknown model on the ally', (p) => { p.manifest.allyNpc.model = 'npc.nope'; }],
 ];
 import { chapterWorld } from './sessions.mjs';
+import { scriptBeatProps } from './script-beats.mjs';
 
 function portableSaveAndPreviewProps(deps) {
   const {
@@ -509,6 +510,7 @@ export default async function chaptersSuite(ctx) {
     ...pidProps(world, pidsModule, { openLabSession, newLabScript }),
     ...lockAndTimedProps(world),
     ...exitDoorProps(world),
+    ...scriptBeatProps(world),
     ...portableSaveAndPreviewProps({
       world,
       readAchievements,

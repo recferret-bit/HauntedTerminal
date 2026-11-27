@@ -242,7 +242,7 @@ export type KernelEvent =
   | {
       /** Kiro Ghost companion action (Destiny-style scan sweep, GGUF weight swap, or cipher crack). */
       type: 'KIRO_ACTION';
-      action: 'scan' | 'load' | 'crack_start' | 'crack_step' | 'crack_done';
+      action: 'scan' | 'load' | 'crack_start' | 'crack_step' | 'crack_done' | 'empower';
       core: string;
       target?: string;
       message: string;
@@ -260,6 +260,15 @@ export type KernelEvent =
       item: ItemId;
       /** procgen model id of the item (`item.terminal`). */
       model: string;
+    }
+  | {
+      /** A chapter script `fly_to`: an actor (`kiro` or a spawned entity) flies to `target` (`hero`, `home`, or the name of a socket or entity in the room). `hold`: it hovers beside the target afterwards. */
+      type: 'ACTOR_FLY_TO';
+      entityId: string;
+      target: string;
+      hold: boolean;
+      /** Flight time in ms. */
+      ms: number;
     }
   | {
       /** A chapter script `give_item`: the item joined the inventory (`held`: it went into his hand). `from` hands it over on the stage. */

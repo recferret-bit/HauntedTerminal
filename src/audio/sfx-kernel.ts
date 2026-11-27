@@ -104,6 +104,8 @@ function actorCues(ev: KernelEvent): SfxId[] {
       crack_start: 'kiro_crack_start',
       crack_step: 'kiro_crack_step',
       crack_done: 'kiro_crack_done',
+      // Placeholder until the dedicated `kiro_magic` cue exists (tensor-gpu-hub-ritual task 5).
+      empower: 'kiro_load',
     };
     return ev.action === 'scan' ? ['kiro_scan', 'sting_kiro'] : [cue[ev.action]];
   }

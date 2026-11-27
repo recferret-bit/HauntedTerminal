@@ -53,6 +53,14 @@ export function takeItem(inv: Inventory, id: ItemId): Inventory {
   return giveItem(inv, id);
 }
 
+/** The item leaves the inventory; if it was in his hand, the terminal (or nothing) takes its place. Anything he does not carry changes nothing. */
+export function consumeItem(inv: Inventory, id: ItemId): Inventory {
+  if (!hasItem(inv, id)) return inv;
+  const items = inv.items.filter((x) => x !== id);
+  const held = inv.held === id ? (items.includes('terminal') ? 'terminal' : null) : inv.held;
+  return { ...inv, items, held };
+}
+
 /** Adds spare skill charges to the shared pool (never below 0). */
 export function addVram(inv: Inventory, n = 1): Inventory {
   return { ...inv, vram: Math.max(0, inv.vram + Math.floor(n)) };

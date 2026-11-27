@@ -57,7 +57,7 @@ export type ScriptStep =
   | { kind: 'print'; text: string }
   | { kind: 'emote'; emote: 'shock' | 'confused' | 'determined' | 'relief' | 'panic' | 'shout'; text?: string }
   | { kind: 'spawn'; entityId: string; model: string; /** How the stage brings it in (default `appear`). */ entrance?: 'appear' | 'glide' }
-  | { kind: 'kiro_action'; action: 'scan' | 'load' | 'crack_start' | 'crack_step' | 'crack_done'; core: string; message: string }
+  | { kind: 'kiro_action'; action: 'scan' | 'load' | 'crack_start' | 'crack_step' | 'crack_done' | 'empower'; core: string; message: string }
   | { kind: 'say'; agent: ScriptAgent; model: string; text: string; mood: ScriptMood; print?: string }
   /** The level's `agentTaunt` from dialogs.json (agent resolved from its prefix); `fallback` if the dialog has none. */
   | { kind: 'taunt'; mood: ScriptMood; fallback?: string; print?: string }
@@ -79,7 +79,13 @@ export type ScriptStep =
   /** An actor (`kiro` or a spawned entity) picks `item` up and flies it to the hero. Stage only: the inventory does not change. */
   | { kind: 'carry_item'; entityId: string; item: ItemId }
   /** The hero receives `item` (added to the inventory, held when his hands are empty), flown in by `from`. */
-  | { kind: 'give_item'; item: ItemId; from?: string };
+  | { kind: 'give_item'; item: ItemId; from?: string }
+  /** The item leaves the inventory (a Tensor GPU slotted into the rack). If he held it, his hands go back to the terminal or empty. */
+  | { kind: 'take_item'; item: ItemId }
+  /** An actor (`kiro` or a spawned entity) flies to `target`: `hero`, `home`, or the name of a socket or entity in the room. Stage only; it does not wait. */
+  | { kind: 'fly_to'; entityId: string; target: string; hold?: boolean; ms?: number }
+  /** Pauses the steps that follow by `sec` level seconds (paused with the game); the steps before it have already run. */
+  | { kind: 'wait'; sec: number };
 
 export interface TutorialStepSpec {
   prompt: string;
