@@ -150,6 +150,10 @@ export interface LevelRuntime {
   /** Indexes of `script.timed` entries that already fired. */
   timedFired: Set<number>;
   /** Steps a `wait` step pushed back: they run on the level tick `dueTick` (in order), or are flushed when the opening is skipped. */
+  /** Kiro skills (`heal`, `hint`) already spent on this level: the level's own charge. */
+  skillsUsed: Set<string>;
+  /** Hint lines already given per riddle id (the next `kiro hint` reads the next line). */
+  hintUses: Map<string, number>;
   deferred: Array<{ dueTick: number; steps: ScriptStep[]; vars: Record<string, string> }>;
   /** True once the player swept the room with `ls -a` / `ls -la` / `ls -A` on this level. */
   roomSwept: boolean;
@@ -207,6 +211,8 @@ export interface ChapterState {
   ended: boolean;
   /** Set by `restart-level` when it reloaded the level during this line; `exec` then skips the post-command block. */
   reloadedNow: boolean;
+  /** Set by a `kiro heal` / `kiro hint` that is not a player action (refused, or no battle): `exec` then runs no enemy turn or world step for the line. */
+  freeAction: boolean;
   /** True when the run started on Level 1 and never teleported via `jumpToLevel`. */
   fullRun: boolean;
   deadNow: boolean;

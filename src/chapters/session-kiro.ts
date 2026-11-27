@@ -1,12 +1,14 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { maxHpFor } from '../game/bestiary.js';
-import { KIRO_CORE_ORDER } from '../game/kiro.js';
+import { KIRO_CORE_ORDER, type KiroSkillId } from '../game/kiro.js';
+import { useKiroSkill } from '../game/kiro-skills.js';
 import { runKiroCommand, stepKiroCrackOnRoot } from '../game/kiro-commands.js';
 import type { Step } from '../game/shell.js';
 import { kiroEnemyRow, kiroFileRow, psXrayToggle } from '../game/puzzle.js';
 import { absPath, type VNode } from '../game/tree.js';
 import { emptyStep, okStep, type ChapterState } from './session-state.js';
 import { coreMatches, coreReaction, fillTemplate, hiddenEnemyId, isNodeHidden, kiroIsWeak, levelScript } from './script.js';
+import { riddleHintLine } from './session-riddle.js';
 import { refreshExitGates } from './session-rules.js';
 
 function chapterLocked(child: VNode): boolean {
@@ -31,7 +33,6 @@ function kiroLoad(g: ChapterState, args: string[]): Step {
       const kiroRule = g.rt.spec.winRules.find((r) => r.kind === 'kiro_loaded');
       const wanted = kiroRule && kiroRule.kind === 'kiro_loaded' ? kiroRule.core : '';
       const wrongCore = (): string => fillTemplate(script?.wrongCoreLine ?? '', { core: wanted });
-      if (script?.wrongCoreLine && wanted && !coreMatches(g, want, wanted)) return emptyStep(1, wrongCore());
       const res = g.kiro.loadCore(want);
       if (!res.ok) return emptyStep(1, res.stderr ?? res.stdout);
       g.rt.loadedCores.add(g.kiro.activeCore.id);
@@ -89,6 +90,23 @@ function kiroScan(g: ChapterState): Step {
       return okStep(res.stdout, events);
 }
 
+/** `kiro heal` / `kiro hint`: the skill of the core Kiro.d runs now, paid from the level's charge or the VRAM pool. */
+function kiroSkill(g: ChapterState, skill: KiroSkillId): Step {
+  const out = useKiroSkill(skill, {
+    core: kiroIsWeak(g) ? null : g.kiro.activeCore,
+    used: g.rt.skillsUsed,
+    inv: g.inventory,
+    hp: g.hp,
+    maxHp: maxHpFor(g.ram),
+    inBattle: g.battle.phase === 'player',
+    riddleHint: () => riddleHintLine(g, absPath(g.rt.cwd)),
+  });
+  g.inventory = out.inv;
+  g.hp += out.healBy;
+  g.freeAction = out.free;
+  return okStep(out.stdout, out.spent ? [{ type: 'VIBECODER_ACTION', action: 'cast', command: `kiro ${skill}` }] : [], out.code, out.stderr);
+}
+
 export function cmdKiro(g: ChapterState, args: string[], stdin: string): Step {
   return runKiroCommand(
     {
@@ -106,6 +124,7 @@ export function cmdKiro(g: ChapterState, args: string[], stdin: string): Step {
       },
       loadCore: (loadArgs) => kiroLoad(g, loadArgs),
       scanRoom: () => kiroScan(g),
+      useSkill: (skill) => kiroSkill(g, skill),
     },
     g.kiro,
     args,

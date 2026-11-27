@@ -112,6 +112,8 @@ const MAN: Record<string, string[]> = {
     '  kiro load <core>              swap local weights: qwen (vs Anti-Gravy), mistral (vs Clod),',
     '                                deepseek (vs Codec), llama (vs Gork Faraday shield).',
     '  kiro crack <lock>             send Kiro.d to decrypt a Cloud-sealed gate while you defend it.',
+    '  kiro heal                     (qwen core) restore half your max HP; one charge per level, VRAM modules add spare ones.',
+    '  kiro hint                     (deepseek core) whisper the next hint of the riddle socket in this room.',
     '  kiro disclaimer               print parody, AWS trademark & post-Kiroween rework notice (alias: kiro legal).',
     '  cat <file> | kiro             audit a file with local weights (flags bugs & slop; kiro.d works too).',
   ],

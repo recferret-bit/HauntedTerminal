@@ -141,6 +141,7 @@ function markFailedActions(events: KernelEvent[], code: number | undefined): Ker
 export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     g.deadNow = false;
     g.reloadedNow = false;
+    g.freeAction = false;
     g.deathText = '';
     const typed = fillPids(line, g.rt.pids).trim();
     g.commandCue = null;
@@ -179,7 +180,7 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     g.rt.levelCommands += 1;
     const firstWord = typed.split(/\s+/)[0] ?? '';
     if (firstWord && !g.preview) recordTelemetry({ commands: [firstWord] });
-    g.lastCmdStartedCrack = /(?:^|[;&|]\s*)kiro\s+(?:crack|decrypt|hack)\b/i.test(typed);
+    g.lastCmdStartedCrack = /(?:^|[;&|]\s*)kiro\s+(?:crack|decrypt)\b/i.test(typed);
 
     const step = runLine(typed, host);
     const actionEvents: KernelEvent[] = step.events.some((e) => e.type === 'VIBECODER_ACTION')
@@ -203,8 +204,8 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
       combinedOutput += syncTutorial(g, events);
       combinedOutput += bullyingNote(g, allWinRulesMet(g), events);
       // Turn-based: the command was an action; the world answers with one step (an enemy turn in a battle).
-      combinedOutput += afterCommand(g, events);
-    } else if (!levelChanged) {
+      if (!g.freeAction) combinedOutput += afterCommand(g, events);
+    } else if (!levelChanged && !g.freeAction) {
       afterCommand(g, events);
     }
     g.lastCmdStartedCrack = false;

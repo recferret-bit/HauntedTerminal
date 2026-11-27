@@ -76,6 +76,10 @@ export interface Play {
   readonly ouch: OuchState;
   run: Run;
   deadNow: boolean;
+  /** Set by a `kiro heal` / `kiro hint` that is not a player action (refused, or no battle): no world step follows the line. */
+  freeAction: boolean;
+  /** Kiro skills spent on each floor: the floor's own charge. */
+  readonly skillsUsed: Record<number, Set<string>>;
   deathText: string;
   act: { action: HeroAction; target?: string };
   paused: boolean;
