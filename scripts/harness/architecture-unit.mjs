@@ -641,5 +641,45 @@ await withProcgen(async (_procgen, vite) => {
     assert.deepEqual(planWordReveal(12, 2400, { instant: true }), { stepMs: 0, holdMs: 2400, revealMs: 0 });
   });
 
+  await test('flying bats: Bézier endpoints, easing, opposite corners, flock size and ranges', async () => {
+    const bat = await load('/src/renderer/bat-path.ts');
+    const bounds = { minX: -5, maxX: 5, minY: 0, maxY: 6 };
+    let seed = 12345;
+    const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 0x100000000);
+    const sizes = new Set();
+    const starts = new Set();
+    for (let i = 0; i < 400; i++) {
+      const flock = bat.makeFlock(rand, bounds);
+      sizes.add(flock.length);
+      assert.ok(flock.length >= 1 && flock.length <= 6);
+      const outside = (p) => p.x < bounds.minX || p.x > bounds.maxX || p.y < bounds.minY || p.y > bounds.maxY;
+      const sx = Math.sign(flock[0].p0.x - (bounds.minX + bounds.maxX) / 2);
+      const sy = Math.sign(flock[0].p0.y - (bounds.minY + bounds.maxY) / 2);
+      starts.add(`${sx},${sy}`);
+      for (const f of flock) {
+        assert.ok(outside(f.p0) && outside(f.p3));
+        // Opposite corner: both axes flip between start and end.
+        assert.equal(Math.sign(f.p3.x - (bounds.minX + bounds.maxX) / 2), -sx);
+        assert.equal(Math.sign(f.p3.y - (bounds.minY + bounds.maxY) / 2), -sy);
+        assert.deepEqual(bat.cubicBezier(f.p0, f.p1, f.p2, f.p3, 0), f.p0);
+        assert.deepEqual(bat.cubicBezier(f.p0, f.p1, f.p2, f.p3, 1), f.p3);
+        assert.ok(f.scale >= 0.7 && f.scale <= 1.3);
+        assert.ok(f.durationSec >= 2 / 1.25 - 1e-9 && f.durationSec <= 3.5 / 0.75 + 1e-9);
+      }
+      const scales = new Set(flock.map((f) => f.scale));
+      assert.equal(scales.size, flock.length, 'each bat differs in size');
+    }
+    assert.deepEqual([...sizes].sort(), [1, 2, 3, 4, 5, 6], 'every group size 1..6 occurs');
+    assert.equal(starts.size, 4, 'all four start corners occur');
+    let prev = 0;
+    for (let i = 1; i <= 100; i++) {
+      const e = bat.easeInOutSine(i / 100);
+      assert.ok(e >= prev);
+      prev = e;
+    }
+    assert.equal(bat.easeInOutSine(0), 0);
+    assert.equal(bat.easeInOutSine(1), 1);
+  });
+
   console.log(`\narchitecture-unit OK (${count()} tests)`);
 }, '/src/game/session.ts');

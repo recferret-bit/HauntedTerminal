@@ -12,6 +12,7 @@ import type { FxId } from './fx-player.js';
 import { popOut } from './stage-motion.js';
 import { stepHeroYaw, yawForDx } from './stage-hero-turn.js';
 import { isLevelTransitionPhase, stepLevelTransition } from './stage-level-transition.js';
+import { stepBats } from './stage-bats.js';
 import { applyActor } from './stage-sync.js';
 import type { ComicStage } from './comic-stage.js';
 
@@ -35,6 +36,7 @@ export function stepStage(stage: ComicStage, dt: number): void {
   stage.tweens.update(dtMs);
   stepLevelTransition(stage, dtMs);
   stepActors(stage, dt);
+  stepBats(stage, dt);
   stepAgentAmbientFx(stage, dt);
   heroFidget(stage, dt);
   if (stage.stormOn && !stage.devNoStorm && !stage.stormPaused) {

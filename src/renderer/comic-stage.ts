@@ -23,6 +23,7 @@ import { reportStage } from './stage-actor.js';
 import { enqueueStageEvent } from './stage-events.js';
 import { buildStageScene, layoutFill } from './stage-layout.js';
 import { syncRoomInner } from './stage-sync.js';
+import { createBatsState } from './stage-bats.js';
 import { stepStage } from './stage-frame.js';
 import { say, triggerShake } from './stage-fx.js';
 import { isLevelTransitionActiveOrArmed, skipLevelTransition as stopLevelTransition } from './stage-level-transition.js';
@@ -136,6 +137,7 @@ export class ComicStage {
   devNoStorm = false;
   /** Play overlay: true while cinematics, outro, stats, or a hidden tab covers the stage. */
   stormPaused = false;
+  readonly bats = createBatsState();
   audioBus: AppBus | null = null;
 
   constructor(
