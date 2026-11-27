@@ -16,8 +16,8 @@ procgen/runtime       adapters: comic materials, ink shells, animator, FX emitte
 shaders/              GLSL materials and post passes. Imports nothing from procgen
 storybook/            storybook: domain <- subjects <- stage <- ui <- app (entry: storybook/storybook.ts)
 assets/               optional PNG albedo loader (three). No other src imports.
-game/                 world, VFS (`tree.ts` with `isDescendantOrSelf`), shell (`session-shell.ts` `CLASSIC_HANDLERS`), shared services (`unix-applets.ts`, `kiro-commands.ts`), FSM controllers (`battle.ts`, `kiro.ts`, `agents.ts`). Three-free.
-chapters/             level runtime (session orchestrator + `session-*` modules + table-driven `CHAPTER_HANDLERS`, `metagame-data.ts`). Imports game and contracts. generated/ is compiled data.
+game/                 world, VFS (`tree.ts` with `isDescendantOrSelf`), shell (`session-shell.ts` `CLASSIC_HANDLERS`), shared services (`unix-applets.ts`, `search-applets.ts` for `tree` and `grep -r`, `kiro-commands.ts`, `kiro-skills.ts` for `kiro heal` / `kiro hint`), FSM controllers (`battle.ts`, `kiro.ts`, `agents.ts`). Three-free.
+chapters/             level runtime (session orchestrator + `session-*` modules + table-driven `CHAPTER_HANDLERS`, `metagame-data.ts`, `tree-gen.ts` seeded decoy trees, `session-search.ts`). Imports game and contracts. generated/ is compiled data.
 renderer/             comic stage. Three, procgen, shaders, assets. Not the game rules.
 cinematic/            generic 3D comix runtime. Three, procgen, shaders. generated/ is compiled data.
 editor-core/          shared workstation framework for spec editors: schema form builder, schema walker, HTTP/etag baseline tracker, dock layout, workspace persistence, resizable viewport stage, the game preview shell and play frame (`game-preview.ts`, `play-frame.ts`), the console dock, and chrome helpers (contracts only).
