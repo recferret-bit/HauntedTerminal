@@ -1758,7 +1758,7 @@ await withProcgen(async (_p, vite) => {
     assert.ok(subj.glow.length > 0, 'FX subject must expose glowing meshes for Storybook Lantern dark mode');
     subj.dispose();
 
-    // FxPlayer.activeLights respects mirroring, scale, top-4 power*radius priority cap, and disposal.
+    // FxPlayer.activeLights respects mirroring, scale, top-8 power*radius priority cap, and disposal.
     const layer = new THREE.Group();
     const player = new FxPlayer({ layer, shake() {}, flash() {} });
     player.play('fx.hop', new THREE.Vector3(1, 0, 0), { scale: 1 });
@@ -1766,8 +1766,12 @@ await withProcgen(async (_p, vite) => {
     player.play('fx.sigkill', new THREE.Vector3(0, 1, 0));
     player.play('fx.reveal', new THREE.Vector3(2, 1, 0));
     player.play('fx.mv-dust', new THREE.Vector3(-1, 0, 0));
+    player.play('fx.fight', new THREE.Vector3(-3, 0.5, 0));
+    player.play('fx.gate-open', new THREE.Vector3(3, 0.5, 0));
+    player.play('fx.door-unlock', new THREE.Vector3(1.5, 0.8, 0));
+    player.play('fx.flood-splash', new THREE.Vector3(-1.5, 0.2, 0));
     const lights = player.activeLights();
-    assert.equal(lights.length, MAX_COMIC_FX_LIGHTS, 'activeLights caps at MAX_COMIC_FX_LIGHTS (4)');
+    assert.equal(lights.length, MAX_COMIC_FX_LIGHTS, 'activeLights caps at MAX_COMIC_FX_LIGHTS (8)');
     assert.ok(lights[0].power * lights[0].radius >= lights[lights.length - 1].power * lights[lights.length - 1].radius, 'activeLights ranks by power * radius');
     const mirroredBolt = lights.find((l) => l.radius > 8);
     assert.ok(mirroredBolt && mirroredBolt.x > -2, 'mirrored page +x offset maps to world +x');
@@ -1779,6 +1783,7 @@ await withProcgen(async (_p, vite) => {
     const variant = createSurfaceVariant(base, 'clay_cracks', { accentA: 0xef476f, accentB: 0xc8763a, hot: 0xfff07c, deep: 0x3c096c });
     assert.equal(variant.uniforms.uLampPower, COMIC_LIGHT.uLampPower, 'variant shares live COMIC_LIGHT');
     assert.equal(variant.uniforms.uFxPos0, COMIC_FX_LIGHTS.uFxPos0, 'variant shares live COMIC_FX_LIGHTS');
+    assert.equal(variant.uniforms.uFxPos7, COMIC_FX_LIGHTS.uFxPos7, 'variant shares live slot-7 COMIC_FX_LIGHTS');
     setComicFxLights([{ x: 1.5, y: 2.2, radius: 3.4, power: 1.25, color: 0x39ff88 }]);
     assert.equal(COMIC_FX_LIGHTS.uFxPos0.value.w, 1.25);
     assert.equal(COMIC_FX_LIGHTS.uFxPos1.value.w, 0);

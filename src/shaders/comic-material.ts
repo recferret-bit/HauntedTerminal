@@ -53,6 +53,14 @@ uniform vec4 uFxPos2;
 uniform vec3 uFxCol2;
 uniform vec4 uFxPos3;
 uniform vec3 uFxCol3;
+uniform vec4 uFxPos4;
+uniform vec3 uFxCol4;
+uniform vec4 uFxPos5;
+uniform vec3 uFxCol5;
+uniform vec4 uFxPos6;
+uniform vec3 uFxCol6;
+uniform vec4 uFxPos7;
+uniform vec3 uFxCol7;
 varying vec3 vNormal;
 varying vec3 vWorld;
 varying vec2 vUv;
@@ -118,14 +126,21 @@ void main() {
     float pingEdge = step(band, 0.09) + 0.45 * step(band, 0.3) * step(dist, uPingR);
     col += lampCol * pingEdge * uPingPower * (0.55 + 0.45 * facing);
   }
-  if (uFxPos0.w > 0.001 || uFxPos1.w > 0.001 || uFxPos2.w > 0.001 || uFxPos3.w > 0.001) {
+  if (
+    uFxPos0.w > 0.001 || uFxPos1.w > 0.001 || uFxPos2.w > 0.001 || uFxPos3.w > 0.001
+    || uFxPos4.w > 0.001 || uFxPos5.w > 0.001 || uFxPos6.w > 0.001 || uFxPos7.w > 0.001
+  ) {
     vec2 fxCell = floor(gl_FragCoord.xy / 3.0);
     float fxDth = (mod(fxCell.x + fxCell.y * 2.0, 4.0) / 4.0 - 0.375) * 0.16;
     float darkBoost = mix(0.32, 0.85, clamp(uLampDark, 0.0, 1.0));
     vec3 fxAdd = comicFxLight(uFxPos0, uFxCol0, baseCol, n, fxDth, darkBoost)
       + comicFxLight(uFxPos1, uFxCol1, baseCol, n, fxDth, darkBoost)
       + comicFxLight(uFxPos2, uFxCol2, baseCol, n, fxDth, darkBoost)
-      + comicFxLight(uFxPos3, uFxCol3, baseCol, n, fxDth, darkBoost);
+      + comicFxLight(uFxPos3, uFxCol3, baseCol, n, fxDth, darkBoost)
+      + comicFxLight(uFxPos4, uFxCol4, baseCol, n, fxDth, darkBoost)
+      + comicFxLight(uFxPos5, uFxCol5, baseCol, n, fxDth, darkBoost)
+      + comicFxLight(uFxPos6, uFxCol6, baseCol, n, fxDth, darkBoost)
+      + comicFxLight(uFxPos7, uFxCol7, baseCol, n, fxDth, darkBoost);
     // Hue-preserving soft knee prevents multi-FX whiteout and keeps self-emissive FX geometry crisp.
     float fxPeak = max(max(fxAdd.r, fxAdd.g), fxAdd.b);
     float fxCap = mix(0.72, 1.12, clamp(uLampDark, 0.0, 1.0));
@@ -196,7 +211,7 @@ export interface ComicFxLight {
   color: number;
 }
 
-export const MAX_COMIC_FX_LIGHTS = 4;
+export const MAX_COMIC_FX_LIGHTS = 8;
 
 export const COMIC_FX_LIGHTS = {
   uFxPos0: { value: new THREE.Vector4(0, 0, 1, 0) },
@@ -207,6 +222,14 @@ export const COMIC_FX_LIGHTS = {
   uFxCol2: { value: new THREE.Color(1, 1, 1) },
   uFxPos3: { value: new THREE.Vector4(0, 0, 1, 0) },
   uFxCol3: { value: new THREE.Color(1, 1, 1) },
+  uFxPos4: { value: new THREE.Vector4(0, 0, 1, 0) },
+  uFxCol4: { value: new THREE.Color(1, 1, 1) },
+  uFxPos5: { value: new THREE.Vector4(0, 0, 1, 0) },
+  uFxCol5: { value: new THREE.Color(1, 1, 1) },
+  uFxPos6: { value: new THREE.Vector4(0, 0, 1, 0) },
+  uFxCol6: { value: new THREE.Color(1, 1, 1) },
+  uFxPos7: { value: new THREE.Vector4(0, 0, 1, 0) },
+  uFxCol7: { value: new THREE.Color(1, 1, 1) },
 };
 
 const FX_LIGHT_SLOTS: ReadonlyArray<{ pos: { value: THREE.Vector4 }; col: { value: THREE.Color } }> = [
@@ -214,9 +237,13 @@ const FX_LIGHT_SLOTS: ReadonlyArray<{ pos: { value: THREE.Vector4 }; col: { valu
   { pos: COMIC_FX_LIGHTS.uFxPos1, col: COMIC_FX_LIGHTS.uFxCol1 },
   { pos: COMIC_FX_LIGHTS.uFxPos2, col: COMIC_FX_LIGHTS.uFxCol2 },
   { pos: COMIC_FX_LIGHTS.uFxPos3, col: COMIC_FX_LIGHTS.uFxCol3 },
+  { pos: COMIC_FX_LIGHTS.uFxPos4, col: COMIC_FX_LIGHTS.uFxCol4 },
+  { pos: COMIC_FX_LIGHTS.uFxPos5, col: COMIC_FX_LIGHTS.uFxCol5 },
+  { pos: COMIC_FX_LIGHTS.uFxPos6, col: COMIC_FX_LIGHTS.uFxCol6 },
+  { pos: COMIC_FX_LIGHTS.uFxPos7, col: COMIC_FX_LIGHTS.uFxCol7 },
 ];
 
-/** Push up to 4 active FX lights into the shared comic shader uniforms (unused slots zeroed). */
+/** Push up to 8 active FX lights into the shared comic shader uniforms (unused slots zeroed). */
 export function setComicFxLights(lights: readonly ComicFxLight[]): void {
   for (let i = 0; i < FX_LIGHT_SLOTS.length; i++) {
     const slot = FX_LIGHT_SLOTS[i]!;

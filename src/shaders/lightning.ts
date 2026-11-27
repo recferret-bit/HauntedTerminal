@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { MAX_COMIC_FX_LIGHTS, mergeComicFxLights, type ComicFxLight } from './comic-material.js';
+import { mergeComicFxLights, type ComicFxLight } from './comic-material.js';
 
 /**
  * Procedural bolts and a Lichtenberg ground web with an electric-surface shader,
@@ -318,7 +318,7 @@ export class LightningStrikeSystem {
         color: LIGHTNING_FX_COLOR,
       });
     }
-    return mergeComicFxLights([out], MAX_COMIC_FX_LIGHTS);
+    return mergeComicFxLights([out], 4);
   }
 
   private refreshFlashFloor(): void {
