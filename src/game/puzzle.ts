@@ -1,9 +1,10 @@
 import type { BubbleStyle, KernelEvent } from '../contracts/events.js';
-import { BESTIARY } from './bestiary.js';
+import { BESTIARY, maxHpFor } from './bestiary.js';
 import { dialogueEvent } from './dialogue.js';
 import { F3_WING_ENERGY, F3_WING_PICKUP, FLOOR_TITLES } from './floors.js';
 import { KIRO_CORE_ORDER, type KiroScanInput } from './kiro.js';
 import { runKiroCommand, stepKiroCrackOnRoot } from './kiro-commands.js';
+import { useKiroSkill } from './kiro-skills.js';
 import { labRiddleRead, labRiddleWrite } from './lab-riddle.js';
 import type { EntityView, ProcRow } from './entities.js';
 import { empty, out, type Play } from './play.js';
@@ -446,6 +447,15 @@ export function cmdKiro(g: Play, args: string[], stdin: string): Step {
         const events: KernelEvent[] = [];
         for (const ev of res.events) push(g, events, ev);
         return res.ok ? out(res.stdout, events) : empty(1, res.stderr ?? res.stdout);
+      },
+      useSkill(skill) {
+        const used = (g.skillsUsed[g.run.floor] ??= new Set<string>());
+        const res = useKiroSkill(skill, { core: g.kiro.activeCore, used, inv: g.run.inventory, hp: g.run.hp, maxHp: maxHpFor(g.run.ram), inBattle: false, riddleHint: () => null });
+        g.run.inventory = res.inv;
+        g.run.hp += res.healBy;
+        g.freeAction = res.free;
+        if (res.spent) bump(g, 'cast');
+        return out(res.stdout, [], res.code, res.stderr);
       },
       scanRoom() {
         bump(g, 'lantern');

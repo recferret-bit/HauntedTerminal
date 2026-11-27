@@ -12,6 +12,8 @@ import { buildLaptop } from './items/laptop.js';
 import { buildManual } from './items/manual.js';
 import { buildMap } from './items/map.js';
 import { buildTerminal } from './items/terminal.js';
+import { buildTensorGpu } from './items/tensor-gpu.js';
+import { buildVramModule } from './items/vram-module.js';
 
 export const ITEM_BUILDERS: Record<ItemId, (seed: number) => ModelSpec> = {
   tube_transistor: buildTubeTransistor,
@@ -19,6 +21,8 @@ export const ITEM_BUILDERS: Record<ItemId, (seed: number) => ModelSpec> = {
   laptop: buildLaptop,
   manual: buildManual,
   map: buildMap,
+  tensor_gpu: buildTensorGpu,
+  vram_module: buildVramModule,
 };
 
 for (const def of Object.values(ITEMS)) {

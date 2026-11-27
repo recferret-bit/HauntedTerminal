@@ -84,6 +84,7 @@ Always run before declaring work done (plus targeted suites for areas touched):
 - `node scripts/harness/generate-chapter.mjs --check && node scripts/harness/generate-comix.mjs --check`
 - When chapters, comix, editors, labs, laptop, or assets changed, run the corresponding verifiers:
   - Chapters/editors: `node scripts/harness/generate-chapter.mjs --verify`, `node .kiro/skills/chapter-implementer/scripts/verify-chapter.mjs`, `node scripts/harness/editor-unit-test.mjs`, `node scripts/harness/editor-smoke.mjs`
+  - Tensor GPU ritual, Kiro skills and VRAM modules (`.kiro/specs/tensor-gpu-hub-ritual/`): `node scripts/harness/property-tests.mjs --only chapters,gameplay`, `battle-unit.mjs`, `classic-unit.mjs`, `manual-smoke.mjs`; new steps `fly_to`, `wait`, `take_item`, `kiro_action: empower` and the level field `generate` follow the four-place rule
   - Battles (turn-based combat, `src/game/battle.ts`; no real-time damage, no Tactical Mode): `node scripts/harness/battle-unit.mjs`, `node scripts/harness/property-tests.mjs --only gameplay`, `node scripts/harness/playthrough.mjs --ticks 3`. Spec: `.kiro/specs/turn-based-battles/`
   - App bus, SFX and music (`src/audio/`, `src/contracts/app-bus.ts`): `node scripts/harness/audio-unit.mjs`. Spec: `.kiro/specs/app-events-audio/`
   - Comix/editor: `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs`, `node scripts/harness/comix-editor-smoke.mjs`

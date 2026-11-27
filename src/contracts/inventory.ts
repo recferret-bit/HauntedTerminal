@@ -2,7 +2,7 @@
  * Item types and descriptors for the developer's inventory.
  * Pure data and contracts shared across procgen (3D models, hero variants) and game (inventory state, shell).
  */
-export const ITEM_IDS = ['tube_transistor', 'terminal', 'laptop', 'manual', 'map'] as const;
+export const ITEM_IDS = ['tube_transistor', 'terminal', 'laptop', 'manual', 'map', 'tensor_gpu', 'vram_module'] as const;
 export type ItemId = (typeof ITEM_IDS)[number];
 
 export interface ItemDef {
@@ -10,10 +10,10 @@ export interface ItemDef {
   readonly label: string;
   /** The item on its own (ModelCatalog id: item.<id>). */
   readonly model: string;
-  /** The developer holding it (ModelCatalog id: vibecoder.dev or vibecoder.dev_<id>). */
-  readonly heroModel: string;
-  /** Developer variant label in ModelCatalog. */
-  readonly heroLabel: string;
+  /** The developer holding it (ModelCatalog id: vibecoder.dev or vibecoder.dev_<id>). Absent: the item is carried, never held in hand. */
+  readonly heroModel?: string;
+  /** Developer variant label in ModelCatalog (with `heroModel`). */
+  readonly heroLabel?: string;
   /** Lore description for ModelCatalog and world lexicon. */
   readonly lore: string;
   /** Developer variant lore in ModelCatalog. */
@@ -78,6 +78,20 @@ export const ITEMS: Readonly<Record<ItemId, ItemDef>> = {
     lore: 'A trace-etched PCB motherboard schematic slate with gold bus channels, IC sector blocks, and glowing phosphor trace nodes: the live circuit map of the chapter.',
     heroLore: 'The developer holding his PCB motherboard schematic map by its top strap: tracing data channels and sector blocks across the machine.',
     use: 'a PCB motherboard schematic map of all chapter channels and sector blocks.',
+  },
+  tensor_gpu: {
+    id: 'tensor_gpu',
+    label: 'tensor gpu',
+    model: 'item.tensor_gpu',
+    lore: 'A PCIe card with a tensor die under a heatsink: the hardware that lets Kiro load open-weight models.',
+    use: 'a tensor card: bring it to the old coder so Kiro can load open-weight models.',
+  },
+  vram_module: {
+    id: 'vram_module',
+    label: 'vram module',
+    model: 'item.vram_module',
+    lore: 'A memory module with gold pins, hidden deep in the file tree: each one adds a spare charge to Kiro skills.',
+    use: 'a memory module: one spare charge for a Kiro skill (kiro heal, kiro hint).',
   },
 };
 

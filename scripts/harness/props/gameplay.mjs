@@ -4,6 +4,7 @@
 import fc from 'fast-check';
 import { expect } from './kit.mjs';
 import { gameplayFsmProps } from './gameplay-fsm.mjs';
+import { kiroSkillProps } from './kiro-skills.mjs';
 import { chapterWorld } from './sessions.mjs';
 
 const COMPOUND = /&&|\|\||;|\n/;
@@ -18,6 +19,7 @@ export default async function gameplaySuite(ctx) {
   const { openLabSession } = await ctx.load('/src/terminal-lab/node-driver.ts');
   const { newLabScript } = await ctx.load('/src/terminal-lab/lab-pack.ts');
   const fsmProps = await gameplayFsmProps(ctx);
+  const skillProps = await kiroSkillProps(ctx);
   const EXT = { energy: 'cell', ram: 'dimm', ssd: 'img' };
   /** The levels that ask for a Kiro core (the hubs), each with the rule that names it. */
   // `script.kiro.coreAliases` lists cores a level accepts for the wanted one (hub 3 accepts mistral for llama): data, not a bug.
@@ -271,20 +273,22 @@ export default async function gameplaySuite(ctx) {
       // Found by this property: hub 3 accepted `kiro load mistral` (a declared alias of llama) but its win rule only accepted llama,
       // so following the alias left the exit locked (fixed in session-rules.ts: the rule honours `coreAliases`).
       examples: [[mistralHub, 'mistral']],
-      name: 'in a Kiro hub, a wrong or unknown core is refused and loads nothing; the wanted core (or a declared alias) satisfies the win rule',
+      name: 'in a Kiro hub, any known core loads but only the wanted core (or a declared alias) satisfies the win rule; an unknown core is refused and loads nothing',
       build: () =>
         fc.property(fc.constantFrom(...hubs.keys()), fc.constantFrom('qwen', 'mistral', 'deepseek', 'llama', 'codec-9', 'clod', ''), (h, core) => {
           const { index, rule, aliases } = hubs[h];
           const accepted = [rule.core, ...(aliases[rule.core] ?? [])];
+          const known = ['qwen', 'mistral', 'deepseek', 'llama'].includes(core);
           const session = world.open(index);
           const before = session.kiro.activeCore.id;
           const r = session.exec(`kiro load ${core}`.trim());
-          if (accepted.includes(core)) {
-            expect((r.code ?? 0) === 0, `level ${index}: loading the wanted core ${core} failed: ${JSON.stringify(r.output).slice(0, 120)}`);
+          if (known) {
+            expect((r.code ?? 0) === 0, `level ${index}: loading the known core ${core} failed: ${JSON.stringify(r.output).slice(0, 120)}`);
             expect(session.rt.loadedCores.has(core), `level ${index}: ${core} is not in loadedCores after a good load`);
-            expect(evalWinRule(session, rule), `level ${index}: the kiro_loaded rule is not met after loading ${core}`);
+            expect(session.kiro.activeCore.id === core, `level ${index}: ${core} was loaded but the active core is ${session.kiro.activeCore.id}`);
+            expect(evalWinRule(session, rule) === accepted.includes(core), `level ${index} wants ${accepted.join(' or ')}: the kiro_loaded rule is ${evalWinRule(session, rule) ? 'met' : 'unmet'} after loading ${core}`);
           } else {
-            expect((r.code ?? 0) !== 0, `level ${index} wants ${accepted.join(' or ')}, but \`kiro load ${core}\` succeeded`);
+            expect((r.code ?? 0) !== 0, `level ${index}: \`kiro load ${core}\` of an unknown core succeeded`);
             expect(session.kiro.activeCore.id === before, `level ${index}: \`kiro load ${core}\` failed but the core went ${before} -> ${session.kiro.activeCore.id}`);
             expect(!session.rt.loadedCores.has(core), `level ${index}: ${core} was recorded as loaded though refused`);
             expect(!evalWinRule(session, rule), `level ${index}: the kiro_loaded rule is met by ${core} (wants ${accepted.join(' or ')})`);
@@ -509,5 +513,6 @@ export default async function gameplaySuite(ctx) {
       },
     },
     ...fsmProps,
+    ...skillProps,
   ];
 }

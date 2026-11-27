@@ -2,7 +2,7 @@ import type { KernelEvent } from '../contracts/events.js';
 import { isItemId } from '../contracts/inventory.js';
 import { PICKUP_INFO, maxHpFor } from '../game/bestiary.js';
 import type { Pickup } from '../game/entities.js';
-import { giveItem, holdItem } from '../game/inventory.js';
+import { addVram, giveItem, holdItem, markTaken, takeItem } from '../game/inventory.js';
 import type { Step } from '../game/shell.js';
 import { absPath, hasExec, hasWrite, isDescendantOrSelf, lookup, makeNode, modeString, resolve, walk, type VNode } from '../game/tree.js';
 import {
@@ -24,6 +24,7 @@ import { levelBannerText, loadLevel } from './session-level.js';
 import { cmdHank } from './session-meta.js';
 import { allWinRulesMet, refreshExitGates, sinkIntoNull, unfinishedObjectives } from './session-rules.js';
 import { riddleRead } from './session-riddle.js';
+import { cmdGrepRecursive } from './session-search.js';
 
 /** One `ls -l` row: mode, owner, size, name and a kind suffix (`/` dir, `=` socket, `-> target` symlink). */
 function longRow(c: VNode): string {
@@ -222,7 +223,8 @@ export function cmdHeadTail(g: ChapterState, cmd: 'head' | 'tail', args: string[
 
 export function cmdGrep(g: ChapterState, args: string[], stdin: string): Step {
     const spec = parseGrepArgs(args);
-    if ('error' in spec) return emptyStep(2, 'usage: grep [-ivc] PATTERN [FILE...]\n');
+    if ('error' in spec) return emptyStep(2, 'usage: grep [-ivcr] PATTERN [FILE...]\n');
+    if (spec.recursive) return cmdGrepRecursive(g, spec);
 
     let haystack = stdin;
     if (spec.files.length > 0) {
@@ -406,11 +408,18 @@ export function collectPickupNode(g: ChapterState, pickup: Pickup, node: VNode, 
     } else if (pickup.type === 'tube_transistor') {
       // The tube transistor: he gets it and holds it; taking it again changes nothing.
       g.inventory = holdItem(giveItem(g.inventory, 'tube_transistor'), 'tube_transistor');
-    } else {
+    } else if (pickup.type === 'tensor_gpu') {
+      // The Tensor GPU is carried, not held: it joins the inventory and the strip slot lights up.
+      g.inventory = takeItem(g.inventory, 'tensor_gpu');
+    } else if (pickup.type === 'vram_module') {
+      // A VRAM module is consumed into one spare skill charge; the strip slot counts them.
+      g.inventory = addVram(g.inventory, 1);
+    } else if (pickup.type === 'laptop') {
       // The laptop: he gets it and holds it; taking it again changes nothing.
       g.inventory = holdItem(giveItem(g.inventory, 'laptop'), 'laptop');
     }
-    const isGpuPart = /gpu|vram|tensor/i.test(node.name) || /gpu|vram|tensor/i.test(pickup.id);
+    g.inventory = markTaken(g.inventory, g.rt.spec.id, pickup.id);
+    const isGpuPart = pickup.type !== 'tensor_gpu' && pickup.type !== 'vram_module' && (/gpu|vram|tensor/i.test(node.name) || /gpu|vram|tensor/i.test(pickup.id));
     const label = isGpuPart ? `${info.label(pickup.amount)} + Local GPU Tensor Chip` : info.label(pickup.amount);
     events.push({
       type: 'PICKUP_COLLECTED',

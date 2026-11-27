@@ -1,7 +1,7 @@
 import type { KernelEvent } from '../contracts/events.js';
 import type { PickupType } from '../game/bestiary.js';
 import { dialogueEvent } from '../game/dialogue.js';
-import { giveItem, heroModel, holdItem, ITEMS } from '../game/inventory.js';
+import { consumeItem, giveItem, heroModel, holdItem, ITEMS } from '../game/inventory.js';
 import { lookup, type VNode } from '../game/tree.js';
 import type { TutorialState } from '../game/types.js';
 import { resolveTauntAgent, type ChapterState } from './session-state.js';
@@ -54,6 +54,9 @@ export function evalCond(g: ChapterState, c: ScriptCond): boolean {
       return c.of.every((x) => evalCond(g, x));
   }
 }
+
+/** Default flight time of a `fly_to` step, in ms. */
+const FLY_TO_MS = 2400;
 
 /** What a step needs from its surroundings. The game fills it from live state, the chapter editor from the draft. */
 export interface StepEnv {
@@ -131,6 +134,12 @@ export function stepOutput(s: ScriptStep, env: StepEnv): { events: KernelEvent[]
       return tutorialCard(env.tutorial, s.step, false);
     case 'carry_item':
       return { events: [{ type: 'ITEM_CARRIED', entityId: s.entityId, item: s.item, model: ITEMS[s.item].model }], print: '' };
+    case 'take_item':
+      return { events: [], print: `[ITEM USED] ${ITEMS[s.item].label.toUpperCase()} leaves your inventory.\n` };
+    case 'fly_to':
+      return { events: [{ type: 'ACTOR_FLY_TO', entityId: s.entityId, target: s.target, hold: s.hold ?? false, ms: s.ms ?? FLY_TO_MS }], print: '' };
+    case 'wait':
+      return { events: [], print: '' };
     case 'give_item': {
       const def = ITEMS[s.item];
       return {
@@ -169,7 +178,14 @@ export function runSteps(g: ChapterState, steps: ScriptStep[], events: KernelEve
     heroModel: heroModel(g.inventory.held),
   };
   let out = '';
-  for (const s of steps) {
+  for (const [i, s] of steps.entries()) {
+    if (s.kind === 'wait') {
+      // The rest of the beat runs `sec` level seconds from now, in order (`runTimed`).
+      const rest = steps.slice(i + 1);
+      if (rest.length > 0) g.rt.deferred.push({ dueTick: g.rt.levelTicks + Math.max(1, Math.round(s.sec)), steps: rest, vars });
+      break;
+    }
+    if (s.kind === 'take_item') g.inventory = consumeItem(g.inventory, s.item);
     if (s.kind === 'give_item') {
       const wasEmpty = g.inventory.held === null;
       g.inventory = giveItem(g.inventory, s.item);
@@ -202,7 +218,7 @@ export function openingActive(g: ChapterState): boolean {
   return !g.rt.openingDone && !g.ended && hasOpeningGate(g);
 }
 
-const OPENING_KEEP = new Set<ScriptStep['kind']>(['spawn', 'carry_item', 'give_item', 'kiro_action', 'tutorial_step']);
+const OPENING_KEEP = new Set<ScriptStep['kind']>(['spawn', 'carry_item', 'give_item', 'take_item', 'fly_to', 'kiro_action', 'tutorial_step']);
 
 /** Marks the opening dialog finished and fast-forwards any unfired state-changing beats up to `openingSec`. */
 export function completeOpeningBeats(g: ChapterState, events: KernelEvent[]): string {
@@ -217,7 +233,31 @@ export function completeOpeningBeats(g: ChapterState, events: KernelEvent[]): st
     const steps = entry.steps.filter((s) => OPENING_KEEP.has(s.kind));
     if (steps.length > 0) out += runSteps(g, steps, events);
   });
+  out += flushPendingBeats(g, events, OPENING_KEEP);
   return out;
+}
+
+/**
+ * Skip Dialog for beats that start from a trigger: the unfired `script.triggers` whose condition already holds fire now,
+ * and every deferred (`wait`) beat runs at once. Only the `keep` kinds run, so items, flights and Kiro's magic still happen
+ * while the dialogs are dropped. Order is kept.
+ */
+function flushPendingBeats(g: ChapterState, events: KernelEvent[], keep: ReadonlySet<ScriptStep['kind']>): string {
+  let out = '';
+  (levelScript(g).triggers ?? []).forEach((tr, i) => {
+    if (g.rt.triggersFired.has(i) || !evalCond(g, tr.when)) return;
+    g.rt.triggersFired.add(i);
+    out += runKept(g, tr.steps, events, keep);
+  });
+  // A kept step list never holds a `wait` (it is not kept), so one pass empties the queue.
+  const pending = g.rt.deferred.splice(0);
+  for (const d of pending) out += runKept(g, d.steps, events, keep, d.vars);
+  return out;
+}
+
+function runKept(g: ChapterState, steps: ScriptStep[], events: KernelEvent[], keep: ReadonlySet<ScriptStep['kind']>, vars: Record<string, string> = {}): string {
+  const kept = steps.filter((s) => keep.has(s.kind));
+  return kept.length > 0 ? runSteps(g, kept, events, vars) : '';
 }
 
 /** Emits the level's Big Four `agentTaunt` with prompt priority when no battle intro took over the taunt slot. */
@@ -232,6 +272,11 @@ export function emitLevelTaunt(g: ChapterState, events: KernelEvent[]): string {
 export function runTimed(g: ChapterState, events: KernelEvent[]): string {
   g.rt.levelTicks += 1;
   let out = '';
+  const due = g.rt.deferred.filter((d) => d.dueTick <= g.rt.levelTicks);
+  if (due.length > 0) {
+    g.rt.deferred = g.rt.deferred.filter((d) => d.dueTick > g.rt.levelTicks);
+    for (const d of due) out += runSteps(g, d.steps, events, d.vars);
+  }
   (levelScript(g).timed ?? []).forEach((t, i) => {
     if (g.rt.timedFired.has(i) || g.rt.levelTicks < t.afterSec) return;
     g.rt.timedFired.add(i);
@@ -301,7 +346,7 @@ export function finishTutorial(g: ChapterState, events: KernelEvent[]): void {
   if (tut) announceTutorialStep(g, tut.steps.length, true, events);
 }
 
-const SKIP_KEEP = new Set<ScriptStep['kind']>(['spawn', 'carry_item', 'give_item']);
+const SKIP_KEEP = new Set<ScriptStep['kind']>(['spawn', 'carry_item', 'give_item', 'take_item', 'fly_to']);
 
 /**
  * Drops every tutorial beat that has not played yet. Dialogs, emotes and prompts

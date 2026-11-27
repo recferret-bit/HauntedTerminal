@@ -12,6 +12,9 @@ import { createStateMachine, type StateMachine, type TransitionTable } from '../
 
 export type KiroCoreId = 'qwen' | 'mistral' | 'deepseek' | 'llama';
 
+/** A skill an open-weight core gives Kiro.d (`src/game/kiro-skills.ts`). */
+export type KiroSkillId = 'heal' | 'hint';
+
 export interface KiroCoreDef {
   id: KiroCoreId;
   gguf: string;
@@ -22,6 +25,8 @@ export interface KiroCoreDef {
   perkTitle: string;
   perkSummary: string;
   bootLine: string;
+  /** The skill this core gives (`kiro heal`, `kiro hint`); absent: none. */
+  skill?: KiroSkillId;
 }
 
 export const KIRO_CORES: Record<KiroCoreId, KiroCoreDef> = {
@@ -35,6 +40,7 @@ export const KIRO_CORES: Record<KiroCoreId, KiroCoreDef> = {
     perkTitle: 'Fast Cipher & PID Visor',
     perkSummary: 'Cracks Cloud-locked doors in 2 steps (instead of 3) & enables PS_XRAY PID visor on `kiro scan`.',
     bootLine: 'Eyes up, Dev. Mounted qwen-coder-7b locally—subagent swarms cannot hide their root PID from me.',
+    skill: 'heal',
   },
   mistral: {
     id: 'mistral',
@@ -57,6 +63,7 @@ export const KIRO_CORES: Record<KiroCoreId, KiroCoreDef> = {
     perkTitle: '<think> Truth Lens',
     perkSummary: '`kiro scan` auto-reveals hidden dotfiles & flags hallucinated code/Docker lines.',
     bootLine: '<think> Local reasoning core online. </think> Ready to burn through hallucinated slop.',
+    skill: 'hint',
   },
   llama: {
     id: 'llama',
@@ -296,7 +303,7 @@ export class KiroCompanion {
     }
     lines.push(
       `  ${DIM}Notice: Big Four are parodies; Kiro marks belong to Amazon/AWS & will be reworked post-Kiroween (run \`kiro disclaimer\`).${RESET}`,
-      `  ${DIM}Commands: kiro (or kiro.d) scan | kiro load <qwen|mistral|deepseek|llama> | kiro crack <lock> | kiro disclaimer | cat <file> | kiro${RESET}`,
+      `  ${DIM}Commands: kiro (or kiro.d) scan | kiro load <qwen|mistral|deepseek|llama> | kiro crack <lock> | kiro heal (qwen) | kiro hint (deepseek) | kiro disclaimer | cat <file> | kiro${RESET}`,
     );
     return `${lines.join('\n')}\n`;
   }

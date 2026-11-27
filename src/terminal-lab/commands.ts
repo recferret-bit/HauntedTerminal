@@ -11,7 +11,7 @@ const GROUP_ORDER = ['Look', 'Move', 'Files', 'Text', 'Fight', 'Loot & Ghost', '
 export type CommandGroup = (typeof GROUP_ORDER)[number];
 
 const GROUPS: Record<CommandGroup, readonly string[]> = {
-  Look: ['pwd', 'ls', 'cat', 'readlink', 'find', 'status', 'whoami', 'inventory', 'inv', 'hold'],
+  Look: ['pwd', 'ls', 'tree', 'cat', 'readlink', 'find', 'status', 'whoami', 'inventory', 'inv', 'hold'],
   Move: ['cd'],
   Files: ['touch', 'mkdir', 'rm', 'mv', 'cp', 'chmod', 'ln', 'echo'],
   Text: ['grep', 'wc', 'cut', 'rev', 'sed', 'head', 'tail'],
@@ -23,7 +23,7 @@ const GROUPS: Record<CommandGroup, readonly string[]> = {
 
 /** A line that runs when the command's Run button is clicked in the default lab room (it has `/lab/readme.txt`). */
 const EXAMPLES: Record<string, string> = {
-  pwd: 'pwd', ls: 'ls -a', cd: 'cd /lab', cat: 'cat readme.txt', readlink: 'readlink readme.txt', find: 'find . -name "*.txt"',
+  pwd: 'pwd', ls: 'ls -a', cd: 'cd /lab', cat: 'cat readme.txt', readlink: 'readlink readme.txt', find: 'find . -name "*.txt"', tree: 'tree -L 2',
   touch: 'touch new.txt', mkdir: 'mkdir -p sub', rm: 'rm -f new.txt', mv: 'mv new.txt moved.txt', cp: 'cp readme.txt copy.txt', chmod: 'chmod 644 readme.txt',
   ln: 'ln -s readme.txt link', echo: 'echo hello', grep: 'grep -i lab readme.txt', wc: 'wc -l readme.txt', cut: 'cut -d: -f1 readme.txt',
   rev: 'rev readme.txt', sed: "sed 's/lab/LAB/' readme.txt", head: 'head -n 1 readme.txt', tail: 'tail -n 1 readme.txt', ps: 'ps', top: 'top',

@@ -15,7 +15,7 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== KIRO.D // CHAPTER MISSION & SURVIVAL BRIEFING ===\n1. YOUR CHAPTER GOAL: Raid 6 sectors for hardware, visit the Matrix Server Hub 3 times so the Old Bearded Coder can reboot Kiro.d with open-weight models (silencing Anti-Gravy, Codec, and Gork), then defeat Clod + PID 1 and run `exit` to return home!\n2. TOOLS & TUBE TRANSISTOR GATE: You dropped your Tube Transistor, Map, and Field Manual. Basic `ls` shows visible files in the room, while `ls -la` and all `ls` flags stay locked until you recover your glowing Tube Transistor in Sector 02 (Cache Vault)!\n3. SURVIVAL COMMANDS HERE: `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`.\n"
+      "content": "=== KIRO.D // CHAPTER MISSION & SURVIVAL BRIEFING ===\n1. YOUR CHAPTER GOAL: Raid 6 sectors for hardware, visit the Matrix Server Hub 3 times so the Old Bearded Coder can reboot Kiro.d with open-weight models (silencing Anti-Gravy, Codec, and Gork), then defeat Clod + PID 1 and run `exit` to return home!\n2. TOOLS & TUBE TRANSISTOR GATE: You dropped your Tube Transistor, Map, and Field Manual. Basic `ls` shows visible files in the room, while `ls -la` and all `ls` flags stay locked until you recover your glowing Tube Transistor in Sector 02 (Cache Vault)!\n3. SURVIVAL COMMANDS HERE: `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`.\n4. SECRET VRAM MODULE: a spare VRAM module hides in the dot folder `.old_archive` of this room, a huge pile of old folders. Plain `ls` never shows dot folders, but `cd .old_archive` works: follow the notes in `lost_and_found`. Or search the pile: `find / -name vram.mod`, `grep -r vram .`. Each module adds a spare charge for Kiro.d skills later!\n"
     },
     {
       "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
@@ -33,6 +33,24 @@
       "path": "/mnt/wires_and_chips/hub_uplink",
       "kind": "dir",
       "mode": 0
+    },
+    {
+      "path": "/mnt/wires_and_chips/.old_archive/lost_and_found/note.txt",
+      "kind": "file",
+      "mode": 420,
+      "content": "LOST & FOUND: anything worth keeping was moved to the `back_room` shelf. Go in with `cd back_room`.\n"
+    },
+    {
+      "path": "/mnt/wires_and_chips/.old_archive/lost_and_found/back_room/note.txt",
+      "kind": "file",
+      "mode": 420,
+      "content": "BACK ROOM: the memory module is in the dot folder `.cold_storage` right here. Plain `ls` hides it, but `cd .cold_storage` works!\n"
+    },
+    {
+      "path": "/mnt/wires_and_chips/.old_archive/lost_and_found/back_room/.cold_storage/vram.mod",
+      "kind": "file",
+      "mode": 420,
+      "content": "VRAM_MODULE_8GB_HBM_SPARE\n"
     }
   ],
   "enemies": [
@@ -49,6 +67,11 @@
       "id": "pickup_tutorial_ram",
       "type": "ram",
       "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm"
+    },
+    {
+      "id": "pickup_l1_vram",
+      "type": "vram_module",
+      "path": "/mnt/wires_and_chips/.old_archive/lost_and_found/back_room/.cold_storage/vram.mod"
     }
   ],
   "patches": [],
@@ -384,5 +407,14 @@
       "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
     },
     "openingSec": 60
-  }
+  },
+  "generate": [
+    {
+      "kind": "tree",
+      "root": "/mnt/wires_and_chips/.old_archive",
+      "folders": 120,
+      "hiddenFiles": 40,
+      "seed": "l1-vram"
+    }
+  ]
 }

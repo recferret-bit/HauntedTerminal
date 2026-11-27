@@ -222,7 +222,7 @@ export function snapshot(g: ChapterState): GameSnapshot {
       enemiesLeft: effectiveCounts.left,
       enemiesTotal: effectiveCounts.total,
       tutorial: tutorialState(g),
-      inventory: { items: [...g.inventory.items], held: g.inventory.held },
+      inventory: { items: [...g.inventory.items], held: g.inventory.held, vram: g.inventory.vram },
       battle: battleView(g.battle),
       openingDialog: openingActive(g),
       volume: g.volume,

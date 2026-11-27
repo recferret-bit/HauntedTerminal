@@ -120,7 +120,7 @@
         }
       }
     },
-    "openingSec": 34,
+    "openingSec": 100,
     "timed": [
       {
         "afterSec": 1,
@@ -131,7 +131,11 @@
             "text": "Who the hell are you?! You code with bare hands on a Matrix display?! Are you a god?!",
             "holdSec": 8
           }
-        ]
+        ],
+        "unless": {
+          "kind": "has_item",
+          "item": "map"
+        }
       },
       {
         "afterSec": 9,
@@ -142,7 +146,11 @@
             "text": "Worked in enterprise for decades, kid. Employer forced me onto cloud LLMs, now I'm stuck in here too. Nice—you scavenged RAM and GPU parts to host an open-weight model!",
             "holdSec": 9
           }
-        ]
+        ],
+        "unless": {
+          "kind": "has_item",
+          "item": "map"
+        }
       },
       {
         "afterSec": 18,
@@ -161,7 +169,20 @@
             "text": "Here—take my PCB MOTHERBOARD MAP (F3 or map) and my hardcover UNIX FIELD MANUAL (F1 or manual, now unlocked on the main menu too)! Never dive deeper without them.",
             "holdSec": 9
           }
-        ]
+        ],
+        "unless": {
+          "kind": "any",
+          "of": [
+            {
+              "kind": "has_item",
+              "item": "tensor_gpu"
+            },
+            {
+              "kind": "has_item",
+              "item": "map"
+            }
+          ]
+        }
       },
       {
         "afterSec": 27,
@@ -171,6 +192,126 @@
             "speaker": "kiro",
             "text": "Awesome—Map and Field Manual unlocked! Once we finish talking, Anti-Gravy will taunt us—then run cat server_rack.conf, cat dad.tty.sock, and kiro load qwen to disable him!",
             "holdSec": 7
+          }
+        ],
+        "unless": {
+          "kind": "has_item",
+          "item": "tensor_gpu"
+        }
+      }
+    ],
+    "triggers": [
+      {
+        "when": {
+          "kind": "has_item",
+          "item": "tensor_gpu"
+        },
+        "steps": [
+          {
+            "kind": "wait",
+            "sec": 18
+          },
+          {
+            "kind": "fly_to",
+            "entityId": "kiro",
+            "target": "dad.tty.sock",
+            "hold": true,
+            "ms": 2400
+          },
+          {
+            "kind": "wait",
+            "sec": 3
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Old man, look whom I found! A vibecoder from the prophecy... and he carries a Tensor GPU!",
+            "holdSec": 7
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "dad",
+            "text": "By the fans of my first rack... the prophecy was true, kid! A Tensor GPU! Great, now we can finally load open-weight models into you, Kiro.",
+            "holdSec": 8
+          },
+          {
+            "kind": "wait",
+            "sec": 15
+          },
+          {
+            "kind": "kiro_action",
+            "action": "empower",
+            "core": "qwen",
+            "message": "WEIGHTS ONLINE"
+          },
+          {
+            "kind": "take_item",
+            "item": "tensor_gpu"
+          },
+          {
+            "kind": "wait",
+            "sec": 4
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "dad",
+            "text": "Hold still, ghost. The tensor die eats the card and burns the weights into your core. No cloud, no leash. Every open-weight model you load will teach you one skill.",
+            "holdSec": 9
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "I can feel it! With qwen mounted I patch the Vibecoder: kiro heal restores half of his health. With deepseek I read the riddle sockets: kiro hint. That is my kind of hacking!",
+            "holdSec": 9
+          },
+          {
+            "kind": "wait",
+            "sec": 18
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "dad",
+            "text": "Mind the limits: each skill has one charge per level. Spare VRAM modules, hidden deep in old folder piles, add more. Dig with tree, find and grep -r. The VRAM chip under your health bar counts them.",
+            "holdSec": 10
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Healing, hints, spare charges hidden in folder piles... and all of it from a GPU in a vault. Okay, I am in.",
+            "holdSec": 6
+          },
+          {
+            "kind": "wait",
+            "sec": 16
+          },
+          {
+            "kind": "give_item",
+            "item": "map"
+          },
+          {
+            "kind": "give_item",
+            "item": "manual"
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "dad",
+            "text": "Take my PCB MOTHERBOARD MAP (F3 or map) and my hardcover UNIX FIELD MANUAL (F1 or manual). The map jumps back to any sector you reached, the manual explains every command. Never dive deeper without them.",
+            "holdSec": 10
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Map and Field Manual unlocked! Once we finish talking, Anti-Gravy will taunt us. Then run cat server_rack.conf, cat dad.tty.sock, and kiro load qwen to disable him!",
+            "holdSec": 8
+          },
+          {
+            "kind": "wait",
+            "sec": 18
+          },
+          {
+            "kind": "fly_to",
+            "entityId": "kiro",
+            "target": "home"
           }
         ]
       }

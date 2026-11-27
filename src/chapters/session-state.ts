@@ -15,7 +15,7 @@ import { absPath, hasWrite, lookup, type VNode } from '../game/tree.js';
 import type { CommandResult, TickResult } from '../game/types.js';
 import type { RankGrade } from './catalog.js';
 import type { LabConfig, LabInjection, LabInspect, LabLevelState } from './session-lab-types.js';
-import type { ChapterPack, LevelDialogEntry, LevelPatchChip, LevelSpec } from './types.js';
+import type { ChapterPack, LevelDialogEntry, LevelPatchChip, LevelSpec, ScriptStep } from './types.js';
 
 export { empty as emptyStep, out as okStep } from '../game/play.js';
 
@@ -149,6 +149,12 @@ export interface LevelRuntime {
   dialog: LevelDialogEntry | undefined;
   /** Indexes of `script.timed` entries that already fired. */
   timedFired: Set<number>;
+  /** Steps a `wait` step pushed back: they run on the level tick `dueTick` (in order), or are flushed when the opening is skipped. */
+  /** Kiro skills (`heal`, `hint`) already spent on this level: the level's own charge. */
+  skillsUsed: Set<string>;
+  /** Hint lines already given per riddle id (the next `kiro hint` reads the next line). */
+  hintUses: Map<string, number>;
+  deferred: Array<{ dueTick: number; steps: ScriptStep[]; vars: Record<string, string> }>;
   /** True once the player swept the room with `ls -a` / `ls -la` / `ls -A` on this level. */
   roomSwept: boolean;
   /** Pickup ids whose `appearWhen` condition has triggered and dropped onto the ground. */
@@ -185,6 +191,8 @@ export interface ChapterState {
   /** The lab session's config, or null in the game. */
   readonly lab: LabConfig | null;
   levelIdx: number;
+  /** The highest level index this session has loaded (-1 before the first load): a map deploy to a level at or below it keeps the run. */
+  reachedIdx: number;
   lastCmdStartedCrack: boolean;
   hp: number;
   ram: number;
@@ -205,6 +213,8 @@ export interface ChapterState {
   ended: boolean;
   /** Set by `restart-level` when it reloaded the level during this line; `exec` then skips the post-command block. */
   reloadedNow: boolean;
+  /** Set by a `kiro heal` / `kiro hint` that is not a player action (refused, or no battle): `exec` then runs no enemy turn or world step for the line. */
+  freeAction: boolean;
   /** True when the run started on Level 1 and never teleported via `jumpToLevel`. */
   fullRun: boolean;
   deadNow: boolean;

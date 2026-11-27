@@ -21,7 +21,7 @@ export type { Field };
 export const AGENTS = ['kiro', 'clod', 'gork', 'codec', 'antigravy'] as const;
 export const MOODS = ['laugh', 'order', 'smug', 'annoyed'] as const;
 const EMOTES = ['shock', 'confused', 'determined', 'relief', 'panic', 'shout'] as const;
-const KIRO_ACTIONS = ['scan', 'load', 'crack_start', 'crack_step', 'crack_done'] as const;
+const KIRO_ACTIONS = ['scan', 'load', 'crack_start', 'crack_step', 'crack_done', 'empower'] as const;
 
 // ---- conditions and script steps ---------------------------------------------------------------------------------
 
@@ -78,6 +78,14 @@ export const STEP_VARIANTS = (): Variants<ScriptStep['kind']> => ({
   tutorial_step: [n('step', 'Tutorial step (1-based)')],
   carry_item: [t('entityId', 'Carrier (kiro or a spawned entity id)'), sel('item', 'Item', ITEM_IDS)],
   give_item: [sel('item', 'Item', ITEM_IDS), opt(t('from', 'Giver (kiro or a spawned entity id)'))],
+  take_item: [sel('item', 'Item', ITEM_IDS)],
+  fly_to: [
+    t('entityId', 'Flier (kiro or a spawned entity id)'),
+    t('target', 'Target (hero, home, or a socket or entity name)', { suggest: 'sockets', mono: true }),
+    opt(b('hold', 'Hover beside the target afterwards')),
+    opt(n('ms', 'Flight time in ms (default 2400)', { step: 100 })),
+  ],
+  wait: [n('sec', 'Seconds to wait before the next steps', { step: 1 })],
   dialog_box: [
     sel('speaker', 'Speaker', ['vibecoder', 'dad', ...AGENTS]),
     t('text', 'Line', { rows: TEXT_ROWS }),
@@ -165,6 +173,14 @@ export const RIDDLE_FIELDS: Field[] = [
   opt({ type: 'strings', key: 'tokens', label: 'Commands the bubble highlights (one per line)' }),
 ];
 
+const GENERATE_FIELDS: Field[] = [
+  sel('kind', 'Kind', ['tree']),
+  t('root', 'Root directory', { mono: true, suggest: 'paths', hint: 'the decoy folders grow under it (it is created when missing)' }),
+  n('folders', 'Decoy folders (at least)'),
+  n('hiddenFiles', 'Hidden decoy files (dot files)'),
+  t('seed', 'Seed', { mono: true, hint: 'same seed, same tree' }),
+];
+
 export const FILES: Field[] = [
   {
     type: 'array',
@@ -193,6 +209,12 @@ export const ENTITIES: Field[] = [
     label: 'Patch chips (one-click fixes in the code editor)',
     item: { title: (p) => `${String(p.label)} → ${String(p.file)}`, fields: PATCH_FIELDS },
   },
+  opt({
+    type: 'array',
+    key: 'generate',
+    label: 'Generated decoy folder trees (hide a file in 100+ folders)',
+    item: { title: (g) => `${String(g.kind)} ${String(g.root)} (${String(g.folders)} folders)`, fields: GENERATE_FIELDS },
+  }),
   opt({
     type: 'array',
     key: 'riddles',
@@ -408,7 +430,7 @@ export const MANIFEST: Field[] = [
     optional: true,
     item: {
       title: (g) => `after level ${String(g.afterLevel)}: ${[g.ram ? `+${String(g.ram)}GB RAM` : '', g.ssd ? `+${String(g.ssd)}GB SSD` : '', g.core ? `core ${String(g.core)}` : ''].filter(Boolean).join(', ')}`,
-      fields: [n('afterLevel', 'After level'), opt(n('ram', 'RAM GB')), opt(n('ssd', 'SSD GB')), opt(t('core', 'Kiro.d core', { suggest: 'cores' })), opt({ type: 'strings', key: 'items', label: 'Items (tube_transistor, terminal, laptop, manual, map; one per line)' })],
+      fields: [n('afterLevel', 'After level'), opt(n('ram', 'RAM GB')), opt(n('ssd', 'SSD GB')), opt(n('vram', 'VRAM charges')), opt(t('core', 'Kiro.d core', { suggest: 'cores' })), opt({ type: 'strings', key: 'items', label: 'Items (tube_transistor, terminal, laptop, manual, map, tensor_gpu, vram_module; one per line)' })],
     },
   },
   opt({ type: 'strings', key: 'startItems', label: 'Items he carries at the start (default tube_transistor, terminal; one per line)' }),

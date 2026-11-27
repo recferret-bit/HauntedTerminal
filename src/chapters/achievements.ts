@@ -156,6 +156,8 @@ const SPEC_BY_ID = new Map(ACHIEVEMENT_SPECS.map((s) => [s.id, s]));
 const REQUIRED_STACK_MECHANICS: readonly ChapterMechanic[] = ['html-css', 'terminal-code', 'docker-image', 'docker-compose'];
 const REQUIRED_HUB_CORES = ['qwen', 'deepseek', 'llama'] as const;
 const ACHIEVEMENTS_STORAGE_KEY = 'out-of-credits:achievements:v1';
+/** Items and pickups of the Tensor GPU ritual: not part of the "full loadout" and "hardware hoarder" trophies (their Steam text is fixed). */
+const NON_ACHIEVEMENT: ReadonlySet<string> = new Set(['tensor_gpu', 'vram_module']);
 
 export interface UnlockedAchievement {
   id: string;
@@ -333,7 +335,7 @@ export function evaluateBatchEvents(
       store.stats.collectedItems.push(item);
       dirty = true;
     }
-    if (ITEM_IDS.every((id) => store.stats.collectedItems.includes(id))) {
+    if (ITEM_IDS.filter((id) => !NON_ACHIEVEMENT.has(id)).every((id) => store.stats.collectedItems.includes(id))) {
       tryGrant('full_loadout');
     }
   };
@@ -342,7 +344,7 @@ export function evaluateBatchEvents(
       store.stats.collectedPickups.push(pickup);
       dirty = true;
     }
-    if (PICKUP_TYPES.every((p) => store.stats.collectedPickups.includes(p))) {
+    if (PICKUP_TYPES.filter((p) => !NON_ACHIEVEMENT.has(p)).every((p) => store.stats.collectedPickups.includes(p))) {
       tryGrant('hardware_hoarder');
     }
   };

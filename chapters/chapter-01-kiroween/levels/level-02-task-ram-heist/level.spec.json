@@ -15,7 +15,7 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. TEST `ls -la`: Try `ls -la` once you hold the Tube Transistor to spot hidden dotfiles before entering GPU Alley.\n4. HARDWARE: Pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n"
+      "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. TEST `ls -la`: Try `ls -la` once you hold the Tube Transistor to spot hidden dotfiles before entering GPU Alley.\n4. HARDWARE: Pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n5. TENSOR GPU: the gargoyle also dropped a Tensor GPU card. Pocket it with `mv tensor_gpu ~` and carry it to the Old Bearded Coder at the Matrix Hub: with it Kiro.d can load open-weight models!\n"
     },
     {
       "path": "/srv/kiroween/cache_vault/gravy_sentry.bin",
@@ -40,6 +40,12 @@
       "kind": "file",
       "mode": 420,
       "content": "#!/bin/transistor\n# TUBE TRANSISTOR: glowing vacuum-tube light & ls -la unlock.\nexport LIGHT=\"on\"\n"
+    },
+    {
+      "path": "/srv/kiroween/cache_vault/tensor_gpu",
+      "kind": "file",
+      "mode": 420,
+      "content": "#!/bin/tensor\n# TENSOR GPU: a PCIe card with a tensor die. Lets Kiro.d load open-weight models.\nexport TENSOR=\"ready\"\n"
     },
     {
       "path": "/srv/kiroween/cache_vault/.vault_beacon",
@@ -75,6 +81,15 @@
       "id": "pickup_l2_transistor",
       "type": "tube_transistor",
       "path": "/srv/kiroween/cache_vault/tube_transistor",
+      "appearWhen": {
+        "kind": "enemy_dead",
+        "enemyId": "trojan_l2"
+      }
+    },
+    {
+      "id": "pickup_l2_tensor_gpu",
+      "type": "tensor_gpu",
+      "path": "/srv/kiroween/cache_vault/tensor_gpu",
       "appearWhen": {
         "kind": "enemy_dead",
         "enemyId": "trojan_l2"
@@ -145,6 +160,7 @@
     "cat vault_notes.txt",
     "chmod -x gravy_sentry.bin",
     "mv tube_transistor ~",
+    "mv tensor_gpu ~",
     "mv ram_16gb.dimm ~",
     "mv ssd_256gb.img ~",
     "cd gpu_alley"
@@ -283,6 +299,26 @@
             "speaker": "kiro",
             "text": "All ls flags are unlocked now! Try running ls -la right here to sweep the shadows for hidden dotfiles before heading to gpu_alley!",
             "holdSec": 7
+          }
+        ]
+      },
+      {
+        "when": {
+          "kind": "has_item",
+          "item": "tensor_gpu"
+        },
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "A Tensor GPU?! A whole PCIe card with a tensor die under that heatsink. What is a thing like this doing in a cache vault?",
+            "holdSec": 7
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "That is the real thing, Vibecoder! Keep it safe: with a Tensor GPU the Old Bearded Coder can load open-weight models into me. Carry it to the Matrix Hub!",
+            "holdSec": 8
           }
         ]
       },

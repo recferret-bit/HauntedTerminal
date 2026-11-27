@@ -1,7 +1,7 @@
 import type { TerminalSkinId } from '../contracts/terminal-skins.js';
 import type { KernelEvent } from '../contracts/events.js';
 import { maxHpFor } from '../game/bestiary.js';
-import { giveItem, hasItem, holdItem, ITEMS, starterInventory, type ItemId } from '../game/inventory.js';
+import { addVram, giveItem, hasItem, holdItem, ITEMS, starterInventory, type ItemId } from '../game/inventory.js';
 import { setHold, skipIntro as endBattleIntro, type BattleHold } from '../game/battle.js';
 import { runLine, type Host } from '../game/shell.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from '../game/types.js';
@@ -44,6 +44,7 @@ export function applyInitialLoadout(g: ChapterState, startIdx: number): void {
       bonusSsd += grant.ssd ?? 0;
       if (grant.core) core = grant.core;
       for (const item of grant.items ?? []) g.inventory = giveItem(g.inventory, item);
+      if (grant.vram) g.inventory = addVram(g.inventory, grant.vram);
     }
     // A grant that gives the tube transistor also puts it in his hand.
     if (hasItem(g.inventory, 'tube_transistor')) g.inventory = holdItem(g.inventory, 'tube_transistor');
@@ -101,10 +102,14 @@ export function jumpToLevel(g: ChapterState, levelIdOrIndex: string | number): T
     g.ended = false;
     g.endedAt = null;
     g.intro = false;
-    applyInitialLoadout(g, idx);
+    // A level he has already reached keeps the run he has (items, core, RAM, SSD, HP, VRAM, taken pickups); a level beyond it, or a
+    // direct entry, starts from what the chapter's grants give.
+    const revisit = idx <= g.reachedIdx;
+    if (!revisit) applyInitialLoadout(g, idx);
     loadLevel(g, idx, false, events);
-    const banner = levelBannerText(g);
-    return { output: banner, events, snapshot: snapshot(g) };
+    // A return does not lock the terminal for the opening conversation again: it ends at once, as Skip Dialog would.
+    const opening = revisit && openingActive(g) ? resolveOpeningTransition(g, events) : '';
+    return { output: levelBannerText(g) + opening, events, snapshot: snapshot(g) };
   }
 
 export function arriveLevel(g: ChapterState): TickResult {
@@ -140,6 +145,7 @@ function markFailedActions(events: KernelEvent[], code: number | undefined): Ker
 export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     g.deadNow = false;
     g.reloadedNow = false;
+    g.freeAction = false;
     g.deathText = '';
     const typed = fillPids(line, g.rt.pids).trim();
     g.commandCue = null;
@@ -178,7 +184,7 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
     g.rt.levelCommands += 1;
     const firstWord = typed.split(/\s+/)[0] ?? '';
     if (firstWord && !g.preview) recordTelemetry({ commands: [firstWord] });
-    g.lastCmdStartedCrack = /(?:^|[;&|]\s*)kiro\s+(?:crack|decrypt|hack)\b/i.test(typed);
+    g.lastCmdStartedCrack = /(?:^|[;&|]\s*)kiro\s+(?:crack|decrypt)\b/i.test(typed);
 
     const step = runLine(typed, host);
     const actionEvents: KernelEvent[] = step.events.some((e) => e.type === 'VIBECODER_ACTION')
@@ -202,8 +208,8 @@ export function exec(g: ChapterState, host: Host, line: string): CommandResult {
       combinedOutput += syncTutorial(g, events);
       combinedOutput += bullyingNote(g, allWinRulesMet(g), events);
       // Turn-based: the command was an action; the world answers with one step (an enemy turn in a battle).
-      combinedOutput += afterCommand(g, events);
-    } else if (!levelChanged) {
+      if (!g.freeAction) combinedOutput += afterCommand(g, events);
+    } else if (!levelChanged && !g.freeAction) {
       afterCommand(g, events);
     }
     g.lastCmdStartedCrack = false;

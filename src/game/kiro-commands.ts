@@ -3,7 +3,7 @@
  * and Chapter (`src/chapters/session-kiro.ts`) shells.
  */
 import type { KernelEvent } from '../contracts/events.js';
-import { type KiroCompanion, inspectTextWithKiro } from './kiro.js';
+import { type KiroCompanion, type KiroSkillId, inspectTextWithKiro } from './kiro.js';
 import type { Step } from './shell.js';
 import { absPath, hasExec, lookup, modeString, resolve, type VNode } from './tree.js';
 
@@ -18,6 +18,8 @@ export interface KiroCommandHost {
   onDenied(node: VNode, command: string, message: string): Step;
   loadCore(args: string[]): Step;
   scanRoom(): Step;
+  /** `kiro heal` / `kiro hint`: the shell applies the outcome of `useKiroSkill` to its own state. */
+  useSkill(skill: KiroSkillId): Step;
 }
 
 /** Advance active `kiro crack` countdown and unlock the target inode on completion. */
@@ -71,7 +73,8 @@ export function runKiroCommand(
   }
   if (sub === 'load' || sub === 'pull' || sub === 'use' || sub === 'swap') return host.loadCore(args);
   if (sub === 'scan' || sub === 'sweep') return host.scanRoom();
-  if (sub === 'crack' || sub === 'decrypt' || sub === 'hack') {
+  if (sub === 'heal' || sub === 'hint') return host.useSkill(sub);
+  if (sub === 'crack' || sub === 'decrypt') {
     const targetArg = args[1];
     if (!targetArg) return fail('kiro crack: specify a locked gate or encrypted file\n');
     const found = resolve(host.cwd, targetArg, false);
@@ -112,5 +115,5 @@ export function runKiroCommand(
     events.push(...res.events);
     return ok(res.stdout, events);
   }
-  return fail(`kiro: unknown subcommand '${sub}'. Try: kiro | kiro scan | kiro load <core> | kiro crack <lock> | kiro disclaimer\n`);
+  return fail(`kiro: unknown subcommand '${sub}'. Try: kiro | kiro scan | kiro load <core> | kiro crack <lock> | kiro heal | kiro hint | kiro disclaimer\n`);
 }

@@ -30,7 +30,7 @@ Capability: real-time damage is removed; combat is turn based only, with no swit
 ### Turns
 
 13. WHEN a battle begins, THE SYSTEM SHALL give the first turn to the player.
-14. WHILE it is the player's turn, THE SYSTEM SHALL count every non-empty line the player sends with Enter as one player action, whether the command succeeds or fails, and SHALL then run the enemy turn.
+14. WHILE it is the player's turn, THE SYSTEM SHALL count every non-empty line the player sends with Enter as one player action, whether the command succeeds or fails, and SHALL then run the enemy turn. (Exception, `.kiro/specs/tensor-gpu-hub-ritual/`: a refused `kiro heal` / `kiro hint`, and a skill used outside a battle, take no turn.)
 15. IF the player sends an empty line, THEN THE SYSTEM SHALL NOT count it as an action.
 16. WHEN the player's turn begins, THE SYSTEM SHALL start a turn timer of 30 seconds (a fixed constant in the orchestrator); IF it runs out before the player acts, THEN THE SYSTEM SHALL end the player's turn and run the enemy turn.
 17. WHILE the game is paused, the battle intro plays, the `edit` mini-editor is open or the laptop is open, THE SYSTEM SHALL pause the turn timer; it SHALL keep running while a dialog box shows.

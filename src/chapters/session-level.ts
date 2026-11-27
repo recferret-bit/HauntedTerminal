@@ -1,10 +1,11 @@
+import { growTree } from './tree-gen.js';
 import type { KernelEvent } from '../contracts/events.js';
 import { endBattle } from '../game/battle.js';
 import { rollOuch } from '../game/ouch.js';
 import { SSD_PER_BACKUP, maxHpFor } from '../game/bestiary.js';
 import { World } from '../game/entities.js';
 import type { EnemySpawn, PickupSpawn } from '../game/floors.js';
-import { lookup, makeRoot } from '../game/tree.js';
+import { lookup, makeRoot, type VNode } from '../game/tree.js';
 import type { LevelSpec } from './types.js';
 import { readMetagame, recordTelemetry } from './catalog.js';
 import { arrivalScript, evalCond, hiddenEnemyId, isPickupHidden, levelScript } from './script.js';
@@ -48,6 +49,20 @@ function levelSpawns(spec: LevelSpec): { enemySpawns: EnemySpawn[]; pickupSpawns
   return { enemySpawns, pickupSpawns };
 }
 
+/** A pickup he already took stays gone on a return: no file, no pickup (so RAM and SSD cannot be farmed by revisiting). */
+function withoutTakenPickups(g: ChapterState, level: LevelSpec): { spec: LevelSpec; goneFiles: string[] } {
+  const taken = new Set(g.inventory.taken);
+  const goneFiles = level.pickups.filter((p) => taken.has(`${level.id}:${p.id}`)).map((p) => p.path);
+  return { spec: goneFiles.length === 0 ? level : { ...level, pickups: level.pickups.filter((p) => !goneFiles.includes(p.path)) }, goneFiles };
+}
+
+function removeFiles(root: VNode, paths: readonly string[]): void {
+  for (const path of paths) {
+    const node = lookup(root, path);
+    node?.parent?.children.delete(node.name);
+  }
+}
+
 export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events: KernelEvent[]): void {
     // A new or restarted level ends any battle; holds (an open editor) stay.
     endBattle(g.battle, 'level', events);
@@ -55,7 +70,8 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
     g.levelIdx = idx;
     // A new roll on every load, so a retry has new PIDs; a lab keeps the PIDs its author placed.
     const pids = g.lab ? fixedPids(g.levels[idx]!.enemies) : rollPids(g.levels[idx]!.enemies, g.pidRandom);
-    const spec = applyPids(g.levels[idx]!, pids);
+    const { spec, goneFiles } = withoutTakenPickups(g, applyPids(g.levels[idx]!, pids));
+    g.reachedIdx = Math.max(g.reachedIdx, idx);
     g.entryRam = g.ram;
     g.entrySsd = g.ssd;
     const clearedFloor = !isRetry && idx > 0 && events.some((e) => e.type === 'FLOOR_CLEARED');
@@ -86,6 +102,9 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
         });
       }
     }
+
+    for (const gen of spec.generate ?? []) growTree(root, gen);
+    removeFiles(root, goneFiles);
 
     const cwd = lookup(root, spec.cwd) ?? root;
     const { enemySpawns, pickupSpawns } = levelSpawns(spec);
@@ -128,6 +147,9 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       spawned: new Set(),
       levelTicks: 0,
       timedFired: new Set(),
+      deferred: [],
+      skillsUsed: new Set(),
+      hintUses: new Map(),
       roomSwept: false,
       droppedPickups: new Set(),
       triggersFired: new Set(),

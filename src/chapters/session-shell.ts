@@ -8,11 +8,13 @@ import { helpText, manPage, manualTopics, mapTopics, runMan, runManual, runMap }
 import type { Step, Word } from '../game/shell.js';
 import { absPath, resolve } from '../game/tree.js';
 import { runLn, runReadlink } from '../game/tree-links.js';
+import { treeWantsHidden, TREE_FLAGS_LOCKED_MESSAGE } from '../game/search-applets.js';
 import { finishTabCompletion, hasLsFlags, LS_FLAGS_LOCKED_MESSAGE, reverseLines } from '../game/unix-applets.js';
 import { CHAPTER_COMMANDS, emptyStep, globToRegExp, okStep, type ChapterState } from './session-state.js';
 import { cmdDocker, cmdEdit, cmdExit, cmdSed, cmdSource } from './session-code.js';
 import { cmdCat, cmdCd, cmdChmod, cmdCp, cmdCut, cmdFind, cmdGrep, cmdHeadTail, cmdLs, cmdMkdir, cmdMv, cmdRm, cmdTouch, cmdWc } from './session-fs.js';
 import { cmdKiro } from './session-kiro.js';
+import { cmdTree } from './session-search.js';
 import { applySkipTutorial, isNodeHidden, lockMessage, tutorialState } from './script.js';
 import { cmdAchievements, cmdBestiary, cmdGrimoire, cmdHank, cmdStatus, cmdWorkshop } from './session-meta.js';
 import { cmdKill, cmdPkill, cmdPs } from './session-proc.js';
@@ -38,7 +40,7 @@ export function complete(g: ChapterState, line: string): { line: string; matches
     const last = endsWithSpace ? '' : (parts[parts.length - 1] ?? '');
     const isKiroCmd = parts[0] === 'kiro' || parts[0] === 'kiro.d';
     if (isKiroCmd && (parts.length === 1 || (parts.length === 2 && !endsWithSpace)) && !last.includes('/')) {
-      const kiroOpts = ['scan', 'load', 'crack', 'status', ...KIRO_CORE_ORDER].filter((k) => k.startsWith(last));
+      const kiroOpts = ['scan', 'load', 'crack', 'heal', 'hint', 'status', ...KIRO_CORE_ORDER].filter((k) => k.startsWith(last));
       if (kiroOpts.length > 0) return finishTabCompletion(line, lead, token, kiroOpts);
     }
     if (isKiroCmd && parts[1] === 'load' && !last.includes('/')) {
@@ -138,9 +140,10 @@ export function dispatch(g: ChapterState, argv: string[], stdin: string): Step {
       g.commandCue = 'locked';
       return emptyStep(1, locked.replace(/\n?$/, '\n'));
     }
-    if (!g.lab && first === 'ls' && !hasItem(g.inventory, 'tube_transistor') && hasLsFlags(argv.slice(1))) {
+    const wantsHidden = first === 'ls' ? hasLsFlags(argv.slice(1)) : first === 'tree' && treeWantsHidden(argv.slice(1));
+    if (!g.lab && wantsHidden && !hasItem(g.inventory, 'tube_transistor')) {
       g.commandCue = 'locked';
-      return emptyStep(1, LS_FLAGS_LOCKED_MESSAGE);
+      return emptyStep(1, first === 'ls' ? LS_FLAGS_LOCKED_MESSAGE : TREE_FLAGS_LOCKED_MESSAGE);
     }
     const step = dispatchCommand(g, argv, stdin);
     if (step.code === 0 && canonical && canonical !== 'ls' && !g.reloadedNow) {
@@ -206,7 +209,7 @@ function dispatchRev(g: ChapterState, args: string[], stdin: string): Step {
 
 function dispatchHelp(g: ChapterState): Step {
   return okStep(
-    `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack] local Unix .gguf daemon Kiro.d (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 15 local trophies & Steamworks ACH_* payload\n  restart-level [--yes]  reload this level (asks twice; alias: retry)\n`,
+    `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack|heal|hint] local Unix .gguf daemon Kiro.d (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 15 local trophies & Steamworks ACH_* payload\n  restart-level [--yes]  reload this level (asks twice; alias: retry)\n`,
   );
 }
 
@@ -245,6 +248,7 @@ export const CHAPTER_HANDLERS: Readonly<Record<string, ChapterHandler>> = {
   cut: cmdCut,
   rev: dispatchRev,
   find: cmdFind,
+  tree: cmdTree,
   readlink: (g, args) => runReadlink(g.rt.cwd, g.rt.root, args, (node) => isNodeHidden(g, node)),
   ln: (g, args) => runLn(g.rt.cwd, args),
   echo: (_g, args) => okStep(`${args.join(' ')}\n`),

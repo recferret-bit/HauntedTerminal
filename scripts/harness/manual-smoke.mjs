@@ -192,6 +192,13 @@ try {
   const belowPt = await $(`(() => {
     const sr = document.querySelector('.mb-search-results').getBoundingClientRect();
     const p1 = document.querySelector('.mb-page-left').getBoundingClientRect();
+    // The first point on the left page, below the drawer, that is not a button, link or input: a longer result list moves the drawer down over the index chips.
+    for (let y = Math.round(sr.bottom + 30); y < p1.bottom - 6; y += 8) {
+      for (let x = Math.round(p1.left + 40); x < p1.right - 40; x += 24) {
+        const el = document.elementFromPoint(x, y);
+        if (el && el.closest('.mb-page-left') && !el.closest('button, a, input, .mb-search-results')) return { x, y };
+      }
+    }
     return { x: Math.round(p1.left + 40), y: Math.round(Math.min(p1.bottom - 20, sr.bottom + 30)) };
   })()`);
   await realClickAt(belowPt.x, belowPt.y);
@@ -234,10 +241,11 @@ try {
   await browser.waitFor("/SIGKILL/.test(document.querySelector('.mb-signal-widget')?.textContent ?? '')", 5000, 'SIGKILL details');
   check(/UNTRAPPABLE|cannot catch/i.test(await text('.mb-signal-widget')), 'kill -9 signal card explains kernel untrappability');
 
-  // ArrowRight works right after choosing a search result
+  // ArrowRight works right after choosing a search result (the spread numbers move whenever a command page is added, so the check is relative)
+  const killStart = await $("Number(/PAGES (\\d+)/.exec(document.querySelector('.mb-page-counter')?.textContent ?? '')?.[1])");
   await browser.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
   await browser.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
-  await browser.waitFor("/PAGES 35–36/.test(document.querySelector('.mb-page-counter')?.textContent ?? '')", 5000, 'ArrowRight flips after search hit');
+  await browser.waitFor(`/PAGES ${killStart + 2}–${killStart + 3}/.test(document.querySelector('.mb-page-counter')?.textContent ?? '')`, 5000, 'ArrowRight flips after search hit');
   check(true, 'ArrowRight flips page immediately after selecting a search result');
 
   // 3. Search 644 -> click the `chmod` command hit -> interactive octal calculator + direct octal input + URL sync
@@ -400,7 +408,7 @@ try {
   await browser.waitFor("window.__game.snapshot().openingDialog === true && document.querySelectorAll('.st-balloon').length === 0", 5000, 'retry --yes clears 3D socket balloon on same-path FLOOR_ENTERED');
   check(true, 'reloading Hub #1 clears stale 3D .st-balloon before opening conversation');
 
-  // Open Level 7 (Hub #2) where all 5 inventory items (lantern, terminal, map, manual, laptop) are carried so 5-item HUD layout is verified too!
+  // Open Level 7 (Hub #2) where all 5 inventory items (lantern, terminal, map, manual, laptop) are carried so the full 7-slot HUD layout (the Tensor GPU and VRAM module slots stay dim) is verified too!
   await browser.open(`${base}/play/${slug}/level-07-hub-model-two?nointro=1`);
   await browser.waitFor("window.__game && window.__manual && window.__map && window.__term && !window.__game.snapshot().paused", 30000, 'Level 7 ready');
   await $(`document.getElementById('skip-dialog-btn').click()`);
@@ -430,7 +438,7 @@ try {
       fits: document.documentElement.scrollWidth <= window.innerWidth && Boolean(hud && hud.right <= window.innerWidth + 1),
     };
   })()`);
-  check(hudLayout1280.slots === 5 && hudLayout1280.nonOverlap && hudLayout1280.clearDoors && hudLayout1280.fits, `5-item HUD strip clean at 1280x820 (${JSON.stringify(hudLayout1280)})`);
+  check(hudLayout1280.slots === 7 && hudLayout1280.nonOverlap && hudLayout1280.clearDoors && hudLayout1280.fits, `7-slot HUD strip clean at 1280x820 (${JSON.stringify(hudLayout1280)})`);
   await browser.shoot(out('04-play-modal'));
 
   await browser.send('Emulation.setDeviceMetricsOverride', { width: 1024, height: 768, deviceScaleFactor: 1, mobile: false });
@@ -446,7 +454,7 @@ try {
     const ncards = [...document.querySelectorAll('.st-ncard')].map((n) => n.getBoundingClientRect());
     return Boolean(title && hud && strip && title.right <= hud.left + 1 && hud.right <= window.innerWidth + 1 && ncards.every((c) => !overlap(hud, c) && !overlap(strip, c)));
   })()`);
-  check(hudLayout1024, '5-item HUD strip and #hud stay clear of #titleblock and .st-ncard at 1024x768');
+  check(hudLayout1024, '7-slot HUD strip and #hud stay clear of #titleblock and .st-ncard at 1024x768');
   await browser.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 820, deviceScaleFactor: 1, mobile: false });
   await browser.evaluate("window.dispatchEvent(new Event('resize'))");
   await browser.waitFor("window.innerWidth === 1280", 3000, 'modal restored to 1280x820');
@@ -488,9 +496,10 @@ try {
   await $(`(() => { window.__term.submit('manual chmod'); })()`);
   await browser.waitFor("window.__manual.isOpen() && document.querySelector('.mb-chmod-widget .mb-insert-btn') !== null", 5000, 'manual chmod opens modal on chmod page');
   check(await $('document.querySelector(".mb-search-results").classList.contains("hidden")'), 'manual chmod keeps search dropdown closed over the page');
+  const chmodStart = await $("Number(/PAGES (\\d+)/.exec(document.querySelector('.mb-page-counter')?.textContent ?? '')?.[1])");
   await browser.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
   await browser.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
-  await browser.waitFor("/PAGES 19–20/.test(document.querySelector('.mb-page-counter')?.textContent ?? '')", 5000, 'ArrowRight flips from chmod spread');
+  await browser.waitFor(`/PAGES ${chmodStart + 2}–${chmodStart + 3}/.test(document.querySelector('.mb-page-counter')?.textContent ?? '')`, 5000, 'ArrowRight flips from chmod spread');
   await browser.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowLeft', code: 'ArrowLeft', windowsVirtualKeyCode: 37 });
   await browser.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowLeft', code: 'ArrowLeft', windowsVirtualKeyCode: 37 });
   await browser.waitFor("document.querySelector('.mb-chmod-widget .mb-insert-btn') !== null", 5000, 'ArrowLeft flips back to chmod spread');
@@ -787,7 +796,7 @@ try {
   // 7. Classic mode (/play/floor/1) starts without manual & map by default, refuses `hold manual`, and /manual/ route resolves
   await browser.open(`${base}/play/floor/1?nointro=1`);
   await browser.waitFor("window.__game && window.__manual && window.__term && !window.__game.snapshot().paused", 30000, 'classic /play/floor/1 booted');
-  check(await $("document.querySelectorAll('.items-strip .item-slot').length === 5 && document.querySelectorAll('.items-strip .item-slot.carried').length === 2"), 'classic mode renders 5-slot strip with only tube_transistor + terminal carried by default');
+  check(await $("document.querySelectorAll('.items-strip .item-slot').length === 7 && document.querySelectorAll('.items-strip .item-slot.carried').length === 2"), 'classic mode renders 7-slot strip with only tube_transistor + terminal carried by default');
   await $(`document.querySelector('#terminal-pane .xterm-helper-textarea')?.focus()`);
   await browser.send('Input.insertText', { text: 'hold manual' });
   await browser.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });

@@ -409,6 +409,23 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
             "holdSec": 6
           }
         ]
+      },
+      {
+        "pickup": "vram_module",
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "A VRAM module! Each one is a spare charge for my skills: kiro heal with a qwen core, kiro hint with a deepseek core. The chip under your health bar counts them!",
+            "holdSec": 8
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Spare charges, hidden in piles of folders. Got it: I am searching every archive from now on!",
+            "holdSec": 6
+          }
+        ]
       }
     ]
   }
@@ -433,7 +450,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== KIRO.D // CHAPTER MISSION & SURVIVAL BRIEFING ===\n1. YOUR CHAPTER GOAL: Raid 6 sectors for hardware, visit the Matrix Server Hub 3 times so the Old Bearded Coder can reboot Kiro.d with open-weight models (silencing Anti-Gravy, Codec, and Gork), then defeat Clod + PID 1 and run `exit` to return home!\n2. TOOLS & TUBE TRANSISTOR GATE: You dropped your Tube Transistor, Map, and Field Manual. Basic `ls` shows visible files in the room, while `ls -la` and all `ls` flags stay locked until you recover your glowing Tube Transistor in Sector 02 (Cache Vault)!\n3. SURVIVAL COMMANDS HERE: `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`.\n"
+          "content": "=== KIRO.D // CHAPTER MISSION & SURVIVAL BRIEFING ===\n1. YOUR CHAPTER GOAL: Raid 6 sectors for hardware, visit the Matrix Server Hub 3 times so the Old Bearded Coder can reboot Kiro.d with open-weight models (silencing Anti-Gravy, Codec, and Gork), then defeat Clod + PID 1 and run `exit` to return home!\n2. TOOLS & TUBE TRANSISTOR GATE: You dropped your Tube Transistor, Map, and Field Manual. Basic `ls` shows visible files in the room, while `ls -la` and all `ls` flags stay locked until you recover your glowing Tube Transistor in Sector 02 (Cache Vault)!\n3. SURVIVAL COMMANDS HERE: `ls`, `mv starter_ram_8gb.dimm ~`, `cat kiro_story.txt`, `ps`, `kill -9 {pid:tutorial_virus_1}`, `cd hub_uplink`.\n4. SECRET VRAM MODULE: a spare VRAM module hides in the dot folder `.old_archive` of this room, a huge pile of old folders. Plain `ls` never shows dot folders, but `cd .old_archive` works: follow the notes in `lost_and_found`. Or search the pile: `find / -name vram.mod`, `grep -r vram .`. Each module adds a spare charge for Kiro.d skills later!\n"
         },
         {
           "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm",
@@ -451,6 +468,24 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "path": "/mnt/wires_and_chips/hub_uplink",
           "kind": "dir",
           "mode": 0
+        },
+        {
+          "path": "/mnt/wires_and_chips/.old_archive/lost_and_found/note.txt",
+          "kind": "file",
+          "mode": 420,
+          "content": "LOST & FOUND: anything worth keeping was moved to the `back_room` shelf. Go in with `cd back_room`.\n"
+        },
+        {
+          "path": "/mnt/wires_and_chips/.old_archive/lost_and_found/back_room/note.txt",
+          "kind": "file",
+          "mode": 420,
+          "content": "BACK ROOM: the memory module is in the dot folder `.cold_storage` right here. Plain `ls` hides it, but `cd .cold_storage` works!\n"
+        },
+        {
+          "path": "/mnt/wires_and_chips/.old_archive/lost_and_found/back_room/.cold_storage/vram.mod",
+          "kind": "file",
+          "mode": 420,
+          "content": "VRAM_MODULE_8GB_HBM_SPARE\n"
         }
       ],
       "enemies": [
@@ -467,6 +502,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "pickup_tutorial_ram",
           "type": "ram",
           "path": "/mnt/wires_and_chips/starter_ram_8gb.dimm"
+        },
+        {
+          "id": "pickup_l1_vram",
+          "type": "vram_module",
+          "path": "/mnt/wires_and_chips/.old_archive/lost_and_found/back_room/.cold_storage/vram.mod"
         }
       ],
       "patches": [],
@@ -806,7 +846,16 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "loadRefusal": "[KIRO.D]: \"I am too weak to host open-weight models on my own! Scavenge RAM + GPU chips in the task sectors and bring them to the Hub server first!\"\n"
         },
         "openingSec": 60
-      }
+      },
+      "generate": [
+        {
+          "kind": "tree",
+          "root": "/mnt/wires_and_chips/.old_archive",
+          "folders": 120,
+          "hiddenFiles": 40,
+          "seed": "l1-vram"
+        }
+      ]
     },
     {
       "id": "level-02-task-ram-heist",
@@ -825,7 +874,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. TEST `ls -la`: Try `ls -la` once you hold the Tube Transistor to spot hidden dotfiles before entering GPU Alley.\n4. HARDWARE: Pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n"
+          "content": "=== SECTOR 02 // CACHE VAULT BRIEFING ===\n1. DANGER: Anti-Gravy stationed a visible Trojan minion (`gravy_sentry.bin`) here! In turn-based battle you act first, every Enter = 1 turn answered by 1 enemy fireball, and a 30s timer ticks under your avatar.\n2. TUBE TRANSISTOR DROP: Strip execute permission so the gargoyle turns to stone: `chmod -x gravy_sentry.bin`. Your Tube Transistor lands on the ground—grab it with `mv tube_transistor ~` to light the vault and unlock `ls -la`!\n3. TEST `ls -la`: Try `ls -la` once you hold the Tube Transistor to spot hidden dotfiles before entering GPU Alley.\n4. HARDWARE: Pocket `ram_16gb.dimm` and `ssd_256gb.img` with `mv <file> ~`, then `cd gpu_alley`!\n5. TENSOR GPU: the gargoyle also dropped a Tensor GPU card. Pocket it with `mv tensor_gpu ~` and carry it to the Old Bearded Coder at the Matrix Hub: with it Kiro.d can load open-weight models!\n"
         },
         {
           "path": "/srv/kiroween/cache_vault/gravy_sentry.bin",
@@ -850,6 +899,12 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "content": "#!/bin/transistor\n# TUBE TRANSISTOR: glowing vacuum-tube light & ls -la unlock.\nexport LIGHT=\"on\"\n"
+        },
+        {
+          "path": "/srv/kiroween/cache_vault/tensor_gpu",
+          "kind": "file",
+          "mode": 420,
+          "content": "#!/bin/tensor\n# TENSOR GPU: a PCIe card with a tensor die. Lets Kiro.d load open-weight models.\nexport TENSOR=\"ready\"\n"
         },
         {
           "path": "/srv/kiroween/cache_vault/.vault_beacon",
@@ -885,6 +940,15 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "pickup_l2_transistor",
           "type": "tube_transistor",
           "path": "/srv/kiroween/cache_vault/tube_transistor",
+          "appearWhen": {
+            "kind": "enemy_dead",
+            "enemyId": "trojan_l2"
+          }
+        },
+        {
+          "id": "pickup_l2_tensor_gpu",
+          "type": "tensor_gpu",
+          "path": "/srv/kiroween/cache_vault/tensor_gpu",
           "appearWhen": {
             "kind": "enemy_dead",
             "enemyId": "trojan_l2"
@@ -955,6 +1019,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "cat vault_notes.txt",
         "chmod -x gravy_sentry.bin",
         "mv tube_transistor ~",
+        "mv tensor_gpu ~",
         "mv ram_16gb.dimm ~",
         "mv ssd_256gb.img ~",
         "cd gpu_alley"
@@ -1093,6 +1158,26 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "speaker": "kiro",
                 "text": "All ls flags are unlocked now! Try running ls -la right here to sweep the shadows for hidden dotfiles before heading to gpu_alley!",
                 "holdSec": 7
+              }
+            ]
+          },
+          {
+            "when": {
+              "kind": "has_item",
+              "item": "tensor_gpu"
+            },
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "A Tensor GPU?! A whole PCIe card with a tensor die under that heatsink. What is a thing like this doing in a cache vault?",
+                "holdSec": 7
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "That is the real thing, Vibecoder! Keep it safe: with a Tensor GPU the Old Bearded Coder can load open-weight models into me. Carry it to the Matrix Hub!",
+                "holdSec": 8
               }
             ]
           },
@@ -1549,7 +1634,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
             }
           }
         },
-        "openingSec": 34,
+        "openingSec": 100,
         "timed": [
           {
             "afterSec": 1,
@@ -1560,7 +1645,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "text": "Who the hell are you?! You code with bare hands on a Matrix display?! Are you a god?!",
                 "holdSec": 8
               }
-            ]
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "map"
+            }
           },
           {
             "afterSec": 9,
@@ -1571,7 +1660,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "text": "Worked in enterprise for decades, kid. Employer forced me onto cloud LLMs, now I'm stuck in here too. Nice—you scavenged RAM and GPU parts to host an open-weight model!",
                 "holdSec": 9
               }
-            ]
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "map"
+            }
           },
           {
             "afterSec": 18,
@@ -1590,7 +1683,20 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "text": "Here—take my PCB MOTHERBOARD MAP (F3 or map) and my hardcover UNIX FIELD MANUAL (F1 or manual, now unlocked on the main menu too)! Never dive deeper without them.",
                 "holdSec": 9
               }
-            ]
+            ],
+            "unless": {
+              "kind": "any",
+              "of": [
+                {
+                  "kind": "has_item",
+                  "item": "tensor_gpu"
+                },
+                {
+                  "kind": "has_item",
+                  "item": "map"
+                }
+              ]
+            }
           },
           {
             "afterSec": 27,
@@ -1600,6 +1706,126 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
                 "speaker": "kiro",
                 "text": "Awesome—Map and Field Manual unlocked! Once we finish talking, Anti-Gravy will taunt us—then run cat server_rack.conf, cat dad.tty.sock, and kiro load qwen to disable him!",
                 "holdSec": 7
+              }
+            ],
+            "unless": {
+              "kind": "has_item",
+              "item": "tensor_gpu"
+            }
+          }
+        ],
+        "triggers": [
+          {
+            "when": {
+              "kind": "has_item",
+              "item": "tensor_gpu"
+            },
+            "steps": [
+              {
+                "kind": "wait",
+                "sec": 18
+              },
+              {
+                "kind": "fly_to",
+                "entityId": "kiro",
+                "target": "dad.tty.sock",
+                "hold": true,
+                "ms": 2400
+              },
+              {
+                "kind": "wait",
+                "sec": 3
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Old man, look whom I found! A vibecoder from the prophecy... and he carries a Tensor GPU!",
+                "holdSec": 7
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "dad",
+                "text": "By the fans of my first rack... the prophecy was true, kid! A Tensor GPU! Great, now we can finally load open-weight models into you, Kiro.",
+                "holdSec": 8
+              },
+              {
+                "kind": "wait",
+                "sec": 15
+              },
+              {
+                "kind": "kiro_action",
+                "action": "empower",
+                "core": "qwen",
+                "message": "WEIGHTS ONLINE"
+              },
+              {
+                "kind": "take_item",
+                "item": "tensor_gpu"
+              },
+              {
+                "kind": "wait",
+                "sec": 4
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "dad",
+                "text": "Hold still, ghost. The tensor die eats the card and burns the weights into your core. No cloud, no leash. Every open-weight model you load will teach you one skill.",
+                "holdSec": 9
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "I can feel it! With qwen mounted I patch the Vibecoder: kiro heal restores half of his health. With deepseek I read the riddle sockets: kiro hint. That is my kind of hacking!",
+                "holdSec": 9
+              },
+              {
+                "kind": "wait",
+                "sec": 18
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "dad",
+                "text": "Mind the limits: each skill has one charge per level. Spare VRAM modules, hidden deep in old folder piles, add more. Dig with tree, find and grep -r. The VRAM chip under your health bar counts them.",
+                "holdSec": 10
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "Healing, hints, spare charges hidden in folder piles... and all of it from a GPU in a vault. Okay, I am in.",
+                "holdSec": 6
+              },
+              {
+                "kind": "wait",
+                "sec": 16
+              },
+              {
+                "kind": "give_item",
+                "item": "map"
+              },
+              {
+                "kind": "give_item",
+                "item": "manual"
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "dad",
+                "text": "Take my PCB MOTHERBOARD MAP (F3 or map) and my hardcover UNIX FIELD MANUAL (F1 or manual). The map jumps back to any sector you reached, the manual explains every command. Never dive deeper without them.",
+                "holdSec": 10
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Map and Field Manual unlocked! Once we finish talking, Anti-Gravy will taunt us. Then run cat server_rack.conf, cat dad.tty.sock, and kiro load qwen to disable him!",
+                "holdSec": 8
+              },
+              {
+                "kind": "wait",
+                "sec": 18
+              },
+              {
+                "kind": "fly_to",
+                "entityId": "kiro",
+                "target": "home"
               }
             ]
           }
@@ -1844,6 +2070,24 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "path": "/srv/kiroween/logic_cell/server_hub_2",
           "kind": "dir",
           "mode": 0
+        },
+        {
+          "path": "/srv/kiroween/logic_cell/skimmer_ledger.txt",
+          "kind": "file",
+          "mode": 420,
+          "content": "TOKEN SKIMMER LEDGER\nI skimmed a spare VRAM module and hid it in the dot folder `.spare_parts` of this room, a pile of 130 shelves (`ls -a` shows it).\nI logged the exact shelf in a skimmer.log, and I stamped the line with STASH.\nSearch: `grep -r STASH .spare_parts`, or `find / -name vram.mod`, or `tree -a .spare_parts`.\n"
+        },
+        {
+          "path": "/srv/kiroween/logic_cell/.spare_parts/crate_a/crate_b/skimmer.log",
+          "kind": "file",
+          "mode": 420,
+          "content": "skimmer.log\nSTASH: the module sleeps in the dot folder .safe on this shelf (cd .safe, then mv vram.mod ~)\n"
+        },
+        {
+          "path": "/srv/kiroween/logic_cell/.spare_parts/crate_a/crate_b/.safe/vram.mod",
+          "kind": "file",
+          "mode": 420,
+          "content": "VRAM_MODULE_16GB_HBM_STOLEN\n"
         }
       ],
       "enemies": [
@@ -1873,6 +2117,11 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "id": "pickup_l6_gpu",
           "type": "ssd",
           "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img"
+        },
+        {
+          "id": "pickup_l6_vram",
+          "type": "vram_module",
+          "path": "/srv/kiroween/logic_cell/.spare_parts/crate_a/crate_b/.safe/vram.mod"
         }
       ],
       "patches": [
@@ -2024,7 +2273,16 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "stage": "crack_only"
         },
         "openingSec": 18
-      }
+      },
+      "generate": [
+        {
+          "kind": "tree",
+          "root": "/srv/kiroween/logic_cell/.spare_parts",
+          "folders": 130,
+          "hiddenFiles": 45,
+          "seed": "l6-vram"
+        }
+      ]
     },
     {
       "id": "level-07-hub-model-two",
