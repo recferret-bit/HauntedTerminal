@@ -43,7 +43,7 @@ const ENEMY_DEFAULTS: Record<EnemyType, { file: string; pid?: number; hidden?: b
   kernel: { file: 'overlord.ko', pid: 1 },
 };
 
-const PICKUP_FILES: Record<PickupType, string> = { energy: 'energy.cell', ram: 'ram_16gb.dimm', ssd: 'ssd_256gb.img', tube_transistor: 'tube_transistor', laptop: 'laptop' };
+const PICKUP_FILES: Record<PickupType, string> = { energy: 'energy.cell', ram: 'ram_16gb.dimm', ssd: 'ssd_256gb.img', tube_transistor: 'tube_transistor', laptop: 'laptop', tensor_gpu: 'tensor_gpu', vram_module: 'vram.mod' };
 
 const usedIds = (script: LabScript): Set<string> => new Set(script.setup.flatMap((op) => ('id' in op ? [op.id] : [])));
 const usedPaths = (script: LabScript): Set<string> => new Set(script.setup.flatMap((op) => ('path' in op ? [op.path] : [])));

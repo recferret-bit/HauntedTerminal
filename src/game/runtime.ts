@@ -3,7 +3,7 @@ import type { KernelEvent } from '../contracts/events.js';
 import { BESTIARY, PICKUP_INFO, RAM_PER_STEP, SSD_PER_BACKUP, maxHpFor, type PickupType } from './bestiary.js';
 import { World, type KillHow, type Pickup } from './entities.js';
 import { CLASSIC_START_CWD, FLOOR_PATHS, FLOOR_TITLES, buildFloor } from './floors.js';
-import { giveItem, hasItem, holdItem } from './inventory.js';
+import { addVram, giveItem, hasItem, holdItem, takeItem } from './inventory.js';
 import { ensureLabDirChain, placeLabFile } from './lab-support.js';
 import { freshLabLevelState } from './lab-types.js';
 import { COMMANDS, manualTopics, mapTopics } from './manual.js';
@@ -251,6 +251,14 @@ export function applyPickup(g: Play, type: PickupType, amount: number, entityId:
   if (type === 'laptop') {
     g.run.inventory = holdItem(giveItem(g.run.inventory, 'laptop'), 'laptop');
     return 'You pack the laptop.\n';
+  }
+  if (type === 'tensor_gpu') {
+    g.run.inventory = takeItem(g.run.inventory, 'tensor_gpu');
+    return 'You pack the Tensor GPU.\n';
+  }
+  if (type === 'vram_module') {
+    g.run.inventory = addVram(g.run.inventory, 1);
+    return `VRAM module consumed: ${g.run.inventory.vram} spare charge(s).\n`;
   }
   if (type === 'energy') return `+${gained} HP. HP ${g.run.hp}/${maxHp(g)}.\n`;
   if (type === 'ram') return `+${amount} GB RAM (${g.run.ram} GB). Max HP ${maxHp(g)}, HP ${g.run.hp}.\n`;

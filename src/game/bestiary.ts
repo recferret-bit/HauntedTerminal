@@ -9,7 +9,7 @@ export type EnemyType =
   | 'virus' | 'worm' | 'trojan' | 'bug' | 'exploit' | 'crack' | 'ransomware'
   | 'spyware' | 'rootkit' | 'zombie' | 'forkbomb' | 'kernel';
 
-export const PICKUP_TYPES = ['energy', 'ram', 'ssd', 'tube_transistor', 'laptop'] as const;
+export const PICKUP_TYPES = ['energy', 'ram', 'ssd', 'tube_transistor', 'laptop', 'tensor_gpu', 'vram_module'] as const;
 export type PickupType = (typeof PICKUP_TYPES)[number];
 
 export interface EnemyInfo {
@@ -228,6 +228,16 @@ export const PICKUP_INFO: Record<PickupType, PickupInfo> = {
     type: 'laptop', model: 'item.laptop', amount: 1,
     label: () => 'LAPTOP',
     blurb: '#!/bin/laptop\n# LAPTOP: portable clamshell workstation for coding tasks.\n# use: mv <file> ~   (it goes in your hand)\nexport EDITOR="laptop"\n',
+  },
+  tensor_gpu: {
+    type: 'tensor_gpu', model: 'item.tensor_gpu', amount: 1,
+    label: () => 'TENSOR GPU',
+    blurb: '#!/bin/tensor\n# TENSOR GPU: a PCIe card that lets Kiro load open-weight models.\n# use: mv <file> ~   (carry it to the old coder in the hub)\nexport TENSOR="ready"\n',
+  },
+  vram_module: {
+    type: 'vram_module', model: 'item.vram_module', amount: 1,
+    label: () => 'VRAM MODULE',
+    blurb: '#!/bin/vram\n# VRAM MODULE: one spare charge for a Kiro skill (kiro heal, kiro hint).\n# use: mv <file> ~   (it is consumed into a charge)\nexport VRAM="$VRAM+1"\n',
   },
 };
 

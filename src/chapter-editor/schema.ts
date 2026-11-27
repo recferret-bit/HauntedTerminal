@@ -408,7 +408,7 @@ export const MANIFEST: Field[] = [
     optional: true,
     item: {
       title: (g) => `after level ${String(g.afterLevel)}: ${[g.ram ? `+${String(g.ram)}GB RAM` : '', g.ssd ? `+${String(g.ssd)}GB SSD` : '', g.core ? `core ${String(g.core)}` : ''].filter(Boolean).join(', ')}`,
-      fields: [n('afterLevel', 'After level'), opt(n('ram', 'RAM GB')), opt(n('ssd', 'SSD GB')), opt(t('core', 'Kiro.d core', { suggest: 'cores' })), opt({ type: 'strings', key: 'items', label: 'Items (tube_transistor, terminal, laptop, manual, map; one per line)' })],
+      fields: [n('afterLevel', 'After level'), opt(n('ram', 'RAM GB')), opt(n('ssd', 'SSD GB')), opt(n('vram', 'VRAM charges')), opt(t('core', 'Kiro.d core', { suggest: 'cores' })), opt({ type: 'strings', key: 'items', label: 'Items (tube_transistor, terminal, laptop, manual, map, tensor_gpu, vram_module; one per line)' })],
     },
   },
   opt({ type: 'strings', key: 'startItems', label: 'Items he carries at the start (default tube_transistor, terminal; one per line)' }),
