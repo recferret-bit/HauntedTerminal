@@ -60,6 +60,7 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   readonly ouch: OuchState;
 
   levelIdx = 0;
+  reachedIdx = -1;
   lastCmdStartedCrack = false;
   hp = 100;
   ram = 0;

@@ -102,7 +102,9 @@ export function jumpToLevel(g: ChapterState, levelIdOrIndex: string | number): T
     g.ended = false;
     g.endedAt = null;
     g.intro = false;
-    applyInitialLoadout(g, idx);
+    // A level he has already reached keeps the run he has (items, core, RAM, SSD, HP, VRAM, taken pickups); a level beyond it, or a
+    // direct entry, starts from what the chapter's grants give.
+    if (idx > g.reachedIdx) applyInitialLoadout(g, idx);
     loadLevel(g, idx, false, events);
     const banner = levelBannerText(g);
     return { output: banner, events, snapshot: snapshot(g) };
