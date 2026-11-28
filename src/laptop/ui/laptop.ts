@@ -9,7 +9,7 @@ import type { CheckResult } from '../domain/checks.js';
 import type { CodeFiles } from '../domain/run.js';
 import { taskById } from '../domain/tasks.js';
 import { createLaptopSound } from '../runtime/sound.js';
-import type { LaptopContext, WorkbenchInspectEvent } from './apps/app-types.js';
+import type { LaptopContext, RoomNotice, RoomTaskBinding, WorkbenchInspectEvent } from './apps/app-types.js';
 import type { Workbench } from './apps/workbench.js';
 import { createDesktopView, type DesktopView } from './desktop-view.js';
 import { createLaptopView, type LaptopView } from './laptop-view.js';
@@ -27,6 +27,12 @@ export interface LaptopOptions {
   onInspect?: (ev: WorkbenchInspectEvent) => void;
   /** Optional observer called when `setSpeed` updates animation speed. */
   onSpeed?: (speed: number) => void;
+  /** Optional live coding bug from the active `/play` room when unlocked. */
+  roomTask?: () => RoomTaskBinding | null;
+  /** Optional status notice shown in Quests (e.g. warmup done / run `ls` first). */
+  roomNotice?: (p: Progress) => RoomNotice | null;
+  /** Optional observer called whenever solved quest progress updates. */
+  onTaskProgress?: (done: readonly string[]) => void;
 }
 
 export interface LaptopHandle {
@@ -183,6 +189,7 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
   const saved = store(opts.storageKey === undefined ? 'credits.laptop.progress' : opts.storageKey);
   let progress = saved.load();
   const progressFns: ((p: Progress) => void)[] = [];
+  const roomFns: (() => void)[] = [];
   const stateFns: ((s: LaptopState, e: LaptopEvent) => void)[] = [];
   const capsCtrl = createCapsController(() => view);
 
@@ -204,10 +211,19 @@ export function mountLaptop(host: HTMLElement, opts: LaptopOptions = {}): Laptop
     setProgress(next) {
       progress = next;
       saved.save(next);
+      opts.onTaskProgress?.(next.done);
       progressFns.forEach((fn) => fn(next));
     },
     onProgress: (fn) => { progressFns.push(fn); },
     open: (app) => desktop.dispatch({ type: 'open', app }),
+    roomTask: opts.roomTask,
+    roomNotice: opts.roomNotice,
+    onRoomChange: (fn) => { roomFns.push(fn); },
+    notifyRoomChange: () => { roomFns.forEach((fn) => fn()); },
+    startRoomTask(binding) {
+      desktop.dispatch({ type: 'open', app: binding.task.app });
+      (desktop.view(binding.task.app) as Workbench | undefined)?.loadTask(binding.task, binding.files, binding.onSolve);
+    },
     startTask(id) {
       const task = taskById(id);
       if (!task) return;

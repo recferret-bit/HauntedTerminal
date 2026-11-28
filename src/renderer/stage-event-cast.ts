@@ -10,6 +10,7 @@ import { placeX } from './stage-layout.js';
 import { claim, flashActor, heroAction, heroFlinch, hopInPlace, owns, playEntrance, playHand, playSpawn, release } from './stage-motion.js';
 import { heroEmote } from './stage-emote.js';
 import { actorFlyTo, itemCarried, itemGiven } from './stage-carry.js';
+import { onComposeOomCrash } from './stage-compose.js';
 import { anchorPoint, findByKey, firstOfKind } from './stage-resolve.js';
 import { syncOverlays } from './stage-sync.js';
 import { stepped } from './tween.js';
@@ -64,6 +65,9 @@ export function handleCastEvent(stage: ComicStage, ev: KernelEvent, subject: Sta
       return true;
     case 'FX_CUE':
       onFxCue(stage, ev);
+      return true;
+    case 'COMPOSE_OOM_CRASH':
+      onComposeOomCrash(stage, ev);
       return true;
     default:
       return false;

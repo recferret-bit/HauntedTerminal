@@ -111,6 +111,7 @@ export class World implements WorldLike {
       bufferPath: spec.buffer ?? null,
       helps: spec.helps ?? null,
       showIn: spec.showIn ?? [],
+      ...(spec.customCodeRule ? { customCodeRule: true } : {}),
       family: 0,
       deathZone: [],
       shown: hidden ? 'hidden' : 'idle',

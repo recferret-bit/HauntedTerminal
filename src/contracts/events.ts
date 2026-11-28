@@ -336,4 +336,9 @@ export type KernelEvent =
       title: string;
       description: string;
       icon: string;
+    }
+  | {
+      /** Unfixed Docker Compose stack spun up and crashed with Java heap OOM (Exit 137) on stage. */
+      type: 'COMPOSE_OOM_CRASH';
+      actors: Array<{ entityId: string; model: string; label: string; x: number; hoverY: number }>;
     };

@@ -1,5 +1,6 @@
 import type { KernelEvent } from '../contracts/events.js';
 import type { AgentDirector } from './agents.js';
+import type { DockerState } from './docker.js';
 import type { World, WorldHost } from './entities.js';
 import type { LabConfig, LabLevelState } from './lab-types.js';
 import type { Inventory } from './inventory.js';
@@ -56,6 +57,7 @@ export interface Run {
   world: World;
   filesRead: Set<string>;
   socketInputs: Map<string, string>;
+  docker: DockerState;
   lab: LabLevelState;
 }
 

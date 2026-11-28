@@ -169,6 +169,11 @@ export class Preview {
     }
     const skipBtn = this.shell.play.win?.document.querySelector<HTMLButtonElement>('#skip-dialog-btn');
     if (skipBtn && !skipBtn.hidden) skipBtn.click();
+    if (this.shell.play.win?.__game?.snapshot()?.pendingLaptopTasks?.length) {
+      this.shell.play.win.__game.completeLaptopTasks?.();
+      const skipAfter = this.shell.play.win?.document.querySelector<HTMLButtonElement>('#skip-dialog-btn');
+      if (skipAfter && !skipAfter.hidden) skipAfter.click();
+    }
     this.cursor += 1;
     this.updateStepLabel();
     this.setStatus(`$ ${next}`);

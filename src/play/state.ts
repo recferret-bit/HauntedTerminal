@@ -137,7 +137,7 @@ export class Play {
   unmountAudio?: () => void;
   manualBook: ManualBook | null = null;
   /** The in-game laptop overlay while it is open (`src/play/laptop.ts`), else null. It never holds the turn timer. */
-  laptopOverlay: { close(immediate?: boolean): void; state(): string } | null = null;
+  laptopOverlay: { close(immediate?: boolean): void; state(): string; runTask?(id: string): Promise<boolean> } | null = null;
   /** Every event the session produced, newest last (capped). The chapter editor reads it through `__game.events()`. */
   eventLog: KernelEvent[] = [];
   /** The lab's config in a Terminal Lab game (`?lab=1` on a draft), else null. */
@@ -182,7 +182,7 @@ export class Play {
   }
 }
 
-export type OverlayId = 'menu' | 'manual' | 'map' | 'hint' | 'editor' | 'laptop';
+export type OverlayId = 'menu' | 'manual' | 'map' | 'hint' | 'editor' | 'laptop' | 'vim';
 
 function isOverlayOpen(play: Play, id: OverlayId): boolean {
   switch (id) {
@@ -198,15 +198,17 @@ function isOverlayOpen(play: Play, id: OverlayId): boolean {
       return Boolean(play.codeEditor?.isOpen());
     case 'laptop':
       return Boolean(play.laptopOverlay);
+    case 'vim':
+      return Boolean(play.shell?.isVimOpen?.());
   }
 }
 
 export function anyModalOpen(play: Play, exclude: readonly OverlayId[] = []): boolean {
-  const ids: OverlayId[] = ['menu', 'manual', 'map', 'hint', 'editor', 'laptop'];
+  const ids: OverlayId[] = ['menu', 'manual', 'map', 'hint', 'editor', 'laptop', 'vim'];
   return ids.some((id) => !exclude.includes(id) && isOverlayOpen(play, id));
 }
 
-export function closeOtherModals(play: Play, keep?: Exclude<OverlayId, 'editor'>): void {
+export function closeOtherModals(play: Play, keep?: Exclude<OverlayId, 'editor' | 'vim'>): void {
   if (keep !== 'menu' && play.menu?.isOpen()) play.menu.close();
   if (keep !== 'manual' && play.manualBook?.isOpen()) play.manualBook.close();
   if (keep !== 'map' && play.chapterMap?.isOpen()) play.chapterMap.close();

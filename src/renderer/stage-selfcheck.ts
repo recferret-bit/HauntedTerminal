@@ -157,6 +157,7 @@ export function allEvents(): KernelEvent[] {
     { type: 'BATTLE_STARTED', battle: 1, agent: 'antigravy', model: 'agent.antigravy', taunt: 'Eat fireballs!', advice: 'TROJAN: chmod -x it.', enemyIds: ['trojan-1'] },
     { type: 'BATTLE_TURN', battle: 1, actor: 'player', first: true, reason: 'start' },
     { type: 'FX_CUE', preset: 'fx.coredump', x: 1.5, y: 0.9, text: 'DUMP!' },
+    { type: 'COMPOSE_OOM_CRASH', actors: [{ entityId: 'docker:oom:0', model: 'prop.file', label: '[postgres]', x: -0.35, hoverY: 1.9 }, { entityId: 'docker:oom:1', model: 'prop.file', label: '[java-api]', x: 0.85, hoverY: 2.15 }] },
   ];
 }
 
@@ -198,8 +199,9 @@ function bogusEvents(): KernelEvent[] {
     { type: 'ACTOR_FLY_TO' },
     { type: 'KIRO_ACTION', action: 'empower', core: 'x', message: '' },
     { type: 'BATTLE_STARTED' },
-    { type: 'VIBECODER_EMOTE', emote: 'shout' },
-    { type: 'VIBECODER_EMOTE' },
+    { type: 'VIBECODER_EMOTE', emote: 'shout' }, { type: 'VIBECODER_EMOTE' },
+    { type: 'COMPOSE_OOM_CRASH' }, { type: 'COMPOSE_OOM_CRASH', actors: [] },
+    { type: 'COMPOSE_OOM_CRASH', actors: [{ entityId: 'bad', model: 'not.a.model', label: 'bad', x: Number.NaN, hoverY: Number.NaN }] },
   ];
   return junk as KernelEvent[];
 }

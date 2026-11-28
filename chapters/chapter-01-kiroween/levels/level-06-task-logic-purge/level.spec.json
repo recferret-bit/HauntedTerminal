@@ -1,48 +1,43 @@
 {
   "id": "level-06-task-logic-purge",
   "index": 6,
-  "title": "Logic Cell: Skimmer Stone & JS Math",
+  "title": "Logic Cell: Laptop Trial & Payment Bug",
   "cwd": "/srv/kiroween/logic_cell",
   "roomKind": "cell",
   "floorTheme": 3,
   "roomSeed": 66,
   "mechanic": "terminal-code",
   "exitDir": "/srv/kiroween/logic_cell/server_hub_2",
-  "summary": "Your old clamshell laptop landed in the Logic Cell! Grab it (mv laptop ~), petrify token_skimmer.bin (chmod -x), fix string-concatenation in cart.js (Number(...)), and collect ram_16gb.dimm + gpu_shader_core_02.img.",
+  "summary": "Grab your laptop (mv laptop ~), test it in the overlay [F4] by passing the 3 basic JS Pad warmups, then find the `code` folder with `ls`, open JS Pad (or `edit`), and fix `processPayment(amountMinor)` in `payment.js` to divide by 100 and round down!",
   "files": [
     {
       "path": "/srv/kiroween/logic_cell/laptop",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "#!/bin/laptop\n# LAPTOP: portable clamshell workstation for coding tasks.\n# use: mv laptop ~   (it goes in your hand)\nexport EDITOR=\"laptop\"\n"
+      "content": "#!/bin/laptop\n# LAPTOP: portable clamshell workstation for coding tasks.\n# use: mv laptop ~   (then click Laptop or press F4 to open it)\nexport EDITOR=\"laptop\"\n"
     },
     {
-      "path": "/srv/kiroween/logic_cell/token_skimmer.bin",
-      "kind": "file",
+      "path": "/srv/kiroween/logic_cell/code",
+      "kind": "dir",
       "mode": 493,
-      "content": "TROJAN_VRAM_SKIMMER_PAYLOAD\n"
+      "appearWhen": {
+        "kind": "laptop_tasks_done",
+        "tasks": ["js-hello", "js-add", "js-countdown"]
+      }
     },
     {
-      "path": "/srv/kiroween/logic_cell/cart.js",
+      "path": "/srv/kiroween/logic_cell/code/payment.js",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "// Open-Weights VRAM Allocation Calculator (cart.js)\nexport function computeCartTotal(price, shipping, qty = 1) {\n  if (qty <= 0) return 0;\n  // BUG: Gork left raw string concatenation so ('549', '15', 1) returns '54915'!\n  return price + shipping;\n}\n",
+      "content": "// Payment Processing Service (code/payment.js)\n// Converts integer minor units (cents) into whole major currency units (dollars).\nfunction processPayment(amountMinor) {\n  // BUG: entered 100 minor units charges 100 dollars instead of dividing by 100 and rounding down!\n  return amountMinor;\n}\n\nconsole.log('100 minor ->', processPayment(100));\nconsole.log('199 minor ->', processPayment(199));\nconsole.log('250 minor ->', processPayment(250));\n",
       "x": 1.65,
-      "model": "prop.file"
-    },
-    {
-      "path": "/srv/kiroween/logic_cell/ram_16gb.dimm",
-      "kind": "file",
-      "mode": 420,
-      "content": "DDR5_ECC_16GB_MODULE_04\n"
-    },
-    {
-      "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img",
-      "kind": "file",
-      "mode": 420,
-      "content": "GPU_SHADER_CORE_CHIP_02\n"
+      "model": "prop.file",
+      "appearWhen": {
+        "kind": "laptop_tasks_done",
+        "tasks": ["js-hello", "js-add", "js-countdown"]
+      }
     },
     {
       "path": "/srv/kiroween/logic_cell/server_hub_2",
@@ -57,7 +52,7 @@
       "path": "/srv/kiroween/logic_cell/skimmer_ledger.txt",
       "kind": "file",
       "mode": 420,
-      "content": "TOKEN SKIMMER LEDGER\nI skimmed a spare VRAM module and hid it in the dot folder `.spare_parts` of this room, a pile of 130 shelves (`ls -a` shows it).\nI logged the exact shelf in a skimmer.log, and I stamped the line with STASH.\nSearch: `grep -r STASH .spare_parts`, or `find / -name vram.mod`, or `tree -a .spare_parts`.\n",
+      "content": "SPARE PARTS LEDGER\nA spare VRAM module sleeps in the dot folder `.spare_parts` of this cell, buried across 130 shelves (`ls -a` reveals it).\nThe exact shelf is logged in skimmer.log with the tag STASH.\nSearch: `grep -r STASH .spare_parts`, or `find / -name vram.mod`, or `tree -a .spare_parts`.\n",
       "x": 2.1,
       "model": "prop.file"
     },
@@ -76,16 +71,15 @@
   ],
   "enemies": [
     {
-      "id": "trojan_l6",
-      "type": "trojan",
-      "path": "/srv/kiroween/logic_cell/token_skimmer.bin",
-      "x": -0.25
-    },
-    {
       "id": "bug_js_l6",
       "type": "bug",
-      "path": "/srv/kiroween/logic_cell/cart.js",
-      "x": 1.35
+      "path": "/srv/kiroween/logic_cell/code/payment.js",
+      "showIn": ["/srv/kiroween/logic_cell"],
+      "x": 1.35,
+      "appearWhen": {
+        "kind": "laptop_tasks_done",
+        "tasks": ["js-hello", "js-add", "js-countdown"]
+      }
     }
   ],
   "pickups": [
@@ -96,19 +90,6 @@
       "x": 3.65
     },
     {
-      "id": "pickup_l6_ram",
-      "type": "ram",
-      "path": "/srv/kiroween/logic_cell/ram_16gb.dimm",
-      "x": 1.05
-    },
-    {
-      "id": "pickup_l6_gpu",
-      "type": "ssd",
-      "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img",
-      "model": "pickup.gpu",
-      "x": 0.45
-    },
-    {
       "id": "pickup_l6_vram",
       "type": "vram_module",
       "path": "/srv/kiroween/logic_cell/.spare_parts/crate_a/crate_b/.safe/vram.mod"
@@ -116,16 +97,10 @@
   ],
   "patches": [
     {
-      "file": "cart.js",
-      "label": "Fix math: Number(price) * Number(qty) + Number(shipping)",
-      "find": "return price + shipping;",
-      "replace": "return Number(price) * Number(qty) + Number(shipping);"
-    },
-    {
-      "file": "cart.js",
-      "label": "Mark BUG -> FIXED",
-      "find": "// BUG:",
-      "replace": "// FIXED:"
+      "file": "payment.js",
+      "label": "Fix minors->majors: Math.floor(amountMinor / 100)",
+      "find": "return amountMinor;",
+      "replace": "return Math.floor(amountMinor / 100);"
     }
   ],
   "props": [
@@ -185,61 +160,124 @@
   ],
   "winRules": [
     {
+      "kind": "laptop_tasks_done",
+      "tasks": ["js-hello", "js-add", "js-countdown"],
+      "description": "Pick up your laptop (mv laptop ~), boot it [F4], and pass all 3 basic JS Pad riddles"
+    },
+    {
+      "kind": "payment_js_valid",
+      "jsPath": "/srv/kiroween/logic_cell/code/payment.js",
+      "description": "Find the code folder (ls), open the editor, and fix processPayment(amountMinor) to divide by 100 and round down"
+    },
+    {
       "kind": "enemy_neutralized",
-      "enemyId": "trojan_l6",
-      "description": "Petrify `token_skimmer.bin` by stripping execute permissions (`chmod -x token_skimmer.bin`)"
-    },
-    {
-      "kind": "cart_js_valid",
-      "jsPath": "/srv/kiroween/logic_cell/cart.js",
-      "description": "Fix `computeCartTotal` in `cart.js` so `('549', '15', 1)` returns numeric `564`"
-    },
-    {
-      "kind": "file_absent",
-      "path": "/srv/kiroween/logic_cell/ram_16gb.dimm",
-      "description": "Collect the RAM stick (`mv ram_16gb.dimm ~`)"
-    },
-    {
-      "kind": "file_absent",
-      "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img",
-      "description": "Collect the GPU Shader Core chip (`mv gpu_shader_core_02.img ~`)"
+      "enemyId": "bug_js_l6",
+      "description": "Squash the payment logic bug in code/payment.js"
     }
   ],
   "solutionCommands": [
     "mv laptop ~",
-    "chmod -x token_skimmer.bin",
-    "sed -i 's/price + shipping/Number(price) * Number(qty) + Number(shipping)/' cart.js",
-    "mv ram_16gb.dimm ~",
-    "mv gpu_shader_core_02.img ~",
+    "ls",
+    "cd code",
+    "sed -i 's|return amountMinor;|return Math.floor(amountMinor / 100);|' payment.js",
+    "cd ..",
     "cd server_hub_2"
   ],
   "script": {
     "arrival": [
       {
         "kind": "print",
-        "text": "\n[LOGIC CELL — /srv/kiroween/logic_cell]\nBeside the ALU die sits your old clamshell laptop—and a live Trojan (`token_skimmer.bin`)! Listen to Kiro.d before battle starts.\n"
+        "text": "\n[LOGIC CELL — /srv/kiroween/logic_cell]\nBeside the ALU die glints your old clamshell laptop. Listen to Kiro.d.\n"
+      },
+      {
+        "kind": "dialog_box",
+        "speaker": "kiro",
+        "text": "Wait... I feel your old clamshell laptop pulsing nearby on the cell floor! Pick it up with `mv laptop ~`.",
+        "holdSec": 6
       }
     ],
     "timed": [
       {
         "afterSec": 1,
+        "unless": {
+          "kind": "has_item",
+          "item": "laptop"
+        },
         "steps": [
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "Look—my old clamshell laptop landed on the cell floor! And there is another gargoyle Trojan (`token_skimmer.bin`) guarding cart.js!",
-            "holdSec": 9
+            "text": "Look—my old clamshell laptop landed right beside the ALU die!",
+            "holdSec": 5
           }
         ]
       },
       {
-        "afterSec": 10,
+        "afterSec": 6,
+        "unless": {
+          "kind": "has_item",
+          "item": "laptop"
+        },
         "steps": [
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "When our talk ends, Gork will taunt and turn-based battle begins! Grab your laptop (mv laptop ~), petrify token_skimmer.bin (chmod -x), fix cart.js, and pocket the RAM + SSD!",
-            "holdSec": 8
+            "text": "Pick up the laptop (`mv laptop ~`) so we can test whether it still boots and runs JavaScript!",
+            "holdSec": 6
+          }
+        ]
+      }
+    ],
+    "triggers": [
+      {
+        "when": {
+          "kind": "has_item",
+          "item": "laptop"
+        },
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "gork",
+            "text": "HAHAHA! That dusty 486 clamshell? Let's see if you even pass its 3 basic JS warmups!",
+            "holdSec": 4
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Alright, let's test this clamshell!",
+            "holdSec": 3
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Open your laptop [F4], click POWER, and pass all 3 JS Pad warmups (Hello World, Add, Countdown).",
+            "holdSec": 4
+          }
+        ]
+      },
+      {
+        "when": {
+          "kind": "laptop_tasks_done",
+          "tasks": ["js-hello", "js-add", "js-countdown"]
+        },
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Whoa—all 3 JS warmups passed, and a live bug just dropped in!",
+            "holdSec": 4
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "clod",
+            "text": "AHAHA! Entered 100 cents pays 100 whole credits! Good luck finding where we hid the code folder!",
+            "holdSec": 5
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Find the code folder with `ls`, open JS Pad on your laptop [F4], and divide minor units by 100 rounded down!",
+            "holdSec": 5
           }
         ]
       }
@@ -251,7 +289,26 @@
           "kind": "has_item",
           "item": "laptop"
         },
-        "message": "edit: pick up your clamshell laptop first to unlock code editing: mv laptop ~"
+        "message": "edit: pick up your clamshell laptop first to unlock code editing: mv laptop ~",
+        "freeAction": true
+      },
+      {
+        "command": "nano",
+        "until": {
+          "kind": "has_item",
+          "item": "laptop"
+        },
+        "message": "nano: pick up your clamshell laptop first to unlock code editing: mv laptop ~",
+        "freeAction": true
+      },
+      {
+        "command": "code",
+        "until": {
+          "kind": "has_item",
+          "item": "laptop"
+        },
+        "message": "code: pick up your clamshell laptop first to unlock code editing: mv laptop ~",
+        "freeAction": true
       },
       {
         "command": "sed",
@@ -259,9 +316,22 @@
           "kind": "has_item",
           "item": "laptop"
         },
-        "message": "sed: pick up your clamshell laptop first to patch code here: mv laptop ~"
+        "message": "sed: pick up your clamshell laptop first to patch code here: mv laptop ~",
+        "freeAction": true
       }
     ],
+    "holdEnemiesUntil": {
+      "kind": "all",
+      "of": [
+        {
+          "kind": "laptop_tasks_done",
+          "tasks": ["js-hello", "js-add", "js-countdown"]
+        },
+        {
+          "kind": "dialog_done"
+        }
+      ]
+    },
     "bullying": {
       "after": 2,
       "every": 3,
@@ -270,22 +340,21 @@
       "lines": [
         {
           "agent": "codec",
-          "text": "CODEC: \"HAHAHA! So that bearded greybeard disabled Anti-Gravy? You still cannot pass our code checks!\""
+          "text": "CODEC: \"HAHAHA! Entered 100 cents and charged 100 credits?! Your checkout is hemorrhaging money!\""
         },
         {
           "agent": "gork",
-          "text": "GORK: \"BWAHAHA! Your Kiro.d only has one open-weight model—we still run this machine!\""
+          "text": "GORK: \"BWAHAHA! Pass the three JS warmups first—and even then you still have to track down the `code` folder!\""
         },
         {
           "agent": "clod",
-          "text": "CLOD: \"AHAHA! Even with Qwen online, your syntax remains delightfully tragic, Vibecoder.\""
+          "text": "CLOD: \"AHAHA! Dividing by 100 and rounding down is apparently too much math for a Vibecoder.\""
         }
       ]
     },
     "kiro": {
       "stage": "crack_only"
-    },
-    "openingSec": 18
+    }
   },
   "generate": [
     {
@@ -307,6 +376,18 @@
       "model": "door.serial",
       "socket": "door.left",
       "sfx": "door_serial"
+    },
+    "subdirs": {
+      "/srv/kiroween/logic_cell/code": {
+        "hero": 2.5,
+        "caption": "LOGIC CELL // code — fix processPayment(amountMinor) in payment.js!",
+        "entryPort": {
+          "label": "logic_cell",
+          "model": "door.serial",
+          "socket": "door.left",
+          "sfx": "door_serial"
+        }
+      }
     }
   }
 }

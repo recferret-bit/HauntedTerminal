@@ -36,6 +36,12 @@ export const OVERVIEW: Field[] = [
 ];
 
 /** Fields of one entry of `files[]`, `enemies[]`, `pickups[]` and `patches[]`; the Terminal Lab builds its setup forms from them. */
+const appearTail = (sfxKey: string, sfxLabel: string): Field[] => [
+  opt(t(sfxKey, sfxLabel, { suggest: 'sfx', mono: true })),
+  opt({ type: 'union', key: 'appearWhen', label: 'Appears when (hidden until this holds)', union: COND_VARIANTS }),
+  ...transformFields({ includeY: true }),
+];
+
 export const FILE_FIELDS: Field[] = [
   t('path', 'Path', { mono: true }),
   sel('kind', 'Kind', ['file', 'dir', 'socket']),
@@ -47,8 +53,7 @@ export const FILE_FIELDS: Field[] = [
   opt(t('model', 'Stage model', { suggest: 'models' })),
   opt(sel('socket', 'Room socket', ROOM_SOCKETS)),
   opt(t('label', 'Stage label')),
-  opt(t('sfx', 'SFX cue override', { suggest: 'sfx', mono: true })),
-  ...transformFields({ includeY: true }),
+  ...appearTail('sfx', 'SFX cue override'),
 ];
 
 export const ENEMY_FIELDS: Field[] = [
@@ -67,8 +72,7 @@ export const ENEMY_FIELDS: Field[] = [
   opt(sel('socket', 'Room socket', ROOM_SOCKETS)),
   opt(t('label', 'Stage label')),
   opt(t('attackSfx', 'Attack SFX override', { suggest: 'sfx', mono: true })),
-  opt(t('killSfx', 'Kill SFX override', { suggest: 'sfx', mono: true })),
-  ...transformFields({ includeY: true }),
+  ...appearTail('killSfx', 'Kill SFX override'),
 ];
 
 export const PICKUP_FIELDS: Field[] = [
@@ -182,8 +186,10 @@ export const RULE_VARIANTS = (): Variants<WinRule['kind']> => ({
   enemy_neutralized: [t('enemyId', 'Enemy id', { suggest: 'enemies' }), DESC],
   html_css_valid: [t('htmlPath', 'HTML path', { suggest: 'paths', mono: true }), t('cssPath', 'CSS path', { suggest: 'paths', mono: true }), DESC],
   cart_js_valid: [t('jsPath', 'JS path', { suggest: 'paths', mono: true }), DESC],
+  payment_js_valid: [t('jsPath', 'Payment JS path', { suggest: 'paths', mono: true }), DESC],
+  laptop_tasks_done: [{ type: 'strings', key: 'tasks', label: 'Laptop task ids (one per line)' }, DESC],
   docker_image_running: [t('imageTag', 'Image tag', { mono: true }), n('port', 'Port'), DESC],
-  docker_compose_healthy: [{ type: 'strings', key: 'services', label: 'Services (one per line)' }, DESC],
+  docker_compose_healthy: [{ type: 'strings', key: 'services', label: 'Services (one per line)' }, opt(b('floating', 'Floating code sheets in mid-air')), DESC],
   boss_defeated: [
     t('bossId', 'Boss enemy id', { suggest: 'enemies' }),
     t('streamPath', 'Stream to drain', { suggest: 'paths', mono: true }),

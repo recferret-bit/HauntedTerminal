@@ -1,9 +1,10 @@
 import type { KernelEvent } from '../contracts/events.js';
 import { giveItem, hasItem, holdItem, ITEMS, type ItemId } from '../game/inventory.js';
 import { absPath, lookup, type VNode } from '../game/tree.js';
-import { levelScript } from './script.js';
+import { isNodeHidden, levelScript } from './script.js';
 import type { WinRule } from './types.js';
-import { validateCartJs, validateDockerCompose, validateDockerfile, validateStorefrontHtmlCss } from './validators.js';
+import { evaluateComposeRuntime } from '../game/docker-compose-eval.js';
+import { validateCartJs, validateDockerCompose, validateDockerfile, validatePaymentJs, validateStorefrontHtmlCss } from './validators.js';
 import { splitParentAndName, type ChapterState } from './session-state.js';
 
 /** Grants unowned items from `manifest.grants` up to `maxAfterLevel`; optionally emits reward events and text. */
@@ -58,6 +59,13 @@ export function syncValidatedCodeBugs(g: ChapterState): void {
         const node = lookup(g.rt.root, rule.jsPath);
         if (node && node.content.includes('BUG') && validateCartJs(node.content).ok) {
           node.content = node.content.replace(/BUG/g, 'FIXED');
+        }
+      } else if (rule.kind === 'payment_js_valid') {
+        const node = lookup(g.rt.root, rule.jsPath);
+        if (node && validatePaymentJs(node.content).ok) {
+          for (const e of g.rt.world.enemies) {
+            if (e.type === 'bug' && e.inode === node.id && !e.dead) e.codeRuleSolved = true;
+          }
         }
       } else if (rule.kind === 'html_css_valid' && evalWinRule(g, rule)) {
         for (const p of [rule.htmlPath, rule.cssPath]) {
@@ -139,6 +147,13 @@ export function evalWinRule(g: ChapterState, rule: WinRule): boolean {
         if (!j) return false;
         return validateCartJs(j.content).ok;
       }
+      case 'payment_js_valid': {
+        const j = lookup(g.rt.root, rule.jsPath);
+        if (!j) return false;
+        return validatePaymentJs(j.content).ok;
+      }
+      case 'laptop_tasks_done':
+        return rule.tasks.every((id) => g.laptopDone.has(id));
       case 'docker_image_running':
         return g.rt.containers.some(
           (c) => c.image === rule.imageTag && c.ports.replace(/\/(tcp|udp)$/i, '').endsWith(`:${rule.port}`),
@@ -189,6 +204,14 @@ export function liveLintFeedback(g: ChapterState, node: VNode): string {
         ? '[STOREFRONT PREVIEW: 200 OK — GPU/RAM/SSD Grid & Cart Drawer Live!]\n'
         : `[STOREFRONT LINT: ${res.errors.length} issue(s) remaining -> ${res.errors[0]}]\n`;
     }
+    const nodePath = absPath(node);
+    const hasPaymentRule = g.rt.spec.winRules.some((r) => r.kind === 'payment_js_valid' && r.jsPath === nodePath);
+    if (hasPaymentRule) {
+      const res = validatePaymentJs(node.content);
+      return res.ok
+        ? '[PAYMENT TEST SUITE: PASS — processPayment(100) === 1, (199) === 1 & (250) === 2]\n'
+        : `[PAYMENT TEST SUITE: FAIL -> ${res.errors[0]}]\n`;
+    }
     if (node.name === 'cart.js') {
       const res = validateCartJs(node.content);
       return res.ok
@@ -203,9 +226,11 @@ export function liveLintFeedback(g: ChapterState, node: VNode): string {
     }
     if (node.name === 'docker-compose.yml') {
       const res = validateDockerCompose(node.content);
-      return res.ok
+      if (!res.ok) return `[COMPOSE LINT: ${res.errors[0]}]\n`;
+      const rt = evaluateComposeRuntime(node.content);
+      return rt.ok
         ? '[COMPOSE LINT: OK — ready for `docker compose up -d`]\n'
-        : `[COMPOSE LINT: ${res.errors[0]}]\n`;
+        : `[COMPOSE LINT: WARN — ${rt.faults[0]!.reason}; raise heap/mem_limit >= 256m]\n`;
     }
     return '';
   }
@@ -225,5 +250,31 @@ export function sinkIntoNull(g: ChapterState, events: KernelEvent[], inodeId: nu
   });
   g.rt.world.sync(events);
   refreshExitGates(g, events);
+}
+
+/** Records visible nodes observed via `ls`, `cd`, `cat`, `tree`, or `grep` for `appearWhen` discovery checks. */
+export function markDiscovered(g: ChapterState, target: VNode, children: readonly VNode[] = []): void {
+  if (!isNodeHidden(g, target)) g.rt.discoveredPaths.add(absPath(target));
+  for (const child of children) {
+    if (!isNodeHidden(g, child)) g.rt.discoveredPaths.add(absPath(child));
+  }
+}
+
+/** True when `targetPath` is visible and any `appearWhen`-gated ancestor/file along it has been discovered via terminal listing/navigation. */
+export function isPathDiscovered(g: ChapterState, targetPath: string): boolean {
+  const node = lookup(g.rt.root, targetPath);
+  if (!node || isNodeHidden(g, node)) return false;
+  const cwd = g.rt.spec.cwd;
+  const gated: string[] = [];
+  if (targetPath.startsWith(`${cwd}/`)) {
+    let cur = cwd;
+    for (const seg of targetPath.slice(cwd.length + 1).split('/')) {
+      cur = `${cur}/${seg}`;
+      if (g.rt.filesByPath.get(cur)?.appearWhen) gated.push(cur);
+    }
+  } else if (g.rt.filesByPath.get(targetPath)?.appearWhen) {
+    gated.push(targetPath);
+  }
+  return gated.length === 0 || gated.some((p) => g.rt.discoveredPaths.has(p));
 }
 

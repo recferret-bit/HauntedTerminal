@@ -84,7 +84,7 @@ export const MANUAL_GUIDES: readonly ManualGuideEntry[] = [
       { token: 'stack.buf / proxy.buf', title: 'Root-Owned Buffer Overflow Exploit', summary: '`kill` says Operation not permitted (runs as `root`).', detail: 'You still own its `.buf` buffer! Make it read-only (`chmod -w` or `chmod 444`) so the overflow segfaults.', example: 'chmod 444 stack.buf' },
       { token: 'worm.bin / keygen', title: 'Port Worm & Lockpick Crack', summary: '`crack` picks closed ports open and resists `rm` ("Text file busy").', detail: 'Kill `crack` first (`ps` + `kill -9 <PID>`), then `chmod 000 port_445` (starves worm in 3 turns) or `rm`.', example: 'chmod 000 port_445' },
       { token: 'ransom.exe', title: 'Padlock Ransomware (Encrypts to 000)', summary: 'Locks nearby pickups (`*.cell/*.dimm/*.img`) to mode `000`.', detail: 'Kill ransomware (`ps` + `kill -9 <PID>`), then decrypt pickups with `chmod 644 <file>` before `source`.', example: 'chmod 644 energy.cell && source energy.cell' },
-      { token: 'BUG in source', title: 'Code Bug & Forkbomb (`666`)', summary: 'Code bugs live in source files; Forkbomb forks zombies every 4 turns.', detail: 'Fix bugs with `grep BUG <file>` + `sed -i \'s/BUG/FIXED/\' <file>` or `edit`; terminate `666` with `kill -9 666`.', example: "sed -i 's/BUG/FIXED/' prod.py" },
+      { token: 'BUG in source', title: 'Code Bug & Forkbomb (`666`)', summary: 'Code bugs live in source files; Forkbomb forks zombies every 4 turns.', detail: 'Fix bugs with `grep BUG <file>` + `sed -i \'s/BUG/FIXED/\' <file>`, `vim`, or `edit`; terminate `666` with `kill -9 666`.', example: "sed -i 's/BUG/FIXED/' prod.py" },
     ],
     takeaways: [
       'Type `man <enemy>` (e.g. `man virus`) or `bestiary` anytime to review enemy stats.',

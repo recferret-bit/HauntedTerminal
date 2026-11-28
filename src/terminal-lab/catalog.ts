@@ -6,7 +6,7 @@ import { baseName } from '../game/tree.js';
 import { AGENTS, RULE_VARIANTS } from '../chapter-editor/schema.js';
 import type { WinRule } from '../chapters/types.js';
 import { DEFAULT_PROP_X } from './lab-pack.js';
-import { CART_JS, COMPOSE_YML, DOCKERFILE, SERVER_JS, STOREFRONT_CSS, STOREFRONT_HTML } from './templates.js';
+import { CART_JS, COMPOSE_YML, DOCKERFILE, PAYMENT_JS, SERVER_JS, STOREFRONT_CSS, STOREFRONT_HTML } from './templates.js';
 import type { LabCond, LabScript, LabSetupOp } from './lab-types.js';
 
 /** One thing the Scene dock can place. `make` reads the lab so ids, pids and positions never collide. */
@@ -273,6 +273,13 @@ const TASK_TEMPLATES: Record<WinRule['kind'], (s: LabScript, id: string) => LabS
     const path = freshPath(s, s.room.cwd, 'cart.js');
     return [{ op: 'file', path, content: CART_JS }, { op: 'task', id, rule: { kind: 'cart_js_valid', jsPath: path, description: 'Fix cart.js so it adds numbers, not strings' } }];
   },
+  payment_js_valid: (s, id) => {
+    const path = freshPath(s, s.room.cwd, 'payment.js');
+    return [{ op: 'file', path, content: PAYMENT_JS }, { op: 'task', id, rule: { kind: 'payment_js_valid', jsPath: path, description: 'Fix payment.js to convert minor units to rounded-down majors' } }];
+  },
+  laptop_tasks_done: (_s, id) => [
+    { op: 'task', id, rule: { kind: 'laptop_tasks_done', tasks: ['js-hello', 'js-add', 'js-countdown'], description: 'Pass the 3 basic JS Pad tasks on the laptop' } },
+  ],
   docker_image_running: (s, id) => [
     { op: 'file', path: freshPath(s, s.room.cwd, 'Dockerfile'), content: DOCKERFILE },
     { op: 'file', path: freshPath(s, s.room.cwd, 'server.js'), content: SERVER_JS },

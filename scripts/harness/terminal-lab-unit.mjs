@@ -526,9 +526,10 @@ await withProcgen(async (_p, vite) => {
     assert.deepEqual([done().file, done()['ran-ls']], [true, true]);
   });
 
-  await test('goals: every win rule template starts undone, is the only task, and its scene has no errors', () => {
+  await test('goals: every win rule template starts undone, is the only task, and its scene has no errors', async () => {
+    const { RULE_VARIANTS } = await load('/src/chapter-editor/schema.ts');
     const kinds = entries().filter((e) => e.id.startsWith('task.'));
-    assert.equal(kinds.length, 14);
+    assert.equal(kinds.length, Object.keys(RULE_VARIANTS()).length);
     for (const e of kinds) {
       const script = lab();
       script.setup.push(...e.make(script));
@@ -1881,6 +1882,126 @@ await withProcgen(async (_p, vite) => {
     assert.equal(actors.find((a) => a.id === 'p-sock')?.socket, 'door.left');
     assert.ok(actors.some((a) => a.id === 'prop:web'), 'prop id starting with prop: stays prop:web');
     assert.equal(actors.some((a) => a.id === 'prop:prop:web'), false, 'never double-prefixes prop:');
+  });
+
+  await test('validatePaymentJs enforces divide-by-100 and floor across edge cases', async () => {
+    const { validatePaymentJs } = await load('/src/chapters/validators.ts');
+    assert.equal(validatePaymentJs('function processPayment(a){return Math.floor(a / 100);}').ok, true);
+    assert.equal(validatePaymentJs('export function processPayment(a){console.log(a);return Math.floor(a / 100);}').ok, true);
+    assert.equal(validatePaymentJs('function processPayment(a){return a;}').ok, false, 'entered 100 returns 100');
+    assert.equal(validatePaymentJs('function processPayment(a){return a / 100;}').ok, false, 'fractional dollars without rounding down fail (199 -> 1.99)');
+    assert.equal(validatePaymentJs('function processPayment(a){return Math.round(a / 100);}').ok, false, 'Math.round rounds 199 up to 2');
+    assert.equal(validatePaymentJs('function processPayment(a){return a === 100 ? 1 : 0;}').ok, false, 'hardcoding 100 fails 250/1050');
+    assert.equal(validatePaymentJs('const other = 1;').ok, false, 'missing processPayment');
+    assert.equal(validatePaymentJs('function processPayment( {').ok, false, 'syntax error');
+  });
+
+  await test('Level 6 laptop trial -> JS warmups -> hidden code/ + bug spawn -> payment fix -> bug death -> door opens', async () => {
+    const { CHAPTER_MANIFESTS } = await load('/src/chapters/catalog.ts');
+    const sess = createChapterSession({ chapterId: CHAPTER_MANIFESTS[0].id, preview: true, startLevelId: 'level-06-task-logic-purge' });
+    sess.skipIntro();
+    const arr = sess.arriveLevel();
+    assert.ok(arr.events.some((e) => e.type === 'DIALOG_BOX' && e.speaker === 'kiro'), 'Kiro announces feeling the laptop on arrival');
+    assert.equal(sess.snapshot().enemiesLeft, 0, 'no enemies active before laptop warmups complete');
+    assert.equal(sess.exec('ls').output.includes('code'), false, 'code folder stays hidden until laptop warmups finish');
+    assert.notEqual(sess.exec('cd code').code, 0, 'cannot enter hidden code folder early');
+    assert.notEqual(sess.exec('edit payment.js').code, 0, 'edit locked before picking up laptop');
+    assert.notEqual(sess.exec('nano payment.js').code, 0, 'nano locked before picking up laptop');
+    assert.notEqual(sess.exec('code payment.js').code, 0, 'code locked before picking up laptop');
+
+    const pick = sess.exec('mv laptop ~');
+    assert.ok(pick.events.some((e) => e.type === 'PICKUP_COLLECTED' && e.item === 'laptop'), 'mv laptop ~ collects laptop');
+    assert.ok(pick.events.some((e) => e.type === 'DIALOG_BOX' && e.speaker === 'gork'), 'Big Four (Gork) taunts after picking up laptop');
+    assert.ok(pick.events.some((e) => e.type === 'DIALOG_BOX' && e.speaker === 'kiro'), 'Kiro prompts to test the laptop JS Pad');
+    assert.deepEqual(sess.snapshot().pendingLaptopTasks, ['js-hello', 'js-add', 'js-countdown']);
+
+    // Partial progress keeps the bug & code/ hidden across incremental syncs.
+    const firstSync = sess.syncLaptopTasks(['js-hello']);
+    assert.equal(firstSync.snapshot.enemiesLeft, 0);
+    assert.deepEqual(firstSync.snapshot.pendingLaptopTasks, ['js-add', 'js-countdown']);
+    const partial = sess.syncLaptopTasks(['js-hello', 'js-add']);
+    assert.equal(partial.snapshot.enemiesLeft, 0);
+    assert.deepEqual(partial.snapshot.pendingLaptopTasks, ['js-countdown']);
+
+    // Completing all 3 basic JS riddles spawns the bug, reveals code/payment.js, and fires new dialog + Big Four taunt.
+    const unlocked = sess.syncLaptopTasks(['js-hello', 'js-add', 'js-countdown']);
+    assert.ok(unlocked.events.some((e) => e.type === 'ENTITY_SPAWNED' && e.entityId === 'bug_js_l6'), 'bug enemy spawns after 3 JS riddles');
+    assert.ok(unlocked.events.some((e) => e.type === 'DIALOG_BOX' && e.speaker === 'vibecoder'), 'new dialog plays on spawn');
+    assert.ok(unlocked.events.some((e) => e.type === 'DIALOG_BOX' && e.speaker === 'clod'), 'Big Four (Clod) taunts when bug spawns');
+    assert.equal(unlocked.snapshot.enemiesLeft, 1);
+    assert.equal(unlocked.snapshot.pendingLaptopTasks, undefined);
+    assert.equal(sess.isPathDiscovered('/srv/kiroween/logic_cell/code/payment.js'), false, 'code/ must be discovered with ls before laptop unlocks it');
+
+    // Every scripted taunt + dialog in pick and unlocked has full script priority (not 320ms chatter preemption).
+    await withFakeDom(async (makeEl) => {
+      const orch = mountDialogOrchestrator(makeEl('div'), stubDrawPortrait());
+      for (const ev of [...pick.events, ...unlocked.events]) {
+        if (ev.type === 'DIALOG_BOX' || ev.type === 'AGENT_TAUNT') orch.handleEvent(ev);
+      }
+      const lines = [orch.box.activeLine(), ...orch.box.queuedLines()].filter(Boolean);
+      assert.equal(lines.length, 6, 'all 6 scripted Level 6 dialogs/taunts stay queued without being dropped');
+      assert.ok(lines.some((l) => l.speaker === 'gork' && l.priority === 'script'), 'Gork taunt runs as full script dialog');
+      assert.ok(lines.some((l) => l.speaker === 'clod' && l.priority === 'script'), 'Clod taunt runs as full script dialog');
+      assert.ok(lines.every((l) => (l.holdMs ?? 0) >= 2500), 'no Level 6 dialog or taunt is shortened to 320ms');
+      orch.clear();
+    });
+
+    if (sess.snapshot().skippableDialog) sess.skipOpeningDialog();
+    const listed = sess.exec('ls').output;
+    assert.ok(listed.includes('code'), 'ls discovers the code folder');
+    assert.equal(sess.isPathDiscovered('/srv/kiroween/logic_cell/code/payment.js'), true, 'ls marks payment.js folder discovered');
+    const entered = sess.exec('cd code');
+    assert.equal(entered.code, 0);
+    assert.equal(entered.snapshot.battle?.phase, 'intro', 'entering code starts turn-based battle with bug_js_l6');
+    assert.equal(entered.snapshot.battle?.held, false, 'Level 6 battle does not hold the turn timer by default');
+    assert.equal(entered.snapshot.paused, false, 'entering code battle leaves game clock unpaused');
+    const startedEv = entered.events.find((e) => e.type === 'BATTLE_STARTED');
+    assert.ok(
+      startedEv && startedEv.type === 'BATTLE_STARTED' && startedEv.advice.includes('payment.js') && !startedEv.advice.includes("s/BUG/FIXED/"),
+      'customCodeRule battle advice points to payment.js fix rather than sed BUG/FIXED',
+    );
+
+    // Fixing ONLY the payment logic validates, kills bug, ends battle, and opens door.
+    const currentText = sess.readEditableFile('payment.js');
+    assert.equal(currentText.ok, true);
+    const fixedText = currentText.content.replace('return amountMinor;', 'return Math.floor(amountMinor / 100);');
+    const saved = sess.saveEditableFile('payment.js', fixedText);
+    assert.ok(saved.events.some((e) => e.type === 'ENEMY_KILLED' && e.entityId === 'bug_js_l6'), 'saving fixed payment.js kills bug');
+    assert.ok(saved.events.some((e) => e.type === 'BATTLE_ENDED' && e.reason === 'cleared'), 'killing bug ends battle cleanly');
+    assert.equal(saved.snapshot.enemiesLeft, 0);
+    assert.equal(saved.snapshot.promptGold, true, 'exit door opens immediately after bug dies');
+    sess.exec('cd ..');
+    const cleared = sess.exec('cd server_hub_2');
+    assert.equal(cleared.snapshot.room.floor, 7, 'exit door transitions to Level 7');
+
+    // Anti-cheese: stripping BUG comment without fixing processPayment keeps BOTH bug alive and exit locked,
+    // and rm/kill hints point to fixing the payment.js logic rather than sed BUG/FIXED.
+    const s2 = createChapterSession({ chapterId: CHAPTER_MANIFESTS[0].id, preview: true, startLevelId: 'level-06-task-logic-purge' });
+    s2.skipIntro();
+    s2.exec('mv laptop ~');
+    s2.completePendingLaptopTasks();
+    if (s2.snapshot().skippableDialog) s2.skipOpeningDialog();
+    s2.exec('cd code');
+    const rmHint = s2.exec('rm payment.js').output;
+    assert.equal(rmHint.includes("s/BUG/FIXED/"), false, 'rm veto does not recommend sed BUG/FIXED on customCodeRule bug');
+    assert.ok(rmHint.includes('JS Pad') || rmHint.includes('edit'), 'rm veto recommends JS Pad or edit');
+    const basePack = rawPack();
+    basePack.levels[0] = {
+      ...basePack.levels[0],
+      files: [{ path: '/lab/payment.js', kind: 'file', content: 'function processPayment(amountMinor) { return amountMinor; }\n' }],
+      enemies: [{ id: 'b1', type: 'bug', path: '/lab/payment.js', pid: 4321 }],
+      pickups: [],
+      winRules: [{ kind: 'payment_js_valid', jsPath: '/lab/payment.js', description: 'Fix payment.js' }],
+    };
+    const s3 = createChapterSession({ chapterId: 'lab-unit', preview: true, pack: basePack });
+    const bugPid = s3.inspect().entities.find((e) => e.id === 'b1')?.pid;
+    assert.ok(bugPid, 'customCodeRule bug with PID exposes rolled PID in inspect');
+    const killHint = s3.exec(`kill ${bugPid}`).output;
+    assert.equal(killHint.includes('The bug is in the code: sed -i it.'), false, 'kill hint does not give generic sed advice on customCodeRule bug');
+    assert.ok(killHint.includes('JS Pad') || killHint.includes('edit/sed'), 'kill hint recommends JS Pad or edit/sed');
+    s2.exec("sed -i 's/BUG/FIXED/' payment.js");
+    assert.equal(s2.snapshot().enemiesLeft, 1, 'bug stays alive until processPayment divides by 100 and floors');
+    assert.equal(s2.snapshot().promptGold, false, 'exit stays locked until processPayment divides by 100 and floors');
   });
 });
 

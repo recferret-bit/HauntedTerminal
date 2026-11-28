@@ -11,7 +11,7 @@ import { runLn, runReadlink } from '../game/tree-links.js';
 import { treeWantsHidden, TREE_FLAGS_LOCKED_MESSAGE } from '../game/search-applets.js';
 import { finishTabCompletion, hasLsFlags, LS_FLAGS_LOCKED_MESSAGE, reverseLines } from '../game/unix-applets.js';
 import { CHAPTER_COMMANDS, emptyStep, globToRegExp, okStep, type ChapterState } from './session-state.js';
-import { cmdDocker, cmdEdit, cmdExit, cmdSed, cmdSource } from './session-code.js';
+import { cmdDocker, cmdEdit, cmdExit, cmdSed, cmdSource, cmdVim } from './session-code.js';
 import { cmdCat, cmdCd, cmdChmod, cmdCp, cmdCut, cmdFind, cmdGrep, cmdHeadTail, cmdLs, cmdMkdir, cmdMv, cmdRm, cmdTouch, cmdWc } from './session-fs.js';
 import { cmdKiro } from './session-kiro.js';
 import { cmdTree } from './session-search.js';
@@ -212,7 +212,7 @@ function dispatchRev(g: ChapterState, args: string[], stdin: string): Step {
 
 function dispatchHelp(g: ChapterState): Step {
   return okStep(
-    `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack|heal|hint] local Unix .gguf daemon Kiro.d (${g.kiro.activeCore.gguf})\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run     build & run Dockerfile container image\n  docker compose up -d   orchestrate multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 15 local trophies & Steamworks ACH_* payload\n  restart-level [--yes]  reload this level (asks twice; alias: retry)\n`,
+    `${helpText(g.rt.spec.summary)}\nCHAPTER & METAGAME TOOLS:\n  kiro [scan|load|crack|heal|hint] local Unix .gguf daemon Kiro.d (${g.kiro.activeCore.gguf})\n  vim [-c ex] <file>     in-terminal modal Vim editor (:w, :q, :wq, :%s/a/b/g)\n  edit <file>            open Split Code Mini-Editor (Ctrl+S saves)\n  hank [status]          ask hank.tty for Socratic hint (or live checklist audit)\n  docker build / run / ps / prune   container lifecycle management\n  docker compose up / ps / logs / down / prune   multi-service Compose stack\n  grimoire / bestiary    open Command Grimoire or Malware Dossier\n  workshop [perk-id]     view Silicon Scrap & toggle ~/.bashrc Rig Perks\n  achievements [export]  inspect 15 local trophies & Steamworks ACH_* payload\n  restart-level [--yes]  reload this level (asks twice; alias: retry)\n`,
   );
 }
 
@@ -272,8 +272,9 @@ export const CHAPTER_HANDLERS: Readonly<Record<string, ChapterHandler>> = {
   pkill: cmdPkill,
   edit: cmdEdit,
   nano: cmdEdit,
-  vim: cmdEdit,
   code: cmdEdit,
+  vim: cmdVim,
+  vi: cmdVim,
   docker: cmdDocker,
   'docker-compose': (g, args) => cmdDocker(g, ['compose', ...args]),
   exit: cmdExit,

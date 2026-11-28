@@ -127,6 +127,10 @@ export default async function gameplaySuite(ctx) {
     for (const c of world.levels[levelIdx].solutionCommands ?? []) {
       if (session.snapshot().battle?.phase === 'intro' || session.levelIdx !== levelIdx) break;
       if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+      if (session.snapshot().pendingLaptopTasks?.length) {
+        session.completePendingLaptopTasks?.();
+        if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+      }
       session.exec(c);
     }
     if (session.levelIdx !== levelIdx || session.snapshot().battle?.phase !== 'intro') return null;
@@ -269,6 +273,10 @@ export default async function gameplaySuite(ctx) {
         const session = world.open(last);
         for (const c of world.levels[last].solutionCommands ?? []) {
           if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+          if (session.snapshot().pendingLaptopTasks?.length) {
+            session.completePendingLaptopTasks?.();
+            if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+          }
           session.exec(c);
         }
         const snap = session.exec('exit').snapshot;
@@ -518,6 +526,37 @@ export default async function gameplaySuite(ctx) {
         const low = Object.entries(need).filter(([k, n]) => seen[k] < n).map(([k, n]) => `${k}: ${seen[k]} (need ${n})`);
         expect(low.length === 0, `random play over ${seen.runs} runs no longer reaches: ${low.join(', ')}`);
       },
+    },
+    {
+      name: 'docker-compose OOM sector: unfixed heap (<256m) repeats crash with 0 HP damage and keeps exit locked; raising heap >=256m via vim unlocks cleanly',
+      build: () =>
+        fc.property(
+          fc.integer({ min: 16, max: 255 }),
+          fc.integer({ min: 256, max: 2048 }),
+          fc.integer({ min: 1, max: 4 }),
+          (lowMb, okMb, crashes) => {
+            const idx = world.levels.findIndex((l) => l.mechanic === 'docker-compose' && l.winRules.some((r) => r.kind === 'docker_compose_healthy' && r.floating));
+            expect(idx >= 0, 'chapter missing floating docker-compose level');
+            const session = world.open(idx);
+            session.arriveLevel();
+            session.skipOpeningDialog();
+            expect(session.exec(`vim -c '%s/-Xmx64m/-Xmx${lowMb}m/' -c 'wq' docker-compose.yml`).code === 0, 'vim low heap patch failed');
+            const startHp = session.snapshot().hp;
+            for (let k = 0; k < crashes; k++) {
+              const r = session.exec('docker compose up -d');
+              expect(r.code === 1, `expected OOM failure at ${lowMb}m`);
+              expect(r.events.some((e) => e.type === 'COMPOSE_OOM_CRASH'), 'missing COMPOSE_OOM_CRASH event');
+              expect(session.snapshot().hp === startHp, `OOM crash damaged HP (${session.snapshot().hp} !== ${startHp})`);
+            }
+            expect(session.exec('ls -la').code === 0, 'ls -la failed');
+            expect(session.exec('cat .logs/java-api.log').output.includes('OutOfMemoryError'), 'missing crash log');
+            expect(session.exec(`vim -c '%s/-Xmx${lowMb}m/-Xmx${okMb}m/' -c 'wq' docker-compose.yml`).code === 0, 'vim ok heap patch failed');
+            const ok = session.exec('docker compose up -d');
+            expect(ok.code === 0, `expected healthy launch at ${okMb}m: ${ok.stderr}`);
+            expect(session.exec('mv ram_16gb.dimm ~').code === 0 && session.exec('mv gpu_tensor_chip_02.img ~').code === 0, 'pickups failed');
+            expect(allWinRulesMet(session), 'win rules must hold after log read, fixed compose up, and pickups');
+          },
+        ),
     },
     ...fsmProps,
     ...skillProps,

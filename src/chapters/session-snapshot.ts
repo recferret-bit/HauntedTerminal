@@ -2,10 +2,10 @@ import { SSD_PER_BACKUP, maxHpFor } from '../game/bestiary.js';
 import { pickTransform, type ActorKind } from '../contracts/room-view.js';
 import { battleView } from '../game/battle.js';
 import { absPath, type VNode } from '../game/tree.js';
-import type { GameSnapshot, LevelInfo, RoomActor, RoomView } from '../game/types.js';
+import type { GameSnapshot, LevelInfo, RoomView } from '../game/types.js';
 import { buildRoom, roomSeedForPath, type SceneFacts, type ViewThing } from '../game/view.js';
 import { computeRunRank, splitParentAndName, type ChapterState } from './session-state.js';
-import { hasSkippableDialog, hiddenEnemyId, isNodeHidden, isPickupHidden, kiroStage, openingActive, tutorialState } from './script.js';
+import { hasSkippableDialog, isEnemyHidden, isNodeHidden, isPickupHidden, kiroStage, openingActive, pendingLaptopTasks, tutorialState } from './script.js';
 import { chapterHintGoals } from './session-hints.js';
 import { allWinRulesMet, computeBossPhase, getChecklist } from './session-rules.js';
 
@@ -66,6 +66,51 @@ function spawnedActorKind(model: string): ActorKind {
   return 'prop';
 }
 
+function appendComposeActors(g: ChapterState, room: RoomView): void {
+  const composeRule = g.rt.spec.winRules.find((r) => r.kind === 'docker_compose_healthy');
+  const isFloatingCompose = Boolean(
+    composeRule && composeRule.kind === 'docker_compose_healthy' && composeRule.floating,
+  );
+  if (isFloatingCompose && g.rt.composeHealthyServices.size > 0) {
+    const floatXs = [-0.35, 0.85, 2.05, 3.25];
+    Array.from(g.rt.composeHealthyServices).forEach((svc, idx) => {
+      room.actors.push({
+        key: 'entity',
+        id: `docker:float:${idx}`,
+        model: 'prop.file',
+        kind: 'prop',
+        state: 'idle',
+        x: floatXs[idx] ?? (-0.35 + idx * 1.15),
+        y: 1.9 + (idx % 2) * 0.25,
+        hidden: false,
+        label: `[${svc}]`,
+      });
+    });
+    return;
+  }
+  const containerNames =
+    g.rt.composeHealthyServices.size > 0
+      ? Array.from(g.rt.composeHealthyServices).map((s) => `${s} [healthy]`)
+      : g.rt.containers.map((c) => `${c.image} [UP]`);
+  const crateCandidates = [0.25, -0.25, -0.68, 3.0, 4.5, 1.25, 0.65, -0.55];
+  containerNames.slice(0, 3).forEach((label, idx) => {
+    const usedX = room.actors.filter((a) => !a.y || a.y < 0.2).map((a) => a.x);
+    const freeX =
+      crateCandidates.find((cx) => usedX.every((ux) => Math.abs(ux - cx) >= 0.36)) ??
+      -0.25 - idx * 0.45;
+    room.actors.push({
+      key: 'entity',
+      id: `docker:crate:${idx}`,
+      model: 'prop.tar',
+      kind: 'prop',
+      state: 'idle',
+      x: freeX,
+      hidden: false,
+      label,
+    });
+  });
+}
+
 function decorateSnapshotRoom(
   g: ChapterState,
   room: RoomView,
@@ -93,29 +138,8 @@ function decorateSnapshotRoom(
         ? `SECTOR CLEAR — ${exitBase ? `cd ${exitBase}` : `run ${g.rt.spec.exitCommand ?? 'exit'}`} to advance!`
         : lockedCaption ?? subdirCaption ?? dEntry?.banner ?? g.rt.spec.summary;
 
-      // Materialize running Docker containers as physical 3D crates on the stage without overlapping existing ground actors!
-      const containerNames =
-        g.rt.composeHealthyServices.size > 0
-          ? Array.from(g.rt.composeHealthyServices).map((s) => `${s} [healthy]`)
-          : g.rt.containers.map((c) => `${c.image} [UP]`);
-      const crateCandidates = [0.25, -0.25, -0.68, 3.0, 4.5, 1.25, 0.65, -0.55];
-      containerNames.slice(0, 3).forEach((label, idx) => {
-        const usedX = room.actors.filter((a) => !a.y || a.y < 0.2).map((a) => a.x);
-        const freeX =
-          crateCandidates.find((cx) => usedX.every((ux) => Math.abs(ux - cx) >= 0.36)) ??
-          -0.25 - idx * 0.45;
-        const actor: RoomActor = {
-          key: 'entity',
-          id: `docker:crate:${idx}`,
-          model: 'prop.tar',
-          kind: 'prop',
-          state: 'idle',
-          x: freeX,
-          hidden: false,
-          label,
-        };
-        room.actors.push(actor);
-      });
+      // Materialize running Docker containers as physical 3D crates or floating code sheets on the stage!
+      appendComposeActors(g, room);
 
       for (const [id, spec] of g.rt.spawnedActors.entries()) {
         if (room.actors.some((a) => a.id === id)) continue;
@@ -263,17 +287,23 @@ export function snapshot(g: ChapterState): GameSnapshot {
     const rawEntities = g.rt.world.views(cwdPath);
     const showHidden = g.editorShowHidden;
     const entityTargets = new Set(rawEntities.map((e) => e.target));
-    const hiddenId = hiddenEnemyId(g);
     const entities = rawEntities.flatMap((e) => {
-      const isGated = e.id === hiddenId || (e.kind === 'pickup' && isPickupHidden(g, e.id));
+      const isGated = e.kind === 'pickup' ? isPickupHidden(g, e.id) : isEnemyHidden(g, e.id);
       if (isGated && !showHidden) return [];
       if (showHidden && (isGated || e.unseen)) {
         return [{ ...e, alpha: 0.55, ...(e.state === 'hidden' ? { state: 'idle' as const } : {}) }];
       }
       return [e];
     });
-    const effectiveCounts = hiddenId
-      ? { left: Math.max(0, counts.left - 1), total: Math.max(0, counts.total - 1) }
+    let hiddenTotal = 0;
+    let hiddenLeft = 0;
+    for (const e of g.rt.world.enemies) {
+      if (e.minion || !isEnemyHidden(g, e.id)) continue;
+      hiddenTotal += 1;
+      if (!e.dead && !g.rt.world.petrified(e)) hiddenLeft += 1;
+    }
+    const effectiveCounts = hiddenTotal > 0
+      ? { left: Math.max(0, counts.left - hiddenLeft), total: Math.max(0, counts.total - hiddenTotal) }
       : counts;
     const things: ViewThing[] = [];
     const hiddenThingNames = new Set<string>();
@@ -324,6 +354,7 @@ export function snapshot(g: ChapterState): GameSnapshot {
     const shortcuts: string[] = [];
     if (g.chaosMode) shortcuts.push('CHAOS');
 
+    const pendingLaptop = pendingLaptopTasks(g);
     return {
       cwd: cwdPath,
       floor: g.rt.spec.floorTheme,
@@ -353,6 +384,7 @@ export function snapshot(g: ChapterState): GameSnapshot {
       battle: battleView(g.battle),
       openingDialog: openingActive(g),
       skippableDialog: hasSkippableDialog(g),
+      ...(pendingLaptop.length > 0 ? { pendingLaptopTasks: pendingLaptop } : {}),
       volume: g.volume,
       level: levelInfo(g, effectiveCounts),
       hintGoals: chapterHintGoals(g),

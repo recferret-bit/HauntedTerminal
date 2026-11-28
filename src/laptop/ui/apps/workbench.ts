@@ -74,10 +74,27 @@ function markActiveTab(tabs: HTMLElement, active: CodeFile): void {
   });
 }
 
+function applySolved(
+  ctx: LaptopContext,
+  taskId: string,
+  files: CodeFiles,
+  onSolved: ((files: CodeFiles) => void) | null,
+): void {
+  if (onSolved) {
+    onSolved({ ...files });
+    ctx.notifyRoomChange?.();
+  } else {
+    ctx.setProgress(markDone(ctx.progress(), taskId));
+  }
+  ctx.sound.note('solved');
+  ctx.pow('SOLVED!');
+}
+
 export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workbench {
   let files: CodeFiles = { ...cfg.scratch };
   let tab: CodeFile = cfg.files[0]!;
   let task: LaptopTask | null = null;
+  let onSolved: ((files: CodeFiles) => void) | null = null;
   let timer = 0;
   let initTimer = 0;
   let hasRun = false;
@@ -93,7 +110,7 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
     onRun: () => void bench.run(),
     onChange: (text) => {
       files = { ...files, [tab]: text };
-      if (task) ctx.setProgress(saveDraft(ctx.progress(), task.id, files));
+      if (task && !onSolved) ctx.setProgress(saveDraft(ctx.progress(), task.id, files));
       if (cfg.autoRunMs > 0) {
         cancelAutoRun();
         timer = window.setTimeout(() => void bench.run(), cfg.autoRunMs);
@@ -105,7 +122,7 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
     cancelAutoRun();
     if (task) {
       files = { ...task.starter };
-      ctx.setProgress(saveDraft(ctx.progress(), task.id, files));
+      if (!onSolved) ctx.setProgress(saveDraft(ctx.progress(), task.id, files));
     } else {
       files = { ...cfg.scratch };
     }
@@ -157,9 +174,10 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
       files = { ...next };
       select(tab);
     },
-    loadTask(next, saved) {
+    loadTask(next, saved, onSolve) {
       cancelAutoRun();
       task = next;
+      onSolved = onSolve ?? null;
       strip.show(next);
       bench.setFiles(saved);
       select(cfg.files.find((f) => saved[f].trim()) ?? cfg.files[0]!);
@@ -181,13 +199,8 @@ export function createWorkbench(ctx: LaptopContext, cfg: WorkbenchConfig): Workb
       if (!current) return results;
       strip.results(results);
       ctx.onInspect?.({ app: cfg.app, taskId: activeTask.id, taskTitle: activeTask.title, mode, report, checks: results });
-      if (allPassed(results)) {
-        ctx.setProgress(markDone(ctx.progress(), activeTask.id));
-        ctx.sound.note('solved');
-        ctx.pow('SOLVED!');
-      } else {
-        ctx.sound.note('check-fail');
-      }
+      if (allPassed(results)) applySolved(ctx, activeTask.id, files, onSolved);
+      else ctx.sound.note('check-fail');
       return results;
     },
     dispose() {

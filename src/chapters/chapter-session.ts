@@ -23,6 +23,7 @@ import { writeRedirect } from './session-redirect.js';
 import * as rules from './session-rules.js';
 import type { LabConfig, LabInjection, LabInspect } from './session-lab-types.js';
 import type { ChapterSession, ChapterSessionOptions, ChapterState, EditorOpenPayload, LevelRuntime } from './session-state.js';
+import type { VimOpenPayload } from '../game/vim-types.js';
 import * as lab from './session-lab.js';
 import * as shell from './session-shell.js';
 import * as snap from './session-snapshot.js';
@@ -89,7 +90,9 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
   inventory = starterInventory();
   entryInventory = starterInventory();
   seenPickups = new Set<PickupType>();
+  laptopDone = new Set<string>();
   pendingEditor: EditorOpenPayload | null = null;
+  pendingVim: VimOpenPayload | null = null;
   pendingManual: string | null = null;
   pendingMap: string | null = null;
   pendingSkin: TerminalSkinId | null = null;
@@ -156,12 +159,20 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
     return code.readEditableFile(this, nameOrPath);
   }
 
+  isPathDiscovered(targetPath: string): boolean {
+    return rules.isPathDiscovered(this, targetPath);
+  }
+
   saveEditableFile(nameOrPath: string, content: string): CommandResult {
     return heard(this, code.saveEditableFile(this, nameOrPath, content));
   }
 
   consumeEditorRequest(): EditorOpenPayload | null {
     return flow.consumeEditorRequest(this);
+  }
+
+  consumeVimRequest(): VimOpenPayload | null {
+    return flow.consumeVimRequest(this);
   }
 
   consumeManualRequest(): string | null {
@@ -204,6 +215,15 @@ class DeclarativeChapterGame implements ChapterSession, Host, ChapterState {
 
   finishScriptDialog(): GameSnapshot | null {
     return flow.finishScriptDialog(this);
+  }
+
+  syncLaptopTasks(doneIds: readonly string[]): TickResult {
+    return heard(this, flow.syncLaptopTasks(this, doneIds));
+  }
+
+  completePendingLaptopTasks(): TickResult | null {
+    const res = flow.completePendingLaptopTasks(this);
+    return res ? heard(this, res) : null;
   }
 
   holdTurnTimer(hold: BattleHold, on: boolean): void {

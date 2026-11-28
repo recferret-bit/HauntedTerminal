@@ -7,7 +7,7 @@ import type { Step } from '../game/shell.js';
 import { kiroEnemyRow, kiroFileRow, psXrayToggle } from '../game/puzzle.js';
 import { absPath, type VNode } from '../game/tree.js';
 import { emptyStep, okStep, type ChapterState } from './session-state.js';
-import { coreMatches, coreReaction, fillTemplate, hiddenEnemyId, isNodeHidden, kiroIsWeak, levelScript } from './script.js';
+import { coreMatches, coreReaction, fillTemplate, isEnemyHidden, isNodeHidden, kiroIsWeak, levelScript } from './script.js';
 import { riddleHintLine } from './session-riddle.js';
 import { refreshExitGates } from './session-rules.js';
 
@@ -63,10 +63,9 @@ function kiroScan(g: ChapterState): Step {
         .filter((child) => !isNodeHidden(g, child))
         .sort((a, b) => a.name.localeCompare(b.name))
         .map((child) => kiroFileRow(child, chapterLocked(child), child.kind === 'file' && (child.mode & 0o400) !== 0));
-      const hiddenId = hiddenEnemyId(g);
       const enemies = g.rt.world
         .views(cwd)
-        .filter((v) => v.kind !== 'pickup' && !(hiddenId && v.id === hiddenId))
+        .filter((v) => v.kind !== 'pickup' && !isEnemyHidden(g, v.id))
         .map(kiroEnemyRow);
       const res = g.kiro.scanRoom({ cwd, ramGb: g.ram, files, enemies });
       const events: KernelEvent[] = [{ type: 'VIBECODER_ACTION', action: 'lantern', command: 'kiro scan' }];

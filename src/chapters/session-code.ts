@@ -7,7 +7,7 @@ import {
   parseSedArgs,
 } from '../game/unix-applets.js';
 import type { Step } from '../game/shell.js';
-import { absPath, hasWrite, resolve } from '../game/tree.js';
+import { absPath, hasWrite, resolve, type VNode } from '../game/tree.js';
 import type { CommandResult } from '../game/types.js';
 import {
   evaluateBatchEvents,
@@ -16,9 +16,12 @@ import {
   formatAchievementLines,
 } from './achievements.js';
 import { recordLevelClear, recordTelemetry } from './catalog.js';
+import { createVfsDockerIo, runDockerCli } from '../game/docker.js';
+import { createVfsVimIo, runVimCli } from '../game/vim.js';
 import { isNodeHidden, runSteps, syncScriptTriggers } from './script.js';
-import { validateDockerCompose, validateDockerfile } from './validators.js';
+import { validateDockerfile } from './validators.js';
 import { computeLevelRank, computeRunRank, emptyStep, okStep, splitParentAndName, type ChapterState, type EditorOpenPayload } from './session-state.js';
+import { syncClearedBattle } from './session-battle.js';
 import { cmdCat, collectPickupNode } from './session-fs.js';
 import { hurt } from './session-level.js';
 import { allWinRulesMet, liveLintFeedback, refreshExitGates, syncValidatedCodeBugs, unfinishedObjectives } from './session-rules.js';
@@ -34,6 +37,7 @@ function commitEdited(g: ChapterState, events: KernelEvent[], inodeId: number, c
   syncValidatedCodeBugs(g);
   g.rt.world.cause = 'other';
   g.rt.world.sync(events);
+  syncClearedBattle(g, events);
   refreshExitGates(g, events);
 }
 
@@ -59,33 +63,50 @@ export function saveEditableFile(g: ChapterState, nameOrPath: string, content: s
     g.deadNow = false;
     const events: KernelEvent[] = [];
     const res = resolve(g.rt.cwd, nameOrPath, true);
-    if (!res.node || isNodeHidden(g, res.node) || res.node.kind !== 'file') {
-      const msg = `edit: ${nameOrPath}: ${res.error ?? (res.node && !isNodeHidden(g, res.node) ? 'Not a regular file' : 'cannot save file')}\n`;
-      return {
-        output: msg,
-        stderr: msg,
-        events,
-        snapshot: snapshot(g),
-      };
-    }
-    if (!hasWrite(res.node)) {
-      events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.node.id, command: 'edit' });
-      const msg = `edit: ${res.node.name}: Permission denied (file is read-only)\n`;
-      return { output: msg, stderr: msg, events, snapshot: snapshot(g) };
+    if (res.node && !isNodeHidden(g, res.node)) {
+      if (res.node.kind !== 'file') {
+        const msg = `edit: ${nameOrPath}: Not a regular file\n`;
+        return { output: msg, stderr: msg, events, snapshot: snapshot(g) };
+      }
+      if (!hasWrite(res.node)) {
+        events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.node.id, command: 'edit' });
+        const msg = `edit: ${res.node.name}: Permission denied (file is read-only)\n`;
+        return { output: msg, stderr: msg, events, snapshot: snapshot(g) };
+      }
     }
 
-    res.node.content = content.endsWith('\n') ? content : `${content}\n`;
+    let savedNode = res.node && !isNodeHidden(g, res.node) ? res.node : null;
+    const normalized = content.endsWith('\n') ? content : `${content}\n`;
+    if (savedNode) {
+      savedNode.content = normalized;
+    } else {
+      const io = createVfsVimIo({
+        cwd: () => g.rt.cwd,
+        isHidden: (node) => isNodeHidden(g, node),
+        onWrite: (_abs, node) => {
+          savedNode = node;
+          return undefined;
+        },
+      });
+      const wr = io.write(nameOrPath, normalized);
+      if (!wr.ok || !savedNode) {
+        const msg = `edit: ${wr.ok ? nameOrPath : wr.error}\n`;
+        return { output: msg, stderr: msg, events, snapshot: snapshot(g) };
+      }
+    }
+
+    g.rt.filesRead.add(absPath(savedNode));
     g.commands += 1;
     g.rt.levelCommands += 1;
     if (!g.preview) recordTelemetry({ commands: ['edit'] });
-    commitEdited(g, events, res.node.id, `edit ${res.node.name}`);
+    commitEdited(g, events, savedNode.id, `edit ${savedNode.name}`);
 
-    const diag = liveLintFeedback(g, res.node);
+    const diag = liveLintFeedback(g, savedNode);
     const notes = g.rt.world.drain() + g.rt.completionNote + syncScriptTriggers(g, events);
     g.rt.completionNote = '';
     const achEvents = evaluateBatchEvents(events, { preview: g.preview, lab: g.lab !== null });
     if (achEvents.length > 0) events.push(...achEvents);
-    const output = `[SAVED] ${res.node.name} (${res.node.content.split('\n').length - 1} lines)\n${diag}${notes}${formatAchievementLines(achEvents)}`;
+    const output = `[SAVED] ${savedNode.name} (${savedNode.content.split('\n').length - 1} lines)\n${diag}${notes}${formatAchievementLines(achEvents)}`;
     return { output, events, snapshot: snapshot(g) };
   }
 
@@ -173,191 +194,108 @@ export function cmdEdit(g: ChapterState, args: string[]): Step {
     );
   }
 
-function dockerCompose(g: ChapterState, args: string[]): Step {
+export function cmdVim(g: ChapterState, args: string[]): Step {
+    const savedNodes: VNode[] = [];
+    const io = createVfsVimIo({
+      cwd: () => g.rt.cwd,
+      isHidden: (node) => isNodeHidden(g, node),
+      onRead: (abs) => {
+        g.rt.filesRead.add(abs);
+      },
+      onWrite: (_abs, node) => {
+        savedNodes.push(node);
+        return undefined;
+      },
+    });
+    const res = runVimCli(args, io);
+    if (res.kind === 'error') return emptyStep(res.code, res.stderr);
     const events: KernelEvent[] = [];
-      const action = args[1] ?? 'ps';
-      const composeNode = resolve(g.rt.cwd, 'docker-compose.yml', true).node;
-      if (!composeNode) {
-        return emptyStep(1, 'docker compose: no docker-compose.yml found in current directory\n');
-      }
-
-      if (action === 'config') {
-        const v = validateDockerCompose(composeNode.content);
-        if (!v.ok) {
-          return emptyStep(
-            1,
-            `docker compose config FAILED:\n${v.errors.map((e) => `  - ${e}`).join('\n')}\n`,
-          );
+    if (res.kind === 'headless') {
+      if (savedNodes.length > 0) {
+        if (!g.preview) recordTelemetry({ commands: ['vim'] });
+        let lint = '';
+        for (const node of savedNodes) {
+          commitEdited(g, events, node.id, `vim ${node.name}`);
+          lint += liveLintFeedback(g, node);
         }
-        return okStep('docker compose config: SYNTAX & SERVICE TOPOLOGY OK (nginx + website + payment)\n');
+        return { stdout: `${res.stdout}${lint}`, stderr: res.stderr, code: res.code, events };
       }
-
-      if (action === 'up') {
-        const v = validateDockerCompose(composeNode.content);
-        if (!v.ok) {
-          return emptyStep(
-            1,
-            `docker compose up FAILED:\n${v.errors.map((e) => `  [ERROR] ${e}`).join('\n')}\n`,
-          );
-        }
-        if (!g.preview) recordTelemetry({ commands: ['docker compose'] });
-        g.rt.composeHealthyServices = new Set(['nginx', 'website', 'payment']);
-        events.push({ type: 'VIBECODER_ACTION', action: 'cast', command: 'docker compose up -d' });
-        ['nginx', 'website', 'payment'].forEach((_svc, i) => {
-          events.push({
-            type: 'ENTITY_SPAWNED',
-            entityId: `docker:crate:${i}`,
-            model: 'prop.tar',
-            reason: 'script',
-          });
-        });
-        refreshExitGates(g, events);
-        return okStep(
-          '[+] Network byterig_default  Created\n' +
-            '[+] Container byterig-payment-1  Started (healthy :4002)\n' +
-            '[+] Container byterig-website-1  Started (healthy -> http://payment:4002)\n' +
-            '[+] Container byterig-nginx-1    Started (healthy 0.0.0.0:8080->80/tcp)\n',
-          events,
-        );
-      }
-
-      if (action === 'ps') {
-        if (g.rt.composeHealthyServices.size === 0) {
-          return okStep('NAME   IMAGE   STATUS   PORTS\n(no active compose stack)\n');
-        }
-        return okStep(
-          'NAME                IMAGE              STATUS          PORTS\n' +
-            'byterig-nginx-1     nginx:alpine       Up (healthy)    0.0.0.0:8080->80/tcp\n' +
-            'byterig-website-1   byterig-web:1.0    Up (healthy)    3000/tcp\n' +
-            'byterig-payment-1   byterig-pay:1.0    Up (healthy)    4002/tcp\n',
-        );
-      }
-
-      if (action === 'down') {
-        g.rt.composeHealthyServices.clear();
-        return okStep('[+] Stopped and removed byterig compose stack.\n');
-      }
-
-      if (action === 'logs') {
-        return okStep(
-          g.rt.composeHealthyServices.size > 0
-            ? 'nginx-1    | 200 GET / -> website:3000\nwebsite-1  | Connected to http://payment:4002 (LIVE)\n'
-            : 'compose: stack is not running (use `docker compose up -d`)\n',
-        );
-      }
-
-      return emptyStep(1, 'usage: docker compose [config | up -d | ps | logs | down]\n');
-}
-
-function dockerBuild(g: ChapterState, args: string[]): Step {
-    const events: KernelEvent[] = [];
-      let tag = 'byterig-web:latest';
-      const tIdx = args.indexOf('-t');
-      if (tIdx >= 0 && args[tIdx + 1]) tag = args[tIdx + 1]!;
-      const df = resolve(g.rt.cwd, 'Dockerfile', true).node;
-      if (!df) return emptyStep(1, 'ERROR: failed to read Dockerfile: open Dockerfile: no such file\n');
-
-      const v = validateDockerfile(df.content);
-      if (!v.ok) {
-        return emptyStep(
-          1,
-          `[+] Building 0.2s (FAILED)\n${v.errors.map((e) => ` => ERROR ${e}`).join('\n')}\n`,
-        );
-      }
-
-      if (!g.preview) recordTelemetry({ commands: ['docker build'] });
-      g.rt.builtImages.set(tag, {
-        tag,
-        baseImage: v.baseImage,
-        exposePort: v.exposePort,
-      });
-      events.push({ type: 'VIBECODER_ACTION', action: 'cast', command: `docker build -t ${tag}` });
-      return okStep(
-        `[+] Building 0.8s (5/5) FINISHED\n` +
-          ` => [1/4] FROM ${v.baseImage}\n` +
-          ` => [2/4] WORKDIR /app\n` +
-          ` => [3/4] COPY . .\n` +
-          ` => exporting to image ${tag} (EXPOSE ${v.exposePort})\n`,
-        events,
-      );
-}
-
-function dockerRun(g: ChapterState, args: string[]): Step {
-    const events: KernelEvent[] = [];
-      let portMap = '';
-      let image = '';
-      for (let i = 1; i < args.length; i++) {
-        const a = args[i]!;
-        if (a === '-d') continue;
-        if (a === '-p' && args[i + 1]) {
-          portMap = args[++i]!;
-        } else if (a === '--name' && args[i + 1]) {
-          i += 1;
-        } else if (!a.startsWith('-')) {
-          image = a;
-        }
-      }
-      if (!image) return emptyStep(1, 'usage: docker run -d -p 3000:3000 <image:tag>\n');
-      const built = g.rt.builtImages.get(image);
-      if (!built) {
-        return emptyStep(
-          1,
-          `Unable to find image '${image}' locally. Build it first with: docker build -t ${image} .\n`,
-        );
-      }
-      const containerPort = Number((portMap.split(':').pop() ?? '0').replace(/\/(tcp|udp)$/i, ''));
-      if (containerPort !== built.exposePort) {
-        return emptyStep(
-          1,
-          `docker: port mismatch "${portMap || '(none)'}" — image ${image} exposes port ${built.exposePort} (use -p 3000:3000).\n`,
-        );
-      }
-
-      const cid = `c${100 + g.rt.containers.length}`;
-      g.rt.containers.push({
-        id: cid,
-        name: `byterig_${g.rt.containers.length + 1}`,
-        image,
-        ports: portMap,
-        status: 'Up (healthy)',
-      });
-      events.push({ type: 'VIBECODER_ACTION', action: 'cast', command: `docker run ${image}` });
-      events.push({ type: 'ENTITY_SPAWNED', entityId: 'docker:crate:0', model: 'prop.tar', reason: 'script' });
       refreshExitGates(g, events);
-      return okStep(`${cid}9f8a21e0 — container ${image} listening on ${portMap} (healthy)\n`, events);
-}
+      events.push({ type: 'VIBECODER_ACTION', action: 'read', command: `vim ${args.join(' ')}`.trim() });
+      return { stdout: res.stdout, stderr: res.stderr, code: res.code, events };
+    }
+    refreshExitGates(g, events);
+    g.pendingVim = res.payload;
+    events.push({ type: 'VIBECODER_ACTION', action: 'read', command: `vim ${res.payload.path || ''}`.trim() });
+    return okStep(`[VIM] Opening ${res.payload.path || '[No Name]'}\n`, events);
+  }
 
 export function cmdDocker(g: ChapterState, args: string[]): Step {
-    const sub = args[0] ?? '';
-    if (sub === 'compose') return dockerCompose(g, args);
-    if (sub === 'build') return dockerBuild(g, args);
+    const strictDockerfile =
+      g.rt.spec.mechanic === 'docker-image' ||
+      g.rt.spec.winRules.some((r) => r.kind === 'docker_image_running');
+    const io = createVfsDockerIo({
+      cwd: () => g.rt.cwd,
+      isHidden: (node) => isNodeHidden(g, node),
+      projectName: () => g.rt.spec.id,
+      validateDockerfile: strictDockerfile ? validateDockerfile : undefined,
+    });
+    const outcome = runDockerCli(g.rt.docker, args, io);
+    g.rt.builtImages = g.rt.docker.images;
+    g.rt.containers = g.rt.docker.containers
+      .filter((c) => c.status === 'running')
+      .map((c) => ({ id: c.id, name: c.name, image: c.image, ports: c.ports, status: 'Up (healthy)' as const }));
+    g.rt.composeHealthyServices = new Set(g.rt.docker.composeHealthyServices);
 
-    if (sub === 'images') {
-      const rows = Array.from(g.rt.builtImages.values()).map(
-        (img) => `${img.tag.padEnd(24, ' ')} ${img.baseImage.padEnd(18, ' ')} 142MB`,
-      );
-      return okStep(`REPOSITORY:TAG           BASE               SIZE\n${rows.join('\n') || '(none)'}\n`);
+    const events: KernelEvent[] = [];
+    if (outcome.builtImage) {
+      if (!g.preview) recordTelemetry({ commands: ['docker build'] });
+      events.push({ type: 'VIBECODER_ACTION', action: 'cast', command: `docker build -t ${outcome.builtImage.tag}` });
+    } else if (args[0] === 'run' && outcome.code === 0) {
+      events.push({ type: 'VIBECODER_ACTION', action: 'cast', command: `docker run ${args.slice(1).join(' ')}` });
+      events.push({ type: 'ENTITY_SPAWNED', entityId: 'docker:crate:0', model: 'prop.tar', reason: 'script' });
+    } else if (outcome.composeResult?.kind === 'up-healthy') {
+      if (!g.preview) recordTelemetry({ commands: ['docker compose'] });
+      g.rt.flags.add('compose_healthy');
+      events.push({ type: 'VIBECODER_ACTION', action: 'cast', command: 'docker compose up -d' });
+      const composeRule = g.rt.spec.winRules.find((r) => r.kind === 'docker_compose_healthy');
+      const isFloating = Boolean(composeRule && composeRule.kind === 'docker_compose_healthy' && composeRule.floating);
+      if (isFloating) {
+        const xs = [-0.35, 0.85, 2.05, 3.25];
+        outcome.composeResult.services.forEach((_svc, i) => {
+          events.push({
+            type: 'ENTITY_SPAWNED',
+            entityId: `docker:float:${i}`,
+            model: 'prop.file',
+            reason: 'script',
+            entrance: 'glide',
+            fromX: xs[i] ?? (-0.35 + i * 1.15),
+            fromY: 0.45,
+          });
+        });
+      } else {
+        outcome.composeResult.services.slice(0, 3).forEach((_svc, i) => {
+          events.push({ type: 'ENTITY_SPAWNED', entityId: `docker:crate:${i}`, model: 'prop.tar', reason: 'script' });
+        });
+      }
+    } else if (outcome.composeResult?.kind === 'up-oom') {
+      g.rt.flags.add('compose_oom_crashed');
+      const xs = [-0.35, 0.85, 2.05, 3.25];
+      events.push({ type: 'VIBECODER_ACTION', action: 'cast', command: 'docker compose up -d' });
+      events.push({
+        type: 'COMPOSE_OOM_CRASH',
+        actors: outcome.composeResult.services.map((svc, i) => ({
+          entityId: `docker:oom:${i}`,
+          model: 'prop.file',
+          label: `[${svc}]`,
+          x: xs[i] ?? (-0.35 + i * 1.15),
+          hoverY: 1.9 + (i % 2) * 0.25,
+        })),
+      });
     }
 
-    if (sub === 'run') return dockerRun(g, args);
-
-    if (sub === 'ps') {
-      if (g.rt.containers.length === 0) return okStep('CONTAINER ID   IMAGE   STATUS   PORTS\n');
-      const lines = g.rt.containers.map(
-        (c) => `${c.id.padEnd(14, ' ')} ${c.image.padEnd(20, ' ')} ${c.status.padEnd(15, ' ')} ${c.ports}`,
-      );
-      return okStep(`CONTAINER ID   IMAGE                STATUS          PORTS\n${lines.join('\n')}\n`);
-    }
-
-    if (sub === 'stop' || sub === 'rm') {
-      g.rt.containers = [];
-      return okStep('Stopped/removed running containers.\n');
-    }
-
-    return emptyStep(
-      1,
-      'usage: docker [build -t <tag> . | images | run -d -p 3000:3000 <tag> | ps | compose up -d]\n',
-    );
+    refreshExitGates(g, events);
+    return { stdout: outcome.stdout, stderr: outcome.stderr, code: outcome.code, events };
   }
 
 export function cmdExit(g: ChapterState): Step {

@@ -80,7 +80,7 @@ try {
   // ---- the scene dock -----------------------------------------------------------------------------------------------
   const groups = await $("[...document.querySelectorAll('.lab-group')].map((d) => d.dataset.group)");
   check(['Enemies', 'Pickups', 'Files', 'NPCs', 'Riddles', 'Tasks', 'Checks'].every((g) => groups.includes(g)) && groups.some((g) => g.startsWith('Props:')), 'the palette has every group');
-  check((await count('[data-palette^="enemy."]')) === 12 && (await count('[data-palette^="pickup."]')) === 7 && (await count('[data-palette^="task."]')) === 14, '12 enemies, 7 pickups and 14 win rules are placeable');
+  check((await count('[data-palette^="enemy."]')) === 12 && (await count('[data-palette^="pickup."]')) === 7 && (await count('[data-palette^="task."]')) === 16, '12 enemies, 7 pickups and 16 win rules are placeable');
   check(await $("(() => { const b = document.querySelector('.cx-side-body'); return b.scrollHeight > b.clientHeight && /auto|scroll/.test(getComputedStyle(b).overflowY); })()"), 'the Scene dock scrolls');
   check((await $("[...document.querySelectorAll('.lab-library button')].map((b) => b.textContent).join(',')")) === 'New,Duplicate,Import…,Export,Delete', 'the library actions are in the Scene dock');
 

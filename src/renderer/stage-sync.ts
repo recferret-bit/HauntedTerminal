@@ -16,6 +16,7 @@ import { clearBubble, playFx, say } from './stage-fx.js';
 import { applyLantern, placeX, syncFlood, syncRoomModel } from './stage-layout.js';
 import { closeDoor, kill, openDoor, playEntrance } from './stage-motion.js';
 import { setBatsAmbient } from './stage-bats.js';
+import { clearComposeOomActors } from './stage-compose.js';
 import { prepareIncomingLevelRoom } from './stage-level-transition.js';
 import { anchorPoint, roomSocket } from './stage-resolve.js';
 import type { ComicStage } from './comic-stage.js';
@@ -80,6 +81,7 @@ export function syncRoomInner(stage: ComicStage, view: RoomView): void {
 
   const keepKiro = (view.actors ?? []).some((ra) => ra && actorId(ra) === 'kiro');
   if (roomChanged) {
+    clearComposeOomActors(stage);
     // A new panel: everyone but the hero (and Kiro when present in the new room) leaves with the old room.
     for (const a of [...stage.actors.values()]) {
       if (a.kind !== 'vibecoder' && !(keepKiro && a.id === 'kiro')) removeActor(stage, a);

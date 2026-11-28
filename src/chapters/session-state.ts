@@ -5,6 +5,8 @@ import type { PickupType } from '../game/bestiary.js';
 import type { RestartPending } from '../game/commands-proc.js';
 import type { World, WorldHost } from '../game/entities.js';
 import type { Inventory } from '../game/inventory.js';
+import type { BuiltImage, DockerState } from '../game/docker.js';
+import type { VimOpenPayload } from '../game/vim-types.js';
 import type { OuchState } from '../game/ouch.js';
 import type { KiroCompanion } from '../game/kiro.js';
 import { COMMANDS } from '../game/manual.js';
@@ -37,6 +39,7 @@ export interface ChapterSession extends Session {
   readEditableFile(
     nameOrPath: string,
   ): ({ ok: true } & EditorOpenPayload) | { ok: false; error: string };
+  isPathDiscovered(targetPath: string): boolean;
   saveEditableFile(nameOrPath: string, content: string): CommandResult;
   consumeEditorRequest(): EditorOpenPayload | null;
   consumeManualRequest(): string | null;
@@ -55,8 +58,12 @@ export interface ChapterSession extends Session {
   skipBattleIntro(): TickResult | null;
   /** Skips the opening Vibecoder + Kiro conversation (`openingSec`), unlocking the terminal and firing the Big Four taunt / battle start. */
   skipOpeningDialog(): TickResult | null;
-  /** Marks any active mid-level scripted dialog complete after natural DialogBox queue drain. */
+  /** Finish any active mid-level scripted dialog complete after natural DialogBox queue drain. */
   finishScriptDialog?(): GameSnapshot | null;
+  /** Sync completed laptop task ids into the chapter runtime. */
+  syncLaptopTasks?(doneIds: readonly string[]): TickResult;
+  /** Complete any pending laptop tasks required by the active level once the laptop is carried (headless/automation). */
+  completePendingLaptopTasks?(): TickResult | null;
   /** Stop or restart the battle turn timer while the mini-editor or the laptop is open. */
   holdTurnTimer(hold: BattleHold, on: boolean): void;
   /** The player's turn ends now and the enemies act (the lab's Tick, the solver's timer runouts). Null outside a battle's player turn. */
@@ -102,12 +109,6 @@ export interface QuestBackup {
   missingTicks: number;
 }
 
-export interface BuiltImage {
-  tag: string;
-  baseImage: string;
-  exposePort: number;
-}
-
 export interface RunningContainer {
   id: string;
   name: string;
@@ -133,6 +134,7 @@ export interface LevelRuntime {
   levelCommands: number;
   levelDeaths: number;
   levelStartedAt: number;
+  docker: DockerState;
   builtImages: Map<string, BuiltImage>;
   containers: RunningContainer[];
   composeHealthyServices: Set<string>;
@@ -173,6 +175,12 @@ export interface LevelRuntime {
   roomSwept: boolean;
   /** Pickup ids whose `appearWhen` condition has triggered and dropped onto the ground. */
   droppedPickups: Set<string>;
+  /** Enemy ids whose `appearWhen` condition has triggered and spawned onto the stage. */
+  spawnedEnemies: Set<string>;
+  /** File/dir paths whose `appearWhen` condition has triggered and revealed in the VFS. */
+  spawnedFiles: Set<string>;
+  /** Visible paths observed by `ls`, `cd`, `cat`, `tree`, or `grep -r` on this level. */
+  discoveredPaths: Set<string>;
   /** Indexes of `script.triggers` entries that already fired on this level load. */
   triggersFired: Set<number>;
   /** True once the opening Vibecoder + Kiro conversation (`openingSec`) has finished or been skipped. */
@@ -246,7 +254,10 @@ export interface ChapterState {
   entryInventory: Inventory;
   /** Pickup types already collected once during this session (drives `manifest.onFirstPickup`). */
   seenPickups: Set<PickupType>;
+  /** Laptop task ids solved on the in-game clamshell laptop across levels in this run. */
+  laptopDone: Set<string>;
   pendingEditor: EditorOpenPayload | null;
+  pendingVim: VimOpenPayload | null;
   pendingManual: string | null;
   pendingMap: string | null;
   pendingSkin: TerminalSkinId | null;
@@ -259,7 +270,11 @@ export const CHAPTER_COMMANDS = [
   'mkdir',
   'edit',
   'nano',
+  'code',
+  'vim',
+  'vi',
   'docker',
+  'docker-compose',
   'hank',
   'grimoire',
   'bestiary',

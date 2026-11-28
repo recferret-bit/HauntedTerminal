@@ -86,7 +86,10 @@ function ruleLines(rule: Rule, cwd: string): ContextCommand[] {
     case 'html_css_valid':
       return [cmd('edit the page', `edit ${rel(rule.htmlPath, cwd)}`), cmd('edit the styles', `edit ${rel(rule.cssPath, cwd)}`)];
     case 'cart_js_valid':
+    case 'payment_js_valid':
       return [cmd('edit the script', `edit ${rel(rule.jsPath, cwd)}`)];
+    case 'laptop_tasks_done':
+      return [cmd('see inventory', 'inventory'), cmd('ask the ally', 'hank')];
     case 'docker_image_running':
       return [cmd('edit the Dockerfile', 'edit Dockerfile'), cmd('build the image', `docker build -t ${rule.imageTag} .`), cmd('run it', `docker run -d -p ${rule.port}:${rule.port} ${rule.imageTag}`)];
     case 'docker_compose_healthy':

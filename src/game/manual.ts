@@ -6,8 +6,8 @@ import type { Step } from './shell.js';
 
 export const COMMANDS = [
   'pwd', 'ls', 'cd', 'cat', 'readlink', 'find', 'tree', 'touch', 'rm', 'mv', 'cp', 'chmod', 'ln',
-  'echo', 'grep', 'wc', 'cut', 'rev', 'sed', 'head', 'tail', 'ps', 'top', 'kill', 'pkill',
-  'source', '.', 'kiro', 'kiro.d', 'help', 'man', 'manual', 'map', 'status', 'whoami', 'tutorial', 'clear', 'exit', 'logout',
+  'echo', 'grep', 'wc', 'cut', 'rev', 'sed', 'vim', 'vi', 'head', 'tail', 'ps', 'top', 'kill', 'pkill',
+  'docker', 'docker-compose', 'source', '.', 'kiro', 'kiro.d', 'help', 'man', 'manual', 'map', 'status', 'whoami', 'tutorial', 'clear', 'exit', 'logout',
   'inventory', 'inv', 'hold', 'restart-level', 'retry', 'skin',
 ];
 
@@ -17,7 +17,8 @@ export function helpText(hint: string): string {
     '  look   pwd  ls [-a -l]  tree [-a -L n]  cat  readlink  find [-name -type]  ps [aux]  top  status',
     '  move   cd <dir>  cd ..  cd ../../..  cd -',
     '  files  touch  rm [-r -f]  mv  cp  chmod  ln -s  echo',
-    '  text   grep [-h -c -i -v -n -r]  wc [-l]  cut -d -f  rev  sed [-i]  head  tail [-n]',
+    '  text   grep [-h -c -i -v -n -r]  wc [-l]  cut -d -f  rev  sed [-i]  head  tail [-n]  vim [-c ex] <file>',
+    '  stack  docker [ps -a | prune | build | run | logs]   docker compose [up -d | ps | logs | down | prune]',
     '  fight  kill [-9 -15 -STOP -CONT] <pid>  pkill <name>     (ps shows the PIDs)',
     '  loot   source <file>  or  . <file>   (*.cell heal, *.dimm RAM, *.img SSD backup)',
     '  ghost  kiro [scan | load <qwen|mistral|deepseek|llama> | crack <lock>]   cat <file> | kiro',
@@ -155,12 +156,20 @@ const MAN: Record<string, string[]> = {
     '  The Esc menu has the same picker. The choice is kept for the next visit.',
   ],
   mkdir: ['mkdir [-p] <dir>...: create directories. -p creates parent rooms too.'],
-  edit: ['edit <file>  (aliases: nano, vim, code): open the Split Code Mini-Editor (Ctrl+S saves).'],
+  edit: ['edit <file>  (aliases: nano, code): open the Split Code Mini-Editor (Ctrl+S saves).'],
+  vim: [
+    'vim [+<line>] [-R] [-c <ex>] <file>  (alias: vi): in-terminal modal editor.',
+    '  Normal: hjkl w b e 0 ^ $ gg G % f<c> u Ctrl-R . /search n N dd yy p P v V',
+    '  Insert: i a o O I A R   Return to Normal: Esc',
+    '  Ex:     :w  :q  :q!  :wq  :x  :%s/old/new/g  :set nu  :noh  :<line>',
+    '  Batch:  vim -c "%s/old/new/g" -c "wq" file',
+  ],
   docker: [
-    'docker: container image and Compose tools.',
-    '  docker build -t <tag> .              build a Dockerfile into an image.',
-    '  docker run -d -p <h>:<c> <tag>       launch a container with host:container port mapping.',
-    '  docker compose config | up -d        validate or start a multi-service stack.',
+    'docker: container lifecycle and Compose stack tools.',
+    '  docker ps [-a] | prune | system prune     list containers (inc. Exit 137 OOMKilled) or reclaim stopped/unused data.',
+    '  docker build -t <tag> . | images | run    build a Dockerfile into an image and start containers.',
+    '  docker logs <name> | start|stop|rm <name> inspect logs or control individual containers.',
+    '  docker compose up [-d] | ps | logs | down | prune  orchestrate multi-service Compose stacks.',
   ],
   hank: ['hank [status]: ask your greybeard ally for a Socratic hint, or audit the mission checklist.'],
   grimoire: ['grimoire [<command>]: inspect unlocked Unix, code and Docker commands.'],
@@ -180,7 +189,7 @@ MAN.logout = MAN.exit ?? [];
 MAN.retry = MAN['restart-level'] ?? [];
 MAN.restart = MAN['restart-level'] ?? [];
 MAN.nano = MAN.edit ?? [];
-MAN.vim = MAN.edit ?? [];
+MAN.vi = MAN.vim ?? [];
 MAN.code = MAN.edit ?? [];
 MAN['docker-compose'] = MAN.docker ?? [];
 MAN.dossier = MAN.bestiary ?? [];

@@ -30,6 +30,7 @@ export default async function terminalSuite({ load }) {
   const { COMMANDS } = await load('/src/game/manual.ts');
   const { applyChmodMode, LS_FLAGS_LOCKED_MESSAGE, reverseLines, wcStats } = await load('/src/game/unix-applets.ts');
   const { giveItem, starterInventory } = await load('/src/game/inventory.ts');
+  const { createVimState, stepVimKey } = await load('/src/game/vim.ts');
   const { CHAPTER_COMMANDS } = await load('/src/chapters/session-state.ts');
   const {
     BOOK_PAGES,
@@ -520,6 +521,68 @@ export default async function terminalSuite({ load }) {
             expect(sweep.code === 0 && sweep.output.includes('.sec_prop'), `${kind}: ls -la did not reveal hidden dotfile with tube_transistor`);
             expect(sweep.snapshot.inventory.held === 'tube_transistor', `${kind}: ls -la did not hold tube_transistor`);
             expect(sweep.events.some((e) => e.type === 'LANTERN_REVEAL'), `${kind}: ls -la did not emit LANTERN_REVEAL`);
+          },
+        ),
+    },
+    {
+      name: 'vim -c batch edits mutate files deterministically and docker compose enforces >=256m across memory syntaxes (both shells)',
+      build: () =>
+        fc.property(
+          shellKind,
+          fileName.filter(usable),
+          fc.integer({ min: 16, max: 1024 }),
+          fc.constantFrom('xmx', 'mem_limit', 'deploy'),
+          fc.constantFrom('m', 'M'),
+          (kind, fname, mb, style, unit) => {
+            const session = room(kind, { [fname]: 'val=BEFORE' });
+            const patch = session.exec(`vim -c '%s/BEFORE/AFTER/' -c 'wq' ${fname}`);
+            expect(patch.code === 0, `${kind}: vim -c patch failed: ${patch.stderr}`);
+            expect(session.exec(`cat ${fname}`).output === 'val=AFTER\n', `${kind}: vim -c output mismatch`);
+
+            const svcLine =
+              style === 'xmx'
+                ? `      JAVA_OPTS: "-Xmx${mb}${unit} --enable-preview"`
+                : style === 'mem_limit'
+                  ? `    mem_limit: ${mb}${unit}`
+                  : `    deploy:\n      resources:\n        limits:\n          memory: ${mb}${unit}\n        reservations:\n          memory: ${mb < 256 ? 512 : 64}M`;
+            const yml = [
+              'services:',
+              '  postgres:',
+              '    image: postgres:16',
+              '  java-api:',
+              '    image: eclipse-temurin:21',
+              ...(style === 'xmx' ? ['    environment:', svcLine] : [svcLine]),
+            ].join('\n');
+            const ymlSession = room(kind, {});
+            expect(ymlSession.exec("vim -c 'q!'").code === 0, `${kind}: vim -c q! must exit 0`);
+            const ymlSaved = ymlSession.saveEditableFile('docker-compose.yml', `${yml}\n`);
+            expect(!ymlSaved.stderr, `${kind}: failed writing compose: ${ymlSaved.stderr}`);
+            const up = ymlSession.exec('docker compose up -d');
+            const psAll = ymlSession.exec('docker ps -a');
+            if (mb < 256) {
+              expect(up.code !== 0, `${kind}: ${mb}${unit} (${style}) must crash with OOM`);
+              expect(/Exited \(137\)/.test(psAll.output), `${kind}: docker ps -a missing Exit 137`);
+              const pr = ymlSession.exec('docker prune');
+              expect(pr.code === 0 && !/Exited \(137\)/.test(ymlSession.exec('docker ps -a').output), `${kind}: prune missed exited pods`);
+            } else {
+              expect(up.code === 0, `${kind}: ${mb}${unit} (${style}) unexpectedly failed: ${up.stderr}`);
+              expect(/Up/.test(ymlSession.exec('docker ps').output), `${kind}: docker ps missing running pods`);
+            }
+          },
+        ),
+    },
+    {
+      name: 'vim insert mode preserves all motion characters literally across arbitrary text',
+      build: () =>
+        fc.property(
+          fc.array(fc.constantFrom(...'hjklwbe0^$G%ax \t'.split('')), { minLength: 1, maxLength: 24 }),
+          (chars) => {
+            const st = createVimState({ path: 'ins.txt', content: '' });
+            stepVimKey(st, 'i', {});
+            for (const ch of chars) stepVimKey(st, ch, {});
+            stepVimKey(st, '\x1b', {});
+            const expected = chars.map((c) => (c === '\t' ? '  ' : c)).join('');
+            expect(st.lines.join('\n') === expected, `insert dropped motion chars: got ${JSON.stringify(st.lines)}, want ${JSON.stringify(expected)}`);
           },
         ),
     },

@@ -3,6 +3,7 @@ import { animReactionsFor, ZONES, type AnimEventReaction } from '../procgen/inde
 import { eventLeadMs, fxCuesFor } from './event-fx.js';
 import { reportStage, setRest } from './stage-actor.js';
 import { clearCarried } from './stage-carry.js';
+import { clearComposeOomActors } from './stage-compose.js';
 import { HERO_WALK_MS, MAX_LEAD_MS } from './stage-const.js';
 import { handleCastEvent } from './stage-event-cast.js';
 import { handleCombatEvent } from './stage-event-combat.js';
@@ -24,6 +25,7 @@ export function enqueueStageEvent(stage: ComicStage, ev: KernelEvent): void {
     if (ev.type === 'FLOOR_ENTERED') {
       clearBubble(stage);
       clearCarried(stage);
+      clearComposeOomActors(stage);
       stage.xrayProcs = [];
       stage.xrayOn = false;
       noteFloorEntered(stage, ev);

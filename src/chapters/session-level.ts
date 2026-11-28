@@ -5,11 +5,12 @@ import { endBattle } from '../game/battle.js';
 import { rollOuch } from '../game/ouch.js';
 import { SSD_PER_BACKUP, maxHpFor } from '../game/bestiary.js';
 import { World } from '../game/entities.js';
+import { createDockerState } from '../game/docker.js';
 import type { EnemySpawn, PickupSpawn } from '../game/floors.js';
 import { lookup, makeRoot, type VNode } from '../game/tree.js';
 import type { LevelSpec } from './types.js';
 import { readMetagame, recordTelemetry } from './catalog.js';
-import { arrivalScript, evalCond, hiddenEnemyId, isPickupHidden, levelScript } from './script.js';
+import { arrivalScript, evalCond, isEnemyHidden, isPickupHidden, levelScript } from './script.js';
 import { applyPids, fillPidsDeep, fixedPids, rollPids } from './pids.js';
 import { ensureDirChain, placeFile, resolveTauntAgent, splitParentAndName, type ChapterState, type QuestBackup } from './session-state.js';
 import { grantManifestItemsUpTo, refreshExitGates } from './session-rules.js';
@@ -38,6 +39,9 @@ function levelSpawns(spec: LevelSpec): { enemySpawns: EnemySpawn[]; pickupSpawns
     buffer: e.buffer,
     helps: e.helps,
     ...(e.showIn ? { showIn: e.showIn } : {}),
+    ...(e.type === 'bug' && spec.winRules.some((r) => r.kind === 'payment_js_valid' && r.jsPath === e.path)
+      ? { customCodeRule: true }
+      : {}),
     ...pickSpatial(e),
     ...(e.socket ? { socket: e.socket } : {}),
     ...(e.model ? { model: e.model } : {}),
@@ -144,6 +148,7 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       levelCommands: 0,
       levelDeaths: 0,
       levelStartedAt: Date.now(),
+      docker: createDockerState(),
       builtImages: new Map(),
       containers: [],
       composeHealthyServices: new Set(),
@@ -168,6 +173,9 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       hintUses: new Map(),
       roomSwept: false,
       droppedPickups: new Set(),
+      spawnedEnemies: new Set(),
+      spawnedFiles: new Set(),
+      discoveredPaths: new Set(),
       triggersFired: new Set(),
       openingDone: false,
       dialogBusyUntilTick: 0,
@@ -177,8 +185,14 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       lab: { absorbed: {}, solved: new Set(), attempts: {}, hits: new Set() },
     };
     g.rt.world = new World(g.host, enemySpawns, pickupSpawns);
+    for (const f of spec.files) {
+      if (f.appearWhen && evalCond(g, f.appearWhen)) g.rt.spawnedFiles.add(f.path);
+    }
     for (const p of spec.pickups) {
       if (p.appearWhen && evalCond(g, p.appearWhen)) g.rt.droppedPickups.add(p.id);
+    }
+    for (const e of spec.enemies) {
+      if (e.appearWhen && evalCond(g, e.appearWhen)) g.rt.spawnedEnemies.add(e.id);
     }
     if (autoLantern) {
       g.rt.world.reveal(cwd, events);
@@ -193,7 +207,7 @@ export function loadLevel(g: ChapterState, idx: number, isRetry: boolean, events
       ...(spec.stage?.sfx?.enter ? { sfx: spec.stage.sfx.enter } : {}),
     });
     for (const present of g.rt.world.presentIn(spec.cwd)) {
-      if (present.id === hiddenEnemyId(g) || isPickupHidden(g, present.id)) continue;
+      if (isEnemyHidden(g, present.id) || isPickupHidden(g, present.id)) continue;
       events.push({
         type: 'ENTITY_SPAWNED',
         entityId: present.id,

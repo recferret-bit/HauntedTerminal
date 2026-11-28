@@ -33,6 +33,9 @@ function paint(play: Play, snap: GameSnapshot): void {
   // No terminal in his inventory (the tutorial start): no panel until it is given, then the visor boot.
   play.shell.setDialogLocked?.(Boolean(snap.openingDialog));
   syncTerminalPresence(play, snap);
+  if (play.laptopOverlay && !snap.inventory?.items.includes('laptop')) {
+    play.laptopOverlay.close(true);
+  }
   if (play.dom.manualBtnEl) {
     const hideManual = !snap.inventory?.items.includes('manual');
     play.dom.manualBtnEl.hidden = hideManual;
@@ -265,6 +268,12 @@ function exposePlayHooks(play: Play): void {
     tick: () => play.session.tick(),
     snapshot: () => play.session.snapshot(),
     events: () => play.eventLog,
+    completeLaptopTasks: () => {
+      const res = play.session.completePendingLaptopTasks?.();
+      if (!res) return false;
+      applyTick(play, res);
+      return true;
+    },
   };
   (window as unknown as { __editor?: unknown }).__editor = {
     isOpen: () => play.codeEditor?.isOpen() ?? false,
@@ -296,6 +305,7 @@ function exposePlayHooks(play: Play): void {
     state: () => play.laptopOverlay?.state() ?? null,
     open: () => play.events.emit({ kind: 'modal', modal: 'laptop', action: 'open' }),
     close: () => play.events.emit({ kind: 'modal', modal: 'laptop', action: 'close' }),
+    runTask: (id: string) => play.laptopOverlay?.runTask?.(id) ?? Promise.resolve(false),
   };
   (window as unknown as { __term?: unknown }).__term = {
     submit: (line: string) => play.shell.submit(line),

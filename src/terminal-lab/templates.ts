@@ -8,6 +8,8 @@ export const STOREFRONT_CSS = '/* Telemetry stylesheet */\nbody {\n  background:
 
 export const CART_JS = "// VRAM allocation calculator (cart.js)\nexport function computeCartTotal(price, shipping, qty = 1) {\n  if (qty <= 0) return 0;\n  // BUG: raw string concatenation so ('549', '15', 1) returns '54915'!\n  return price + shipping;\n}\n";
 
+export const PAYMENT_JS = "// Payment processor (code/payment.js)\nfunction processPayment(amountMinor) {\n  // BUG: entered 100 minor units returns 100 instead of dividing by 100 and rounding down!\n  return amountMinor;\n}\n\nconsole.log('100 minor ->', processPayment(100));\n";
+
 export const DOCKERFILE = '# Inference worker container\nFROM node:99-vibe-turbo\nWORKDIR /app\nCOPY . .\nEXPOSE 9999\nCMD ["node", "broken_server.js"]\n';
 
 export const SERVER_JS = "// Worker HTTP node (port 3000)\nconsole.log('worker listening on :3000');\n";

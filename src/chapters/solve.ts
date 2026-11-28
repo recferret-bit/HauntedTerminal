@@ -58,6 +58,11 @@ export function solvePack(pack: ChapterPack, options: SolveOptions = {}): SolveR
           if (forced) entry.deaths += forced.events.filter((e) => e.type === 'PLAYER_RESPAWNED').length;
         }
         if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+        if (session.snapshot().pendingLaptopTasks?.length) {
+          const lapRes = session.completePendingLaptopTasks?.();
+          if (lapRes) entry.deaths += lapRes.events.filter((e) => e.type === 'PLAYER_RESPAWNED').length;
+          if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+        }
         const res = session.exec(cmd);
         entry.commands += 1;
         entry.lastOutput = res.output.slice(-400);

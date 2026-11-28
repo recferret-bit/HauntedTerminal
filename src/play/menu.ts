@@ -79,6 +79,7 @@ export function mountPlayMenu(play: Play): void {
 
   window.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || e.repeat) return;
+    if (play.shell?.isVimOpen?.()) return;
     if (play.laptopOverlay) {
       e.preventDefault();
       e.stopPropagation();

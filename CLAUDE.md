@@ -61,6 +61,7 @@ When a prompt may be a feature or big refactor, output the size-test verdict on 
 `.kiro/hooks/*.json` do not fire automatically in Claude Code unless mirrored in `.claude/settings.json`. Enforce their guards and checks manually:
 
 ### Pre-Write Guards (`guard-chapter-files`, `guard-spec-first`)
+- **Share pure engine modules**: keep POSIX, Kiro, tree, modal `vim` (`src/game/vim*.ts`, `src/ui/terminal-vim.ts`), and `docker` / `docker compose` (`src/game/docker*.ts`) logic shared across Classic, Chapter, and Terminal Lab shells cleanly under `check-layers.mjs`.
 - **Never edit generated outputs**: do not touch `src/chapters/generated/**` or `src/cinematic/generated/**`. Edit `chapters/` or `comix/` and run `generate-chapter.mjs` or `generate-comix.mjs`.
 - **Never start new code without an approved spec**: do not create a new `src/<area>/` directory or a new `pages/*.html` page unless a `.kiro/specs/<name>/` spec naming that path has `Status: approved` or `done`.
 - **Confirm architectural/vocabulary edits first**: before editing `scripts/quality/check-layers.mjs` or `vite.config.ts`, confirm the layer/page/route change with the user and keep `.kiro/steering/architecture.md` / `structure.md` in sync. Before extending a spec vocabulary, apply the **four-place rule** together in one change:
@@ -90,7 +91,7 @@ Always run before declaring work done (plus targeted suites for areas touched):
   - Comix/editor: `node .kiro/skills/comix-implementer/scripts/verify-comix.mjs`, `node scripts/harness/comix-editor-smoke.mjs`
   - Terminal Lab: `node scripts/harness/terminal-lab-unit.mjs`, `node scripts/harness/terminal-lab-api-test.mjs`, `node scripts/harness/terminal-lab.mjs --all` (`--validate`, `--from-level`), `node scripts/harness/terminal-lab-smoke.mjs` (1600x950 and `--width 1280 --height 820`)
   - Interactive Field Manual (`/manual`, `F1`, `manual`): `node scripts/harness/manual-unit.mjs`, `node scripts/harness/manual-smoke.mjs`. Spec: `.kiro/specs/inventory/items/manual/`
-  - Laptop Lab: `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/laptop-lab.mjs --verify`, `node scripts/harness/laptop-lab-smoke.mjs` (1600x950 and `--width 1280 --height 820`)
+  - Laptop Lab: `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/laptop-lab.mjs --verify`, `node scripts/harness/laptop-lab-smoke.mjs` (1600x950 and `--width 1280 --height 820`), `node scripts/harness/play-laptop-smoke.mjs` (1600x950 and `--width 1280 --height 820`). Specs: `.kiro/specs/play-laptop-overlay/`, `.kiro/specs/laptop-rework/`, `.kiro/specs/level-06-laptop-payment-rework/`
   - Landing tabs: `node scripts/harness/hub-unit.mjs` and `node scripts/desktop/landing-smoke.mjs` (Home, Desktop Builds, Achievements, Comix pages). Spec: `.kiro/specs/landing-tabs/`
   - Visual audit (qa): `node scripts/harness/visual-audit.mjs` (`--screens`, `--sizes`, `--selftest`; report only, exit 1 = flags to explain); baselines in `docs/qa/baselines/` are approved by a person only (`--update`). Spec: `.kiro/specs/qa-visual-audit/`
   - MCP: `node scripts/harness/forge-unit.mjs` (`npm run quality:mcp`); `node scripts/harness/mcp-probe.mjs` (manual, real Kiro CLI)

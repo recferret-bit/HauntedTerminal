@@ -77,7 +77,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
     id: 'full_stack_fixer',
     steamApiName: 'ACH_FULL_STACK_FIXER',
     title: 'Full-Stack Firefighter',
-    description: 'Clear HTML/CSS, JavaScript, Dockerfile, and Docker Compose repair sectors.',
+    description: 'Clear JavaScript, Dockerfile, and Docker Compose repair sectors.',
     category: 'CRAFT',
     icon: 'FX',
   },
@@ -153,7 +153,7 @@ export const ACHIEVEMENT_SPECS: readonly AchievementSpec[] = [
 ];
 
 const SPEC_BY_ID = new Map(ACHIEVEMENT_SPECS.map((s) => [s.id, s]));
-const REQUIRED_STACK_MECHANICS: readonly ChapterMechanic[] = ['html-css', 'terminal-code', 'docker-image', 'docker-compose'];
+const REQUIRED_STACK_MECHANICS: readonly ChapterMechanic[] = ['terminal-code', 'docker-image', 'docker-compose'];
 const REQUIRED_HUB_CORES = ['qwen', 'deepseek', 'llama'] as const;
 const ACHIEVEMENTS_STORAGE_KEY = 'out-of-credits:achievements:v1';
 /** Items and pickups of the Tensor GPU ritual: not part of the "full loadout" and "hardware hoarder" trophies (their Steam text is fixed). */

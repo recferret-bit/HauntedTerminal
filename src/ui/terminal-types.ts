@@ -1,4 +1,6 @@
 import type { Terminal } from '@xterm/xterm';
+import type { VimOpenPayload } from '../game/vim-types.js';
+import type { VimUiHooks } from './terminal-vim.js';
 
 export interface ShellHooks {
   /** Run one line. Return the text to print (ANSI allowed, \n line ends) and whether to clear first. */
@@ -37,6 +39,9 @@ export interface Shell {
   /** Lock keyboard/paste input while an opening Vibecoder + Kiro conversation plays (without pausing the game clock or marking `busy()`). */
   setDialogLocked?(on: boolean): void;
   readonly dialogLocked?: boolean;
+  /** Enter alternate-screen modal Vim editor inside xterm.js until :q / :wq / :x exits. */
+  openVim?(payload: VimOpenPayload, hooks: VimUiHooks): void;
+  isVimOpen?(): boolean;
   fit(): void;
   focus(): void;
   blur(): void;

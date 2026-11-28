@@ -22,7 +22,7 @@ import { writeRedirect } from './session-redirect.js';
 import { finishTutorial, firstPickupScript, isNodeHidden } from './script.js';
 import { levelBannerText, loadLevel } from './session-level.js';
 import { cmdHank } from './session-meta.js';
-import { allWinRulesMet, refreshExitGates, sinkIntoNull, unfinishedObjectives } from './session-rules.js';
+import { allWinRulesMet, markDiscovered, refreshExitGates, sinkIntoNull, unfinishedObjectives } from './session-rules.js';
 import { riddleRead } from './session-riddle.js';
 import { cmdGrepRecursive } from './session-search.js';
 
@@ -53,6 +53,7 @@ export function cmdLs(g: ChapterState, args: string[]): Step {
       return okStep('', events, 1, `ls: cannot access '${targetPath}': ${res.error ?? 'No such file or directory'}\n`);
     }
     if (res.node.kind !== 'dir') {
+      markDiscovered(g, res.node);
       return okStep(`${longFmt ? longRow(res.node) : res.node.name}\n`);
     }
     if ((res.node.mode & 0o400) === 0) {
@@ -82,6 +83,7 @@ export function cmdLs(g: ChapterState, args: string[]): Step {
     const entries = Array.from(res.node.children.values())
       .filter((c) => !isNodeHidden(g, c) && (showAll || !c.name.startsWith('.')))
       .sort((a, b) => a.name.localeCompare(b.name));
+    markDiscovered(g, res.node, entries);
 
     if (longFmt) {
       const lines = entries.map(longRow);
@@ -100,9 +102,9 @@ export function cmdCd(g: ChapterState, args: string[]): Step {
     }
 
     const res = resolve(g.rt.cwd, target, true);
-    if (!res.node) {
-      if (res.denied) events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.denied.id, command: 'cd' });
-      return okStep('', events, 1, `bash: cd: ${target}: ${res.error}\n`);
+    if (!res.node || isNodeHidden(g, res.node)) {
+      if (!res.node && res.denied) events.push({ type: 'PERMISSION_DENIED_RATTLE', targetId: res.denied.id, command: 'cd' });
+      return okStep('', events, 1, `bash: cd: ${target}: ${res.node ? 'No such file or directory' : res.error}\n`);
     }
     if (res.node.kind !== 'dir') {
       return emptyStep(1, `bash: cd: ${target}: Not a directory\n`);
@@ -164,6 +166,7 @@ export function cmdCd(g: ChapterState, args: string[]): Step {
 
     const fromId = g.rt.cwd.id;
     g.rt.cwd = res.node;
+    markDiscovered(g, res.node);
     const stageEntry = g.rt.spec.stage?.entryPort;
     const stageEntrySfx = stageEntry && typeof stageEntry === 'object' ? stageEntry.sfx : undefined;
     const stageEntryModel = stageEntry && typeof stageEntry === 'object' ? stageEntry.model : undefined;
@@ -230,6 +233,7 @@ export function cmdCat(g: ChapterState, args: string[], stdin: string): Step {
       }
       const full = absPath(res.node);
       g.rt.filesRead.add(full);
+      markDiscovered(g, res.node);
       events.push({ type: 'VIBECODER_ACTION', action: 'read', command: 'cat', targetEntityId: g.rt.world.entityOf(res.node.id) });
       outText += res.node.content;
     }

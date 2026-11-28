@@ -88,6 +88,10 @@ function tasksForRule(g: ChapterState, rule: WinRule): HintTask[] {
       return [{ label: `Repair layout and controls in ${baseName(rule.htmlPath)} and ${baseName(rule.cssPath)}`, done }];
     case 'cart_js_valid':
       return [{ label: `Fix the calculation bug in ${baseName(rule.jsPath)}`, done }];
+    case 'payment_js_valid':
+      return [{ label: `Fix minor-to-major rounding in ${baseName(rule.jsPath)}`, done }];
+    case 'laptop_tasks_done':
+      return [{ label: `Complete the ${rule.tasks.length} basic JS Pad warmups on the laptop`, done }];
     case 'docker_image_running':
       return [{ label: `Fix Dockerfile and run ${rule.imageTag} on port ${rule.port}`, done }];
     case 'docker_compose_healthy':

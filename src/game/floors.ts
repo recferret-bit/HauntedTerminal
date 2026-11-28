@@ -47,6 +47,8 @@ export interface EnemySpawn extends SceneTransform {
   helps?: string;
   /** Extra rooms (absolute paths) where it is drawn, e.g. the mimic seen from the hall. */
   showIn?: string[];
+  /** Chapter bug gated by a functional code winRule rather than `'BUG'` substring removal. */
+  customCodeRule?: boolean;
   x?: number;
   y?: number;
   socket?: RoomSocketId;

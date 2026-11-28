@@ -15,13 +15,21 @@ import {
   type TurnReason,
 } from '../game/battle.js';
 import { absPath } from '../game/tree.js';
+import { isEnemyHidden } from './script.js';
 import { hashSeed, resolveTauntAgent, type ChapterState } from './session-state.js';
 import { enemiesHeld, worldStep } from './session-world.js';
 
 /** The enemies that would fight the hero now; none while the level holds its enemies. */
 function currentThreats(g: ChapterState): BattleThreat[] {
   if (enemiesHeld(g)) return [];
-  return g.rt.world.threats().map((e) => ({ id: e.id, type: e.type, boss: e.boss }));
+  return g.rt.world.threats().filter((e) => !isEnemyHidden(g, e.id)).map((e) => ({ id: e.id, type: e.type, boss: e.boss }));
+}
+
+/** Ends an active battle immediately if non-shell actions (like saving code in an editor) killed the last threat. */
+export function syncClearedBattle(g: ChapterState, events: KernelEvent[]): void {
+  if (g.battle.phase !== 'idle' && currentThreats(g).length === 0) {
+    endBattle(g.battle, 'cleared', events);
+  }
 }
 
 /** idle -> intro when threats are in the hero's room; returns the terminal lines. Battle #1 of a level uses its Big Four `agentTaunt` when present. */
@@ -40,6 +48,18 @@ export function maybeBeginBattle(g: ChapterState, events: KernelEvent[]): string
       agent: who === 'kiro' ? undefined : who,
       taunt: clean || raw,
     };
+  }
+  const hasCustomBug = threats.some((t) => g.rt.world.enemies.find((e) => e.id === t.id)?.customCodeRule);
+  if (hasCustomBug) {
+    const rule = g.rt.spec.winRules.find((r) =>
+      r.kind === 'payment_js_valid' || r.kind === 'cart_js_valid' || r.kind === 'html_css_valid');
+    const action = g.inventory.items.includes('laptop') ? 'open Laptop [F4] -> JS Pad, or edit/sed' : 'use edit/sed to fix the logic';
+    const target = rule
+      ? (rule.kind === 'html_css_valid' ? rule.htmlPath : rule.jsPath).split('/').pop() ?? ''
+      : '';
+    const where = target ? ` in ${target}` : '';
+    const advice = rule ? `BUG${where}: ${rule.description} (${action})` : `BUG: fix the buggy code file (${action})`;
+    override = { ...override, advice };
   }
   g.rt.levelBattles += 1;
   beginBattle(g.battle, threats, seed, events, override);

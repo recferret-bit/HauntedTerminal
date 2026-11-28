@@ -56,3 +56,7 @@ Capability: reworks the developer's CSS 3D clamshell laptop (`src/laptop/`) and 
 - Unit & lab verification: `node scripts/harness/laptop-unit.mjs`, `node scripts/harness/laptop-lab.mjs --verify`
 - Headless Chrome E2E: `node scripts/harness/laptop-lab-smoke.mjs --width 1280 --height 820`, `node scripts/harness/play-laptop-smoke.mjs` (both 1600x950 and `--width 1280 --height 820`: auto-open on `/play` launch, physical Power button visible and boots/shuts down, transparent background in `/play`, outside click closes overlay)
 - Project gates: `npm run quality`, `npm run build`
+
+## Later changes
+
+- `.kiro/specs/level-06-laptop-payment-rework/` adds optional `roomTask`, `roomNotice`, `onTaskProgress`, and `onRoomChange` hooks in Laptop `Quests` & `JS Pad` (binding Level 6 Phase 1 warmups and discovery-gated `code/payment.js` repair) while keeping the `/play` overlay background transparent and keeping the battle turn timer running.

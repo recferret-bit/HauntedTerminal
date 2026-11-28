@@ -17,7 +17,7 @@ import { colourise, mountShell } from '../ui/terminal.js';
 import { mountVisualLab } from '../ui/visual-lab.js';
 import { holdForComix, mountPlayAudio, syncPlayAudio } from './audio-sync.js';
 import { routeModalAction } from './events.js';
-import { closeLaptop, isLaptopOpen, openLaptop } from './laptop.js';
+import { clearPlayLaptopProgress, closeLaptop, isLaptopOpen, openLaptop, saveRoomFileToPlay } from './laptop.js';
 import { recordExec } from './lab.js';
 import { finishPlayLevelTransition } from './loop.js';
 import { mountPlayMenu } from './menu.js';
@@ -49,6 +49,32 @@ function runShellLine(play: Play, line: string): { output: string; clear?: boole
         play.codeEditor.open(edReq);
         play.session.bus?.emit({ kind: 'menu', action: 'open' });
       }
+    }
+    const vimReq = session.consumeVimRequest?.();
+    if (vimReq && play.shell.openVim) {
+      session.holdTurnTimer?.('editor', true);
+      play.session.bus?.emit({ kind: 'menu', action: 'open' });
+      play.shell.openVim(vimReq, {
+        onSave: (filePath, content) => {
+          if (!session.saveEditableFile) return { ok: false, error: 'save unavailable' };
+          const savedRes = session.saveEditableFile(filePath, content);
+          session.bus?.emit({ kind: 'command', result: savedRes.stderr ? 'fail' : 'ok' });
+          play.events.emit({ kind: 'apply-events', events: savedRes.events, snap: savedRes.snapshot, printed: savedRes.output });
+          if (savedRes.stderr) return { ok: false, error: savedRes.stderr.trim() };
+          return { ok: true, message: savedRes.output };
+        },
+        onRead: (filePath) => {
+          if (!session.readEditableFile) return { ok: false, error: 'reload unavailable' };
+          const r = session.readEditableFile(filePath);
+          return r.ok ? { ok: true, content: r.content, exists: r.exists ?? true } : { ok: false, error: r.error };
+        },
+        onExit: (pendingOutput) => {
+          session.bus?.emit({ kind: 'menu', action: 'close' });
+          session.holdTurnTimer?.('editor', false);
+          if (pendingOutput) play.shell.printAbove(colourise(pendingOutput));
+          if (!play.editorMode && play.lifecycle.phase() === 'play') window.setTimeout(() => play.shell.focus(), 0);
+        },
+      });
     }
     const skinReq = session.consumeSkinRequest?.();
     if (skinReq) play.events.emit({ kind: 'skin-change', id: skinReq });
@@ -99,13 +125,7 @@ export function mountPlayShell(play: Play): void {
   const dock = play.dom.termDockEl;
   if (pane && dock) {
     play.codeEditor = mountCodeEditor(pane, dock, {
-      onSave: (fileName, content) => {
-        if (!isChapterSession(play.session)) return;
-        const res = play.session.saveEditableFile(fileName, content);
-        play.session.bus?.emit({ kind: 'command', result: res.stderr ? 'fail' : 'ok' });
-        if (res.output) play.shell.printAbove(colourise(res.output, res.stderr));
-        play.events.emit({ kind: 'apply-events', events: res.events, snap: res.snapshot, printed: res.output });
-      },
+      onSave: (fileName, content) => saveRoomFileToPlay(play, fileName, content),
       onMove: () => play.session.bus?.emit({ kind: 'menu', action: 'move' }),
       onClose: () => {
         play.session.bus?.emit({ kind: 'menu', action: 'close' });
@@ -147,7 +167,7 @@ function openHintDialog(play: Play): void {
 function openMenuModal(play: Play): void {
   if (!play.menu) return;
   const statsOpen = play.dom.statsEl.classList.contains('open');
-  if (!play.lifecycle.canOpenEscMenu(statsOpen) || play.codeEditor?.isOpen()) return;
+  if (!play.lifecycle.canOpenEscMenu(statsOpen) || play.codeEditor?.isOpen() || play.shell?.isVimOpen?.()) return;
   closeOtherModals(play, 'menu');
   play.menu.open(play.session.snapshot());
 }
@@ -184,6 +204,7 @@ function closeChapterMap(play: Play): void {
 
 function playAgain(play: Play, skip: boolean): void {
   if (play.lifecycle.phase() !== 'stats') return;
+  clearPlayLaptopProgress();
   play.skipIntroPref = skip;
   writeSkipPref(skip);
   play.hud?.hideStats();

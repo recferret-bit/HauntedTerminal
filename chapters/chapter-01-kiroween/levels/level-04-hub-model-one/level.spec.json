@@ -7,7 +7,7 @@
   "floorTheme": 1,
   "roomSeed": 4,
   "mechanic": "hub",
-  "exitDir": "/home/dev/sector_ui_grid",
+  "exitDir": "/home/dev/sector_compose_cluster",
   "summary": "At the Matrix Hub, the cigarette-smoking Old Bearded Coder gifts you the PCB Motherboard Map (`F3` / `map`) and Unix Field Manual (`F1` / `manual`), then takes your scavenged parts to reboot Kiro.d with `kiro load qwen`—disabling Anti-Gravy!",
   "files": [
     {
@@ -15,7 +15,7 @@
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. Worked in enterprise for decades, kid. Take my PCB Motherboard Map (`map` / `F3`) and Unix Field Manual (`manual` / `F1`)—you'll need both deeper in the machine.\"\nOLD BEARDED CODER: \"And nice haul of RAM + GPU chips! Let's slot them into my server and reboot Kiro.d!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro.d's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro.d disable Anti-Gravy of the Big Four, then step through `cd sector_ui_grid`!\n",
+      "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. Worked in enterprise for decades, kid. Take my PCB Motherboard Map (`map` / `F3`) and Unix Field Manual (`manual` / `F1`)—you'll need both deeper in the machine.\"\nOLD BEARDED CODER: \"And nice haul of RAM + GPU chips! Let's slot them into my server and reboot Kiro.d!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro.d's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro.d disable Anti-Gravy of the Big Four, then step through `cd sector_compose_cluster`!\n",
       "x": 1.65,
       "model": "prop.file"
     },
@@ -27,7 +27,7 @@
       "model": "npc.greybeard_rig"
     },
     {
-      "path": "/home/dev/sector_ui_grid",
+      "path": "/home/dev/sector_compose_cluster",
       "kind": "dir",
       "mode": 0,
       "x": -0.82,
@@ -121,7 +121,7 @@
     "cat server_rack.conf",
     "cat dad.tty.sock",
     "kiro load qwen",
-    "cd sector_ui_grid"
+    "cd sector_compose_cluster"
   ],
   "script": {
     "arrival": [

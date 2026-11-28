@@ -1,8 +1,10 @@
 import { FitAddon } from '@xterm/addon-fit';
 import { Terminal } from '@xterm/xterm';
-import { createLineState, drain, enqueue, newPrompt, printAbove, setBuffer, type LineState } from './terminal-draw.js';
+import type { VimOpenPayload } from '../game/vim-types.js';
+import { createLineState, drain, enqueue, newPrompt, printAbove, setBuffer, writeRunOutput, type LineState } from './terminal-draw.js';
 import { handleKey } from './terminal-keys.js';
 import type { Shell, ShellHooks } from './terminal-types.js';
+import { mountTerminalVim, type VimController, type VimUiHooks } from './terminal-vim.js';
 
 /**
  * The shell line editor on top of xterm.js: prompt, cursor editing, history, Tab completion, paste,
@@ -80,17 +82,87 @@ function syncInputTabStop(st: LineState, gate: { available: boolean; dialogLocke
   }
 }
 
-function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: { available: boolean; dialogLocked: boolean }): Shell {
+function runTypeOut(st: LineState, text: string, ms: number): Promise<void> {
+  st.cancelType?.();
+  const tokens = text.replace(/\r?\n/g, '\r\n').match(TYPE_TOKENS_RX) ?? [];
+  if (tokens.length === 0) return Promise.resolve();
+  st.typing = true;
+  const frames = Math.max(1, Math.round(ms / 16));
+  const per = Math.max(1, Math.ceil(tokens.length / frames));
+  let i = 0;
+  return new Promise<void>((resolve) => {
+    let timer = 0;
+    let cancelled = false;
+    st.cancelType = () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      st.typing = false;
+      st.cancelType = null;
+      resolve();
+    };
+    const step = () => {
+      if (cancelled) return;
+      st.term.write(tokens.slice(i, i + per).join(''));
+      i += per;
+      if (i < tokens.length) timer = window.setTimeout(step, 16);
+      else {
+        st.typing = false;
+        st.cancelType = null;
+        resolve();
+      }
+    };
+    step();
+  });
+}
+
+interface ShellGate {
+  available: boolean;
+  dialogLocked: boolean;
+  activeVim: VimController | null;
+  pendingAbove: string[];
+  inRun: boolean;
+  deferredVim: { payload: VimOpenPayload; hooks: VimUiHooks } | null;
+  st: LineState | null;
+}
+
+function mountVimNow(st: LineState, gate: ShellGate, payload: VimOpenPayload, hooks: VimUiHooks): void {
+  gate.activeVim?.close();
+  gate.activeVim = mountTerminalVim(st.term, payload, {
+    onSave: hooks.onSave,
+    onRead: hooks.onRead,
+    onExit(pendingOutput) {
+      gate.activeVim = null;
+      const buffered = gate.pendingAbove.splice(0);
+      for (const line of buffered) printAbove(st, line);
+      hooks.onExit(pendingOutput);
+      if (!st.blocked && !st.promptShown) newPrompt(st);
+      if (!st.blocked) drain(st);
+    },
+  });
+}
+
+function shellApi(
+  st: LineState,
+  fitAddon: FitAddon,
+  panel: HTMLElement,
+  gate: ShellGate,
+): Shell {
   syncInputTabStop(st, gate);
   return {
     term: st.term,
     submit: (line: string) => enqueue(st, line),
-    printAbove: (text: string) => printAbove(st, text),
+    printAbove: (text: string) => {
+      if (gate.activeVim) {
+        if (text) gate.pendingAbove.push(text);
+        return;
+      }
+      printAbove(st, text);
+    },
     setBlocked(next: boolean) {
       if (next === st.blocked) return;
       st.blocked = next;
       syncInputTabStop(st, gate);
-      if (!st.blocked) {
+      if (!st.blocked && !gate.activeVim) {
         drain(st);
         if (!st.promptShown && st.queue.length === 0) newPrompt(st);
       }
@@ -98,40 +170,13 @@ function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: {
     get blocked() {
       return st.blocked;
     },
-    busy: () => st.blocked || st.queue.length > 0 || st.draining || st.typing,
-    typeOut(text: string, ms: number) {
-      st.cancelType?.();
-      const tokens = text.replace(/\r?\n/g, '\r\n').match(TYPE_TOKENS_RX) ?? [];
-      if (tokens.length === 0) return Promise.resolve();
-      st.typing = true;
-      const frames = Math.max(1, Math.round(ms / 16));
-      const per = Math.max(1, Math.ceil(tokens.length / frames));
-      let i = 0;
-      return new Promise<void>((resolve) => {
-        let timer = 0;
-        let cancelled = false;
-        st.cancelType = () => {
-          cancelled = true;
-          window.clearTimeout(timer);
-          st.typing = false;
-          st.cancelType = null;
-          resolve();
-        };
-        const step = () => {
-          if (cancelled) return;
-          st.term.write(tokens.slice(i, i + per).join(''));
-          i += per;
-          if (i < tokens.length) timer = window.setTimeout(step, 16);
-          else {
-            st.typing = false;
-            st.cancelType = null;
-            resolve();
-          }
-        };
-        step();
-      });
-    },
+    busy: () => st.blocked || st.queue.length > 0 || st.draining || st.typing || gate.activeVim !== null,
+    typeOut: (text: string, ms: number) => runTypeOut(st, text, ms),
     reset(banner?: string) {
+      gate.activeVim?.close();
+      gate.activeVim = null;
+      gate.deferredVim = null;
+      gate.pendingAbove.length = 0;
       st.cancelType?.();
       st.term.reset();
       st.promptShown = false;
@@ -146,7 +191,7 @@ function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: {
     },
     setInput(text: string) {
       if (gate.dialogLocked) return;
-      if (!st.blocked && st.queue.length === 0 && !st.draining) {
+      if (!st.blocked && !gate.activeVim && st.queue.length === 0 && !st.draining) {
         if (!st.promptShown) newPrompt(st);
         setBuffer(st, text);
       } else {
@@ -156,7 +201,18 @@ function shellApi(st: LineState, fitAddon: FitAddon, panel: HTMLElement, gate: {
     fit() {
       try {
         fitAddon.fit();
+        gate.activeVim?.render();
       } catch { /* host hidden */ }
+    },
+    openVim(payload, hooks) {
+      if (gate.inRun) {
+        gate.deferredVim = { payload, hooks };
+        return;
+      }
+      mountVimNow(st, gate, payload, hooks);
+    },
+    isVimOpen() {
+      return gate.activeVim !== null;
     },
     setAvailable(on: boolean, pop = true) {
       if (on === gate.available) return;
@@ -200,8 +256,38 @@ const MODIFIER_KEYS = new Set(['Shift', 'Control', 'Alt', 'Meta', 'AltGraph', 'C
 
 export function mountShell(host: HTMLElement, hooks: ShellHooks): Shell {
   const { term, fitAddon } = openTerm(host);
-  const st = createLineState(term, hooks);
-  const gate = { available: true, dialogLocked: false };
+  const gate: ShellGate = {
+    available: true,
+    dialogLocked: false,
+    activeVim: null,
+    pendingAbove: [],
+    inRun: false,
+    deferredVim: null,
+    st: null,
+  };
+  const wrappedHooks: ShellHooks = {
+    ...hooks,
+    run(line) {
+      gate.inRun = true;
+      gate.deferredVim = null;
+      try {
+        const res = hooks.run(line);
+        const req = (gate as ShellGate).deferredVim;
+        if (req && gate.st) {
+          gate.deferredVim = null;
+          writeRunOutput(gate.st, res);
+          mountVimNow(gate.st, gate, req.payload, req.hooks);
+          return { output: '' };
+        }
+        return res;
+      } finally {
+        gate.inRun = false;
+      }
+    },
+  };
+  const st = createLineState(term, wrappedHooks);
+  gate.st = st;
+  st.isModalOpen = () => gate.activeVim !== null;
   const panel = host.closest<HTMLElement>('#terminal-bezel') ?? host;
   if (!panel.querySelector('.tty-dialog-lock-note')) {
     const lockNote = document.createElement('div');
@@ -225,6 +311,10 @@ export function mountShell(host: HTMLElement, hooks: ShellHooks): Shell {
   }
   term.onData((data) => {
     if (st.blocked || !gate.available || gate.dialogLocked) return;
+    if (gate.activeVim) {
+      gate.activeVim.onData(data);
+      return;
+    }
     handleKey(st, data, keyRepeat);
   });
   return shellApi(st, fitAddon, panel, gate);

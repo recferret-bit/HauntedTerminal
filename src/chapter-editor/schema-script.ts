@@ -27,6 +27,7 @@ export const COND_VARIANTS = (): Variants<ScriptCond['kind']> => ({
   tutorial_skipped: [],
   dialog_done: [],
   flag: [t('name', 'Flag name', { mono: true })],
+  laptop_tasks_done: [{ type: 'strings', key: 'tasks', label: 'Laptop task ids (one per line)' }],
   not: [{ type: 'union', key: 'of', label: 'Negated condition', union: COND_VARIANTS }],
   any: [{ type: 'array', key: 'of', label: 'Any of', item: { union: COND_VARIANTS, title: condTitle } }],
   all: [{ type: 'array', key: 'of', label: 'All of', item: { union: COND_VARIANTS, title: condTitle } }],
@@ -35,6 +36,7 @@ export const COND_VARIANTS = (): Variants<ScriptCond['kind']> => ({
 export function condTitle(c: Record<string, unknown>): string {
   const flags = c.kind === 'ran_command' && c.flags ? ` [${String(c.flags)}]` : '';
   const detail = c.name ?? c.path ?? c.enemyId ?? c.core ?? c.item
+    ?? (Array.isArray(c.tasks) ? c.tasks.join(', ') : undefined)
     ?? (Array.isArray(c.of) ? `${c.of.length} conditions` : c.of && typeof c.of === 'object' ? condTitle(c.of as Record<string, unknown>) : '');
   return `${String(c.kind)}${detail ? `: ${String(detail)}${flags}` : ''}`;
 }

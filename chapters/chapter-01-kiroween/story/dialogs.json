@@ -46,30 +46,30 @@
       "hankRungs": [
         "Old Bearded Coder (*smoking a cigarette at his Matrix CRT*): \"Keep that Motherboard Map (`F3` / `map`) and Unix Field Manual (`F1` / `manual`) handy, kid! Now inspect `cat server_rack.conf`.\"",
         "Old Bearded Coder: \"Talk to me via `cat dad.tty.sock`, then run `kiro load qwen` so we slot your scavenged parts into my server and silence Anti-Gravy!\"",
-        "Old Bearded Coder: \"Run `cat server_rack.conf`, `cat dad.tty.sock`, and `kiro load qwen` to boot Open-Weight Model #1 and disable Anti-Gravy, then `cd sector_ui_grid`!\""
+        "Old Bearded Coder: \"Run `cat server_rack.conf`, `cat dad.tty.sock`, and `kiro load qwen` to boot Open-Weight Model #1 and disable Anti-Gravy, then `cd sector_compose_cluster`!\""
       ],
       "agentTaunt": "ANTI-GRAVY: \"Wait—that bearded fossil just gave him a Map and a Field Manual, AND he is wiring local GPU chips?!\"",
       "completion": "SUPER COOL! Map & Field Manual unlocked, Kiro.d reboots with Qwen-Coder-7B, and ANTI-GRAVY IS DISABLED!"
     },
     "level-05-task-ui-grid": {
-      "banner": "LEVEL 05 // UI GRID: Anti-Gravy is gone, but Codec, Gork & Clod mock you! Repair HTML+CSS & grab RAM + GPU.",
+      "banner": "LEVEL 05 // COMPOSE CLUSTER: Reveal `.logs/` (`ls -la`), diagnose Java heap OOM, raise memory in `vim`, and run `docker compose up -d`!",
       "hankRungs": [
-        "Old Bearded Coder: \"Codec broke the hardware monitor UI! Check `storefront.css` and `index.html`—or open them with `edit storefront.css`.\"",
-        "Old Bearded Coder: \"Change `display: none` to `display: grid` in `storefront.css`, remove `disabled` from `#checkout-btn` in `index.html`, then grab the RAM + GPU chip!\"",
-        "Old Bearded Coder: \"Run `sed -i 's/display: none/display: grid/' storefront.css`, `sed -i 's/ disabled//' index.html`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_02.img ~`, and `cd logic_cell`.\""
+        "Old Bearded Coder: \"Four Compose containers (`postgres`, `java-api`, `nginx`, `frontend`) keep crashing! Run `ls -la` to find the hidden `.logs/` folder and `cat .logs/java-api.log`.\"",
+        "Old Bearded Coder: \"See `-Xmx64m` causing `OutOfMemoryError: Java heap space`? Open `vim docker-compose.yml`, raise it to `-Xmx512m` (at least `256m`), save with `:wq`, then run `docker compose up -d`!\"",
+        "Old Bearded Coder: \"Run `ls -la`, `cat .logs/java-api.log`, `vim -c '%s/-Xmx64m/-Xmx512m/' -c 'wq' docker-compose.yml`, `docker compose up -d`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_02.img ~`, and `cd logic_cell`.\""
       ],
-      "agentTaunt": "CODEC: \"You disabled Anti-Gravy with a lucky local model, Vibecoder, but you can't even center a CSS grid without us!\"",
-      "completion": "UI Grid restored and another RAM + GPU Tensor Chip scavenged!"
+      "agentTaunt": "CODEC: \"You disabled Anti-Gravy, Vibecoder, so watch your 64MB Java backend drown in OOMKilled Exit 137!\"",
+      "completion": "All four Compose containers are flying cleanly in formation and RAM + GPU Tensor Chip are scavenged!"
     },
     "level-06-task-logic-purge": {
-      "banner": "LEVEL 06 // LOGIC CELL: Grab your laptop (`mv laptop ~`), petrify token_skimmer.bin, fix JS math in cart.js & collect RAM + GPU!",
+      "banner": "LEVEL 06 // LOGIC CELL: Recover your laptop, pass the 3 JS Pad warmups, find `code/`, and fix the payment bug!",
       "hankRungs": [
-        "Old Bearded Coder: \"Gork planted a trojan (`token_skimmer.bin`) and a string-concatenation bug in `cart.js`—and your clamshell laptop landed on the cell floor! Pocket it first with `mv laptop ~`.\"",
-        "Old Bearded Coder: \"Once you hold your laptop (`mv laptop ~`), run `chmod -x token_skimmer.bin`, then replace `price + shipping` with `Number(price) * Number(qty) + Number(shipping)` inside `cart.js` and pocket both hardware parts!\"",
-        "Old Bearded Coder: \"Run `mv laptop ~`, `chmod -x token_skimmer.bin`, `sed -i 's/price + shipping/Number(price) * Number(qty) + Number(shipping)/' cart.js`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_02.img ~`, and `cd server_hub_2`.\""
+        "Old Bearded Coder: \"Kiro.d feels your old clamshell laptop right on the cell floor! Pick it up with `mv laptop ~`, open it with `F4` (or click the Laptop slot), power it ON, and pass the 3 basic JS Pad quests (`Hello, World!`, `Add two numbers`, `Countdown`).\"",
+        "Old Bearded Coder: \"Once the 3 warmups pass and the bug spawns, run `ls` to find the `code` folder (`cd code` & `ls`), then turn the laptop on, open JS Pad (or `edit payment.js`), and fix `processPayment(amountMinor)` to divide by 100 and round down (`Math.floor(amountMinor / 100)`).\"",
+        "Old Bearded Coder: \"Run `mv laptop ~`, finish the 3 JS Pad warmups in `[F4]`, run `ls`, `cd code`, patch `processPayment(amountMinor)` to `return Math.floor(amountMinor / 100);`, wait for the bug to die, then `cd ..` and `cd server_hub_2`!\""
       ],
-      "agentTaunt": "GORK: \"BWAHAHA! `'549' + '15' === '54915'`! Even with that dusty clamshell laptop, you'll still have to fix the JavaScript yourself!\"",
-      "completion": "Laptop recovered, JS math verified, and second batch of RAM + GPU chips ready for the Hub server!"
+      "agentTaunt": "GORK: \"BWAHAHA! Entered 100 minor units, charged 100 major units! Fix `processPayment` in `payment.js` or my logic bug cooks you!\"",
+      "completion": "Laptop tested, payment minor/major rounding fixed, logic bug squashed, and exit door open!"
     },
     "level-07-hub-model-two": {
       "banner": "LEVEL 07 // THE MATRIX HUB: Install the second RAM + GPU batch, reboot Kiro.d & disable Codec!",

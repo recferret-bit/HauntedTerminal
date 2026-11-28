@@ -17,7 +17,7 @@ const GROUPS: Record<CommandGroup, readonly string[]> = {
   Text: ['grep', 'wc', 'cut', 'rev', 'sed', 'head', 'tail'],
   Fight: ['ps', 'top', 'kill', 'pkill'],
   'Loot & Ghost': ['source', '.', 'kiro', 'kiro.d'],
-  Code: ['edit', 'nano', 'docker'],
+  Code: ['edit', 'nano', 'code', 'vim', 'vi', 'docker', 'docker-compose'],
   'Help & game': ['help', 'man', 'manual', 'map', 'tutorial', 'clear', 'exit', 'logout', 'hank', 'grimoire', 'bestiary', 'workshop', 'achievements', 'restart-level', 'retry', 'skin'],
 };
 
@@ -29,7 +29,7 @@ const EXAMPLES: Record<string, string> = {
   rev: 'rev readme.txt', sed: "sed 's/lab/LAB/' readme.txt", head: 'head -n 1 readme.txt', tail: 'tail -n 1 readme.txt', ps: 'ps', top: 'top',
   kill: 'kill -l', pkill: 'pkill nothing', source: 'source readme.txt', '.': '. readme.txt', kiro: 'kiro', 'kiro.d': 'kiro.d', help: 'help', man: 'man ls', manual: 'manual chmod', map: 'map',
   status: 'status', whoami: 'whoami', inventory: 'inventory', inv: 'inv', hold: 'hold tube_transistor', tutorial: 'tutorial', clear: 'clear', exit: 'exit', logout: 'logout', edit: 'edit readme.txt',
-  nano: 'nano readme.txt', docker: 'docker images', hank: 'hank', grimoire: 'grimoire', bestiary: 'bestiary', workshop: 'workshop', achievements: 'achievements',
+  nano: 'nano readme.txt', code: 'code readme.txt', vim: 'vim -c q readme.txt', vi: 'vi -c q readme.txt', docker: 'docker images', 'docker-compose': 'docker-compose ps', hank: 'hank', grimoire: 'grimoire', bestiary: 'bestiary', workshop: 'workshop', achievements: 'achievements',
   'restart-level': 'restart-level --yes', retry: 'restart-level --yes', skin: 'skin',
 };
 
@@ -38,7 +38,11 @@ const USAGE: Record<string, string> = {
   hank: 'hank [status]: the ally gives a Socratic hint, or audits the checklist.',
   edit: 'edit <file>: open the split code editor (Ctrl+S saves).',
   nano: 'nano <file>: same as edit.',
-  docker: 'docker build -t <tag> . | run -d -p <port>:<port> <tag> | images | compose up -d',
+  code: 'code <file>: same as edit.',
+  vim: 'vim [-c ex] <file>: open in-terminal modal Vim editor (:w, :q, :wq).',
+  vi: 'vi [-c ex] <file>: alias for vim.',
+  docker: 'docker ps [-a] | prune | build -t <tag> . | run -d -p <port>:<port> <tag> | images | compose up -d',
+  'docker-compose': 'docker-compose up [-d] | down | ps | logs | prune: alias for docker compose.',
   grimoire: 'grimoire: the command book of what you have practiced.',
   bestiary: 'bestiary: the malware dossier.',
   workshop: 'workshop [perk-id]: Silicon Scrap and rig perks.',

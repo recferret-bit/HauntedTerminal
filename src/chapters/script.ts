@@ -3,9 +3,16 @@ import { pickTransform } from '../contracts/room-view.js';
 import type { PickupType } from '../game/bestiary.js';
 import { dialogueEvent } from '../game/dialogue.js';
 import { consumeItem, giveItem, heroModel, holdItem, ITEMS } from '../game/inventory.js';
-import { lookup, type VNode } from '../game/tree.js';
+import { absPath, lookup, type VNode } from '../game/tree.js';
 import type { TutorialState } from '../game/types.js';
-import { findMatchingLock, invocationMatches, recordDialogHoldTicks, scriptDialogActive } from './script-locks.js';
+import {
+  findMatchingLock,
+  invocationMatches,
+  pendingLaptopTasksForSpec,
+  recordDialogHoldTicks,
+  scriptDialogActive,
+  syncConditionalSpawns,
+} from './script-locks.js';
 import { resolveTauntAgent, type ChapterState } from './session-state.js';
 import type { LevelScript, ScriptAgent, ScriptBullying, ScriptCond, ScriptCoreReaction, ScriptLock, ScriptStep, ScriptTutorial } from './types.js';
 
@@ -57,6 +64,8 @@ export function evalCond(g: ChapterState, c: ScriptCond): boolean {
       return !scriptDialogActive(g, openingActive(g));
     case 'flag':
       return g.rt.flags.has(c.name);
+    case 'laptop_tasks_done':
+      return c.tasks.every((id) => g.laptopDone.has(id));
     case 'not':
       return !evalCond(g, c.of);
     case 'any':
@@ -287,18 +296,23 @@ export function completeOpeningBeats(g: ChapterState, events: KernelEvent[]): st
   return out;
 }
 
+function fireUnfiredTriggers(g: ChapterState, run: (steps: ScriptStep[]) => string): string {
+  let out = '';
+  (levelScript(g).triggers ?? []).forEach((tr, i) => {
+    if (g.rt.triggersFired.has(i) || !evalCond(g, tr.when)) return;
+    g.rt.triggersFired.add(i);
+    out += run(tr.steps);
+  });
+  return out;
+}
+
 /**
  * Skip Dialog for beats that start from a trigger: the unfired `script.triggers` whose condition already holds fire now,
  * and every deferred (`wait`) beat runs at once. Only the `keep` kinds run, so items, flights and Kiro's magic still happen
  * while the dialogs are dropped. Order is kept.
  */
 function flushPendingBeats(g: ChapterState, events: KernelEvent[], keep: ReadonlySet<ScriptStep['kind']>): string {
-  let out = '';
-  (levelScript(g).triggers ?? []).forEach((tr, i) => {
-    if (g.rt.triggersFired.has(i) || !evalCond(g, tr.when)) return;
-    g.rt.triggersFired.add(i);
-    out += runKept(g, tr.steps, events, keep);
-  });
+  let out = fireUnfiredTriggers(g, (steps) => runKept(g, steps, events, keep));
   // A kept step list never holds a `wait` (it is not kept), so one pass empties the queue.
   const pending = g.rt.deferred.splice(0);
   for (const d of pending) out += runKept(g, d.steps, events, keep, d.vars);
@@ -446,10 +460,16 @@ function isHiddenRevealed(g: ChapterState): boolean {
   return !hide || g.rt.hiddenRevealed || evalCond(g, hide.revealWhen);
 }
 
-/** Id of the enemy that must not be shown yet, or ''. */
-export function hiddenEnemyId(g: ChapterState): string {
+/** True when an enemy (`tutorial.hide` or `appearWhen`) has not appeared yet. */
+export function isEnemyHidden(g: ChapterState, enemyId: string): boolean {
   const hide = levelScript(g).tutorial?.hide;
-  return hide && !isHiddenRevealed(g) ? hide.enemyId : '';
+  if (hide && !isHiddenRevealed(g) && hide.enemyId === enemyId) return true;
+  const spec = g.rt.spec.enemies.find((x) => x.id === enemyId);
+  return Boolean(spec?.appearWhen && !g.rt.spawnedEnemies.has(enemyId) && !evalCond(g, spec.appearWhen));
+}
+
+export function pendingLaptopTasks(g: ChapterState): string[] {
+  return pendingLaptopTasksForSpec(g.rt.spec, g.laptopDone, g.inventory.items.includes('laptop'));
 }
 
 export function isPickupHidden(g: ChapterState, pickupId: string): boolean {
@@ -461,35 +481,19 @@ export function isNodeHidden(g: ChapterState, node: VNode): boolean {
   const hide = levelScript(g).tutorial?.hide;
   if (hide && node.name === hide.node && !isHiddenRevealed(g)) return true;
   const pickup = g.rt.world?.pickupByInode(node.id);
-  return Boolean(pickup && isPickupHidden(g, pickup.id));
+  if (pickup && isPickupHidden(g, pickup.id)) return true;
+  for (let cur: VNode | null = node; cur; cur = cur.parent) {
+    const f = g.rt.filesByPath?.get(absPath(cur));
+    if (f?.appearWhen && !g.rt.spawnedFiles.has(f.path) && !evalCond(g, f.appearWhen)) return true;
+  }
+  return false;
 }
 
-/** Drops any `appearWhen` pickups whose condition now holds and runs unfired `script.triggers`. */
+/** Drops any `appearWhen` files/pickups/enemies whose condition now holds and runs unfired `script.triggers`. */
 export function syncScriptTriggers(g: ChapterState, events: KernelEvent[]): string {
   if (g.ended) return '';
-  let out = '';
-  for (const p of g.rt.spec.pickups) {
-    if (!p.appearWhen || g.rt.droppedPickups.has(p.id) || !evalCond(g, p.appearWhen)) continue;
-    g.rt.droppedPickups.add(p.id);
-    const live = g.rt.world.pickups.find((x) => x.id === p.id && !x.collected);
-    if (live) {
-      events.push({
-        type: 'ENTITY_SPAWNED',
-        entityId: live.id,
-        model: live.model,
-        reason: 'script',
-        ...(p.dropFromX !== undefined ? { fromX: p.dropFromX } : {}),
-        ...(p.dropFromY !== undefined ? { fromY: p.dropFromY } : {}),
-      });
-      events.push({ type: 'FILE_CREATED', inodeId: live.inode, name: live.name, entityId: live.id });
-    }
-  }
-  (levelScript(g).triggers ?? []).forEach((tr, i) => {
-    if (g.rt.triggersFired.has(i) || !evalCond(g, tr.when)) return;
-    g.rt.triggersFired.add(i);
-    out += runSteps(g, tr.steps, events);
-  });
-  return out;
+  syncConditionalSpawns(g, (c) => evalCond(g, c), events);
+  return fireUnfiredTriggers(g, (steps) => runSteps(g, steps, events));
 }
 
 /** Runs `manifest.onFirstPickup` steps once per session the very first time `pickupType` is collected. */

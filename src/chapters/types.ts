@@ -102,11 +102,15 @@ export interface LevelFileSpec extends ClassicLabFile, SceneTransform {
   socket?: RoomSocketId;
   label?: string;
   sfx?: string;
+  /** Optional condition: file/dir and its stage actor stay hidden until this holds. */
+  appearWhen?: ScriptCond;
 }
 
-/** Same spawn record as a classic floor. `showIn` stays optional and unused by chapter JSON. */
 /** A level enemy. Its `pid` only marks that it has one: the number the player sees is rolled on every load (`pids.ts`), and text names it `{pid:<enemy id>}`. */
-export type LevelEnemySpec = EnemySpawn;
+export interface LevelEnemySpec extends EnemySpawn {
+  /** Optional condition: enemy stays hidden and inactive until this holds, then spawns onto the stage. */
+  appearWhen?: ScriptCond;
+}
 
 export interface LevelPickupSpec extends PickupSpawn {
   /** Optional condition: pickup and its file stay hidden until this holds, then land on the ground. */
@@ -202,8 +206,10 @@ export type WinRule =
   | { kind: 'enemy_neutralized'; enemyId: string; description: string }
   | { kind: 'html_css_valid'; htmlPath: string; cssPath: string; description: string }
   | { kind: 'cart_js_valid'; jsPath: string; description: string }
+  | { kind: 'payment_js_valid'; jsPath: string; description: string }
+  | { kind: 'laptop_tasks_done'; tasks: string[]; description: string }
   | { kind: 'docker_image_running'; imageTag: string; port: number; description: string }
-  | { kind: 'docker_compose_healthy'; services: string[]; description: string }
+  | { kind: 'docker_compose_healthy'; services: string[]; floating?: boolean; description: string }
   | {
       kind: 'boss_defeated';
       bossId: string;

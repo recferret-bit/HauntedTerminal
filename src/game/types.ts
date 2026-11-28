@@ -56,6 +56,8 @@ export interface GameSnapshot {
   openingDialog?: boolean;
   /** True while any skippable scripted dialog (opening or mid-level trigger) is active (shows Skip Dialog without locking terminal unless openingDialog is also true). */
   skippableDialog?: boolean;
+  /** Incomplete laptop quest ids required on this level once the laptop is carried (for UI/automation). */
+  pendingLaptopTasks?: readonly string[];
 }
 
 /** Name, objective and win-rule checklist of the current level. Classic floors have an empty checklist. */

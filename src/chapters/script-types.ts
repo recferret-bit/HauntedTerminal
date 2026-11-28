@@ -58,6 +58,7 @@ export type ScriptCond =
   | { kind: 'tutorial_skipped' }
   | { kind: 'dialog_done' }
   | { kind: 'flag'; name: string }
+  | { kind: 'laptop_tasks_done'; tasks: string[] }
   | { kind: 'not'; of: ScriptCond }
   | { kind: 'any'; of: ScriptCond[] }
   | { kind: 'all'; of: ScriptCond[] };

@@ -1,47 +1,64 @@
 {
   "id": "level-05-task-ui-grid",
   "index": 5,
-  "title": "UI Grid: Restoring the Open-Weights Console",
-  "cwd": "/srv/kiroween/ui_dashboard",
+  "title": "Compose Cluster: OOM Heap & Vim Rescue",
+  "cwd": "/srv/kiroween/compose_cluster",
   "roomKind": "lab_hall",
   "floorTheme": 3,
   "roomSeed": 55,
-  "mechanic": "html-css",
-  "exitDir": "/srv/kiroween/ui_dashboard/logic_cell",
-  "summary": "Anti-Gravy is down, but Codec, Gork, and Clod still laugh at you! Fix the broken HTML/CSS hardware telemetry dashboard (`index.html` + `storefront.css`) and scavenge `ram_16gb.dimm` + `gpu_tensor_chip_02.img`.",
+  "mechanic": "docker-compose",
+  "exitDir": "/srv/kiroween/compose_cluster/logic_cell",
+  "summary": "Anti-Gravy is down, but this 4-container Docker Compose cluster crashes with Java heap OOM! Reveal `.logs/` with `ls -la`, inspect `.logs/java-api.log`, fix `docker-compose.yml` in `vim`, launch `docker compose up -d`, and scavenge `ram_16gb.dimm` + `gpu_tensor_chip_02.img`.",
   "files": [
     {
-      "path": "/srv/kiroween/ui_dashboard/index.html",
+      "path": "/srv/kiroween/compose_cluster/docker-compose.yml",
       "kind": "file",
       "mode": 420,
       "questCritical": true,
-      "content": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>Open-Weights GPU Telemetry Grid</title>\n  <link rel=\"stylesheet\" href=\"storefront.css\" />\n</head>\n<body>\n  <header class=\"site-header\">\n    <h1>KIRO.D OPEN-WEIGHTS HARDWARE MONITOR</h1>\n  </header>\n  <main class=\"product-grid\">\n    <article class=\"gpu-card\" data-sku=\"gpu\">\n      <h2>RTX 4090 24GB Tensor Core</h2>\n      <span class=\"price\">$1599</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ram\">\n      <h2>64GB DDR5 ECC Server Kit</h2>\n      <span class=\"price\">$249</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ssd\">\n      <h2>2TB Gen5 NVMe Weights Vault</h2>\n      <span class=\"price\">$189</span>\n    </article>\n  </main>\n  <!-- BUG: Codec disabled #checkout-btn -->\n  <aside id=\"cart-drawer\" class=\"cart-drawer\">\n    <h3>Mounted Open-Weights Parts</h3>\n    <p>Total Power: <span data-bind=\"cart-total\">$0.00</span></p>\n    <button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>\n  </aside>\n</body>\n</html>\n",
+      "content": "# Open-Weights Telemetry Compose Stack\n# BUG: java-api crashes on startup (-Xmx64m)! Raise JVM heap >= 256m (e.g. -Xmx512m) or mem_limit >= 256m.\nservices:\n  postgres:\n    image: postgres:16-alpine\n    environment:\n      POSTGRES_DB: telemetry\n      POSTGRES_USER: kiro\n    ports:\n      - \"5432:5432\"\n\n  java-api:\n    image: eclipse-temurin:21-jre-alpine\n    build: .\n    depends_on:\n      - postgres\n    environment:\n      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/telemetry\n      JAVA_OPTS: \"-Xmx64m\"\n    ports:\n      - \"8080:8080\"\n\n  frontend:\n    image: node:22-alpine\n    depends_on:\n      - java-api\n    ports:\n      - \"3000:3000\"\n\n  nginx:\n    image: nginx:1.27-alpine\n    depends_on:\n      - frontend\n      - java-api\n    ports:\n      - \"80:80\"\n",
       "x": 3.85,
       "model": "prop.file"
     },
     {
-      "path": "/srv/kiroween/ui_dashboard/storefront.css",
+      "path": "/srv/kiroween/compose_cluster/Dockerfile",
       "kind": "file",
       "mode": 420,
-      "questCritical": true,
-      "content": "/* Open-Weights GPU Telemetry Stylesheet */\nbody {\n  background: #0d0814;\n  color: #f4f0e8;\n}\n/* BUG: Codec hid the entire GPU grid with display: none */\n.product-grid {\n  display: none;\n  gap: 16px;\n}\n.cart-drawer {\n  width: 320px;\n  z-index: 10;\n  border: 2px solid #00f5d4;\n}\n",
+      "content": "FROM eclipse-temurin:21-jre-alpine\nWORKDIR /app\nCOPY . .\nEXPOSE 8080\nCMD [\"java\", \"-jar\", \"/app/telemetry-api.jar\"]\n",
       "x": 3.25,
       "model": "prop.file"
     },
     {
-      "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm",
+      "path": "/srv/kiroween/compose_cluster/.logs",
+      "kind": "dir",
+      "mode": 493
+    },
+    {
+      "path": "/srv/kiroween/compose_cluster/.logs/java-api.log",
+      "kind": "file",
+      "mode": 420,
+      "questCritical": true,
+      "content": "2026-11-27T18:10:02.114Z INFO  [main] TelemetryApiApplication : Starting TelemetryApiApplication on java-api (PID 1)\n2026-11-27T18:10:02.408Z INFO  [main] HikariPool-1 : jdbc:postgresql://postgres:5432/telemetry - Start completed.\n2026-11-27T18:10:02.891Z WARN  [main] JVM : Max heap ceiling detected at -Xmx64m (64 MB)! Cache warmup requires >= 256m.\n2026-11-27T18:10:03.205Z ERROR [http-nio-8080-exec-1] DispatcherServlet : Servlet.service() failed\njava.lang.OutOfMemoryError: Java heap space\n\tat java.base/java.util.Arrays.copyOf(Arrays.java:3512)\n\tat io.kiro.telemetry.TensorFrameBuffer.loadBatch(TensorFrameBuffer.java:142)\n\tat io.kiro.telemetry.CacheWarmupRunner.run(CacheWarmupRunner.java:88)\nContainer compose_cluster-java-api-1 terminated by kernel OOM killer: Exit 137 (OOMKilled)\n"
+    },
+    {
+      "path": "/srv/kiroween/compose_cluster/.logs/cluster.log",
+      "kind": "file",
+      "mode": 420,
+      "content": "postgres-1  | database system is ready to accept connections\njava-api-1  | FATAL java.lang.OutOfMemoryError: Java heap space -> Exit 137 (OOMKilled)\nfrontend-1  | connect ECONNREFUSED java-api:8080 (backend down)\nnginx-1     | [error] upstream prematurely closed connection while reading response header from upstream\n"
+    },
+    {
+      "path": "/srv/kiroween/compose_cluster/ram_16gb.dimm",
       "kind": "file",
       "mode": 420,
       "content": "DDR5_ECC_16GB_MODULE_03\n"
     },
     {
-      "path": "/srv/kiroween/ui_dashboard/gpu_tensor_chip_02.img",
+      "path": "/srv/kiroween/compose_cluster/gpu_tensor_chip_02.img",
       "kind": "file",
       "mode": 420,
       "content": "GPU_TENSOR_CORE_CHIP_24GB_VRAM_02\n"
     },
     {
-      "path": "/srv/kiroween/ui_dashboard/logic_cell",
+      "path": "/srv/kiroween/compose_cluster/logic_cell",
       "kind": "dir",
       "mode": 0,
       "x": -0.88,
@@ -50,43 +67,23 @@
       "sfx": "door_ethernet"
     }
   ],
-  "enemies": [
-    {
-      "id": "bug_css_l5",
-      "type": "bug",
-      "path": "/srv/kiroween/ui_dashboard/storefront.css",
-      "x": 0.35
-    }
-  ],
+  "enemies": [],
   "pickups": [
     {
       "id": "pickup_l5_ram",
       "type": "ram",
-      "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm",
+      "path": "/srv/kiroween/compose_cluster/ram_16gb.dimm",
       "x": 1.65
     },
     {
       "id": "pickup_l5_gpu",
       "type": "ssd",
-      "path": "/srv/kiroween/ui_dashboard/gpu_tensor_chip_02.img",
+      "path": "/srv/kiroween/compose_cluster/gpu_tensor_chip_02.img",
       "model": "pickup.gpu",
       "x": 1.05
     }
   ],
-  "patches": [
-    {
-      "file": "storefront.css",
-      "label": "Restore display: grid on .product-grid",
-      "find": "display: none;",
-      "replace": "display: grid;"
-    },
-    {
-      "file": "index.html",
-      "label": "Remove disabled attribute from #checkout-btn",
-      "find": "<button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>",
-      "replace": "<button id=\"checkout-btn\" type=\"button\">Mount to Server</button>"
-    }
-  ],
+  "patches": [],
   "props": [
     {
       "id": "l5_gpu_card",
@@ -150,25 +147,32 @@
   ],
   "winRules": [
     {
-      "kind": "html_css_valid",
-      "htmlPath": "/srv/kiroween/ui_dashboard/index.html",
-      "cssPath": "/srv/kiroween/ui_dashboard/storefront.css",
-      "description": "Fix `.product-grid` (`display: grid`) in `storefront.css` and remove `disabled` from `#checkout-btn` in `index.html`"
+      "kind": "read_file",
+      "path": "/srv/kiroween/compose_cluster/.logs/java-api.log",
+      "description": "Reveal `.logs/` (`ls -la`) and inspect `cat .logs/java-api.log` crash trace"
+    },
+    {
+      "kind": "docker_compose_healthy",
+      "services": ["postgres", "java-api", "frontend", "nginx"],
+      "floating": true,
+      "description": "Raise Java heap (`>= 256m`) in `docker-compose.yml` via `vim` and launch `docker compose up -d`"
     },
     {
       "kind": "file_absent",
-      "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm",
+      "path": "/srv/kiroween/compose_cluster/ram_16gb.dimm",
       "description": "Collect the RAM stick (`mv ram_16gb.dimm ~`)"
     },
     {
       "kind": "file_absent",
-      "path": "/srv/kiroween/ui_dashboard/gpu_tensor_chip_02.img",
+      "path": "/srv/kiroween/compose_cluster/gpu_tensor_chip_02.img",
       "description": "Collect the GPU Tensor Chip (`mv gpu_tensor_chip_02.img ~`)"
     }
   ],
   "solutionCommands": [
-    "sed -i 's/display: none/display: grid/' storefront.css",
-    "sed -i 's/ disabled//' index.html",
+    "ls -la",
+    "cat .logs/java-api.log",
+    "vim -c '%s/-Xmx64m/-Xmx512m/' -c 'wq' docker-compose.yml",
+    "docker compose up -d",
     "mv ram_16gb.dimm ~",
     "mv gpu_tensor_chip_02.img ~",
     "cd logic_cell"
@@ -177,7 +181,7 @@
     "arrival": [
       {
         "kind": "print",
-        "text": "\n[UI GRID — /srv/kiroween/ui_dashboard]\nAnti-Gravy is offline! Finish your briefing with Kiro.d (or click Skip Dialog ») before Codec taunts.\n"
+        "text": "\n[COMPOSE CLUSTER — /srv/kiroween/compose_cluster]\nAnti-Gravy is offline, but this 4-container cluster crashed on launch! Finish your briefing with Kiro.d (or click Skip Dialog »).\n"
       }
     ],
     "timed": [
@@ -187,7 +191,7 @@
           {
             "kind": "dialog_box",
             "speaker": "vibecoder",
-            "text": "Anti-Gravy is silenced, and I have my Tube Transistor, Map (F3), and Field Manual (F1) now! What broke in this UI Grid, Kiro.d?",
+            "text": "Whoa—`docker-compose.yml`, a `Dockerfile`, and no obvious crash log from plain `ls`! Where did the logs go, Kiro.d?",
             "holdSec": 8
           }
         ]
@@ -198,10 +202,110 @@
           {
             "kind": "dialog_box",
             "speaker": "kiro",
-            "text": "Codec hid .product-grid in storefront.css and disabled #checkout-btn in index.html! Fix both and grab the RAM + SSD parts so we keep raising Max HP, Revives, and Hub power!",
+            "text": "Use your Tube Transistor: run `ls -la` to expose hidden `.logs/`, inspect `.logs/java-api.log`, then fix `docker-compose.yml` in `vim` (`-c` or interactive) and run `docker compose up -d`!",
             "holdSec": 8
           }
         ]
+      }
+    ],
+    "triggers": [
+      {
+        "when": {
+          "kind": "file_read",
+          "path": "/srv/kiroween/compose_cluster/.logs/java-api.log"
+        },
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "Found it! `java.lang.OutOfMemoryError: Java heap space` -> Exit 137 (OOMKilled)! Someone left `JAVA_OPTS: \"-Xmx64m\"` on `java-api`!",
+            "holdSec": 6
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Open `vim docker-compose.yml` (`i` to edit `-Xmx64m` to `-Xmx512m`, `Esc`, then `:wq`) — or try `docker compose up` first to watch the unfixed pods crash!",
+            "holdSec": 7
+          }
+        ]
+      },
+      {
+        "when": {
+          "kind": "flag",
+          "name": "compose_oom_crashed"
+        },
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "WHOA! All four container sheets launched into mid-air, flickered red, and crashed straight to the floor — Exit 137 OOMKilled!",
+            "holdSec": 6
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Zero HP lost, just a wiped pod (`docker ps -a` / `docker prune`). Raise `JAVA_OPTS` in `docker-compose.yml` to `-Xmx512m` via `vim` and re-run `docker compose up -d`!",
+            "holdSec": 7
+          }
+        ]
+      },
+      {
+        "when": {
+          "kind": "flag",
+          "name": "compose_healthy"
+        },
+        "steps": [
+          {
+            "kind": "dialog_box",
+            "speaker": "vibecoder",
+            "text": "LOOK AT THEM FLY! `[postgres]`, `[java-api]`, `[frontend]`, and `[nginx]` are floating in formation!",
+            "holdSec": 6
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Stack online with zero OOMs! Pocket `ram_16gb.dimm` + `gpu_tensor_chip_02.img`, then `cd logic_cell`!",
+            "holdSec": 6
+          }
+        ]
+      }
+    ],
+    "locks": [
+      {
+        "command": "edit",
+        "until": {
+          "kind": "has_item",
+          "item": "laptop"
+        },
+        "message": "The split editor and sed shortcuts stay sealed in this container bay until your laptop is recovered! Edit with `vim docker-compose.yml`.\n",
+        "freeAction": true
+      },
+      {
+        "command": "nano",
+        "until": {
+          "kind": "has_item",
+          "item": "laptop"
+        },
+        "message": "The split editor and sed shortcuts stay sealed in this container bay until your laptop is recovered! Edit with `vim docker-compose.yml`.\n",
+        "freeAction": true
+      },
+      {
+        "command": "code",
+        "until": {
+          "kind": "has_item",
+          "item": "laptop"
+        },
+        "message": "The split editor and sed shortcuts stay sealed in this container bay until your laptop is recovered! Edit with `vim docker-compose.yml`.\n",
+        "freeAction": true
+      },
+      {
+        "command": "sed",
+        "until": {
+          "kind": "has_item",
+          "item": "laptop"
+        },
+        "message": "The split editor and sed shortcuts stay sealed in this container bay until your laptop is recovered! Edit with `vim docker-compose.yml`.\n",
+        "freeAction": true
       }
     ],
     "bullying": {
@@ -212,15 +316,15 @@
       "lines": [
         {
           "agent": "codec",
-          "text": "CODEC: \"HAHAHA! So that bearded greybeard disabled Anti-Gravy? You still cannot pass our code checks!\""
+          "text": "CODEC: \"HAHAHA! 64MB JVM heap for four containers? Even a Hello World segfaults in your cluster!\""
         },
         {
           "agent": "gork",
-          "text": "GORK: \"BWAHAHA! Your Kiro.d only has one open-weight model—we still run this machine!\""
+          "text": "GORK: \"BWAHAHA! Wait until he types `:q!` by accident inside Vim for the fifth time!\""
         },
         {
           "agent": "clod",
-          "text": "CLOD: \"AHAHA! Even with Qwen online, your syntax remains delightfully tragic, Vibecoder.\""
+          "text": "CLOD: \"AHAHA! Exit 137 looks charming on your telemetry pods, Vibecoder.\""
         }
       ]
     },

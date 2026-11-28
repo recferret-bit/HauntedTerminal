@@ -99,6 +99,11 @@ class LevelCheck {
       case 'flag':
         if (!c.name.trim()) this.add('error', tab, `${what}: flag name is empty`);
         break;
+      case 'laptop_tasks_done':
+        if (!Array.isArray(c.tasks) || c.tasks.length === 0 || c.tasks.some((t) => !t.trim())) {
+          this.add('error', tab, `${what}: laptop_tasks_done needs non-empty task ids`);
+        }
+        break;
       case 'not':
         this.cond(tab, `${what}.not`, c.of);
         break;
@@ -200,7 +205,18 @@ function checkRule(c: LevelCheck, rule: WinRule, i: number): void {
       c.needPath('rules', what, rule.cssPath, 'file');
       break;
     case 'cart_js_valid':
+    case 'payment_js_valid':
       c.needPath('rules', what, rule.jsPath, 'file');
+      break;
+    case 'laptop_tasks_done':
+      if (!Array.isArray(rule.tasks) || rule.tasks.length === 0 || rule.tasks.some((t) => !t.trim())) {
+        c.add('error', 'rules', `${what}: empty laptop task id list`);
+      }
+      break;
+    case 'docker_compose_healthy':
+      if (!Array.isArray(rule.services) || rule.services.length === 0 || rule.services.some((s) => !s.trim())) {
+        c.add('error', 'rules', `${what}: empty compose services list`);
+      }
       break;
     case 'boss_defeated':
       c.needEnemy('rules', what, rule.bossId);
@@ -299,12 +315,14 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack, winnable: boolean): Pack
     checkTransform(add, 'files', `file "${f.path}"`, f);
     checkSocket(add, 'files', `file "${f.path}"`, f.socket);
     checkSfxCue(add, 'files', `file "${f.path}".sfx`, f.sfx);
+    if (f.appearWhen) c.cond('files', `file "${f.path}".appearWhen`, f.appearWhen);
   }
   for (const e of spec.enemies) {
     if (!ENEMY_TYPES.some((t) => t === e.type)) c.add('error', 'entities', `enemy "${e.id}": unknown type "${e.type}"`);
     // A zombie is a bare process: its path is the room it haunts.
     c.needPath('entities', `enemy "${e.id}"`, e.path, e.type === 'zombie' ? 'dir' : 'file');
     if (e.helps) c.needEnemy('entities', `enemy "${e.id}" helps`, e.helps);
+    if (e.appearWhen) c.cond('entities', `enemy "${e.id}".appearWhen`, e.appearWhen);
     checkTransform(add, 'entities', `enemy "${e.id}"`, e);
     checkSocket(add, 'entities', `enemy "${e.id}"`, e.socket);
     checkSfxCue(add, 'entities', `enemy "${e.id}".attackSfx`, e.attackSfx);
@@ -358,7 +376,11 @@ function checkLevel(spec: LevelSpec, pack: ChapterPack, winnable: boolean): Pack
   if (winnable && spec.winRules.length === 0) c.add('error', 'rules', 'a level needs at least one win rule');
   spec.winRules.forEach((r, i) => checkRule(c, r, i));
   for (const rule of spec.winRules) {
-    const critical = rule.kind === 'read_file' || rule.kind === 'file_contains' ? [rule.path] : [];
+    const critical = rule.kind === 'read_file' || rule.kind === 'file_contains'
+      ? [rule.path]
+      : rule.kind === 'payment_js_valid'
+        ? [rule.jsPath]
+        : [];
     for (const path of critical) {
       if (c.paths.get(path) === 'file' && !spec.files.find((f) => f.path === path)?.questCritical) {
         c.add('warn', 'files', `"${path}" is needed by a win rule but not questCritical, so deleting it soft-locks the level`);

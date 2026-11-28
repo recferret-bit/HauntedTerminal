@@ -13,6 +13,9 @@ import type { Step } from './shell.js';
 import { absPath, resolve } from './tree.js';
 import { treeWantsHidden, TREE_FLAGS_LOCKED_MESSAGE } from './search-applets.js';
 import { hasLsFlags, LS_FLAGS_LOCKED_MESSAGE } from './unix-applets.js';
+import { runDockerCli, createVfsDockerIo } from './docker.js';
+import { createVfsVimIo, runVimCli } from './vim.js';
+import type { VimOpenPayload } from './vim-types.js';
 
 export interface ClassicShellHost extends Play {
   hint(): string;
@@ -20,6 +23,7 @@ export interface ClassicShellHost extends Play {
   setManualQuery(query: string | null): void;
   setMapQuery(query: string | null): void;
   setSkinRequest(id: TerminalSkinId): void;
+  setVimRequest(payload: VimOpenPayload): void;
   quietSkip(): { text: string; events: KernelEvent[] };
   restartLevel(args: string[]): Step;
   finishStep(step: Step): Step;
@@ -39,6 +43,39 @@ function cmdClassicExit(g: Play): Step {
     `The lightning reverses. You yank your hands off the keyboard: the agents can do their own work.\nDawn, at your desk. Rank ${grade}. Time ${time}s. Commands ${g.run.commands}.\n`,
     events,
   );
+}
+
+function runClassicVim(g: ClassicShellHost, args: string[]): Step {
+  const io = createVfsVimIo({
+    cwd: () => g.run.cwd,
+    onRead: (abs) => g.run.filesRead.add(abs),
+  });
+  const res = runVimCli(args, io);
+  if (res.kind === 'error') return empty(res.code, res.stderr);
+  if (res.kind === 'headless') {
+    if (res.saved) g.run.world.cause = 'other';
+    return {
+      stdout: res.stdout,
+      stderr: res.stderr,
+      code: res.code,
+      events: [{ type: 'VIBECODER_ACTION', action: res.saved ? 'write' : 'read', command: `vim ${args.join(' ')}`.trim() }],
+    };
+  }
+  g.setVimRequest(res.payload);
+  return out(`[VIM] Opening ${res.payload.path || '[No Name]'}\n`, [
+    { type: 'VIBECODER_ACTION', action: 'read', command: `vim ${res.payload.path || ''}`.trim() },
+  ]);
+}
+
+function runClassicDocker(g: ClassicShellHost, args: string[]): Step {
+  const io = createVfsDockerIo({ cwd: () => g.run.cwd, projectName: () => 'haunted' });
+  const res = runDockerCli(g.run.docker, args, io);
+  return {
+    stdout: res.stdout,
+    stderr: res.stderr,
+    code: res.code,
+    events: [{ type: 'VIBECODER_ACTION', action: 'cast', command: `docker ${args.join(' ')}`.trim() }],
+  };
 }
 
 const CLASSIC_HANDLERS: Record<string, ClassicHandler> = {
@@ -69,6 +106,10 @@ const CLASSIC_HANDLERS: Record<string, ClassicHandler> = {
   cut: (g, args, stdin) => cmdCut(g, args, stdin),
   rev: (g, args, stdin) => cmdRev(g, args, stdin),
   sed: (g, args, stdin) => cmdSed(g, args, stdin),
+  vim: (g, args) => runClassicVim(g, args),
+  vi: (g, args) => runClassicVim(g, args),
+  docker: (g, args) => runClassicDocker(g, args),
+  'docker-compose': (g, args) => runClassicDocker(g, ['compose', ...args]),
   head: (g, args, stdin) => cmdHeadTail(g, args, stdin, true),
   tail: (g, args, stdin) => cmdHeadTail(g, args, stdin, false),
   ps: (g, args) => cmdPs(g, args, false),

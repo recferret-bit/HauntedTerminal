@@ -14,7 +14,11 @@ export interface PlayWindow extends Window {
     /** Raw keystrokes as xterm would deliver them. */
     input(data: string): void;
   };
-  __game?: { events(): KernelEvent[]; snapshot(): { cwd: string; hp: number; maxHp: number; enemiesLeft: number } };
+  __game?: {
+    events(): KernelEvent[];
+    snapshot(): { cwd: string; hp: number; maxHp: number; enemiesLeft: number; pendingLaptopTasks?: readonly string[] };
+    completeLaptopTasks?: () => boolean;
+  };
   __stageEditor?: StageEditorApi;
 }
 

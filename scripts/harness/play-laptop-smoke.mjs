@@ -25,8 +25,9 @@ const $ = (expr, ms) => browser.evaluate(expr, ms);
 const L = 'window.__laptopOverlay';
 
 async function key(k, code = k) {
-  await browser.send('Input.dispatchKeyEvent', { type: 'keyDown', key: k, code, windowsVirtualKeyCode: k === 'Escape' ? 27 : 115 });
-  await browser.send('Input.dispatchKeyEvent', { type: 'keyUp', key: k, code, windowsVirtualKeyCode: k === 'Escape' ? 27 : 115 });
+  const vk = k === 'Escape' ? 27 : k === 'Enter' ? 13 : 115;
+  await browser.send('Input.dispatchKeyEvent', { type: 'keyDown', key: k, code, windowsVirtualKeyCode: vk });
+  await browser.send('Input.dispatchKeyEvent', { type: 'keyUp', key: k, code, windowsVirtualKeyCode: vk });
   await sleep(150);
 }
 
@@ -82,12 +83,114 @@ async function boot(level, query = 'nointro=1') {
   await browser.waitFor(`window.__game && ${L} && window.__term && !window.__game.snapshot().paused && window.__term.phase() === 'play'`, 30000, `${level} ready`);
 }
 
+async function runTerm(cmd) {
+  await browser.waitFor('!window.__game.snapshot().busy', 15000, `idle before ${cmd}`);
+  await $(`(() => { const b = document.getElementById('skip-dialog-btn'); if (b && !b.hidden) b.click(); return true; })()`);
+  await $(`window.__term.submit(${JSON.stringify(cmd)}).then(() => true)`);
+  await browser.waitFor('!window.__game.snapshot().busy', 15000, `idle after ${cmd}`);
+  await $(`(() => { const b = document.getElementById('skip-dialog-btn'); if (b && !b.hidden) b.click(); return true; })()`);
+}
+
+async function openDesktop() {
+  await key('F4');
+  await browser.waitFor(`${L}.state() === 'open'`, 5000, 'laptop auto-opens lid');
+  await realClick('#laptop-overlay .lt-power');
+  await browser.waitFor(`${L}.state() === 'desktop'`, 12000, 'laptop boots to desktop');
+}
+
+async function verifyPaymentBugLevel(levelId) {
+  if (!levelId) return;
+  await $(`localStorage.removeItem(${JSON.stringify(PROGRESS_KEY)})`);
+  await boot(levelId, 'nointro=1');
+  await runTerm('mv laptop ~');
+  check(await $(`window.__game.snapshot().inventory.items.includes('laptop')`), `${levelId}: picking up laptop puts it in inventory`);
+
+  await openDesktop();
+  const warmups = await $('window.__game.snapshot().pendingLaptopTasks ?? []');
+  check(warmups.length === 3, `${levelId}: 3 JS Pad warmups are pending after pickup`);
+  // Complete 1 warmup, close to sync partial progress, then reopen and finish the remaining 2 -> confirms (3/3) count.
+  await $(`${L}.runTask(${JSON.stringify(warmups[0])})`, 15000);
+  await key('Escape');
+  await browser.waitFor(`!${L}.isOpen()`, 3000, 'close laptop after partial warmup sync');
+  await browser.waitFor('!window.__game.snapshot().busy', 15000, 'idle after partial warmup sync');
+  const remWarmups = await $('window.__game.snapshot().pendingLaptopTasks ?? []');
+  check(remWarmups.length === 2, `${levelId}: 2 JS Pad warmups remain after solving 1st warmup`);
+  await openDesktop();
+  for (const id of remWarmups) await $(`${L}.runTask(${JSON.stringify(id)})`, 15000);
+  await sleep(120);
+  check((await $(`document.querySelector('.laptop-overlay-close')?.textContent`)) === 'DONE — RETURN [Esc]', `${levelId}: Phase 1 warmup completion updates close prompt`);
+  check(await $(`(() => {
+    const q = document.querySelector('#laptop-overlay .lt-window[data-app="quests"]');
+    return q?.querySelector('.lt-quest-app')?.textContent === 'OK' && (q?.textContent?.includes('Warmups complete (3/3)!') ?? false);
+  })()`), `${levelId}: Phase 1 Quests shows OK Warmups complete (3/3)! across multi-open`);
+  await key('Escape');
+  await browser.waitFor(`!${L}.isOpen()`, 3000, 'close laptop after Phase 1 warmups');
+  await browser.waitFor('!window.__game.snapshot().busy', 15000, 'idle after Phase 1 sync');
+  await $(`(() => { const b = document.getElementById('skip-dialog-btn'); if (b && !b.hidden) b.click(); return true; })()`);
+
+  await openDesktop();
+  check((await $(`document.querySelector('#laptop-overlay .lt-window[data-app="quests"] .lt-quest-app')?.textContent`)) === 'LOCK', `${levelId}: Quests shows LOCK before ls discovers code/`);
+  check(!(await $(`document.querySelector('#laptop-overlay [data-task^="room:"]')`)), `${levelId}: room bug fix button stays locked before ls`);
+  await key('Escape');
+  await browser.waitFor(`!${L}.isOpen()`, 3000, 'close locked laptop before ls');
+
+  await runTerm('ls');
+  await runTerm('cd code');
+  await browser.waitFor('Boolean(window.__game.snapshot().battle)', 8000, 'cd code starts battle');
+  await $(`document.querySelector('#terminal-panel .xterm-helper-textarea')?.focus()`);
+  for (let i = 0; i < 20; i++) {
+    if ((await $('window.__game.snapshot().battle?.phase')) === 'player') break;
+    await key('Enter');
+  }
+  await browser.waitFor(`window.__game.snapshot().battle?.phase === 'player'`, 8000, 'battle enters player turn');
+
+  await openDesktop();
+  const tBefore = await $('window.__game.snapshot().battle?.secondsLeft ?? null');
+  check(await $('window.__game.snapshot().battle?.held === false'), `${levelId}: laptop overlay never holds the battle turn timer`);
+  await sleep(1500);
+  const tAfter = await $('window.__game.snapshot().battle?.secondsLeft ?? null');
+  check(typeof tBefore === 'number' && typeof tAfter === 'number' && tAfter < tBefore, `${levelId}: battle turn timer ticks down while laptop is open (${tBefore} -> ${tAfter})`);
+
+  await realClick('#laptop-overlay button[data-task^="room:"]');
+  await browser.waitFor(`Boolean(document.querySelector('#laptop-overlay .lt-window[data-app="jspad"] textarea.lt-code')?.value.includes('processPayment'))`, 5000, 'JS Pad opens payment.js');
+  await $(`(() => {
+    const ta = document.querySelector('#laptop-overlay .lt-window[data-app="jspad"] textarea.lt-code');
+    ta.value = ta.value.replace('return amountMinor;', 'return Math.floor(amountMinor / 100);');
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    const chk = [...document.querySelectorAll('#laptop-overlay .lt-window[data-app="jspad"] button')].find((b) => b.textContent === 'Check');
+    chk?.click();
+    return Boolean(chk);
+  })()`);
+  await browser.waitFor('window.__game.snapshot().promptGold && !window.__game.snapshot().battle', 12000, 'fixing payment.js kills bug and opens exit');
+  check(!(await $(`document.querySelector('#laptop-overlay [data-task^="room:"]')`)), `${levelId}: solving payment.js removes the [BUG] row in Quests`);
+  check(await $(`(() => {
+    const q = document.querySelector('#laptop-overlay .lt-window[data-app="quests"]');
+    return q?.querySelector('.lt-quest-app')?.textContent === 'OK' && (q?.textContent?.includes('payment.js fixed!') ?? false);
+  })()`), `${levelId}: Quests shows OK completion notice after payment.js fix`);
+  check((await $(`document.querySelector('.laptop-overlay-close')?.textContent`)) === 'DONE — RETURN [Esc]', `${levelId}: close button updates to DONE — RETURN [Esc] after payment.js fix`);
+  await key('Escape');
+  await browser.waitFor(`!${L}.isOpen()`, 3000, 'close laptop after payment.js fix');
+  // Reopening after payment.js was already solved still initializes DONE — RETURN [Esc] and OK notice.
+  await openDesktop();
+  check((await $(`document.querySelector('.laptop-overlay-close')?.textContent`)) === 'DONE — RETURN [Esc]', `${levelId}: reopening solved laptop preserves DONE — RETURN [Esc]`);
+  check(await $(`(() => {
+    const q = document.querySelector('#laptop-overlay .lt-window[data-app="quests"]');
+    return q?.querySelector('.lt-quest-app')?.textContent === 'OK' && (q?.textContent?.includes('payment.js fixed!') ?? false);
+  })()`), `${levelId}: reopening solved laptop preserves OK notice`);
+  await key('Escape');
+  await browser.waitFor(`!${L}.isOpen()`, 3000, 'close reopened solved laptop');
+  await runTerm('cd ..');
+  await runTerm('cd server_hub_2');
+  check((await $('window.__game.snapshot().room.floor')) === 7, `${levelId}: exit door advances to floor 7 after bug purge`);
+}
+
 // Levels from the chapter's own grants: one entered before the laptop is granted, one entered after.
 const chapter = readChapter(slug);
 const grantAt = Math.min(...(chapter.manifest.grants ?? []).filter((g) => g.items?.includes('laptop')).map((g) => g.afterLevel));
 const specs = chapter.levels.map((l) => l.spec);
 const before = specs.find((l) => l.index === Math.max(1, grantAt - 1))?.id;
 const after = specs.find((l) => l.index === grantAt + 1)?.id;
+const paymentLevel = specs.find((l) => l.winRules?.some((r) => r.kind === 'payment_js_valid'))?.id;
 if (!before || !after) throw new Error(`no laptop grant in ${slug}`);
 
 try {
@@ -167,6 +270,8 @@ try {
   check(await $(`Boolean(document.getElementById('laptop-overlay')?.classList.contains('is-closing')) && ${L}.state() === 'closing'`), 'Close button starts the fast lid-close animation before hiding');
   await browser.waitFor(`!${L}.isOpen()`, 3000, 'the Close button closes the laptop');
   await browser.waitFor(`document.getElementById('terminal-panel')?.contains(document.activeElement)`, 3000, 'focus returns to the terminal after Close button');
+
+  await verifyPaymentBugLevel(paymentLevel);
 
   // Progress key: a preview writes none.
   await $(`localStorage.removeItem(${JSON.stringify(PROGRESS_KEY)})`);

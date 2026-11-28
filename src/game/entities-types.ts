@@ -56,6 +56,8 @@ export interface Enemy extends SceneTransform {
   bufferPath: string | null;
   helps: string | null;
   showIn: string[];
+  customCodeRule?: boolean;
+  codeRuleSolved?: boolean;
   family: number;
   /** Rooms it was in when it died (the stage plays the death there). */
   deathZone: string[];

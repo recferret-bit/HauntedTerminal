@@ -201,7 +201,8 @@ async function main() {
       return { phase: t.phase(), busy: t.busy(), paused: t.paused(), stats: t.statsOpen(),
         floor: s.floor, stageFloor: s.room?.floor ?? s.floor, hp: s.hp, maxHp: s.maxHp, cwd: s.cwd, ended: s.ended, rank: s.rank,
         commands: s.commands, timeSec: s.timeSec, ram: s.ram, ssd: s.ssd, backups: s.backups,
-        enemiesLeft: s.enemiesLeft, enemiesTotal: s.enemiesTotal };
+        enemiesLeft: s.enemiesLeft, enemiesTotal: s.enemiesTotal,
+        pendingLaptopTasks: s.pendingLaptopTasks ?? [] };
     })()`);
     const pressKey = async (key, code, keyCode) => {
       await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key, code, windowsVirtualKeyCode: keyCode, nativeVirtualKeyCode: keyCode });
@@ -265,6 +266,25 @@ async function main() {
         const line = String(item);
         await waitFor((st) => !st.busy || st.ended, lineTimeout, `input to unblock before "${line}"`);
         await evaluate(`(() => { const b = document.querySelector('#skip-dialog-btn'); if (b && !b.hidden) b.click(); return true; })()`, lineTimeout);
+        if (s.pendingLaptopTasks && s.pendingLaptopTasks.length > 0) {
+          await evaluate(`(async () => {
+            window.__laptopOverlay?.open();
+            const until = Date.now() + 8000;
+            while (Date.now() < until && window.__laptopOverlay?.state() !== 'open') await new Promise((r) => setTimeout(r, 80));
+            document.querySelector('#laptop-overlay .lt-power')?.click();
+            const deskUntil = Date.now() + 8000;
+            while (Date.now() < deskUntil && window.__laptopOverlay?.state() !== 'desktop') await new Promise((r) => setTimeout(r, 80));
+            for (const id of ${JSON.stringify(s.pendingLaptopTasks)}) {
+              await window.__laptopOverlay?.runTask(id);
+            }
+            window.__laptopOverlay?.close();
+            const closeUntil = Date.now() + 4000;
+            while (Date.now() < closeUntil && window.__laptopOverlay?.isOpen()) await new Promise((r) => setTimeout(r, 60));
+            return true;
+          })()`, 22000);
+          s = await waitFor((st) => !st.busy || st.ended, lineTimeout, 'laptop close');
+          await evaluate(`(() => { const b = document.querySelector('#skip-dialog-btn'); if (b && !b.hidden) b.click(); return true; })()`, lineTimeout);
+        }
         await evaluate(`window.__term.submit(${JSON.stringify(line)}).then(() => true)`, lineTimeout);
         ran++;
         await sleep(gap);
@@ -327,16 +347,22 @@ async function main() {
     if (chrome && chrome.exitCode === null) {
       chrome.kill();
       await new Promise((res) => {
-        const timer = setTimeout(res, 2000);
+        const timer = setTimeout(res, 1500);
         chrome.once('exit', () => { clearTimeout(timer); res(); });
       });
+      if (chrome.exitCode === null) chrome.kill('SIGKILL');
     }
-    if (vite) await vite.close();
+    chrome?.stderr?.destroy();
+    chrome?.unref?.();
+    if (vite) {
+      vite.httpServer?.closeAllConnections?.();
+      await Promise.race([vite.close().catch(() => {}), sleep(2000)]);
+    }
     try { rmSync(profile, { recursive: true, force: true }); } catch { /* Chrome may still hold a lock file */ }
   }
 }
 
 main().then(
-  (code) => { process.exitCode = code; },
-  (err) => { console.error(`FAIL     ${err.message}`); process.exitCode = 1; },
+  (code) => { process.exit(code); },
+  (err) => { console.error(`FAIL     ${err.message}`); process.exit(1); },
 );

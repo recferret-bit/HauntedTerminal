@@ -23,6 +23,9 @@ import { createSfx, type Sfx } from './sfx.js';
 import { absPath } from './tree.js';
 import { createOuch } from './ouch.js';
 import { finishTabCompletion } from './unix-applets.js';
+import { createDockerState } from './docker.js';
+import { createVfsVimIo } from './vim.js';
+import type { VimOpenPayload } from './vim-types.js';
 import type { CommandResult, FloorId, GameSnapshot, TickResult } from './types.js';
 import { buildRoom } from './view.js';
 
@@ -55,6 +58,18 @@ export interface Session {
   consumeMapRequest?(): string | null;
   /** Consume a pending `skin <id>` request from the last command (the page applies it). */
   consumeSkinRequest?(): TerminalSkinId | null;
+  /** Consume a pending in-terminal `vim` open request from the last command. */
+  consumeVimRequest?(): VimOpenPayload | null;
+  /** Read a workspace file for editor reload (`:e`). */
+  readEditableFile?(nameOrPath: string): { ok: true; content: string; exists?: boolean } | { ok: false; error: string };
+  /** Save a buffer edited in terminal `vim` (or code editor) back into VFS. */
+  saveEditableFile?(nameOrPath: string, content: string): CommandResult;
+  /** Hold or release the battle turn timer (e.g. while Vim / mini-editor is active). */
+  holdTurnTimer?(hold: 'editor' | 'laptop', on: boolean): void;
+  /** Sync completed laptop task ids into the chapter runtime. */
+  syncLaptopTasks?(doneIds: readonly string[]): TickResult;
+  /** Complete any pending laptop tasks required by the active level once the laptop is carried (headless/automation). */
+  completePendingLaptopTasks?(): TickResult | null;
   /** App bus. Pages subscribe; headless tests can read `recent()`. */
   readonly bus?: AppBus;
   readonly sfx?: Sfx;
@@ -90,6 +105,7 @@ class Game implements LabSession, Host, ClassicShellHost {
   private pendingManual: string | null = null;
   private pendingMap: string | null = null;
   private pendingSkin: TerminalSkinId | null = null;
+  private pendingVim: VimOpenPayload | null = null;
   paused = false;
   pausedAt: number | null = null;
   readonly host: WorldHost = {
@@ -196,6 +212,38 @@ class Game implements LabSession, Host, ClassicShellHost {
     const id = this.pendingSkin; this.pendingSkin = null; return id;
   }
 
+  consumeVimRequest(): VimOpenPayload | null {
+    const req = this.pendingVim;
+    this.pendingVim = null;
+    return req;
+  }
+
+  private vimIo(): ReturnType<typeof createVfsVimIo> {
+    return createVfsVimIo({
+      cwd: () => this.run.cwd,
+      onRead: (abs) => this.run.filesRead.add(abs),
+    });
+  }
+
+  readEditableFile(nameOrPath: string): { ok: true; content: string; exists?: boolean } | { ok: false; error: string } {
+    return this.vimIo().read(nameOrPath);
+  }
+
+  saveEditableFile(nameOrPath: string, content: string): CommandResult {
+    const res = this.vimIo().write(nameOrPath, content);
+    if (!res.ok) {
+      const msg = `vim: ${res.error}\n`;
+      return this.heard(msg, [], { stderr: msg, code: 1 });
+    }
+    this.run.commands += 1;
+    const events: KernelEvent[] = [{ type: 'VIBECODER_ACTION', action: 'write', command: `vim ${nameOrPath}` }];
+    this.run.world.cause = 'other';
+    this.run.world.sync(events);
+    const lineCount = Math.max(1, content.split('\n').length - (content.endsWith('\n') ? 1 : 0));
+    const notes = this.run.world.drain();
+    return this.heard(`[SAVED] ${nameOrPath} (${lineCount} lines)\n${notes}`, events, { code: 0 });
+  }
+
   quietSkip(): { text: string; events: KernelEvent[] } {
     const tutoring = this.agents.active();
     const chatter = this.agents.skip();
@@ -217,6 +265,10 @@ class Game implements LabSession, Host, ClassicShellHost {
 
   setSkinRequest(id: TerminalSkinId): void {
     this.pendingSkin = id;
+  }
+
+  setVimRequest(payload: VimOpenPayload): void {
+    this.pendingVim = payload;
   }
 
   skipTutorial(): TickResult {
@@ -515,6 +567,7 @@ class Game implements LabSession, Host, ClassicShellHost {
       world: new World(this.host, [], []),
       filesRead: new Set(),
       socketInputs: new Map(),
+      docker: createDockerState('haunted'),
       lab: freshLabLevelState(),
     };
     load(this, startFloor);

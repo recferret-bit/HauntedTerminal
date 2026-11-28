@@ -19,16 +19,39 @@ function questsApp(ctx: LaptopContext): AppView {
   const list = h('ol', { class: 'lt-quests' });
   const draw = (p: Progress): void => {
     head.textContent = `${p.done.length} / ${TASKS.length} quests solved`;
-    list.replaceChildren(...TASKS.map((t) => {
-      const done = p.done.includes(t.id);
-      return h('li', { class: done ? 'done' : '' },
-        h('span', { class: 'lt-quest-app' }, APPS[t.app].glyph),
-        h('span', { class: 'lt-quest-text' }, h('b', {}, `${done ? '[x] ' : ''}${t.title}`), h('small', {}, t.brief)),
-        h('button', { class: 'lt-btn95', 'data-task': t.id, onclick: () => ctx.startTask(t.id) }, done ? 'Redo' : 'Start'));
-    }));
+    const notice = ctx.roomNotice?.(p);
+    const noticeItems = notice
+      ? [
+          h('li', { class: 'done' },
+            h('span', { class: 'lt-quest-app' }, notice.badge),
+            h('span', { class: 'lt-quest-text' }, h('b', {}, notice.title), h('small', {}, notice.detail)),
+            h('span', {})),
+        ]
+      : [];
+    const room = ctx.roomTask?.();
+    const roomItems = room
+      ? [
+          h('li', {},
+            h('span', { class: 'lt-quest-app' }, 'BUG'),
+            h('span', { class: 'lt-quest-text' }, h('b', {}, room.task.title), h('small', {}, room.task.brief)),
+            h('button', { class: 'lt-btn95', 'data-task': room.task.id, onclick: () => ctx.startRoomTask?.(room) }, 'Fix')),
+        ]
+      : [];
+    list.replaceChildren(
+      ...noticeItems,
+      ...roomItems,
+      ...TASKS.map((t) => {
+        const done = p.done.includes(t.id);
+        return h('li', { class: done ? 'done' : '' },
+          h('span', { class: 'lt-quest-app' }, APPS[t.app].glyph),
+          h('span', { class: 'lt-quest-text' }, h('b', {}, `${done ? '[x] ' : ''}${t.title}`), h('small', {}, t.brief)),
+          h('button', { class: 'lt-btn95', 'data-task': t.id, onclick: () => ctx.startTask(t.id) }, done ? 'Redo' : 'Start'));
+      }),
+    );
   };
   draw(ctx.progress());
   ctx.onProgress(draw);
+  ctx.onRoomChange?.(() => draw(ctx.progress()));
   return { el: h('div', { class: 'lt-questbox' }, head, list) };
 }
 
@@ -46,7 +69,12 @@ export function createApp(id: AppId, ctx: LaptopContext): AppView {
   switch (id) {
     case 'quests': return questsApp(ctx);
     case 'sysinfo': return sysinfoApp(ctx);
-    case 'jspad': return createWorkbench(ctx, { app: 'jspad', files: ['js'], scratch: { html: '', css: '', js: JS_SCRATCH }, autoRunMs: 0 });
+    case 'jspad': {
+      const wb = createWorkbench(ctx, { app: 'jspad', files: ['js'], scratch: { html: '', css: '', js: JS_SCRATCH }, autoRunMs: 0 });
+      const room = ctx.roomTask?.();
+      if (room && room.task.app === 'jspad') wb.loadTask(room.task, room.files, room.onSolve);
+      return wb;
+    }
     case 'weaver': return createWorkbench(ctx, { app: 'weaver', files: ['html', 'css', 'js'], scratch: PAGE_SCRATCH, autoRunMs: 700 });
   }
 }

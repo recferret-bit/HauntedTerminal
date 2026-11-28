@@ -44,7 +44,9 @@ export function vetoRemove(world: WorldLike, node: VNode, events: KernelEvent[])
   const running = !e.frozen;
   switch (e.type) {
     case 'bug':
-      return `${node.name}: refusing to delete production. Patch the bug: sed -i 's/BUG/FIXED/' ${node.name}`;
+      return e.customCodeRule
+        ? `${node.name}: refusing to delete production. Open Laptop JS Pad or edit ${node.name} to fix the logic.`
+        : `${node.name}: refusing to delete production. Patch the bug: sed -i 's/BUG/FIXED/' ${node.name}`;
     case 'crack':
       return running ? `${node.name}: Text file busy (it is running). Find its PID with ps and kill it.` : null;
     case 'exploit':
@@ -105,7 +107,11 @@ export function signal(world: WorldLike, pid: number, sig: PosixSignal, events: 
     proc('TRAPPED_ENRAGED');
     shrug();
     return e.type === 'bug'
-      ? ok(`prod.service restarted (Restart=always) as PID ${e.pid}. The bug is in the code: sed -i it.\n`)
+      ? ok(`prod.service restarted (Restart=always) as PID ${e.pid}. ${
+          e.customCodeRule
+            ? `Fix the logic in ${e.name} (Laptop JS Pad or edit/sed).`
+            : 'The bug is in the code: sed -i it.'
+        }\n`)
       : ok(`${e.name} relaunches as PID ${e.pid}: it is still executable. chmod -x it.\n`);
   }
   if (sig === 'SIGSTOP') {
@@ -207,7 +213,7 @@ export function sync(world: WorldLike, events: KernelEvent[], how: KillHow = wor
       kill(world, e, how, events);
       continue;
     }
-    if (e.type === 'bug' && node && !node.content.includes('BUG')) {
+    if (e.type === 'bug' && node && (e.codeRuleSolved || (!e.customCodeRule && !node.content.includes('BUG')))) {
       kill(world, e, 'other', events);
       continue;
     }

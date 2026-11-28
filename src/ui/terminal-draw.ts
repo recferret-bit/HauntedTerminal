@@ -22,6 +22,7 @@ export interface LineState {
   pendingTail: string | null;
   typing: boolean;
   cancelType: (() => void) | null;
+  isModalOpen?: () => boolean;
 }
 
 const ESC = String.fromCharCode(0x1b);
@@ -112,6 +113,15 @@ export function commitInputLine(st: LineState): void {
   st.cursorRow = 0;
 }
 
+export function writeRunOutput(st: LineState, res: { output: string; clear?: boolean; stderr?: string }): void {
+  if (res.clear) st.term.write(CLEAR);
+  if (res.output) {
+    let body = colourise(res.output, res.stderr).replace(/\r?\n/g, '\r\n');
+    if (!body.endsWith('\r\n')) body += '\r\n';
+    st.term.write(body);
+  }
+}
+
 /** Run one line. `echoed`: the Enter handler already left it on screen. */
 function runLine(st: LineState, line: string, echoed: boolean): void {
   if (!echoed) {
@@ -134,20 +144,15 @@ function runLine(st: LineState, line: string, echoed: boolean): void {
     console.error(err);
     res = { output: `\x1b[1;31mkernel: ${(err as Error).message}\x1b[0m\n` };
   }
-  if (res.clear) st.term.write(CLEAR);
-  if (res.output) {
-    let body = colourise(res.output, res.stderr).replace(/\r?\n/g, '\r\n');
-    if (!body.endsWith('\r\n')) body += '\r\n';
-    st.term.write(body);
-  }
-  if (!st.blocked && !st.promptShown) newPrompt(st);
+  if (res.clear || res.output) writeRunOutput(st, res);
+  if (!st.blocked && !st.promptShown && !st.isModalOpen?.()) newPrompt(st);
 }
 
 export function drain(st: LineState): void {
   if (st.draining) return;
   st.draining = true;
   try {
-    while (!st.blocked && st.queue.length > 0) {
+    while (!st.blocked && !st.isModalOpen?.() && st.queue.length > 0) {
       const next = st.queue.shift()!;
       runLine(st, next.line, next.echoed);
       next.done();
@@ -155,7 +160,7 @@ export function drain(st: LineState): void {
   } finally {
     st.draining = false;
   }
-  if (!st.blocked && st.queue.length === 0 && st.pendingTail !== null) {
+  if (!st.blocked && !st.isModalOpen?.() && st.queue.length === 0 && st.pendingTail !== null) {
     const tail = st.pendingTail;
     st.pendingTail = null;
     if (!st.promptShown) newPrompt(st);

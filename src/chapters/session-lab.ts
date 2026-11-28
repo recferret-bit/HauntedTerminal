@@ -1,7 +1,7 @@
 import { maxHpFor } from '../game/bestiary.js';
 import { applyLabInjection, buildLabInspect } from '../game/lab-support.js';
 import type { TickResult } from '../game/types.js';
-import { hiddenEnemyId } from './script.js';
+import { isEnemyHidden } from './script.js';
 import { skipIntro } from '../game/battle.js';
 import { enemyTurn, freeStep } from './session-battle.js';
 import { clockTick } from './session-flow.js';
@@ -15,6 +15,7 @@ import type { ChapterState } from './session-state.js';
 /** Everything a tool wants to show about the running level, as plain data. Changes nothing. */
 export function inspect(g: ChapterState): LabInspect {
   const counts = g.rt.world.counts();
+  const hiddenLeft = g.rt.world.enemies.filter((e) => !e.minion && !e.dead && !g.rt.world.petrified(e) && isEnemyHidden(g, e.id)).length;
   return buildLabInspect({
     levelId: g.rt.spec.id,
     root: g.rt.root,
@@ -22,8 +23,8 @@ export function inspect(g: ChapterState): LabInspect {
     world: g.rt.world,
     hp: g.hp,
     maxHp: maxHpFor(g.ram),
-    // The script's hidden enemy is not counted until it shows, like the HUD.
-    enemiesLeft: hiddenEnemyId(g) ? Math.max(0, counts.left - 1) : counts.left,
+    // Script-hidden enemies are not counted until they appear, like the HUD.
+    enemiesLeft: Math.max(0, counts.left - hiddenLeft),
     held: enemiesHeld(g),
     lab: g.lab,
     state: g.rt.lab,

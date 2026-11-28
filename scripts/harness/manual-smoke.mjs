@@ -768,7 +768,9 @@ try {
   await browser.waitFor("!window.__game.snapshot().paused", 5000, 'floor reveal card clears after deploy');
 
   // Mid-battle F1 & F3 keep 30s turn timer running while reading (Q4 / D5) — use post-Hub combat level (index >= 5) carrying manual & map
-  const battleLevel = readChapter(slug).levels.map((l) => l.spec).find((l) => l.index >= 5 && l.enemies.length > 0 && !l.script?.safe);
+  const battleLevel = readChapter(slug)
+    .levels.map((l) => l.spec)
+    .find((l) => l.index >= 5 && l.enemies.some((e) => !e.appearWhen && e.type !== 'ransomware' && e.type !== 'spyware' && e.type !== 'rootkit') && !l.script?.safe);
   check(Boolean(battleLevel), 'found a post-Hub combat level for mid-battle F1 live timer verification');
   if (battleLevel) {
     await browser.open(`${base}/play/${slug}/${battleLevel.id}?nointro=1`);

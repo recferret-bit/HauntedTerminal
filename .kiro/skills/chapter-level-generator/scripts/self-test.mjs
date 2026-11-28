@@ -478,7 +478,7 @@ await withProcgen(async (_p, vite) => {
   const dadOut = kiroChap.exec('dad').output;
   assert.ok(dadOut.includes('Motherboard Map') && dadOut.includes('Field Manual'));
   // Attempting to exit before `kiro load qwen` must fail with gate locked!
-  assert.ok(kiroChap.exec('cd sector_ui_grid').output.includes('Sector gate locked'));
+  assert.ok(kiroChap.exec('cd sector_compose_cluster').output.includes('Sector gate locked'));
   // Loading an out-of-order core (`llama`) in Hub 1 must NOT satisfy `kiro_loaded: "qwen"` or emit Hub 3's banner!
   const wrongHubCore = kiroChap.exec('kiro load llama');
   assert.ok(
@@ -496,30 +496,36 @@ await withProcgen(async (_p, vite) => {
     true,
   );
 
-  // Verify interactive `edit` modal (`readEditableFile` + patch chips + `saveEditableFile`) on Levels 5, 6, 8, 9
+  // Verify Level 5 Docker Compose OOM cluster (.logs reveal + edit/sed locks + vim rescue + floating sheets) & Level 6 laptop trial
   kiroChap.jumpToLevel('level-05-task-ui-grid');
-  assert.ok(kiroChap.exec('dad').output.includes('storefront.css'));
-  assert.ok(kiroChap.exec('dad').output.includes('#checkout-btn'));
-  assert.ok(kiroChap.exec('dad').output.includes("sed -i 's/ disabled//' index.html"));
-  const editCss = kiroChap.readEditableFile('storefront.css');
-  assert.equal(editCss.ok, true);
-  const patchedCss = editCss.content.replace(editCss.patches[0].find, editCss.patches[0].replace);
-  assert.ok(kiroChap.saveEditableFile('storefront.css', patchedCss).output.includes('[SAVED]'));
-  const editHtml = kiroChap.readEditableFile('index.html');
-  assert.equal(editHtml.ok, true);
-  const patchedHtml = editHtml.content.replace(editHtml.patches[0].find, editHtml.patches[0].replace);
-  assert.ok(kiroChap.saveEditableFile('index.html', patchedHtml).output.includes('200 OK'));
+  assert.ok(kiroChap.exec('dad').output.includes('.logs/java-api.log'));
+  assert.ok(kiroChap.exec('edit docker-compose.yml').output.includes('vim'), 'edit must be locked until laptop on Level 5');
+  assert.ok(kiroChap.exec("sed -i 's/64m/512m/' docker-compose.yml").output.includes('vim'), 'sed must be locked until laptop on Level 5');
+  assert.ok(kiroChap.exec('ls -la').output.includes('.logs'));
+  assert.ok(kiroChap.exec('cat .logs/java-api.log').output.includes('OutOfMemoryError'));
+  const hpBeforeOom = kiroChap.snapshot().hp;
+  const oomAttempt = kiroChap.exec('docker compose up -d');
+  assert.equal(oomAttempt.code, 1, 'unfixed docker compose up must fail with OOM');
+  assert.equal(kiroChap.snapshot().hp, hpBeforeOom, 'unfixed OOM crash deals 0 HP damage');
+  assert.ok(oomAttempt.events.some((e) => e.type === 'COMPOSE_OOM_CRASH'));
+  assert.ok(kiroChap.exec("vim -c '%s/-Xmx64m/-Xmx512m/' -c 'wq' docker-compose.yml").output.includes('COMPOSE LINT: OK'));
+  const upOk = kiroChap.exec('docker compose up -d');
+  assert.equal(upOk.code, 0);
+  const floatActors = upOk.snapshot.room.actors.filter((a) => a.id.startsWith('docker:float:'));
+  assert.equal(floatActors.length, 4, 'all 4 Compose services must hover on stage as floating prop.file sheets');
   kiroChap.exec('mv gpu_tensor_chip_02.img ~');
   kiroChap.exec('mv ram_16gb.dimm ~');
   kiroChap.exec('cd logic_cell');
   assert.equal(kiroChap.getCurrentLevel().id, 'level-06-task-logic-purge');
-  assert.ok(kiroChap.exec('edit cart.js').output.includes('laptop'), 'edit is locked on Level 6 until the laptop is taken');
-  assert.ok(kiroChap.exec("sed -i 's/foo/bar/' cart.js").output.includes('laptop'), 'sed is locked on Level 6 until the laptop is taken');
+  assert.ok(kiroChap.exec('edit code/payment.js').output.includes('laptop'), 'edit is locked on Level 6 until the laptop is taken');
+  assert.ok(kiroChap.exec("sed -i 's/foo/bar/' code/payment.js").output.includes('laptop'), 'sed is locked on Level 6 until the laptop is taken');
   const laptopPick = kiroChap.exec('mv laptop ~');
   assert.ok(laptopPick.output.includes('[COLLECTED]'), 'mv laptop ~ collects the laptop on Level 6');
   assert.equal(laptopPick.snapshot.inventory.held, 'laptop', 'Level 6 holds the laptop after pickup');
-  const editCart = kiroChap.readEditableFile('cart.js');
-  assert.equal(editCart.ok, true, 'edit works once laptop is held');
+  const lapSync = kiroChap.completePendingLaptopTasks();
+  assert.ok(lapSync?.events.some((e) => e.type === 'ENTITY_SPAWNED' && e.entityId === 'bug_js_l6'), 'passing the 3 laptop JS warmups spawns bug_js_l6');
+  const editPayment = kiroChap.readEditableFile('code/payment.js');
+  assert.equal(editPayment.ok, true, 'edit works once laptop is held and code/payment.js has spawned');
 
   // Jump to Hub 2 (Level 7) & Hub 3 (Level 10): verify DeepSeek disables Codec and Llama disables Gork
   kiroChap.jumpToLevel('level-07-hub-model-two');
@@ -602,6 +608,10 @@ await withProcgen(async (_p, vite) => {
   for (const lvl of catalog.getChapterLevels('chapter-01-kiroween')) {
     for (const cmd of lvl.solutionCommands) {
       if (fullRunSession.snapshot().skippableDialog) fullRunSession.skipOpeningDialog();
+      if (fullRunSession.snapshot().pendingLaptopTasks?.length) {
+        fullRunSession.completePendingLaptopTasks?.();
+        if (fullRunSession.snapshot().skippableDialog) fullRunSession.skipOpeningDialog();
+      }
       fullRunSession.exec(cmd);
     }
   }

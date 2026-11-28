@@ -18,12 +18,14 @@ import {
   hasSkippableDialog,
   levelScript,
   openingActive,
+  pendingLaptopTasks,
   runTimed,
   skipMidLevelDialog,
   syncScriptTriggers,
   syncTutorial,
 } from './script.js';
 import type { ChapterState, EditorOpenPayload } from './session-state.js';
+import type { VimOpenPayload } from '../game/vim-types.js';
 import { afterCommand, battleSecond, enemyTurn, maybeBeginBattle } from './session-battle.js';
 import { arriveCurrentLevel, levelBannerText, loadLevel, restartChapterLevel } from './session-level.js';
 import { cmdHank } from './session-meta.js';
@@ -73,6 +75,12 @@ export function isChaosMode(g: ChapterState): boolean {
 export function consumeEditorRequest(g: ChapterState): EditorOpenPayload | null {
     const req = g.pendingEditor;
     g.pendingEditor = null;
+    return req;
+  }
+
+export function consumeVimRequest(g: ChapterState): VimOpenPayload | null {
+    const req = g.pendingVim;
+    g.pendingVim = null;
     return req;
   }
 
@@ -284,6 +292,22 @@ export function skipBattleIntro(g: ChapterState): TickResult | null {
     });
   }
 
+/** Syncs solved laptop task ids from the in-game clamshell laptop UI, running unlocked triggers/spawns. */
+export function syncLaptopTasks(g: ChapterState, doneIds: readonly string[]): TickResult {
+  return settle(g, (events) => {
+    for (const id of doneIds) g.laptopDone.add(id);
+    const out = syncWorldAndGates(g, events);
+    return out + maybeBeginBattle(g, events);
+  });
+}
+
+/** Completes any pending `laptop_tasks_done` requirements on the active level once the laptop is carried (headless/automation). */
+export function completePendingLaptopTasks(g: ChapterState): TickResult | null {
+  const pending = pendingLaptopTasks(g);
+  if (pending.length === 0) return null;
+  return syncLaptopTasks(g, pending);
+}
+
 /** Opening or mid-level scripted Vibecoder + Kiro conversation skip (Skip Dialog button). Null when none is active. */
 export function skipOpeningDialog(g: ChapterState): TickResult | null {
     if (openingActive(g)) {
@@ -294,7 +318,7 @@ export function skipOpeningDialog(g: ChapterState): TickResult | null {
       });
     }
     if (!hasSkippableDialog(g)) return null;
-    return settle(g, (events) => skipMidLevelDialog(g, events) + syncWorldAndGates(g, events));
+    return settle(g, (events) => skipMidLevelDialog(g, events) + syncWorldAndGates(g, events) + maybeBeginBattle(g, events));
   }
 
 /** Marks an active mid-level scripted dialog complete after natural DialogBox queue drain. */
@@ -343,6 +367,7 @@ export function restart(g: ChapterState, options?: { intro?: boolean }): TickRes
     g.endedAt = null;
     g.fullRun = true;
     g.seenPickups.clear();
+    g.laptopDone.clear();
     g.intro = Boolean(options?.intro);
     applyInitialLoadout(g, 0);
     loadLevel(g, 0, false, options?.intro ? [] : events);

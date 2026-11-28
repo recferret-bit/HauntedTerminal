@@ -25,7 +25,19 @@ export interface AppView {
 
 /** An app that can take a task: the code editors. */
 export interface TaskApp extends AppView {
-  loadTask(task: LaptopTask, files: CodeFiles): void;
+  loadTask(task: LaptopTask, files: CodeFiles, onSolve?: (files: CodeFiles) => void): void;
+}
+
+export interface RoomTaskBinding {
+  task: LaptopTask;
+  files: CodeFiles;
+  onSolve(files: CodeFiles): void;
+}
+
+export interface RoomNotice {
+  badge: string;
+  title: string;
+  detail: string;
 }
 
 export interface LaptopContext {
@@ -34,6 +46,16 @@ export interface LaptopContext {
   onProgress(fn: (p: Progress) => void): void;
   /** Opens the task's app with the task (and its saved draft) loaded. */
   startTask(id: string): void;
+  /** Optional live coding bug from the active `/play` room when unlocked. */
+  roomTask?(): RoomTaskBinding | null;
+  /** Optional status notice shown in Quests (e.g. warmup done / run `ls` first). */
+  roomNotice?(p: Progress): RoomNotice | null;
+  /** Subscribes to room-bound task state changes (e.g. bug fixed inside JS Pad). */
+  onRoomChange?(fn: () => void): void;
+  /** Notifies room-bound task listeners after a room file is fixed. */
+  notifyRoomChange?(): void;
+  /** Opens a room-bound task inside its code app (`jspad` / `weaver`). */
+  startRoomTask?(binding: RoomTaskBinding): void;
   open(app: AppId): void;
   shutdown(): void;
   /** A comic word bursting off the screen: `SOLVED!`. */

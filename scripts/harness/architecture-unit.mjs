@@ -1302,5 +1302,193 @@ await withProcgen(async (_procgen, vite) => {
     cast.disposeStageActor(fwActor);
   });
 
+  await test('vim engine supports full modal FSM, motions, insert/replace, visual, undo/redo, search, Ex commands, and -c batch CLI', async () => {
+    const { VIM_MODE_TRANSITIONS } = await load('/src/game/vim-types.ts');
+    const { reachableStates } = await load('/src/contracts/state-machine.ts');
+    const { createVimState, stepVimKey, runVimCli } = await load('/src/game/vim.ts');
+
+    const reach = reachableStates(VIM_MODE_TRANSITIONS, 'normal');
+    assert.deepEqual([...reach].sort(), ['command', 'insert', 'normal', 'replace', 'search', 'visual', 'visual-line']);
+
+    const files = new Map([['app.yml', 'JAVA_OPTS: "-Xmx64m"\nport: 8080\n']]);
+    const io = {
+      read: (p) => (files.has(p) ? { ok: true, content: files.get(p), exists: true } : { ok: true, content: '', exists: false }),
+      write: (p, c) => {
+        files.set(p, c);
+        return { ok: true };
+      },
+    };
+
+    const s = createVimState({ path: 'app.yml', content: files.get('app.yml'), readOnly: false });
+    for (const ch of ['0', 'f', '6', 'c', 'w', '5', '1', '2', 'm', 'Escape']) stepVimKey(s, ch, io);
+    assert.equal(s.lines[0], 'JAVA_OPTS: "-Xmx512m"');
+
+    // Undo and redo round-trip cleanly.
+    stepVimKey(s, 'u', io);
+    assert.equal(s.lines[0], 'JAVA_OPTS: "-Xmx64m"');
+    stepVimKey(s, '\x12', io);
+    assert.equal(s.lines[0], 'JAVA_OPTS: "-Xmx512m"');
+
+    // Visual line yank & paste adds a duplicated line; undo restores.
+    for (const ch of ['V', 'y', 'p']) stepVimKey(s, ch, io);
+    assert.equal(s.lines.length, 3);
+    stepVimKey(s, 'u', io);
+    assert.equal(s.lines.length, 2);
+
+    // Search forward jumps to 8080, Ex :set nu & :wq writes back to IO.
+    for (const ch of ['/', '8', '0', '8', '0', 'Enter']) stepVimKey(s, ch, io);
+    assert.equal(s.row, 1);
+    for (const ch of [':', 's', 'e', 't', ' ', 'n', 'u', 'Enter']) stepVimKey(s, ch, io);
+    assert.equal(s.showNumbers, true);
+    let outcome = 'continue';
+    for (const ch of [':', 'w', 'q', 'Enter']) outcome = stepVimKey(s, ch, io).outcome;
+    assert.equal(outcome, 'saved-quit');
+    assert.ok(files.get('app.yml').includes('-Xmx512m'));
+
+    // Batch CLI -c saves cleanly without interactive blocking, and -R blocks :w without force.
+    const batch = runVimCli(['-c', '%s/-Xmx512m/-Xmx1g/', '-c', 'wq', 'app.yml'], io);
+    assert.equal(batch.kind, 'headless');
+    assert.equal(batch.saved, true);
+    assert.ok(files.get('app.yml').includes('-Xmx1g'));
+    const ro = createVimState({ path: 'app.yml', content: files.get('app.yml'), readOnly: true });
+    for (const ch of [':', 'w', 'Enter']) stepVimKey(ro, ch, io);
+    assert.match(ro.status, /readonly/i);
+  });
+
+  await test('docker & compose engine evaluates memory limits (OOM Exit 137 vs >=256m), auto-recreates cleanly, and preserves Level 8/9 stacks', async () => {
+    const { evaluateComposeRuntime, parseMemoryMb, validateDockerCompose } = await load('/src/game/docker-compose-eval.ts');
+    const { createDockerState, runDockerCli } = await load('/src/game/docker.ts');
+    const { evaluateLevelClearAchievements, ACHIEVEMENT_SPECS, resetAchievementsForTest } = await load('/src/chapters/achievements.ts');
+    const { createChapterSession } = await load('/src/chapters/chapter-session.ts');
+
+    assert.equal(parseMemoryMb('64m'), 64);
+    assert.equal(parseMemoryMb('512M'), 512);
+    assert.equal(parseMemoryMb('1g'), 1024);
+    assert.equal(parseMemoryMb('2G'), 2048);
+
+    const lowCompose = 'services:\n  java-api:\n    image: eclipse-temurin:21\n    environment:\n      JAVA_OPTS: "-Xmx128m"\n  postgres:\n    image: postgres:16\n';
+    assert.equal(validateDockerCompose(lowCompose).ok, true);
+    assert.equal(evaluateComposeRuntime(lowCompose).ok, false);
+    assert.equal(evaluateComposeRuntime(lowCompose.replace('128m', '256m')).ok, true);
+    const viaMemLimit = 'services:\n  java-api:\n    image: openjdk:21\n    mem_limit: 512m\n';
+    assert.equal(evaluateComposeRuntime(viaMemLimit).ok, true);
+
+    let yml = lowCompose;
+    const dockerState = createDockerState('unit');
+    const io = {
+      cwd: '/stack',
+      readFile: (p) => (p.includes('compose') ? { ok: true, content: yml, path: '/stack/docker-compose.yml' } : { ok: false, error: 'missing' }),
+      readOptional: () => null,
+      findComposeFile: () => ({ path: '/stack/docker-compose.yml', content: yml }),
+    };
+    const failUp = runDockerCli(dockerState, ['compose', 'up', '-d'], io);
+    assert.equal(failUp.code, 1);
+    assert.equal(failUp.composeResult?.kind, 'up-oom');
+    assert.match(runDockerCli(dockerState, ['ps', '-a'], io).stdout, /Exited \(137\)/);
+    yml = lowCompose.replace('128m', '512m');
+    const okUp = runDockerCli(dockerState, ['compose', 'up', '-d'], io);
+    assert.equal(okUp.code, 0);
+    assert.equal(okUp.composeResult?.kind, 'up-healthy');
+    assert.match(runDockerCli(dockerState, ['ps'], io).stdout, /Up 1 second \(healthy\)/);
+    assert.equal(runDockerCli(dockerState, ['compose', 'down', '-v'], io).code, 0);
+    assert.match(runDockerCli(dockerState, ['prune'], io).stdout, /Deleted Containers/);
+
+    // ACH_FULL_STACK_FIXER unlocks after terminal-code + docker-image + docker-compose without requiring html-css.
+    assert.ok(!ACHIEVEMENT_SPECS.find((a) => a.steamApiName === 'ACH_FULL_STACK_FIXER').description.includes('HTML/CSS'));
+    resetAchievementsForTest();
+    evaluateLevelClearAchievements({ openingSector: false, mechanic: 'terminal-code', rank: 'A', chaos: false, preview: false, lab: false });
+    evaluateLevelClearAchievements({ openingSector: false, mechanic: 'docker-image', rank: 'A', chaos: false, preview: false, lab: false });
+    const stackAch = evaluateLevelClearAchievements({ openingSector: false, mechanic: 'docker-compose', rank: 'A', chaos: false, preview: false, lab: false });
+    assert.ok(stackAch.some((e) => e.steamApiName === 'ACH_FULL_STACK_FIXER'));
+    resetAchievementsForTest();
+
+    // Level 5 OOM crash deals 0 HP damage, locks edit/sed, opens after vim rescue + compose up with 4 floating prop.file actors.
+    const chap = createChapterSession({ chapterId: 'chapter-01-kiroween', startLevelId: 'level-05-task-ui-grid', pidSeed: 1 });
+    chap.arriveLevel();
+    chap.skipOpeningDialog();
+    assert.equal(chap.exec('edit docker-compose.yml').code, 1);
+    assert.equal(chap.exec("sed -i 's/64m/512m/' docker-compose.yml").code, 1);
+    const hp0 = chap.snapshot().hp;
+    const crash1 = chap.exec('docker compose up -d');
+    assert.equal(crash1.code, 1);
+    assert.equal(chap.snapshot().hp, hp0);
+    assert.ok(crash1.events.some((e) => e.type === 'COMPOSE_OOM_CRASH' && e.actors.length === 4));
+    assert.equal(chap.exec('docker compose up -d').code, 1);
+    assert.equal(chap.snapshot().hp, hp0);
+    chap.exec('ls -la');
+    chap.exec('cat .logs/java-api.log');
+    chap.exec("vim -c '%s/-Xmx64m/-Xmx512m/' -c 'wq' docker-compose.yml");
+    const launched = chap.exec('docker compose up -d');
+    assert.equal(launched.code, 0);
+    const floats = launched.snapshot.room.actors.filter((a) => a.id?.startsWith('docker:float:'));
+    assert.equal(floats.length, 4);
+    assert.ok(floats.every((a) => a.model === 'prop.file' && (a.y ?? 0) >= 1.5));
+  });
+
+  await test('vim insert motion keys, cc/S/dw/db/d<N>G/dgg/SS3, classic readEditableFile, and docker edge cases', async () => {
+    const { createVimState, stepVimKey } = await load('/src/game/vim.ts');
+    const { evaluateComposeRuntime } = await load('/src/game/docker-compose-eval.ts');
+    const { createDockerState, runDockerCli } = await load('/src/game/docker.ts');
+    const { createSession } = await load('/src/game/session.ts');
+
+    const runKeys = (content, keys) => {
+      const s = createVimState({ path: 't.txt', content });
+      for (const k of keys) stepVimKey(s, k, {});
+      return s;
+    };
+
+    // Motion characters typed inside Insert/Replace mode are inserted literally, not treated as Normal motions.
+    assert.deepEqual(runKeys('ok', ['a', ...'hjklwbe0^$G%', '\x1b']).lines, ['ohjklwbe0^$G%k']);
+    assert.deepEqual(runKeys('hello\nworld', ['i', '\x1b[3~', '\x1b']).lines, ['ello', 'world']);
+    assert.equal(runKeys('aaa\nbbb', ['\x1bOB']).row, 1);
+
+    // cc / S on 1-line and last-line buffers replace in-place with a single undo step.
+    assert.deepEqual(runKeys('hello', ['c', 'c']).lines, ['']);
+    const ccLast = runKeys('aaa\nbbb', ['j', 'c', 'c']);
+    assert.deepEqual(ccLast.lines, ['aaa', '']);
+    assert.equal(ccLast.row, 1);
+    assert.deepEqual(runKeys('aaa\nbbb\nccc', ['j', 'c', 'c', 'x', '\x1b', 'u']).lines, ['aaa', 'bbb', 'ccc']);
+    assert.deepEqual(runKeys('aaa\nbbb', ['j', 'S']).lines, ['aaa', '']);
+
+    // dw at EOF, db exclusivity, post-operator counts & dgg.
+    assert.deepEqual(runKeys('foo', ['d', 'w']).lines, ['']);
+    assert.deepEqual(runKeys('foo bar', ['w', 'd', 'w']).lines, ['foo ']);
+    assert.deepEqual(runKeys('aaa\n  bbb ccc', ['2', 'd', 'w']).lines, ['ccc']);
+    assert.deepEqual(runKeys('hello world', ['w', 'd', 'b']).lines, ['world']);
+    assert.deepEqual(runKeys('hello\nworld', ['j', 'd', 'b']).lines, ['world']);
+    assert.deepEqual(runKeys('a\nb\nc\nd', ['d', '3', 'G']).lines, ['d']);
+    assert.deepEqual(runKeys('a\nb\nc\nd', ['3', 'd', 'G']).lines, ['d']);
+    assert.deepEqual(runKeys('a\nb\nc\nd', ['j', 'j', 'd', 'g', 'g']).lines, ['d']);
+
+    // Classic Game supports readEditableFile for :e reloads.
+    const classic = createSession({ seed: 1 });
+    assert.equal(classic.readEditableFile('app.js').ok, true);
+
+    // -Xmx64m telemetry triggers OOM; deploy.resources.reservations never overwrites limits.
+    const telemetryCompose = 'services:\n  java-api:\n    image: api\n    environment:\n      JAVA_OPTS: "-Xmx64m telemetry"\n';
+    assert.equal(evaluateComposeRuntime(telemetryCompose).ok, false);
+    const resCompose = 'services:\n  java-api:\n    image: api\n    deploy:\n      resources:\n        limits:\n          memory: 512M\n        reservations:\n          memory: 64M\n';
+    assert.equal(evaluateComposeRuntime(resCompose).ok, true);
+
+    // docker up, docker compose top, logs --tail N, and compose start refusing to mask OOMKilled.
+    let yml = telemetryCompose;
+    const dst = createDockerState('u');
+    const dio = {
+      cwd: '/srv',
+      readFile: () => ({ ok: false, error: 'missing' }),
+      readOptional: () => null,
+      findComposeFile: () => ({ path: '/srv/docker-compose.yml', content: yml }),
+    };
+    assert.equal(runDockerCli(dst, ['up', '-d'], dio).code, 1);
+    assert.equal(runDockerCli(dst, ['compose', 'start'], dio).code, 1);
+    assert.equal(runDockerCli(dst, ['start', 'java-api'], dio).code, 1);
+    assert.equal(runDockerCli(dst, ['compose', 'logs', '--tail', '2', 'java-api'], dio).stdout.trim().split('\n').length, 2);
+    assert.equal(runDockerCli(dst, ['logs', '--tail', '1', 'u-java-api-1'], dio).stdout.trim().split('\n').length, 1);
+    yml = resCompose;
+    assert.equal(runDockerCli(dst, ['compose', 'start'], dio).code, 0);
+    assert.match(runDockerCli(dst, ['compose', 'top'], dio).stdout, /start-java-api/);
+    assert.equal(runDockerCli(dst, ['down'], dio).code, 0);
+  });
+
   console.log(`\narchitecture-unit OK (${count()} tests)`);
 }, '/src/game/session.ts');

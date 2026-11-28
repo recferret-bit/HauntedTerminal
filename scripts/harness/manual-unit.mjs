@@ -257,7 +257,9 @@ await withProcgen(async (_p, vite) => {
     assert.ok(comp.matches.includes('kill') && comp.matches.includes('kiro'), `expected kill & kiro in ${JSON.stringify(comp)}`);
 
     const chapter = readChapter(slug);
-    const battleLevel = chapter.levels.map((l) => l.spec).find((l) => l.index >= 5 && l.enemies.length > 0 && !l.script?.safe);
+    const battleLevel = chapter.levels
+      .map((l) => l.spec)
+      .find((l) => l.index >= 5 && l.enemies.some((e) => !e.appearWhen && e.type !== 'ransomware' && e.type !== 'spyware' && e.type !== 'rootkit') && !l.script?.safe);
     assert.ok(battleLevel, 'expected at least one post-Hub combat level in chapter');
     if (battleLevel) {
       session.jumpToLevel(battleLevel.id);

@@ -1,8 +1,16 @@
 import { CHAPTER_MANIFESTS, getChapterPack } from '../chapters/catalog.js';
 import { readDraftPack } from '../chapters/draft.js';
-import type { ChapterPack, LevelFileSpec, LevelSpec, ScriptStep } from '../chapters/types.js';
+import type { ChapterPack, LevelFileSpec, LevelSpec, ScriptCond, ScriptStep } from '../chapters/types.js';
 import type { LabPlayer, LabScript, LabSetupOp, LabStep } from './lab-types.js';
 import { uniqueLabId, validateLab } from './store.js';
+
+function usesLaptopCond(c: ScriptCond | undefined): boolean {
+  if (!c) return false;
+  if (c.kind === 'laptop_tasks_done') return true;
+  if (c.kind === 'not') return usesLaptopCond(c.of);
+  if (c.kind === 'any' || c.kind === 'all') return c.of.some(usesLaptopCond);
+  return false;
+}
 
 export interface ImportableLevel {
   /** `<chapterId>/<levelId>`, suitable for `<select>` values and `?from=<ref>`. */
@@ -105,11 +113,15 @@ export function levelToLabScript(pack: ChapterPack, level: LevelSpec, takenIds: 
   for (const f of level.files ?? []) setup.push(fileOp(f));
   for (const e of level.enemies ?? []) {
     usedIds.add(e.id);
-    setup.push({ op: 'enemy', ...structuredClone(e) });
+    const enemy = structuredClone(e);
+    if (usesLaptopCond(enemy.appearWhen)) delete enemy.appearWhen;
+    setup.push({ op: 'enemy', ...enemy });
   }
   for (const p of level.pickups ?? []) {
     usedIds.add(p.id);
-    setup.push({ op: 'pickup', ...structuredClone(p) });
+    const pickup = structuredClone(p);
+    if (usesLaptopCond(pickup.appearWhen)) delete pickup.appearWhen;
+    setup.push({ op: 'pickup', ...pickup });
   }
   for (const patch of level.patches ?? []) setup.push({ op: 'patch', ...structuredClone(patch) });
   for (const r of level.riddles ?? []) {
@@ -126,6 +138,8 @@ export function levelToLabScript(pack: ChapterPack, level: LevelSpec, takenIds: 
 
   const taskIds: string[] = [];
   (level.winRules ?? []).forEach((rule, i) => {
+    // Non-terminal 3D laptop overlay tasks cannot be driven by a shell line in Terminal Lab.
+    if (rule.kind === 'laptop_tasks_done') return;
     const id = nextFreeTaskId(usedIds, i + 1);
     taskIds.push(id);
     setup.push({ op: 'task', id, rule: structuredClone(rule) });

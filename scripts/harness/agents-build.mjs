@@ -132,7 +132,7 @@ const TEAM = {
   },
   'terminal-designer': {
     description: 'Designs and tunes the terminal: the shell, its commands, the virtual file system, man pages, terminal UI and the Terminal Lab (src/game shell files, src/ui, src/terminal-lab, lab scripts).',
-    writes: ['src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,search-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types}.ts', 'src/ui/**', 'src/terminal-lab/**', 'scripts/harness/terminal-lab/**', 'scripts/harness/props/terminal*.mjs', 'scripts/harness/{manual-unit,manual-smoke}.mjs'],
+    writes: ['src/game/{shell,commands-fs,commands-move,commands-proc,commands-text,unix-applets,search-applets,tree,tree-links,manual,manual-types,manual-cmds-nav,manual-cmds-text,manual-cmds-meta,manual-guides,manual-catalog,lab-checks,lab-riddle,lab-support,lab-types,vim-types,vim-buffer,vim-ex,vim,docker-compose-eval,docker}.ts', 'src/ui/**', 'src/terminal-lab/**', 'scripts/harness/terminal-lab/**', 'scripts/harness/props/terminal*.mjs', 'scripts/harness/{manual-unit,manual-smoke}.mjs'],
     // The manual's spec (done) is left out, read it when needed: the resources must keep >= 8,000 of the CLI's 100,000 characters free.
     resources: [steer('terminal-lab-rules'), 'file://.kiro/specs/inventory/items/terminal/requirements.md', 'file://.kiro/specs/inventory/items/terminal/design.md'],
     skills: ['terminal-lab', 'chapter-level-generator'],

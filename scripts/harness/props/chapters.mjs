@@ -221,6 +221,10 @@ function exitDoorProps(world) {
           if (solve) {
             for (const cmd of (l.solutionCommands ?? []).filter((c) => !c.includes(nameOf(l.exitDir)))) {
               if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+              if (session.snapshot().pendingLaptopTasks?.length) {
+                session.completePendingLaptopTasks?.();
+                if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+              }
               session.exec(cmd);
             }
           }
@@ -285,6 +289,10 @@ function pidPlayProps(world, withEnemies, { openLabSession, newLabScript, RESERV
           for (const c of solution.slice(0, k % (solution.length + 1))) {
             if (session.snapshot().ended || session.levelIdx !== index) break;
             if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+            if (session.snapshot().pendingLaptopTasks?.length) {
+              session.completePendingLaptopTasks?.();
+              if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+            }
             session.exec(c);
           }
           if (session.levelIdx !== index || session.snapshot().ended) return; // the prefix cleared the level: nothing rolled is left to see
@@ -390,6 +398,11 @@ function pidProps(world, pids, lab) {
             for (let t = 0; t < 2; t++) deaths += session.tick().events.filter((e) => e.type === 'PLAYER_RESPAWNED').length;
             deaths += (session.forceEnemyTurn()?.events ?? []).filter((e) => e.type === 'PLAYER_RESPAWNED').length;
             if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+            if (session.snapshot().pendingLaptopTasks?.length) {
+              const lapRes = session.completePendingLaptopTasks?.();
+              if (lapRes) deaths += lapRes.events.filter((e) => e.type === 'PLAYER_RESPAWNED').length;
+              if (session.snapshot().skippableDialog) session.skipOpeningDialog();
+            }
             deaths += session.exec(cmd).events.filter((e) => e.type === 'PLAYER_RESPAWNED').length;
           }
           expect(deaths === 0, `${deaths} death(s) on level ${index} with pidSeed ${seed}`);
@@ -580,6 +593,47 @@ export default async function chaptersSuite(ctx) {
           const issues = checkPack(broken);
           expect(Array.isArray(issues), 'checkPack did not return a list');
         }),
+    },
+    {
+      name: 'docker_compose_healthy validates non-empty services and floating: true materializes all services as prop.file',
+      build: () =>
+        fc.property(
+          fc.uniqueArray(fc.stringMatching(/^[a-z][a-z0-9-]{1,8}$/), { minLength: 1, maxLength: 5 }),
+          fc.boolean(),
+          (services, floating) => {
+            const level5Idx = world.levels.findIndex((l) => l.winRules.some((r) => r.kind === 'docker_compose_healthy' && r.floating));
+            expect(level5Idx >= 0, 'chapter must include a floating docker_compose_healthy level');
+            const broken = structuredClone(world.pack);
+            const rule = broken.levels[level5Idx].winRules.find((r) => r.kind === 'docker_compose_healthy');
+            rule.services = [];
+            expect(checkPack(broken).some((x) => x.severity === 'error'), 'empty docker_compose_healthy services passed checkPack');
+
+            const custom = world.openWith(level5Idx, (pack) => {
+              const r = pack.levels[level5Idx].winRules.find((w) => w.kind === 'docker_compose_healthy');
+              r.services = services;
+              r.floating = floating;
+              const cwd = pack.levels[level5Idx].cwd;
+              const yml = pack.levels[level5Idx].files.find((f) => f.path === `${cwd}/docker-compose.yml`);
+              yml.content = [
+                'services:',
+                ...services.map((svc) => `  ${svc}:\n    image: alpine:3.20`),
+              ].join('\n') + '\n';
+            });
+            custom.arriveLevel();
+            custom.skipOpeningDialog();
+            const up = custom.exec('docker compose up -d');
+            expect(up.code === 0, `docker compose up failed: ${up.stderr}`);
+            const actors = up.snapshot.room.actors;
+            if (floating) {
+              const floats = actors.filter((a) => a.id?.startsWith('docker:float:'));
+              expect(floats.length === services.length, `expected ${services.length} floating prop.file actors, got ${floats.length}`);
+              expect(floats.every((a) => a.model === 'prop.file' && (a.y ?? 0) >= 1.5), 'floating compose sheets must use prop.file at height >= 1.5');
+            } else {
+              const crates = actors.filter((a) => a.id?.startsWith('docker:crate:'));
+              expect(crates.length === Math.min(3, services.length), `expected ${Math.min(3, services.length)} crate actors, got ${crates.length}`);
+            }
+          },
+        ),
     },
     ...pidProps(world, pidsModule, { openLabSession, newLabScript }),
     ...lockAndTimedProps(world),

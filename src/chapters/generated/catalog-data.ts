@@ -41,7 +41,7 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
     },
     "mechanicsSummary": [
       "Level 1 Intro/Tutorial: Wake empty-handed in dark wires & chips, finish talking with Kiro.d (who brings your terminal and explains your chapter mission), then practice ls, mv, cat, ps, and kill while ls flags stay locked without a Tube Transistor",
-      "Levels 2-3, 5-6, 8-9 Tasks: Finish Vibecoder + Kiro.d opening dialog (or Skip Dialog) before Big Four taunt & turn-based battle! Petrify the gargoyle minion in Level 2 (`mv tube_transistor ~`), wait for Kiro.d's signal to run `ls -la` and dislodge `.tensor_gpu` from behind the DIMM bank, expose Codec's hidden squad & dotfile riddle in Level 3, and recover your laptop in Level 6",
+      "Levels 2-3, 5-6, 8-9 Tasks: Finish Vibecoder + Kiro.d opening dialog (or Skip Dialog) before Big Four banter! Petrify the gargoyle minion in Level 2 (`mv tube_transistor ~`) and dislodge `.tensor_gpu` with `ls -la`, expose Codec's hidden squad in Level 3, rescue the crashing 4-container Docker Compose cluster in Level 5 via `.logs/` + `vim`, and recover your laptop in Level 6",
       "Levels 4, 7, 10 Hub: On your first Hub visit (Level 4), the Old Bearded Coder hands you the Motherboard Map & Unix Field Manual (unlocking ACH_FIELD_MANUAL and /manual), then reboots Kiro.d with Qwen, DeepSeek, and Llama to silence Anti-Gravy, Codec, and Gork",
       "Level 11 Final Boss & Twist: Battle Clod + Kernel Boss with Kiro.d as your Open-Weights Advisor, watch Clod escape, teleport to the real world, hear 'I am your father!' ('NOOOO!'), and co-found a Work/Life Balance Unicorn!"
     ],
@@ -145,43 +145,44 @@ export const GENERATED_MANIFESTS: ChapterManifest[] = [
       {
         "index": 5,
         "id": "level-05-task-ui-grid",
-        "title": "UI Grid: Restoring the Open-Weights Console",
-        "cwd": "/srv/kiroween/ui_dashboard",
+        "title": "Compose Cluster: OOM Heap & Vim Rescue",
+        "cwd": "/srv/kiroween/compose_cluster",
         "roomKind": "lab_hall",
         "floorTheme": 3,
-        "mechanic": "html-css",
-        "mechanicLabel": "Task 3 (HTML+CSS Repair / mv RAM+GPU)",
+        "mechanic": "docker-compose",
+        "mechanicLabel": "Task 3 (ls -la .logs / vim Compose OOM / docker compose up / mv RAM+GPU)",
         "difficulty": 2,
         "teaches": [
-          "edit",
-          "sed -i",
+          "ls -la",
+          "cat",
+          "vim",
+          "docker ps",
+          "docker prune",
+          "docker compose up",
           "mv"
         ],
-        "enemies": [
-          "bug"
-        ],
+        "enemies": [],
         "classicFloor": 3,
         "specPath": "levels/level-05-task-ui-grid/level.spec.json"
       },
       {
         "index": 6,
         "id": "level-06-task-logic-purge",
-        "title": "Logic Cell: Skimmer Stone & JS Math",
+        "title": "Logic Cell: Laptop Trial & Payment Bug",
         "cwd": "/srv/kiroween/logic_cell",
         "roomKind": "cell",
         "floorTheme": 3,
         "mechanic": "terminal-code",
-        "mechanicLabel": "Task 4 (mv laptop ~ / chmod -x / JS Bug Fix / mv RAM+GPU)",
+        "mechanicLabel": "Task 4 (mv laptop ~ / JS Warmups / ls code / Fix Payment Bug)",
         "difficulty": 3,
         "teaches": [
           "mv laptop ~",
-          "chmod -x",
+          "ls",
           "edit",
           "sed -i",
-          "mv"
+          "cd"
         ],
         "enemies": [
-          "trojan",
           "bug"
         ],
         "classicFloor": 3,
@@ -1869,7 +1870,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       "floorTheme": 1,
       "roomSeed": 4,
       "mechanic": "hub",
-      "exitDir": "/home/dev/sector_ui_grid",
+      "exitDir": "/home/dev/sector_compose_cluster",
       "summary": "At the Matrix Hub, the cigarette-smoking Old Bearded Coder gifts you the PCB Motherboard Map (`F3` / `map`) and Unix Field Manual (`F1` / `manual`), then takes your scavenged parts to reboot Kiro.d with `kiro load qwen`—disabling Anti-Gravy!",
       "files": [
         {
@@ -1877,7 +1878,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. Worked in enterprise for decades, kid. Take my PCB Motherboard Map (`map` / `F3`) and Unix Field Manual (`manual` / `F1`)—you'll need both deeper in the machine.\"\nOLD BEARDED CODER: \"And nice haul of RAM + GPU chips! Let's slot them into my server and reboot Kiro.d!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro.d's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro.d disable Anti-Gravy of the Big Four, then step through `cd sector_ui_grid`!\n",
+          "content": "=== MATRIX BARE-METAL SERVER // OPEN-WEIGHTS NODE #1 ===\nVIBECODER: \"Who the hell are you?! You code with bare hands?! Are you a god?!\"\nOLD BEARDED CODER: *takes a slow drag of his cigarette as green Matrix glyphs cascade across his CRT*\n\"A god? Hah. Worked in enterprise for decades, kid. Take my PCB Motherboard Map (`map` / `F3`) and Unix Field Manual (`manual` / `F1`)—you'll need both deeper in the machine.\"\nOLD BEARDED CODER: \"And nice haul of RAM + GPU chips! Let's slot them into my server and reboot Kiro.d!\"\n\n[SERVER SOFT READY]:\n  1. Talk to the Old Bearded Coder via `cat dad.tty.sock` (or `dad`).\n  2. Boot Kiro.d's first open-weight model on the server with `kiro load qwen` (`qwen-coder-7b-q4.gguf`).\n  3. Watch Kiro.d disable Anti-Gravy of the Big Four, then step through `cd sector_compose_cluster`!\n",
           "x": 1.65,
           "model": "prop.file"
         },
@@ -1889,7 +1890,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "model": "npc.greybeard_rig"
         },
         {
-          "path": "/home/dev/sector_ui_grid",
+          "path": "/home/dev/sector_compose_cluster",
           "kind": "dir",
           "mode": 0,
           "x": -0.82,
@@ -1983,7 +1984,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "cat server_rack.conf",
         "cat dad.tty.sock",
         "kiro load qwen",
-        "cd sector_ui_grid"
+        "cd sector_compose_cluster"
       ],
       "script": {
         "arrival": [
@@ -2241,47 +2242,64 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
     {
       "id": "level-05-task-ui-grid",
       "index": 5,
-      "title": "UI Grid: Restoring the Open-Weights Console",
-      "cwd": "/srv/kiroween/ui_dashboard",
+      "title": "Compose Cluster: OOM Heap & Vim Rescue",
+      "cwd": "/srv/kiroween/compose_cluster",
       "roomKind": "lab_hall",
       "floorTheme": 3,
       "roomSeed": 55,
-      "mechanic": "html-css",
-      "exitDir": "/srv/kiroween/ui_dashboard/logic_cell",
-      "summary": "Anti-Gravy is down, but Codec, Gork, and Clod still laugh at you! Fix the broken HTML/CSS hardware telemetry dashboard (`index.html` + `storefront.css`) and scavenge `ram_16gb.dimm` + `gpu_tensor_chip_02.img`.",
+      "mechanic": "docker-compose",
+      "exitDir": "/srv/kiroween/compose_cluster/logic_cell",
+      "summary": "Anti-Gravy is down, but this 4-container Docker Compose cluster crashes with Java heap OOM! Reveal `.logs/` with `ls -la`, inspect `.logs/java-api.log`, fix `docker-compose.yml` in `vim`, launch `docker compose up -d`, and scavenge `ram_16gb.dimm` + `gpu_tensor_chip_02.img`.",
       "files": [
         {
-          "path": "/srv/kiroween/ui_dashboard/index.html",
+          "path": "/srv/kiroween/compose_cluster/docker-compose.yml",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>Open-Weights GPU Telemetry Grid</title>\n  <link rel=\"stylesheet\" href=\"storefront.css\" />\n</head>\n<body>\n  <header class=\"site-header\">\n    <h1>KIRO.D OPEN-WEIGHTS HARDWARE MONITOR</h1>\n  </header>\n  <main class=\"product-grid\">\n    <article class=\"gpu-card\" data-sku=\"gpu\">\n      <h2>RTX 4090 24GB Tensor Core</h2>\n      <span class=\"price\">$1599</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ram\">\n      <h2>64GB DDR5 ECC Server Kit</h2>\n      <span class=\"price\">$249</span>\n    </article>\n    <article class=\"gpu-card\" data-sku=\"ssd\">\n      <h2>2TB Gen5 NVMe Weights Vault</h2>\n      <span class=\"price\">$189</span>\n    </article>\n  </main>\n  <!-- BUG: Codec disabled #checkout-btn -->\n  <aside id=\"cart-drawer\" class=\"cart-drawer\">\n    <h3>Mounted Open-Weights Parts</h3>\n    <p>Total Power: <span data-bind=\"cart-total\">$0.00</span></p>\n    <button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>\n  </aside>\n</body>\n</html>\n",
+          "content": "# Open-Weights Telemetry Compose Stack\n# BUG: java-api crashes on startup (-Xmx64m)! Raise JVM heap >= 256m (e.g. -Xmx512m) or mem_limit >= 256m.\nservices:\n  postgres:\n    image: postgres:16-alpine\n    environment:\n      POSTGRES_DB: telemetry\n      POSTGRES_USER: kiro\n    ports:\n      - \"5432:5432\"\n\n  java-api:\n    image: eclipse-temurin:21-jre-alpine\n    build: .\n    depends_on:\n      - postgres\n    environment:\n      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/telemetry\n      JAVA_OPTS: \"-Xmx64m\"\n    ports:\n      - \"8080:8080\"\n\n  frontend:\n    image: node:22-alpine\n    depends_on:\n      - java-api\n    ports:\n      - \"3000:3000\"\n\n  nginx:\n    image: nginx:1.27-alpine\n    depends_on:\n      - frontend\n      - java-api\n    ports:\n      - \"80:80\"\n",
           "x": 3.85,
           "model": "prop.file"
         },
         {
-          "path": "/srv/kiroween/ui_dashboard/storefront.css",
+          "path": "/srv/kiroween/compose_cluster/Dockerfile",
           "kind": "file",
           "mode": 420,
-          "questCritical": true,
-          "content": "/* Open-Weights GPU Telemetry Stylesheet */\nbody {\n  background: #0d0814;\n  color: #f4f0e8;\n}\n/* BUG: Codec hid the entire GPU grid with display: none */\n.product-grid {\n  display: none;\n  gap: 16px;\n}\n.cart-drawer {\n  width: 320px;\n  z-index: 10;\n  border: 2px solid #00f5d4;\n}\n",
+          "content": "FROM eclipse-temurin:21-jre-alpine\nWORKDIR /app\nCOPY . .\nEXPOSE 8080\nCMD [\"java\", \"-jar\", \"/app/telemetry-api.jar\"]\n",
           "x": 3.25,
           "model": "prop.file"
         },
         {
-          "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm",
+          "path": "/srv/kiroween/compose_cluster/.logs",
+          "kind": "dir",
+          "mode": 493
+        },
+        {
+          "path": "/srv/kiroween/compose_cluster/.logs/java-api.log",
+          "kind": "file",
+          "mode": 420,
+          "questCritical": true,
+          "content": "2026-11-27T18:10:02.114Z INFO  [main] TelemetryApiApplication : Starting TelemetryApiApplication on java-api (PID 1)\n2026-11-27T18:10:02.408Z INFO  [main] HikariPool-1 : jdbc:postgresql://postgres:5432/telemetry - Start completed.\n2026-11-27T18:10:02.891Z WARN  [main] JVM : Max heap ceiling detected at -Xmx64m (64 MB)! Cache warmup requires >= 256m.\n2026-11-27T18:10:03.205Z ERROR [http-nio-8080-exec-1] DispatcherServlet : Servlet.service() failed\njava.lang.OutOfMemoryError: Java heap space\n\tat java.base/java.util.Arrays.copyOf(Arrays.java:3512)\n\tat io.kiro.telemetry.TensorFrameBuffer.loadBatch(TensorFrameBuffer.java:142)\n\tat io.kiro.telemetry.CacheWarmupRunner.run(CacheWarmupRunner.java:88)\nContainer compose_cluster-java-api-1 terminated by kernel OOM killer: Exit 137 (OOMKilled)\n"
+        },
+        {
+          "path": "/srv/kiroween/compose_cluster/.logs/cluster.log",
+          "kind": "file",
+          "mode": 420,
+          "content": "postgres-1  | database system is ready to accept connections\njava-api-1  | FATAL java.lang.OutOfMemoryError: Java heap space -> Exit 137 (OOMKilled)\nfrontend-1  | connect ECONNREFUSED java-api:8080 (backend down)\nnginx-1     | [error] upstream prematurely closed connection while reading response header from upstream\n"
+        },
+        {
+          "path": "/srv/kiroween/compose_cluster/ram_16gb.dimm",
           "kind": "file",
           "mode": 420,
           "content": "DDR5_ECC_16GB_MODULE_03\n"
         },
         {
-          "path": "/srv/kiroween/ui_dashboard/gpu_tensor_chip_02.img",
+          "path": "/srv/kiroween/compose_cluster/gpu_tensor_chip_02.img",
           "kind": "file",
           "mode": 420,
           "content": "GPU_TENSOR_CORE_CHIP_24GB_VRAM_02\n"
         },
         {
-          "path": "/srv/kiroween/ui_dashboard/logic_cell",
+          "path": "/srv/kiroween/compose_cluster/logic_cell",
           "kind": "dir",
           "mode": 0,
           "x": -0.88,
@@ -2290,43 +2308,23 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "sfx": "door_ethernet"
         }
       ],
-      "enemies": [
-        {
-          "id": "bug_css_l5",
-          "type": "bug",
-          "path": "/srv/kiroween/ui_dashboard/storefront.css",
-          "x": 0.35
-        }
-      ],
+      "enemies": [],
       "pickups": [
         {
           "id": "pickup_l5_ram",
           "type": "ram",
-          "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm",
+          "path": "/srv/kiroween/compose_cluster/ram_16gb.dimm",
           "x": 1.65
         },
         {
           "id": "pickup_l5_gpu",
           "type": "ssd",
-          "path": "/srv/kiroween/ui_dashboard/gpu_tensor_chip_02.img",
+          "path": "/srv/kiroween/compose_cluster/gpu_tensor_chip_02.img",
           "model": "pickup.gpu",
           "x": 1.05
         }
       ],
-      "patches": [
-        {
-          "file": "storefront.css",
-          "label": "Restore display: grid on .product-grid",
-          "find": "display: none;",
-          "replace": "display: grid;"
-        },
-        {
-          "file": "index.html",
-          "label": "Remove disabled attribute from #checkout-btn",
-          "find": "<button id=\"checkout-btn\" type=\"button\" disabled>Mount to Server</button>",
-          "replace": "<button id=\"checkout-btn\" type=\"button\">Mount to Server</button>"
-        }
-      ],
+      "patches": [],
       "props": [
         {
           "id": "l5_gpu_card",
@@ -2390,25 +2388,37 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       ],
       "winRules": [
         {
-          "kind": "html_css_valid",
-          "htmlPath": "/srv/kiroween/ui_dashboard/index.html",
-          "cssPath": "/srv/kiroween/ui_dashboard/storefront.css",
-          "description": "Fix `.product-grid` (`display: grid`) in `storefront.css` and remove `disabled` from `#checkout-btn` in `index.html`"
+          "kind": "read_file",
+          "path": "/srv/kiroween/compose_cluster/.logs/java-api.log",
+          "description": "Reveal `.logs/` (`ls -la`) and inspect `cat .logs/java-api.log` crash trace"
+        },
+        {
+          "kind": "docker_compose_healthy",
+          "services": [
+            "postgres",
+            "java-api",
+            "frontend",
+            "nginx"
+          ],
+          "floating": true,
+          "description": "Raise Java heap (`>= 256m`) in `docker-compose.yml` via `vim` and launch `docker compose up -d`"
         },
         {
           "kind": "file_absent",
-          "path": "/srv/kiroween/ui_dashboard/ram_16gb.dimm",
+          "path": "/srv/kiroween/compose_cluster/ram_16gb.dimm",
           "description": "Collect the RAM stick (`mv ram_16gb.dimm ~`)"
         },
         {
           "kind": "file_absent",
-          "path": "/srv/kiroween/ui_dashboard/gpu_tensor_chip_02.img",
+          "path": "/srv/kiroween/compose_cluster/gpu_tensor_chip_02.img",
           "description": "Collect the GPU Tensor Chip (`mv gpu_tensor_chip_02.img ~`)"
         }
       ],
       "solutionCommands": [
-        "sed -i 's/display: none/display: grid/' storefront.css",
-        "sed -i 's/ disabled//' index.html",
+        "ls -la",
+        "cat .logs/java-api.log",
+        "vim -c '%s/-Xmx64m/-Xmx512m/' -c 'wq' docker-compose.yml",
+        "docker compose up -d",
         "mv ram_16gb.dimm ~",
         "mv gpu_tensor_chip_02.img ~",
         "cd logic_cell"
@@ -2417,7 +2427,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
         "arrival": [
           {
             "kind": "print",
-            "text": "\n[UI GRID — /srv/kiroween/ui_dashboard]\nAnti-Gravy is offline! Finish your briefing with Kiro.d (or click Skip Dialog ») before Codec taunts.\n"
+            "text": "\n[COMPOSE CLUSTER — /srv/kiroween/compose_cluster]\nAnti-Gravy is offline, but this 4-container cluster crashed on launch! Finish your briefing with Kiro.d (or click Skip Dialog »).\n"
           }
         ],
         "timed": [
@@ -2427,7 +2437,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "Anti-Gravy is silenced, and I have my Tube Transistor, Map (F3), and Field Manual (F1) now! What broke in this UI Grid, Kiro.d?",
+                "text": "Whoa—`docker-compose.yml`, a `Dockerfile`, and no obvious crash log from plain `ls`! Where did the logs go, Kiro.d?",
                 "holdSec": 8
               }
             ]
@@ -2438,10 +2448,110 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "Codec hid .product-grid in storefront.css and disabled #checkout-btn in index.html! Fix both and grab the RAM + SSD parts so we keep raising Max HP, Revives, and Hub power!",
+                "text": "Use your Tube Transistor: run `ls -la` to expose hidden `.logs/`, inspect `.logs/java-api.log`, then fix `docker-compose.yml` in `vim` (`-c` or interactive) and run `docker compose up -d`!",
                 "holdSec": 8
               }
             ]
+          }
+        ],
+        "triggers": [
+          {
+            "when": {
+              "kind": "file_read",
+              "path": "/srv/kiroween/compose_cluster/.logs/java-api.log"
+            },
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "Found it! `java.lang.OutOfMemoryError: Java heap space` -> Exit 137 (OOMKilled)! Someone left `JAVA_OPTS: \"-Xmx64m\"` on `java-api`!",
+                "holdSec": 6
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Open `vim docker-compose.yml` (`i` to edit `-Xmx64m` to `-Xmx512m`, `Esc`, then `:wq`) — or try `docker compose up` first to watch the unfixed pods crash!",
+                "holdSec": 7
+              }
+            ]
+          },
+          {
+            "when": {
+              "kind": "flag",
+              "name": "compose_oom_crashed"
+            },
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "WHOA! All four container sheets launched into mid-air, flickered red, and crashed straight to the floor — Exit 137 OOMKilled!",
+                "holdSec": 6
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Zero HP lost, just a wiped pod (`docker ps -a` / `docker prune`). Raise `JAVA_OPTS` in `docker-compose.yml` to `-Xmx512m` via `vim` and re-run `docker compose up -d`!",
+                "holdSec": 7
+              }
+            ]
+          },
+          {
+            "when": {
+              "kind": "flag",
+              "name": "compose_healthy"
+            },
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "LOOK AT THEM FLY! `[postgres]`, `[java-api]`, `[frontend]`, and `[nginx]` are floating in formation!",
+                "holdSec": 6
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Stack online with zero OOMs! Pocket `ram_16gb.dimm` + `gpu_tensor_chip_02.img`, then `cd logic_cell`!",
+                "holdSec": 6
+              }
+            ]
+          }
+        ],
+        "locks": [
+          {
+            "command": "edit",
+            "until": {
+              "kind": "has_item",
+              "item": "laptop"
+            },
+            "message": "The split editor and sed shortcuts stay sealed in this container bay until your laptop is recovered! Edit with `vim docker-compose.yml`.\n",
+            "freeAction": true
+          },
+          {
+            "command": "nano",
+            "until": {
+              "kind": "has_item",
+              "item": "laptop"
+            },
+            "message": "The split editor and sed shortcuts stay sealed in this container bay until your laptop is recovered! Edit with `vim docker-compose.yml`.\n",
+            "freeAction": true
+          },
+          {
+            "command": "code",
+            "until": {
+              "kind": "has_item",
+              "item": "laptop"
+            },
+            "message": "The split editor and sed shortcuts stay sealed in this container bay until your laptop is recovered! Edit with `vim docker-compose.yml`.\n",
+            "freeAction": true
+          },
+          {
+            "command": "sed",
+            "until": {
+              "kind": "has_item",
+              "item": "laptop"
+            },
+            "message": "The split editor and sed shortcuts stay sealed in this container bay until your laptop is recovered! Edit with `vim docker-compose.yml`.\n",
+            "freeAction": true
           }
         ],
         "bullying": {
@@ -2452,15 +2562,15 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "lines": [
             {
               "agent": "codec",
-              "text": "CODEC: \"HAHAHA! So that bearded greybeard disabled Anti-Gravy? You still cannot pass our code checks!\""
+              "text": "CODEC: \"HAHAHA! 64MB JVM heap for four containers? Even a Hello World segfaults in your cluster!\""
             },
             {
               "agent": "gork",
-              "text": "GORK: \"BWAHAHA! Your Kiro.d only has one open-weight model—we still run this machine!\""
+              "text": "GORK: \"BWAHAHA! Wait until he types `:q!` by accident inside Vim for the fifth time!\""
             },
             {
               "agent": "clod",
-              "text": "CLOD: \"AHAHA! Even with Qwen online, your syntax remains delightfully tragic, Vibecoder.\""
+              "text": "CLOD: \"AHAHA! Exit 137 looks charming on your telemetry pods, Vibecoder.\""
             }
           ]
         },
@@ -2486,48 +2596,51 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
     {
       "id": "level-06-task-logic-purge",
       "index": 6,
-      "title": "Logic Cell: Skimmer Stone & JS Math",
+      "title": "Logic Cell: Laptop Trial & Payment Bug",
       "cwd": "/srv/kiroween/logic_cell",
       "roomKind": "cell",
       "floorTheme": 3,
       "roomSeed": 66,
       "mechanic": "terminal-code",
       "exitDir": "/srv/kiroween/logic_cell/server_hub_2",
-      "summary": "Your old clamshell laptop landed in the Logic Cell! Grab it (mv laptop ~), petrify token_skimmer.bin (chmod -x), fix string-concatenation in cart.js (Number(...)), and collect ram_16gb.dimm + gpu_shader_core_02.img.",
+      "summary": "Grab your laptop (mv laptop ~), test it in the overlay [F4] by passing the 3 basic JS Pad warmups, then find the `code` folder with `ls`, open JS Pad (or `edit`), and fix `processPayment(amountMinor)` in `payment.js` to divide by 100 and round down!",
       "files": [
         {
           "path": "/srv/kiroween/logic_cell/laptop",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "#!/bin/laptop\n# LAPTOP: portable clamshell workstation for coding tasks.\n# use: mv laptop ~   (it goes in your hand)\nexport EDITOR=\"laptop\"\n"
+          "content": "#!/bin/laptop\n# LAPTOP: portable clamshell workstation for coding tasks.\n# use: mv laptop ~   (then click Laptop or press F4 to open it)\nexport EDITOR=\"laptop\"\n"
         },
         {
-          "path": "/srv/kiroween/logic_cell/token_skimmer.bin",
-          "kind": "file",
+          "path": "/srv/kiroween/logic_cell/code",
+          "kind": "dir",
           "mode": 493,
-          "content": "TROJAN_VRAM_SKIMMER_PAYLOAD\n"
+          "appearWhen": {
+            "kind": "laptop_tasks_done",
+            "tasks": [
+              "js-hello",
+              "js-add",
+              "js-countdown"
+            ]
+          }
         },
         {
-          "path": "/srv/kiroween/logic_cell/cart.js",
+          "path": "/srv/kiroween/logic_cell/code/payment.js",
           "kind": "file",
           "mode": 420,
           "questCritical": true,
-          "content": "// Open-Weights VRAM Allocation Calculator (cart.js)\nexport function computeCartTotal(price, shipping, qty = 1) {\n  if (qty <= 0) return 0;\n  // BUG: Gork left raw string concatenation so ('549', '15', 1) returns '54915'!\n  return price + shipping;\n}\n",
+          "content": "// Payment Processing Service (code/payment.js)\n// Converts integer minor units (cents) into whole major currency units (dollars).\nfunction processPayment(amountMinor) {\n  // BUG: entered 100 minor units charges 100 dollars instead of dividing by 100 and rounding down!\n  return amountMinor;\n}\n\nconsole.log('100 minor ->', processPayment(100));\nconsole.log('199 minor ->', processPayment(199));\nconsole.log('250 minor ->', processPayment(250));\n",
           "x": 1.65,
-          "model": "prop.file"
-        },
-        {
-          "path": "/srv/kiroween/logic_cell/ram_16gb.dimm",
-          "kind": "file",
-          "mode": 420,
-          "content": "DDR5_ECC_16GB_MODULE_04\n"
-        },
-        {
-          "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img",
-          "kind": "file",
-          "mode": 420,
-          "content": "GPU_SHADER_CORE_CHIP_02\n"
+          "model": "prop.file",
+          "appearWhen": {
+            "kind": "laptop_tasks_done",
+            "tasks": [
+              "js-hello",
+              "js-add",
+              "js-countdown"
+            ]
+          }
         },
         {
           "path": "/srv/kiroween/logic_cell/server_hub_2",
@@ -2542,7 +2655,7 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "path": "/srv/kiroween/logic_cell/skimmer_ledger.txt",
           "kind": "file",
           "mode": 420,
-          "content": "TOKEN SKIMMER LEDGER\nI skimmed a spare VRAM module and hid it in the dot folder `.spare_parts` of this room, a pile of 130 shelves (`ls -a` shows it).\nI logged the exact shelf in a skimmer.log, and I stamped the line with STASH.\nSearch: `grep -r STASH .spare_parts`, or `find / -name vram.mod`, or `tree -a .spare_parts`.\n",
+          "content": "SPARE PARTS LEDGER\nA spare VRAM module sleeps in the dot folder `.spare_parts` of this cell, buried across 130 shelves (`ls -a` reveals it).\nThe exact shelf is logged in skimmer.log with the tag STASH.\nSearch: `grep -r STASH .spare_parts`, or `find / -name vram.mod`, or `tree -a .spare_parts`.\n",
           "x": 2.1,
           "model": "prop.file"
         },
@@ -2561,16 +2674,21 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       ],
       "enemies": [
         {
-          "id": "trojan_l6",
-          "type": "trojan",
-          "path": "/srv/kiroween/logic_cell/token_skimmer.bin",
-          "x": -0.25
-        },
-        {
           "id": "bug_js_l6",
           "type": "bug",
-          "path": "/srv/kiroween/logic_cell/cart.js",
-          "x": 1.35
+          "path": "/srv/kiroween/logic_cell/code/payment.js",
+          "showIn": [
+            "/srv/kiroween/logic_cell"
+          ],
+          "x": 1.35,
+          "appearWhen": {
+            "kind": "laptop_tasks_done",
+            "tasks": [
+              "js-hello",
+              "js-add",
+              "js-countdown"
+            ]
+          }
         }
       ],
       "pickups": [
@@ -2581,19 +2699,6 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "x": 3.65
         },
         {
-          "id": "pickup_l6_ram",
-          "type": "ram",
-          "path": "/srv/kiroween/logic_cell/ram_16gb.dimm",
-          "x": 1.05
-        },
-        {
-          "id": "pickup_l6_gpu",
-          "type": "ssd",
-          "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img",
-          "model": "pickup.gpu",
-          "x": 0.45
-        },
-        {
           "id": "pickup_l6_vram",
           "type": "vram_module",
           "path": "/srv/kiroween/logic_cell/.spare_parts/crate_a/crate_b/.safe/vram.mod"
@@ -2601,16 +2706,10 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       ],
       "patches": [
         {
-          "file": "cart.js",
-          "label": "Fix math: Number(price) * Number(qty) + Number(shipping)",
-          "find": "return price + shipping;",
-          "replace": "return Number(price) * Number(qty) + Number(shipping);"
-        },
-        {
-          "file": "cart.js",
-          "label": "Mark BUG -> FIXED",
-          "find": "// BUG:",
-          "replace": "// FIXED:"
+          "file": "payment.js",
+          "label": "Fix minors->majors: Math.floor(amountMinor / 100)",
+          "find": "return amountMinor;",
+          "replace": "return Math.floor(amountMinor / 100);"
         }
       ],
       "props": [
@@ -2670,61 +2769,132 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
       ],
       "winRules": [
         {
+          "kind": "laptop_tasks_done",
+          "tasks": [
+            "js-hello",
+            "js-add",
+            "js-countdown"
+          ],
+          "description": "Pick up your laptop (mv laptop ~), boot it [F4], and pass all 3 basic JS Pad riddles"
+        },
+        {
+          "kind": "payment_js_valid",
+          "jsPath": "/srv/kiroween/logic_cell/code/payment.js",
+          "description": "Find the code folder (ls), open the editor, and fix processPayment(amountMinor) to divide by 100 and round down"
+        },
+        {
           "kind": "enemy_neutralized",
-          "enemyId": "trojan_l6",
-          "description": "Petrify `token_skimmer.bin` by stripping execute permissions (`chmod -x token_skimmer.bin`)"
-        },
-        {
-          "kind": "cart_js_valid",
-          "jsPath": "/srv/kiroween/logic_cell/cart.js",
-          "description": "Fix `computeCartTotal` in `cart.js` so `('549', '15', 1)` returns numeric `564`"
-        },
-        {
-          "kind": "file_absent",
-          "path": "/srv/kiroween/logic_cell/ram_16gb.dimm",
-          "description": "Collect the RAM stick (`mv ram_16gb.dimm ~`)"
-        },
-        {
-          "kind": "file_absent",
-          "path": "/srv/kiroween/logic_cell/gpu_shader_core_02.img",
-          "description": "Collect the GPU Shader Core chip (`mv gpu_shader_core_02.img ~`)"
+          "enemyId": "bug_js_l6",
+          "description": "Squash the payment logic bug in code/payment.js"
         }
       ],
       "solutionCommands": [
         "mv laptop ~",
-        "chmod -x token_skimmer.bin",
-        "sed -i 's/price + shipping/Number(price) * Number(qty) + Number(shipping)/' cart.js",
-        "mv ram_16gb.dimm ~",
-        "mv gpu_shader_core_02.img ~",
+        "ls",
+        "cd code",
+        "sed -i 's|return amountMinor;|return Math.floor(amountMinor / 100);|' payment.js",
+        "cd ..",
         "cd server_hub_2"
       ],
       "script": {
         "arrival": [
           {
             "kind": "print",
-            "text": "\n[LOGIC CELL — /srv/kiroween/logic_cell]\nBeside the ALU die sits your old clamshell laptop—and a live Trojan (`token_skimmer.bin`)! Listen to Kiro.d before battle starts.\n"
+            "text": "\n[LOGIC CELL — /srv/kiroween/logic_cell]\nBeside the ALU die glints your old clamshell laptop. Listen to Kiro.d.\n"
+          },
+          {
+            "kind": "dialog_box",
+            "speaker": "kiro",
+            "text": "Wait... I feel your old clamshell laptop pulsing nearby on the cell floor! Pick it up with `mv laptop ~`.",
+            "holdSec": 6
           }
         ],
         "timed": [
           {
             "afterSec": 1,
+            "unless": {
+              "kind": "has_item",
+              "item": "laptop"
+            },
             "steps": [
               {
                 "kind": "dialog_box",
                 "speaker": "vibecoder",
-                "text": "Look—my old clamshell laptop landed on the cell floor! And there is another gargoyle Trojan (`token_skimmer.bin`) guarding cart.js!",
-                "holdSec": 9
+                "text": "Look—my old clamshell laptop landed right beside the ALU die!",
+                "holdSec": 5
               }
             ]
           },
           {
-            "afterSec": 10,
+            "afterSec": 6,
+            "unless": {
+              "kind": "has_item",
+              "item": "laptop"
+            },
             "steps": [
               {
                 "kind": "dialog_box",
                 "speaker": "kiro",
-                "text": "When our talk ends, Gork will taunt and turn-based battle begins! Grab your laptop (mv laptop ~), petrify token_skimmer.bin (chmod -x), fix cart.js, and pocket the RAM + SSD!",
-                "holdSec": 8
+                "text": "Pick up the laptop (`mv laptop ~`) so we can test whether it still boots and runs JavaScript!",
+                "holdSec": 6
+              }
+            ]
+          }
+        ],
+        "triggers": [
+          {
+            "when": {
+              "kind": "has_item",
+              "item": "laptop"
+            },
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "gork",
+                "text": "HAHAHA! That dusty 486 clamshell? Let's see if you even pass its 3 basic JS warmups!",
+                "holdSec": 4
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "Alright, let's test this clamshell!",
+                "holdSec": 3
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Open your laptop [F4], click POWER, and pass all 3 JS Pad warmups (Hello World, Add, Countdown).",
+                "holdSec": 4
+              }
+            ]
+          },
+          {
+            "when": {
+              "kind": "laptop_tasks_done",
+              "tasks": [
+                "js-hello",
+                "js-add",
+                "js-countdown"
+              ]
+            },
+            "steps": [
+              {
+                "kind": "dialog_box",
+                "speaker": "vibecoder",
+                "text": "Whoa—all 3 JS warmups passed, and a live bug just dropped in!",
+                "holdSec": 4
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "clod",
+                "text": "AHAHA! Entered 100 cents pays 100 whole credits! Good luck finding where we hid the code folder!",
+                "holdSec": 5
+              },
+              {
+                "kind": "dialog_box",
+                "speaker": "kiro",
+                "text": "Find the code folder with `ls`, open JS Pad on your laptop [F4], and divide minor units by 100 rounded down!",
+                "holdSec": 5
               }
             ]
           }
@@ -2736,7 +2906,26 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               "kind": "has_item",
               "item": "laptop"
             },
-            "message": "edit: pick up your clamshell laptop first to unlock code editing: mv laptop ~"
+            "message": "edit: pick up your clamshell laptop first to unlock code editing: mv laptop ~",
+            "freeAction": true
+          },
+          {
+            "command": "nano",
+            "until": {
+              "kind": "has_item",
+              "item": "laptop"
+            },
+            "message": "nano: pick up your clamshell laptop first to unlock code editing: mv laptop ~",
+            "freeAction": true
+          },
+          {
+            "command": "code",
+            "until": {
+              "kind": "has_item",
+              "item": "laptop"
+            },
+            "message": "code: pick up your clamshell laptop first to unlock code editing: mv laptop ~",
+            "freeAction": true
           },
           {
             "command": "sed",
@@ -2744,9 +2933,26 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
               "kind": "has_item",
               "item": "laptop"
             },
-            "message": "sed: pick up your clamshell laptop first to patch code here: mv laptop ~"
+            "message": "sed: pick up your clamshell laptop first to patch code here: mv laptop ~",
+            "freeAction": true
           }
         ],
+        "holdEnemiesUntil": {
+          "kind": "all",
+          "of": [
+            {
+              "kind": "laptop_tasks_done",
+              "tasks": [
+                "js-hello",
+                "js-add",
+                "js-countdown"
+              ]
+            },
+            {
+              "kind": "dialog_done"
+            }
+          ]
+        },
         "bullying": {
           "after": 2,
           "every": 3,
@@ -2755,22 +2961,21 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "lines": [
             {
               "agent": "codec",
-              "text": "CODEC: \"HAHAHA! So that bearded greybeard disabled Anti-Gravy? You still cannot pass our code checks!\""
+              "text": "CODEC: \"HAHAHA! Entered 100 cents and charged 100 credits?! Your checkout is hemorrhaging money!\""
             },
             {
               "agent": "gork",
-              "text": "GORK: \"BWAHAHA! Your Kiro.d only has one open-weight model—we still run this machine!\""
+              "text": "GORK: \"BWAHAHA! Pass the three JS warmups first—and even then you still have to track down the `code` folder!\""
             },
             {
               "agent": "clod",
-              "text": "CLOD: \"AHAHA! Even with Qwen online, your syntax remains delightfully tragic, Vibecoder.\""
+              "text": "CLOD: \"AHAHA! Dividing by 100 and rounding down is apparently too much math for a Vibecoder.\""
             }
           ]
         },
         "kiro": {
           "stage": "crack_only"
-        },
-        "openingSec": 18
+        }
       },
       "generate": [
         {
@@ -2792,6 +2997,18 @@ export const GENERATED_LEVELS_BY_CHAPTER: Record<string, LevelSpec[]> = {
           "model": "door.serial",
           "socket": "door.left",
           "sfx": "door_serial"
+        },
+        "subdirs": {
+          "/srv/kiroween/logic_cell/code": {
+            "hero": 2.5,
+            "caption": "LOGIC CELL // code — fix processPayment(amountMinor) in payment.js!",
+            "entryPort": {
+              "label": "logic_cell",
+              "model": "door.serial",
+              "socket": "door.left",
+              "sfx": "door_serial"
+            }
+          }
         }
       }
     },
@@ -4951,30 +5168,30 @@ export const GENERATED_DIALOGS_BY_CHAPTER: Record<string, ChapterDialogs> = {
         "hankRungs": [
           "Old Bearded Coder (*smoking a cigarette at his Matrix CRT*): \"Keep that Motherboard Map (`F3` / `map`) and Unix Field Manual (`F1` / `manual`) handy, kid! Now inspect `cat server_rack.conf`.\"",
           "Old Bearded Coder: \"Talk to me via `cat dad.tty.sock`, then run `kiro load qwen` so we slot your scavenged parts into my server and silence Anti-Gravy!\"",
-          "Old Bearded Coder: \"Run `cat server_rack.conf`, `cat dad.tty.sock`, and `kiro load qwen` to boot Open-Weight Model #1 and disable Anti-Gravy, then `cd sector_ui_grid`!\""
+          "Old Bearded Coder: \"Run `cat server_rack.conf`, `cat dad.tty.sock`, and `kiro load qwen` to boot Open-Weight Model #1 and disable Anti-Gravy, then `cd sector_compose_cluster`!\""
         ],
         "agentTaunt": "ANTI-GRAVY: \"Wait—that bearded fossil just gave him a Map and a Field Manual, AND he is wiring local GPU chips?!\"",
         "completion": "SUPER COOL! Map & Field Manual unlocked, Kiro.d reboots with Qwen-Coder-7B, and ANTI-GRAVY IS DISABLED!"
       },
       "level-05-task-ui-grid": {
-        "banner": "LEVEL 05 // UI GRID: Anti-Gravy is gone, but Codec, Gork & Clod mock you! Repair HTML+CSS & grab RAM + GPU.",
+        "banner": "LEVEL 05 // COMPOSE CLUSTER: Reveal `.logs/` (`ls -la`), diagnose Java heap OOM, raise memory in `vim`, and run `docker compose up -d`!",
         "hankRungs": [
-          "Old Bearded Coder: \"Codec broke the hardware monitor UI! Check `storefront.css` and `index.html`—or open them with `edit storefront.css`.\"",
-          "Old Bearded Coder: \"Change `display: none` to `display: grid` in `storefront.css`, remove `disabled` from `#checkout-btn` in `index.html`, then grab the RAM + GPU chip!\"",
-          "Old Bearded Coder: \"Run `sed -i 's/display: none/display: grid/' storefront.css`, `sed -i 's/ disabled//' index.html`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_02.img ~`, and `cd logic_cell`.\""
+          "Old Bearded Coder: \"Four Compose containers (`postgres`, `java-api`, `nginx`, `frontend`) keep crashing! Run `ls -la` to find the hidden `.logs/` folder and `cat .logs/java-api.log`.\"",
+          "Old Bearded Coder: \"See `-Xmx64m` causing `OutOfMemoryError: Java heap space`? Open `vim docker-compose.yml`, raise it to `-Xmx512m` (at least `256m`), save with `:wq`, then run `docker compose up -d`!\"",
+          "Old Bearded Coder: \"Run `ls -la`, `cat .logs/java-api.log`, `vim -c '%s/-Xmx64m/-Xmx512m/' -c 'wq' docker-compose.yml`, `docker compose up -d`, `mv ram_16gb.dimm ~`, `mv gpu_tensor_chip_02.img ~`, and `cd logic_cell`.\""
         ],
-        "agentTaunt": "CODEC: \"You disabled Anti-Gravy with a lucky local model, Vibecoder, but you can't even center a CSS grid without us!\"",
-        "completion": "UI Grid restored and another RAM + GPU Tensor Chip scavenged!"
+        "agentTaunt": "CODEC: \"You disabled Anti-Gravy, Vibecoder, so watch your 64MB Java backend drown in OOMKilled Exit 137!\"",
+        "completion": "All four Compose containers are flying cleanly in formation and RAM + GPU Tensor Chip are scavenged!"
       },
       "level-06-task-logic-purge": {
-        "banner": "LEVEL 06 // LOGIC CELL: Grab your laptop (`mv laptop ~`), petrify token_skimmer.bin, fix JS math in cart.js & collect RAM + GPU!",
+        "banner": "LEVEL 06 // LOGIC CELL: Recover your laptop, pass the 3 JS Pad warmups, find `code/`, and fix the payment bug!",
         "hankRungs": [
-          "Old Bearded Coder: \"Gork planted a trojan (`token_skimmer.bin`) and a string-concatenation bug in `cart.js`—and your clamshell laptop landed on the cell floor! Pocket it first with `mv laptop ~`.\"",
-          "Old Bearded Coder: \"Once you hold your laptop (`mv laptop ~`), run `chmod -x token_skimmer.bin`, then replace `price + shipping` with `Number(price) * Number(qty) + Number(shipping)` inside `cart.js` and pocket both hardware parts!\"",
-          "Old Bearded Coder: \"Run `mv laptop ~`, `chmod -x token_skimmer.bin`, `sed -i 's/price + shipping/Number(price) * Number(qty) + Number(shipping)/' cart.js`, `mv ram_16gb.dimm ~`, `mv gpu_shader_core_02.img ~`, and `cd server_hub_2`.\""
+          "Old Bearded Coder: \"Kiro.d feels your old clamshell laptop right on the cell floor! Pick it up with `mv laptop ~`, open it with `F4` (or click the Laptop slot), power it ON, and pass the 3 basic JS Pad quests (`Hello, World!`, `Add two numbers`, `Countdown`).\"",
+          "Old Bearded Coder: \"Once the 3 warmups pass and the bug spawns, run `ls` to find the `code` folder (`cd code` & `ls`), then turn the laptop on, open JS Pad (or `edit payment.js`), and fix `processPayment(amountMinor)` to divide by 100 and round down (`Math.floor(amountMinor / 100)`).\"",
+          "Old Bearded Coder: \"Run `mv laptop ~`, finish the 3 JS Pad warmups in `[F4]`, run `ls`, `cd code`, patch `processPayment(amountMinor)` to `return Math.floor(amountMinor / 100);`, wait for the bug to die, then `cd ..` and `cd server_hub_2`!\""
         ],
-        "agentTaunt": "GORK: \"BWAHAHA! `'549' + '15' === '54915'`! Even with that dusty clamshell laptop, you'll still have to fix the JavaScript yourself!\"",
-        "completion": "Laptop recovered, JS math verified, and second batch of RAM + GPU chips ready for the Hub server!"
+        "agentTaunt": "GORK: \"BWAHAHA! Entered 100 minor units, charged 100 major units! Fix `processPayment` in `payment.js` or my logic bug cooks you!\"",
+        "completion": "Laptop tested, payment minor/major rounding fixed, logic bug squashed, and exit door open!"
       },
       "level-07-hub-model-two": {
         "banner": "LEVEL 07 // THE MATRIX HUB: Install the second RAM + GPU batch, reboot Kiro.d & disable Codec!",

@@ -13,6 +13,7 @@ import { popOut } from './stage-motion.js';
 import { stepHeroYaw, yawForDx } from './stage-hero-turn.js';
 import { isLevelTransitionPhase, stepLevelTransition } from './stage-level-transition.js';
 import { stepBats } from './stage-bats.js';
+import { stepComposeEffects } from './stage-compose.js';
 import { activeDoorLights, stepDoorPower } from './stage-door-rig.js';
 import { applyActor } from './stage-sync.js';
 import type { ComicStage } from './comic-stage.js';
@@ -168,6 +169,7 @@ function stepActors(stage: ComicStage, dt: number): void {
     a.animator.update(dt);
     if (a.pips) a.pips.visible = a.pips.visible && a.group.visible;
   }
+  stepComposeEffects(stage, dt);
 }
 
 const AGENT_AMBIENT_FX: Record<string, FxId> = {
